@@ -658,6 +658,8 @@ window.SelHub = window.SelHub || {
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
@@ -812,7 +814,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // Tabs
-        h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1 border border-slate-200 flex-wrap' },
+        h('div', { role: 'tablist', 'aria-label': 'Ethical Reasoning tabs', className: 'flex gap-1 bg-slate-100 rounded-xl p-1 border border-slate-200 flex-wrap' },
           [
             { id: 'dilemmas', label: '\uD83D\uDD25 Dilemmas' },
             { id: 'branching', label: '\uD83C\uDF33 Scenarios' },
@@ -827,8 +829,8 @@ window.SelHub = window.SelHub || {
             { id: 'debate', label: '\uD83C\uDFA4 Debate' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' },
           ].map(function(t) {
-            return h('button', { key: t.id, onClick: function() { upd('tab', t.id); },
-              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] ' + (tab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700')
+            return h('button', { key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
+              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700')
             }, t.label);
           })
         ),
@@ -850,7 +852,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-2xl' }, dl.emoji),
                   h('div', null,
                     h('div', { className: 'font-bold text-sm text-slate-800' }, dl.title),
-                    h('span', { className: 'text-[10px] text-slate-400 font-bold uppercase' }, dl.category)
+                    h('span', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, dl.category)
                   )
                 ),
                 h('p', { className: 'text-xs text-slate-500 leading-relaxed line-clamp-2' }, dl.scenario.substring(0, 120) + '...')
@@ -920,7 +922,7 @@ window.SelHub = window.SelHub || {
                       h('span', { className: 'text-lg font-bold text-indigo-400 shrink-0' }, String.fromCharCode(65 + idx)),
                       h('div', null,
                         h('p', { className: 'text-sm text-slate-800 font-medium' }, ch.text),
-                        h('p', { className: 'text-[10px] text-slate-400 mt-1' }, 'Framework: ' + ch.framework)
+                        h('p', { className: 'text-[10px] text-slate-500 mt-1' }, 'Framework: ' + ch.framework)
                       )
                     )
                   );
@@ -1047,7 +1049,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-2xl' }, fw.emoji),
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'font-bold text-sm text-slate-800' }, fw.name),
-                    fw.thinker && h('div', { className: 'text-[10px] text-slate-400 font-medium' }, fw.thinker)
+                    fw.thinker && h('div', { className: 'text-[10px] text-slate-500 font-medium' }, fw.thinker)
                   )
                 )
               ),
@@ -1103,7 +1105,7 @@ window.SelHub = window.SelHub || {
               h('span', { className: 'text-3xl' }, selectedDilemma.emoji),
               h('div', null,
                 h('h3', { className: 'text-lg font-black text-slate-800' }, selectedDilemma.title),
-                h('span', { className: 'text-[10px] text-slate-400 font-bold uppercase' }, selectedDilemma.category)
+                h('span', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, selectedDilemma.category)
               ),
               h('button', { onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-400 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
             ),
@@ -1195,7 +1197,7 @@ window.SelHub = window.SelHub || {
               dialogueHistory.map(function(msg, i) {
                 return h('div', { key: i, className: 'flex ' + (msg.role === 'student' ? 'justify-end' : 'justify-start') },
                   h('div', { className: 'max-w-[80%] rounded-2xl px-4 py-3 ' + (msg.role === 'student' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-800 border border-slate-200') },
-                    h('div', { className: 'text-[10px] font-bold mb-1 ' + (msg.role === 'student' ? 'text-indigo-200' : 'text-slate-400') }, msg.role === 'student' ? 'You' : '\uD83C\uDFDB\uFE0F Socrates'),
+                    h('div', { className: 'text-[10px] font-bold mb-1 ' + (msg.role === 'student' ? 'text-indigo-200' : 'text-slate-500') }, msg.role === 'student' ? 'You' : '\uD83C\uDFDB\uFE0F Socrates'),
                     h('p', { className: 'text-sm leading-relaxed' }, msg.text)
                   )
                 );
@@ -1219,7 +1221,7 @@ window.SelHub = window.SelHub || {
               }, aiLoading ? '...' : '\u2192')
             ),
 
-            h('p', { className: 'text-[9px] text-slate-400 text-center' }, 'The AI will challenge your thinking with questions \u2014 not give you answers. There are no wrong responses.')
+            h('p', { className: 'text-[9px] text-slate-500 text-center' }, 'The AI will challenge your thinking with questions \u2014 not give you answers. There are no wrong responses.')
           )
         ),
 
@@ -1262,7 +1264,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                 h('div', { className: 'bg-purple-500 h-full transition-all duration-300', style: { width: Math.round((step / total) * 100) + '%' } })
               ),
-              h('p', { className: 'text-[10px] text-slate-400 text-center' }, 'Question ' + (step + 1) + ' of ' + total),
+              h('p', { className: 'text-[10px] text-slate-500 text-center' }, 'Question ' + (step + 1) + ' of ' + total),
 
               // Scenario
               h('div', { className: 'bg-white rounded-2xl border-2 border-purple-200 p-5' },
@@ -1287,7 +1289,7 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-[10px] text-slate-600 mb-1' }, '\uD83D\uDD35 Self-interest: "' + sc.levels.preconv + '"'),
                   h('p', { className: 'text-[10px] text-slate-600 mb-1' }, '\uD83D\uDFE2 Rules/Society: "' + sc.levels.conv + '"'),
                   h('p', { className: 'text-[10px] text-slate-600' }, '\uD83D\uDFE1 Universal principles: "' + sc.levels.postconv + '"'),
-                  h('p', { className: 'text-[9px] text-slate-400 mt-2 italic' }, 'Your answer doesn\u2019t have to match any of these exactly. Most people use a blend!')
+                  h('p', { className: 'text-[9px] text-slate-500 mt-2 italic' }, 'Your answer doesn\u2019t have to match any of these exactly. Most people use a blend!')
                 )
               ),
 
@@ -1343,7 +1345,7 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              h('p', { className: 'text-[9px] text-slate-400 mt-3 text-center italic' }, 'Most people use a mix of all three levels depending on the situation. Growth is a journey, not a destination.')
+              h('p', { className: 'text-[9px] text-slate-500 mt-3 text-center italic' }, 'Most people use a mix of all three levels depending on the situation. Growth is a journey, not a destination.')
             ),
 
             // Retake button
@@ -1588,7 +1590,7 @@ window.SelHub = window.SelHub || {
                   csSocratic.map(function(msg, i) {
                     return h('div', { key: i, className: 'flex ' + (msg.role === 'student' ? 'justify-end' : 'justify-start') },
                       h('div', { className: 'max-w-[80%] rounded-2xl px-4 py-3 ' + (msg.role === 'student' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-800 border border-slate-200') },
-                        h('div', { className: 'text-[10px] font-bold mb-1 ' + (msg.role === 'student' ? 'text-teal-200' : 'text-slate-400') }, msg.role === 'student' ? 'You' : '\uD83C\uDFDB\uFE0F Socrates'),
+                        h('div', { className: 'text-[10px] font-bold mb-1 ' + (msg.role === 'student' ? 'text-teal-200' : 'text-slate-500') }, msg.role === 'student' ? 'You' : '\uD83C\uDFDB\uFE0F Socrates'),
                         h('p', { className: 'text-sm leading-relaxed' }, msg.text)
                       )
                     );
@@ -1725,7 +1727,7 @@ window.SelHub = window.SelHub || {
                       h('span', { className: 'text-lg' }, v.emoji),
                       h('div', null,
                         h('div', { className: 'font-bold text-xs ' + (isSelected ? 'text-rose-800' : 'text-slate-700') }, v.name),
-                        h('div', { className: 'text-[10px] text-slate-400 leading-tight' }, v.desc.substring(0, 50) + '...')
+                        h('div', { className: 'text-[10px] text-slate-500 leading-tight' }, v.desc.substring(0, 50) + '...')
                       )
                     ),
                     isSelected && h('div', { className: 'mt-1 text-[9px] text-rose-500 font-bold' }, '\u2713 Selected')
@@ -1756,7 +1758,7 @@ window.SelHub = window.SelHub || {
                     h('span', { className: 'text-xl' }, v.emoji),
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'font-bold text-sm text-slate-800' }, v.name),
-                      h('div', { className: 'text-[10px] text-slate-400' }, v.desc)
+                      h('div', { className: 'text-[10px] text-slate-500' }, v.desc)
                     ),
                     h('div', { className: 'flex flex-col gap-1 shrink-0' },
                       idx > 0 && h('button', { onClick: function() {
@@ -1877,7 +1879,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                 h('div', { className: 'bg-green-500 h-full transition-all duration-300', style: { width: Math.round(((step + 1) / steps.length) * 100) + '%' } })
               ),
-              h('p', { className: 'text-[10px] text-slate-400 text-center' }, 'Step ' + (step + 1) + ' of ' + steps.length),
+              h('p', { className: 'text-[10px] text-slate-500 text-center' }, 'Step ' + (step + 1) + ' of ' + steps.length),
 
               // Previous steps summary (show completed steps)
               step > 0 && h('div', { className: 'space-y-2' },
@@ -2011,7 +2013,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-2xl' }, phil.emoji),
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'font-bold text-sm text-slate-800' }, phil.name),
-                    h('div', { className: 'text-[10px] text-slate-400 font-medium' }, phil.years + ' \u2014 ' + phil.tagline)
+                    h('div', { className: 'text-[10px] text-slate-500 font-medium' }, phil.years + ' \u2014 ' + phil.tagline)
                   ),
                   (d.philosophersExplored || []).indexOf(phil.id) !== -1 && h('span', { className: 'text-[9px] text-purple-500 font-bold' }, '\u2713 Explored')
                 )

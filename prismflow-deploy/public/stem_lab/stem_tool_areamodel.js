@@ -27,6 +27,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var t = ctx.t;
 
       // ── State via labToolData ──
@@ -328,6 +329,7 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'range', min: '1', max: String(cols - 1), value: leftCols,
               onChange: function(e) { upd({ splitAt: parseInt(e.target.value) }); },
+              'aria-label': 'Split at column position',
               className: 'flex-1 accent-violet-600'
             }),
             h('span', { className: 'text-xs font-mono text-violet-600' }, leftCols + ' | ' + rightCols)
@@ -496,6 +498,7 @@ window.StemLab = window.StemLab || {
               onChange: function(e) { upd({ aiQuestion: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
               placeholder: 'Ask about area models...',
+              'aria-label': 'Ask the area model tutor',
               className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
             }),
             h('button', {
@@ -524,7 +527,7 @@ window.StemLab = window.StemLab || {
           h('h3', { className: 'text-lg font-bold text-amber-800' }, '\uD83D\uDFE7 Area Model'),
           h('div', { className: 'ml-auto flex items-center gap-3' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-400' }, 'Best: ' + bestStreak),
+            bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
             h('span', { className: 'text-xs font-bold text-amber-600' }, score.correct + '/' + score.total)
           )
         ),
@@ -552,6 +555,7 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'range', min: '1', max: '12', value: dims.rows,
               onChange: function(e) { upd({ dims: { rows: parseInt(e.target.value), cols: dims.cols }, highlight: { rows: 0, cols: 0 } }); },
+              'aria-label': 'Number of rows',
               className: 'w-full accent-amber-600'
             }),
             h('div', { className: 'text-center text-lg font-bold text-amber-700' }, dims.rows)
@@ -561,6 +565,7 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'range', min: '1', max: '12', value: dims.cols,
               onChange: function(e) { upd({ dims: { rows: dims.rows, cols: parseInt(e.target.value) }, highlight: { rows: 0, cols: 0 } }); },
+              'aria-label': 'Number of columns',
               className: 'w-full accent-amber-600'
             }),
             h('div', { className: 'text-center text-lg font-bold text-amber-700' }, dims.cols)
@@ -617,7 +622,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('span', { className: 'text-[9px] text-slate-400' }, Object.keys(challengeTypesUsed).length + '/3 modes')
+            h('span', { className: 'text-[9px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/3 modes')
           ),
 
           !challenge
@@ -647,6 +652,7 @@ window.StemLab = window.StemLab || {
                     onChange: function(e) { upd({ answer: e.target.value }); },
                     onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
                     placeholder: 'Product = ?',
+                    'aria-label': 'Challenge answer',
                     className: 'flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono'
                   }),
                   h('button', {

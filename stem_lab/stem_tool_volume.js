@@ -120,6 +120,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var t = ctx.t;
       var callGemini = ctx.callGemini;
 
@@ -615,6 +616,7 @@ window.StemLab = window.StemLab || {
                   // Check dimension king
                   if (nd.l === 10 && nd.w === 10 && nd.h === 10) checkBadges({ dimensionKing: true });
                 },
+                'aria-label': (dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height') + ' slider',
                 className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
               }),
               h('div', { className: 'text-center text-lg font-bold text-emerald-700 mt-1' }, dims[dim])
@@ -657,6 +659,7 @@ window.StemLab = window.StemLab || {
               upd({ showLayers: lv, layerUsed: true });
               if (!badges.layerMaster) checkBadges({ layerMaster: true });
             },
+            'aria-label': 'Visible layers',
             className: 'flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
           }),
           h('span', { className: 'text-xs font-mono text-emerald-600' },
@@ -742,7 +745,7 @@ window.StemLab = window.StemLab || {
               type: 'number', value: answer,
               onChange: function(e) { upd({ answer: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
-              placeholder: 'V = ?', className: 'flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono'
+              placeholder: 'V = ?', 'aria-label': 'Volume answer', className: 'flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono'
             }),
             h('button', {
               onClick: checkChallenge, disabled: !answer,

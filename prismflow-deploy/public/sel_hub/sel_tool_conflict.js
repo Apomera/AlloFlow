@@ -872,6 +872,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var band = ctx.gradeBand || 'elementary';
@@ -1022,6 +1024,7 @@ window.SelHub = window.SelHub || {
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Conflict Resolution tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(t) {
@@ -1178,15 +1181,15 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Build your I-Statement'),
             h('div', { style: { marginBottom: 10 } },
               h('label', { style: { display: 'block', fontSize: 12, color: '#e2e8f0', marginBottom: 4, fontWeight: 600 } }, 'I feel...'),
-              h('input', { type: 'text', value: isFeeling, onChange: function(e) { upd('isFeeling', e.target.value); }, placeholder: 'Name the feeling (frustrated, hurt, scared...)', style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' } })
+              h('input', { type: 'text', value: isFeeling, 'aria-label': 'I feel...', onChange: function(e) { upd('isFeeling', e.target.value); }, placeholder: 'Name the feeling (frustrated, hurt, scared...)', style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' } })
             ),
             h('div', { style: { marginBottom: 10 } },
               h('label', { style: { display: 'block', fontSize: 12, color: '#e2e8f0', marginBottom: 4, fontWeight: 600 } }, 'Because...'),
-              h('input', { type: 'text', value: isBecause, onChange: function(e) { upd('isBecause', e.target.value); }, placeholder: 'What happened that caused the feeling?', style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' } })
+              h('input', { type: 'text', value: isBecause, 'aria-label': 'Because...', onChange: function(e) { upd('isBecause', e.target.value); }, placeholder: 'What happened that caused the feeling?', style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' } })
             ),
             h('div', null,
               h('label', { style: { display: 'block', fontSize: 12, color: '#e2e8f0', marginBottom: 4, fontWeight: 600 } }, 'I need...'),
-              h('input', { type: 'text', value: isNeed, onChange: function(e) { upd('isNeed', e.target.value); }, placeholder: 'What would help? What do you need from them?', style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' } })
+              h('input', { type: 'text', value: isNeed, 'aria-label': 'I need...', onChange: function(e) { upd('isNeed', e.target.value); }, placeholder: 'What would help? What do you need from them?', style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' } })
             )
           ),
           // Preview
@@ -1336,7 +1339,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { marginBottom: 16 } },
             h('label', { style: { display: 'block', fontSize: 12, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 } }, 'Your reflection: How would you apply this in your life?'),
             h('textarea', {
-              value: rpReflection, onChange: function(e) { upd('rpReflection', e.target.value); },
+              value: rpReflection, 'aria-label': 'Repair reflection', onChange: function(e) { upd('rpReflection', e.target.value); },
               placeholder: 'Think of a time this approach could have helped...',
               rows: 3,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -1532,6 +1535,7 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic' } }, part.prompt),
                 h('textarea', {
                   value: part.val,
+                  'aria-label': part.label + ' apology section',
                   onChange: function(e) { upd(part.key, e.target.value); },
                   placeholder: band === 'elementary' ? 'Write your words here...' : 'Write your response...',
                   rows: 2,
@@ -1810,7 +1814,7 @@ window.SelHub = window.SelHub || {
           h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } }, 'Describe a real conflict you\'re dealing with and get structured help.'),
           h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('textarea', {
-              value: medPrompt, onChange: function(e) { upd('medPrompt', e.target.value); },
+              value: medPrompt, 'aria-label': 'Describe your conflict for AI mediator', onChange: function(e) { upd('medPrompt', e.target.value); },
               placeholder: band === 'elementary'
                 ? 'Tell me about a fight or disagreement you\'re having. Who is it with? What happened?'
                 : 'Describe the conflict: Who\'s involved? What happened? How do you feel? What have you tried so far?',
@@ -1997,7 +2001,7 @@ window.SelHub = window.SelHub || {
                     var newDone = rpPracticeCompleted + 1;
                     upd({ rpSubMode: 'select', rpChatHistory: [], rpRapport: 50, rpTurnCount: 0, rpPracticeCompleted: newDone, rpInputText: '' });
                     logPractice('roleplay', curRPScenario.id);
-                    awardXP(20);
+                    awardXP(rpHintUsed ? 15 : 20);
                     tryAwardBadge('first_roleplay');
                     if (newDone >= 5) tryAwardBadge('roleplay_5');
                   },
@@ -2008,6 +2012,7 @@ window.SelHub = window.SelHub || {
               rpTurnCount < 20 && h('div', { style: { display: 'flex', gap: 8 } },
                 h('input', {
                   type: 'text', value: rpInputText,
+                  'aria-label': 'Role-play message',
                   onChange: function(e) { upd('rpInputText', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && rpInputText.trim() && !rpLoadingRP) { sendRPMessage(); } },
                   placeholder: band === 'elementary' ? 'What do you want to say?' : 'Type your response...',
@@ -2072,7 +2077,7 @@ window.SelHub = window.SelHub || {
                       var newStreak = rpResolveStreak + 1;
                       upd({ rpChatHistory: updatedHistory, rpRapport: newRapport, rpLoadingRP: false, rpSubMode: 'resolved', rpPracticeCompleted: newDone, rpResolveStreak: newStreak });
                       logPractice('roleplay', curRPScenario.id);
-                      awardXP(30);
+                      awardXP(rpHintUsed ? 20 : 30);
                       tryAwardBadge('first_roleplay');
                       tryAwardBadge('roleplay_resolved');
                       if (newDone >= 5) tryAwardBadge('roleplay_5');
@@ -2223,6 +2228,7 @@ window.SelHub = window.SelHub || {
               medTurnCount < 20 && h('div', { style: { display: 'flex', gap: 8 } },
                 h('input', {
                   type: 'text', value: medInputText,
+                  'aria-label': 'Mediation message',
                   onChange: function(e) { upd('medInputText', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && medInputText.trim() && !medLoadingRP) { sendMedMessage(); } },
                   placeholder: 'What do you say as the mediator?',

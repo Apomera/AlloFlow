@@ -125,6 +125,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var t = ctx.t;
       var callGemini = ctx.callGemini || window.callGemini;
       var celebrate = ctx.celebrate;
@@ -597,6 +598,7 @@ window.StemLab = window.StemLab || {
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
         return h('button', { onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
+          role: 'tab', 'aria-selected': active,
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
             (active ? 'bg-purple-500 text-white shadow-md' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-200')
         }, icon + ' ' + label);
@@ -616,7 +618,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-2 ml-1' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
             streak > 0 && h('div', { className: 'text-xs font-bold text-amber-500' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('div', { className: 'text-[10px] text-slate-400' }, 'Best: ' + bestStreak)
+            bestStreak > 0 && h('div', { className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak)
           ),
           h('div', { className: 'flex items-center gap-1 ml-auto' },
             // Badge count
@@ -659,7 +661,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Tab Navigation ──
-        h('div', { className: 'flex gap-2 flex-wrap' },
+        h('div', { className: 'flex gap-2 flex-wrap', role: 'tablist', 'aria-label': 'Angle Explorer sections' },
           tabBtn('explore', 'Explore', '\uD83D\uDCD0'),
           tabBtn('challenges', 'Challenges', '\uD83C\uDFAF'),
           tabBtn('reference', 'Learn', '\uD83D\uDCDA'),
@@ -733,7 +735,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center col-span-1' },
               h('div', { className: 'text-[10px] font-bold text-purple-600 uppercase mb-0.5' }, 'Unit'),
-              h('select', { value: angleUnit, onChange: function(e) { upd('angleUnit', e.target.value); }, className: 'text-xs font-bold text-purple-800 bg-transparent border-none outline-none cursor-pointer w-full text-center' },
+              h('select', { value: angleUnit, onChange: function(e) { upd('angleUnit', e.target.value); }, 'aria-label': 'Angle unit', className: 'text-xs font-bold text-purple-800 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer w-full text-center' },
                 h('option', { value: 'deg' }, 'Degrees'),
                 h('option', { value: 'rad' }, 'Radians'),
                 h('option', { value: 'grad' }, 'Gradians'),
@@ -744,9 +746,9 @@ window.StemLab = window.StemLab || {
 
           // Slider
           h('div', { className: 'bg-white rounded-xl p-3 border border-purple-100' },
-            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600' }),
+            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-label': 'Angle value slider', className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600' }),
             h('div', { className: 'flex justify-between mt-1' },
-              h('span', { className: 'text-[10px] text-slate-400' }, '0\u00B0'),
+              h('span', { className: 'text-[10px] text-slate-500' }, '0\u00B0'),
               h('div', { className: 'flex gap-2' },
                 h('label', { className: 'flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: snapEnabled, onChange: function() { upd('snapEnabled', !snapEnabled); }, className: 'accent-purple-500' }),
@@ -761,7 +763,7 @@ window.StemLab = window.StemLab || {
                   '2nd Ray'
                 )
               ),
-              h('span', { className: 'text-[10px] text-slate-400' }, '360\u00B0')
+              h('span', { className: 'text-[10px] text-slate-500' }, '360\u00B0')
             )
           ),
 
@@ -777,7 +779,7 @@ window.StemLab = window.StemLab || {
 
           // Pinned angles
           anglePins.length > 0 && h('div', { className: 'flex gap-1.5 flex-wrap items-center' },
-            h('span', { className: 'text-[10px] text-slate-400 font-bold' }, 'Pins:'),
+            h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Pins:'),
             anglePins.map(function(pin, i) {
               return h('button', { key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-300 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-all', title: 'Click to remove' },
                 pin.deg + '\u00B0 \u2715'
@@ -903,6 +905,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 items-center' },
               h('input', { type: 'number', min: 0, max: 360, value: estimateGuess, placeholder: 'Your guess...',
                 onChange: function(e) { upd('estimateGuess', e.target.value); },
+                'aria-label': 'Angle estimate guess in degrees',
                 className: 'flex-1 px-3 py-2 border-2 border-amber-300 rounded-lg text-sm font-bold text-amber-800 outline-none focus:border-amber-500'
               }),
               h('span', { className: 'text-sm text-amber-600' }, '\u00B0'),
@@ -1108,14 +1111,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-4 items-center justify-center mb-3' },
               h('div', null,
                 h('div', { className: 'text-[10px] font-bold text-sky-600 mb-1' }, 'Hour'),
-                h('select', { value: clockHour, onChange: function(e) { upd('clockHour', parseInt(e.target.value)); }, className: 'px-3 py-1.5 border-2 border-sky-200 rounded-lg text-sm font-bold text-sky-800 outline-none' },
+                h('select', { value: clockHour, onChange: function(e) { upd('clockHour', parseInt(e.target.value)); }, 'aria-label': 'Clock hour', className: 'px-3 py-1.5 border-2 border-sky-200 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
                   [1,2,3,4,5,6,7,8,9,10,11,12].map(function(hr) { return h('option', { key: hr, value: hr }, hr); })
                 )
               ),
               h('span', { className: 'text-2xl font-bold text-sky-700' }, ':'),
               h('div', null,
                 h('div', { className: 'text-[10px] font-bold text-sky-600 mb-1' }, 'Minute'),
-                h('select', { value: clockMinute, onChange: function(e) { upd('clockMinute', parseInt(e.target.value)); }, className: 'px-3 py-1.5 border-2 border-sky-200 rounded-lg text-sm font-bold text-sky-800 outline-none' },
+                h('select', { value: clockMinute, onChange: function(e) { upd('clockMinute', parseInt(e.target.value)); }, 'aria-label': 'Clock minute', className: 'px-3 py-1.5 border-2 border-sky-200 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
                   [0,5,10,15,20,25,30,35,40,45,50,55].map(function(m) { return h('option', { key: m, value: m }, m < 10 ? '0' + m : m); })
                 )
               )

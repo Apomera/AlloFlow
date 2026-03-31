@@ -820,6 +820,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
@@ -963,12 +965,14 @@ window.SelHub = window.SelHub || {
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Social Skills tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', {
             key: tab.id,
+            role: 'tab', 'aria-selected': isActive,
             onClick: function() {
               upd('activeTab', tab.id);
               if (soundEnabled) sfxClick();
@@ -1080,6 +1084,7 @@ window.SelHub = window.SelHub || {
           !convoRevealed && h('div', null,
             h('textarea', {
               value: convoDraft,
+              'aria-label': 'Conversation draft response',
               onChange: function(e) { upd('convoDraft', e.target.value); },
               placeholder: band === 'elementary' ? 'What would you say? Type it here...' : 'Draft your response...',
               rows: 3,
@@ -1824,6 +1829,7 @@ window.SelHub = window.SelHub || {
           !ldRevealed && h('div', null,
             h('textarea', {
               value: ldDraft,
+              'aria-label': 'Listening practice response',
               onChange: function(e) { upd('ldDraft', e.target.value); },
               placeholder: currentLd.skill === 'paraphrase' ? 'Restate what they said in your own words...' :
                            currentLd.skill === 'reflect' ? 'Reflect back the feelings you hear...' :

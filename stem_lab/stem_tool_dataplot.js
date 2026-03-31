@@ -191,6 +191,8 @@ window.StemLab = window.StemLab || {
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini || window.callGemini;
       var ArrowLeft = ctx.icons.ArrowLeft;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
 
       // ── State ──
       var d = (ctx.toolData && ctx.toolData.dataPlot) || {};
@@ -729,7 +731,7 @@ window.StemLab = window.StemLab || {
       // ── Tab button helper ──
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
-        return h('button', { onClick: function() { upd('activeTab', id); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-200') }, icon + ' ' + label);
+        return h('button', { onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-200') }, icon + ' ' + label);
       };
 
       // Regression line/curve path
@@ -765,7 +767,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
-      return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200 space-y-3', tabIndex: 0, onKeyDown: handleKey, style: { outline: 'none' } },
+      return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200 space-y-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1', tabIndex: 0, onKeyDown: handleKey },
 
         // ── Header ──
         h('div', { className: 'flex items-center gap-3 flex-wrap' },
@@ -826,7 +828,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Tab nav ──
-        h('div', { className: 'flex gap-2 flex-wrap' },
+        h('div', { className: 'flex gap-2 flex-wrap', role: 'tablist', 'aria-label': 'Data Plot sections' },
           tabBtn('chart', 'Chart', '\uD83D\uDCCA'),
           tabBtn('stats', 'Statistics', '\uD83D\uDCC8'),
           tabBtn('quiz', 'Quiz', '\uD83C\uDFAF'),
@@ -853,7 +855,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' + (chartType === ct.id ? 'bg-teal-600 text-white shadow' : 'bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100')
               }, ct.icon + ' ' + ct.label);
             }),
-            h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, className: 'ml-auto text-[10px] px-2 py-1 rounded-lg border border-slate-200 outline-none' },
+            h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, 'aria-label': 'Color palette', className: 'ml-auto text-[10px] px-2 py-1 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
               palettes.map(function(p) { return h('option', { key: p.id, value: p.id }, '\uD83C\uDFA8 ' + p.name); })
             )
           ),
@@ -868,8 +870,8 @@ window.StemLab = window.StemLab || {
 
           // Axis labels
           h('div', { className: 'flex gap-2' },
-            h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value); }, placeholder: 'X-axis label', className: 'flex-1 px-2 py-1 text-xs border border-teal-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' }),
-            h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value); }, placeholder: 'Y-axis label', className: 'flex-1 px-2 py-1 text-xs border border-teal-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' })
+            h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value); }, placeholder: 'X-axis label', 'aria-label': 'X-axis label', className: 'flex-1 px-2 py-1 text-xs border border-teal-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' }),
+            h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value); }, placeholder: 'Y-axis label', 'aria-label': 'Y-axis label', className: 'flex-1 px-2 py-1 text-xs border border-teal-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' })
           ),
 
           // ── SVG Chart (scatter / line / bar) ──
@@ -1253,7 +1255,7 @@ window.StemLab = window.StemLab || {
                   : h('div', { className: 'space-y-2' },
                     h('div', { className: 'flex gap-2 items-center' },
                       h('span', { className: 'text-xs font-bold text-cyan-600' }, 'Y value:'),
-                      h('input', { type: 'number', step: '0.1', value: zScoreInput, onChange: function(e) { upd('zScoreInput', e.target.value); checkBadges({ zScoreUsed: true }); }, placeholder: meanY.toFixed(1), className: 'w-24 px-2 py-1.5 border-2 border-cyan-200 rounded-lg text-sm font-bold text-cyan-800 text-center outline-none focus:border-cyan-400' }),
+                      h('input', { type: 'number', step: '0.1', value: zScoreInput, onChange: function(e) { upd('zScoreInput', e.target.value); checkBadges({ zScoreUsed: true }); }, placeholder: meanY.toFixed(1), 'aria-label': 'Y value for z-score calculation', className: 'w-24 px-2 py-1.5 border-2 border-cyan-200 rounded-lg text-sm font-bold text-cyan-800 text-center outline-none focus:border-cyan-400' }),
                       zScoreInput !== '' && !isNaN(parseFloat(zScoreInput)) && (function() {
                         var zVal = (parseFloat(zScoreInput) - meanY) / stdDev;
                         var pct = zToPercentile(zVal);
@@ -1387,7 +1389,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'text-[10px] text-slate-500 mb-2' }, 'Using ' + regressionType + ': ' + regEq),
                   h('div', { className: 'flex gap-2 items-center flex-wrap' },
                     h('span', { className: 'text-xs font-bold text-indigo-600' }, 'If X ='),
-                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, className: 'w-24 px-2 py-1.5 border-2 border-indigo-200 rounded-lg text-sm font-bold text-indigo-800 text-center outline-none focus:border-indigo-400', placeholder: '?' }),
+                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': 'X value for prediction', className: 'w-24 px-2 py-1.5 border-2 border-indigo-200 rounded-lg text-sm font-bold text-indigo-800 text-center outline-none focus:border-indigo-400', placeholder: '?' }),
                     h('span', { className: 'text-xs font-bold text-indigo-600' }, 'then Y \u2248'),
                     h('div', { className: 'px-3 py-1.5 border rounded-lg text-sm font-bold text-center min-w-[60px] ' + (predIsExtrapolation ? 'bg-red-50 border-red-200 text-red-700' : 'bg-indigo-50 border-indigo-200 text-indigo-800') }, predResult || '?'),
                     predX !== '' && predResult && h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600') },

@@ -504,7 +504,7 @@ window.StemLab = window.StemLab || {
               React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan up' }, "\u2B06"),
               React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin - dy, yMax: yR.yMax - dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan down' }, "\u2B07"),
               React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 transition-all", 'aria-label': 'Reset view' }, "\u21BA Reset"),
-              React.createElement("span", { className: "text-[9px] text-slate-400 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
+              React.createElement("span", { className: "text-[9px] text-slate-500 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
             ),
 
             // ── Transformation Labels ──
@@ -718,7 +718,7 @@ window.StemLab = window.StemLab || {
 
             // Legend
 
-            React.createElement("div", { className: "mt-2 flex items-center gap-4 text-[9px] text-slate-400" },
+            React.createElement("div", { className: "mt-2 flex items-center gap-4 text-[9px] text-slate-500" },
 
               React.createElement("span", null, "\u2014\u2014 f(x)"),
 

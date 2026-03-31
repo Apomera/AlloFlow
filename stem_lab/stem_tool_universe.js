@@ -1562,7 +1562,7 @@ var d = labToolData.universe || {};
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF20 Universe Time-Lapse"),
 
-              React.createElement("span", { className: "text-xs text-slate-400" }, "13.8 billion years of cosmic history")
+              React.createElement("span", { className: "text-xs text-slate-500" }, "13.8 billion years of cosmic history")
 
             ),
 
@@ -1593,6 +1593,8 @@ var d = labToolData.universe || {};
                 React.createElement("input", {
 
                   type: "range", min: 0, max: 13.8, step: 0.01, value: cosmicTime,
+
+                  'aria-label': 'Cosmic time in billion years',
 
                   onChange: function (e) { var val = parseFloat(e.target.value); upd("cosmicTime", val); var cv = document.querySelector('[data-universe-canvas]'); if (cv) cv.dataset.time = String(val); },
 
@@ -1640,7 +1642,7 @@ var d = labToolData.universe || {};
 
                   React.createElement("span", { className: "text-[9px] text-violet-500 font-bold" }, "Speed"),
 
-                  React.createElement("input", { type: "range", min: 0.5, max: 5, step: 0.5, value: speed, onChange: function (e) { upd("speed", parseFloat(e.target.value)); }, className: "w-16 h-1 accent-violet-400" }),
+                  React.createElement("input", { type: "range", min: 0.5, max: 5, step: 0.5, value: speed, 'aria-label': 'Simulation speed', onChange: function (e) { upd("speed", parseFloat(e.target.value)); }, className: "w-16 h-1 accent-violet-400" }),
 
                   React.createElement("span", { className: "text-[10px] text-violet-600 font-bold w-6" }, speed + "x")
 
@@ -1799,7 +1801,7 @@ var d = labToolData.universe || {};
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("span", { className: "text-lg", style: { color: stage.color } }, stage.icon),
                       React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, stage.name),
-                      React.createElement("span", { className: "ml-auto text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, stage.duration)
+                      React.createElement("span", { className: "ml-auto text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stage.duration)
                     ),
                     isActive && React.createElement("div", { className: "mt-2 space-y-1" },
                       React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, stage.desc),
@@ -1915,7 +1917,7 @@ var d = labToolData.universe || {};
                     hctx.fillText('Supergiants', HW * 0.35, 20);
                   }
                 }),
-                React.createElement("div", { className: "mt-2 text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "The Sun is a G2V main-sequence star. It will become a red giant in ~5 billion years, then shrink to a white dwarf.")
+                React.createElement("div", { className: "mt-2 text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "The Sun is a G2V main-sequence star. It will become a red giant in ~5 billion years, then shrink to a white dwarf.")
               )
             ),
 
@@ -2037,6 +2039,7 @@ var d = labToolData.universe || {};
                 React.createElement("input", {
                   type: "text", placeholder: "Ask about the universe...",
                   value: d.aiQuestion || '',
+                  'aria-label': 'Ask the AI cosmos tutor a question',
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') askCosmosTutor(d.aiQuestion); },
                   className: "flex-1 px-3 py-1.5 border border-violet-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-400 outline-none"
@@ -2085,7 +2088,7 @@ var d = labToolData.universe || {};
                       React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, el.name + " \u2014 " + el.origin),
                       React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, el.note)
                     ),
-                    React.createElement("span", { className: "text-[9px] font-mono " + (isDark ? 'text-slate-500' : 'text-slate-400') }, el.pct)
+                    React.createElement("span", { className: "text-[9px] font-mono " + (isDark ? 'text-slate-400' : 'text-slate-500') }, el.pct)
                   );
                 })
               )
@@ -2106,8 +2109,8 @@ var d = labToolData.universe || {};
                     React.createElement("span", { className: "text-sm", style: { marginLeft: csi * 8 + 'px' } }, cs.icon),
                     React.createElement("div", { className: "flex-1" },
                       React.createElement("span", { className: "text-[10px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, cs.name),
-                      React.createElement("span", { className: "text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') + " ml-1" }, "(" + cs.example + ")"),
-                      React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, cs.size + " \u2022 " + cs.desc)
+                      React.createElement("span", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " ml-1" }, "(" + cs.example + ")"),
+                      React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, cs.size + " \u2022 " + cs.desc)
                     )
                   );
                 })
@@ -2175,7 +2178,7 @@ var d = labToolData.universe || {};
                       if (answered) {
                         if (isCorrect) btnClass += (isDark ? 'bg-green-900 border-green-500 text-green-300' : 'bg-green-100 border-green-400 text-green-700');
                         else if (wasSelected) btnClass += (isDark ? 'bg-red-900 border-red-500 text-red-300' : 'bg-red-100 border-red-400 text-red-700');
-                        else btnClass += (isDark ? 'bg-slate-700 border-slate-600 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-400');
+                        else btnClass += (isDark ? 'bg-slate-700 border-slate-600 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-500');
                       } else {
                         btnClass += (isDark ? 'bg-slate-700 border-slate-600 text-slate-200 hover:border-pink-400' : 'bg-white border-pink-200 text-slate-700 hover:border-pink-400');
                       }
@@ -2212,7 +2215,7 @@ var d = labToolData.universe || {};
                   return React.createElement("div", { key: cni, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-indigo-100') + " rounded-lg p-2 border text-center" },
                     React.createElement("div", { className: "text-sm" }, cn.icon),
                     React.createElement("div", { className: "text-[9px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, cn.value),
-                    React.createElement("div", { className: "text-[8px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, cn.label)
+                    React.createElement("div", { className: "text-[8px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, cn.label)
                   );
                 })
               )
@@ -2237,7 +2240,7 @@ var d = labToolData.universe || {};
                         React.createElement("span", { className: "font-bold text-indigo-500 mr-1" }, cc.date),
                         React.createElement("span", { className: "mr-1" }, cc.icon),
                         React.createElement("span", { className: "font-medium" }, cc.event),
-                        React.createElement("span", { className: " ml-1 " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "(" + cc.real + ")")
+                        React.createElement("span", { className: " ml-1 " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "(" + cc.real + ")")
                       )
                     );
                   })
@@ -2261,7 +2264,7 @@ var d = labToolData.universe || {};
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-lg" }, gt.icon),
                       React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, gt.name + " (" + gt.pct + " of galaxies)"),
-                      React.createElement("span", { className: "ml-auto text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, gt.example)
+                      React.createElement("span", { className: "ml-auto text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, gt.example)
                     ),
                     React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, gt.desc),
                     React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-violet-400' : 'text-violet-500') + " mt-1 font-medium" }, "Structure: " + gt.features)
@@ -2416,7 +2419,7 @@ var d = labToolData.universe || {};
                         React.createElement("label", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, param.label + ": " + val),
                         React.createElement("span", { className: "text-[8px] " + (isDark ? 'text-slate-600' : 'text-slate-400') }, param.desc)
                       ),
-                      React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: val, onChange: function(e) { upd(param.key, parseFloat(e.target.value)); }, className: "w-full h-1 bg-green-200 rounded-lg appearance-none" })
+                      React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: val, 'aria-label': param.label, onChange: function(e) { upd(param.key, parseFloat(e.target.value)); }, className: "w-full h-1 bg-green-200 rounded-lg appearance-none" })
                     );
                   })
                 ),
@@ -2495,15 +2498,15 @@ var d = labToolData.universe || {};
               d.showObservable && React.createElement("div", { className: "space-y-2" },
                 React.createElement("div", { className: "grid grid-cols-3 gap-1.5 text-center" },
                   React.createElement("div", { className: (isDark ? 'bg-slate-700' : 'bg-white') + " rounded-lg p-2 border " + (isDark ? 'border-slate-600' : 'border-fuchsia-100') },
-                    React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "Radius"),
+                    React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Radius"),
                     React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, OBSERVABLE_UNIVERSE.radius)
                   ),
                   React.createElement("div", { className: (isDark ? 'bg-slate-700' : 'bg-white') + " rounded-lg p-2 border " + (isDark ? 'border-slate-600' : 'border-fuchsia-100') },
-                    React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "Diameter"),
+                    React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Diameter"),
                     React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, OBSERVABLE_UNIVERSE.diameter)
                   ),
                   React.createElement("div", { className: (isDark ? 'bg-slate-700' : 'bg-white') + " rounded-lg p-2 border " + (isDark ? 'border-slate-600' : 'border-fuchsia-100') },
-                    React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "Age"),
+                    React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Age"),
                     React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, OBSERVABLE_UNIVERSE.age)
                   )
                 ),
@@ -2534,20 +2537,20 @@ var d = labToolData.universe || {};
                         React.createElement("div", { className: "w-7 h-7 rounded-full flex items-center justify-center text-sm", style: { background: ep2.color + '20', border: '2px solid ' + ep2.color } }, ep2.icon),
                         React.createElement("div", { className: "flex-1" },
                           React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, ep2.name),
-                          React.createElement("span", { className: "text-[9px] ml-1.5 " + (isDark ? 'text-slate-500' : 'text-slate-400') }, ep2.example)
+                          React.createElement("span", { className: "text-[9px] ml-1.5 " + (isDark ? 'text-slate-400' : 'text-slate-500') }, ep2.example)
                         ),
                         React.createElement("span", { className: "text-[8px] px-1.5 py-0.5 rounded-full font-bold " + (ep2.habitable === 'Best candidate' ? (isDark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-600') : ep2.habitable === 'Possible' ? (isDark ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-600') : (isDark ? 'bg-slate-600 text-slate-400' : 'bg-slate-100 text-slate-500')) }, typeof ep2.habitable === 'string' ? ep2.habitable : (ep2.habitable ? 'Habitable' : 'Not habitable'))
                       ),
                       React.createElement("div", { className: "grid grid-cols-3 gap-1 mb-1.5" },
-                        React.createElement("div", { className: "text-[8px] text-center " + (isDark ? 'text-slate-500' : 'text-slate-400') },
+                        React.createElement("div", { className: "text-[8px] text-center " + (isDark ? 'text-slate-400' : 'text-slate-500') },
                           React.createElement("div", { className: "font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, ep2.size),
                           "Size"
                         ),
-                        React.createElement("div", { className: "text-[8px] text-center " + (isDark ? 'text-slate-500' : 'text-slate-400') },
+                        React.createElement("div", { className: "text-[8px] text-center " + (isDark ? 'text-slate-400' : 'text-slate-500') },
                           React.createElement("div", { className: "font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, ep2.orbit),
                           "Orbit"
                         ),
-                        React.createElement("div", { className: "text-[8px] text-center " + (isDark ? 'text-slate-500' : 'text-slate-400') },
+                        React.createElement("div", { className: "text-[8px] text-center " + (isDark ? 'text-slate-400' : 'text-slate-500') },
                           React.createElement("div", { className: "font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, ep2.temp),
                           "Temperature"
                         )
@@ -2583,7 +2586,7 @@ var d = labToolData.universe || {};
                           React.createElement("span", { className: "text-sm" }, sm.icon),
                           React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, sm.name),
                           React.createElement("span", { className: "ml-auto text-[9px] font-bold " + (isDark ? 'text-blue-400' : 'text-blue-500') }, sm.year),
-                          React.createElement("span", { className: "text-[8px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, sm.agency)
+                          React.createElement("span", { className: "text-[8px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, sm.agency)
                         ),
                         React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, sm.desc)
                       )
@@ -2634,7 +2637,7 @@ var d = labToolData.universe || {};
                 }, d.showLensing ? 'Hide' : 'Explore \u2192')
               ),
               d.showLensing && React.createElement("div", { className: "space-y-2" },
-                React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-1" }, "Einstein predicted that massive objects bend light. This gravitational lensing lets us see behind galaxies, magnify distant objects, and map invisible dark matter."),
+                React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic mb-1" }, "Einstein predicted that massive objects bend light. This gravitational lensing lets us see behind galaxies, magnify distant objects, and map invisible dark matter."),
                 // Animated lensing canvas
                 React.createElement("canvas", {
                   style: { width: '100%', height: '150px', display: 'block', borderRadius: '8px' },
@@ -2787,7 +2790,7 @@ var d = labToolData.universe || {};
                         React.createElement("span", { className: "text-lg" }, mt2.icon),
                         React.createElement("div", { className: "flex-1" },
                           React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, mt2.name),
-                          React.createElement("div", { className: "text-[8px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, mt2.source)
+                          React.createElement("div", { className: "text-[8px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, mt2.source)
                         )
                       ),
                       React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " mb-1" }, mt2.desc),
@@ -2964,7 +2967,7 @@ var d = labToolData.universe || {};
                           React.createElement("span", { className: "text-[8px] px-1.5 py-0.5 rounded-full font-bold " + (re.type === 'blueshift' ? 'bg-blue-900 text-blue-300' : 'bg-red-900 text-red-300') }, re.type + " z=" + re.z)
                         ),
                         React.createElement("div", { className: "text-[9px] text-slate-500" }, "Velocity: " + re.vel),
-                        React.createElement("div", { className: "text-[9px] text-slate-400" }, re.desc)
+                        React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, re.desc)
                       )
                     );
                   })
@@ -2994,7 +2997,7 @@ var d = labToolData.universe || {};
                         React.createElement("div", { className: "w-7 h-7 rounded-full flex items-center justify-center text-sm", style: { background: sn.color + '25', border: '2px solid ' + sn.color } }, sn.icon),
                         React.createElement("div", { className: "flex-1" },
                           React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, sn.name),
-                          React.createElement("div", { className: "flex gap-2 text-[8px] " + (isDark ? 'text-slate-500' : 'text-slate-400') },
+                          React.createElement("div", { className: "flex gap-2 text-[8px] " + (isDark ? 'text-slate-400' : 'text-slate-500') },
                             React.createElement("span", null, "\uD83D\uDCCF " + sn.dist),
                             React.createElement("span", null, "\u2194 " + sn.size)
                           )
@@ -3030,7 +3033,7 @@ var d = labToolData.universe || {};
                         React.createElement("div", { className: "w-7 h-7 rounded-full flex items-center justify-center text-sm", style: { background: pn.color + '25', border: '2px solid ' + pn.color } }, pn.icon),
                         React.createElement("div", { className: "flex-1" },
                           React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, pn.name),
-                          React.createElement("div", { className: "flex gap-2 text-[8px] " + (isDark ? 'text-slate-500' : 'text-slate-400') },
+                          React.createElement("div", { className: "flex gap-2 text-[8px] " + (isDark ? 'text-slate-400' : 'text-slate-500') },
                             React.createElement("span", null, "\uD83D\uDCCF " + pn.dist),
                             React.createElement("span", null, "\u23F3 " + pn.age),
                             React.createElement("span", null, "\uD83C\uDF00 " + pn.shape)
@@ -3066,7 +3069,7 @@ var d = labToolData.universe || {};
                       React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " mb-1" }, cc.desc),
                       React.createElement("div", { className: "flex items-center gap-2 text-[8px]" },
                         React.createElement("span", { className: (isDark ? 'text-amber-400' : 'text-amber-600') + " font-bold" }, "\u26A0 Danger: " + cc.danger),
-                        React.createElement("span", { className: isDark ? 'text-slate-600' : 'text-slate-400' }, "\u2022 Frequency: " + cc.freq)
+                        React.createElement("span", { className: isDark ? 'text-slate-400' : 'text-slate-500' }, "\u2022 Frequency: " + cc.freq)
                       ),
                       React.createElement("button", {
                         onClick: function(e) { e.stopPropagation(); speakText(cc.name + '. ' + cc.desc); },
@@ -3088,7 +3091,7 @@ var d = labToolData.universe || {};
                 }, d.showSpectrum ? 'Hide' : 'Explore \u2192')
               ),
               d.showSpectrum && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-400 italic mb-2" }, "Astronomers observe the universe across the entire electromagnetic spectrum. Each type of light reveals different cosmic phenomena invisible to our eyes."),
+                React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic mb-2" }, "Astronomers observe the universe across the entire electromagnetic spectrum. Each type of light reveals different cosmic phenomena invisible to our eyes."),
                 // Spectrum bar visualization
                 React.createElement("div", { className: "flex rounded-lg overflow-hidden mb-2 h-3" },
                   EM_SPECTRUM.map(function(em, emi) {
@@ -3140,6 +3143,7 @@ var d = labToolData.universe || {};
                   React.createElement("input", {
                     type: "range", min: 0, max: COSMIC_SCALES.length - 1, step: 1,
                     value: d.scaleIdx || 0,
+                    'aria-label': 'Cosmic scale zoom from quarks to universe',
                     onChange: function(e) { upd('scaleIdx', parseInt(e.target.value)); playBeep(); },
                     className: "flex-1 h-1.5 accent-violet-500"
                   }),
@@ -3201,7 +3205,7 @@ var d = labToolData.universe || {};
                     });
                   })
                 ),
-                React.createElement("div", { className: "flex justify-between text-[7px] " + (isDark ? 'text-slate-500' : 'text-slate-400') + " mb-2" },
+                React.createElement("div", { className: "flex justify-between text-[7px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " mb-2" },
                   React.createElement("span", null, "Hottest (O)"),
                   React.createElement("span", null, "Coolest (M)")
                 ),
@@ -3214,7 +3218,7 @@ var d = labToolData.universe || {};
                       React.createElement("div", { className: "w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-white shadow-lg", style: { background: sc.color, boxShadow: '0 0 20px ' + sc.color + '60' } }, sc.class),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("div", { className: "text-sm font-black " + (isDark ? 'text-white' : 'text-slate-800') }, "Class " + sc.class + " \u2014 " + sc.colorName + " Stars"),
-                        React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "Example: " + sc.example + " \u2022 " + sc.pct + " of all stars")
+                        React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Example: " + sc.example + " \u2022 " + sc.pct + " of all stars")
                       )
                     ),
                     React.createElement("div", { className: "grid grid-cols-4 gap-1.5 mb-2" },
@@ -3226,7 +3230,7 @@ var d = labToolData.universe || {};
                       ].map(function(stat) {
                         return React.createElement("div", { key: stat.label, className: "text-center text-[8px] p-1 rounded " + (isDark ? 'bg-slate-600' : 'bg-slate-50') },
                           React.createElement("div", { className: "font-bold " + (isDark ? 'text-slate-200' : 'text-slate-700') }, stat.val),
-                          React.createElement("div", { className: isDark ? 'text-slate-500' : 'text-slate-400' }, stat.label)
+                          React.createElement("div", { className: isDark ? 'text-slate-400' : 'text-slate-500' }, stat.label)
                         );
                       })
                     ),
@@ -3267,10 +3271,11 @@ var d = labToolData.universe || {};
                   React.createElement("input", {
                     type: "number", min: 1, max: 500, step: 1,
                     value: d.earthWeight || 70,
+                    'aria-label': 'Your weight on Earth in kilograms',
                     onChange: function(e) { upd('earthWeight', parseFloat(e.target.value) || 70); },
                     className: "w-20 px-2 py-1 border rounded text-sm text-center " + (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'border-green-300')
                   }),
-                  React.createElement("span", { className: "text-[9px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "(" + Math.round((d.earthWeight || 70) * 2.205) + " lbs)")
+                  React.createElement("span", { className: "text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "(" + Math.round((d.earthWeight || 70) * 2.205) + " lbs)")
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
                   GRAVITY_BODIES.map(function(gb, gbi) {
@@ -3280,8 +3285,8 @@ var d = labToolData.universe || {};
                       React.createElement("div", { className: "text-sm" }, gb.icon),
                       React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, gb.name),
                       React.createElement("div", { className: "text-sm font-black " + (isDark ? 'text-green-300' : 'text-green-600') }, gb.g > 1000 ? 'N/A' : w.toFixed(1) + " kg"),
-                      React.createElement("div", { className: "text-[8px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, gb.g < 100 ? gb.g + "g" : gb.g.toExponential(1) + "g"),
-                      React.createElement("div", { className: "text-[8px] " + (isDark ? 'text-slate-500' : 'text-slate-400') + " italic" }, gb.desc)
+                      React.createElement("div", { className: "text-[8px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, gb.g < 100 ? gb.g + "g" : gb.g.toExponential(1) + "g"),
+                      React.createElement("div", { className: "text-[8px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic" }, gb.desc)
                     );
                   })
                 )
@@ -3352,7 +3357,7 @@ var d = labToolData.universe || {};
                         React.createElement("div", { className: "flex-1 bg-slate-200 rounded-full h-1.5 " + (isDark ? 'bg-slate-600' : '') },
                           React.createElement("div", { className: "h-1.5 rounded-full transition-all", style: { width: barPct + '%', background: cs.color } })
                         ),
-                        React.createElement("span", { className: "text-[8px] font-mono w-16 text-right " + (isDark ? 'text-slate-500' : 'text-slate-400') }, cs.frac + " c")
+                        React.createElement("span", { className: "text-[8px] font-mono w-16 text-right " + (isDark ? 'text-slate-400' : 'text-slate-500') }, cs.frac + " c")
                       )
                     );
                   })
@@ -3428,7 +3433,7 @@ var d = labToolData.universe || {};
                 }),
                 (isDark ? '\uD83C\uDF19' : '\u2600\uFE0F') + " Dark Mode"
               ),
-              React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-500' : 'text-slate-400') }, "\uD83C\uDF20 Epochs visited: " + epochsVisited.length + "/9")
+              React.createElement("span", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "\uD83C\uDF20 Epochs visited: " + epochsVisited.length + "/9")
             ),
 
             // === TUTORIAL OVERLAY ===

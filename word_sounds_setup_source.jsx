@@ -434,7 +434,7 @@
                                         data-help-key="ws_gen_theme_input" value={imageTheme}
                                         onChange={(e) => setImageTheme(e.target.value)}
                                         placeholder={t('word_sounds.theme_placeholder', 'e.g. cartoon, pixel art, realistic...')}
-                                        className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 outline-none"
+                                        className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
                                     />
                                     <p className="text-xs text-slate-500 mt-2">{t('word_sounds.theme_hint', 'Optional: Style for new word images (not glossary)')}</p>
                                 </div>
@@ -446,7 +446,7 @@
                                     <select aria-label={t('common.image_display_mode')}
                                         value={imageVisibilityMode}
                                         onChange={(e) => setImageVisibilityMode(e.target.value)}
-                                        className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-violet-400 outline-none"
+                                        className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-violet-400 focus:outline-none"
                                         title={t('common.control_when_word_images_appear_during_activities')}
                                     >
                                         <option value="smart">🧠 Smart (Recommended) - Activity-specific</option>
@@ -514,7 +514,7 @@
                                         <><select aria-label={t('common.selection')} data-help-key="ws_gen_family_select"
                                             value={selectedFamily}
                                             onChange={(e) => setSelectedFamily(e.target.value)}
-                                            className="mt-3 w-full p-2 rounded-lg border border-pink-200 bg-white text-sm focus:ring-2 focus:ring-pink-400 outline-none"
+                                            className="mt-3 w-full p-2 rounded-lg border border-pink-200 bg-white text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
                                         >
                                             <option value="">{t('word_sounds.select_family', 'Select family...')}</option>
                                             {Object.keys(WORD_FAMILY_PRESETS).map(k => <option key={k} value={k}>{k} ({WORD_FAMILY_PRESETS[k].length})</option>)}
@@ -543,7 +543,7 @@
                                                 id="word-sounds-quick-add" data-help-key="ws_gen_quick_add_input"
                                                 type="text"
                                                 placeholder={t('word_sounds.add_word', 'Add a word...')}
-                                                className="flex-1 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 outline-none"
+                                                className="flex-1 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none"
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                         e.preventDefault();
@@ -572,9 +572,10 @@
                                             </button>
                                         </div>
                                         <textarea
+                                            aria-label={t('word_sounds.type_words', 'Type words here')}
                                             value={customText} onChange={(e) => setCustomText(e.target.value)}
                                             placeholder={t('word_sounds.type_words', 'Type words here (space or comma separated)...')}
-                                            className="mt-2 w-full h-20 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-none"
+                                            className="mt-2 w-full h-20 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none resize-none"
                                         />
                                     </>)}
                                 </div>
@@ -590,7 +591,7 @@
                                         <select aria-label={t('common.selection')}
                                             value={selectedSightWordList}
                                             onChange={(e) => setSelectedSightWordList(e.target.value)}
-                                            className="mt-3 w-full p-2 rounded-lg border border-amber-200 bg-white text-sm focus:ring-2 focus:ring-amber-400 outline-none"
+                                            className="mt-3 w-full p-2 rounded-lg border border-amber-200 bg-white text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
                                         >
                                             <option value="">Select a sight word list...</option>
                                             {Object.keys(SIGHT_WORD_PRESETS).map(k => (
@@ -612,7 +613,7 @@
                                             <input aria-label={t('common.e_g_space_ocean')}
                                                 value={aiTopic} onChange={(e) => setAiTopic(e.target.value)}
                                                 placeholder="e.g. Space, Ocean..."
-                                                className="flex-1 p-2 rounded-lg border border-violet-200 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                                className="flex-1 p-2 rounded-lg border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                                             />
                                             <button
                                                 aria-label={t('common.confirm')}
@@ -679,7 +680,7 @@
                                                 >
                                                     <div className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center gap-2">
-                                                            <GripVertical size={14} className="text-slate-400 cursor-grab active:cursor-grabbing" />
+                                                            <GripVertical size={14} className="text-slate-500 cursor-grab active:cursor-grabbing" />
                                                             <input aria-label={t('common.toggle_enabled')}
                                                                 type="checkbox"
                                                                 checked={lessonPlan[activity.id]?.enabled}
@@ -800,7 +801,7 @@
                                      })}
                                  </div>
                              ) : (
-                                 <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+                                 <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
                                      <Layers size={48} className="mb-4 opacity-50" />
                                      <p className="text-xl font-bold">{t('word_sounds.no_words', 'No words selected')}</p>
                                      <p className="text-sm">{t('word_sounds.choose_source_hint', 'Choose a source to begin')}</p>
@@ -1108,7 +1109,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                     {preloadedWords.length === 0 ? (
-                        <div className="text-center py-12 text-slate-400">
+                        <div className="text-center py-12 text-slate-500">
                             <div className="text-4xl mb-2">⏳</div>
                             {isLoading ? <p className="animate-pulse">Generating new words... this may take a moment</p> : <p>No words preloaded yet. Start the activity to generate words.</p>}
                         </div>
@@ -1159,14 +1160,14 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 aria-label={t('common.move_up')}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'up'); }}
                                                 disabled={idx === 0}
-                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? 'text-slate-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? 'text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-600'}`}
                                                 data-help-key="word_sounds_review_move_word" title={t('common.move_up')}
                                             >▲</button>
                                             <button
                                                 aria-label={t('common.move_down')}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'down'); }}
                                                 disabled={idx === preloadedWords.length - 1}
-                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? 'text-slate-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? 'text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-600'}`}
                                                 data-help-key="word_sounds_review_move_word" title={t('common.move_down')}
                                             >▼</button>
                                         </div>
@@ -1319,7 +1320,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             {word.phonemes?.length || 0} sounds
                                         </span>
                                     </div>
-                                    <ChevronDown size={20} className={`text-slate-400 transition-transform ${expandedIndex === idx ? 'rotate-180' : ''}`} />
+                                    <ChevronDown size={20} className={`text-slate-500 transition-transform ${expandedIndex === idx ? 'rotate-180' : ''}`} />
                                 </div>
                                 {expandedIndex === idx && (
                                     <div className="border-t border-slate-100 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
@@ -1331,7 +1332,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     <button
                                                         onClick={() => onRegenerateWord && onRegenerateWord(idx)}
                                                         disabled={regeneratingIndex === idx}
-                                                        className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-400' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
+                                                        className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-500' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
                                                         title="Re-check phonemes with Gemini"
                                                     >
                                                         {regeneratingIndex === idx ? <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" /> : '✨'}
@@ -1423,7 +1424,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     <input aria-label={t('common.rhyme_time_options')}
                                                         value={word.rhymeWord || ''}
                                                         onChange={(e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value })}
-                                                        className="px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 outline-none"
+                                                        className="px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300"
                                                         data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_correct_rhyme')}
                                                     />
                                                     {(word.rhymeDistractors || []).map((d, i) => (
@@ -1435,7 +1436,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     newDist[i] = e.target.value;
                                                                     onUpdateWord(idx, { ...word, rhymeDistractors: newDist });
                                                                 }}
-                                                                className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 outline-none"
+                                                                className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300"
                                                                 data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_distractor')}
                                                             />
                                                             <button
@@ -1493,7 +1494,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                     newDist[i] = e.target.value;
                                                                     onUpdateWord(idx, { ...word, blendingDistractors: newDist });
                                                                 }}
-                                                                className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 outline-none"
+                                                                className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-300"
                                                             />
                                                             <button
                                                                 aria-label={t('common.play_tts')}
@@ -1570,7 +1571,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             className="w-24 h-24 rounded-xl object-cover border-2 border-indigo-200 shadow-md"
                                                         />
                                                     ) : (
-                                                        <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 bg-slate-50">
+                                                        <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-500 bg-slate-50">
                                                             <ImageIcon size={32} />
                                                         </div>
                                                     )}

@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_advocacy.js — Self-Advocacy Workshop Plugin (v1.0)
+// sel_tool_advocacy.js — Self-Advocacy Workshop Plugin (v2.0)
 // Advocacy scenarios, script builder, rights education,
-// AI-powered voice practice with authority figures.
+// AI-powered voice practice, self-advocacy practice scripts,
+// strength assessment quiz, letter/email template builder.
 // Registered tool ID: "advocacy"
 // Category: self-management
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
@@ -108,6 +109,41 @@ window.SelHub = window.SelHub || {
           { label: 'Put your head down and try to tough it out.', style: 'silent', outcome: 'You\'re suffering in silence when a simple accommodation could help. Your body is telling you something \u2014 listen to it.', rating: 1 },
           { label: 'Cover your ears and cry: "I CAN\'T do this! It\'s too loud! I need to leave!"', style: 'aggressive', outcome: 'Your distress is real, but an uncontrolled reaction might be seen as a behavior problem instead of a sensory need.', rating: 2 },
           { label: 'Go to the teacher and say: "The fire alarm really affected me. I need a few minutes in a quiet space to calm down before I can learn."', style: 'assertive', outcome: 'You named the trigger, described the impact, stated your need, and connected it to learning. That\'s self-advocacy AND self-regulation working together.', rating: 3 }
+        ] },
+      { id: 'ad25', title: 'The Wrong Grade on Your Paper', setup: 'You got your spelling test back and it says you got a 60, but when you count the answers, you actually got an 80. The teacher already moved on to the next lesson.',
+        who: 'Your teacher',
+        branches: [
+          { label: 'Accept the 60. The teacher is always right.', style: 'silent', outcome: 'You accepted a grade that isn\'t yours. Mistakes happen \u2014 even teachers make them. Your real score matters.', rating: 1 },
+          { label: '"You graded my test WRONG! I don\'t have a 60! You need to fix this NOW!"', style: 'aggressive', outcome: 'You\'re right that it\'s wrong, but shouting during class embarrasses the teacher and makes them defensive instead of helpful.', rating: 2 },
+          { label: 'Wait for a break, then go to the teacher quietly: "I counted my answers and I think there might be a mistake on my grade. Could we look at it together?"', style: 'assertive', outcome: 'You chose the right time, used polite language, and invited collaboration. Teachers appreciate students who catch errors respectfully.', rating: 3 }
+        ] },
+      { id: 'ad26', title: 'The Friend Who Won\'t Share', setup: 'You\'re working on an art project and need the blue paint. Another student has been holding it for 15 minutes and won\'t pass it even though you asked.',
+        who: 'Your classmate / teacher',
+        branches: [
+          { label: 'Use a different color. It\'s not worth the fight.', style: 'silent', outcome: 'You changed your whole project to avoid conflict. Sometimes compromise is fine, but you deserve access to shared materials too.', rating: 1 },
+          { label: 'Grab the paint from them: "You\'ve had it forever! It\'s MY turn!"', style: 'aggressive', outcome: 'Taking things from people escalates conflict. Now it\'s a fight over paint instead of a sharing problem.', rating: 2 },
+          { label: 'Say: "I need the blue paint too. Can we take turns? I\'ll give it back in five minutes." If they still refuse, ask the teacher: "We need help sharing materials."', style: 'assertive', outcome: 'You proposed a fair solution first, then asked for adult help when peer negotiation failed. That\'s a two-step advocacy skill.', rating: 3 }
+        ] },
+      { id: 'ad27', title: 'Feeling Sick at School', setup: 'Your stomach really hurts and you feel like you might throw up, but the last time you went to the nurse, your mom said you were faking to get out of school.',
+        who: 'Your teacher / nurse',
+        branches: [
+          { label: 'Stay at your desk. Nobody believes you anyway.', style: 'silent', outcome: 'You could get sicker or have an accident because a past experience made you afraid to speak up. Your body is real even when others doubt it.', rating: 1 },
+          { label: 'Start crying loudly until someone notices.', style: 'aggressive', outcome: 'The distress gets attention but not the right kind. People focus on the crying instead of the sickness.', rating: 2 },
+          { label: 'Tell the teacher quietly: "I feel really sick to my stomach. I think I need to go to the nurse." Be specific about what hurts and when it started.', style: 'assertive', outcome: 'Being specific helps adults take you seriously. If your mom doubts you, the nurse\'s assessment is evidence that you were genuinely ill.', rating: 3 }
+        ] },
+      { id: 'ad28', title: 'Someone Cuts in Line', setup: 'You\'ve been waiting in the lunch line for five minutes. A bigger kid pushes in front of you and acts like nothing happened. Other kids behind you are watching.',
+        who: 'The student / lunch monitor',
+        branches: [
+          { label: 'Let them go. They\'re bigger than you and it\'s not worth it.', style: 'silent', outcome: 'Avoiding conflict because of a size difference teaches you that bigger people get what they want. That\'s not a rule you have to accept.', rating: 1 },
+          { label: 'Push them back: "Hey! I was HERE FIRST! Get to the back!"', style: 'aggressive', outcome: 'Physical response gets you in trouble, even though you were right. Now YOU might be the one getting a consequence.', rating: 2 },
+          { label: 'Say calmly: "I was in line here. The back of the line is over there." If they don\'t move, tell the lunch monitor: "Someone cut in front of me."', style: 'assertive', outcome: 'You stated the fact without emotion, gave them a chance to self-correct, and had a backup plan. Smart advocacy in a tricky situation.', rating: 3 }
+        ] },
+      { id: 'ad29', title: 'Too Shy to Ask for Help', setup: 'You don\'t understand the directions for the homework, but every time you think about raising your hand, your heart beats fast and your face feels hot. You\'re too shy to ask in front of everyone.',
+        who: 'Your teacher / yourself',
+        branches: [
+          { label: 'Don\'t do the homework. You\'ll get a zero but at least you didn\'t embarrass yourself.', style: 'silent', outcome: 'A zero hurts your grade and doesn\'t solve the confusion. The embarrassment you\'re imagining is almost always worse than the reality.', rating: 1 },
+          { label: 'Blurt out: "I DON\'T GET IT!" from your seat.', style: 'aggressive', outcome: 'This might get you help, but it was the thing you were afraid of \u2014 everyone looking at you. There are quieter ways.', rating: 2 },
+          { label: 'Write a note to the teacher: "I don\'t understand the directions. Can you help me privately?" Or go up during a work time and ask quietly at their desk.', style: 'assertive', outcome: 'You found a way to get help that works for YOUR comfort level. Writing it down, asking privately, or emailing are all valid advocacy methods. You don\'t have to raise your hand to ask for help.', rating: 3 }
         ] }
     ],
     middle: [
@@ -166,6 +202,41 @@ window.SelHub = window.SelHub || {
           { label: 'Don\'t say anything. Turn in whatever you can do on paper.', style: 'silent', outcome: 'You get a lower grade because of something that\'s not your fault. The teacher might think you didn\'t try when actually you didn\'t have the tools.', rating: 1 },
           { label: '"I can\'t do this! Not everyone has a computer at home, you know!"', style: 'aggressive', outcome: 'You made an important point, but the public callout might embarrass the teacher and they\'ll respond to the tone, not the truth.', rating: 2 },
           { label: 'Talk to the teacher privately: "I don\'t have reliable internet at home. Could I use the computer lab before or after school, or is there a way to do this assignment differently?"', style: 'assertive', outcome: 'You identified the barrier, asked privately (protecting your dignity), and proposed alternatives. Many teachers genuinely don\'t realize not everyone has the same access.', rating: 3 }
+        ] },
+      { id: 'ad30', title: 'Unfair Group Project Grading', setup: 'Your group project got a B, but you did most of the work. Two group members barely contributed. The teacher gave everyone the same grade. You feel it\'s unfair.',
+        who: 'Your teacher',
+        branches: [
+          { label: 'Accept the B. It\'s a group grade, that\'s how it works.', style: 'silent', outcome: 'You absorbed an unfair outcome and learned that other people\'s lack of effort can bring you down. But you had the power to change this.', rating: 1 },
+          { label: '"This is so unfair! I did EVERYTHING and they did NOTHING! I deserve an A!"', style: 'aggressive', outcome: 'You stated the problem but accused your groupmates publicly. The teacher hears complaints, not evidence.', rating: 2 },
+          { label: 'Talk to the teacher privately: "I want to discuss how the group grade was determined. I kept a log of my contributions and I feel the work wasn\'t evenly distributed. Could we look at individual contributions?"', style: 'assertive', outcome: 'You brought evidence (a contribution log), spoke privately, and asked for a fair review. Many teachers have policies for adjusting group grades when one person carries the load.', rating: 3 }
+        ] },
+      { id: 'ad31', title: 'Need a Mental Health Day', setup: 'You\'ve been overwhelmed for weeks. You can\'t focus, you\'re not sleeping, and today you just feel like you cannot handle school. You need a day off for your mental health.',
+        who: 'Your parent / counselor',
+        branches: [
+          { label: 'Go to school anyway. Everyone else deals with it.', style: 'silent', outcome: 'Pushing through when your mind is shutting down isn\'t resilience \u2014 it\'s denial. Your mental health is health.', rating: 1 },
+          { label: '"I\'m NOT going to school and you can\'t MAKE me! I don\'t care about any of it!"', style: 'aggressive', outcome: 'Refusing without explaining sounds like defiance, not distress. Your parent hears rebellion instead of pain.', rating: 2 },
+          { label: 'Tell your parent honestly: "I\'ve been really overwhelmed and I don\'t think I can function at school today. Can we talk about what I\'m going through? I might need to see the counselor too."', style: 'assertive', outcome: 'You named the problem, admitted you need help, and proposed a step. A mental health day with a plan is self-advocacy, not avoidance.', rating: 3 }
+        ] },
+      { id: 'ad32', title: 'The Dress Code Feels Unfair', setup: 'The dress code seems to target certain students more than others. You and your friends have noticed that the same rules are enforced differently depending on who you are.',
+        who: 'Administration / school board',
+        branches: [
+          { label: 'Follow the code and don\'t make waves. Rules are rules.', style: 'silent', outcome: 'Compliance doesn\'t equal fairness. If a rule is applied unequally, silence lets the inequity continue.', rating: 1 },
+          { label: 'Post about it on social media to call out the school.', style: 'aggressive', outcome: 'Social media can raise awareness but also escalates unpredictably. You bypass the formal process that could actually change the policy.', rating: 2 },
+          { label: 'Collect examples of inconsistent enforcement with dates and details. Bring them to administration: "We\'ve noticed the dress code seems to be applied differently for different students. Here are specific examples. Can we discuss how to make enforcement more consistent?"', style: 'assertive', outcome: 'Data is powerful. Specific examples are harder to dismiss than feelings. You advocated for systemic change using evidence \u2014 that\'s how policy actually gets reformed.', rating: 3 }
+        ] },
+      { id: 'ad33', title: 'Peer Pressure to Skip Class', setup: 'Your friend group is planning to skip 5th period to hang out off campus. They\'re pressuring you to come. You don\'t want to skip, but you don\'t want to lose your friends either.',
+        who: 'Your friends / yourself',
+        branches: [
+          { label: 'Go along with it. One class won\'t matter and your friendships are important.', style: 'silent', outcome: 'One skip becomes two. The pattern builds. And the friendship is conditional on you doing what they want \u2014 that\'s not friendship, it\'s pressure.', rating: 1 },
+          { label: '"You guys are so immature. I\'m not getting in trouble for your stupid idea."', style: 'aggressive', outcome: 'Insulting them creates a bigger rift than just saying no. Now it\'s personal instead of just a decision.', rating: 2 },
+          { label: '"I\'m going to pass on this one. I\'ve got a test coming up and I can\'t miss class. I\'ll catch up with you after school."', style: 'assertive', outcome: 'You said no without judging them, gave a reason, and kept the door open for the friendship. That\'s boundary-setting with social awareness.', rating: 3 }
+        ] },
+      { id: 'ad34', title: 'Teacher Mispronounces Your Name', setup: 'Your teacher has been mispronouncing your name for three weeks. Every time they say it wrong, a few students snicker. You\'ve let it go but it\'s starting to really bother you.',
+        who: 'Your teacher',
+        branches: [
+          { label: 'Let it go. It\'s just a name. People mispronounce things all the time.', style: 'silent', outcome: 'Your name is your identity. Accepting a mispronunciation tells the class your name doesn\'t matter. It does.', rating: 1 },
+          { label: 'Correct them loudly in the middle of class: "It\'s not [wrong]. You\'ve been saying it WRONG for weeks!"', style: 'aggressive', outcome: 'You\'re right to correct them, but the public embarrassment makes the teacher defensive and the snickering worse.', rating: 2 },
+          { label: 'Talk to the teacher before or after class: "I wanted to help you with my name. It\'s pronounced [correct]. Would it help if I wrote it out phonetically for you?"', style: 'assertive', outcome: 'You approached it as helping them, not blaming them. You offered a tool (phonetic spelling) that makes it easier for them to get it right. Your name matters and you deserve to hear it spoken correctly.', rating: 3 }
         ] }
     ],
     high: [
@@ -224,6 +295,41 @@ window.SelHub = window.SelHub || {
           { label: 'Keep going. The experience on your resume is worth more than money.', style: 'silent', outcome: 'Maybe. But if you\'re doing the work of an employee, labor law may require compensation. And normalizing unpaid labor hurts everyone who comes after you.', rating: 1 },
           { label: '"I\'m basically a free employee. This is exploitation and I\'m going to report it."', style: 'aggressive', outcome: 'If it IS exploitative, reporting is valid \u2014 but threatening first without exploring options burns the bridge and the reference.', rating: 2 },
           { label: '"I\'ve been taking on responsibilities beyond the internship scope, which I\'m happy to do. But I want to discuss whether this role could become a paid position, or if we can adjust the workload to match the internship agreement."', style: 'assertive', outcome: 'You acknowledged your value, referenced the agreement, and proposed options. This is professional advocacy \u2014 the kind that leads to either fair pay or a clear boundary.', rating: 3 }
+        ] },
+      { id: 'ad35', title: 'Internship Negotiation', setup: 'You got a summer internship offer, but the hours conflict with a family obligation two days a week. The internship coordinator said "take it or leave it." You really want this opportunity.',
+        who: 'Internship coordinator',
+        branches: [
+          { label: 'Accept the schedule as-is. You can\'t risk losing the opportunity.', style: 'silent', outcome: 'You sacrificed something important without even trying to negotiate. In professional life, the first offer is rarely the final answer.', rating: 1 },
+          { label: '"That schedule doesn\'t work for me. Change it or I\'ll find another internship."', style: 'aggressive', outcome: 'Ultimatums from interns rarely work. You have less leverage than you think, and the coordinator has other applicants.', rating: 2 },
+          { label: '"I\'m very excited about this internship and committed to making it work. I have a family obligation on Tuesdays and Thursdays. Could I make up those hours on other days, or adjust my start time? I want to show I\'m dedicated."', style: 'assertive', outcome: 'You showed enthusiasm, explained the constraint, and proposed solutions. Flexibility with commitment is exactly what employers want to see. Most will negotiate when you demonstrate investment.', rating: 3 }
+        ] },
+      { id: 'ad36', title: 'College Accommodation Request', setup: 'You\'ve been accepted to college and you have a documented learning disability. You need to register with disability services before classes start, but you\'re not sure how to explain your needs to a new institution.',
+        who: 'Disability services office',
+        branches: [
+          { label: 'Don\'t register. College is a fresh start and you don\'t want to be labeled.', style: 'silent', outcome: 'A fresh start doesn\'t mean leaving behind the supports that help you succeed. College coursework is harder, not easier \u2014 accommodations matter more, not less.', rating: 1 },
+          { label: '"I have a disability and you HAVE to accommodate me. It\'s the law."', style: 'aggressive', outcome: 'You\'re right about the law, but leading with demands instead of information makes the process adversarial instead of collaborative.', rating: 2 },
+          { label: '"I\'d like to register with disability services. I have documentation of [disability] and I\'ve found these accommodations helpful in high school: [list]. What\'s the process to get similar supports set up here?"', style: 'assertive', outcome: 'You brought documentation, referenced what works, and asked about the process. Disability services offices WANT students to self-identify early \u2014 you just made their job easier and your success more likely.', rating: 3 }
+        ] },
+      { id: 'ad37', title: 'Workplace Harassment', setup: 'A coworker at your part-time job keeps making comments about your age, calling you "kid" and saying things like "shouldn\'t you be doing homework?" It\'s affecting your confidence and other employees are starting to treat you differently.',
+        who: 'Manager / HR',
+        branches: [
+          { label: 'Ignore it. They\'re just joking around and you don\'t want to be the one who can\'t take a joke.', style: 'silent', outcome: 'If the comments are persistent and affecting your work environment, it\'s not a joke \u2014 it\'s harassment. Silence normalizes it.', rating: 1 },
+          { label: 'Snap back at them: "At least I have a future. What\'s your excuse for still being here?"', style: 'aggressive', outcome: 'Fighting fire with fire might feel good but now you\'re both behaving unprofessionally. You could face consequences too.', rating: 2 },
+          { label: 'First, tell the coworker directly: "I\'d appreciate if you stopped making comments about my age. I\'m here to do my job." If it continues, document the incidents and report to your manager: "I\'ve asked [name] to stop making age-related comments and it\'s continuing. I\'d like this addressed."', style: 'assertive', outcome: 'You tried direct communication first, then escalated with documentation. This is textbook workplace advocacy. You created a record that protects you if things get worse.', rating: 3 }
+        ] },
+      { id: 'ad38', title: 'Unfair School Policy', setup: 'Your school implemented a new policy requiring students to earn a certain GPA to participate in extracurriculars. You know several students who rely on sports and clubs for college scholarships and mental health \u2014 including students with disabilities whose GPAs are affected by their conditions.',
+        who: 'School board / principal',
+        branches: [
+          { label: 'It\'s the school\'s decision. They probably know best.', style: 'silent', outcome: 'Policies made without student input often have unintended consequences. The school board may not realize how this affects vulnerable students unless someone speaks up.', rating: 1 },
+          { label: 'Organize a walkout to protest the policy.', style: 'aggressive', outcome: 'A walkout gets attention but also consequences. And it doesn\'t present an alternative \u2014 it just says "no" without offering "instead."', rating: 2 },
+          { label: 'Research the policy\'s impact: how many students are affected, does it disproportionately impact students with disabilities or low-income students? Present findings to the school board: "We believe this policy has unintended consequences. Here\'s our data and a proposed alternative that still encourages academic effort while protecting access."', style: 'assertive', outcome: 'You used data, identified affected populations, and proposed an alternative. This is civic advocacy at its finest. Policymakers respond to evidence and solutions, not just opposition.', rating: 3 }
+        ] },
+      { id: 'ad39', title: 'Advocating for a Community Need', setup: 'Your neighborhood doesn\'t have safe sidewalks or crosswalks near the school. Students walk in the road every day. Two students have already been hit by cars this year. Nobody in charge seems to be doing anything.',
+        who: 'City council / school administration',
+        branches: [
+          { label: 'Walk carefully and hope nothing happens to you. It\'s just how things are.', style: 'silent', outcome: 'Accepting dangerous conditions as normal is how communities stay unsafe. Someone has to start the conversation.', rating: 1 },
+          { label: 'Post angry rants on social media: "Two kids got hit and nobody cares! This city is garbage!"', style: 'aggressive', outcome: 'Anger without a channel is just noise. Social media might raise awareness but doesn\'t attend city council meetings.', rating: 2 },
+          { label: 'Document the issue: photograph the dangerous areas, gather statements from affected students and families, research who is responsible for infrastructure. Attend a city council meeting or write a formal request: "We\'re requesting a safety assessment for [street/intersection]. Here is evidence of the danger and the number of students affected daily."', style: 'assertive', outcome: 'You became a community advocate. Documentation, research, and formal channels are how infrastructure actually gets changed. You just practiced the same skills that civil rights leaders, disability advocates, and community organizers use every day.', rating: 3 }
         ] }
     ]
   };
@@ -692,6 +798,299 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // ── Self-Advocacy Practice Scripts (fill-in + TTS read-aloud) ──
+  // ══════════════════════════════════════════════════════════════
+  var SELF_ADVOCACY_SCRIPTS = {
+    elementary: [
+      { id: 'sas1', title: 'I Need Help With This', situation: 'You are working on an assignment and you don\'t understand what to do. You need to ask your teacher for help.',
+        template: 'Excuse me, {teacher_name}. I am having trouble with {assignment}. Could you please help me understand {specific_part}? I learn better when {learning_style}.',
+        blanks: [
+          { key: 'teacher_name', label: 'Teacher\'s name', placeholder: 'Ms. Smith' },
+          { key: 'assignment', label: 'The assignment', placeholder: 'the math worksheet' },
+          { key: 'specific_part', label: 'What part confuses you', placeholder: 'how to carry the numbers' },
+          { key: 'learning_style', label: 'How you learn best', placeholder: 'someone shows me an example first' }
+        ],
+        tips: ['Take a deep breath first', 'It is okay not to know \u2014 that is why school exists', 'Point to the exact part that confuses you'] },
+      { id: 'sas2', title: 'Please Stop That', situation: 'Someone near you keeps doing something that is bothering you. It might be poking you, making noises, or taking your things.',
+        template: 'I need you to please stop {behavior}. It is bothering me because {reason}. If it does not stop, I will need to tell {adult}.',
+        blanks: [
+          { key: 'behavior', label: 'What they are doing', placeholder: 'tapping my desk' },
+          { key: 'reason', label: 'Why it bothers you', placeholder: 'I cannot focus on my work' },
+          { key: 'adult', label: 'Which adult you would tell', placeholder: 'the teacher' }
+        ],
+        tips: ['Use a firm but calm voice', 'You do not need to explain twice', 'It is not mean to set a boundary'] },
+      { id: 'sas3', title: 'Can I Have More Time?', situation: 'The teacher says time is almost up, but you are not finished. You need more time to do your best work.',
+        template: '{teacher_name}, I am still working on {task}. I want to do my best but I need a little more time. Could I have {amount} more minutes, or finish it during {alternative_time}?',
+        blanks: [
+          { key: 'teacher_name', label: 'Teacher\'s name', placeholder: 'Mr. Johnson' },
+          { key: 'task', label: 'What you are working on', placeholder: 'the writing assignment' },
+          { key: 'amount', label: 'How many more minutes', placeholder: '5' },
+          { key: 'alternative_time', label: 'Another time you could finish', placeholder: 'recess or lunch' }
+        ],
+        tips: ['Ask before time is up, not after', 'Show that you have been working, not playing', 'Offering to finish at another time shows responsibility'] },
+      { id: 'sas4', title: 'Can You Explain Again?', situation: 'The teacher explained something, but you did not understand. You need them to explain it a different way.',
+        template: 'Sorry, {teacher_name}, I did not quite understand that. Could you explain {topic} again? Maybe you could {alternative_method}? That usually helps me get it.',
+        blanks: [
+          { key: 'teacher_name', label: 'Teacher\'s name', placeholder: 'Mrs. Garcia' },
+          { key: 'topic', label: 'What you did not understand', placeholder: 'the directions for the project' },
+          { key: 'alternative_method', label: 'A different way to explain', placeholder: 'show me an example or draw a picture' }
+        ],
+        tips: ['Saying "I did not understand" is brave, not weak', 'Suggesting HOW to re-explain helps the teacher help you', 'Other kids probably did not get it either'] },
+      { id: 'sas5', title: 'I Feel Left Out', situation: 'During group work or at recess, other kids are not including you. You feel lonely and want to be part of the group.',
+        template: 'I have been feeling left out when {situation}. It makes me feel {feeling}. Could I join {activity}? I could help with {contribution}.',
+        blanks: [
+          { key: 'situation', label: 'When you feel left out', placeholder: 'we pick teams at recess' },
+          { key: 'feeling', label: 'How it makes you feel', placeholder: 'sad and lonely' },
+          { key: 'activity', label: 'What you want to join', placeholder: 'the soccer game' },
+          { key: 'contribution', label: 'What you can add', placeholder: 'being the goalie' }
+        ],
+        tips: ['It is okay to ask to be included', 'Offering to contribute shows you are a team player', 'If kids say no, talk to an adult \u2014 you deserve to play too'] },
+      { id: 'sas6', title: 'That\'s Not Fair Because...', situation: 'Something happened that feels unfair to you. Maybe the rules were not applied equally or someone got something you did not.',
+        template: 'I think this might not be fair because {reason}. When {specific_example}, I felt {feeling}. Could we talk about {request}?',
+        blanks: [
+          { key: 'reason', label: 'Why it seems unfair', placeholder: 'I followed the rules but did not get the reward' },
+          { key: 'specific_example', label: 'What specifically happened', placeholder: 'I raised my hand but someone who shouted out got called on' },
+          { key: 'feeling', label: 'How you felt', placeholder: 'frustrated because I was trying to do the right thing' },
+          { key: 'request', label: 'What you would like', placeholder: 'making sure everyone follows the same rules' }
+        ],
+        tips: ['Focus on the situation, not blaming a person', 'Use "I think" and "I feel" instead of "You always"', 'Fair does not always mean the same \u2014 it means what each person needs'] }
+    ],
+    middle: [
+      { id: 'sas7', title: 'I\'d Like to Discuss My Grade', situation: 'You received a grade you think is wrong or unfair. You want to have a respectful conversation with the teacher about it.',
+        template: 'Hi {teacher_name}, I would like to discuss my grade on {assignment}. I {effort_description}. Looking at the rubric, I am confused about {specific_question}. Could we review it together?',
+        blanks: [
+          { key: 'teacher_name', label: 'Teacher\'s name', placeholder: 'Ms. Thompson' },
+          { key: 'assignment', label: 'The assignment', placeholder: 'the history essay' },
+          { key: 'effort_description', label: 'What effort you put in', placeholder: 'spent three hours researching and followed the rubric closely' },
+          { key: 'specific_question', label: 'What specifically confuses you', placeholder: 'why I lost points on the thesis section when I included all required elements' }
+        ],
+        tips: ['Bring your work and the rubric', 'Ask to understand, not to argue', 'Go at a calm time, not right when you get the grade back'] },
+      { id: 'sas8', title: 'I Need Accommodations For...', situation: 'You have a documented need (IEP, 504, or medical) and need to make sure a teacher sets up your accommodation.',
+        template: 'Hi {teacher_name}, I wanted to let you know that my {plan_type} includes {accommodation}. The upcoming {event} is on {date}. What do I need to do to make sure my accommodation is set up?',
+        blanks: [
+          { key: 'teacher_name', label: 'Teacher\'s name', placeholder: 'Mr. Chen' },
+          { key: 'plan_type', label: 'Type of plan', placeholder: '504 plan' },
+          { key: 'accommodation', label: 'The accommodation', placeholder: 'extended time and a quiet testing room' },
+          { key: 'event', label: 'What it is for', placeholder: 'midterm exam' },
+          { key: 'date', label: 'When it is', placeholder: 'next Thursday' }
+        ],
+        tips: ['Ask at least a week in advance', 'Know your plan \u2014 keep a copy on your phone', 'This is your legal right, not a favor'] },
+      { id: 'sas9', title: 'I Disagree Respectfully Because...', situation: 'You have a different opinion than the teacher or another adult. You want to express it without being rude.',
+        template: 'I understand your perspective that {their_position}. I see it differently because {your_reasoning}. I have noticed that {evidence}. Could we discuss {compromise_or_alternative}?',
+        blanks: [
+          { key: 'their_position', label: 'Their position or decision', placeholder: 'the homework policy is necessary' },
+          { key: 'your_reasoning', label: 'Your reasoning', placeholder: 'some students have after-school responsibilities that make it impossible to complete two hours of homework' },
+          { key: 'evidence', label: 'Evidence or observation', placeholder: 'several students are failing because of incomplete homework, not because they do not understand the material' },
+          { key: 'compromise_or_alternative', label: 'A possible compromise', placeholder: 'allowing alternative ways to show understanding' }
+        ],
+        tips: ['Start by acknowledging their point of view', 'Use evidence, not just feelings', 'Propose an alternative, not just criticism'] },
+      { id: 'sas10', title: 'I Need a Break Right Now', situation: 'You are feeling overwhelmed, anxious, or emotional in class. You need to step away before you lose control.',
+        template: 'I am starting to feel {feeling} and I do not think I can focus right now. I need {request} so I can {purpose}. I will be back in {timeframe}.',
+        blanks: [
+          { key: 'feeling', label: 'What you are feeling', placeholder: 'really overwhelmed and anxious' },
+          { key: 'request', label: 'What you need', placeholder: 'to step out for a few minutes' },
+          { key: 'purpose', label: 'Why it will help', placeholder: 'calm down and reset so I can actually learn' },
+          { key: 'timeframe', label: 'How long', placeholder: '5 minutes' }
+        ],
+        tips: ['Ask BEFORE you reach the breaking point', 'Giving a timeframe shows responsibility', 'Having a plan for where you will go helps adults trust you'] },
+      { id: 'sas11', title: 'Can We Find a Compromise?', situation: 'You and a teacher or peer are at an impasse. Neither side is getting what they want. You want to find a middle ground.',
+        template: 'I understand that you need {their_need}. I also need {your_need}. What if we tried {compromise}? That way {benefit_to_both}.',
+        blanks: [
+          { key: 'their_need', label: 'What they need', placeholder: 'everyone to present in front of the class' },
+          { key: 'your_need', label: 'What you need', placeholder: 'a way to share my work that does not trigger my anxiety' },
+          { key: 'compromise', label: 'Your proposed compromise', placeholder: 'I present to a small group, or I record a video presentation' },
+          { key: 'benefit_to_both', label: 'How it helps everyone', placeholder: 'you can still assess my speaking skills and I can still show what I know' }
+        ],
+        tips: ['Name both sides\' needs \u2014 it shows empathy', 'Be specific about your compromise idea', 'If one compromise is rejected, have a backup'] },
+      { id: 'sas12', title: 'I Feel Uncomfortable When...', situation: 'Someone is doing or saying something that makes you uncomfortable. It might not be bullying, but it crosses a line for you.',
+        template: 'I need to tell you that I feel uncomfortable when {behavior}. It affects me because {impact}. I would like {request}. This is important to me.',
+        blanks: [
+          { key: 'behavior', label: 'What is happening', placeholder: 'people make jokes about my lunch or my food from home' },
+          { key: 'impact', label: 'How it affects you', placeholder: 'I have stopped eating lunch at school and I am hungry all afternoon' },
+          { key: 'request', label: 'What you want to happen', placeholder: 'the comments to stop, and maybe for the teacher to address respecting different cultures' }
+        ],
+        tips: ['You do not need to justify being uncomfortable', 'Naming the impact makes it real for the listener', 'If it continues after you speak up, it becomes a pattern worth reporting'] }
+    ],
+    high: [
+      { id: 'sas13', title: 'Advocating for a Policy Change', situation: 'You have identified a school policy that is unfair or harmful. You want to formally advocate for it to be changed.',
+        template: 'I am writing to advocate for a change to {policy}. This policy currently {current_impact}. I have gathered {evidence}. I propose {alternative}. I believe this would benefit {who_benefits} because {reasoning}.',
+        blanks: [
+          { key: 'policy', label: 'The policy', placeholder: 'the GPA requirement for extracurricular participation' },
+          { key: 'current_impact', label: 'Its negative impact', placeholder: 'disproportionately excludes students with disabilities and those experiencing hardship' },
+          { key: 'evidence', label: 'Evidence you have gathered', placeholder: 'data showing that 40% of affected students have documented disabilities or are in special education' },
+          { key: 'alternative', label: 'Your proposed alternative', placeholder: 'a progress-based standard instead of a fixed GPA cutoff' },
+          { key: 'who_benefits', label: 'Who it would help', placeholder: 'all students, especially those who use extracurriculars for college access and mental health' },
+          { key: 'reasoning', label: 'Why it matters', placeholder: 'research shows that extracurricular participation actually improves academic outcomes' }
+        ],
+        tips: ['Data and research are your strongest tools', 'Propose alternatives, not just complaints', 'Know who has the power to change the policy and target your advocacy to them'] },
+      { id: 'sas14', title: 'I Need to Set This Boundary', situation: 'Someone in your life \u2014 a friend, family member, teacher, or coworker \u2014 keeps crossing a boundary. You need to set it clearly.',
+        template: 'I need to be direct about something. When {boundary_crossing}, it {impact_on_you}. Going forward, I need {boundary}. I value {relationship}, and this boundary actually helps me be {positive_outcome}.',
+        blanks: [
+          { key: 'boundary_crossing', label: 'What they keep doing', placeholder: 'you share my personal information with other people' },
+          { key: 'impact_on_you', label: 'How it affects you', placeholder: 'makes me unable to trust you with anything important' },
+          { key: 'boundary', label: 'The boundary you are setting', placeholder: 'you to keep what I tell you private unless I say otherwise' },
+          { key: 'relationship', label: 'What you value about the relationship', placeholder: 'our friendship' },
+          { key: 'positive_outcome', label: 'How the boundary helps', placeholder: 'a better, more trusting friend' }
+        ],
+        tips: ['Boundaries are not punishments \u2014 they are protection', 'You can set a boundary AND keep the relationship', 'If someone refuses to respect your boundary, that tells you something important about them'] },
+      { id: 'sas15', title: 'I Want to Negotiate...', situation: 'You need to negotiate something \u2014 a work schedule, a deadline, a grade, a responsibility. You want a fair outcome for both sides.',
+        template: 'I would like to discuss {topic}. My current situation is {current_state}. I am proposing {proposal} because {reasoning}. I am flexible on {flexible_point}, but I need {non_negotiable}. Can we find something that works for both of us?',
+        blanks: [
+          { key: 'topic', label: 'What you want to negotiate', placeholder: 'my work schedule for the school year' },
+          { key: 'current_state', label: 'Your current situation', placeholder: 'I have AP classes that require significant study time and I cannot work more than 15 hours a week' },
+          { key: 'proposal', label: 'What you are proposing', placeholder: 'working weekends and two weekday evenings' },
+          { key: 'reasoning', label: 'Why this makes sense', placeholder: 'weekends are your busiest time and I am fully available then' },
+          { key: 'flexible_point', label: 'What you can be flexible on', placeholder: 'which weekday evenings' },
+          { key: 'non_negotiable', label: 'What you cannot budge on', placeholder: 'not working past 9 PM on school nights' }
+        ],
+        tips: ['Know your bottom line before you start', 'Show flexibility where you can \u2014 it builds goodwill', 'Put the agreement in writing afterward'] },
+      { id: 'sas16', title: 'I\'m Reporting This Because...', situation: 'You need to formally report something \u2014 harassment, discrimination, a safety concern, or a policy violation. You want to do it effectively.',
+        template: 'I am filing this report about {incident}. On {date}, at {location}, {what_happened}. This has been happening {frequency}. I have {evidence}. I am reporting this because {why_it_matters}. I would like {outcome}.',
+        blanks: [
+          { key: 'incident', label: 'Type of incident', placeholder: 'ongoing harassment by a coworker' },
+          { key: 'date', label: 'When it happened', placeholder: 'March 15, and again on March 20 and March 22' },
+          { key: 'location', label: 'Where', placeholder: 'in the break room and on the sales floor' },
+          { key: 'what_happened', label: 'What happened (specific details)', placeholder: 'my coworker made repeated comments about my appearance and would not stop when asked' },
+          { key: 'frequency', label: 'How often', placeholder: 'at least three times per week for the past month' },
+          { key: 'evidence', label: 'Evidence', placeholder: 'text messages, a written log of dates and incidents, and one witness' },
+          { key: 'why_it_matters', label: 'Why you are reporting', placeholder: 'it is creating a hostile work environment and affecting my ability to do my job' },
+          { key: 'outcome', label: 'What you want done', placeholder: 'the behavior to stop and a written confirmation that my report has been received' }
+        ],
+        tips: ['Document EVERYTHING before you report', 'Keep copies of everything you submit', 'Know the chain of command: manager, HR, then external agencies', 'Retaliation for reporting is illegal \u2014 document that too if it happens'] },
+      { id: 'sas17', title: 'I Need Support With...', situation: 'You are going through something hard and need to ask for support from school or work without oversharing.',
+        template: 'I wanted to let you know that I am dealing with {general_description}. It has been affecting my {impact_area}. I do not need to go into all the details, but I would appreciate {specific_support}. I am working on {what_you_are_doing} and I expect to {timeline}.',
+        blanks: [
+          { key: 'general_description', label: 'General description (you control how much to share)', placeholder: 'a difficult family situation' },
+          { key: 'impact_area', label: 'What it is affecting', placeholder: 'my ability to concentrate and meet deadlines' },
+          { key: 'specific_support', label: 'What support you need', placeholder: 'some flexibility on the next two assignment deadlines' },
+          { key: 'what_you_are_doing', label: 'What you are doing to manage it', placeholder: 'getting support from my counselor' },
+          { key: 'timeline', label: 'Your expected timeline', placeholder: 'be back on track within two weeks' }
+        ],
+        tips: ['You control how much you share \u2014 nobody is entitled to your full story', 'Showing you have a plan builds trust', 'Asking for help is not weakness \u2014 it is wisdom'] },
+      { id: 'sas18', title: 'My Perspective Is Different Because...', situation: 'In a discussion or meeting, your viewpoint differs from the majority. You want to share it in a way that gets heard, not dismissed.',
+        template: 'I appreciate {what_others_said}. My perspective is different because {reason_for_difference}. From my experience, {your_perspective}. I think it is important to consider {what_to_consider} because {why_it_matters}.',
+        blanks: [
+          { key: 'what_others_said', label: 'What others shared', placeholder: 'the points that have been made about standardized testing' },
+          { key: 'reason_for_difference', label: 'Why your view is different', placeholder: 'I have a learning disability that means standardized tests do not accurately reflect what I know' },
+          { key: 'your_perspective', label: 'Your perspective', placeholder: 'alternative assessments like portfolios and projects give a much better picture of student learning' },
+          { key: 'what_to_consider', label: 'What should be considered', placeholder: 'how testing affects students with disabilities' },
+          { key: 'why_it_matters', label: 'Why it matters', placeholder: 'decisions made without diverse perspectives often have unintended consequences for marginalized groups' }
+        ],
+        tips: ['Start by validating what has been said \u2014 then add your view', 'Different perspectives are not wrong perspectives', 'Your lived experience IS evidence', 'If your voice is the only one saying this, it is even more important to say it'] }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Advocacy Strength Assessment (self-assessment quiz) ──
+  // ══════════════════════════════════════════════════════════════
+  var ASSESSMENT_STATEMENTS = [
+    { id: 'aq1', text: 'I can clearly state what I need to another person.', category: 'communication' },
+    { id: 'aq2', text: 'I stay calm when advocating for myself, even when I am frustrated.', category: 'regulation' },
+    { id: 'aq3', text: 'I can see the other person\'s perspective even when I disagree.', category: 'empathy' },
+    { id: 'aq4', text: 'I know when a situation requires me to speak up versus let it go.', category: 'judgment' },
+    { id: 'aq5', text: 'I can identify my own needs before trying to express them.', category: 'self_awareness' },
+    { id: 'aq6', text: 'I follow up when my first attempt at advocacy does not work.', category: 'persistence' },
+    { id: 'aq7', text: 'I know my legal rights as a student (IEP, 504, FERPA, etc.).', category: 'knowledge' },
+    { id: 'aq8', text: 'I can advocate for others, not just myself.', category: 'empathy' },
+    { id: 'aq9', text: 'I use evidence and examples when making my case, not just emotions.', category: 'communication' },
+    { id: 'aq10', text: 'I feel confident that speaking up is worth it, even when it is hard.', category: 'confidence' }
+  ];
+
+  var ASSESSMENT_CATEGORIES = {
+    communication: { label: 'Communication', icon: '\uD83D\uDDE3\uFE0F', tip: 'Practice using specific language: name the issue, describe the impact, make a clear request.' },
+    regulation: { label: 'Self-Regulation', icon: '\uD83E\uDDD8', tip: 'Try taking a breath before speaking. Write down what you want to say before you say it.' },
+    empathy: { label: 'Empathy & Perspective', icon: '\u2764\uFE0F', tip: 'Before advocating, ask yourself: what does the other person need? How can I address both our needs?' },
+    judgment: { label: 'Judgment', icon: '\u2696\uFE0F', tip: 'Not everything needs a battle. Focus your energy on things that truly matter to your wellbeing or rights.' },
+    self_awareness: { label: 'Self-Awareness', icon: '\uD83D\uDCAD', tip: 'Before speaking up, pause and ask: What do I actually need here? What would make this better?' },
+    persistence: { label: 'Persistence', icon: '\uD83D\uDCAA', tip: 'If the first person cannot help, find someone who can. Keep a record of your attempts.' },
+    knowledge: { label: 'Rights Knowledge', icon: '\uD83D\uDCDA', tip: 'Explore the Rights tab in this tool. Knowing what you are legally entitled to changes everything.' },
+    confidence: { label: 'Confidence', icon: '\u2B50', tip: 'Confidence grows with practice. Start with low-stakes situations and work your way up.' }
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Letter / Email Template Builder ──
+  // ══════════════════════════════════════════════════════════════
+  var LETTER_TEMPLATES = [
+    { id: 'lt1', title: 'Letter to a Teacher', recipient: 'Teacher', icon: '\uD83D\uDC69\u200D\uD83C\uDFEB',
+      fields: [
+        { key: 'teacher_name', label: 'Teacher\'s name', placeholder: 'Ms. Rodriguez' },
+        { key: 'your_name', label: 'Your name', placeholder: 'Alex' },
+        { key: 'issue', label: 'The issue or request', placeholder: 'I have been struggling to keep up with the reading pace in class' },
+        { key: 'impact', label: 'How it is affecting you', placeholder: 'I am falling behind on assignments and my grades are dropping' },
+        { key: 'request', label: 'What you are asking for', placeholder: 'extra time to complete reading assignments or access to audiobook versions' },
+        { key: 'evidence', label: 'Supporting evidence', placeholder: 'My 504 plan includes extended time accommodations, and I have been meeting with my reading specialist weekly' }
+      ],
+      format: function(f) {
+        return 'Dear ' + (f.teacher_name || '[Teacher Name]') + ',\n\n' +
+          'I am writing to discuss something that has been affecting my learning. ' + (f.issue || '[Describe the issue]') + '. ' +
+          'This has been impacting me because ' + (f.impact || '[Describe the impact]') + '.\n\n' +
+          'I would like to request ' + (f.request || '[Your request]') + '. ' +
+          'I believe this is reasonable because ' + (f.evidence || '[Supporting evidence]') + '.\n\n' +
+          'I would appreciate the chance to discuss this with you. When would be a good time to meet?\n\n' +
+          'Thank you for your time,\n' + (f.your_name || '[Your Name]');
+      }
+    },
+    { id: 'lt2', title: 'Letter to a Principal', recipient: 'Principal', icon: '\uD83D\uDC68\u200D\uD83D\uDCBC',
+      fields: [
+        { key: 'principal_name', label: 'Principal\'s name', placeholder: 'Dr. Johnson' },
+        { key: 'your_name', label: 'Your name', placeholder: 'Alex' },
+        { key: 'issue', label: 'The issue', placeholder: 'inconsistent enforcement of the dress code policy' },
+        { key: 'impact', label: 'How it affects students', placeholder: 'certain students are being dress-coded more often than others for the same outfits' },
+        { key: 'request', label: 'What you are requesting', placeholder: 'a review of how the dress code is enforced and clearer written guidelines' },
+        { key: 'evidence', label: 'Evidence or examples', placeholder: 'On March 5, I was dress-coded for a tank top, but three other students wore similar tops without consequence' }
+      ],
+      format: function(f) {
+        return 'Dear ' + (f.principal_name || '[Principal Name]') + ',\n\n' +
+          'I am writing to bring a concern to your attention regarding ' + (f.issue || '[the issue]') + '. ' +
+          'This is affecting students because ' + (f.impact || '[describe the impact]') + '.\n\n' +
+          'Specifically, ' + (f.evidence || '[provide evidence or examples]') + '.\n\n' +
+          'I respectfully request ' + (f.request || '[your request]') + '. ' +
+          'I believe this would benefit the entire school community.\n\n' +
+          'I would welcome the opportunity to discuss this further. Thank you for considering this concern.\n\n' +
+          'Respectfully,\n' + (f.your_name || '[Your Name]');
+      }
+    },
+    { id: 'lt3', title: 'Letter to a Parent/Guardian', recipient: 'Parent', icon: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67',
+      fields: [
+        { key: 'parent_name', label: 'Parent\'s name', placeholder: 'Mom' },
+        { key: 'your_name', label: 'Your name', placeholder: 'Alex' },
+        { key: 'issue', label: 'What you need to discuss', placeholder: 'I have been feeling really anxious about school lately' },
+        { key: 'impact', label: 'How it is affecting you', placeholder: 'I am not sleeping well and I dread going to school in the morning' },
+        { key: 'request', label: 'What you need from them', placeholder: 'to talk to a counselor or therapist about what I am going through' },
+        { key: 'evidence', label: 'What you have already tried', placeholder: 'I have been trying deep breathing and journaling, but it is not enough' }
+      ],
+      format: function(f) {
+        return 'Dear ' + (f.parent_name || '[Parent/Guardian]') + ',\n\n' +
+          'I want to talk to you about something important. ' + (f.issue || '[What you need to discuss]') + '. ' +
+          'It has been affecting me: ' + (f.impact || '[How it affects you]') + '.\n\n' +
+          'I have already tried ' + (f.evidence || '[what you have done so far]') + ', but I think I need more support.\n\n' +
+          'What I am asking for is ' + (f.request || '[your request]') + '. ' +
+          'This is hard to bring up, but I trust you and I need your help.\n\n' +
+          'Love,\n' + (f.your_name || '[Your Name]');
+      }
+    },
+    { id: 'lt4', title: 'Letter to an Employer', recipient: 'Employer', icon: '\uD83C\uDFE2',
+      fields: [
+        { key: 'employer_name', label: 'Employer\'s name', placeholder: 'Mr. Martinez' },
+        { key: 'your_name', label: 'Your name', placeholder: 'Alex' },
+        { key: 'issue', label: 'The issue', placeholder: 'I have been scheduled during school hours three times this month' },
+        { key: 'impact', label: 'How it affects you', placeholder: 'I am missing important classes and my grades are suffering' },
+        { key: 'request', label: 'What you are requesting', placeholder: 'a consistent schedule that respects my school hours of 7:30 AM to 2:30 PM' },
+        { key: 'evidence', label: 'Supporting information', placeholder: 'State labor law requires that minors attend school during required hours, and my availability was submitted during hiring' }
+      ],
+      format: function(f) {
+        return 'Dear ' + (f.employer_name || '[Employer Name]') + ',\n\n' +
+          'I am writing to address a scheduling concern. ' + (f.issue || '[Describe the issue]') + '. ' +
+          'This is affecting me because ' + (f.impact || '[Describe the impact]') + '.\n\n' +
+          'I am committed to being a reliable employee. ' + (f.evidence || '[Supporting information]') + '.\n\n' +
+          'I am requesting ' + (f.request || '[Your request]') + '. ' +
+          'I am happy to discuss this in person and find a solution that works for both of us.\n\n' +
+          'Thank you for your understanding,\n' + (f.your_name || '[Your Name]');
+      }
+    }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
   // ── Badges ──
   // ══════════════════════════════════════════════════════════════
   var BADGES = [
@@ -708,7 +1107,13 @@ window.SelHub = window.SelHub || {
     { id: 'total_10',           icon: '\uD83C\uDFC6', name: 'Advocacy Champion',      desc: 'Complete 10 activities across all tabs' },
     { id: 'total_20',           icon: '\uD83D\uDC8E', name: 'Advocacy Leader',        desc: 'Complete 20 activities across all tabs' },
     { id: 'phrase_explorer',    icon: '\uD83D\uDCAC', name: 'Phrase Collector',       desc: 'Practice 5 power phrases' },
-    { id: 'advocate_10',        icon: '\uD83C\uDF1F', name: 'Seasoned Advocate',      desc: 'Complete 10 advocacy scenarios' }
+    { id: 'advocate_10',        icon: '\uD83C\uDF1F', name: 'Seasoned Advocate',      desc: 'Complete 10 advocacy scenarios' },
+    { id: 'sas_master',         icon: '\uD83D\uDCDC', name: 'Script Master',          desc: 'Practice 5 self-advocacy scripts' },
+    { id: 'scenario_champion',  icon: '\uD83C\uDFC6', name: 'Scenario Champion',      desc: 'Complete 15 advocacy scenarios' },
+    { id: 'assessment_done',    icon: '\uD83D\uDCCA', name: 'Assessment Complete',    desc: 'Complete the advocacy strength assessment' },
+    { id: 'letter_writer',      icon: '\u2709\uFE0F', name: 'Letter Writer',          desc: 'Create a formal advocacy letter' },
+    { id: 'advocacy_leader',    icon: '\uD83C\uDF1F', name: 'Advocacy Master',        desc: 'Earn 10 badges total' },
+    { id: 'sas_all_band',       icon: '\uD83D\uDC51', name: 'Script Expert',          desc: 'Practice all scripts in your grade band' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -726,6 +1131,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var band = ctx.gradeBand || 'elementary';
@@ -773,6 +1180,23 @@ window.SelHub = window.SelHub || {
       var ppPracticed    = d.ppPracticed || {};
       var ppCount        = Object.keys(d.ppPracticed || {}).length;
 
+      // Self-Advocacy Scripts state
+      var sasIdx         = d.sasIdx || 0;
+      var sasParts       = d.sasParts || {};
+      var sasCompleted   = d.sasCompleted || 0;
+      var sasPracticedSet = d.sasPracticedSet || {};
+      var sasPracticeMode = d.sasPracticeMode || false;
+
+      // Assessment state
+      var assessAnswers  = d.assessAnswers || {};
+      var assessDone     = d.assessDone || false;
+
+      // Letter Builder state
+      var ltIdx          = d.ltIdx || 0;
+      var ltFields       = d.ltFields || {};
+      var ltCompleted    = d.ltCompleted || 0;
+      var ltPreview      = d.ltPreview || false;
+
       // Practice log & badges
       var practiceLog    = d.practiceLog || [];
       var earnedBadges   = d.earnedBadges || {};
@@ -799,9 +1223,10 @@ window.SelHub = window.SelHub || {
         var entry = { type: type, id: id, timestamp: Date.now() };
         var newLog = practiceLog.concat([entry]);
         upd('practiceLog', newLog);
-        var totalActivities = scCompleted + stCompleted + rtViewed + voCompleted + ppCount;
+        var totalActivities = scCompleted + stCompleted + rtViewed + voCompleted + ppCount + sasCompleted + ltCompleted + (assessDone ? 1 : 0);
         if (totalActivities + 1 >= 10) tryAwardBadge('total_10');
         if (totalActivities + 1 >= 20) tryAwardBadge('total_20');
+        if (Object.keys(earnedBadges).length >= 10) tryAwardBadge('advocacy_leader');
       }
 
       var ACCENT = '#6366f1';
@@ -814,13 +1239,17 @@ window.SelHub = window.SelHub || {
       var tabs = [
         { id: 'scenarios', label: '\uD83D\uDCE2 Scenarios' },
         { id: 'scripts',   label: '\uD83D\uDCDD Scripts' },
+        { id: 'advocacy_scripts', label: '\uD83C\uDFA4 Practice' },
         { id: 'rights',    label: '\u2696\uFE0F Rights' },
         { id: 'voice',     label: '\uD83C\uDFA4 Voice' },
         { id: 'phrases',   label: '\uD83D\uDCAC Phrases' },
+        { id: 'assessment', label: '\uD83D\uDCCB Quiz' },
+        { id: 'letters',   label: '\u2709\uFE0F Letters' },
         { id: 'progress',  label: '\uD83D\uDCCA Progress' }
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Self-Advocacy tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(t) {
@@ -933,6 +1362,7 @@ window.SelHub = window.SelHub || {
                 tryAwardBadge('first_advocate');
                 if (newDone >= 5) tryAwardBadge('advocate_5');
                 if (newDone >= 10) tryAwardBadge('advocate_10');
+                if (newDone >= 15) tryAwardBadge('scenario_champion');
                 if (newStreak >= 3) tryAwardBadge('assertive_advocate');
                 if (soundEnabled) sfxResolve();
                 ctx.announceToSR && ctx.announceToSR('Next advocacy scenario loaded');
@@ -972,6 +1402,7 @@ window.SelHub = window.SelHub || {
               }
               return h('input', {
                 key: pi, type: 'text',
+                'aria-label': part.placeholder,
                 value: stParts[part.key] || '',
                 onChange: function(e) {
                   var newParts = Object.assign({}, stParts);
@@ -1202,6 +1633,7 @@ window.SelHub = window.SelHub || {
             voTurnCount < 20 && h('div', { style: { display: 'flex', gap: 8 } },
               h('input', {
                 type: 'text', value: voInputText,
+                'aria-label': 'Voice practice message',
                 onChange: function(e) { upd('voInputText', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter' && voInputText.trim() && !voLoading) { sendVoMessage(); } },
                 placeholder: band === 'elementary' ? 'What do you want to say?' : 'Type what you\'d say...',
@@ -1373,17 +1805,419 @@ window.SelHub = window.SelHub || {
       }
 
       // ══════════════════════════════════════════════════════════
+      // ── TAB: Self-Advocacy Practice Scripts ──
+      // ══════════════════════════════════════════════════════════
+      var advocacyScriptsContent = null;
+      if (activeTab === 'advocacy_scripts') {
+        var sasScripts = SELF_ADVOCACY_SCRIPTS[band] || SELF_ADVOCACY_SCRIPTS.elementary;
+        var curSas = sasScripts[sasIdx % sasScripts.length];
+        var sasAllFilled = curSas.blanks.every(function(b) { return sasParts[b.key] && sasParts[b.key].trim(); });
+
+        // Build the filled script text
+        function buildSasScript(sc, parts) {
+          var result = sc.template;
+          sc.blanks.forEach(function(b) {
+            result = result.replace('{' + b.key + '}', parts[b.key] || '___');
+          });
+          return result;
+        }
+
+        // TTS read-aloud function
+        function speakScript(text) {
+          if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            var utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            utterance.volume = 0.8;
+            window.speechSynthesis.speak(utterance);
+          } else {
+            addToast('Text-to-speech is not supported in this browser.', 'info');
+          }
+        }
+
+        advocacyScriptsContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFA4 Self-Advocacy Practice Scripts'),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Fill in the blanks to create a script, then practice saying it out loud.'),
+          h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } },
+            'Script ' + ((sasIdx % sasScripts.length) + 1) + ' of ' + sasScripts.length + (sasCompleted > 0 ? ' \u00B7 ' + sasCompleted + ' practiced' : '')
+          ),
+          // Script selector (horizontal scroll)
+          h('div', { style: { display: 'flex', gap: 6, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 8, marginBottom: 12 } },
+            sasScripts.map(function(sc, si) {
+              var isCurrent = (sasIdx % sasScripts.length) === si;
+              var isDone = !!sasPracticedSet[sc.id];
+              return h('button', {
+                key: sc.id,
+                onClick: function() { upd({ sasIdx: si, sasParts: {}, sasPracticeMode: false }); if (soundEnabled) sfxClick(); },
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (isCurrent ? ACCENT : isDone ? '#22c55e33' : '#334155'), background: isCurrent ? ACCENT_DIM : 'transparent', color: isCurrent ? ACCENT : isDone ? '#22c55e' : '#94a3b8', fontSize: 11, fontWeight: isCurrent ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0 }
+              }, (isDone ? '\u2713 ' : '') + sc.title);
+            })
+          ),
+          // Situation card
+          h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, curSas.title),
+            h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } }, curSas.situation)
+          ),
+          // Fill-in-the-blank area
+          h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Fill In Your Script'),
+            curSas.blanks.map(function(blank, bi) {
+              return h('div', { key: bi, style: { marginBottom: 10 } },
+                h('label', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: 4 } }, blank.label),
+                h('input', {
+                  type: 'text',
+                  'aria-label': blank.label + ' advocacy response',
+                  value: sasParts[blank.key] || '',
+                  onChange: function(e) {
+                    var newParts = Object.assign({}, sasParts);
+                    newParts[blank.key] = e.target.value;
+                    upd('sasParts', newParts);
+                  },
+                  placeholder: blank.placeholder,
+                  style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit', boxSizing: 'border-box' }
+                })
+              );
+            })
+          ),
+          // Live preview of the script
+          sasAllFilled && h('div', { style: { padding: 14, borderRadius: 12, background: '#22c55e08', border: '1px solid #22c55e33', marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Your Script'),
+            h('p', { style: { fontSize: 14, color: '#f1f5f9', lineHeight: 1.8, fontStyle: 'italic' } },
+              '\u201C' + buildSasScript(curSas, sasParts) + '\u201D'
+            ),
+            h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() { speakScript(buildSasScript(curSas, sasParts)); if (soundEnabled) sfxClick(); },
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              }, '\uD83D\uDD0A Read Aloud'),
+              h('button', {
+                onClick: function() { upd('sasPracticeMode', !sasPracticeMode); if (soundEnabled) sfxClick(); },
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: sasPracticeMode ? '#22c55e' : '#f59e0b', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              }, sasPracticeMode ? '\uD83C\uDFA4 Practicing...' : '\uD83C\uDFA4 Practice Mode')
+            )
+          ),
+          // Practice mode overlay
+          sasPracticeMode && sasAllFilled && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '2px solid #f59e0b44', marginBottom: 16, textAlign: 'center' } },
+            h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83C\uDFA4'),
+            h('p', { style: { fontSize: 14, fontWeight: 700, color: '#f59e0b', marginBottom: 8 } }, 'Practice Mode'),
+            h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12, lineHeight: 1.6 } }, 'Read the script out loud. Practice until it feels natural. Try it with different tones: confident, calm, and firm.'),
+            h('p', { style: { fontSize: 16, color: '#f1f5f9', lineHeight: 2, padding: '12px 16px', background: '#1e293b', borderRadius: 10, fontStyle: 'italic' } },
+              '\u201C' + buildSasScript(curSas, sasParts) + '\u201D'
+            ),
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() { speakScript(buildSasScript(curSas, sasParts)); },
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              }, '\uD83D\uDD0A Hear It Again'),
+              h('button', {
+                onClick: function() {
+                  if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
+                  var newDone = sasCompleted + 1;
+                  var newSet = Object.assign({}, sasPracticedSet);
+                  newSet[curSas.id] = Date.now();
+                  upd({ sasCompleted: newDone, sasPracticedSet: newSet, sasPracticeMode: false });
+                  logPractice('advocacy_script', curSas.id);
+                  awardXP(15);
+                  if (newDone >= 5) tryAwardBadge('sas_master');
+                  if (Object.keys(newSet).length >= sasScripts.length) tryAwardBadge('sas_all_band');
+                  if (soundEnabled) sfxCorrect();
+                  addToast('Script practiced! Great job finding your voice.', 'success');
+                },
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              }, '\u2705 Mark as Practiced')
+            )
+          ),
+          // Tips
+          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\uD83D\uDCA1 Tips'),
+            curSas.tips.map(function(tip, ti) {
+              return h('div', { key: ti, style: { fontSize: 12, color: '#e2e8f0', marginBottom: 4, paddingLeft: 12 } }, '\u2022 ' + tip);
+            })
+          ),
+          // Navigation
+          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
+            h('button', {
+              onClick: function() {
+                var prev = sasIdx - 1;
+                if (prev < 0) prev = sasScripts.length - 1;
+                upd({ sasIdx: prev, sasParts: {}, sasPracticeMode: false });
+                if (soundEnabled) sfxClick();
+              },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+            }, '\u2190 Previous'),
+            h('button', {
+              onClick: function() {
+                upd({ sasIdx: sasIdx + 1, sasParts: {}, sasPracticeMode: false });
+                if (soundEnabled) sfxClick();
+              },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+            }, 'Next \u2192')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Advocacy Strength Assessment ──
+      // ══════════════════════════════════════════════════════════
+      var assessmentContent = null;
+      if (activeTab === 'assessment') {
+        var assessAllDone = ASSESSMENT_STATEMENTS.every(function(s) { return assessAnswers[s.id] != null; });
+
+        // Calculate results
+        var assessResults = null;
+        if (assessAllDone || assessDone) {
+          var categoryScores = {};
+          var categoryCounts = {};
+          ASSESSMENT_STATEMENTS.forEach(function(s) {
+            var val = assessAnswers[s.id] || 3;
+            if (!categoryScores[s.category]) { categoryScores[s.category] = 0; categoryCounts[s.category] = 0; }
+            categoryScores[s.category] += val;
+            categoryCounts[s.category] += 1;
+          });
+          var totalScore = 0;
+          var totalMax = ASSESSMENT_STATEMENTS.length * 5;
+          ASSESSMENT_STATEMENTS.forEach(function(s) { totalScore += (assessAnswers[s.id] || 3); });
+          var strengths = [];
+          var growth = [];
+          Object.keys(categoryScores).forEach(function(cat) {
+            var avg = categoryScores[cat] / categoryCounts[cat];
+            var catInfo = ASSESSMENT_CATEGORIES[cat];
+            if (avg >= 4) { strengths.push(catInfo); }
+            else if (avg <= 2.5) { growth.push(catInfo); }
+          });
+          assessResults = { totalScore: totalScore, totalMax: totalMax, strengths: strengths, growth: growth, categoryScores: categoryScores, categoryCounts: categoryCounts };
+        }
+
+        assessmentContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCB Advocacy Strength Assessment'),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } }, 'Rate each statement honestly. There are no right or wrong answers \u2014 this is about self-awareness.'),
+
+          // If results are showing
+          assessDone && assessResults && h('div', null,
+            h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
+              h('div', { style: { fontSize: 36, fontWeight: 700, color: ACCENT } }, assessResults.totalScore + ' / ' + assessResults.totalMax),
+              h('div', { style: { fontSize: 13, color: '#94a3b8', marginTop: 4 } }, 'Overall Advocacy Strength Score'),
+              h('div', { style: { height: 8, borderRadius: 4, background: '#1e293b', marginTop: 12 } },
+                h('div', { style: { height: '100%', borderRadius: 4, background: assessResults.totalScore / assessResults.totalMax >= 0.7 ? '#22c55e' : assessResults.totalScore / assessResults.totalMax >= 0.4 ? '#f59e0b' : '#ef4444', width: Math.round((assessResults.totalScore / assessResults.totalMax) * 100) + '%', transition: 'width 0.4s' } })
+              )
+            ),
+            // Category breakdown
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
+              Object.keys(assessResults.categoryScores).map(function(cat) {
+                var catInfo = ASSESSMENT_CATEGORIES[cat];
+                var avg = assessResults.categoryScores[cat] / assessResults.categoryCounts[cat];
+                var color = avg >= 4 ? '#22c55e' : avg >= 3 ? '#f59e0b' : '#ef4444';
+                return h('div', { key: cat, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid ' + color + '33', textAlign: 'center' } },
+                  h('div', { style: { fontSize: 20 } }, catInfo.icon),
+                  h('div', { style: { fontSize: 11, fontWeight: 600, color: '#e2e8f0', marginTop: 4 } }, catInfo.label),
+                  h('div', { style: { fontSize: 18, fontWeight: 700, color: color, marginTop: 2 } }, avg.toFixed(1) + '/5')
+                );
+              })
+            ),
+            // Strengths
+            assessResults.strengths.length > 0 && h('div', { style: { padding: 14, borderRadius: 12, background: '#22c55e08', border: '1px solid #22c55e33', marginBottom: 12 } },
+              h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2B50 Your Strengths'),
+              assessResults.strengths.map(function(s, si) {
+                return h('div', { key: si, style: { fontSize: 12, color: '#e2e8f0', marginBottom: 4, paddingLeft: 12 } }, s.icon + ' ' + s.label);
+              })
+            ),
+            // Growth areas
+            assessResults.growth.length > 0 && h('div', { style: { padding: 14, borderRadius: 12, background: '#f59e0b08', border: '1px solid #f59e0b33', marginBottom: 12 } },
+              h('p', { style: { fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\uD83C\uDF31 Growth Areas'),
+              assessResults.growth.map(function(g, gi) {
+                return h('div', { key: gi, style: { fontSize: 12, color: '#e2e8f0', marginBottom: 6, paddingLeft: 12 } },
+                  h('span', { style: { fontWeight: 600 } }, g.icon + ' ' + g.label + ': '),
+                  g.tip
+                );
+              })
+            ),
+            // Personalized tips
+            h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
+              h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\uD83D\uDCA1 Personalized Tips'),
+              assessResults.totalScore / assessResults.totalMax >= 0.7 && h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'You have strong advocacy skills! Focus on using them to help others and tackling systemic issues. Try the Voice Practice tab for advanced challenges.'),
+              assessResults.totalScore / assessResults.totalMax >= 0.4 && assessResults.totalScore / assessResults.totalMax < 0.7 && h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'You are building solid advocacy skills! Practice the Self-Advocacy Scripts to build confidence in specific situations. Focus on your growth areas with targeted scenarios.'),
+              assessResults.totalScore / assessResults.totalMax < 0.4 && h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'Advocacy is a skill that grows with practice. Start with the Power Phrases tab \u2014 memorize a few phrases and try them in low-stakes situations. Every time you speak up, you get stronger.')
+            ),
+            h('div', { style: { textAlign: 'center' } },
+              h('button', {
+                onClick: function() { upd({ assessAnswers: {}, assessDone: false }); if (soundEnabled) sfxClick(); },
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, 'Retake Assessment')
+            )
+          ),
+
+          // Question form (if not done)
+          !assessDone && h('div', null,
+            h('div', { style: { fontSize: 11, color: '#64748b', textAlign: 'center', marginBottom: 16 } },
+              Object.keys(assessAnswers).length + ' of ' + ASSESSMENT_STATEMENTS.length + ' answered'
+            ),
+            ASSESSMENT_STATEMENTS.map(function(stmt, qi) {
+              var currentVal = assessAnswers[stmt.id];
+              return h('div', { key: stmt.id, style: { padding: 14, borderRadius: 12, background: currentVal != null ? '#0f172a' : '#1e293b', border: '1px solid ' + (currentVal != null ? ACCENT_MED : '#334155'), marginBottom: 10 } },
+                h('p', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 10, lineHeight: 1.5 } }, (qi + 1) + '. ' + stmt.text),
+                h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center' } },
+                  [1, 2, 3, 4, 5].map(function(val) {
+                    var isSelected = currentVal === val;
+                    var labels = ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'];
+                    return h('button', {
+                      key: val,
+                      onClick: function() {
+                        var newAnswers = Object.assign({}, assessAnswers);
+                        newAnswers[stmt.id] = val;
+                        upd('assessAnswers', newAnswers);
+                        if (soundEnabled) sfxClick();
+                      },
+                      title: labels[val - 1],
+                      style: { width: 40, height: 40, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : '#334155'), background: isSelected ? ACCENT : 'transparent', color: isSelected ? '#fff' : '#94a3b8', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                    }, String(val));
+                  })
+                ),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 9, color: '#64748b' } },
+                  h('span', null, 'Strongly Disagree'),
+                  h('span', null, 'Strongly Agree')
+                )
+              );
+            }),
+            assessAllDone && h('div', { style: { textAlign: 'center', marginTop: 16 } },
+              h('button', {
+                onClick: function() {
+                  upd('assessDone', true);
+                  logPractice('assessment', 'advocacy_assessment');
+                  awardXP(25);
+                  tryAwardBadge('assessment_done');
+                  if (soundEnabled) sfxResolve();
+                  addToast('Assessment complete! See your results above.', 'success');
+                },
+                style: { padding: '12px 28px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              }, '\u2705 See My Results')
+            )
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Letter / Email Template Builder ──
+      // ══════════════════════════════════════════════════════════
+      var lettersContent = null;
+      if (activeTab === 'letters') {
+        var curLt = LETTER_TEMPLATES[ltIdx % LETTER_TEMPLATES.length];
+        var ltAllFilled = curLt.fields.every(function(f) { return ltFields[f.key] && ltFields[f.key].trim(); });
+
+        lettersContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2709\uFE0F Letter & Email Builder'),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } }, 'Build a formal advocacy letter you can actually send. Fill in the fields and export.'),
+          // Template selector
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
+            LETTER_TEMPLATES.map(function(lt, li) {
+              var isCurrent = (ltIdx % LETTER_TEMPLATES.length) === li;
+              return h('button', {
+                key: lt.id,
+                onClick: function() { upd({ ltIdx: li, ltFields: {}, ltPreview: false }); if (soundEnabled) sfxClick(); },
+                style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : '#334155'), background: isCurrent ? ACCENT_DIM : '#1e293b', cursor: 'pointer', textAlign: 'center' }
+              },
+                h('div', { style: { fontSize: 24, marginBottom: 4 } }, lt.icon),
+                h('div', { style: { fontSize: 12, fontWeight: 600, color: isCurrent ? ACCENT : '#e2e8f0' } }, 'To ' + lt.recipient)
+              );
+            })
+          ),
+          // Field inputs
+          h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 } },
+              h('span', { style: { fontSize: 20 } }, curLt.icon),
+              h('div', null,
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, curLt.title),
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Fill in each field below')
+              )
+            ),
+            curLt.fields.map(function(field, fi) {
+              return h('div', { key: fi, style: { marginBottom: 10 } },
+                h('label', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: 4 } }, field.label),
+                h('textarea', {
+                  value: ltFields[field.key] || '',
+                  'aria-label': field.label,
+                  onChange: function(e) {
+                    var newFields = Object.assign({}, ltFields);
+                    newFields[field.key] = e.target.value;
+                    upd('ltFields', newFields);
+                  },
+                  placeholder: field.placeholder,
+                  rows: 2,
+                  style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
+                })
+              );
+            })
+          ),
+          // Actions
+          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
+            h('button', {
+              onClick: function() {
+                if (!ltAllFilled) { addToast('Fill in all fields first.', 'info'); return; }
+                upd('ltPreview', !ltPreview);
+                if (soundEnabled) sfxReveal();
+              },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ltPreview ? '#334155' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+            }, ltPreview ? 'Hide Preview' : '\uD83D\uDC41\uFE0F Preview Letter'),
+            ltAllFilled && h('button', {
+              onClick: function() {
+                var text = curLt.format(ltFields);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(text).then(function() {
+                    addToast('Letter copied to clipboard!', 'success');
+                  }).catch(function() {
+                    addToast('Could not copy. Try selecting the text manually.', 'info');
+                  });
+                } else {
+                  addToast('Clipboard not available. Select and copy the preview text.', 'info');
+                }
+                var newDone = ltCompleted + 1;
+                upd('ltCompleted', newDone);
+                logPractice('letter', curLt.id);
+                awardXP(20);
+                tryAwardBadge('letter_writer');
+                if (soundEnabled) sfxCorrect();
+              },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+            }, '\uD83D\uDCCB Copy & Save')
+          ),
+          // Preview
+          ltPreview && ltAllFilled && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, 'Letter Preview'),
+            h('pre', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap', wordWrap: 'break-word', fontFamily: 'inherit', margin: 0 } },
+              curLt.format(ltFields)
+            )
+          ),
+          // Tips
+          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+            h('p', { style: { fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\uD83D\uDCA1 Letter Writing Tips'),
+            [
+              'Always keep a copy of letters you send.',
+              'Be specific: names, dates, and details make your case stronger.',
+              'State the impact on YOU, not just what happened.',
+              'End with a clear, specific request.',
+              'Follow up if you do not hear back within a week.'
+            ].map(function(tip, ti) {
+              return h('div', { key: ti, style: { fontSize: 12, color: '#e2e8f0', marginBottom: 4, paddingLeft: 12 } }, '\u2022 ' + tip);
+            })
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // ── TAB: Progress ──
       // ══════════════════════════════════════════════════════════
       var progressContent = null;
       if (activeTab === 'progress') {
-        var totalActs = scCompleted + stCompleted + rtViewed + voCompleted + ppCount;
+        var totalActs = scCompleted + stCompleted + rtViewed + voCompleted + ppCount + sasCompleted + ltCompleted + (assessDone ? 1 : 0);
         var stats = [
           { label: 'Scenarios Done', value: scCompleted, icon: '\uD83D\uDCE2', color: '#6366f1' },
           { label: 'Scripts Built', value: stCompleted, icon: '\uD83D\uDCDD', color: '#8b5cf6' },
+          { label: 'Practice Scripts', value: sasCompleted, icon: '\uD83C\uDFA4', color: '#a855f7' },
           { label: 'Rights Explored', value: rtViewed, icon: '\u2696\uFE0F', color: '#3b82f6' },
           { label: 'Voice Practices', value: voCompleted, icon: '\uD83C\uDFA4', color: '#22c55e' },
-          { label: 'Phrases Practiced', value: ppCount, icon: '\uD83D\uDCAC', color: '#f59e0b' }
+          { label: 'Phrases Practiced', value: ppCount, icon: '\uD83D\uDCAC', color: '#f59e0b' },
+          { label: 'Letters Created', value: ltCompleted, icon: '\u2709\uFE0F', color: '#ec4899' },
+          { label: 'Assessment', value: assessDone ? 'Done' : 'Not yet', icon: '\uD83D\uDCCB', color: '#14b8a6' }
         ];
 
         progressContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
@@ -1392,12 +2226,12 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
             h('div', { style: { fontSize: 13, color: '#94a3b8' } }, 'Total Activities Completed')
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10, marginBottom: 20 } },
             stats.map(function(s) {
-              return h('div', { key: s.label, style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' } },
-                h('div', { style: { fontSize: 24 } }, s.icon),
-                h('div', { style: { fontSize: 22, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, s.label)
+              return h('div', { key: s.label, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' } },
+                h('div', { style: { fontSize: 22 } }, s.icon),
+                h('div', { style: { fontSize: 20, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
+                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, s.label)
               );
             })
           ),
@@ -1405,8 +2239,8 @@ window.SelHub = window.SelHub || {
             h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Practice'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               practiceLog.slice(-8).reverse().map(function(entry, i) {
-                var icons = { scenario: '\uD83D\uDCE2', script: '\uD83D\uDCDD', rights: '\u2696\uFE0F', voice: '\uD83C\uDFA4', phrase: '\uD83D\uDCAC' };
-                var labels = { scenario: 'Advocacy Scenario', script: 'Script Builder', rights: 'Rights Explorer', voice: 'Voice Practice', phrase: 'Power Phrase' };
+                var icons = { scenario: '\uD83D\uDCE2', script: '\uD83D\uDCDD', rights: '\u2696\uFE0F', voice: '\uD83C\uDFA4', phrase: '\uD83D\uDCAC', advocacy_script: '\uD83C\uDFA4', assessment: '\uD83D\uDCCB', letter: '\u2709\uFE0F' };
+                var labels = { scenario: 'Advocacy Scenario', script: 'Script Builder', rights: 'Rights Explorer', voice: 'Voice Practice', phrase: 'Power Phrase', advocacy_script: 'Practice Script', assessment: 'Self-Assessment', letter: 'Advocacy Letter' };
                 return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 } },
                   h('span', null, icons[entry.type] || '\uD83D\uDCDD'),
                   h('span', { style: { color: '#e2e8f0', fontWeight: 500 } }, labels[entry.type] || entry.type),
@@ -1421,7 +2255,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
-      var content = scenariosContent || scriptsContent || rightsContent || voiceContent || phrasesContent || progressContent;
+      var content = scenariosContent || scriptsContent || advocacyScriptsContent || rightsContent || voiceContent || phrasesContent || assessmentContent || lettersContent || progressContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,

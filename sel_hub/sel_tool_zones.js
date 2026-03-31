@@ -382,6 +382,7 @@ window.SelHub = window.SelHub || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
@@ -485,12 +486,14 @@ window.SelHub = window.SelHub || {
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Zones of Regulation tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', {
             key: tab.id,
+            role: 'tab', 'aria-selected': isActive,
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); announceToSR('Switched to ' + tab.id + ' tab'); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -686,6 +689,7 @@ window.SelHub = window.SelHub || {
                            'Reflect on the factors influencing your current state (optional)',
               value: checkInNote,
               onChange: function(e) { upd('checkInNote', e.target.value); },
+              'aria-label': 'Check-in notes',
               rows: 3,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             }),
@@ -1443,6 +1447,7 @@ window.SelHub = window.SelHub || {
                         return h('input', {
                           key: i,
                           type: 'text',
+                          'aria-label': step.sense + ' item ' + (i + 1),
                           placeholder: (i + 1) + '...',
                           value: (inputs[i] || ''),
                           onChange: function(e) {

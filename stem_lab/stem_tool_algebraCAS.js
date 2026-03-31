@@ -125,6 +125,7 @@
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
 
       return (function() {
         var d = labToolData.algebraCAS || {};
@@ -418,10 +419,11 @@
           { id: 'tutor', label: '\uD83E\uDD16 Tutor' }
         ];
 
-        var tabBar = h('div', { style: { display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' } },
+        var tabBar = h('div', { style: { display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }, role: 'tablist', 'aria-label': 'Algebra CAS sections' },
           TABS.map(function(t) {
             return h('button', {
               key: t.id, onClick: function() { upd('tab', t.id); },
+              role: 'tab', 'aria-selected': tab === t.id,
               style: btnStyle(tab === t.id)
             }, t.label);
           })
@@ -439,6 +441,7 @@
               h('input', { type: 'text', value: expression, onChange: function(e) { upd('expression', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') handleSolve(); },
                 placeholder: 'e.g. ' + ((EXAMPLES[mode] || [])[0] || '2x + 5 = 13'),
+                'aria-label': 'Algebra expression input',
                 style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' } }),
               h('button', { onClick: handleSolve, disabled: isLoading || !expression.trim(),
                 style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', opacity: (isLoading || !expression.trim()) ? 0.5 : 1, border: 'none' }
@@ -507,6 +510,7 @@
                   onChange: function(e) { upd('practiceAnswer', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') handlePracticeCheck(); },
                   placeholder: 'Your answer...',
+                  'aria-label': 'Practice answer input',
                   style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' } }),
                 h('button', { onClick: handlePracticeCheck, disabled: isLoading || !practiceAnswer.trim(),
                   style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', cursor: 'pointer', opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1, border: 'none' }
@@ -650,13 +654,14 @@
                 h('input', { type: 'text', value: scaleEq, onChange: function(e) { upd('scaleEq', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') updMulti({ scaleSteps: [], scaleSolved: false }); },
                   placeholder: 'e.g. 3x + 5 = 14',
+                  'aria-label': 'Balance scale equation input',
                   style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' } }),
                 h('button', { onClick: function() { updMulti({ scaleSteps: [], scaleSolved: false }); },
                   style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, 'Load')
               )
             ),
             h('div', { style: { borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: 'rgba(15,23,42,0.5)' } },
-              h('canvas', { ref: function(canvas) { if (canvas) setTimeout(function() { drawScale(canvas); }, 0); }, style: { width: '100%', display: 'block' } })
+              h('canvas', { ref: function(canvas) { if (canvas) setTimeout(function() { drawScale(canvas); }, 0); }, 'aria-label': 'Interactive algebra balance scale visualization', tabIndex: 0, style: { width: '100%', display: 'block' } })
             ),
             scaleEq && !scaleSolved ? h('div', null,
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Apply to Both Sides'),
@@ -704,6 +709,7 @@
               h('input', { type: 'text', value: tutorInput, onChange: function(e) { upd('tutorInput', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') handleTutorSend(); },
                 placeholder: 'Ask about algebra...',
+                'aria-label': 'Ask the algebra tutor',
                 style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontSize: '12px' } }),
               h('button', { onClick: handleTutorSend, disabled: isLoading || !tutorInput.trim(),
                 style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', cursor: 'pointer', opacity: (isLoading || !tutorInput.trim()) ? 0.5 : 1, border: 'none' }

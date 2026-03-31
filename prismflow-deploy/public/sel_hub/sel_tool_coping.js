@@ -551,6 +551,7 @@ window.SelHub = window.SelHub || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
@@ -745,12 +746,14 @@ window.SelHub = window.SelHub || {
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Coping Skills tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', {
             key: tab.id,
+            role: 'tab', 'aria-selected': isActive,
             onClick: function() { if (tab.id !== 'practice') { stopBreathTimer(); stopMoveTimer(); } upd({ activeTab: tab.id, practiceMode: tab.id !== 'practice' ? null : d.practiceMode }); if (soundEnabled) sfxClick(); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -1445,6 +1448,7 @@ window.SelHub = window.SelHub || {
               ),
               h('input', {
                 type: 'text', value: tfCustomThought,
+                'aria-label': 'Enter a negative thought to reframe',
                 onChange: function(e) { upd('tfCustomThought', e.target.value); },
                 placeholder: band === 'elementary' ? 'Type a mean thought here...' : 'Enter a negative thought...',
                 style: { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', marginBottom: 8 }
@@ -1518,7 +1522,7 @@ window.SelHub = window.SelHub || {
                 })
               ),
               h('input', {
-                type: 'text', value: iFeeling, onChange: function(e) { upd('iFeeling', e.target.value); },
+                type: 'text', value: iFeeling, 'aria-label': 'I feel...', onChange: function(e) { upd('iFeeling', e.target.value); },
                 placeholder: 'Or type your own feeling...',
                 style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
               })
@@ -1541,7 +1545,7 @@ window.SelHub = window.SelHub || {
                 })
               ),
               h('input', {
-                type: 'text', value: iSituation, onChange: function(e) { upd('iSituation', e.target.value); },
+                type: 'text', value: iSituation, 'aria-label': 'When...', onChange: function(e) { upd('iSituation', e.target.value); },
                 placeholder: 'Or type your own situation...',
                 style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
               })
@@ -1551,7 +1555,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { marginBottom: 16 } },
               h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, '3. Because... (optional)'),
               h('input', {
-                type: 'text', value: iReason, onChange: function(e) { upd('iReason', e.target.value); },
+                type: 'text', value: iReason, 'aria-label': 'Because...', onChange: function(e) { upd('iReason', e.target.value); },
                 placeholder: band === 'elementary' ? 'Why does it make you feel that way?' : 'The impact or reason...',
                 style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
               })
@@ -1561,7 +1565,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { marginBottom: 20 } },
               h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, '4. I would like... (optional)'),
               h('input', {
-                type: 'text', value: iNeed, onChange: function(e) { upd('iNeed', e.target.value); },
+                type: 'text', value: iNeed, 'aria-label': 'I need...', onChange: function(e) { upd('iNeed', e.target.value); },
                 placeholder: band === 'elementary' ? 'What do you need?' : 'Your specific request...',
                 style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
               })
@@ -1708,6 +1712,7 @@ window.SelHub = window.SelHub || {
               ),
               h('textarea', {
                 value: stInput,
+                'aria-label': 'Self-talk reframe response',
                 onChange: function(e) { upd('stInput', e.target.value); },
                 placeholder: band === 'elementary' ? 'Example: I\'m so stupid...' : 'Example: I always mess everything up...',
                 rows: 3,
@@ -1808,7 +1813,7 @@ window.SelHub = window.SelHub || {
             }),
             h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
               h('input', {
-                type: 'text', id: 'cp-warning',
+                type: 'text', id: 'cp-warning', 'aria-label': 'Warning sign',
                 placeholder: band === 'elementary' ? 'My fists get tight, my face gets hot...' : 'Add a warning sign...',
                 style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
               }),
@@ -1847,7 +1852,7 @@ window.SelHub = window.SelHub || {
             }),
             h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
               h('input', {
-                type: 'text', id: 'cp-step',
+                type: 'text', id: 'cp-step', 'aria-label': 'Coping step',
                 placeholder: band === 'elementary' ? 'Take 5 deep breaths, go to calm corner...' : 'Add a step...',
                 style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
               }),
@@ -1905,7 +1910,7 @@ window.SelHub = window.SelHub || {
             }),
             h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
               h('input', {
-                type: 'text', id: 'cp-adult',
+                type: 'text', id: 'cp-adult', 'aria-label': 'Trusted adult',
                 placeholder: band === 'elementary' ? 'Mom, Mr. Smith, Counselor Jones...' : 'Name and relationship...',
                 style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
               }),
@@ -2004,6 +2009,7 @@ window.SelHub = window.SelHub || {
           // Input
           h('textarea', {
             value: matcherFeeling,
+            'aria-label': 'Describe how you are feeling for coping matcher',
             onChange: function(e) { upd('matcherFeeling', e.target.value); },
             placeholder: band === 'elementary' ? 'I feel really mad because my brother broke my toy...' :
                          band === 'middle' ? 'I\'m feeling overwhelmed with homework and social drama...' :

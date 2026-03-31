@@ -149,6 +149,8 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_graphcalc.js',
     'stem_lab/stem_tool_algebraCAS.js',
     'stem_lab/stem_tool_circuit.js',
+    'stem_lab/stem_tool_a11yauditor.js',
+    'stem_lab/stem_tool_worldbuilder.js',
     'stem_lab/stem_tool_climateExplorer.js',
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',

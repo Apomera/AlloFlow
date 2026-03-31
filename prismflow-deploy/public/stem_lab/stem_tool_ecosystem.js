@@ -184,6 +184,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var setToolSnapshots = ctx.setToolSnapshots;
       var callGemini = ctx.callGemini || window.callGemini;
       var callTTS = ctx.callTTS || window.callTTS;
@@ -552,7 +553,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
             h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Prey Population'),
             h('text', { x: 8, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9, transform: 'rotate(-90, 8, ' + (H / 2) + ')' }, 'Predator Population')
           ),
-          h('div', { className: 'flex gap-3 text-xs text-slate-400 mt-1 justify-center' },
+          h('div', { className: 'flex gap-3 text-xs text-slate-500 mt-1 justify-center' },
             h('span', null, '\uD83D\uDD04 Cycles: ' + cycles),
             h('span', null, '\uD83D\uDC07 Peak Prey: ' + peakPrey),
             h('span', null, '\uD83E\uDD8A Peak Pred: ' + peakPred)
@@ -563,7 +564,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
       // ── Environment graph (from livePopHistory) ──
       var buildEnvSVG = function() {
         var hist = livePopHistory;
-        if (!hist || hist.length < 2) return h('p', { className: 'text-xs text-slate-400 text-center py-4' }, 'Run the canvas simulation to see environment data.');
+        if (!hist || hist.length < 2) return h('p', { className: 'text-xs text-slate-500 text-center py-4' }, 'Run the canvas simulation to see environment data.');
         var sx = function(i) { return pad + (i / (hist.length - 1)) * (W - 2 * pad); };
         var sy = function(v) { return H - pad - v * (H - 2 * pad); };
 
@@ -2105,7 +2106,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
 
 
         // ── Mode tabs (4 tabs now) ──
-        h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1' },
+        h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': 'Ecosystem Explorer sections' },
           ['explore', 'sandbox', 'quiz', 'badges'].map(function(t2) {
             var tabLabel = '';
             if (t2 === 'explore') tabLabel = '\uD83C\uDF3F Explore';
@@ -2114,6 +2115,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
             else tabLabel = '\uD83C\uDFC5 Badges (' + badgeCount + '/' + BADGES.length + ')';
             return h('button', {
               key: t2,
+              role: 'tab', 'aria-selected': tab === t2,
               className: 'flex-1 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
                 (tab === t2 ? 'bg-emerald-500 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'),
               onClick: function() {
@@ -2174,6 +2176,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
               h('span', { className: 'text-[10px] font-semibold text-slate-500 dark:text-slate-400' }, 'Speed:'),
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
+                'aria-label': 'Simulation speed',
                 className: 'flex-1 h-1.5 accent-emerald-500',
                 onChange: function(e) {
                   var newSpeed = parseInt(e.target.value, 10);
@@ -2224,13 +2227,13 @@ if (!window.StemLab.isRegistered('ecosystem')) {
                 },
                   h('span', null, eventIcons[ev.name] || '\u26A1'),
                   h('span', { className: 'font-semibold' }, ev.name),
-                  h('span', { className: 'ml-auto text-slate-400' }, timeLabel)
+                  h('span', { className: 'ml-auto text-slate-500' }, timeLabel)
                 );
               })
             ),
             h('div', { className: 'flex items-center gap-2 mt-1 pt-1 border-t border-slate-200 dark:border-slate-600' },
-              h('span', { className: 'text-[9px] text-slate-400' }, 'Total events: ' + eventHistory.length),
-              h('span', { className: 'text-[9px] text-slate-400 ml-auto' },
+              h('span', { className: 'text-[9px] text-slate-500' }, 'Total events: ' + eventHistory.length),
+              h('span', { className: 'text-[9px] text-slate-500 ml-auto' },
                 'Unique: ' + Object.keys(eventsTriggered).length + '/5'
               )
             )
@@ -2262,6 +2265,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
             ),
             h('input', {
               type: 'range', min: 30, max: 200, step: 5, value: carryingCapacity,
+              'aria-label': 'Carrying capacity',
               className: 'w-full h-1.5 accent-amber-500',
               onChange: function(e) {
                 var newK = parseInt(e.target.value, 10);
@@ -2352,7 +2356,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
                     h('text', { x: lsx(hist.length - 1) + 5, y: lsy(lLast.prey) + 3, fill: '#22c55e', fontSize: 8, fontWeight: 'bold' }, lLast.prey),
                     h('text', { x: lsx(hist.length - 1) + 5, y: lsy(lLast.pred) + 3, fill: '#ef4444', fontSize: 8, fontWeight: 'bold' }, lLast.pred)
                   );
-                })() : h('p', { className: 'text-xs text-slate-400 text-center py-4' }, 'Canvas simulation is generating live data...')
+                })() : h('p', { className: 'text-xs text-slate-500 text-center py-4' }, 'Canvas simulation is generating live data...')
               ) : buildEnvSVG(),
 
               // Legend row
@@ -2408,22 +2412,22 @@ if (!window.StemLab.isRegistered('ecosystem')) {
                 h('div', { className: 'text-lg' }, '\u2600\uFE0F'),
                 h('div', { className: 'text-[9px] font-semibold' }, 'Sun')
               ),
-              h('span', { className: 'text-slate-400 text-sm' }, '\u2192'),
+              h('span', { className: 'text-slate-500 text-sm' }, '\u2192'),
               h('div', { className: 'bg-green-100 dark:bg-green-900/30 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, '\uD83C\uDF3F'),
                 h('div', { className: 'text-[9px] font-semibold' }, 'Plants')
               ),
-              h('span', { className: 'text-slate-400 text-sm' }, '\u2192'),
+              h('span', { className: 'text-slate-500 text-sm' }, '\u2192'),
               h('div', { className: 'bg-emerald-100 dark:bg-emerald-900/30 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, '\uD83D\uDC07'),
                 h('div', { className: 'text-[9px] font-semibold' }, 'Herbivores')
               ),
-              h('span', { className: 'text-slate-400 text-sm' }, '\u2192'),
+              h('span', { className: 'text-slate-500 text-sm' }, '\u2192'),
               h('div', { className: 'bg-orange-100 dark:bg-orange-900/30 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, '\uD83E\uDD8A'),
                 h('div', { className: 'text-[9px] font-semibold' }, 'Predators')
               ),
-              h('span', { className: 'text-slate-400 text-sm' }, '\u2192'),
+              h('span', { className: 'text-slate-500 text-sm' }, '\u2192'),
               h('div', { className: 'bg-amber-100 dark:bg-amber-900/30 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, '\uD83C\uDF44'),
                 h('div', { className: 'text-[9px] font-semibold' }, 'Decomposers')
@@ -2467,6 +2471,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
               ),
               h('input', {
                 type: 'range', min: 5, max: 150, step: 5, value: prey0,
+                'aria-label': 'Prey start population',
                 className: 'w-full h-1.5 accent-emerald-500',
                 onChange: function(e) { upd('prey0', parseInt(e.target.value, 10)); }
               })
@@ -2479,6 +2484,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
               ),
               h('input', {
                 type: 'range', min: 2, max: 80, step: 2, value: pred0,
+                'aria-label': 'Predator start population',
                 className: 'w-full h-1.5 accent-red-500',
                 onChange: function(e) { upd('pred0', parseInt(e.target.value, 10)); }
               })
@@ -2718,6 +2724,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
               h('span', { className: 'text-[10px] font-semibold text-slate-500 dark:text-slate-400' }, 'Speed:'),
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
+                'aria-label': 'Sandbox simulation speed',
                 className: 'flex-1 h-1.5 accent-teal-500',
                 onChange: function(e) {
                   var newSpeed = parseInt(e.target.value, 10);
@@ -2797,7 +2804,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
               h('li', null, 'Erase: Click near an entity to remove it'),
               h('li', null, 'Move: Click and drag an entity to reposition it')
             ),
-            h('p', { className: 'text-[10px] italic text-slate-400' }, 'Tip: Pause the simulation first for precise placement!')
+            h('p', { className: 'text-[10px] italic text-slate-500' }, 'Tip: Pause the simulation first for precise placement!')
           ),
 
           // ── Sandbox experiment suggestions ──
@@ -2921,7 +2928,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
         ),
 
         // ── Keyboard shortcuts (updated) ──
-        h('div', { className: 'text-[10px] text-slate-400 text-center space-x-3' },
+        h('div', { className: 'text-[10px] text-slate-500 text-center space-x-3' },
           h('span', null, 'E Explore'),
           h('span', null, 'S Sandbox'),
           h('span', null, 'Q Quiz'),
@@ -2940,7 +2947,7 @@ if (!window.StemLab.isRegistered('ecosystem')) {
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('span', { className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' },
                 '\uD83C\uDF3F Step ' + (tutorialStep + 1) + ' of 5'),
-              h('button', { className: 'text-slate-400 hover:text-slate-600 text-sm', onClick: dismissTutorial }, '\u2715')
+              h('button', { className: 'text-slate-500 hover:text-slate-600 text-sm', onClick: dismissTutorial }, '\u2715')
             ),
             h('p', { className: 'text-sm text-slate-700 dark:text-slate-200 mb-4 leading-relaxed' },
               [

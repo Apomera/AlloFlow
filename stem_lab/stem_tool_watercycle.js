@@ -14,6 +14,7 @@
       var addToast=ctx.addToast; var t=ctx.t;
       var ArrowLeft=ctx.icons.ArrowLeft;
       var announceToSR=ctx.announceToSR;
+      var a11yClick=ctx.a11yClick;
       var awardStemXP=ctx.awardXP; var getStemXP=ctx.getXP;
       var stemCelebrate=ctx.celebrate; var stemBeep=ctx.beep;
       var gradeLevel=ctx.gradeLevel;

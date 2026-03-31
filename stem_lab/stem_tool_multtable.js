@@ -165,6 +165,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var t = ctx.t;
       var callGemini = ctx.callGemini;
 

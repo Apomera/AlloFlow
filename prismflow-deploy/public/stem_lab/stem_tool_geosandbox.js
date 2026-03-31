@@ -452,6 +452,10 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var t = ctx.t;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
+
+      return (function() {
 
       // ── State ──
       var gd = (labToolData && labToolData.geoSandbox) || {};
@@ -627,28 +631,25 @@ window.StemLab = window.StemLab || {
         });
       };
 
-      // ── Keyboard shortcuts ──
-      React.useEffect(function() {
-        var handler = function(e) {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-          var key = e.key;
-          // 1-7: select shape
-          if (key >= '1' && key <= '7') {
-            var idx = parseInt(key) - 1;
-            if (shapes[idx]) selectShape(shapes[idx].id);
-            return;
-          }
-          switch (key.toLowerCase()) {
-            case 'c': generateChallenge(); break;
-            case 'w': toggleWireframe(); break;
-            case 'e': doExportSTL(); break;
-            case 'b': updExt({ showBadges: !showBadges }); break;
-            case '/': e.preventDefault(); askAI(); break;
-          }
-        };
-        window.addEventListener('keydown', handler);
-        return function() { window.removeEventListener('keydown', handler); };
-      });
+      // ── Keyboard shortcuts (managed without useEffect) ──
+      if (window._geoSandboxKbHandler) window.removeEventListener('keydown', window._geoSandboxKbHandler);
+      window._geoSandboxKbHandler = function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+        var key = e.key;
+        if (key >= '1' && key <= '7') {
+          var idx = parseInt(key) - 1;
+          if (shapes[idx]) selectShape(shapes[idx].id);
+          return;
+        }
+        switch (key.toLowerCase()) {
+          case 'c': generateChallenge(); break;
+          case 'w': toggleWireframe(); break;
+          case 'e': doExportSTL(); break;
+          case 'b': updExt({ showBadges: !showBadges }); break;
+          case '/': e.preventDefault(); askAI(); break;
+        }
+      };
+      window.addEventListener('keydown', window._geoSandboxKbHandler);
 
       // ── Three.js scene update effect ──
       React.useEffect(function() {
@@ -814,6 +815,7 @@ window.StemLab = window.StemLab || {
                     step: sl.step,
                     value: dims[sl.key] || sl.min,
                     onChange: function(e) { updDim(sl.key, e.target.value); },
+                    'aria-label': sl.label + ' slider',
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
                   })
                 );
@@ -856,6 +858,7 @@ window.StemLab = window.StemLab || {
                   type: 'range', min: 0.1, max: 1, step: 0.05,
                   value: opacity,
                   onChange: function(e) { upd('opacity', parseFloat(e.target.value)); },
+                  'aria-label': 'Shape opacity',
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
                 })
               )
@@ -915,6 +918,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex-1 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden relative', style: { minHeight: '400px' } },
             h('canvas', {
               id: 'geo-sandbox-canvas',
+              'aria-label': 'Interactive geology sandbox 3D visualization', tabIndex: 0,
               className: 'w-full h-full',
               style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
             }),
@@ -973,6 +977,7 @@ window.StemLab = window.StemLab || {
               onChange: function(e) { upd('challengeAnswer', e.target.value); },
               onKeyDown: function(e) { if (e.key === 'Enter') checkChallengeAnswer(); },
               placeholder: challenge.type === 'identify' ? 'Type the shape name...' : 'Enter your answer...',
+              'aria-label': 'Challenge answer',
               className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
               step: 'any'
             }),
@@ -1010,6 +1015,7 @@ window.StemLab = window.StemLab || {
           '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.'
         )
       );
+      })();
     }
   });
 })();

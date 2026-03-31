@@ -228,7 +228,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
             ),
 
-            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-1 mb-3" }, "Build " + mode + " circuits. V = IR. Add components and adjust voltage to see live calculations."),
+            React.createElement("p", { className: "text-xs text-slate-500 italic -mt-1 mb-3" }, "Build " + mode + " circuits. V = IR. Add components and adjust voltage to see live calculations."),
 
             // SVG Schematic
 
@@ -522,7 +522,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
               React.createElement("button", { onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all" }, "\uD83D\uDDD1 Clear"),
 
-              d.components.length > 0 && React.createElement("span", { className: "self-center text-xs text-slate-400 ml-auto" }, d.components.length + " component" + (d.components.length > 1 ? 's' : ''))
+              d.components.length > 0 && React.createElement("span", { className: "self-center text-xs text-slate-500 ml-auto" }, d.components.length + " component" + (d.components.length > 1 ? 's' : ''))
 
             ),
 
@@ -654,7 +654,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
               ),
 
-              React.createElement("div", { className: "mt-2 flex items-center gap-2 text-[10px] text-slate-400" },
+              React.createElement("div", { className: "mt-2 flex items-center gap-2 text-[10px] text-slate-500" },
 
                 React.createElement("span", null, "\u2696 V = IR"),
 

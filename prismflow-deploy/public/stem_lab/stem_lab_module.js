@@ -177,7 +177,9 @@
         callGemini,
         callTTS,
         callImagen,
-        callGeminiVision
+        callGeminiVision,
+        callGeminiImageEdit,
+        theme: _themeProp
       } = props;
       // t (translation function) — pulled from props with a safe fallback
       var t = props.t || function (k) { return k; };
@@ -227,6 +229,52 @@
         document.head.appendChild(s);
         return function () { var el = document.getElementById('stem-xp-keyframes'); if (el) el.remove(); };
       }, []);
+
+      // ── Theme-aware CSS overrides for dark mode & high contrast ──
+      React.useEffect(function () {
+        var id = 'stem-theme-overrides';
+        var existing = document.getElementById(id);
+        if (existing) existing.remove();
+        if (!isDark && !isContrast) return;
+        var s = document.createElement('style');
+        s.id = id;
+        if (isDark) {
+          s.textContent = [
+            '[data-stem-lab] .bg-white { background-color: #1e293b !important; color: #f1f5f9 !important; }',
+            '[data-stem-lab] .bg-slate-50 { background-color: #0f172a !important; color: #f1f5f9 !important; }',
+            '[data-stem-lab] .bg-slate-100 { background-color: #1e293b !important; }',
+            '[data-stem-lab] .bg-slate-200 { background-color: #334155 !important; }',
+            '[data-stem-lab] .text-slate-900, [data-stem-lab] .text-slate-800, [data-stem-lab] .text-slate-700 { color: #f1f5f9 !important; }',
+            '[data-stem-lab] .text-slate-600 { color: #cbd5e1 !important; }',
+            '[data-stem-lab] .text-slate-500 { color: #94a3b8 !important; }',
+            '[data-stem-lab] .border-slate-200 { border-color: #475569 !important; }',
+            '[data-stem-lab] .border-slate-100 { border-color: #334155 !important; }',
+            '[data-stem-lab] .border-slate-300 { border-color: #475569 !important; }',
+            '[data-stem-lab] .bg-indigo-50 { background-color: #312e81 !important; }',
+            '[data-stem-lab] .bg-blue-50 { background-color: #1e3a5f !important; }',
+            '[data-stem-lab] .bg-green-50 { background-color: #14532d !important; }',
+            '[data-stem-lab] .bg-yellow-50 { background-color: #422006 !important; }',
+            '[data-stem-lab] .bg-red-50 { background-color: #450a0a !important; }',
+            '[data-stem-lab] .bg-purple-50 { background-color: #3b0764 !important; }',
+            '[data-stem-lab] .bg-emerald-50 { background-color: #064e3b !important; }',
+            '[data-stem-lab] .bg-gradient-to-br.from-slate-50 { background: #0f172a !important; }',
+            '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }',
+          ].join('\n');
+        } else if (isContrast) {
+          s.textContent = [
+            '[data-stem-lab] .bg-white, [data-stem-lab] .bg-slate-50, [data-stem-lab] .bg-slate-100 { background-color: #000000 !important; color: #ffffff !important; }',
+            '[data-stem-lab] .bg-slate-200, [data-stem-lab] .bg-slate-300 { background-color: #1a1a1a !important; color: #ffffff !important; }',
+            '[data-stem-lab] .text-slate-900, [data-stem-lab] .text-slate-800, [data-stem-lab] .text-slate-700, [data-stem-lab] .text-slate-600, [data-stem-lab] .text-slate-500 { color: #ffffff !important; }',
+            '[data-stem-lab] .text-indigo-700, [data-stem-lab] .text-indigo-600, [data-stem-lab] .text-blue-700, [data-stem-lab] .text-blue-600 { color: #fbbf24 !important; }',
+            '[data-stem-lab] .border-slate-200, [data-stem-lab] .border-slate-100, [data-stem-lab] .border-slate-300 { border-color: #fbbf24 !important; }',
+            '[data-stem-lab] .bg-indigo-50, [data-stem-lab] .bg-blue-50, [data-stem-lab] .bg-green-50, [data-stem-lab] .bg-yellow-50, [data-stem-lab] .bg-red-50, [data-stem-lab] .bg-purple-50, [data-stem-lab] .bg-emerald-50 { background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
+            '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #000000 !important; color: #ffffff !important; border: 2px solid #fbbf24 !important; }',
+            '[data-stem-lab] button { border: 1px solid #fbbf24 !important; }',
+          ].join('\n');
+        }
+        document.head.appendChild(s);
+        return function () { var el = document.getElementById(id); if (el) el.remove(); };
+      }, [isDark, isContrast]);
 
       // ── STEM Lab XP System (per-activity cap: 100 XP) ──
       var stemXpData = (labToolData && labToolData._stemXP) || {};
@@ -364,12 +412,14 @@
         }, stemAILoading ? "⏳" : "💡", " ", t('stem.ai.get_hint') || "Get a Hint");
       }
 
-      // ── Theme Detection (reads DOM class from parent app) ──
-      var _stemTheme = 'light';
-      try {
-        if (document.querySelector('.theme-dark')) _stemTheme = 'dark';
-        else if (document.querySelector('.theme-contrast')) _stemTheme = 'contrast';
-      } catch (e) { }
+      // ── Theme Detection (prop from parent app, falls back to DOM query) ──
+      var _stemTheme = _themeProp || 'light';
+      if (!_themeProp) {
+        try {
+          if (document.querySelector('.theme-dark')) _stemTheme = 'dark';
+          else if (document.querySelector('.theme-contrast')) _stemTheme = 'contrast';
+        } catch (e) { }
+      }
       var isDark = _stemTheme === 'dark';
       var isContrast = _stemTheme === 'contrast';
       // Palette shortcuts for canvas rendering
@@ -1387,9 +1437,11 @@
           backdropFilter: 'blur(6px)'
         }
       }, /*#__PURE__*/React.createElement("div", {
-        className: "w-full max-w-[98vw] m-2 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300")
+        className: "w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
+        style: { backgroundColor: _pal.bg, color: _pal.text }
       }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-center justify-between px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white", role: "banner"
+        className: "flex items-center justify-between px-6 py-3 text-white", role: "banner",
+        style: { background: isContrast ? '#000' : 'linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)', borderBottom: isContrast ? '3px solid #fbbf24' : 'none' }
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-3"
       }, React.createElement("div", {
@@ -1474,7 +1526,8 @@
         }, /*#__PURE__*/React.createElement(X, {
           size: 20
         })))), /*#__PURE__*/React.createElement("div", {
-          className: "flex border-b border-slate-200 bg-slate-50 px-6", role: "tablist", "aria-label": "STEM Lab navigation"
+          className: "flex border-b px-6", role: "tablist", "aria-label": "STEM Lab navigation",
+          style: { backgroundColor: _pal.bgAlt, borderColor: _pal.border }
         }, [{
           id: 'create',
           label: '\uD83D\uDCDD Create',
@@ -1489,11 +1542,15 @@
             setStemLabTab(tab.id);
             setStemLabTool(null);
           },
-          className: `flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all ${stemLabTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`
+          className: "flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all",
+          style: stemLabTab === tab.id
+            ? { borderColor: isContrast ? '#fbbf24' : '#4f46e5', color: isContrast ? '#fbbf24' : (isDark ? '#a5b4fc' : '#4338ca'), backgroundColor: _pal.bg }
+            : { borderColor: 'transparent', color: _pal.textMuted }
         }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
           className: `text-[10px] font-normal ${stemLabTab === tab.id ? 'text-indigo-400' : 'text-slate-400'}`
         }, tab.desc)))), /*#__PURE__*/React.createElement("div", {
-          className: "flex-1 overflow-y-auto p-6"
+          className: "flex-1 overflow-y-auto p-6",
+          style: { backgroundColor: _pal.bg, color: _pal.text }
         }, stemLabTab === 'create' && !showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
           className: "space-y-5 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, /*#__PURE__*/React.createElement("div", {
@@ -1519,7 +1576,7 @@
         }, "\uD83D\uDCCB Build Assessment")), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-400 uppercase"
+          className: "text-xs font-bold text-slate-500 uppercase"
         }, "Style:"), [{
           val: t('stem.solver.stepbystep'),
           label: t('stem.solver.stepbystep')
@@ -2189,6 +2246,12 @@
                 color: 'violet', ready: true
               },
               {
+                // @tool semiconductor
+                id: 'semiconductor', icon: '\uD83D\uDD0C', label: 'Semiconductor Lab',
+                desc: 'Explore transistors, logic gates, silicon doping, and chip design fundamentals.',
+                color: 'cyan', ready: true
+              },
+              {
                 // @tool physics
                 id: 'physics', icon: '⚡', label: t('stem.tools_menu.physics_simulator'),
                 desc: 'Projectile motion, velocity vectors, and trajectory visualization.',
@@ -2256,6 +2319,16 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'a11yAuditor', icon: '♿', label: 'Digital Accessibility Lab',
+                desc: 'Audit websites and documents for WCAG 2.1 AA accessibility. Learn about digital rights, inclusive design, and who is left out when the web isn\'t accessible.',
+                color: 'teal', ready: true
+              },
+              {
+                id: 'worldBuilder', icon: '✍️', label: 'WriteCraft',
+                desc: 'Literary RPG — explore worlds, craft items, build structures, and battle through the strength of your prose. Your eloquence IS your superpower.',
+                color: 'violet', ready: true
+              },
+              {
                 id: 'lifeSkills', icon: '\uD83E\uDDED', label: 'Life Skills Lab',
                 desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
                 color: 'cyan', ready: true
@@ -2267,6 +2340,7 @@
 
               { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
               { id: 'dnaLab', icon: '🧬', label: 'DNA Lab', desc: 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
+              { id: 'epidemicSim', icon: '\uD83E\uDDA0', label: 'Epidemic Simulator', desc: 'Model disease spread with SIR/SEIR models. Adjust R0, vaccination rates, and social distancing. Flatten the curve!', color: 'red', ready: true },
 
               { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', category: true },
               { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
@@ -3300,16 +3374,16 @@
                 // Paycheck result cards
                 React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
                   React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border-2 border-green-300" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Gross (" + payFreq + ")"),
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Gross (" + payFreq + ")"),
                     React.createElement("p", { className: "text-2xl font-black text-green-600" }, "$" + Math.round(grossPer).toLocaleString())
                   ),
                   React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border-2 border-red-200" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Taxes Taken"),
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Taxes Taken"),
                     React.createElement("p", { className: "text-2xl font-black text-red-500" }, "-$" + Math.round(totalTax / freqMult).toLocaleString()),
                     React.createElement("p", { className: "text-[9px] text-red-400" }, Math.round(effectiveRate) + "% effective rate")
                   ),
                   React.createElement("div", { className: "bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 text-center border-2 border-emerald-400" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Take Home"),
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Take Home"),
                     React.createElement("p", { className: "text-2xl font-black text-emerald-600" }, "$" + Math.round(netPer).toLocaleString()),
                     React.createElement("p", { className: "text-[9px] text-emerald-500 font-bold" }, "$" + Math.round(netAnnual).toLocaleString() + "/year")
                   )
@@ -3628,13 +3702,13 @@
                   ),
                   React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                     React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border border-teal-200" },
-                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Predicted Pressure"),
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Predicted Pressure"),
                       React.createElement("p", { className: "text-2xl font-black " + (asTireP2 < 30 ? 'text-red-500' : 'text-teal-600') }, (Math.round(asTireP2 * 10) / 10) + " PSI"),
                       React.createElement("p", { className: "text-[10px] " + (tireDrop > 0 ? 'text-red-400' : 'text-emerald-400') + " font-bold" },
                         (tireDrop > 0 ? '\u2B07\uFE0F ' : '\u2B06\uFE0F ') + Math.abs(Math.round(tireDrop * 10) / 10) + " PSI change")
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border border-slate-200" },
-                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "The Math"),
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "The Math"),
                       React.createElement("p", { className: "text-xs text-slate-600 font-mono mt-1" },
                         asTireP1 + " \u00D7 (" + Math.round(t2K) + "K / " + Math.round(t1K) + "K)"),
                       React.createElement("p", { className: "text-xs text-slate-600 font-mono" }, "= " + (Math.round(asTireP2 * 10) / 10) + " PSI"),
@@ -3671,7 +3745,7 @@
                     )
                   ),
                   React.createElement("div", { className: "bg-white rounded-xl p-4 border border-teal-200 text-center" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Heat Loss Through Wall"),
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Heat Loss Through Wall"),
                     React.createElement("p", { className: "text-2xl font-black text-teal-600" }, Math.round(asHeatLoss).toLocaleString() + " BTU/hr"),
                     React.createElement("p", { className: "text-xs text-slate-500" }, Math.round(asHeatLossDay).toLocaleString() + " BTU/day")
                   ),
@@ -6612,7 +6686,7 @@
               // Root & Octave & Scale Lock
               React.createElement("div", { className: "flex gap-2 mb-3 items-center" },
                 React.createElement("div", { className: "flex items-center gap-1" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Root"),
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Root"),
                   React.createElement("select", {
                     'aria-label': 'Root note',
                     value: selectedRoot,
@@ -6621,7 +6695,7 @@
                   }, NOTE_NAMES.map(function (n) { return React.createElement("option", { key: n, value: n }, n); }))
                 ),
                 React.createElement("div", { className: "flex items-center gap-1" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Oct"),
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Oct"),
                   React.createElement("div", { className: "flex gap-0.5" },
                     [3, 4, 5, 6].map(function (o) {
                       return React.createElement("button", {
@@ -6715,7 +6789,7 @@
               // ── Chord Buttons ──
               React.createElement("div", { className: "mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Chords"),
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Chords"),
                   React.createElement("select", {
                     'aria-label': 'Chord root note',
                     value: chordRoot,
@@ -7084,7 +7158,7 @@
                 ),
                 // Inversion selector
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Inversion"),
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Inversion"),
                   [0, 1, 2].map(function (inv) {
                     return React.createElement("button", {
                       key: inv,
@@ -11250,7 +11324,9 @@
             numberline: true, volume: true, areamodel: true, fractionViz: true, fractions: true,
             codingPlayground: true, wave: true, semiconductor: true, titrationLab: true,
             plateTectonics: true, gameStudio: true, geoQuiz: true, geometryProver: true,
-            epidemicSim: true, lifeSkills: true, graphCalc: true
+            epidemicSim: true, lifeSkills: true, graphCalc: true,
+            a11yAuditor: true,
+            worldBuilder: true
           };
           console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
           if (!_pluginOnlyTools[stemLabTool]) return null;
@@ -11303,11 +11379,17 @@
             callTTS: typeof callTTS === 'function' ? callTTS : null,
             callImagen: typeof callImagen === 'function' ? callImagen : null,
             callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
+            callGeminiImageEdit: typeof callGeminiImageEdit === 'function' ? callGeminiImageEdit : null,
             gradeLevel: gradeLevel || '5th Grade',
             srOnly: function(text) { return React.createElement('span', { className: 'sr-only' }, text); },
             a11yClick: function(handler) { return { onClick: handler, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(e); } }, role: 'button', tabIndex: 0 }; },
             canvasA11yDesc: function(desc) { return { role: 'img', 'aria-label': desc }; },
             props: props || {},
+            // ── Theme ──
+            isDark: isDark,
+            isContrast: isContrast,
+            theme: _stemTheme,
+            pal: _pal,
             // ── Shared explore state ──
             exploreScore: exploreScore || { correct: 0, total: 0 },
             setExploreScore: typeof setExploreScore === 'function' ? setExploreScore : function() {},

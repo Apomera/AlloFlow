@@ -2261,7 +2261,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌱 Companion Planting Lab"),
 
-                  React.createElement("p", { className: "text-xs text-slate-400" }, "The milpa / Three Sisters — 7,000+ years of agricultural science")
+                  React.createElement("p", { className: "text-xs text-slate-500" }, "The milpa / Three Sisters — 7,000+ years of agricultural science")
 
                 )
 
@@ -2515,7 +2515,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2" },
 
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase px-1" }, "Plant:"),
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase px-1" }, "Plant:"),
 
                   React.createElement("button", {
 
@@ -2759,7 +2759,7 @@ var d = (labToolData.companionPlanting) || {};
 
                       ),
 
-                      React.createElement("div", { className: "text-[9px] text-slate-400" }, syn.desc),
+                      React.createElement("div", { className: "text-[9px] text-slate-500" }, syn.desc),
 
                       React.createElement("div", { className: "text-[10px] font-bold", style: { color: c.text } }, Math.round(syn.val) + '%')
 
@@ -3291,7 +3291,7 @@ var d = (labToolData.companionPlanting) || {};
                       React.createElement("div", { className: "flex items-center gap-1.5 mb-0.5" },
                         React.createElement("span", { className: "text-lg" }, food.icon),
                         React.createElement("span", { className: "text-[10px] font-bold text-slate-700 w-16" }, food.food),
-                        React.createElement("span", { className: "text-[7px] text-slate-400" }, food.season)
+                        React.createElement("span", { className: "text-[7px] text-slate-500" }, food.season)
                       ),
                       React.createElement("div", { className: "flex gap-0.5" },
                         // Homegrown bar
@@ -3432,7 +3432,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
                 gardenStreak > 0 ? React.createElement("span", { className: "px-3 py-0.5 rounded-full text-[9px] font-bold " + (gardenStreak >= 5 ? 'bg-amber-500 text-white animate-pulse' : gardenStreak >= 3 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + gardenStreak + ' streak!') : null,
-                React.createElement("span", { className: "text-[9px] text-slate-400" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
+                React.createElement("span", { className: "text-[9px] text-slate-500" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
               ),
               (function() {
                 var sc = GARDEN_SCENARIOS[gardenScenarioIdx];
@@ -3637,7 +3637,7 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("span", { className: "text-lg" }, season.icon),
                       React.createElement("span", { className: "text-[10px] font-black text-emerald-800" }, season.season),
-                      React.createElement("span", { className: "text-[8px] text-slate-400 font-mono ml-auto" }, season.months)
+                      React.createElement("span", { className: "text-[8px] text-slate-500 font-mono ml-auto" }, season.months)
                     ),
                     isActive && React.createElement("div", { className: "mt-1.5 pl-7 space-y-1" },
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
@@ -3674,7 +3674,7 @@ var d = (labToolData.companionPlanting) || {};
                     })
                   )
                 ),
-                React.createElement("div", { className: "flex justify-between text-[7px] text-slate-400 mb-2 px-1" },
+                React.createElement("div", { className: "flex justify-between text-[7px] text-slate-500 mb-2 px-1" },
                   React.createElement("span", null, "\u2190 Acidic"),
                   React.createElement("span", null, "Neutral"),
                   React.createElement("span", null, "Alkaline \u2192")
@@ -3769,7 +3769,7 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement("div", { className: "flex items-center gap-1.5" },
                       React.createElement("span", { className: "text-lg" }, fam.icon),
                       React.createElement("span", { className: "text-[10px] font-black", style: { color: fam.color } }, fam.name),
-                      React.createElement("span", { className: "text-[8px] text-slate-400 ml-auto" }, fam.members)
+                      React.createElement("span", { className: "text-[8px] text-slate-500 ml-auto" }, fam.members)
                     ),
                     isActive && React.createElement("div", { className: "mt-1.5 space-y-1 pl-7" },
                       React.createElement("div", { className: "text-[9px] text-blue-600" }, "\uD83D\uDD04 Rotation: " + fam.rotation),
@@ -3801,7 +3801,7 @@ var d = (labToolData.companionPlanting) || {};
                   },
                     React.createElement("div", { className: "text-xl mb-0.5" }, soil.icon),
                     React.createElement("div", { className: "text-[10px] font-black", style: { color: soil.color } }, soil.name),
-                    React.createElement("div", { className: "text-[8px] text-slate-400" }, soil.texture),
+                    React.createElement("div", { className: "text-[8px] text-slate-500" }, soil.texture),
                     isActive && React.createElement("div", { className: "text-left mt-1.5 space-y-0.5" },
                       React.createElement("div", { className: "text-[8px] text-blue-600" }, "\uD83D\uDCA7 Drainage: " + soil.drainage),
                       React.createElement("div", { className: "text-[8px] text-emerald-600" }, "\uD83C\uDF31 Nutrients: " + soil.nutrients),
@@ -3846,7 +3846,7 @@ var d = (labToolData.companionPlanting) || {};
                         React.createElement("div", { className: "flex items-center gap-1.5" },
                           React.createElement("span", { className: "text-lg" }, pest.icon),
                           React.createElement("span", { className: "text-[10px] font-bold text-red-800" }, pest.name),
-                          React.createElement("span", { className: "text-[8px] text-slate-400 ml-auto" }, pest.damage.substring(0, 30) + '...')
+                          React.createElement("span", { className: "text-[8px] text-slate-500 ml-auto" }, pest.damage.substring(0, 30) + '...')
                         ),
                         isActive && React.createElement("div", { className: "mt-1.5 space-y-0.5 pl-7" },
                           React.createElement("div", { className: "text-[9px] text-red-600" }, "\uD83D\uDCA5 Damage: " + pest.damage),

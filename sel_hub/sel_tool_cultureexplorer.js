@@ -491,6 +491,8 @@ window.SelHub = window.SelHub || {
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
@@ -875,7 +877,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // Tabs (expanded)
-        h('div', { className: 'flex flex-wrap gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200' },
+        h('div', { role: 'tablist', 'aria-label': 'Culture Explorer tabs', className: 'flex flex-wrap gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200' },
           [
             { id: 'choose', label: '\uD83D\uDDFA\uFE0F Cultures' },
             { id: 'worldmap', label: '\uD83C\uDF0E World Map' },
@@ -890,8 +892,8 @@ window.SelHub = window.SelHub || {
             { id: 'journal', label: '\uD83D\uDCD3 Journal' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' }
           ].map(function(t) {
-            return h('button', { key: t.id, onClick: function() { upd('tab', t.id); },
-              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-[10px] font-bold transition-all ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
+            return h('button', { key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
+              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-[10px] font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
             }, t.label);
           })
         ),
@@ -991,7 +993,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-sm shrink-0' }, '\uD83D\uDC4B'),
                     h('div', null,
-                      h('span', { className: 'text-[10px] font-bold text-slate-400 uppercase' }, 'Greeting'),
+                      h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Greeting'),
                       h('p', { className: 'text-sm font-bold text-slate-800' }, hl.greeting),
                       callTTS && h('button', { onClick: function() { callTTS(hl.greeting.split('(')[0].trim()); }, className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear it')
                     )
@@ -999,21 +1001,21 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-sm shrink-0' }, '\uD83C\uDF72'),
                     h('div', null,
-                      h('span', { className: 'text-[10px] font-bold text-slate-400 uppercase' }, 'Traditional Food'),
+                      h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Traditional Food'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.food)
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-sm shrink-0' }, '\uD83C\uDFB6'),
                     h('div', null,
-                      h('span', { className: 'text-[10px] font-bold text-slate-400 uppercase' }, 'Music & Dance'),
+                      h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Music & Dance'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.music)
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-sm shrink-0' }, '\uD83C\uDF89'),
                     h('div', null,
-                      h('span', { className: 'text-[10px] font-bold text-slate-400 uppercase' }, 'Festival'),
+                      h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Festival'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.festival)
                     )
                   ),
@@ -1363,15 +1365,15 @@ window.SelHub = window.SelHub || {
                 ),
                 h('div', { className: 'space-y-1' },
                   h('div', { className: 'flex items-center gap-2' },
-                    h('span', { className: 'text-[10px] font-bold text-slate-400 w-14' }, 'Hello:'),
+                    h('span', { className: 'text-[10px] font-bold text-slate-500 w-14' }, 'Hello:'),
                     h('span', { className: 'text-sm font-bold text-cyan-700' }, lang.hello)
                   ),
                   h('div', { className: 'flex items-center gap-2' },
-                    h('span', { className: 'text-[10px] font-bold text-slate-400 w-14' }, 'Thanks:'),
+                    h('span', { className: 'text-[10px] font-bold text-slate-500 w-14' }, 'Thanks:'),
                     h('span', { className: 'text-sm text-slate-700' }, lang.thanks)
                   ),
                   h('div', { className: 'flex items-center gap-2' },
-                    h('span', { className: 'text-[10px] font-bold text-slate-400 w-14' }, 'Friend:'),
+                    h('span', { className: 'text-[10px] font-bold text-slate-500 w-14' }, 'Friend:'),
                     h('span', { className: 'text-sm text-slate-700' }, lang.friend)
                   )
                 ),
@@ -1848,7 +1850,7 @@ window.SelHub = window.SelHub || {
             h('p', { className: 'text-sm text-slate-600 italic leading-relaxed' },
               '"The beauty of the world lies in the diversity of its people." \u2014 Unknown'
             ),
-            h('p', { className: 'text-[10px] text-slate-400 mt-1' },
+            h('p', { className: 'text-[10px] text-slate-500 mt-1' },
               'Every culture on this list represents millions of unique individuals. Learning about cultures is a beginning, not an end.'
             )
           )

@@ -259,6 +259,7 @@ const StoryForge = React.memo(({
   onSaveSubmission,     // Callback to save completed story as resource: (submissionObj) => void
   lessonResources,      // Array of available lesson resources for "Import from Lesson"
   codename,             // Student codename (e.g., "Bright Tiger") — used instead of real name
+  onAnalyzeFluency,     // Optional: (audioBase64, mimeType, referenceText) => Promise<result> — ORF analysis
 }) => {
   // ── Safe translate ──
   const t = tFunc || ((k) => k);
@@ -363,12 +364,90 @@ const StoryForge = React.memo(({
   const [characters, setCharacters] = useState([]);
   const [audioSegments, setAudioSegments] = useState({});
   const [playbackIdx, setPlaybackIdx] = useState(-1);
+  const [sentenceIdx, setSentenceIdx] = useState(0);
   const audioRef = useRef(null);
   const recorder = useAudioRecorder();
   const [recordingParagraphId, setRecordingParagraphId] = useState(null);
 
+  // ── Sentence splitter for karaoke narration ──
+  const splitSentences = (text) => {
+    if (!text) return [''];
+    // Split on sentence-ending punctuation followed by space or end of string
+    // Handles: "Dr. Smith said hello." correctly by not splitting on "Dr."
+    const raw = text.match(/[^.!?]*[.!?]+[\s]?|[^.!?]+$/g);
+    if (!raw) return [text.trim()];
+    return raw.map(s => s.trim()).filter(s => s.length > 0);
+  };
+
   // ── Narration voice ──
   const [narratorVoice, setNarratorVoice] = useState(selectedVoice || 'Puck');
+
+  // ── ORF Fluency Reading ──
+  const [fluencyReadingId, setFluencyReadingId] = useState(null);
+  const [fluencyResult, setFluencyResult] = useState(null);
+  const [fluencyRecording, setFluencyRecording] = useState(false);
+  const fluencyRecorderRef = useRef(null);
+  const fluencyChunksRef = useRef([]);
+
+  const startFluencyReading = async (paragraphId) => {
+    if (!onAnalyzeFluency) { if (addToast) addToast('Fluency analysis not available in this mode', 'info'); return; }
+    setFluencyReadingId(paragraphId);
+    setFluencyResult(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      fluencyRecorderRef.current = new MediaRecorder(stream);
+      fluencyChunksRef.current = [];
+      fluencyRecorderRef.current.ondataavailable = (e) => { if (e.data.size > 0) fluencyChunksRef.current.push(e.data); };
+      fluencyRecorderRef.current.start();
+      setFluencyRecording(true);
+    } catch (err) {
+      console.warn('Microphone access denied:', err);
+      setFluencyReadingId(null);
+    }
+  };
+
+  const stopFluencyReading = async (paragraphId, text) => {
+    if (!fluencyRecorderRef.current) return;
+    setFluencyRecording(false);
+    return new Promise((resolve) => {
+      fluencyRecorderRef.current.onstop = async () => {
+        const blob = new Blob(fluencyChunksRef.current, { type: 'audio/webm' });
+        fluencyRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+          const base64 = reader.result.split(',')[1];
+          if (addToast) addToast('Analyzing your reading...', 'info');
+          try {
+            const result = await onAnalyzeFluency(base64, 'audio/webm', text);
+            if (result) {
+              setFluencyResult({ paragraphId, ...result });
+              awardXP(8, 'Fluency practice');
+              if (result.confidence?.overall >= 7 && addToast) addToast('Great reading! Check your results below.', 'success');
+            }
+          } catch (err) {
+            console.warn('Fluency analysis failed:', err);
+            if (addToast) addToast('Analysis failed — try again with clearer audio', 'error');
+          }
+          setFluencyReadingId(null);
+          resolve();
+        };
+      };
+      fluencyRecorderRef.current.stop();
+    });
+  };
+
+  // ── Unsaved changes guard ──
+  const [isDirty, setIsDirty] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+
+  const safeClose = () => {
+    if (isDirty && paragraphs.some(p => p.text.trim().length > 0)) {
+      setShowCloseConfirm(true);
+    } else {
+      onClose();
+    }
+  };
 
   // ── Advanced config collapse ──
   const [showAdvancedConfig, setShowAdvancedConfig] = useState(false);
@@ -569,14 +648,17 @@ const StoryForge = React.memo(({
   // ── Keyboard shortcuts ──
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'Escape' && isOpen) { onClose(); e.preventDefault(); }
+      if (e.key === 'Escape' && isOpen) { safeClose(); e.preventDefault(); }
       if ((e.ctrlKey || e.metaKey) && e.key === 's' && isOpen) {
         e.preventDefault();
         try {
           const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language };
           localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
+          setIsDirty(false);
           if (addToast) addToast('Draft saved!', 'success');
-        } catch(err) { /* localStorage full */ }
+        } catch(err) {
+          if (addToast) addToast('Could not save draft \u2014 browser storage may be full. Export your story as JSON to avoid losing work!', 'error');
+        }
       }
     };
     window.addEventListener('keydown', handler);
@@ -785,11 +867,19 @@ const StoryForge = React.memo(({
 
   const updateParagraph = (idx, text) => {
     setParagraphs(prev => prev.map((p, i) => i === idx ? { ...p, text } : p));
+    if (!isDirty) setIsDirty(true);
   };
 
   const addParagraph = () => {
     if (paragraphs.length >= maxParagraphs) return;
-    setParagraphs(prev => [...prev, { id: `p-${Date.now()}`, text: '', scaffoldFrame: '' }]);
+    const newId = `p-${Date.now()}`;
+    setParagraphs(prev => [...prev, { id: newId, text: '', scaffoldFrame: '' }]);
+    if (!isDirty) setIsDirty(true);
+    // Auto-scroll to new paragraph after render
+    setTimeout(() => {
+      const el = document.getElementById('sf-para-' + newId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   };
 
   const removeParagraph = (idx) => {
@@ -1125,21 +1215,33 @@ Return ONLY JSON:
     setAudioSegments(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], aiLoading: true } }));
     try {
       const nVoice = narratorVoice || selectedVoice || 'Puck';
-      // ── Dialogue-aware narration: split dialogue from narration for different voices ──
-      if (characters.length > 0) {
-        // Split into dialogue segments: "said Character" patterns
-        const dialoguePattern = /"([^"]+)"\s*(?:,?\s*(?:said|asked|replied|exclaimed|whispered|shouted|called|cried|muttered|yelled|screamed|laughed|answered|explained|added|continued|began|stated|responded|declared)\s+(\w+))/gi;
-        const hasDialogue = dialoguePattern.test(text);
-        if (hasDialogue) {
-          // For dialogue-heavy text, narrate the full paragraph with narrator voice
-          // (Character voices would require sequential audio stitching — complex. Single voice is reliable.)
-          const audioUrl = await onCallTTS(text, nVoice, 0.85);
-          setAudioSegments(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], aiAudioUrl: audioUrl, aiLoading: false, hasDialogue: true } }));
-          return;
+      const sentences = splitSentences(text);
+      const sentenceAudios = [];
+
+      // Generate TTS for each sentence individually
+      for (let i = 0; i < sentences.length; i++) {
+        const sentence = sentences[i];
+        if (sentence.trim().length === 0) { sentenceAudios.push(null); continue; }
+        try {
+          const audioUrl = await onCallTTS(sentence, nVoice, 0.9);
+          sentenceAudios.push(audioUrl);
+        } catch (e) {
+          console.warn('Sentence TTS failed for:', sentence, e);
+          sentenceAudios.push(null);
         }
       }
-      const audioUrl = await onCallTTS(text, nVoice, 0.9);
-      setAudioSegments(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], aiAudioUrl: audioUrl, aiLoading: false } }));
+
+      // Store sentence-level audio + first sentence as the legacy aiAudioUrl for backward compat
+      setAudioSegments(prev => ({
+        ...prev,
+        [paragraphId]: {
+          ...prev[paragraphId],
+          aiAudioUrl: sentenceAudios[0] || null,
+          sentenceAudios: sentenceAudios,
+          sentences: sentences,
+          aiLoading: false
+        }
+      }));
     } catch (err) {
       console.warn('Narration failed:', err);
       setAudioSegments(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], aiLoading: false } }));
@@ -1179,25 +1281,59 @@ Return ONLY JSON:
     setRecordingParagraphId(null);
   };
 
-  // ── Playback ──
+  // ── Playback (sentence-level with paragraph chaining) ──
   useEffect(() => {
-    if (playbackIdx >= 0 && playbackIdx < paragraphs.length) {
-      const pid = paragraphs[playbackIdx].id;
-      const seg = audioSegments[pid];
-      const src = seg?.studentAudioUrl || seg?.aiAudioUrl;
+    if (playbackIdx < 0 || playbackIdx >= paragraphs.length) return;
+    const pid = paragraphs[playbackIdx].id;
+    const seg = audioSegments[pid];
+
+    // Sentence-level audio available?
+    if (seg?.sentenceAudios && seg.sentenceAudios.length > 0) {
+      const safeIdx = Math.min(sentenceIdx, seg.sentenceAudios.length - 1);
+      const src = seg.sentenceAudios[safeIdx];
       if (src && audioRef.current) {
         audioRef.current.src = src;
         audioRef.current.play().catch(() => {});
-      } else {
-        if (playbackIdx < paragraphs.length - 1) setPlaybackIdx(playbackIdx + 1);
-        else setPlaybackIdx(-1);
+        return;
       }
+      // This sentence has no audio — skip to next
+      if (safeIdx < seg.sentenceAudios.length - 1) {
+        setSentenceIdx(safeIdx + 1);
+      } else {
+        // End of paragraph — advance
+        if (playbackIdx < paragraphs.length - 1) { setPlaybackIdx(playbackIdx + 1); setSentenceIdx(0); }
+        else { setPlaybackIdx(-1); setSentenceIdx(0); }
+      }
+      return;
     }
-  }, [playbackIdx, paragraphs, audioSegments]);
+
+    // Fallback: student recording or single paragraph audio
+    const src = seg?.studentAudioUrl || seg?.aiAudioUrl;
+    if (src && audioRef.current) {
+      audioRef.current.src = src;
+      audioRef.current.play().catch(() => {});
+    } else {
+      // No audio for this paragraph — skip
+      if (playbackIdx < paragraphs.length - 1) { setPlaybackIdx(playbackIdx + 1); setSentenceIdx(0); }
+      else { setPlaybackIdx(-1); setSentenceIdx(0); }
+    }
+  }, [playbackIdx, sentenceIdx, paragraphs, audioSegments]);
 
   const handleAudioEnded = () => {
-    if (playbackIdx < paragraphs.length - 1) setPlaybackIdx(playbackIdx + 1);
-    else setPlaybackIdx(-1);
+    if (playbackIdx < 0 || playbackIdx >= paragraphs.length) { setPlaybackIdx(-1); setSentenceIdx(0); return; }
+    const pid = paragraphs[playbackIdx].id;
+    const seg = audioSegments[pid];
+
+    // If sentence-level audio: advance to next sentence within paragraph
+    if (seg?.sentenceAudios && seg.sentenceAudios.length > 0) {
+      if (sentenceIdx < seg.sentenceAudios.length - 1) {
+        setSentenceIdx(sentenceIdx + 1);
+        return;
+      }
+    }
+    // End of paragraph — advance to next paragraph
+    if (playbackIdx < paragraphs.length - 1) { setPlaybackIdx(playbackIdx + 1); setSentenceIdx(0); }
+    else { setPlaybackIdx(-1); setSentenceIdx(0); }
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -1657,6 +1793,12 @@ show();
     <div className={`fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label="StoryForge Creative Writing Studio">
       {/* Hidden audio element for playback */}
       <audio ref={audioRef} onEnded={handleAudioEnded} className="hidden" />
+      {/* Screen reader playback announcements */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {playbackIdx >= 0 && paragraphs[playbackIdx] ? (
+          `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ': ' + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ''}`
+        ) : ''}
+      </div>
 
       {/* ── Restore Draft Prompt ── */}
       {showRestorePrompt && (
@@ -1668,6 +1810,22 @@ show();
             <div className="flex gap-3 justify-center">
               <button onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Start Fresh</button>
               <button onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">Restore Draft</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Unsaved changes confirmation ── */}
+      {showCloseConfirm && (
+        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
+            <div className="text-3xl mb-3">{'\u270F\uFE0F'}</div>
+            <h3 className="text-lg font-black text-slate-800 mb-2">You Have Unsaved Changes</h3>
+            <p className="text-sm text-slate-500 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Keep Writing</button>
+              <button onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">Save Draft & Close</button>
+              <button onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">Close Anyway</button>
             </div>
           </div>
         </div>
@@ -1710,7 +1868,7 @@ show();
           >
             <span className="text-sm">{(() => { try { return document.querySelector('.theme-contrast') ? '\uD83D\uDC41' : document.querySelector('.theme-dark') ? '\uD83C\uDF19' : '\u2600\uFE0F'; } catch(e) { return '\u2600\uFE0F'; } })()}</span>
           </button>
-          <button onClick={onClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label="Close StoryForge">
+          <button onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label="Close StoryForge">
             <X size={24} />
           </button>
         </div>
@@ -1912,6 +2070,7 @@ show();
                   <input
                     type="text" value={customArtStyle} onChange={(e) => setCustomArtStyle(e.target.value)}
                     placeholder="Describe your custom art style..."
+                    aria-label="Custom art style description"
                     className="mt-3 w-full text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
                   />
                 )}
@@ -1939,6 +2098,7 @@ show();
                   <input
                     type="text" value={customLanguage} onChange={(e) => setCustomLanguage(e.target.value)}
                     placeholder="Type your language (e.g., Swahili, Haitian Creole, Hmong...)"
+                    aria-label="Custom writing language"
                     className="mt-3 w-full text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-300 outline-none"
                   />
                 )}
@@ -1953,6 +2113,7 @@ show();
                 <textarea
                   value={storyPrompt} onChange={(e) => setStoryPrompt(e.target.value)}
                   placeholder="Give your students a theme or starting scenario... e.g., 'Write about a scientist who discovers something unexpected'"
+                  aria-label="Story prompt"
                   className="w-full text-sm p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-none h-20"
                 />
 
@@ -2105,7 +2266,7 @@ show();
               {/* Paragraph Cards */}
               {paragraphs.map((p, idx) => (
                 <React.Fragment key={p.id}>
-                <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden hover:border-rose-200 transition-colors">
+                <div id={'sf-para-' + p.id} className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden hover:border-rose-200 transition-colors">
                   <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-slate-500">Paragraph {idx + 1}</span>
@@ -2366,6 +2527,18 @@ show();
                             </div>
                           )}
                         </div>
+                      ) : illustrations[p.id]?.error ? (
+                        <div className="w-48 h-28 bg-red-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-red-200 gap-1">
+                          <span className="text-red-400 text-lg">{'\u26A0\uFE0F'}</span>
+                          <span className="text-[10px] font-bold text-red-500">Generation failed</span>
+                          <button
+                            onClick={() => { setIllustrations(prev => ({ ...prev, [p.id]: {} })); illustrateParagraph(p.id, p.text, idx); }}
+                            disabled={isProcessing}
+                            className="text-[10px] font-bold text-red-600 hover:text-red-800 underline disabled:opacity-40"
+                          >
+                            Try Again
+                          </button>
+                        </div>
                       ) : (
                         <div className="flex flex-col gap-1">
                           <button
@@ -2422,7 +2595,7 @@ show();
                     <Volume2 size={14} /> {isProcessing ? 'Narrating...' : 'Narrate All'}
                   </button>
                   <button
-                    onClick={() => playbackIdx === -1 ? setPlaybackIdx(0) : setPlaybackIdx(-1)}
+                    onClick={() => { if (playbackIdx === -1) { setSentenceIdx(0); setPlaybackIdx(0); } else { setPlaybackIdx(-1); setSentenceIdx(0); } }}
                     className="px-4 py-2 bg-green-600 text-white rounded-full text-xs font-bold hover:bg-green-700 transition-colors flex items-center gap-2"
                   >
                     <Play size={14} /> {playbackIdx >= 0 ? 'Stop' : 'Play All'}
@@ -2448,19 +2621,33 @@ show();
               {paragraphs.map((p, idx) => {
                 const seg = audioSegments[p.id];
                 const isCurrentPlayback = playbackIdx === idx;
+                const hasSentenceAudio = seg?.sentenceAudios && seg.sentenceAudios.length > 0;
+                const displaySentences = hasSentenceAudio ? seg.sentences : splitSentences(p.text);
                 return (
                   <div key={p.id} className={`bg-white rounded-2xl border-2 shadow-sm p-5 transition-colors ${isCurrentPlayback ? 'border-green-400 bg-green-50/30' : 'border-indigo-100'}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-indigo-600">Paragraph {idx + 1} {isCurrentPlayback && '▶ Playing'}</span>
+                      <span className="text-xs font-bold text-indigo-600">Paragraph {idx + 1} {isCurrentPlayback && '\u25B6 Playing'}</span>
                       <div className="flex gap-2">
                         {/* AI Narrate button */}
-                        {seg?.aiAudioUrl ? (
-                          <span className="text-xs text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> AI Narrated</span>
+                        {hasSentenceAudio ? (
+                          <span className="text-xs text-green-600 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> AI Narrated ({seg.sentenceAudios.filter(Boolean).length} sentences)</span>
                         ) : seg?.aiLoading ? (
                           <span className="text-xs text-indigo-400 flex items-center gap-1"><RefreshCw size={12} className="animate-spin" /> Generating...</span>
                         ) : (
                           <button onClick={() => narrateParagraph(p.id, p.text)} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
                             <Volume2 size={12} /> Narrate
+                          </button>
+                        )}
+                        {/* Play this paragraph */}
+                        {hasSentenceAudio && (
+                          <button
+                            onClick={() => {
+                              if (isCurrentPlayback) { setPlaybackIdx(-1); setSentenceIdx(0); }
+                              else { setPlaybackIdx(idx); setSentenceIdx(0); }
+                            }}
+                            className="text-xs font-bold text-green-600 hover:text-green-800 flex items-center gap-1"
+                          >
+                            <Play size={12} /> {isCurrentPlayback ? 'Stop' : 'Play'}
                           </button>
                         )}
                         {/* Record button */}
@@ -2472,12 +2659,101 @@ show();
                         >
                           <Mic size={12} /> {recordingParagraphId === p.id ? 'Stop' : seg?.studentAudioUrl ? 'Re-record' : 'Record'}
                         </button>
+                        {/* ORF Fluency Reading button */}
+                        {onAnalyzeFluency && (
+                          <button
+                            onClick={() => fluencyReadingId === p.id ? stopFluencyReading(p.id, p.text) : startFluencyReading(p.id)}
+                            className={`text-xs font-bold flex items-center gap-1 transition-colors ${
+                              fluencyReadingId === p.id && fluencyRecording ? 'text-orange-600 animate-pulse' : 'text-teal-500 hover:text-teal-700'
+                            }`}
+                            aria-label={fluencyReadingId === p.id ? 'Stop fluency reading' : 'Read aloud for fluency practice'}
+                          >
+                            <BookOpen size={12} /> {fluencyReadingId === p.id && fluencyRecording ? 'Stop Reading' : '📖 Read Aloud'}
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <p className={`text-sm leading-relaxed transition-colors ${isCurrentPlayback ? 'text-green-800 font-medium' : 'text-slate-700'}`}>{p.text}</p>
+                    {/* Karaoke-style sentence rendering */}
+                    <p className="text-sm leading-relaxed">
+                      {displaySentences.map((sentence, sIdx) => {
+                        const isActiveSentence = isCurrentPlayback && sentenceIdx === sIdx;
+                        return (
+                          <span
+                            key={sIdx}
+                            className={`transition-all duration-300 ${
+                              isActiveSentence
+                                ? 'bg-yellow-200 text-green-900 font-semibold rounded px-0.5 py-0.5 shadow-sm'
+                                : isCurrentPlayback && sIdx < sentenceIdx
+                                  ? 'text-green-700/60'
+                                  : 'text-slate-700'
+                            }`}
+                            style={isActiveSentence ? { boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone' } : undefined}
+                          >
+                            {sentence}{' '}
+                          </span>
+                        );
+                      })}
+                    </p>
                     {seg?.studentAudioUrl && (
                       <div className="mt-2">
                         <audio controls src={seg.studentAudioUrl} className="w-full h-8" />
+                      </div>
+                    )}
+                    {/* ORF Fluency Results */}
+                    {fluencyResult && fluencyResult.paragraphId === p.id && (
+                      <div className="mt-3 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="text-center">
+                            <div className={`text-2xl font-black ${fluencyResult.accuracy >= 90 ? 'text-green-600' : fluencyResult.accuracy >= 70 ? 'text-amber-600' : 'text-red-600'}`}>{fluencyResult.accuracy || 0}%</div>
+                            <div className="text-[9px] text-slate-500 font-bold">Accuracy</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-black text-indigo-600">{fluencyResult.wcpm || 0}</div>
+                            <div className="text-[9px] text-slate-500 font-bold">WCPM</div>
+                          </div>
+                          {fluencyResult.confidence && (
+                            <div className="text-center">
+                              <div className={`text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? 'text-green-600' : fluencyResult.confidence.overall >= 4 ? 'text-amber-600' : 'text-red-600'}`}>{fluencyResult.confidence.overall}/10</div>
+                              <div className="text-[9px] text-slate-500 font-bold">Confidence</div>
+                            </div>
+                          )}
+                          {fluencyResult.prosody && (
+                            <div className="flex gap-2 ml-auto">
+                              {[{k:'pacing',l:'Pace'},{k:'expression',l:'Expr'},{k:'phrasing',l:'Phrase'}].map(({k,l}) => (
+                                <div key={k} className="text-center">
+                                  <div className="text-sm font-bold text-slate-700">{fluencyResult.prosody[k]}/5</div>
+                                  <div className="text-[8px] text-slate-400">{l}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {/* Word-by-word display */}
+                        {fluencyResult.wordData && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {fluencyResult.wordData.map((w, wi) => (
+                              <span key={wi} title={w.said ? `Said: "${w.said}"${w.lowConfidence ? ' (⚠ uncertain)' : ''}` : (w.lowConfidence ? '⚠ AI uncertain' : '')}
+                                className={`px-1 py-0.5 rounded text-xs font-medium ${w.lowConfidence ? 'ring-1 ring-amber-400 ' : ''}${
+                                  w.status === 'correct' ? 'text-green-700 bg-green-100' :
+                                  w.status === 'missed' ? 'text-white bg-red-500' :
+                                  w.status === 'stumbled' ? 'text-amber-800 bg-amber-100' :
+                                  w.status === 'self_corrected' ? 'text-blue-700 bg-blue-100' :
+                                  w.status === 'mispronounced' ? 'text-red-700 bg-red-100' : 'text-slate-600'
+                                }`}>{w.word}</span>
+                            ))}
+                          </div>
+                        )}
+                        {/* Confidence note */}
+                        {fluencyResult.confidence?.note && (
+                          <div className="mt-2 text-[10px] text-slate-500 italic">{fluencyResult.confidence.note}</div>
+                        )}
+                        {fluencyResult.confidence?.accentDetected && (
+                          <div className="mt-1 text-[10px] text-teal-600 font-medium">🌍 Accent patterns detected — scores adjusted conservatively to respect linguistic diversity.</div>
+                        )}
+                        {fluencyResult.feedback && (
+                          <div className="mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200">{fluencyResult.feedback}</div>
+                        )}
+                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[10px] text-slate-400 hover:text-slate-600 font-bold">Dismiss</button>
                       </div>
                     )}
                   </div>
@@ -2902,7 +3178,7 @@ show();
             Next <ArrowRight size={16} />
           </button>
         ) : (
-          <button onClick={onClose} className="px-5 py-2.5 rounded-full text-sm font-bold bg-slate-600 text-white hover:bg-slate-700 transition-colors flex items-center gap-2">
+          <button onClick={safeClose} className="px-5 py-2.5 rounded-full text-sm font-bold bg-slate-600 text-white hover:bg-slate-700 transition-colors flex items-center gap-2">
             Done <CheckCircle2 size={16} />
           </button>
         )}

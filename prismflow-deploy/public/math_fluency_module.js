@@ -429,7 +429,7 @@
               autoFocus: true, 'aria-label': 'Your answer',
               style: {
                 width: '140px', textAlign: 'center', fontSize: '2rem', fontWeight: 800,
-                borderBottom: '4px solid #f59e0b', background: 'transparent', outline: 'none',
+                borderBottom: '4px solid #f59e0b', background: 'transparent',
                 padding: '8px 0', margin: '0 auto', display: 'block', borderTop: 'none', borderLeft: 'none', borderRight: 'none'
               }
             }),
@@ -452,13 +452,13 @@
               }, 'Skip \u2192')
             )
           ),
-          h('div', { style: { marginTop: '12px', fontSize: '11px', color: '#94a3b8' } },
+          h('div', { style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
             'Tab = Skip \u2022 Esc = End Early' + (autoAdvance ? ' \u2022 Auto-advance ON' : ''))
         ),
         // End early button
         h('button', {
           onClick: function () { if (timerRef.current) clearInterval(timerRef.current); finishProbe(); },
-          style: { marginTop: '1.5rem', fontSize: '14px', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }
+          style: { marginTop: '1.5rem', fontSize: '14px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }
         }, 'End probe early')
       );
     }
@@ -482,7 +482,7 @@
             '\ud83d\udcca Fluency Probe Results'),
           h('button', {
             onClick: function () { setResults(null); },
-            style: { color: '#94a3b8', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }
+            style: { color: '#64748b', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }
           }, h(X, { size: 18 }))
         ),
 
@@ -516,7 +516,7 @@
             },
               h('div', { style: { fontSize: '1.8rem', fontWeight: 900, color: m.color } }, m.val),
               h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#64748b', marginTop: '4px' } }, m.label),
-              m.sub ? h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, m.sub) : null
+              m.sub ? h('div', { style: { fontSize: '10px', color: '#64748b' } }, m.sub) : null
             );
           })
         ),
@@ -618,7 +618,7 @@
           h('select', {
             value: operation, onChange: function (e) { setOperation(e.target.value); },
             'aria-label': 'Math operation',
-            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none' }
+            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
             h('option', { value: 'add' }, '\u2795 Addition'),
             h('option', { value: 'sub' }, '\u2796 Subtraction'),
@@ -633,7 +633,7 @@
           h('select', {
             value: difficulty, onChange: function (e) { setDifficulty(e.target.value); },
             'aria-label': 'Difficulty level',
-            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none' }
+            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
             h('option', { value: 'single' }, 'Single Digit (0\u201312)'),
             h('option', { value: 'double' }, 'Double Digit (10\u201399)'),
@@ -646,7 +646,7 @@
           h('select', {
             value: timeLimit, onChange: function (e) { setTimeLimit(parseInt(e.target.value)); },
             'aria-label': 'Time limit',
-            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none' }
+            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
             h('option', { value: 60 }, '60 seconds'),
             h('option', { value: 120 }, '120 seconds'),
@@ -659,7 +659,7 @@
           h('select', {
             value: problemCount, onChange: function (e) { setProblemCount(parseInt(e.target.value)); },
             'aria-label': 'Number of problems',
-            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none' }
+            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
             h('option', { value: 20 }, '20 (Quick Check)'),
             h('option', { value: 40 }, '40 (Short)'),

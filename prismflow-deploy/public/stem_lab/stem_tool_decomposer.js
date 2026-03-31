@@ -1137,12 +1137,13 @@
           ),
 
           /* ── Tab bar ── */
-          h('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1' },
+          h('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
             TABS.map(function(t) {
               var active = tab === t.id;
               return h('button', {
                 key: t.id,
                 onClick: function() { upd('tab', t.id); },
+                role: 'tab', 'aria-selected': active,
                 className: 'flex-1 py-2 rounded-lg text-xs font-bold transition-all '
                   + (active
                     ? 'bg-white text-slate-800 shadow-sm'
@@ -1264,7 +1265,7 @@
                     ),
                     h('div', null,
                       h('p', { className: 'font-bold text-sm text-slate-800' }, el.name),
-                      h('p', { className: 'text-[10px] text-slate-400' }, el.group + ' \u00B7 ' + el.mass + ' u')
+                      h('p', { className: 'text-[10px] text-slate-500' }, el.group + ' \u00B7 ' + el.mass + ' u')
                     ),
                     h('span', { className: 'ml-auto px-2 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold' },
                       '\u00D7' + el.count + ' in ' + sel.formula
@@ -1277,7 +1278,7 @@
                       style: { width: Math.round(el.count / totalAtoms * 100) + '%', background: el.color }
                     })
                   ),
-                  h('p', { className: 'text-[10px] text-slate-400 mt-1' },
+                  h('p', { className: 'text-[10px] text-slate-500 mt-1' },
                     Math.round(el.count / totalAtoms * 100) + '% of atoms in this molecule'
                   )
                 );
@@ -1351,15 +1352,15 @@
                       ),
                       h('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-center text-[9px]' },
                         h('div', { className: 'bg-slate-50 rounded p-1' },
-                          h('div', { className: 'font-bold text-slate-400' }, 'Atoms'),
+                          h('div', { className: 'font-bold text-slate-500' }, 'Atoms'),
                           h('div', { className: 'font-black text-slate-700' }, tc)
                         ),
                         h('div', { className: 'bg-slate-50 rounded p-1' },
-                          h('div', { className: 'font-bold text-slate-400' }, 'Bond'),
+                          h('div', { className: 'font-bold text-slate-500' }, 'Bond'),
                           h('div', { className: 'font-black text-slate-700' }, mat.bondType)
                         ),
                         h('div', { className: 'bg-slate-50 rounded p-1' },
-                          h('div', { className: 'font-bold text-slate-400' }, 'State'),
+                          h('div', { className: 'font-bold text-slate-500' }, 'State'),
                           h('div', { className: 'font-black text-slate-700' }, mat.state)
                         )
                       )
@@ -1452,7 +1453,7 @@
                         style: { width: percent + '%', background: el.color }
                       })
                     ),
-                    h('span', { className: 'text-slate-400 font-bold w-12 text-right' }, percent + '%')
+                    h('span', { className: 'text-slate-500 font-bold w-12 text-right' }, percent + '%')
                   );
                 })
               ),
@@ -2059,7 +2060,7 @@
 
                 // Found objects summary
                 sceneFoundCount > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
-                  h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\u2705 Identified in ' + scene.name),
+                  h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\u2705 Identified in ' + scene.name),
                   h('div', { className: 'flex flex-wrap gap-1.5' },
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
                       var mat = MATERIALS.find(function(m) { return m.name === obj.material; });
@@ -2167,7 +2168,7 @@
                   ),
                   // Equation
                   h('div', { className: 'bg-white rounded-lg p-3 mb-3 text-center border border-amber-200' },
-                    h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1' }, 'Chemical Equation'),
+                    h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1' }, 'Chemical Equation'),
                     h('p', { className: 'text-sm font-mono font-bold text-slate-800' }, activeReaction.equation)
                   ),
                   // Description
@@ -2194,7 +2195,7 @@
 
             // Discovered reactions log
             Object.keys(reactionsDiscovered).length > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA Discovered Reactions (' + Object.keys(reactionsDiscovered).length + '/' + REACTIONS.length + ')'),
+              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA Discovered Reactions (' + Object.keys(reactionsDiscovered).length + '/' + REACTIONS.length + ')'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 REACTIONS.map(function(r) {
                   var disc = !!reactionsDiscovered[r.name];
@@ -2412,7 +2413,7 @@
 
             // Explanation text
             h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1' }, '\uD83D\uDCDA How it works'),
+              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1' }, '\uD83D\uDCDA How it works'),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' },
                 'All matter is made of particles (atoms or molecules) that are always moving. In a solid, particles vibrate in a fixed arrangement held by strong bonds. As temperature increases, particles gain energy. At the melting point, they break free and flow as a liquid. At the boiling point, they escape into the air as gas.'
               ),
@@ -2489,19 +2490,19 @@
             h('div', { className: 'grid grid-cols-4 gap-2 mb-3' },
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, totalAtoms),
-                h('div', { className: 'text-[9px] font-bold text-slate-400' }, 'Total Atoms')
+                h('div', { className: 'text-[9px] font-bold text-slate-500' }, 'Total Atoms')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.elements.length),
-                h('div', { className: 'text-[9px] font-bold text-slate-400' }, 'Elements')
+                h('div', { className: 'text-[9px] font-bold text-slate-500' }, 'Elements')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.bondType.split(' ')[0]),
-                h('div', { className: 'text-[9px] font-bold text-slate-400' }, 'Bond Type')
+                h('div', { className: 'text-[9px] font-bold text-slate-500' }, 'Bond Type')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.state),
-                h('div', { className: 'text-[9px] font-bold text-slate-400' }, 'State')
+                h('div', { className: 'text-[9px] font-bold text-slate-500' }, 'State')
               )
             )
           ),
@@ -2707,7 +2708,7 @@
           h('div', { className: 'border-t border-slate-200 pt-3 mt-4 mb-3' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-sm font-bold text-slate-700' }, '\uD83C\uDFC5 Badges'),
-              h('span', { className: 'text-xs text-slate-400' },
+              h('span', { className: 'text-xs text-slate-500' },
                 badges.length + ' / ' + BADGES.length + ' earned'
               )
             ),

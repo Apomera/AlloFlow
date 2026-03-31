@@ -581,6 +581,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var Heart = ctx.icons.Heart;
       var addToast = ctx.addToast;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
@@ -739,12 +741,13 @@ window.SelHub = window.SelHub || {
         ),
 
         // ── Tab Navigation ──
-        h('div', { className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
+        h('div', { role: 'tablist', 'aria-label': 'Civic Action tabs', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
           TABS.map(function(t) {
             return h('button', {
               key: t.id,
+              role: 'tab', 'aria-selected': tab === t.id,
               onClick: function() { upd('tab', t.id); },
-              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ' +
+              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 ' +
                 (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-600/60 hover:text-teal-700')
             }, t.label);
           })
@@ -881,7 +884,7 @@ window.SelHub = window.SelHub || {
                   className: 'w-full p-4 text-left'
                 },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, strategy.label),
-                  h('div', { className: 'text-[10px] text-slate-400 mt-0.5 uppercase font-bold' }, strategy.category)
+                  h('div', { className: 'text-[10px] text-slate-500 mt-0.5 uppercase font-bold' }, strategy.category)
                 ),
                 isExpanded && h('div', { className: 'px-4 pb-4 space-y-2' },
                   strategy.steps.map(function(step, si) {
@@ -1023,7 +1026,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
             h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: ((plannerStep + 1) / PLANNER_STEPS.length * 100) + '%' } })
           ),
-          h('div', { className: 'flex justify-between text-[10px] text-slate-400 font-bold' },
+          h('div', { className: 'flex justify-between text-[10px] text-slate-500 font-bold' },
             h('span', null, 'Step ' + (plannerStep + 1) + ' of ' + PLANNER_STEPS.length),
             h('span', null, PLANNER_STEPS[plannerStep].label)
           ),
@@ -1085,7 +1088,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'text-sm font-bold text-slate-700' }, tmpl.title),
                 h('div', { className: 'text-xs text-slate-600 italic' }, tmpl.greeting),
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed mt-2 bg-slate-50 rounded-lg p-3 border border-slate-100' }, tmpl.body),
-                h('p', { className: 'text-[10px] text-slate-400 mt-1' }, 'Tip: Copy this template and customize the parts in [brackets] with your own words.')
+                h('p', { className: 'text-[10px] text-slate-500 mt-1' }, 'Tip: Copy this template and customize the parts in [brackets] with your own words.')
               );
             })()
           ),
@@ -1230,7 +1233,7 @@ window.SelHub = window.SelHub || {
                       h('span', { className: 'text-xs font-bold text-slate-700' }, cat.label),
                       h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString() + ' (' + pct + '%)')
                     ),
-                    h('p', { className: 'text-[10px] text-slate-400' }, cat.desc),
+                    h('p', { className: 'text-[10px] text-slate-500' }, cat.desc),
                     h('input', {
                       type: 'range',
                       min: 0,
@@ -1412,7 +1415,7 @@ window.SelHub = window.SelHub || {
                     h('div', { className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white', style: { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, legSupport + '% Support')
                   ),
                   h('div', { className: 'absolute left-1/2 top-0 bottom-0 border-l-2 border-dashed border-slate-400', style: { left: '50%' } }),
-                  h('p', { className: 'text-xs text-slate-400 mt-1' }, 'Need 51% to pass'),
+                  h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Need 51% to pass'),
                   h('div', { className: 'text-4xl mt-4' }, passed ? '\ud83c\udf89' : '\ud83d\udcaa'),
                   h('h4', { className: 'text-lg font-black ' + (passed ? 'text-emerald-700' : 'text-amber-700') }, passed ? 'Your Bill Passed!' : 'Your Bill Did Not Pass'),
                   h('p', { className: 'text-sm text-slate-600' }, passed ? 'Congratulations! Your coalition-building and strong committee answers made the difference. This is how democracy works.' : 'Your bill fell short of 51%. Consider building a broader coalition and preparing stronger evidence next time. Many great bills take multiple attempts to pass.'),
@@ -1450,9 +1453,9 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
                 h('h4', { className: 'text-lg font-black text-slate-800' }, 'School Council Results!'),
                 h('div', { className: 'flex justify-center gap-6' },
-                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[10px] text-slate-400' }, 'Happiness')),
-                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[10px] text-slate-400' }, 'Learning')),
-                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[10px] text-slate-400' }, 'Health'))
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[10px] text-slate-500' }, 'Happiness')),
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[10px] text-slate-500' }, 'Learning')),
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[10px] text-slate-500' }, 'Health'))
                 ),
                 h('p', { className: 'text-sm text-slate-600' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
                 h('button', {
@@ -1533,7 +1536,7 @@ window.SelHub = window.SelHub || {
           // Template questions
           h('div', { className: 'bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
             h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest' }, '\ud83d\udccb Template Questions (' + gradeBand + ')'),
-            h('p', { className: 'text-[10px] text-slate-400' }, 'Click to add a template question to your survey.'),
+            h('p', { className: 'text-[10px] text-slate-500' }, 'Click to add a template question to your survey.'),
             h('div', { className: 'space-y-2' },
               surveyTemplates.map(function(tmpl, ti) {
                 var alreadyAdded = surveyQuestions.some(function(sq) { return sq.q === tmpl.q; });
@@ -1551,7 +1554,7 @@ window.SelHub = window.SelHub || {
                     h('span', null, tmpl.q),
                     alreadyAdded ? h('span', { className: 'text-[10px] font-bold text-emerald-600' }, '\u2705 Added') : h('span', { className: 'text-[10px] font-bold text-teal-500' }, '+ Add')
                   ),
-                  h('span', { className: 'text-[10px] text-slate-400 block mt-0.5' }, tmpl.type === 'choice' ? 'Multiple choice' : 'Open-ended')
+                  h('span', { className: 'text-[10px] text-slate-500 block mt-0.5' }, tmpl.type === 'choice' ? 'Multiple choice' : 'Open-ended')
                 );
               })
             )
@@ -1607,7 +1610,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: si, className: 'bg-white rounded-xl border border-teal-200 p-3 flex justify-between items-start' },
                 h('div', { className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold text-slate-800' }, (si + 1) + '. ' + sq.q),
-                  h('span', { className: 'text-[10px] text-slate-400' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
+                  h('span', { className: 'text-[10px] text-slate-500' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
                   sq.custom && h('span', { className: 'text-[10px] text-amber-500 ml-2 font-bold' }, '(custom)')
                 ),
                 h('button', {
@@ -1900,11 +1903,11 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'flex justify-center gap-6' },
                 h('div', null,
                   h('div', { className: 'text-2xl font-bold text-teal-700' }, serviceHours.toFixed(1)),
-                  h('div', { className: 'text-[10px] text-slate-400' }, 'Hours Logged')
+                  h('div', { className: 'text-[10px] text-slate-500' }, 'Hours Logged')
                 ),
                 h('div', null,
                   h('div', { className: 'text-2xl font-bold text-teal-700' }, Object.keys(serviceNotes).length),
-                  h('div', { className: 'text-[10px] text-slate-400' }, 'Phases Documented')
+                  h('div', { className: 'text-[10px] text-slate-500' }, 'Phases Documented')
                 )
               ),
               h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 text-left' },
@@ -2129,7 +2132,7 @@ window.SelHub = window.SelHub || {
                   h('div', null,
                     h('div', { className: 'flex items-center gap-2 flex-wrap' },
                       h('span', { className: 'font-bold text-sm text-slate-800' }, cm.name),
-                      h('span', { className: 'text-[10px] text-slate-400' }, cm.years),
+                      h('span', { className: 'text-[10px] text-slate-500' }, cm.years),
                       h('span', { className: 'bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-[10px] font-bold' }, cm.theme)
                     ),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mt-1' }, cm.bio),

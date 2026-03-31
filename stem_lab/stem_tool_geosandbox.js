@@ -452,6 +452,8 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var t = ctx.t;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
 
       return (function() {
 
@@ -813,6 +815,7 @@ window.StemLab = window.StemLab || {
                     step: sl.step,
                     value: dims[sl.key] || sl.min,
                     onChange: function(e) { updDim(sl.key, e.target.value); },
+                    'aria-label': sl.label + ' slider',
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
                   })
                 );
@@ -855,6 +858,7 @@ window.StemLab = window.StemLab || {
                   type: 'range', min: 0.1, max: 1, step: 0.05,
                   value: opacity,
                   onChange: function(e) { upd('opacity', parseFloat(e.target.value)); },
+                  'aria-label': 'Shape opacity',
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
                 })
               )
@@ -914,6 +918,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex-1 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden relative', style: { minHeight: '400px' } },
             h('canvas', {
               id: 'geo-sandbox-canvas',
+              'aria-label': 'Interactive geology sandbox 3D visualization', tabIndex: 0,
               className: 'w-full h-full',
               style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
             }),
@@ -972,6 +977,7 @@ window.StemLab = window.StemLab || {
               onChange: function(e) { upd('challengeAnswer', e.target.value); },
               onKeyDown: function(e) { if (e.key === 'Enter') checkChallengeAnswer(); },
               placeholder: challenge.type === 'identify' ? 'Type the shape name...' : 'Enter your answer...',
+              'aria-label': 'Challenge answer',
               className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
               step: 'any'
             }),

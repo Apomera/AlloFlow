@@ -120,6 +120,8 @@ window.StemLab = window.StemLab || {
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var callGemini = ctx.callGemini;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
 
       // ── State ──
       var d = labToolData.inequality || {};
@@ -712,6 +714,7 @@ window.StemLab = window.StemLab || {
                   if (newTC >= 10) checkBadges({ testMaster: true });
                 }
               },
+              'aria-label': 'Test a value against the inequality',
               className: 'px-3 py-1.5 border-2 border-sky-300 rounded-lg font-mono text-sm w-36 text-center focus:ring-2 focus:ring-sky-400 outline-none'
             }),
             testResult !== null && h('span', { className: 'text-sm font-bold ' + (testResult ? 'text-emerald-600' : 'text-red-600') },
@@ -836,6 +839,7 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'text', value: solverExpr, placeholder: '3x - 7 \u2265 5',
               onChange: function(e) { upd('solverExpr', e.target.value); },
+              'aria-label': 'Step-by-step solver inequality input',
               className: 'px-3 py-1.5 border-2 border-teal-300 rounded-lg font-mono text-sm w-48 text-center focus:ring-2 focus:ring-teal-400 outline-none'
             }),
             h('button', {

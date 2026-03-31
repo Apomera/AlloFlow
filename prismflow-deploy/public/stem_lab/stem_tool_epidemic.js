@@ -598,6 +598,7 @@ window.StemLab = window.StemLab || {
       var d = (ctx.toolData && ctx.toolData.epidemicSim) || {};
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
+      var a11yClick = ctx.a11yClick;
       var gradeBand = getGradeBand(ctx);
 
       // ── State helpers ──
@@ -1224,14 +1225,14 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Sub-tool tabs ──
-        h('div', { className: 'flex flex-wrap gap-1.5' },
+        h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Epidemic Simulator sections' },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
             return h('button', {
               key: st.id,
               onClick: function() { updMulti({ tab: st.id, hoverDay: null }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-indigo-50 border border-slate-200'),
-              'aria-pressed': active ? 'true' : 'false'
+              role: 'tab', 'aria-selected': active
             }, st.icon + ' ' + st.label);
           })
         ),
@@ -1519,7 +1520,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-[10px] font-bold ' + (active ? 'text-teal-700' : 'text-slate-600') }, npi.label)
                   ),
                   h('p', { className: 'text-[8px] text-slate-500 mt-0.5' }, '-' + (npi.betaReduction * 100) + '% transmission'),
-                  h('p', { className: 'text-[8px] text-slate-400' }, 'Cost: ' + npi.cost)
+                  h('p', { className: 'text-[8px] text-slate-500' }, 'Cost: ' + npi.cost)
                 );
               })
             )

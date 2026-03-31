@@ -246,79 +246,79 @@ const d = labToolData.molecule;
 
           const ELEMENT_DETAILS = {
 
-            H: { desc: t('stem.periodic.lightest_element_fuels_stars_via'), uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['Hâ‚‚O (Water)', 'HCl (Hydrochloric Acid)', 'NHâ‚ƒ (Ammonia)', 'CHâ‚„ (Methane)'] },
+            H: { desc: t('stem.periodic.lightest_element_fuels_stars_via'), uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['H₂O (Water)', 'HCl (Hydrochloric Acid)', 'NH₃ (Ammonia)', 'CH₄ (Methane)'] },
 
             He: { desc: t('stem.periodic.inert_noble_gas_2nd_most'), uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas â€” does not form compounds)'] },
 
-            Li: { desc: t('stem.periodic.lightest_metal_soft_enough_to'), uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Liâ‚‚COâ‚ƒ (Lithium Carbonate)'] },
+            Li: { desc: t('stem.periodic.lightest_metal_soft_enough_to'), uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Li₂CO₃ (Lithium Carbonate)'] },
 
             Be: { desc: t('stem.periodic.rare_toxic_metal_that_is'), uses: ['Aerospace alloys', 'X-ray windows', 'Satellite components'], compounds: ['BeO (Beryllium Oxide)'] },
 
-            B: { desc: t('stem.periodic.metalloid_essential_for_plant_growth'), uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['Bâ‚‚Oâ‚ƒ (Boron Trioxide)', 'Hâ‚ƒBOâ‚ƒ (Boric Acid)'] },
+            B: { desc: t('stem.periodic.metalloid_essential_for_plant_growth'), uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['B₂O₃ (Boron Trioxide)', 'H₃BO₃ (Boric Acid)'] },
 
-            C: { desc: t('stem.periodic.basis_of_all_known_life'), uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['COâ‚‚ (Carbon Dioxide)', 'CHâ‚„ (Methane)', 'Câ‚†Hâ‚â‚‚Oâ‚† (Glucose)', 'CaCOâ‚ƒ (Limestone)'] },
+            C: { desc: t('stem.periodic.basis_of_all_known_life'), uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['CO₂ (Carbon Dioxide)', 'CH₄ (Methane)', 'C₆H₁₂O₆ (Glucose)', 'CaCO₃ (Limestone)'] },
 
-            N: { desc: t('stem.periodic.makes_up_78_of_earth') + "'s atmosphere", uses: ['Fertilizers', 'Explosives(TNT)', 'Food preservation'], compounds: ['NHâ‚ƒ (Ammonia)', 'NOâ‚‚ (Nitrogen Dioxide)', 'Nâ‚‚O(Laughing Gas)', 'HNOâ‚ƒ (Nitric Acid)'] },
+            N: { desc: t('stem.periodic.makes_up_78_of_earth') + "'s atmosphere", uses: ['Fertilizers', 'Explosives(TNT)', 'Food preservation'], compounds: ['NH₃ (Ammonia)', 'NO₂ (Nitrogen Dioxide)', 'N₂O(Laughing Gas)', 'HNO₃ (Nitric Acid)'] },
 
-            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant') + "'s crust", uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['Hâ‚‚O(Water)', 'COâ‚‚ (Carbon Dioxide)', 'Feâ‚‚Oâ‚ƒ(Rust)', 'Oâ‚ƒ(Ozone)'] },
+            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant') + "'s crust", uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['H₂O(Water)', 'CO₂ (Carbon Dioxide)', 'Fe₂O₃(Rust)', 'O₃(Ozone)'] },
 
-            F: { desc: t('stem.periodic.most_reactive_and_electronegative_element'), uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CFâ‚„ (Carbon Tetrafluoride)'] },
+            F: { desc: t('stem.periodic.most_reactive_and_electronegative_element'), uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CF₄ (Carbon Tetrafluoride)'] },
 
             Ne: { desc: t('stem.periodic.produces_iconic_reddishorange_glow_in'), uses: ['Neon signs', 'High-voltage indicators', 'Laser technology'], compounds: ['None (noble gas)'] },
 
-            Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCOâ‚ƒ (Baking Soda)', 'Naâ‚‚COâ‚ƒ (Washing Soda)'] },
+            Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCO₃ (Baking Soda)', 'Na₂CO₃ (Washing Soda)'] },
 
-            Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSOâ‚„ (Epsom Salt)', 'Mg(OH)â‚‚ (Milk of Magnesia)'] },
+            Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSO₄ (Epsom Salt)', 'Mg(OH)₂ (Milk of Magnesia)'] },
 
-            Al: { desc: t('stem.periodic.most_abundant_metal_in_earth') + "'s crust", uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Alâ‚‚Oâ‚ƒ (Alumina)', 'AlClâ‚ƒ(Aluminum Chloride)'] },
+            Al: { desc: t('stem.periodic.most_abundant_metal_in_earth') + "'s crust", uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Al₂O₃ (Alumina)', 'AlCl₃(Aluminum Chloride)'] },
 
-            Si: { desc: t('stem.periodic.semiconductor_that_powers_the_digital'), uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiOâ‚‚ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
+            Si: { desc: t('stem.periodic.semiconductor_that_powers_the_digital'), uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiO₂ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
 
-            P: { desc: t('stem.periodic.essential_for_dna_and_bones'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['Hâ‚ƒPOâ‚„ (Phosphoric Acid)', 'Caâ‚ƒ(POâ‚„)â‚‚ (Bone mineral)'] },
+            P: { desc: t('stem.periodic.essential_for_dna_and_bones'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['H₃PO₄ (Phosphoric Acid)', 'Ca₃(PO₄)₂ (Bone mineral)'] },
 
-            S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['Hâ‚‚SOâ‚„ (Sulfuric Acid)', 'SOâ‚‚ (Sulfur Dioxide)', 'Hâ‚‚S (Hydrogen Sulfide)'] },
+            S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['H₂SO₄ (Sulfuric Acid)', 'SO₂ (Sulfur Dioxide)', 'H₂S (Hydrogen Sulfide)'] },
 
             Cl: { desc: t('stem.periodic.greenishyellow_gas_used_to_purify'), uses: ['Water treatment', 'PVC plastic', 'Bleach & disinfectants'], compounds: ['NaCl (Table Salt)', 'HCl (Hydrochloric Acid)', 'NaOCl (Bleach)'] },
 
             Ar: { desc: t('stem.periodic.third_most_abundant_gas_in'), uses: ['Welding shield gas', 'Light bulb filling', 'Window insulation'], compounds: ['None (noble gas)'] },
 
-            K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNOâ‚ƒ (Saltpeter)'] },
+            K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNO₃ (Saltpeter)'] },
 
-            Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCOâ‚ƒ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)â‚‚ (Slaked Lime)', 'CaSOâ‚„ (Gypsum)'] },
+            Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCO₃ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)₂ (Slaked Lime)', 'CaSO₄ (Gypsum)'] },
 
-            Fe: { desc: t('stem.periodic.most_used_metal_core_of'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Feâ‚‚Oâ‚ƒ (Rust)', 'FeSOâ‚„ (Iron Supplement)', 'Feâ‚ƒOâ‚„ (Magnetite)'] },
+            Fe: { desc: t('stem.periodic.most_used_metal_core_of'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Fe₂O₃ (Rust)', 'FeSO₄ (Iron Supplement)', 'Fe₃O₄ (Magnetite)'] },
 
-            Cu: { desc: t('stem.periodic.reddish_metal_used_since_the'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSOâ‚„ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cuâ‚‚O (Cuprous Oxide)'] },
+            Cu: { desc: t('stem.periodic.reddish_metal_used_since_the'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSO₄ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cu₂O (Cuprous Oxide)'] },
 
-            Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnClâ‚‚ (Zinc Chloride)'] },
+            Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnCl₂ (Zinc Chloride)'] },
 
-            Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNOâ‚ƒ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Agâ‚‚O (Silver Oxide)'] },
+            Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
 
-            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuClâ‚ƒ (Gold Chloride) â€” gold rarely forms compounds'] },
+            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) â€” gold rarely forms compounds'] },
 
-            Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiOâ‚‚ (Titanium Dioxide)', 'TiClâ‚„ (Titanium Tetrachloride)'] },
+            Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
 
-            Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Crâ‚‚Oâ‚ƒ (Chromium Oxide)', 'Kâ‚‚Crâ‚‚Oâ‚‡ (Potassium Dichromate)'] },
+            Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Cr₂O₃ (Chromium Oxide)', 'K₂Cr₂O₇ (Potassium Dichromate)'] },
 
-            Mn: { desc: t('stem.periodic.essential_for_steel_production_and'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnOâ‚‚ (Manganese Dioxide)', 'KMnOâ‚„ (Potassium Permanganate)'] },
+            Mn: { desc: t('stem.periodic.essential_for_steel_production_and'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnO₂ (Manganese Dioxide)', 'KMnO₄ (Potassium Permanganate)'] },
 
-            Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSOâ‚„ (Nickel Sulfate)'] },
+            Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSO₄ (Nickel Sulfate)'] },
 
             Br: { desc: t('stem.periodic.only_nonmetal_liquid_at_room'), uses: ['Flame retardants', 'Photography', 'Water purification'], compounds: ['NaBr (Sodium Bromide)', 'HBr (Hydrobromic Acid)'] },
 
             I: { desc: t('stem.periodic.essential_trace_element_for_thyroid'), uses: ['Antiseptic (tincture)', 'Iodized salt', 'Medical imaging'], compounds: ['KI (Potassium Iodide)', 'HI (Hydroiodic Acid)'] },
 
-            Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtClâ‚‚ (Platinum Chloride)', 'Hâ‚‚PtClâ‚† (Chloroplatinic Acid)'] },
+            Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtCl₂ (Platinum Chloride)', 'H₂PtCl₆ (Chloroplatinic Acid)'] },
 
-            U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UOâ‚‚ (Uranium Dioxide)', 'UFâ‚† (Uranium Hexafluoride)'] },
+            U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UO₂ (Uranium Dioxide)', 'UF₆ (Uranium Hexafluoride)'] },
 
-            Hg: { desc: t('stem.periodic.only_metal_liquid_at_room'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgClâ‚‚ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
+            Hg: { desc: t('stem.periodic.only_metal_liquid_at_room'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgCl₂ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
 
-            Pb: { desc: t('stem.periodic.dense_soft_metal_once_used'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSOâ‚„ (Lead Sulfate)'] },
+            Pb: { desc: t('stem.periodic.dense_soft_metal_once_used'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSO₄ (Lead Sulfate)'] },
 
-            Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnOâ‚‚ (Tin Oxide)', 'SnClâ‚‚ (Tin Chloride)'] },
+            Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnO₂ (Tin Oxide)', 'SnCl₂ (Tin Chloride)'] },
 
-            W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WOâ‚ƒ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
+            W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
 
           };
 
@@ -686,69 +686,69 @@ const d = labToolData.molecule;
 
           const viewerPresets = [
 
-            { name: 'Hâ‚‚O (Water)', atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'Hâ‚‚O' },
+            { name: 'H₂O (Water)', atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H₂O' },
 
-            { name: 'COâ‚‚ (Carbon Dioxide)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'COâ‚‚' },
+            { name: 'CO₂ (Carbon Dioxide)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO₂' },
 
-            { name: 'CHâ‚„ (Methane)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CHâ‚„' },
+            { name: 'CH₄ (Methane)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH₄' },
 
             { name: 'NaCl (Table Salt)', atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'NaCl' },
 
-            { name: 'NHâ‚ƒ (Ammonia)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NHâ‚ƒ' },
+            { name: 'NH₃ (Ammonia)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH₃' },
 
-            { name: 'Oâ‚‚ (Oxygen Gas)', atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'Oâ‚‚' },
+            { name: 'O₂ (Oxygen Gas)', atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'O₂' },
 
-            { name: 'Nâ‚‚ (Nitrogen Gas)', atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1]], formula: 'Nâ‚‚' },
+            { name: 'N₂ (Nitrogen Gas)', atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1]], formula: 'N₂' },
 
-            { name: 'Hâ‚‚Oâ‚‚ (Hydrogen Peroxide)', atoms: [{ el: 'O', x: 160, y: 130, color: '#ef4444' }, { el: 'O', x: 240, y: 130, color: '#ef4444' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 290, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [1, 3]], formula: 'Hâ‚‚Oâ‚‚' },
+            { name: 'H₂O₂ (Hydrogen Peroxide)', atoms: [{ el: 'O', x: 160, y: 130, color: '#ef4444' }, { el: 'O', x: 240, y: 130, color: '#ef4444' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 290, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [1, 3]], formula: 'H₂O₂' },
 
             { name: 'HCl (Hydrochloric Acid)', atoms: [{ el: 'H', x: 160, y: 150, color: '#60a5fa' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'HCl' },
 
-            { name: 'Hâ‚‚SOâ‚„ (Sulfuric Acid)', atoms: [{ el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 130, y: 100, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]], formula: 'Hâ‚‚SOâ‚„' },
+            { name: 'H₂SO₄ (Sulfuric Acid)', atoms: [{ el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 130, y: 100, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]], formula: 'H₂SO₄' },
 
-            { name: 'Câ‚‚Hâ‚…OH (Ethanol)', atoms: [{ el: 'C', x: 150, y: 140, color: '#1e293b' }, { el: 'C', x: 230, y: 140, color: '#1e293b' }, { el: 'O', x: 300, y: 140, color: '#ef4444' }, { el: 'H', x: 320, y: 200, color: '#60a5fa' }, { el: 'H', x: 110, y: 90, color: '#60a5fa' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 90, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6]], formula: 'Câ‚‚Hâ‚…OH' },
+            { name: 'C₂H₅OH (Ethanol)', atoms: [{ el: 'C', x: 150, y: 140, color: '#1e293b' }, { el: 'C', x: 230, y: 140, color: '#1e293b' }, { el: 'O', x: 300, y: 140, color: '#ef4444' }, { el: 'H', x: 320, y: 200, color: '#60a5fa' }, { el: 'H', x: 110, y: 90, color: '#60a5fa' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 90, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6]], formula: 'C₂H₅OH' },
 
-            { name: 'CaCOâ‚ƒ (Calcium Carbonate)', atoms: [{ el: 'Ca', x: 100, y: 150, color: '#fbbf24' }, { el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 200, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }], bonds: [[0,4],[1,2],[1,3],[1,4]], formula: 'CaCOâ‚ƒ' },
+            { name: 'CaCO₃ (Calcium Carbonate)', atoms: [{ el: 'Ca', x: 100, y: 150, color: '#fbbf24' }, { el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 200, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }], bonds: [[0,4],[1,2],[1,3],[1,4]], formula: 'CaCO₃' },
 
-            { name: 'Câ‚†Hâ‚â‚‚Oâ‚† (Glucose)', atoms: [{ el: 'C', x: 120, y: 110, color: '#1e293b' }, { el: 'C', x: 180, y: 110, color: '#1e293b' }, { el: 'C', x: 240, y: 110, color: '#1e293b' }, { el: 'O', x: 120, y: 180, color: '#ef4444' }, { el: 'O', x: 180, y: 180, color: '#ef4444' }, { el: 'O', x: 240, y: 180, color: '#ef4444' }, { el: 'H', x: 300, y: 110, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[1,4],[2,5],[2,6]], formula: 'Câ‚†Hâ‚â‚‚Oâ‚†' },
+            { name: 'C₆H₁₂O₆ (Glucose)', atoms: [{ el: 'C', x: 120, y: 110, color: '#1e293b' }, { el: 'C', x: 180, y: 110, color: '#1e293b' }, { el: 'C', x: 240, y: 110, color: '#1e293b' }, { el: 'O', x: 120, y: 180, color: '#ef4444' }, { el: 'O', x: 180, y: 180, color: '#ef4444' }, { el: 'O', x: 240, y: 180, color: '#ef4444' }, { el: 'H', x: 300, y: 110, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[1,4],[2,5],[2,6]], formula: 'C₆H₁₂O₆' },
 
             { name: 'NaOH (Sodium Hydroxide)', atoms: [{ el: 'Na', x: 130, y: 150, color: '#a855f7' }, { el: 'O', x: 210, y: 150, color: '#ef4444' }, { el: 'H', x: 280, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2]], formula: 'NaOH' },
 
-            { name: 'Feâ‚‚Oâ‚ƒ (Iron Oxide)', atoms: [{ el: 'Fe', x: 140, y: 120, color: '#fb923c' }, { el: 'Fe', x: 260, y: 120, color: '#fb923c' }, { el: 'O', x: 120, y: 200, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'O', x: 280, y: 200, color: '#ef4444' }], bonds: [[0,2],[0,3],[1,3],[1,4]], formula: 'Feâ‚‚Oâ‚ƒ' },
+            { name: 'Fe₂O₃ (Iron Oxide)', atoms: [{ el: 'Fe', x: 140, y: 120, color: '#fb923c' }, { el: 'Fe', x: 260, y: 120, color: '#fb923c' }, { el: 'O', x: 120, y: 200, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'O', x: 280, y: 200, color: '#ef4444' }], bonds: [[0,2],[0,3],[1,3],[1,4]], formula: 'Fe₂O₃' },
 
-            { name: 'Oâ‚ƒ (Ozone)', atoms: [{ el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 200, y: 110, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'Oâ‚ƒ' },
+            { name: 'O₃ (Ozone)', atoms: [{ el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 200, y: 110, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'O₃' },
 
             { name: 'CO (Carbon Monoxide)', atoms: [{ el: 'C', x: 160, y: 150, color: '#1e293b' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'CO' },
 
-            { name: 'NOâ‚‚ (Nitrogen Dioxide)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'O', x: 140, y: 180, color: '#ef4444' }, { el: 'O', x: 260, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'NOâ‚‚' },
+            { name: 'NO₂ (Nitrogen Dioxide)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'O', x: 140, y: 180, color: '#ef4444' }, { el: 'O', x: 260, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'NO₂' },
 
-            { name: 'SOâ‚‚ (Sulfur Dioxide)', atoms: [{ el: 'S', x: 200, y: 120, color: '#facc15' }, { el: 'O', x: 130, y: 180, color: '#ef4444' }, { el: 'O', x: 270, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SOâ‚‚' },
+            { name: 'SO₂ (Sulfur Dioxide)', atoms: [{ el: 'S', x: 200, y: 120, color: '#facc15' }, { el: 'O', x: 130, y: 180, color: '#ef4444' }, { el: 'O', x: 270, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SO₂' },
 
-            { name: 'Nâ‚‚O (Nitrous Oxide)', atoms: [{ el: 'N', x: 140, y: 150, color: '#3b82f6' }, { el: 'N', x: 200, y: 150, color: '#3b82f6' }, { el: 'O', x: 260, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'Nâ‚‚O' },
+            { name: 'N₂O (Nitrous Oxide)', atoms: [{ el: 'N', x: 140, y: 150, color: '#3b82f6' }, { el: 'N', x: 200, y: 150, color: '#3b82f6' }, { el: 'O', x: 260, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'N₂O' },
 
-            { name: 'CHâ‚ƒOH (Methanol)', atoms: [{ el: 'C', x: 160, y: 140, color: '#1e293b' }, { el: 'O', x: 240, y: 140, color: '#ef4444' }, { el: 'H', x: 300, y: 140, color: '#60a5fa' }, { el: 'H', x: 120, y: 90, color: '#60a5fa' }, { el: 'H', x: 120, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 80, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5]], formula: 'CHâ‚ƒOH' },
+            { name: 'CH₃OH (Methanol)', atoms: [{ el: 'C', x: 160, y: 140, color: '#1e293b' }, { el: 'O', x: 240, y: 140, color: '#ef4444' }, { el: 'H', x: 300, y: 140, color: '#60a5fa' }, { el: 'H', x: 120, y: 90, color: '#60a5fa' }, { el: 'H', x: 120, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 80, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5]], formula: 'CH₃OH' },
 
-            { name: 'HNOâ‚ƒ (Nitric Acid)', atoms: [{ el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'H', x: 260, y: 200, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[3,4]], formula: 'HNOâ‚ƒ' },
+            { name: 'HNO₃ (Nitric Acid)', atoms: [{ el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'H', x: 260, y: 200, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[3,4]], formula: 'HNO₃' },
 
-            { name: 'Hâ‚ƒPOâ‚„ (Phosphoric Acid)', atoms: [{ el: 'P', x: 200, y: 140, color: '#f97316' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 90, color: '#ef4444' }, { el: 'O', x: 270, y: 195, color: '#ef4444' }, { el: 'O', x: 130, y: 195, color: '#ef4444' }, { el: 'H', x: 310, y: 60, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[2,5],[3,6],[4,7]], formula: 'Hâ‚ƒPOâ‚„' },
+            { name: 'H₃PO₄ (Phosphoric Acid)', atoms: [{ el: 'P', x: 200, y: 140, color: '#f97316' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 90, color: '#ef4444' }, { el: 'O', x: 270, y: 195, color: '#ef4444' }, { el: 'O', x: 130, y: 195, color: '#ef4444' }, { el: 'H', x: 310, y: 60, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[2,5],[3,6],[4,7]], formula: 'H₃PO₄' },
 
-            { name: 'Câ‚ƒHâ‚ˆ (Propane)', atoms: [{ el: 'C', x: 130, y: 140, color: '#1e293b' }, { el: 'C', x: 200, y: 140, color: '#1e293b' }, { el: 'C', x: 270, y: 140, color: '#1e293b' }, { el: 'H', x: 100, y: 90, color: '#60a5fa' }, { el: 'H', x: 100, y: 190, color: '#60a5fa' }, { el: 'H', x: 130, y: 210, color: '#60a5fa' }, { el: 'H', x: 200, y: 90, color: '#60a5fa' }, { el: 'H', x: 200, y: 190, color: '#60a5fa' }, { el: 'H', x: 300, y: 90, color: '#60a5fa' }, { el: 'H', x: 300, y: 190, color: '#60a5fa' }, { el: 'H', x: 270, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9],[2,10]], formula: 'Câ‚ƒHâ‚ˆ' },
+            { name: 'C₃H₈ (Propane)', atoms: [{ el: 'C', x: 130, y: 140, color: '#1e293b' }, { el: 'C', x: 200, y: 140, color: '#1e293b' }, { el: 'C', x: 270, y: 140, color: '#1e293b' }, { el: 'H', x: 100, y: 90, color: '#60a5fa' }, { el: 'H', x: 100, y: 190, color: '#60a5fa' }, { el: 'H', x: 130, y: 210, color: '#60a5fa' }, { el: 'H', x: 200, y: 90, color: '#60a5fa' }, { el: 'H', x: 200, y: 190, color: '#60a5fa' }, { el: 'H', x: 300, y: 90, color: '#60a5fa' }, { el: 'H', x: 300, y: 190, color: '#60a5fa' }, { el: 'H', x: 270, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9],[2,10]], formula: 'C₃H₈' },
 
-            { name: 'Câ‚„Hâ‚â‚€ (Butane)', atoms: [{ el: 'C', x: 100, y: 140, color: '#1e293b' }, { el: 'C', x: 170, y: 140, color: '#1e293b' }, { el: 'C', x: 240, y: 140, color: '#1e293b' }, { el: 'C', x: 310, y: 140, color: '#1e293b' }, { el: 'H', x: 70, y: 100, color: '#60a5fa' }, { el: 'H', x: 70, y: 180, color: '#60a5fa' }, { el: 'H', x: 100, y: 210, color: '#60a5fa' }, { el: 'H', x: 170, y: 100, color: '#60a5fa' }, { el: 'H', x: 170, y: 195, color: '#60a5fa' }, { el: 'H', x: 240, y: 100, color: '#60a5fa' }, { el: 'H', x: 240, y: 195, color: '#60a5fa' }, { el: 'H', x: 340, y: 100, color: '#60a5fa' }, { el: 'H', x: 340, y: 180, color: '#60a5fa' }, { el: 'H', x: 310, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6],[1,7],[1,8],[2,9],[2,10],[3,11],[3,12],[3,13]], formula: 'Câ‚„Hâ‚â‚€' },
+            { name: 'C₄H₁₀ (Butane)', atoms: [{ el: 'C', x: 100, y: 140, color: '#1e293b' }, { el: 'C', x: 170, y: 140, color: '#1e293b' }, { el: 'C', x: 240, y: 140, color: '#1e293b' }, { el: 'C', x: 310, y: 140, color: '#1e293b' }, { el: 'H', x: 70, y: 100, color: '#60a5fa' }, { el: 'H', x: 70, y: 180, color: '#60a5fa' }, { el: 'H', x: 100, y: 210, color: '#60a5fa' }, { el: 'H', x: 170, y: 100, color: '#60a5fa' }, { el: 'H', x: 170, y: 195, color: '#60a5fa' }, { el: 'H', x: 240, y: 100, color: '#60a5fa' }, { el: 'H', x: 240, y: 195, color: '#60a5fa' }, { el: 'H', x: 340, y: 100, color: '#60a5fa' }, { el: 'H', x: 340, y: 180, color: '#60a5fa' }, { el: 'H', x: 310, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6],[1,7],[1,8],[2,9],[2,10],[3,11],[3,12],[3,13]], formula: 'C₄H₁₀' },
 
-            { name: 'SiOâ‚‚ (Silicon Dioxide)', atoms: [{ el: 'Si', x: 200, y: 150, color: '#34d399' }, { el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SiOâ‚‚' },
+            { name: 'SiO₂ (Silicon Dioxide)', atoms: [{ el: 'Si', x: 200, y: 150, color: '#34d399' }, { el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SiO₂' },
 
             { name: 'KCl (Potassium Chloride)', atoms: [{ el: 'K', x: 160, y: 150, color: '#f87171' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0,1]], formula: 'KCl' },
 
             { name: 'MgO (Magnesium Oxide)', atoms: [{ el: 'Mg', x: 160, y: 150, color: '#fbbf24' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'MgO' },
 
-            { name: 'NaHCOâ‚ƒ (Baking Soda)', atoms: [{ el: 'Na', x: 80, y: 150, color: '#a855f7' }, { el: 'O', x: 150, y: 150, color: '#ef4444' }, { el: 'C', x: 220, y: 150, color: '#1e293b' }, { el: 'O', x: 220, y: 80, color: '#ef4444' }, { el: 'O', x: 290, y: 150, color: '#ef4444' }, { el: 'H', x: 340, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[2,4],[4,5]], formula: 'NaHCOâ‚ƒ' },
+            { name: 'NaHCO₃ (Baking Soda)', atoms: [{ el: 'Na', x: 80, y: 150, color: '#a855f7' }, { el: 'O', x: 150, y: 150, color: '#ef4444' }, { el: 'C', x: 220, y: 150, color: '#1e293b' }, { el: 'O', x: 220, y: 80, color: '#ef4444' }, { el: 'O', x: 290, y: 150, color: '#ef4444' }, { el: 'H', x: 340, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[2,4],[4,5]], formula: 'NaHCO₃' },
 
-            { name: 'CHâ‚ƒCOOH (Acetic Acid)', atoms: [{ el: 'C', x: 140, y: 140, color: '#1e293b' }, { el: 'C', x: 220, y: 140, color: '#1e293b' }, { el: 'O', x: 220, y: 70, color: '#ef4444' }, { el: 'O', x: 290, y: 160, color: '#ef4444' }, { el: 'H', x: 340, y: 160, color: '#60a5fa' }, { el: 'H', x: 100, y: 95, color: '#60a5fa' }, { el: 'H', x: 100, y: 185, color: '#60a5fa' }, { el: 'H', x: 140, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[1,3],[3,4],[0,5],[0,6],[0,7]], formula: 'CHâ‚ƒCOOH' },
+            { name: 'CH₃COOH (Acetic Acid)', atoms: [{ el: 'C', x: 140, y: 140, color: '#1e293b' }, { el: 'C', x: 220, y: 140, color: '#1e293b' }, { el: 'O', x: 220, y: 70, color: '#ef4444' }, { el: 'O', x: 290, y: 160, color: '#ef4444' }, { el: 'H', x: 340, y: 160, color: '#60a5fa' }, { el: 'H', x: 100, y: 95, color: '#60a5fa' }, { el: 'H', x: 100, y: 185, color: '#60a5fa' }, { el: 'H', x: 140, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[1,3],[3,4],[0,5],[0,6],[0,7]], formula: 'CH₃COOH' },
 
-            { name: 'KNOâ‚ƒ (Potassium Nitrate)', atoms: [{ el: 'K', x: 100, y: 150, color: '#f87171' }, { el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 160, y: 190, color: '#ef4444' }, { el: 'O', x: 240, y: 190, color: '#ef4444' }, { el: 'O', x: 200, y: 70, color: '#ef4444' }], bonds: [[0,2],[1,2],[1,3],[1,4]], formula: 'KNOâ‚ƒ' },
+            { name: 'KNO₃ (Potassium Nitrate)', atoms: [{ el: 'K', x: 100, y: 150, color: '#f87171' }, { el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 160, y: 190, color: '#ef4444' }, { el: 'O', x: 240, y: 190, color: '#ef4444' }, { el: 'O', x: 200, y: 70, color: '#ef4444' }], bonds: [[0,2],[1,2],[1,3],[1,4]], formula: 'KNO₃' },
 
-            { name: 'CuSOâ‚„ (Copper Sulfate)', atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSOâ‚„' },
+            { name: 'CuSO₄ (Copper Sulfate)', atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSO₄' },
 
           ];
 

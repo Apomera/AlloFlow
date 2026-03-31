@@ -33,6 +33,7 @@ window.StemLab = window.StemLab || {
           var addToast = ctx.addToast;
           var awardXP = ctx.awardXP;
           var announceToSR = ctx.announceToSR;
+          var a11yClick = ctx.a11yClick;
           var t = ctx.t;
 
           // ── State via labToolData ──
@@ -470,13 +471,15 @@ window.StemLab = window.StemLab || {
                 h('input', {
                   type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max,
                   placeholder: 'Value',
+                  'aria-label': 'Marker value',
                   className: 'w-24 px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
                 }),
                 h('input', {
                   type: 'text', id: 'nlMarkerLabel', placeholder: 'Label (optional)',
+                  'aria-label': 'Marker label',
                   className: 'flex-1 px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
                 }),
-                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', className: 'w-8 h-8 rounded cursor-pointer' }),
+                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', 'aria-label': 'Marker color', className: 'w-8 h-8 rounded cursor-pointer' }),
                 h('button', {
                   onClick: function() {
                     var valEl = document.getElementById('nlMarkerVal');
@@ -542,6 +545,7 @@ window.StemLab = window.StemLab || {
                           onChange: function(e) { upd({ answer: e.target.value }); },
                           onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkAnswer(); },
                           placeholder: 'Your answer',
+                          'aria-label': 'Challenge answer',
                           className: 'flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm font-mono'
                         }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
                         h('button', {
@@ -723,11 +727,12 @@ window.StemLab = window.StemLab || {
             ),
 
             // Tab bar
-            h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200' },
+            h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': 'Number Line sections' },
               tabs.map(function(t2) {
                 return h('button', {
                   key: t2.id,
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
+                  role: 'tab', 'aria-selected': tab === t2.id,
                   className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
                     (tab === t2.id ? 'bg-white text-blue-800 shadow-sm' : 'text-blue-500 hover:text-blue-700')
                 }, t2.icon + ' ' + t2.label);

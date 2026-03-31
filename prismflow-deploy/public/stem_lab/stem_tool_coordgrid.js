@@ -27,6 +27,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var t = ctx.t;
 
       // ── State from ctx (hosted in parent) ──
@@ -520,7 +521,7 @@ window.StemLab = window.StemLab || {
           h('h3', { className: 'text-lg font-bold text-cyan-800' }, '\uD83D\uDCCD Coordinate Grid'),
           h('div', { className: 'ml-auto flex items-center gap-3' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-400' }, 'Best: ' + bestStreak),
+            bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
             h('span', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
             h('button', {
               onClick: function() {
@@ -564,7 +565,7 @@ window.StemLab = window.StemLab || {
 
         // Challenge Modes
         h('div', { className: 'space-y-2' },
-          h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider' }, '\uD83C\uDFAF Challenges'),
+          h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider' }, '\uD83C\uDFAF Challenges'),
           h('div', { className: 'flex gap-2 flex-wrap' },
             h('button', {
               onClick: function() {

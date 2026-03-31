@@ -1655,7 +1655,7 @@ const d = labToolData.physics;
 
             // ── XP & Stats Bar ──
             React.createElement("div", { className: "flex items-center gap-3 mb-2 px-1" },
-              React.createElement("span", { className: "text-[10px] font-bold text-slate-400" }, "\uD83D\uDE80 Launches: " + (d.launchCount || 0)),
+              React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDE80 Launches: " + (d.launchCount || 0)),
               React.createElement("span", { className: "text-[10px] font-bold text-amber-500" }, "\uD83C\uDFAF Targets: " + (d.targetsHit || 0)),
               d.quizStreak > 0 && React.createElement("span", { className: "text-[10px] font-bold text-orange-500" }, "\uD83D\uDD25 Streak: " + d.quizStreak)
             ),
@@ -1823,7 +1823,7 @@ const d = labToolData.physics;
                 ),
 
                 // Attempt counter
-                React.createElement("p", { className: "text-[10px] text-slate-400 text-right" }, "Attempts: " + (d.targetAttempts || 0))
+                React.createElement("p", { className: "text-[10px] text-slate-500 text-right" }, "Attempts: " + (d.targetAttempts || 0))
               )
             ),
 

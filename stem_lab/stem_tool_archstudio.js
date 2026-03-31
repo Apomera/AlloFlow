@@ -210,6 +210,8 @@
       else { ctx.update('archStudio', key, val); }
     };
     var callGemini = ctx.callGemini || window.callGemini;
+    var announceToSR = ctx.announceToSR;
+    var a11yClick = ctx.a11yClick;
 
     // ── State ──
     var blocks = d.blocks || [];
@@ -1732,14 +1734,14 @@
             shareCode && el('div', { style: { marginBottom: 4 } },
               el('textarea', { value: shareCode, readOnly: true, onClick: function (e) { e.target.select(); }, style: {
                 width: '100%', height: 50, padding: 6, background: '#0f172a', border: '1px solid #334155', borderRadius: 6,
-                color: '#94a3b8', fontSize: 8, fontFamily: 'monospace', resize: 'none', outline: 'none'
-              } })
+                color: '#94a3b8', fontSize: 8, fontFamily: 'monospace', resize: 'none'
+              }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
             ),
             el('div', { style: { fontSize: 9, color: '#64748b', marginBottom: 4 } }, 'Paste a code below to import:'),
             el('div', { style: { display: 'flex', gap: 3 } },
               el('input', { type: 'text', placeholder: 'Paste share code...', value: d.importCode || '',
                 onChange: function (e) { upd('importCode', e.target.value); },
-                style: { flex: 1, padding: '5px 8px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 9, outline: 'none' }
+                style: { flex: 1, padding: '5px 8px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 9 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
               }),
               el('button', { onClick: function () { importShareCode(d.importCode); }, style: {
                 padding: '5px 10px', borderRadius: 6, border: 'none',
@@ -1985,7 +1987,7 @@
                 'Loading 3D engine...'
               )
             )
-            : el('canvas', { id: 'arch-studio-canvas', style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
+            : el('canvas', { id: 'arch-studio-canvas', 'aria-label': 'Interactive architecture studio 3D visualization', tabIndex: 0, style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
 
           // Controls overlay (top-right)
           el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 9, color: '#64748b', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },

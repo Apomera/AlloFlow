@@ -294,7 +294,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           <select aria-label={t('common.selection')}
             value={gameMode}
             onChange={(e) => setGameMode(e.target.value)}
-            className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+            className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
             data-help-key="memory_mode_select"
           >
             <option value="smart">{t('memory.modes.smart')}</option>
@@ -691,6 +691,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         onKeyDown={(e) => handleTermKeyDown(e, item.id)}
                                         tabIndex={0}
                                         role="button"
+                                        aria-label={`${t('matching.select_term_aria')}: ${item.term}`}
                                         aria-pressed={keyboardSelectedTerm === item.id}
                                         className={`bg-indigo-50 border-2 border-indigo-100 p-3 rounded-lg w-full shadow-sm text-sm font-bold text-indigo-900 flex items-center justify-center text-center h-full print:border-slate-300 print:bg-white select-none cursor-pointer hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all ${keyboardSelectedTerm === item.id ? 'ring-4 ring-yellow-200 border-yellow-400 bg-yellow-50' : ''}`}
                                         data-help-key="matching_term_item"
@@ -746,6 +747,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         onKeyDown={(e) => handleDefKeyDown(e, def.id)}
                                         tabIndex={0}
                                         role="button"
+                                        aria-label={`${t('matching.connect_def_aria')}: ${def.text}`}
                                         className={`bg-white border border-slate-200 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 select-none cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? 'hover:border-indigo-300 hover:shadow-md' : ''}`}
                                         data-help-key="matching_def_item"
                                     >
@@ -1072,7 +1074,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                onTouchStart={(e) => handleTouchStart(e, idx)}
                                onTouchMove={handleTouchMove}
                                onTouchEnd={handleTouchEnd}
-                               className={`relative z-10 sm:flex sm:items-center sm:justify-between group transition-all duration-300 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 focus:ring-offset-4 ${isDragging ? 'opacity-20 scale-95' : 'opacity-100'} ${isLifted ? 'z-50 scale-105 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl' : ''}`}
+                               className={`relative z-10 sm:flex sm:items-center sm:justify-between group transition-all duration-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 focus:ring-offset-4 ${isDragging ? 'opacity-20 scale-95' : 'opacity-100'} ${isLifted ? 'z-50 scale-105 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl' : ''}`}
                                data-help-key="timeline_draggable_item"
                            >
                                <div className={`hidden sm:block sm:w-1/2 ${!isLeft ? 'order-1' : 'order-2'}`}></div>
@@ -1507,7 +1509,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                        onChange={(e) => setNewItemText(e.target.value)}
                                        onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
                                        placeholder={t('concept_sort.add_item_placeholder')}
-                                       className="w-full text-xs text-center p-1 bg-transparent border-b border-slate-300 focus:border-indigo-500 outline-none mb-2"
+                                       className="w-full text-xs text-center p-1 bg-transparent border-b border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2"
                                        aria-label={t('concept_sort.add_item_placeholder')}
                                    />
                                     <button aria-label={t('common.add')}
@@ -2207,7 +2209,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 <select aria-label={t('common.selection')}
                     value={crosswordLang}
                     onChange={(e) => setCrosswordLang(e.target.value)}
-                    className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+                    className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
                 >
                     <option value="English">{t('languages.english')}</option>
                     {availableLangs.map(lang => (
@@ -2636,7 +2638,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 max="50"
                                 value={settings.cardCount}
                                 onChange={(e) => setSettings({...settings, cardCount: Math.max(1, Math.min(50, parseInt(e.target.value) || 20))})}
-                                className="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-bold text-slate-700 focus:ring-2 focus:ring-rose-200 outline-none"
+                                className="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-bold text-slate-700 focus:ring-2 focus:ring-rose-200 focus:outline-none"
                                 data-help-key="bingo_card_count_input" aria-label={t('bingo.card_count')}
                             />
                         </div>
@@ -3235,6 +3237,8 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                                     onClick={() => toggleCell(r, c)}
                                     role="button"
                                     tabIndex={0}
+                                    aria-label={`${cell.text}${isMarked ? ' (marked)' : ''}`}
+                                    aria-pressed={isMarked}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
                                             e.preventDefault();
@@ -3432,7 +3436,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                                 value={guess}
                                 onChange={(e) => setGuess(e.target.value.toUpperCase())}
                                 onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
-                                className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${
+                                className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${
                                     feedback === 'correct' ? 'border-green-500 bg-green-50 text-green-800' :
                                     feedback === 'incorrect' ? 'border-red-400 bg-red-50 text-red-800' :
                                     'border-indigo-200 focus:border-indigo-400 text-indigo-900 bg-white'

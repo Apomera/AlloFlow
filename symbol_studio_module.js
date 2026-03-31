@@ -2005,8 +2005,8 @@
       leftCol: { width: '250px', flexShrink: 0, borderRight: '1px solid #e5e7eb', overflowY: 'auto', background: '#f9fafb', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' },
       rightCol: { flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' },
       lbl: { fontSize: '11px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '3px' },
-      input: { width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' },
-      textarea: { width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' },
+      input: { width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '13px', boxSizing: 'border-box', fontFamily: 'inherit' },
+      textarea: { width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '12px', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' },
       btn: function (bg, color, disabled) { return { padding: '8px 14px', background: disabled ? '#d1d5db' : (bg || PURPLE), color: disabled ? '#9ca3af' : (color || '#fff'), border: 'none', borderRadius: '7px', fontWeight: 600, fontSize: '12px', cursor: disabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }; },
       chip: function (bg, color) { return { padding: '3px 8px', background: bg, color: color, border: '1px solid ' + color, borderRadius: '20px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }; },
       card: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' },
@@ -2270,6 +2270,7 @@
               onChange: function (ev) { setQuestInput(ev.target.value); },
               onKeyDown: function (ev) { if (ev.key === 'Enter') checkSpelling(); },
               placeholder: 'Type the label...',
+              'aria-label': 'Spell the symbol label',
               disabled: !!questFeedback,
               style: Object.assign({}, S.input, { flex: 1, textAlign: 'center', fontSize: '16px', fontWeight: 700, textTransform: 'lowercase' })
             }),
@@ -2396,7 +2397,7 @@
             e('div', { style: { border: '3px solid ' + color, borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '8px', background: '#fff' } },
               e('div', { style: { textAlign: 'center', fontWeight: 700, fontSize: '16px', color: '#1f2937', minHeight: '22px' } }, label || '\u00a0'),
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', marginTop: '6px' } },
-                e('input', { type: 'text', value: label, onChange: function (ev) { setLabel(ev.target.value); }, placeholder: which === 'first' ? 'e.g. homework' : 'e.g. iPad time', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
+                e('input', { type: 'text', value: label, onChange: function (ev) { setLabel(ev.target.value); }, placeholder: which === 'first' ? 'e.g. homework' : 'e.g. iPad time', 'aria-label': which === 'first' ? 'First activity' : 'Reward activity', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
                 e('button', { onClick: function () { genFtCell(which); }, disabled: loading || !label.trim() || !onCallImagen, style: S.btn(PURPLE, '#fff', loading || !label.trim() || !onCallImagen) }, '✨'),
                 qbUploadBtn({ type: 'ft', which: which })
               )
@@ -2433,7 +2434,7 @@
                 e('div', { style: { width: 130, height: 130, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, cellImage(item.image, isLoading, 120)),
                 e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#1f2937', padding: '6px 4px 2px', textAlign: 'center', minHeight: '20px' } }, item.label || '\u00a0'),
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px', padding: '4px', width: '100%' } },
-                  e('input', { type: 'text', value: item.label, onChange: function (ev) { var v = ev.target.value; setCbItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, placeholder: 'Option ' + (idx + 1), style: Object.assign({}, S.input, { fontSize: '11px' }), onClick: function (ev) { ev.stopPropagation(); } }),
+                  e('input', { type: 'text', value: item.label, onChange: function (ev) { var v = ev.target.value; setCbItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, placeholder: 'Option ' + (idx + 1), 'aria-label': 'Choice board option ' + (idx + 1), style: Object.assign({}, S.input, { fontSize: '11px' }), onClick: function (ev) { ev.stopPropagation(); } }),
                   e('button', { onClick: function (ev) { ev.stopPropagation(); genChoiceItem(item.id); }, disabled: isLoading || !item.label.trim() || !onCallImagen, style: S.btn(PURPLE, '#fff', isLoading || !item.label.trim() || !onCallImagen) }, '✨'),
                   qbUploadBtn({ type: 'cb', id: item.id })
                 )
@@ -2452,11 +2453,11 @@
           e('div', { className: 'ss-no-print', style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'flex-end' } },
             e('div', null,
               e('label', { style: S.lbl }, 'Working for...'),
-              e('input', { type: 'text', value: tokenLabel, onChange: function (ev) { setTokenLabel(ev.target.value); }, placeholder: 'e.g. Stay in seat', style: Object.assign({}, S.input, { width: 140 }) })
+              e('input', { type: 'text', value: tokenLabel, onChange: function (ev) { setTokenLabel(ev.target.value); }, placeholder: 'e.g. Stay in seat', 'aria-label': 'Token board behavior label', style: Object.assign({}, S.input, { width: 140 }) })
             ),
             e('div', null,
               e('label', { style: S.lbl }, 'Tokens needed'),
-              e('select', { value: tokenTotal, onChange: function (ev) { setTokenTotal(Number(ev.target.value)); setTokenEarned(0); }, style: Object.assign({}, S.input, { width: 70 }) },
+              e('select', { value: tokenTotal, onChange: function (ev) { setTokenTotal(Number(ev.target.value)); setTokenEarned(0); }, 'aria-label': 'Number of tokens required', style: Object.assign({}, S.input, { width: 70 }) },
                 [2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return e('option', { key: n, value: n }, n); })
               )
             ),
@@ -2492,7 +2493,7 @@
               ),
               e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#16a34a', textAlign: 'center' } }, tokenRewardLabel || '\u00a0'),
               e('div', { className: 'ss-no-print', style: { display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' } },
-                e('input', { type: 'text', value: tokenRewardLabel, onChange: function (ev) { setTokenRewardLabel(ev.target.value); }, placeholder: 'e.g. iPad time', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
+                e('input', { type: 'text', value: tokenRewardLabel, onChange: function (ev) { setTokenRewardLabel(ev.target.value); }, placeholder: 'e.g. iPad time', 'aria-label': 'Token board reward', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
                 e('div', { style: { display: 'flex', gap: '4px' } },
                   e('button', { onClick: genTokenReward, disabled: tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen, style: S.btn(PURPLE, '#fff', tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen) }, '✨'),
                   qbUploadBtn({ type: 'token' })
@@ -2539,7 +2540,7 @@
                   type: 'text', value: item.label,
                   onClick: function (ev) { ev.stopPropagation(); },
                   onChange: function (ev) { var v = ev.target.value; setCmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); },
-                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#064e3b', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text', lineHeight: 1.4 }
+                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#064e3b', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Calming item label'
                 }),
                 // Action buttons
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
@@ -2589,7 +2590,7 @@
                   type: 'text', value: item.label,
                   onClick: function (ev) { ev.stopPropagation(); },
                   onChange: function (ev) { var v = ev.target.value; setSnItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); },
-                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#78350f', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text', lineHeight: 1.4 }
+                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#78350f', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Sensory item label'
                 }),
                 // Action buttons
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
@@ -2626,7 +2627,7 @@
                 e('div', { style: { width: 90, height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px', background: '#fff', border: '1px solid ' + BLUE_BORDER, overflow: 'hidden', flexShrink: 0 } },
                   isLoading ? spinner(28) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '6px' } }) : e('div', { style: { fontSize: '34px' } }, '\uD83D\uDE4B')
                 ),
-                e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setAmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#1e3a8a', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text', lineHeight: 1.4 } }),
+                e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setAmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': 'Activity label', style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#1e3a8a', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 } }),
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
                   e('button', { title: 'Generate image', onClick: function (ev) { ev.stopPropagation(); genAmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
                   e('button', { title: 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'am', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
@@ -2685,7 +2686,7 @@
                     e('div', { style: { width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', background: '#fff', border: '1px solid ' + ROSE_BORDER, overflow: 'hidden' } },
                       isLoading ? spinner(24) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '5px' } }) : e('div', { style: { fontSize: '30px' } }, '\uD83E\uDDB4')
                     ),
-                    e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setBcItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '11px', color: '#9f1239', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text' } }),
+                    e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setBcItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': 'Behavior chart item label', style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '11px', color: '#9f1239', textAlign: 'center', width: '100%', cursor: 'text' } }),
                     e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
                       e('button', { onClick: function (ev) { ev.stopPropagation(); genBcItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
                       e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'bc', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
@@ -2731,13 +2732,13 @@
                 return e('div', {
                   key: item.id,
                   onClick: function () { setTwStep(idx); speakCell(item.label); },
-                  style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 8px 8px', border: '2px solid ' + (isCurrent ? INDIGO : INDIGO_BORDER), borderRadius: '12px', background: isCurrent ? INDIGO_LIGHT : '#fff', cursor: 'pointer', outline: isCurrent ? '2px solid ' + INDIGO : 'none', transition: 'all 0.1s' }
+                  style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 8px 8px', border: '2px solid ' + (isCurrent ? INDIGO : INDIGO_BORDER), borderRadius: '12px', background: isCurrent ? INDIGO_LIGHT : '#fff', cursor: 'pointer', outline: isCurrent ? '2px solid ' + INDIGO : '2px solid transparent', transition: 'all 0.1s' }
                 },
                   e('div', { style: { fontSize: '9px', fontWeight: 700, color: isCurrent ? INDIGO : '#9ca3af', marginBottom: '2px' } }, 'STEP ' + (idx + 1)),
                   e('div', { style: { width: 70, height: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', background: '#f9fafb', border: '1px solid #e5e7eb', overflow: 'hidden' } },
                     isLoading ? spinner(20) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '4px' } }) : e('div', { style: { fontSize: '24px' } }, '\u23F0')
                   ),
-                  e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setTwItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 600, fontSize: '10px', color: isCurrent ? '#312e81' : '#374151', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text', lineHeight: 1.4 } }),
+                  e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setTwItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 600, fontSize: '10px', color: isCurrent ? '#312e81' : '#374151', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Task walk step label' }),
                   e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
                     e('button', { onClick: function (ev) { ev.stopPropagation(); genTwItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
                     e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
@@ -2813,13 +2814,13 @@
               var val = ev.target.value; setAvatarName(val);
               var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { name: val }) : p; });
               setProfiles(upd); store(STORAGE_PROFILES, upd);
-            }, placeholder: 'e.g. Marcus', style: Object.assign({}, S.input, { marginBottom: '6px' }) }),
+            }, placeholder: 'e.g. Marcus', 'aria-label': 'Avatar name', style: Object.assign({}, S.input, { marginBottom: '6px' }) }),
             e('label', { style: S.lbl }, 'Appearance'),
             e('input', { type: 'text', value: avatarDesc, onChange: function (ev) {
               var val = ev.target.value; setAvatarDesc(val);
               var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { description: val }) : p; });
               setProfiles(upd); store(STORAGE_PROFILES, upd);
-            }, placeholder: 'e.g. 8-year-old boy with curly hair', style: Object.assign({}, S.input, { marginBottom: '8px' }) }),
+            }, placeholder: 'e.g. 8-year-old boy with curly hair', 'aria-label': 'Avatar appearance description', style: Object.assign({}, S.input, { marginBottom: '8px' }) }),
             e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } },
               e('button', { onClick: generateAvatar, disabled: avatarGenerating || !avatarDesc.trim(), style: S.btn(PURPLE, '#fff', avatarGenerating || !avatarDesc.trim()) }, avatarGenerating ? '⏳' : '✨ Generate'),
               e('button', { onClick: function () { fileInputRef.current && fileInputRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷 Upload'),
@@ -2833,17 +2834,18 @@
         e('div', { style: S.card },
           sectionLabel('Global Settings'),
           e('label', { style: S.lbl }, 'Art Style'),
-          e('select', { value: globalStyleSel, onChange: function (ev) { setGlobalStyle(ev.target.value); }, style: Object.assign({}, S.input, { marginBottom: globalStyleSel === '__custom__' ? '4px' : '8px' }) },
+          e('select', { value: globalStyleSel, onChange: function (ev) { setGlobalStyle(ev.target.value); }, 'aria-label': 'Art style', style: Object.assign({}, S.input, { marginBottom: globalStyleSel === '__custom__' ? '4px' : '8px' }) },
             STYLE_OPTIONS.map(function (o) { return e('option', { key: o.value, value: o.value }, o.label); })
           ),
           globalStyleSel === '__custom__' && e('input', {
             type: 'text', value: customStyle,
             onChange: function (ev) { setCustomStyle(ev.target.value); },
             placeholder: 'e.g. pastel crayon, realistic pencil sketch, pixel art...',
+            'aria-label': 'Custom art style description',
             style: Object.assign({}, S.input, { marginBottom: '8px', fontSize: '11px' })
           }),
           e('label', { style: { display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: '#374151' } },
-            e('input', { type: 'checkbox', checked: autoClean, onChange: function (ev) { setAutoClean(ev.target.checked); } }),
+            e('input', { type: 'checkbox', checked: autoClean, onChange: function (ev) { setAutoClean(ev.target.checked); }, 'aria-label': 'Auto-clean text from images' }),
             e('span', null, 'Auto-clean text from images')
           ),
           e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels'),
@@ -2870,6 +2872,7 @@
             ? e('select', {
                 value: globalVoice,
                 onChange: function (ev) { setGlobalVoice(ev.target.value); store(STORAGE_VOICE, ev.target.value); },
+                'aria-label': 'Text-to-speech voice',
                 style: Object.assign({}, S.input, { marginBottom: '4px' })
               },
               availableVoices.map(function (v) {
@@ -3089,6 +3092,7 @@
             e('div', { style: { display: 'flex', gap: '6px' } },
               e('select', {
                 id: 'iep-goal-type',
+                'aria-label': 'IEP goal type',
                 style: { fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '4px 6px', background: '#fff' }
               },
                 e('option', { value: 'expressive' }, 'Expressive'),
@@ -3099,12 +3103,14 @@
                 id: 'iep-goal-text',
                 type: 'text',
                 placeholder: 'e.g. Request items using 2-word phrases',
+                'aria-label': 'IEP goal description',
                 style: Object.assign({}, S.input, { flex: 1, margin: 0, fontSize: '11px' })
               }),
               e('input', {
                 id: 'iep-goal-target',
                 type: 'number', min: 1, max: 200,
                 placeholder: '# target',
+                'aria-label': 'IEP goal target count',
                 style: { width: '60px', fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '4px 6px', textAlign: 'center' }
               })
             ),
@@ -3166,11 +3172,11 @@
           })(),
           symMode === 'single'
             ? e('div', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
-                e('div', null, e('label', { style: S.lbl }, 'Label'), e('input', { type: 'text', value: symLabel, onChange: function (ev) { setSymLabel(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') genSingle(); }, placeholder: 'e.g. wash hands', style: S.input, autoFocus: true })),
-                e('div', null, e('label', { style: S.lbl }, 'Context (optional)'), e('input', { type: 'text', value: symDesc, onChange: function (ev) { setSymDesc(ev.target.value); }, placeholder: 'e.g. hygiene routine', style: S.input })),
+                e('div', null, e('label', { style: S.lbl }, 'Label'), e('input', { type: 'text', value: symLabel, onChange: function (ev) { setSymLabel(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') genSingle(); }, placeholder: 'e.g. wash hands', 'aria-label': 'Symbol label', style: S.input, autoFocus: true })),
+                e('div', null, e('label', { style: S.lbl }, 'Context (optional)'), e('input', { type: 'text', value: symDesc, onChange: function (ev) { setSymDesc(ev.target.value); }, placeholder: 'e.g. hygiene routine', 'aria-label': 'Symbol context', style: S.input })),
                 e('div', null,
                   e('label', { style: S.lbl }, 'Category'),
-                  e('select', { value: symCategory, onChange: function (ev) { setSymCategory(ev.target.value); }, style: S.input },
+                  e('select', { value: symCategory, onChange: function (ev) { setSymCategory(ev.target.value); }, 'aria-label': 'Symbol category', style: S.input },
                     e('option', { value: '' }, 'other'),
                     ['emotions', 'classroom', 'daily living', 'food', 'social', 'actions', 'places', 'objects'].map(function (c) { return e('option', { key: c, value: c }, c); })
                   )
@@ -3178,7 +3184,7 @@
               )
             : e('div', null,
                 e('label', { style: S.lbl }, 'One label per line'),
-                e('textarea', { value: symBatch, onChange: function (ev) { setSymBatch(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast', style: Object.assign({}, S.textarea, { height: '70px' }) }),
+                e('textarea', { value: symBatch, onChange: function (ev) { setSymBatch(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast', 'aria-label': 'Batch symbol labels, one per line', style: Object.assign({}, S.textarea, { height: '70px' }) }),
                 e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '2px 0 0' } }, symBatch.split('\n').filter(function (l) { return l.trim(); }).length + ' queued'),
                 e('div', { style: { marginTop: '6px' } },
                   e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, 'Quick Sets'),
@@ -3224,7 +3230,7 @@
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                 e('span', { style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Gallery (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
-                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', outline: 'none', flex: 1 } }),
+                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': 'Search symbols', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
                 e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
               ),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
@@ -3281,16 +3287,16 @@
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1, minWidth: '200px' } },
             e('label', { style: S.lbl }, 'Topic'),
-            e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: 'e.g. morning routine, feelings, playground', style: S.input, autoFocus: true })
+            e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: 'e.g. morning routine, feelings, playground', 'aria-label': 'Board topic', style: S.input, autoFocus: true })
           ),
           e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
           boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, style: S.btn('#059669', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
           boardWords.length > 0 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Cols:'),
-            e('input', { type: 'number', min: 2, max: 8, value: boardCols, onChange: function (ev) { setBoardCols(Number(ev.target.value)); }, style: { width: '52px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 8px', fontSize: '13px', outline: 'none' } })
+            e('input', { type: 'number', min: 2, max: 8, value: boardCols, onChange: function (ev) { setBoardCols(Number(ev.target.value)); }, 'aria-label': 'Board columns', style: { width: '52px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 8px', fontSize: '13px' } })
           ),
           boardWords.length > 0 && e('label', { style: { display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', cursor: 'pointer', color: '#374151' } },
-            e('input', { type: 'checkbox', checked: boardColor, onChange: function (ev) { setBoardColor(ev.target.checked); } }),
+            e('input', { type: 'checkbox', checked: boardColor, onChange: function (ev) { setBoardColor(ev.target.checked); }, 'aria-label': 'Enable color coding' }),
             'Color coding'
           ),
           // Theme selector
@@ -3319,6 +3325,7 @@
                   setBoardWords(function (prev) { return prev.map(function (w) { return w.originalLabel ? Object.assign({}, w, { label: w.originalLabel, translatedLabel: undefined, originalLabel: undefined }) : w; }); });
                 }
               },
+              'aria-label': 'Board language',
               style: { fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 6px', background: '#fff', cursor: 'pointer' }
             },
               LANG_OPTIONS.map(function (l) { return e('option', { key: l.code, value: l.code }, l.label); })
@@ -3450,7 +3457,7 @@
         showGalleryPicker && gallery.length > 0 && e('div', { style: { flexShrink: 0, background: '#faf5ff', border: '1px solid #ede9fe', borderRadius: '10px', padding: '10px', maxHeight: '160px', overflowY: 'auto' } },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
             e('span', { style: { fontSize: '11px', fontWeight: 600, color: PURPLE } }, 'Gallery \u2014 click any symbol to add it to the board'),
-            e('input', { type: 'text', value: gpFilter, onChange: function (ev) { setGpFilter(ev.target.value); }, placeholder: 'Filter\u2026', style: { border: '1px solid #d8b4fe', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', outline: 'none', marginLeft: 'auto', width: '80px' } })
+            e('input', { type: 'text', value: gpFilter, onChange: function (ev) { setGpFilter(ev.target.value); }, placeholder: 'Filter\u2026', 'aria-label': 'Filter gallery symbols', style: { border: '1px solid #d8b4fe', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', marginLeft: 'auto', width: '80px' } })
           ),
           e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '6px' } },
             gallery
@@ -3480,6 +3487,7 @@
               onChange: function (ev) { setSentenceInput(ev.target.value); },
               onKeyDown: function (ev) { if (ev.key === 'Enter') parseTextToSymbols(); },
               placeholder: 'e.g. I want to go to the park today',
+              'aria-label': 'Sentence to map to symbols',
               style: Object.assign({}, S.input, { flex: 1, borderColor: '#86efac' })
             }),
             e('button', { onClick: parseTextToSymbols, disabled: !sentenceInput.trim() || sentenceParsing || !onCallGemini, style: S.btn('#059669', '#fff', !sentenceInput.trim() || sentenceParsing || !onCallGemini) },
@@ -3532,7 +3540,7 @@
           e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#1e40af' } }, 'Print Settings'),
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Cell size:'),
-            e('select', { value: boardCellSz, onChange: function (ev) { setBoardCellSz(ev.target.value); }, style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px', outline: 'none' } },
+            e('select', { value: boardCellSz, onChange: function (ev) { setBoardCellSz(ev.target.value); }, 'aria-label': 'Cell size', style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px' } },
               e('option', { value: 'small' }, 'Small (1.5\u2033)'),
               e('option', { value: 'medium' }, 'Medium (2\u2033)'),
               e('option', { value: 'large' }, 'Large (2.5\u2033)')
@@ -3540,7 +3548,7 @@
           ),
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Label:'),
-            e('select', { value: boardTextPos, onChange: function (ev) { setBoardTextPos(ev.target.value); }, style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px', outline: 'none' } },
+            e('select', { value: boardTextPos, onChange: function (ev) { setBoardTextPos(ev.target.value); }, 'aria-label': 'Label position', style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px' } },
               e('option', { value: 'below' }, 'Below image'),
               e('option', { value: 'above' }, 'Above image'),
               e('option', { value: 'none' }, 'Hidden (image only)')
@@ -3548,12 +3556,12 @@
           ),
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Text size:'),
-            e('input', { type: 'number', min: 8, max: 18, value: boardTextSize, onChange: function (ev) { setBoardTextSize(Number(ev.target.value)); }, style: { width: '50px', border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 7px', fontSize: '12px', outline: 'none' } })
+            e('input', { type: 'number', min: 8, max: 18, value: boardTextSize, onChange: function (ev) { setBoardTextSize(Number(ev.target.value)); }, 'aria-label': 'Text size', style: { width: '50px', border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 7px', fontSize: '12px' } })
           ),
           e('button', { onClick: printBoardSized, style: S.btn('#1e40af', '#fff', false) }, '\uD83D\uDDB6 Print Now')
         ),
         // Board title
-        boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: 'Board title (optional)', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
+        boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: 'Board title (optional)', 'aria-label': 'Board title', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
         // Board grid (also serves as print area)
         boardWords.length > 0
           ? e('div', { id: 'ss-pb', style: { flex: 1, overflowY: 'auto', background: theme.gridBg, padding: '8px', borderRadius: '8px', transition: 'background 0.2s' } },
@@ -3648,12 +3656,12 @@
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1 } },
             e('label', { style: S.lbl }, 'Activities (one per line)'),
-            e('textarea', { value: schedInput, onChange: function (ev) { setSchedInput(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast\nboard the bus\narrive at school', style: Object.assign({}, S.textarea, { height: '70px' }) })
+            e('textarea', { value: schedInput, onChange: function (ev) { setSchedInput(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast\nboard the bus\narrive at school', 'aria-label': 'Schedule activities, one per line', style: Object.assign({}, S.textarea, { height: '70px' }) })
           ),
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
             e('div', null,
               e('label', { style: S.lbl }, 'Layout'),
-              e('select', { value: schedOrientation, onChange: function (ev) { setSchedOrientation(ev.target.value); }, style: Object.assign({}, S.input, { width: 'auto' }) },
+              e('select', { value: schedOrientation, onChange: function (ev) { setSchedOrientation(ev.target.value); }, 'aria-label': 'Schedule layout', style: Object.assign({}, S.input, { width: 'auto' }) },
                 e('option', { value: 'horizontal' }, 'Horizontal Strip'),
                 e('option', { value: 'vertical' }, 'Vertical List')
               )
@@ -3693,7 +3701,7 @@
           )
         ),
         // Schedule title
-        schedItems.length > 0 && e('input', { type: 'text', value: schedTitle, onChange: function (ev) { setSchedTitle(ev.target.value); }, placeholder: 'Schedule title, e.g. Marcus\'s Morning Routine', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '14px', maxWidth: '400px' }) }),
+        schedItems.length > 0 && e('input', { type: 'text', value: schedTitle, onChange: function (ev) { setSchedTitle(ev.target.value); }, placeholder: 'Schedule title, e.g. Marcus\'s Morning Routine', 'aria-label': 'Schedule title', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '14px', maxWidth: '400px' }) }),
         // Schedule strip
         schedItems.length > 0
           ? e('div', { id: 'ss-ps', style: { flex: 1, overflowY: 'auto', overflowX: schedOrientation === 'horizontal' ? 'auto' : 'hidden' } },
@@ -3759,14 +3767,14 @@
         e('div', { style: { width: '240px', flexShrink: 0, borderRight: '1px solid #e5e7eb', padding: '16px', overflowY: 'auto', background: '#f9fafb', display: 'flex', flexDirection: 'column', gap: '10px' } },
           e('div', null,
             e('label', { style: S.lbl }, 'Student Name'),
-            e('input', { type: 'text', value: storyStudentName, onChange: function (ev) { setStoryStudentName(ev.target.value); }, placeholder: 'e.g. Marcus', style: S.input })
+            e('input', { type: 'text', value: storyStudentName, onChange: function (ev) { setStoryStudentName(ev.target.value); }, placeholder: 'e.g. Marcus', 'aria-label': 'Student name for social story', style: S.input })
           ),
           e('div', null,
             e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' } },
               e('label', { style: S.lbl }, 'Situation / Goal'),
               e('span', { style: { fontSize: '10px', color: '#9ca3af' } }, 'or pick a template ↓')
             ),
-            e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: 'e.g. Marcus is learning to wait his turn during group time', style: Object.assign({}, S.textarea, { height: '65px' }) }),
+            e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: 'e.g. Marcus is learning to wait his turn during group time', 'aria-label': 'Social story situation or goal', style: Object.assign({}, S.textarea, { height: '65px' }) }),
             e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '5px' } },
               STORY_TEMPLATES.concat(customTemplates).map(function (t, i) {
                 var isCustom = i >= STORY_TEMPLATES.length;
@@ -3793,7 +3801,7 @@
           ),
           e('div', null,
             e('label', { style: S.lbl }, 'Additional context (optional)'),
-            e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. Marcus is 7, has autism, loves trains', style: Object.assign({}, S.textarea, { height: '55px' }) })
+            e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. Marcus is 7, has autism, loves trains', 'aria-label': 'Additional context for social story', style: Object.assign({}, S.textarea, { height: '55px' }) })
           ),
           e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
           e('p', { style: { fontSize: '10px', color: '#9ca3af' } }, 'Uses Carol Gray format — descriptive, perspective, and directive sentences. Illustrations auto-generate for each page.'),
@@ -3867,7 +3875,7 @@
         e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0, flexWrap: 'wrap' } },
           e('div', { style: { flex: 1, minWidth: '200px' } },
             e('label', { style: S.lbl }, 'New Activity Set Name'),
-            e('input', { type: 'text', value: newBookTitle, onChange: function (ev) { setNewBookTitle(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') createBook(); }, placeholder: 'e.g. Marcus \u2014 School Day Boards', style: S.input })
+            e('input', { type: 'text', value: newBookTitle, onChange: function (ev) { setNewBookTitle(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') createBook(); }, placeholder: 'e.g. Marcus \u2014 School Day Boards', 'aria-label': 'New activity set name', style: S.input })
           ),
           e('button', { onClick: createBook, disabled: !newBookTitle.trim(), style: S.btn(PURPLE, '#fff', !newBookTitle.trim()) }, '+ Create Set')
         ),
@@ -3902,6 +3910,7 @@
                       e('select', {
                         value: activeBook.profileId || '',
                         onChange: function (ev) { tagBookProfile(activeBook.id, ev.target.value || null); },
+                        'aria-label': 'Assign student profile to activity set',
                         style: { fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 5px', color: activeBook.profileId ? PURPLE : '#9ca3af', background: activeBook.profileId ? LIGHT_PURPLE : '#f9fafb' }
                       },
                         e('option', { value: '' }, '— None —'),
@@ -4224,6 +4233,7 @@
             e('select', {
               value: scanSpeed,
               onChange: function (ev) { setScanSpeed(Number(ev.target.value)); setScanIndex(0); },
+              'aria-label': 'Scanning speed',
               style: { fontSize: '12px', background: '#334155', color: '#fff', border: '1px solid #475569', borderRadius: '5px', padding: '2px 6px', cursor: 'pointer' }
             },
               e('option', { value: 1000 }, '1 s'),

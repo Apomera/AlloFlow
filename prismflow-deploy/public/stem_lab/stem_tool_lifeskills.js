@@ -450,6 +450,7 @@ window.StemLab = window.StemLab || {
       var d = (ctx.toolData && ctx.toolData.lifeSkills) || {};
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
+      var a11yClick = ctx.a11yClick;
       var gradeBand = getGradeBand(ctx);
 
       // ── State helpers ──
@@ -804,12 +805,12 @@ window.StemLab = window.StemLab || {
         ),
 
         // Sub-tool tabs
-        h('div', { className: 'flex flex-wrap gap-1.5' },
+        h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Life Skills sections' },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
             return h('button', { key: st.id, onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-teal-50 border border-slate-200'),
-              'aria-pressed': active ? 'true' : 'false'
+              role: 'tab', 'aria-selected': active
             }, st.icon + ' ' + st.label);
           })
         ),

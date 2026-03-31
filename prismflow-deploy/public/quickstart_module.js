@@ -743,6 +743,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
     ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-500 uppercase mb-1" }, t("wizard.input_instructions_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-3 pointer-events-none" }, /* @__PURE__ */ React.createElement(Wrench, { size: 14, className: "text-slate-500" })), /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        "aria-label": t("wizard.input_instructions_label"),
         value: localData.sourceCustomInstructions,
         onChange: (e) => setLocalData((prev) => ({ ...prev, sourceCustomInstructions: e.target.value })),
         "data-help-key": "wizard_instructions_input",
@@ -855,7 +856,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         className: "hover:text-indigo-900 ml-1"
       },
       /* @__PURE__ */ React.createElement(X, { size: 12 })
-    ))), localData.languages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 italic self-center w-full text-center" }, t("wizard.no_langs_selected")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold text-slate-600 mb-1" }, t("wizard.interests_label_optional").replace(" (Optional)", ""), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 font-normal" }, " (Optional)")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+    ))), localData.languages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 italic self-center w-full text-center" }, t("wizard.no_langs_selected")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold text-slate-600 mb-1" }, t("wizard.interests_label_optional").replace(" (Optional)", ""), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 font-normal" }, " (Optional)")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_wiz_interest_input"),

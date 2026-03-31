@@ -431,6 +431,8 @@ window.StemLab = window.StemLab || {
       var callGemini = ctx.callGemini;
       var callImagen = ctx.callImagen;
       var gradeLevel = ctx.gradeLevel;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
 
       return (function() {
         // == State ==
@@ -782,6 +784,7 @@ window.StemLab = window.StemLab || {
                   var p = e.target.value.split('x');
                   upd({ gridW: parseInt(p[0]), gridH: parseInt(p[1]), tiles: {} });
                 },
+                'aria-label': 'Grid size',
                 className: 'text-xs border border-rose-200 rounded-lg px-2 py-1.5 bg-white'
               },
                 ['8x6','12x8','16x12','20x15','24x18'].map(function(s) { return h('option', { key: s, value: s }, s); })
@@ -790,6 +793,7 @@ window.StemLab = window.StemLab || {
               h('select', {
                 value: gameType,
                 onChange: function(e) { upd({ gameType: e.target.value }); },
+                'aria-label': 'Game type',
                 className: 'text-xs border border-rose-200 rounded-lg px-2 py-1.5 bg-white'
               },
                 h('option', { value: 'topdown' }, '\uD83D\uDD3D Top-Down'),
@@ -830,6 +834,7 @@ window.StemLab = window.StemLab || {
                 type: 'text', value: aiPrompt,
                 onChange: function(e) { upd({ aiPrompt: e.target.value }); },
                 placeholder: 'Theme: forest maze, ice castle, dungeon...',
+                'aria-label': 'AI map generation theme',
                 className: 'flex-1 text-xs border border-rose-200 rounded-lg px-2 py-1.5'
               }),
               aiResult && h('span', { className: 'text-xs font-bold self-center ' + (aiResult.charAt(0) === '\u2705' ? 'text-green-600' : 'text-red-500') }, aiResult)
@@ -1028,7 +1033,7 @@ window.StemLab = window.StemLab || {
                 // AI sprite gen
                 callImagen && h('div', { className: 'p-3 rounded-xl border border-purple-200 bg-purple-50 space-y-2' },
                   h('div', { className: 'text-xs font-bold text-purple-700' }, '\uD83E\uDD16 AI Sprite Tools'),
-                  h('input', { type: 'text', value: aiPrompt, onChange: function(e) { upd({ aiPrompt: e.target.value }); }, placeholder: 'a fire-breathing dragon...', className: 'w-full text-xs border border-purple-200 rounded-lg px-2 py-1.5' }),
+                  h('input', { type: 'text', value: aiPrompt, onChange: function(e) { upd({ aiPrompt: e.target.value }); }, placeholder: 'a fire-breathing dragon...', 'aria-label': 'AI sprite generation prompt', className: 'w-full text-xs border border-purple-200 rounded-lg px-2 py-1.5' }),
                   h('button', {
                     onClick: function() {
                       if (!aiPrompt.trim()) return;
@@ -1235,8 +1240,8 @@ window.StemLab = window.StemLab || {
 
             // Game grid
             h('div', {
-              className: 'rounded-xl border-2 ' + (isPlaying ? 'border-green-400' : 'border-rose-300') + ' bg-slate-900 p-1 overflow-auto',
-              style: { maxHeight: '450px', outline: 'none' },
+              className: 'rounded-xl border-2 ' + (isPlaying ? 'border-green-400' : 'border-rose-300') + ' bg-slate-900 p-1 overflow-auto outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1',
+              style: { maxHeight: '450px' },
               tabIndex: 0,
               onKeyDown: onPlayKey
             },

@@ -473,6 +473,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var band = ctx.gradeBand || 'elementary';
@@ -605,6 +607,7 @@ window.SelHub = window.SelHub || {
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Decision Making tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(t) {
@@ -844,6 +847,7 @@ window.SelHub = window.SelHub || {
             h('textarea', {
               value: dtReflection,
               onChange: function(e) { upd('dtReflection', e.target.value); },
+              'aria-label': 'Decision tree reflection',
               placeholder: band === 'elementary' ? 'I chose this because...' : 'I chose this because... The consequences might be... It connects to the values of...',
               rows: 4,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
@@ -953,6 +957,7 @@ window.SelHub = window.SelHub || {
               h('textarea', {
                 value: edSideA,
                 onChange: function(e) { upd('edSideA', e.target.value); },
+                'aria-label': 'Arguments for side A',
                 placeholder: 'Why might this value matter more here?',
                 rows: 3,
                 style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #3b82f644', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -963,6 +968,7 @@ window.SelHub = window.SelHub || {
               h('textarea', {
                 value: edSideB,
                 onChange: function(e) { upd('edSideB', e.target.value); },
+                'aria-label': 'Arguments for side B',
                 placeholder: 'Why might this value matter more here?',
                 rows: 3,
                 style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #ef444444', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -975,6 +981,7 @@ window.SelHub = window.SelHub || {
             h('textarea', {
               value: edVerdict,
               onChange: function(e) { upd('edVerdict', e.target.value); },
+              'aria-label': 'Your verdict',
               placeholder: 'I would lean toward... because...',
               rows: 3,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -1083,6 +1090,7 @@ window.SelHub = window.SelHub || {
               h('textarea', {
                 value: csShort,
                 onChange: function(e) { upd('csShort', e.target.value); },
+                'aria-label': 'Short-term consequences',
                 placeholder: 'What happens ' + curCs.categories[0] + '? Who is affected and how?',
                 rows: 2,
                 style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #fbbf2444', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -1096,6 +1104,7 @@ window.SelHub = window.SelHub || {
               h('textarea', {
                 value: csMid,
                 onChange: function(e) { upd('csMid', e.target.value); },
+                'aria-label': 'Medium-term consequences',
                 placeholder: 'What happens ' + curCs.categories[1] + '? How do things change?',
                 rows: 2,
                 style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #fb923c44', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -1109,6 +1118,7 @@ window.SelHub = window.SelHub || {
               h('textarea', {
                 value: csLong,
                 onChange: function(e) { upd('csLong', e.target.value); },
+                'aria-label': 'Long-term consequences',
                 placeholder: 'What happens ' + curCs.categories[2] + '? What lasting effects might there be?',
                 rows: 2,
                 style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #f8717144', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -1215,6 +1225,7 @@ window.SelHub = window.SelHub || {
             h('textarea', {
               value: biasReflection,
               onChange: function(e) { upd('biasReflection', e.target.value); },
+              'aria-label': 'Bias reflection',
               placeholder: 'Can you think of a time this bias affected YOUR thinking?',
               rows: 3,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -1393,6 +1404,7 @@ window.SelHub = window.SelHub || {
             h('textarea', {
               value: rwReflection,
               onChange: function(e) { upd('rwReflection', e.target.value); },
+              'aria-label': 'Real-world decision reflection',
               placeholder: 'What would you have done? What makes this decision so hard?',
               rows: 4,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
@@ -1662,6 +1674,7 @@ window.SelHub = window.SelHub || {
             h('textarea', {
               value: advPrompt,
               onChange: function(e) { upd('advPrompt', e.target.value); },
+              'aria-label': 'Describe your decision for AI advisor',
               placeholder: band === 'elementary'
                 ? 'Tell me about something you need to decide. For example: "I can\'t decide if I should try out for the play or join soccer..."'
                 : 'Describe a decision you\'re facing. Include what makes it hard — the competing values, the people involved, the pressure you feel...',

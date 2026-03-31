@@ -121,7 +121,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       <span className="font-bold text-slate-500 w-24 shrink-0">{label}:</span>
       {type === 'select' ? (
         <select value={value || ''} onChange={e => handleUpdateGroupProfile(gId, field, e.target.value)}
-          className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 outline-none">
+          aria-label={label}
+          className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none">
           <option value="">—</option>
           {options.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
@@ -129,6 +130,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         <div className="flex-1 flex items-center gap-2">
           <input type="range" min="0.5" max="1.5" step="0.05" value={value || 1}
             onChange={e => handleUpdateGroupProfile(gId, field, parseFloat(e.target.value))}
+            aria-label={label}
             className="flex-1 accent-indigo-500" />
           <span className="text-slate-600 font-mono w-10 text-right">{(value || 1).toFixed(2)}x</span>
         </div>
@@ -139,7 +141,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         </button>
       ) : (
         <input type="text" value={value || ''} onChange={e => handleUpdateGroupProfile(gId, field, e.target.value)}
-          placeholder="—" className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 outline-none" />
+          aria-label={label}
+          placeholder="—" className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
       )}
     </div>
   );
@@ -172,14 +175,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <RefreshCw size={14} /> {t('roster.sync_session') || 'Sync to Live Session'}
             </button>
           )}
-          <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
+          <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" aria-label={t('roster.import') || 'Import roster JSON'} />
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar">
           <div className="flex items-center gap-2 mb-2">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('roster.class_name') || 'Class Name'}:</label>
             <input type="text" value={rosterKey?.className || ''} onChange={e => setRosterKey(prev => ({ ...(prev || { groups: {}, students: {} }), className: e.target.value }))}
               placeholder={t('common.placeholder_ms_smith_period_3')}
-              className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
+              aria-label={t('roster.class_name') || 'Class name'}
+              className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
           </div>
           {groupIds.map(gId => {
             const group = groups[gId];
@@ -200,7 +204,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                   <div className="p-4 space-y-3 border-t border-slate-100 bg-white">
                     <div className="flex gap-2 items-center mb-2">
                       <input type="text" value={group.name} onChange={e => handleUpdateGroupMeta(gId, 'name', e.target.value)}
-                        className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" />
+                        aria-label={t('roster.group_name') || 'Group name'}
+                        className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-sm font-bold focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
                       <div className="flex gap-1">
                         {COLORS.map(c => (
                           <button key={c} onClick={() => handleUpdateGroupMeta(gId, 'color', c)}
@@ -236,7 +241,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                             </button>
                           </span>
                         ))}
-                        {gStudents.length === 0 && <span className="text-xs text-slate-400 italic">{t('roster.no_students') || 'No students assigned'}</span>}
+                        {gStudents.length === 0 && <span className="text-xs text-slate-500 italic">{t('roster.no_students') || 'No students assigned'}</span>}
                       </div>
                     </div>
                     <div className="flex gap-2 pt-2 border-t border-slate-100">
@@ -255,8 +260,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <div className="flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors">
             <input type="text" value={newGroupName} onChange={e => setNewGroupName(e.target.value)}
               placeholder={t('roster.new_group_placeholder') || 'New group name...'}
+              aria-label={t('roster.new_group_placeholder') || 'New group name'}
               onKeyDown={e => e.key === 'Enter' && handleAddGroup()}
-              className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
+              className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
             <div className="flex gap-1">
               {COLORS.slice(0, 4).map(c => (
                 <button key={c} onClick={() => setNewGroupColor(c)}
@@ -288,12 +294,14 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                  <div className="flex-1 flex flex-col gap-1.5">
                      <div className="flex gap-1.5 items-center">
                        <select value={rosterAdj} onChange={e => setRosterAdj(e.target.value)}
-                         className="flex-1 px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-teal-400 outline-none">
+                         aria-label={t('codenames.pick_adjective') || 'Pick adjective'}
+                         className="flex-1 px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-teal-400 focus:outline-none">
                          <option value="">{t('codenames.pick_adjective') || '— Adjective —'}</option>
                          {rosterAdjectives.map(a => <option key={a} value={a}>{a}</option>)}
                        </select>
                        <select value={rosterAnimal} onChange={e => setRosterAnimal(e.target.value)}
-                         className="flex-1 px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-teal-400 outline-none">
+                         aria-label={t('codenames.pick_animal') || 'Pick animal'}
+                         className="flex-1 px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-teal-400 focus:outline-none">
                          <option value="">{t('codenames.pick_animal') || '— Animal —'}</option>
                          {rosterAnimals.map(a => <option key={a} value={a}>{a}</option>)}
                        </select>
@@ -304,12 +312,14 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                      {useCustomName && (
                        <input type="text" value={newStudentName} onChange={e => setNewStudentName(e.target.value)}
                          placeholder={t('roster.display_name_placeholder') || 'Real name (for your reference only)...'}
+                         aria-label={t('roster.display_name_placeholder') || 'Student real name'}
                          onKeyDown={e => e.key === 'Enter' && handleAddStudent()}
-                         className="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
+                         className="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
                      )}
                    </div>
                  <select value={newStudentGroup} onChange={e => setNewStudentGroup(e.target.value)}
-                   className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-400 outline-none">
+                   aria-label={t('roster.assign_group') || 'Assign to group'}
+                   className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none">
                    <option value="">{t('roster.unassigned') || 'Unassigned'}</option>
                    {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
                  </select>
@@ -340,7 +350,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       </span>
                     )}
                     <select onChange={e => { if (e.target.value) handleMoveStudent(name, e.target.value); }} value=""
-                      className="text-[10px] bg-transparent border-none outline-none cursor-pointer text-amber-600 ml-1 w-4">
+                      aria-label={'Move ' + name + ' to group'}
+                      className="text-[10px] bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-300 cursor-pointer text-amber-600 ml-1 w-4">
                       <option value="">→</option>
                       {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
                     </select>
@@ -353,7 +364,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             </div>
           )}
           {rosterKey && (
-            <div className="flex gap-4 pt-3 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
+            <div className="flex gap-4 pt-3 border-t border-slate-100 text-[10px] text-slate-500 font-medium">
               <span>{groupIds.length} group{groupIds.length !== 1 ? 's' : ''}</span>
               <span>{Object.keys(students).length} student{Object.keys(students).length !== 1 ? 's' : ''}</span>
               <span>{getUnassigned().length} unassigned</span>
@@ -856,7 +867,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                   onChange={(e) => setUserInput(e.target.value)}
                   placeholder={t('escape_room.enter_answer')}
                   data-help-key="escape_room_cipher_input"
-                  className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 outline-none"
+                  className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
                 />
                 <button
                   onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'cipher')}
@@ -900,7 +911,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder={t('escape_room.enter_answer')}
                     data-help-key="escape_room_fillin_input"
-                    className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 outline-none"
+                    className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
                   />
                 )}
                 <button
@@ -928,7 +939,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                   onChange={(e) => setUserInput(e.target.value.toUpperCase())}
                   placeholder={t('escape_room.unscramble_placeholder')}
                   data-help-key="escape_room_scramble_input"
-                  className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 outline-none text-center font-mono text-xl uppercase"
+                  className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 text-center font-mono text-xl uppercase"
                 />
                 <button
                   onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'scramble')}
@@ -1072,7 +1083,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                 </div>
                 {matchingPairs.length > 0 && (
                   <div className="bg-slate-900 p-3 rounded-lg" role="list" aria-label={t('escape_room.matched_pairs') || 'Matched pairs'}>
-                    <p className="text-xs text-slate-400 mb-2" aria-hidden="true">{t('escape_room.matched_pairs')}</p>
+                    <p className="text-xs text-slate-500 mb-2" aria-hidden="true">{t('escape_room.matched_pairs')}</p>
                     <div className="space-y-1">
                       {matchingPairs.map((pair, idx) => (
                         <div key={idx} role="listitem" className="text-sm text-green-400">✓ {pair.left} ↔ {pair.right}</div>
@@ -1575,7 +1586,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                      <select aria-label={t('common.selection')}
                         value={mode || 'live-pulse'} data-help-key="quiz_mode_select"
                         onChange={handleModeChange}
-                        className="bg-indigo-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-600 outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
+                        className="bg-indigo-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
                      >
                          <option value="live-pulse">📊 {t('quiz.modes.live_pulse')}</option>
                          <option value="boss-battle">⚔️ {t('quiz.modes.boss_battle')}</option>
@@ -1586,7 +1597,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                              value={bossDifficulty}
                              onChange={(e) => setBossDifficulty(e.target.value)}
                              disabled={phase !== 'lobby'}
-                             className={`text-xs font-bold px-3 py-1.5 rounded-lg border outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer ${
+                             className={`text-xs font-bold px-3 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer ${
                                  bossDifficulty === 'easy' ? 'bg-emerald-600 border-emerald-500 text-white' :
                                  bossDifficulty === 'hard' ? 'bg-red-600 border-red-500 text-white' :
                                  'bg-amber-500 border-amber-400 text-white'
@@ -2241,7 +2252,7 @@ const LearnerProgressView = React.memo(({
                             </div>
                         </div>
                         <div className="flex-1">
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('learner.total_xp')}</div>
+                            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('learner.total_xp')}</div>
                             <div className="text-2xl font-black text-indigo-900">{globalPoints.toLocaleString()}</div>
                         </div>
                         {stats.trend > 0 && (
@@ -2306,14 +2317,14 @@ const LearnerProgressView = React.memo(({
                         <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 rounded-full" style={{ width: `${Math.max(5, globalProgress)}%` }} />
                         </div>
-                        <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                        <div className="flex justify-between text-[10px] font-mono text-slate-500">
                             <span>{currentLevelXP} XP</span>
                             <span>{globalXPNext} XP to next</span>
                         </div>
                     </div>
                 </div>
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
                         <Activity size={14} /> Activities Completed
                     </h3>
                     <div className="text-3xl font-black text-slate-800 mb-4">{stats.totalActivities}</div>
@@ -2332,11 +2343,11 @@ const LearnerProgressView = React.memo(({
                     </div>
                 </div>
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Target size={14} /> Skills Progress
                     </h3>
                     {stats.wsTotal === 0 && Object.keys(phonemeMastery).length === 0 ? (
-                        <div className="text-center py-6 text-slate-400 italic text-sm">
+                        <div className="text-center py-6 text-slate-500 italic text-sm">
                             <BookOpen size={32} className="mx-auto mb-2 opacity-40" />
                             Start practicing to see your skills grow!
                         </div>
@@ -2395,7 +2406,7 @@ const LearnerProgressView = React.memo(({
                     )}
                 </div>
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Award size={14} /> Achievements
                     </h3>
                     {(() => {
@@ -2424,13 +2435,13 @@ const LearnerProgressView = React.memo(({
                                     </div>
                                 )}
                                 {earned.length === 0 && (
-                                    <div className="text-center py-4 text-slate-400 italic text-sm">
+                                    <div className="text-center py-4 text-slate-500 italic text-sm">
                                         Complete activities to earn achievements! 🌟
                                     </div>
                                 )}
                                 {showDiagnostics && locked.length > 0 && (
                                     <div>
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('learner.coming_up')}</div>
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('learner.coming_up')}</div>
                                         <div className="flex flex-wrap gap-1.5">
                                             {locked.slice(0, 4).map(m => (
                                                 <div key={m.name} className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-center opacity-50" title={m.desc}>
@@ -2536,7 +2547,7 @@ const LearnerProgressView = React.memo(({
             })()}
             {studentProgressLog.length >= 2 && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <TrendingUp size={14} /> Growth Over Time
                     </h3>
                     <LongitudinalProgressChart logs={studentProgressLog} />
@@ -2550,19 +2561,19 @@ const LearnerProgressView = React.memo(({
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
                             <div className="text-lg font-black text-slate-700">{stats.wsCorrect}/{stats.wsTotal}</div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase">{t('learner.words_correct')}</div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase">{t('learner.words_correct')}</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
                             <div className="text-lg font-black text-slate-700">{Object.keys(phonemeMastery).length}</div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase">{t('learner.phonemes_touched')}</div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase">{t('learner.phonemes_touched')}</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
                             <div className="text-lg font-black text-slate-700">{stats.sessionCount}</div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase">Sessions</div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase">Sessions</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
                             <div className="text-lg font-black text-slate-700">{stats.labelChallenges}</div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase">{t('learner.label_challenges')}</div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase">{t('learner.label_challenges')}</div>
                         </div>
                     </div>
                     {pointHistory.length > 0 && (
@@ -3386,7 +3397,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                      {p.dcpm !== undefined && <span className="font-mono font-bold text-amber-700">{p.dcpm} DCPM</span>}
                                                      {p.accuracy !== undefined && <span className="font-mono font-bold text-emerald-700">{Math.round(p.accuracy * 100)}%</span>}
                                                      {p.score !== undefined && <span className="font-mono font-bold text-indigo-700">{p.score}</span>}
-                                                     <span className="text-slate-400">{new Date(p.timestamp || p.date || Date.now()).toLocaleDateString()}</span>
+                                                     <span className="text-slate-500">{new Date(p.timestamp || p.date || Date.now()).toLocaleDateString()}</span>
                                                  </div>
                                              </div>
                                          ))
@@ -3734,10 +3745,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                         React.createElement('div', { className: 'text-xs font-bold text-slate-500 uppercase tracking-wider mb-2' }, c.label),
                                                         React.createElement('div', { className: 'flex items-end gap-2' },
                                                             React.createElement('span', { className: 'text-3xl font-black ' + c.color }, c.avg),
-                                                            React.createElement('span', { className: 'text-xs text-slate-400 mb-1' }, '/ 5.0')),
+                                                            React.createElement('span', { className: 'text-xs text-slate-500 mb-1' }, '/ 5.0')),
                                                         React.createElement('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden' },
                                                             React.createElement('div', { className: 'h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all', style: { width: (parseFloat(c.avg) / 5 * 100) + '%' } })),
-                                                        React.createElement('div', { className: 'text-[10px] text-slate-400 mt-1' }, 'n = ' + c.n + ' responses')
+                                                        React.createElement('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'n = ' + c.n + ' responses')
                                                     )
                                                 )
                                             );
@@ -3770,7 +3781,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                             '📈 Probe Trends Over Time'),
                                         (() => {
                                             const sorted = allProbes.filter(p => p.date && p.wcpm !== undefined).sort((a,b) => new Date(a.date) - new Date(b.date));
-                                            if (sorted.length < 2) return React.createElement('p', { className: 'text-sm text-slate-400 italic' }, 'Need at least 2 probes with dates to show trends.');
+                                            if (sorted.length < 2) return React.createElement('p', { className: 'text-sm text-slate-500 italic' }, 'Need at least 2 probes with dates to show trends.');
                                             const maxWcpm = Math.max(...sorted.map(p => p.wcpm), 10);
                                             const chartH = 160;
                                             const barW = Math.max(20, Math.min(50, 600 / sorted.length));
@@ -3782,7 +3793,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                         return React.createElement('div', { key: i, className: 'flex flex-col items-center', style: { width: barW + 'px' } },
                                                             React.createElement('div', { className: 'text-[9px] font-bold mb-1', style: { color } }, p.wcpm),
                                                             React.createElement('div', { style: { width: (barW - 4) + 'px', height: h + 'px', background: color, borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease' } }),
-                                                            React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1 text-center', style: { width: barW + 'px' } }, 
+                                                            React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1 text-center', style: { width: barW + 'px' } }, 
                                                                 p.date ? new Date(p.date).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : '')
                                                         );
                                                     })
@@ -3829,7 +3840,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                              <div className="text-center py-8">
                                                  <div className="text-4xl mb-3">📌</div>
                                                  <p className="text-sm text-slate-500">No STEM Stations created yet.</p>
-                                                 <p className="text-xs text-slate-400 mt-1">Generate a lesson plan to get AI-recommended STEM tools.</p>
+                                                 <p className="text-xs text-slate-500 mt-1">Generate a lesson plan to get AI-recommended STEM tools.</p>
                                              </div>
                                          );
                                      }

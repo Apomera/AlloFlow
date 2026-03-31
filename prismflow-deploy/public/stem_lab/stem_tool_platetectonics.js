@@ -1162,6 +1162,8 @@ var d = labToolData.plateTectonics || {};
 
                   ref: canvasRef,
 
+                  'aria-label': 'Interactive plate tectonics cross-section visualization', tabIndex: 0,
+
                   className: "w-full cursor-grab active:cursor-grabbing",
 
                   style: { height: '400px', display: 'block', background: '#1a1a2e' }
@@ -1302,7 +1304,7 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", { className: "rounded-xl overflow-hidden border-2 border-red-200" },
 
-                  React.createElement("canvas", { ref: seismoRef, className: "w-full", style: { height: '120px', display: 'block' } })
+                  React.createElement("canvas", { ref: seismoRef, 'aria-label': 'Interactive plate tectonics seismograph visualization', role: 'img', className: "w-full", style: { height: '120px', display: 'block' } })
 
                 )
 
@@ -1385,7 +1387,7 @@ var d = labToolData.plateTectonics || {};
                     },
                       React.createElement('div', { className: 'text-lg' }, era.icon || '\uD83C\uDF0D'),
                       React.createElement('div', { className: 'text-[9px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-500') }, era.name),
-                      React.createElement('div', { className: 'text-[8px] text-slate-400' }, era.mya)
+                      React.createElement('div', { className: 'text-[8px] text-slate-500' }, era.mya)
                     );
                   })
                 ),
@@ -1407,7 +1409,7 @@ var d = labToolData.plateTectonics || {};
                   // Detailed description
                   React.createElement('p', { className: 'text-xs text-slate-600 leading-relaxed' }, ERAS[timelineEra].desc || ''),
 
-                  React.createElement('p', { className: 'text-[10px] text-slate-400 mt-1 italic' }, '\uD83D\uDCA1 Switch to Simulation tab to see plate positions, or use Time-Lapse to animate through all eras.')
+                  React.createElement('p', { className: 'text-[10px] text-slate-500 mt-1 italic' }, '\uD83D\uDCA1 Switch to Simulation tab to see plate positions, or use Time-Lapse to animate through all eras.')
                 )
 
               )
@@ -1435,6 +1437,8 @@ var d = labToolData.plateTectonics || {};
                 React.createElement("canvas", {
 
                   id: "geology-earth-canvas",
+
+                  'aria-label': 'Interactive plate tectonics Earth cross-section visualization', role: 'img',
 
                   width: 520, height: 320,
 

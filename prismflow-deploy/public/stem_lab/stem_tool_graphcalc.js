@@ -172,6 +172,8 @@
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
 
       return (function() {
         var d = labToolData.graphCalc || {};
@@ -590,11 +592,11 @@
             h('span', { style: { fontSize: '10px', color: '#818cf8', maxWidth: '300px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, gradeIntros[band] || ''),
             h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
               h('span', { style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
-              h('select', { value: tier, onChange: function(e) { SOUNDS.tierChange(); upd('tier', e.target.value); }, style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' } },
+              h('select', { value: tier, onChange: function(e) { SOUNDS.tierChange(); upd('tier', e.target.value); }, 'aria-label': 'Difficulty tier', style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' } },
                 h('option', { value: 'explorer' }, '\uD83D\uDFE2 Explorer'), h('option', { value: 'analyst' }, '\uD83D\uDFE1 Analyst'),
                 h('option', { value: 'engineer' }, '\uD83D\uDD35 Engineer'), h('option', { value: 'researcher' }, '\uD83D\uDFE3 Researcher')
               ),
-              h('button', { onClick: takeSnapshot, style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCF8'),
+              h('button', { onClick: takeSnapshot, 'aria-label': 'Take snapshot', style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCF8'),
               badges.length > 0 ? h('span', { style: { background: 'rgba(167,139,250,0.15)', color: '#a78bfa', padding: '3px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' } }, '\uD83C\uDFC5 ' + badges.length) : null
             )
           ),
@@ -615,7 +617,9 @@
                     h('input', { type: 'text', value: fn.expr || '', placeholder: i === 0 ? '2x + 3' : i === 1 ? 'x^2 - 4' : 'sin(x)',
                       onChange: function(e) { var nf = funcs.slice(); nf[i] = Object.assign({}, nf[i], { expr: e.target.value }); upd('funcs', nf); },
                       onFocus: function() { upd('focusedInput', i); },
-                      style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color + '44', background: fn.color + '11', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px', outline: 'none' } })
+                      'aria-label': 'Function y' + (i + 1) + ' expression',
+                      className: 'focus:ring-2 focus:ring-indigo-500',
+                      style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color + '44', background: fn.color + '11', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px' } })
                   );
                 })
               ),
@@ -687,7 +691,7 @@
 
             // Center — Canvas
             h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
-              h('canvas', { ref: canvasRef, style: { width: '100%', flex: 1, background: '#0f172a', cursor: d.traceMode ? 'crosshair' : 'default' },
+              h('canvas', { ref: canvasRef, 'aria-label': 'Interactive graphing calculator visualization', tabIndex: 0, style: { width: '100%', flex: 1, background: '#0f172a', cursor: d.traceMode ? 'crosshair' : 'default' },
                 onMouseMove: function(e) { if (!d.traceMode) return; var rect = e.currentTarget.getBoundingClientRect(); var px = (e.clientX - rect.left) / rect.width * (e.currentTarget.width / (window.devicePixelRatio || 1)); if (e.currentTarget._toMathX) upd('traceX', e.currentTarget._toMathX(px)); },
                 onMouseLeave: function() { if (d.traceMode) upd('traceX', null); } }),
               showWindow ? h('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
@@ -755,7 +759,7 @@
                   aiLoading ? h('div', { style: { fontSize: '11px', color: '#64748b', fontStyle: 'italic' } }, 'Thinking...') : null
                 ),
                 h('div', { style: { display: 'flex', gap: '4px' } },
-                  h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: 'Ask about math...', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', fontSize: '11px', outline: 'none' } }),
+                  h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: 'Ask about math...', 'aria-label': 'Ask the math tutor', className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', fontSize: '11px' } }),
                   h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
                 )
               ) : null,

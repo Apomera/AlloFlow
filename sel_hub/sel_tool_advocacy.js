@@ -1402,6 +1402,7 @@ window.SelHub = window.SelHub || {
               }
               return h('input', {
                 key: pi, type: 'text',
+                'aria-label': part.placeholder,
                 value: stParts[part.key] || '',
                 onChange: function(e) {
                   var newParts = Object.assign({}, stParts);
@@ -1632,6 +1633,7 @@ window.SelHub = window.SelHub || {
             voTurnCount < 20 && h('div', { style: { display: 'flex', gap: 8 } },
               h('input', {
                 type: 'text', value: voInputText,
+                'aria-label': 'Voice practice message',
                 onChange: function(e) { upd('voInputText', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter' && voInputText.trim() && !voLoading) { sendVoMessage(); } },
                 placeholder: band === 'elementary' ? 'What do you want to say?' : 'Type what you\'d say...',
@@ -1865,6 +1867,7 @@ window.SelHub = window.SelHub || {
                 h('label', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: 4 } }, blank.label),
                 h('input', {
                   type: 'text',
+                  'aria-label': blank.label + ' advocacy response',
                   value: sasParts[blank.key] || '',
                   onChange: function(e) {
                     var newParts = Object.assign({}, sasParts);
@@ -2132,6 +2135,7 @@ window.SelHub = window.SelHub || {
                 h('label', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: 4 } }, field.label),
                 h('textarea', {
                   value: ltFields[field.key] || '',
+                  'aria-label': field.label,
                   onChange: function(e) {
                     var newFields = Object.assign({}, ltFields);
                     newFields[field.key] = e.target.value;

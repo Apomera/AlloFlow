@@ -909,6 +909,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var Heart = ctx.icons.Heart;
       var addToast = ctx.addToast;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
@@ -1054,7 +1056,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ── Tab Navigation ──
-        h('div', { className: 'flex flex-wrap gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
+        h('div', { role: 'tablist', 'aria-label': 'Restorative Circle tabs', className: 'flex flex-wrap gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
           ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges'].map(function(t) {
             var labels = {
               'home': '\uD83C\uDFE0 Types',
@@ -1073,8 +1075,9 @@ window.SelHub = window.SelHub || {
             };
             return h('button', {
               key: t,
+              role: 'tab', 'aria-selected': tab === t,
               onClick: function() { upd('tab', t); },
-              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] ' +
+              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 ' +
                 (tab === t ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700')
             }, labels[t]);
           })
@@ -1734,7 +1737,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'flex items-center gap-2 mb-1' },
                 h('span', { className: 'text-xl' }, catData.emoji),
                 h('h4', { className: 'text-sm font-bold', style: { color: catData.color } }, catData.label),
-                h('span', { className: 'text-[10px] text-slate-400 ml-auto' }, catData.questions.length + ' questions')
+                h('span', { className: 'text-[10px] text-slate-500 ml-auto' }, catData.questions.length + ' questions')
               ),
               catData.questions.map(function(q, i) {
                 return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3 hover:border-amber-400 transition-all' },
@@ -2267,7 +2270,7 @@ window.SelHub = window.SelHub || {
                     style: { width: pct + '%' }
                   })
                 ),
-                h('p', { className: 'text-[10px] text-slate-400 mt-1 text-right' },
+                h('p', { className: 'text-[10px] text-slate-500 mt-1 text-right' },
                   isEarned ? '\u2713 Earned!' : progress + ' / ' + badge.threshold
                 )
               );

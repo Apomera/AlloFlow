@@ -1483,7 +1483,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     onClick: function () { toggleLayer(lt.key); },
 
-                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400')
+                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-500')
 
                   }, lt.icon + " " + lt.label);
 
@@ -1503,6 +1503,8 @@ if (!window._galaxyHasLoadedOnce) {
 
                   type: "range", min: 2500, max: 100000, step: 2500, value: starCount,
 
+                  'aria-label': 'Number of stars',
+
                   onChange: function (e) {
 
                     var val = parseInt(e.target.value);
@@ -1519,7 +1521,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
+                React.createElement("span", { className: "text-[10px] text-slate-500 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
 
               ),
 
@@ -1544,6 +1546,8 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("input", {
 
                     type: "range", min: 0.1, max: 14, step: 0.1, value: cosmicAge,
+
+                    'aria-label': 'Cosmic age in billion years',
 
                     onChange: function (e) {
 
@@ -1844,7 +1848,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         else { upd("quizStreak", 0); }
 
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-500 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
 
                     }, opt);
 
@@ -2381,7 +2385,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("h4", { className: "text-sm font-bold text-white" }, "Star Mass & Classification"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Adjust mass to explore how different stars live and die")
+                    React.createElement("p", { className: "text-[10px] text-slate-500" }, "Adjust mass to explore how different stars live and die")
 
                   ),
 
@@ -2512,7 +2516,7 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("p", { className: "text-[11px] font-bold leading-tight", style: { color: s.color } }, s.name),
-                          React.createElement("p", { className: "text-[9px] text-slate-400 leading-tight" }, s.desc)
+                          React.createElement("p", { className: "text-[9px] text-slate-500 leading-tight" }, s.desc)
                         ),
                         React.createElement("span", { className: "text-[8px] text-slate-600 flex-shrink-0" },
                           s.id === 'nebula' ? "" :
@@ -2625,7 +2629,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         return React.createElement("div", { key: item.l, className: "bg-white rounded-lg p-1.5 text-center border border-slate-100" },
 
-                          React.createElement("div", { className: "text-slate-400 font-bold" }, item.l),
+                          React.createElement("div", { className: "text-slate-500 font-bold" }, item.l),
 
                           React.createElement("div", { className: "font-bold", style: { color: st.color } }, item.v)
 

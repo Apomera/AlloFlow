@@ -54,6 +54,8 @@
       var getStemXP = ctx.getXP;
       var callGemini = ctx.callGemini;
       var gradeLevel = ctx.gradeLevel || '5th Grade';
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
 
       // ── State ──
       var d = (labToolData && labToolData.climateExplorer) || {};
@@ -462,6 +464,7 @@
           el('span', { style: { fontSize: 16, width: 24, textAlign: 'center' } }, emoji),
           el('span', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', width: 60 } }, label),
           el('input', { type: 'range', min: 0, max: 100, value: value, onChange: onChange,
+            'aria-label': label + ' slider',
             style: { flex: 1, accentColor: color, height: 6 } }),
           el('span', { style: { fontSize: 13, fontWeight: 900, color: color, width: 40, textAlign: 'right', fontFamily: 'monospace' } }, value + '%')
         );
@@ -516,7 +519,7 @@
         ),
 
         // ── Tab Bar ──
-        el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(34,197,94,0.1)', padding: '0 16px' } },
+        el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(34,197,94,0.1)', padding: '0 16px' }, role: 'tablist', 'aria-label': 'Climate Explorer sections' },
           [
             { id: 'carbon', icon: '\uD83E\uDDEE', label: 'Carbon Calculator' },
             { id: 'renewables', icon: '\u26A1', label: 'Renewables' },
@@ -525,6 +528,7 @@
           ].map(function(t) {
             var active = tab === t.id;
             return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
+              role: 'tab', 'aria-selected': active,
               style: { padding: '12px 16px', border: 'none', borderBottom: active ? '2px solid #22c55e' : '2px solid transparent', background: 'none', color: active ? '#4ade80' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s' } },
               el('span', null, t.icon), t.label);
           })
@@ -604,6 +608,7 @@
             el('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.08))', border: '1px solid rgba(34,197,94,0.2)', marginTop: 8 } },
               // Canvas donut chart
               el('canvas', { ref: function(c) { if (c) setTimeout(function() { drawDonut(c, ct); }, 0); },
+                'aria-label': 'Interactive climate explorer carbon footprint donut chart visualization', role: 'img',
                 style: { width: '100%', height: 180, display: 'block', marginBottom: 8 } }),
               // Legend
               el('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 8 } },
@@ -708,6 +713,7 @@
               ),
               // Canvas emissions timeline
               el('canvas', { ref: function(c) { if (c) setTimeout(function() { drawTimeline(c, timeline, BASELINE_GT); }, 0); },
+                'aria-label': 'Interactive climate explorer emissions timeline visualization', role: 'img',
                 style: { width: '100%', height: 160, display: 'block', borderRadius: 8, marginBottom: 12, background: 'rgba(0,0,0,0.15)' } }),
 
               // Hopeful message

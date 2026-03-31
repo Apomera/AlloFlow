@@ -291,7 +291,7 @@ window.StemLab = window.StemLab || {
 
       function sliderRow(label, value, min, max, step, onChange, unit) {
         return h('div', { className: 'flex items-center gap-2 mt-1' },
-          h('span', { className: 'text-xs text-slate-400 w-20 shrink-0' }, label),
+          h('span', { className: 'text-xs text-slate-500 w-20 shrink-0' }, label),
           h('input', {
             type: 'range', min: min, max: max, step: step, value: value,
             onChange: function(e) { onChange(parseFloat(e.target.value)); },
@@ -1206,7 +1206,7 @@ window.StemLab = window.StemLab || {
           !showCMOS && sliderRow('Drain V', Vd, 0, 10, 0.5, function(v) { upd('drainVoltage', v); }, ' V'),
           // Current bar
           h('div', { className: 'mt-2 flex items-center gap-2' },
-            h('span', { className: 'text-xs text-slate-400 w-20' }, showCMOS ? 'Output' : 'Current'),
+            h('span', { className: 'text-xs text-slate-500 w-20' }, showCMOS ? 'Output' : 'Current'),
             h('div', { className: 'flex-1 h-3 bg-slate-800 rounded-full overflow-hidden' },
               h('div', { className: 'h-full rounded-full transition-all duration-300 ' + (showCMOS ? (cmosOut ? 'bg-emerald-500' : 'bg-red-500') : isOn ? 'bg-emerald-500' : 'bg-slate-700'),
                 style: { width: (showCMOS ? (cmosOut ? 100 : 0) : currentPct) + '%' }
@@ -1339,8 +1339,8 @@ window.StemLab = window.StemLab || {
           truthTableGrid = h('div', { className: 'mt-2 rounded-lg bg-slate-800/60 border border-slate-700 p-2 overflow-x-auto' },
             h('table', { className: 'w-full text-xs' },
               h('thead', null, h('tr', null,
-                h('th', { className: 'text-left text-slate-400 px-2 py-1' }, 'A'),
-                gate.inputs === 2 && h('th', { className: 'text-left text-slate-400 px-2 py-1' }, 'B'),
+                h('th', { className: 'text-left text-slate-500 px-2 py-1' }, 'A'),
+                gate.inputs === 2 && h('th', { className: 'text-left text-slate-500 px-2 py-1' }, 'B'),
                 h('th', { className: 'text-left text-cyan-400 px-2 py-1' }, 'Q')
               )),
               h('tbody', null, rows.map(function(r, ri) {
@@ -1385,7 +1385,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex items-center gap-3 mt-2' },
-            h('span', { className: 'text-xs text-slate-400' }, h('span', { className: 'font-bold text-slate-300' }, 'Truth: '), gate.truth),
+            h('span', { className: 'text-xs text-slate-500' }, h('span', { className: 'font-bold text-slate-300' }, 'Truth: '), gate.truth),
             pill(d.showTruthGrid ? 'Hide Table' : 'Full Table', d.showTruthGrid, function() { upd('showTruthGrid', !d.showTruthGrid); })
           ),
           truthTableGrid,
@@ -1632,7 +1632,7 @@ window.StemLab = window.StemLab || {
         }
 
         return h('div', null,
-          h('div', { className: 'text-xs text-slate-400 mb-2' }, 'Build a circuit from components. Add parts, then simulate!'),
+          h('div', { className: 'text-xs text-slate-500 mb-2' }, 'Build a circuit from components. Add parts, then simulate!'),
           // Palette
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             COMP_PALETTE.map(function(comp) {
@@ -1656,7 +1656,7 @@ window.StemLab = window.StemLab || {
                     var compInfo = COMP_PALETTE.find(function(p) { return p.type === comp.type; }) || {};
                     return h('div', { key: comp.id, className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600 relative group' },
                       h('span', { className: 'text-lg' }, compInfo.icon || '?'),
-                      h('span', { className: 'text-[10px] text-slate-400' }, comp.value),
+                      h('span', { className: 'text-[10px] text-slate-500' }, comp.value),
                       h('button', {
                         onClick: function() { removeComponent(comp.id); },
                         className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[8px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center',
@@ -1894,7 +1894,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-sm font-bold text-white' }, currentStage.name)
             ),
             h('p', { className: 'text-xs text-slate-300 mb-2' }, currentStage.desc),
-            h('p', { className: 'text-xs text-slate-400 leading-relaxed' }, currentStage.detail)
+            h('p', { className: 'text-xs text-slate-500 leading-relaxed' }, currentStage.detail)
           ),
           // Process parameters (6-8+)
           (gradeBand === '6-8' || gradeBand === '9-12') && (stage === 2 || stage === 5) && h('div', { className: 'mt-2' },

@@ -420,6 +420,7 @@ window.StemLab = window.StemLab || {
           var addToast = ctx.addToast;
           var ArrowLeft = ctx.icons.ArrowLeft;
           var announceToSR = ctx.announceToSR;
+          var a11yClick = ctx.a11yClick;
           var awardXP = ctx.awardXP;
           var setToolSnapshots = ctx.setToolSnapshots;
           var band = getGradeBand(ctx);
@@ -1002,7 +1003,7 @@ window.StemLab = window.StemLab || {
                   var earned = !!badges[b.id];
                   return h('div', { key: b.id, className: 'text-center p-1.5 rounded-lg border ' + (earned ? 'bg-white border-amber-300' : 'bg-slate-50 border-slate-200 opacity-50'), title: b.desc },
                     h('span', { className: 'text-lg block' }, earned ? b.icon : '\uD83D\uDD12'),
-                    h('span', { className: 'text-[7px] font-bold block ' + (earned ? 'text-amber-700' : 'text-slate-400') }, b.name)
+                    h('span', { className: 'text-[7px] font-bold block ' + (earned ? 'text-amber-700' : 'text-slate-500') }, b.name)
                   );
                 })
               )
@@ -1017,7 +1018,8 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd('_aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAI(); },
                   placeholder: 'Ask about genetics, inheritance, alleles...',
-                  className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:outline-none focus:border-sky-400'
+                  'aria-label': 'Ask the genetics tutor',
+                  className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300'
                 }),
                 h('button', {
                   onClick: askAI,
@@ -1117,7 +1119,7 @@ window.StemLab = window.StemLab || {
               // Genotype ratios
               h('div', { className: 'mt-4 bg-slate-50 rounded-lg p-3 text-center' },
                 h('p', { className: 'text-sm font-bold text-slate-600' }, genotypeRatioStr),
-                h('p', { className: 'text-xs text-slate-400 mt-1' },
+                h('p', { className: 'text-xs text-slate-500 mt-1' },
                   blendCount > 0
                     ? 'Phenotype: ' + domCount + '/4 Dominant, ' + blendCount + '/4 ' + (inheritMode === 'incomplete' ? 'Blended' : 'Codominant') + ', ' + recCount + '/4 Recessive'
                     : 'Phenotype: ' + domCount + '/4 Dominant, ' + recCount + '/4 Recessive'
@@ -1175,7 +1177,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-amber-600' }, 'Homo R: ' + (homoR * 25) + '%')
                     )
                   ),
-                  h('div', { className: 'mt-2 text-[8px] text-slate-400 space-y-0.5' },
+                  h('div', { className: 'mt-2 text-[8px] text-slate-500 space-y-0.5' },
                     h('p', null, '\uD83D\uDFE2 Homozygous Dominant (e.g. BB)'),
                     h('p', null, '\uD83D\uDD35 Heterozygous (e.g. Bb)'),
                     h('p', null, '\uD83D\uDFE1 Homozygous Recessive (e.g. bb)')
@@ -1223,7 +1225,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Educational Callout
-              !isDihybrid && h('p', { className: 'mt-3 text-xs text-slate-400 italic' },
+              !isDihybrid && h('p', { className: 'mt-3 text-xs text-slate-500 italic' },
                 (function() {
                   if (inheritMode === 'incomplete') {
                     if (blendCount === 4) return '\uD83D\uDCA1 100% blended phenotype! Both parents are heterozygous \u2014 classic incomplete dominance 1:2:1 ratio.';
@@ -1264,7 +1266,7 @@ window.StemLab = window.StemLab || {
                     className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all ' +
                       (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300')
                   }, isDihybrid ? '\uD83E\uDDEC Dihybrid ON (4\u00D74)' : '\uD83E\uDDEC Dihybrid Cross (4\u00D74)'),
-                  isDihybrid && h('span', { className: 'text-[9px] text-slate-400' }, 'Two genes, 16 offspring combinations')
+                  isDihybrid && h('span', { className: 'text-[9px] text-slate-500' }, 'Two genes, 16 offspring combinations')
                 ),
 
                 isDihybrid && h('div', null,
@@ -1295,6 +1297,7 @@ window.StemLab = window.StemLab || {
                               upd('_diP1G1', na);
                               punnettSound('allele');
                             },
+                            'aria-label': 'Parent 1 Gene 1 allele ' + (i + 1),
                             className: 'px-2 py-1 border border-violet-200 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
@@ -1313,6 +1316,7 @@ window.StemLab = window.StemLab || {
                               upd('_diP1G2', na);
                               punnettSound('allele');
                             },
+                            'aria-label': 'Parent 1 Gene 2 allele ' + (i + 1),
                             className: 'px-2 py-1 border border-violet-200 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
@@ -1401,7 +1405,7 @@ window.StemLab = window.StemLab || {
                         return h('div', { key: cat.key, className: 'bg-' + cat.color + '-50 rounded-lg p-2 text-center border border-' + cat.color + '-200' },
                           h('p', { className: 'text-lg font-bold text-' + cat.color + '-700' }, diPhenoCounts[cat.key] + '/16'),
                           h('p', { className: 'text-[8px] font-bold text-' + cat.color + '-600' }, diPhenoLabel(cat.key)),
-                          h('p', { className: 'text-[8px] text-slate-400' }, (diPhenoCounts[cat.key] / 16 * 100).toFixed(1) + '%')
+                          h('p', { className: 'text-[8px] text-slate-500' }, (diPhenoCounts[cat.key] / 16 * 100).toFixed(1) + '%')
                         );
                       })
                     ),
@@ -1410,7 +1414,7 @@ window.StemLab = window.StemLab || {
                       ? h('p', { className: 'mt-2 text-xs text-emerald-600 font-bold text-center' }, '\uD83C\uDF1F Classic 9:3:3:1 ratio! This is Mendel\'s signature dihybrid ratio from independent assortment.')
                       : diPhenoCounts.DomDom === 4 && diPhenoCounts.DomRec === 4 && diPhenoCounts.RecDom === 4 && diPhenoCounts.RecRec === 4
                         ? h('p', { className: 'mt-2 text-xs text-sky-600 font-bold text-center' }, '\uD83D\uDCA1 1:1:1:1 ratio! This is a dihybrid test cross (double heterozygote \u00D7 double recessive).')
-                        : h('p', { className: 'mt-2 text-xs text-slate-400 italic text-center' }, '\uD83D\uDCA1 Try AaBb \u00D7 AaBb for the classic 9:3:3:1 ratio, or AaBb \u00D7 aabb for a 1:1:1:1 test cross.')
+                        : h('p', { className: 'mt-2 text-xs text-slate-500 italic text-center' }, '\uD83D\uDCA1 Try AaBb \u00D7 AaBb for the classic 9:3:3:1 ratio, or AaBb \u00D7 aabb for a 1:1:1:1 test cross.')
                   ),
 
                   // Dihybrid Quick Crosses
@@ -1445,7 +1449,7 @@ window.StemLab = window.StemLab || {
                   ),
 
                   // Dihybrid educational callout
-                  h('p', { className: 'mt-3 text-xs text-slate-400 italic' },
+                  h('p', { className: 'mt-3 text-xs text-slate-500 italic' },
                     diPreset
                       ? '\uD83D\uDCA1 ' + diPreset.t1name + ' (' + diPreset.domLabel1 + '/' + diPreset.recLabel1 + ') and ' + diPreset.t2name + ' (' + diPreset.domLabel2 + '/' + diPreset.recLabel2 + ') are inherited independently.'
                       : '\uD83D\uDCA1 In dihybrid crosses, each parent forms 4 gamete types. The 4\u00D74 grid shows all 16 possible offspring combinations.'
@@ -1696,7 +1700,7 @@ window.StemLab = window.StemLab || {
                     onClick: function() { upd('popDrift', !popDrift); },
                     className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-500 border-slate-200')
                   }, popDrift ? '\uD83C\uDFB2 Drift ON' : '\uD83C\uDFB2 Drift OFF'),
-                  h('span', { className: 'text-[9px] text-slate-400' }, 'Random genetic drift (stronger in small populations)')
+                  h('span', { className: 'text-[9px] text-slate-500' }, 'Random genetic drift (stronger in small populations)')
                 ),
 
                 // Run / Reset buttons
@@ -1802,7 +1806,7 @@ window.StemLab = window.StemLab || {
                   h('text', { x: 335, y: 140 - popHistory[popHistory.length - 1] * 130, style: { fontSize: '9px', fontWeight: 'bold', fill: '#22c55e' } }, 'p'),
                   h('text', { x: 335, y: 140 - (1 - popHistory[popHistory.length - 1]) * 130, style: { fontSize: '9px', fontWeight: 'bold', fill: '#f59e0b' } }, 'q')
                 ),
-                h('p', { className: 'text-[9px] text-slate-400 mt-1 text-center' },
+                h('p', { className: 'text-[9px] text-slate-500 mt-1 text-center' },
                   'Gen ' + (popHistory.length - 1) + ': p = ' + popHistory[popHistory.length - 1].toFixed(4) + ', q = ' + (1 - popHistory[popHistory.length - 1]).toFixed(4)
                 )
               )
@@ -1869,7 +1873,7 @@ window.StemLab = window.StemLab || {
                     isSelected && h('div', { className: 'mt-2 pt-2 border-t border-' + mc + '-200' },
                       h('p', { className: 'text-[10px] text-slate-600 mb-1' }, t.desc),
                       h('p', { className: 'text-[9px] text-slate-500' }, '\uD83D\uDFE2 Dominant: ' + t.dom + ' | \uD83D\uDFE1 Recessive: ' + t.rec),
-                      h('p', { className: 'text-[9px] text-slate-400' }, '\uD83D\uDCCA Frequency: ' + t.freq)
+                      h('p', { className: 'text-[9px] text-slate-500' }, '\uD83D\uDCCA Frequency: ' + t.freq)
                     )
                   );
                 })
@@ -1896,7 +1900,8 @@ window.StemLab = window.StemLab || {
                   type: 'text', value: dnaSeq,
                   onChange: function(e) { upd('_dnaSeq', e.target.value.toUpperCase().replace(/[^ATCG]/g, '')); },
                   placeholder: 'e.g. ATGCGTACCTGA',
-                  className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-fuchsia-200 rounded-lg focus:outline-none focus:border-fuchsia-400 tracking-widest'
+                  'aria-label': 'DNA template strand sequence',
+                  className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-fuchsia-200 rounded-lg focus:outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-300 tracking-widest'
                 }),
                 h('div', { className: 'flex gap-2 mt-2' },
                   h('button', {
@@ -1968,12 +1973,12 @@ window.StemLab = window.StemLab || {
                           title: AMINO_FULL[aa] || aa
                         },
                           h('span', { className: 'text-xs font-bold block', style: { color: AMINO_COLORS[cat] || '#94a3b8' } }, aa),
-                          h('span', { className: 'text-[7px] text-slate-400 block' }, codons[i]),
+                          h('span', { className: 'text-[7px] text-slate-500 block' }, codons[i]),
                           i < aminos.length - 1 && aa !== 'Stop' ? h('span', { className: 'text-[8px] text-slate-300' }, '\u2192') : null
                         );
                       })
                     ),
-                    h('p', { className: 'text-[9px] text-slate-400 mt-2' }, 'Protein length: ' + aminos.filter(function(a) { return a !== 'Stop'; }).length + ' amino acids')
+                    h('p', { className: 'text-[9px] text-slate-500 mt-2' }, 'Protein length: ' + aminos.filter(function(a) { return a !== 'Stop'; }).length + ' amino acids')
                   ),
 
                   // Color legend
@@ -2088,7 +2093,7 @@ window.StemLab = window.StemLab || {
                       );
                     })(),
 
-                    !mutOriginalDna && h('p', { className: 'text-[9px] text-slate-400 italic' },
+                    !mutOriginalDna && h('p', { className: 'text-[9px] text-slate-500 italic' },
                       'Click a mutation button to see how DNA changes affect the protein. Try all three types!'
                     )
                   )
@@ -2160,7 +2165,7 @@ window.StemLab = window.StemLab || {
                         }, 1500);
                       },
                       className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
-                        (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-400 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-300 hover:bg-violet-50')
+                        (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-300 hover:bg-violet-50')
                     }, opt);
                   })
                 ),
@@ -2261,7 +2266,7 @@ window.StemLab = window.StemLab || {
                           }, 1500);
                         },
                         className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
-                          (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-400 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50')
+                          (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50')
                       }, opt);
                     })
                   ),
@@ -2322,7 +2327,7 @@ window.StemLab = window.StemLab || {
                     },
                       h('span', { className: 'text-xl' }, topic.icon),
                       h('span', { className: 'text-sm font-bold text-slate-700 flex-1' }, topic.title),
-                      h('span', { className: 'text-xs text-slate-400' }, isOpen ? '\u25B2' : '\u25BC')
+                      h('span', { className: 'text-xs text-slate-500' }, isOpen ? '\u25B2' : '\u25BC')
                     ),
                     isOpen && h('div', { className: 'px-3 pb-3' },
                       h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },

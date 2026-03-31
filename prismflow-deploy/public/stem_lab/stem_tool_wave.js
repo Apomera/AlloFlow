@@ -65,7 +65,7 @@ window.StemLab = window.StemLab || {
             }});
           });
         }
-        return h('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Wave Simulator…');
+        return h('div', { className: 'p-8 text-center text-slate-500' }, 'Loading Wave Simulator…');
       }
       return (function() {
 const d = labToolData.wave;
@@ -1265,6 +1265,8 @@ const d = labToolData.wave;
 
                      type: "number", value: a,
 
+                     'aria-label': 'Wave amplitude',
+
                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('amplitude', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(v, f); } catch(ex){} } },
 
                      className: "bg-slate-900 border border-cyan-500 text-cyan-300 rounded px-1.5 py-0.5 mx-0.5 text-center focus:outline-none focus:ring-1 focus:ring-cyan-400 w-16 font-mono shadow-sm",
@@ -1280,6 +1282,8 @@ const d = labToolData.wave;
                  React.createElement("input", {
 
                      type: "number", value: f,
+
+                     'aria-label': 'Wave frequency',
 
                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('frequency', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(a, v); } catch(ex){} } },
 
@@ -1499,7 +1503,7 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), onChange: function (e) { var v = parseFloat(e.target.value); upd(s.k, v); if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); } }, className: "w-full accent-cyan-600" })
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.label, onChange: function (e) { var v = parseFloat(e.target.value); upd(s.k, v); if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); } }, className: "w-full accent-cyan-600" })
 
                 )
 
@@ -1513,7 +1517,7 @@ const d = labToolData.wave;
 
               React.createElement("label", { className: "text-xs font-bold text-pink-700 flex items-center gap-1.5 cursor-pointer" },
 
-                React.createElement("input", { type: "checkbox", checked: !!d.showSecond, onChange: e => upd('showSecond', e.target.checked), className: "accent-pink-600" }),
+                React.createElement("input", { type: "checkbox", checked: !!d.showSecond, 'aria-label': 'Show second wave', onChange: e => upd('showSecond', e.target.checked), className: "accent-pink-600" }),
 
                 "\u223F Show Second Wave (Interference)"
 
@@ -1525,7 +1529,7 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "A2:"),
 
-                  React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': 'Second wave amplitude', onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.amplitude2 || 30)
 
@@ -1535,7 +1539,7 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "f2:"),
 
-                  React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, onChange: e => upd('frequency2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': 'Second wave frequency', onChange: e => upd('frequency2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.frequency2 || 3)
 
@@ -1545,7 +1549,7 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
 
-                  React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': 'Second wave phase', onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
 
@@ -1561,7 +1565,7 @@ const d = labToolData.wave;
 
               React.createElement("label", { className: "text-xs font-bold text-amber-700 flex items-center gap-1.5 cursor-pointer" },
 
-                React.createElement("input", { type: "checkbox", checked: !!d.damping, onChange: e => upd('damping', e.target.checked), className: "accent-amber-600" }),
+                React.createElement("input", { type: "checkbox", checked: !!d.damping, 'aria-label': 'Enable damping', onChange: e => upd('damping', e.target.checked), className: "accent-amber-600" }),
 
                 "\uD83C\uDF0A Damping (Exponential Decay)"
 
@@ -1571,7 +1575,7 @@ const d = labToolData.wave;
 
                 React.createElement("span", { className: "text-[10px] text-amber-500 font-bold" }, "\u03B1:"),
 
-                React.createElement("input", { type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-20 accent-amber-500" }),
+                React.createElement("input", { type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, 'aria-label': 'Damping coefficient', onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-20 accent-amber-500" }),
 
                 React.createElement("span", { className: "text-[10px] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
 
@@ -1587,7 +1591,7 @@ const d = labToolData.wave;
 
                 React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "Source Separation:"),
 
-                React.createElement("input", { type: "range", min: 20, max: 200, step: 5, value: d.rippleSeparation || 80, onChange: e => upd('rippleSeparation', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
+                React.createElement("input", { type: "range", min: 20, max: 200, step: 5, value: d.rippleSeparation || 80, 'aria-label': 'Slit separation', onChange: e => upd('rippleSeparation', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
 
                 React.createElement("span", { className: "text-xs text-indigo-900 font-bold w-6" }, d.rippleSeparation || 80)
 
@@ -1597,7 +1601,7 @@ const d = labToolData.wave;
 
                 React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "Medium Damping:"),
 
-                React.createElement("input", { type: "range", min: 0.000, max: 0.010, step: 0.001, value: d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002, onChange: e => upd('dampingCoeff', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
+                React.createElement("input", { type: "range", min: 0.000, max: 0.010, step: 0.001, value: d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002, 'aria-label': 'Damping coefficient for interference', onChange: e => upd('dampingCoeff', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
 
                 React.createElement("span", { className: "text-xs text-indigo-900 font-bold w-12" }, (d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002).toFixed(3))
 
@@ -1613,7 +1617,7 @@ const d = labToolData.wave;
 
                 "Source Speed (v\u209B):",
 
-                React.createElement("input", { type: "range", min: 0.0, max: 0.95, step: 0.05, value: d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3, onChange: e => upd('sourceSpeed', parseFloat(e.target.value)), className: "w-32 accent-rose-600" }),
+                React.createElement("input", { type: "range", min: 0.0, max: 0.95, step: 0.05, value: d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3, 'aria-label': 'Source speed as fraction of wave speed', onChange: e => upd('sourceSpeed', parseFloat(e.target.value)), className: "w-32 accent-rose-600" }),
 
                 React.createElement("span", { className: "inline-block w-8 text-right" }, Math.round((d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3) * 100) + "%")
 
@@ -1627,7 +1631,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "bg-slate-800 rounded-lg p-3 mb-3 text-center" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
 
               
 
@@ -1661,7 +1665,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
 
                   (d.matchTarget && d.matchTarget.isEquation) ? "Your Equation:" : "Current Equation:",
 

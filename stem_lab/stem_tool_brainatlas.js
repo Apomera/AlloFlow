@@ -3399,7 +3399,7 @@ var d = labToolData.brainAtlas || {};
 
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
 
-                React.createElement("p", { className: "text-xs text-slate-400" }, currentView.desc)
+                React.createElement("p", { className: "text-xs text-slate-500" }, currentView.desc)
 
               )
 
@@ -3994,7 +3994,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Function"),
 
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
 
@@ -4002,7 +4002,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.brodmann && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Brodmann Areas"),
 
                         React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
 
@@ -4010,7 +4010,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.blood && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Blood Supply"),
 
                         React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
 
@@ -4026,7 +4026,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.synthesis && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
 
@@ -4034,7 +4034,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.receptors && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
 
@@ -4042,7 +4042,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.pathways && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
 
@@ -4098,7 +4098,7 @@ var d = labToolData.brainAtlas || {};
 
                         React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
 
-                        React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
+                        React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
 
                       );
 

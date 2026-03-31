@@ -20,6 +20,8 @@ window.StemLab.registerTool('titrationLab', {
     var awardStemXP = ctx.awardXP;
     var setToolSnapshots = ctx.setToolSnapshots;
     var addToast = ctx.addToast;
+    var announceToSR = ctx.announceToSR;
+    var a11yClick = ctx.a11yClick;
 
 var d = (labToolData && labToolData.titrationLab) || {};
 
@@ -901,6 +903,8 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
         type: "range", min: 0, max: maxVol, step: 0.1, value: volumeAdded,
 
         onChange: function (e) { updMulti({ volumeAdded: parseFloat(e.target.value), _prevVolume: volumeAdded }); },
+
+        'aria-label': 'Titrant volume',
 
         className: "flex-1 min-w-[120px] accent-cyan-400",
 
@@ -1797,6 +1801,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             React.createElement("input", {
               type: "range", min: 0.01, max: 18, step: 0.01, value: molarityCalcC1,
               onChange: function(e) { upd('molarityC1', parseFloat(e.target.value)); },
+              'aria-label': 'Stock solution concentration',
               className: "flex-1 accent-violet-500", style: { height: '4px' }
             }),
             React.createElement("span", { className: "text-xs font-mono font-bold text-violet-300 w-16 text-right" }, molarityCalcC1.toFixed(2) + " M")
@@ -1819,6 +1824,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             React.createElement("input", {
               type: "range", min: 0.001, max: molarityCalcC1, step: 0.001, value: Math.min(molarityCalcC2, molarityCalcC1),
               onChange: function(e) { upd('molarityC2', parseFloat(e.target.value)); },
+              'aria-label': 'Target concentration',
               className: "flex-1 accent-cyan-500", style: { height: '4px' }
             }),
             React.createElement("span", { className: "text-xs font-mono font-bold text-cyan-300 w-16 text-right" }, molarityCalcC2.toFixed(3) + " M")
@@ -1830,6 +1836,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             React.createElement("input", {
               type: "range", min: 1, max: 1000, step: 1, value: molarityCalcV1,
               onChange: function(e) { upd('molarityV1', parseFloat(e.target.value)); },
+              'aria-label': 'Final volume',
               className: "flex-1 accent-cyan-500", style: { height: '4px' }
             }),
             React.createElement("span", { className: "text-xs font-mono font-bold text-cyan-300 w-16 text-right" }, molarityCalcV1.toFixed(0) + " mL")

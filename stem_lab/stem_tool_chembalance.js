@@ -377,6 +377,7 @@
       var addToast = ctx.addToast;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var awardXP = ctx.awardXP;
       var setToolSnapshots = ctx.setToolSnapshots;
       var callGemini = ctx.callGemini;
@@ -651,7 +652,7 @@
           d._showAI && h('div', { className: 'mb-3 bg-sky-50 rounded-xl p-3 border border-sky-200' },
             h('p', { className: 'text-[10px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 AI Chemistry Tutor'),
             h('div', { className: 'flex gap-2 mb-2' },
-              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: 'Ask a chemistry question...', className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:outline-none focus:border-sky-400' }),
+              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: 'Ask a chemistry question...', 'aria-label': 'Ask the chemistry tutor', className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:outline-none focus:border-sky-400' }),
               h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
             ),
             d._chemAIResp && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, d._chemAIResp)
@@ -705,7 +706,7 @@
               h('div', { className: 'flex justify-center gap-4 mb-4' },
                 coeffs.map(function(c, i) {
                   return h('div', { key: i, className: 'flex flex-col items-center gap-1' },
-                    h('span', { className: 'text-[9px] font-bold text-slate-400 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
+                    h('span', { className: 'text-[9px] font-bold text-slate-500 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
                     h('button', { onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg' }, '+'),
                     h('span', { className: 'text-2xl font-black text-slate-700 w-9 text-center' }, c),
                     h('button', { onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-500 hover:bg-red-100 transition-colors text-lg' }, '\u2212')
@@ -768,7 +769,7 @@
                     h('span', { className: 'text-2xl' }, rt.icon),
                     h('div', { className: 'flex-1' },
                       h('p', { className: 'text-sm font-bold text-slate-700' }, rt.label),
-                      h('p', { className: 'text-[10px] font-mono text-slate-400' }, rt.pattern)
+                      h('p', { className: 'text-[10px] font-mono text-slate-500' }, rt.pattern)
                     ),
                     h('span', { className: 'text-xs text-slate-400' }, isOpen ? '\u25B2' : '\u25BC')
                   ),
@@ -840,7 +841,7 @@
             // Formula input
             h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200 mb-3' },
               h('label', { className: 'text-[10px] font-bold text-teal-600 uppercase tracking-wider block mb-1' }, '\uD83E\uDDEE Enter Chemical Formula'),
-              h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: 'e.g. H2O, NaCl, Ca(OH)2', className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-200 rounded-lg focus:outline-none focus:border-teal-400 tracking-widest mb-2' }),
+              h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: 'e.g. H2O, NaCl, Ca(OH)2', 'aria-label': 'Chemical formula input', className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-200 rounded-lg focus:outline-none focus:border-teal-400 tracking-widest mb-2' }),
               // Presets
               h('div', { className: 'flex flex-wrap gap-1' },
                 MOLAR_PRESETS.map(function(mp) {
@@ -867,7 +868,7 @@
                     return h('div', { key: el, className: 'flex items-center gap-1.5 bg-slate-50 rounded-lg px-2 py-1 border' },
                       h('div', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-black', style: { backgroundColor: ATOM_COLORS[el] || '#64748b' } }, el),
                       h('span', { className: 'text-[10px] font-bold text-slate-600' }, el + ' \u00D7' + elems[el]),
-                      h('span', { className: 'text-[9px] text-slate-400' }, pct + '%')
+                      h('span', { className: 'text-[9px] text-slate-500' }, pct + '%')
                     );
                   })
                 ),
@@ -875,12 +876,12 @@
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   h('div', null,
                     h('label', { className: 'text-[9px] font-bold text-slate-500 block mb-1' }, 'Grams \u2192 Moles'),
-                    h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
+                    h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', 'aria-label': 'Grams to convert to moles', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
                     stoichGrams && h('p', { className: 'text-[10px] font-bold text-teal-600 mt-1' }, stoichGrams + 'g = ' + (parseFloat(stoichGrams) / mass).toFixed(4) + ' mol')
                   ),
                   h('div', null,
                     h('label', { className: 'text-[9px] font-bold text-slate-500 block mb-1' }, 'Moles \u2192 Grams'),
-                    h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
+                    h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', 'aria-label': 'Moles to convert to grams', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
                     stoichMoles && h('p', { className: 'text-[10px] font-bold text-teal-600 mt-1' }, stoichMoles + ' mol = ' + (parseFloat(stoichMoles) * mass).toFixed(4) + 'g')
                   )
                 )
@@ -990,7 +991,7 @@
                     h('div', { className: 'w-10 h-10 flex items-center justify-center rounded-lg text-2xl', style: { background: sym.color + '15', border: '2px solid ' + sym.color } }, sym.icon),
                     h('div', null,
                       h('p', { className: 'text-[10px] font-bold text-slate-700' }, sym.label),
-                      !isOpen && h('p', { className: 'text-[8px] text-slate-400' }, sym.desc.substring(0, 40) + '...')
+                      !isOpen && h('p', { className: 'text-[8px] text-slate-500' }, sym.desc.substring(0, 40) + '...')
                     )
                   ),
                   isOpen && h('div', { className: 'mt-2 pt-2 border-t border-red-200' },

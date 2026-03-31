@@ -520,6 +520,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
@@ -657,12 +659,14 @@ window.SelHub = window.SelHub || {
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Mindfulness tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', {
             key: tab.id,
+            role: 'tab', 'aria-selected': isActive,
             onClick: function() {
               stopBreathTimer(); stopScanTimer();
               upd({ activeTab: tab.id, breathActive: false, breathPhase: null, scanActive: false });
@@ -1048,6 +1052,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 14, color: sense.color, fontWeight: 700, width: 20, textAlign: 'center', flexShrink: 0 } }, i + 1),
                     h('input', {
                       type: 'text',
+                      'aria-label': sense.sense + ' item ' + (i + 1),
                       placeholder: sense.sense.toLowerCase() + ' #' + (i + 1) + '...',
                       value: (groundInputs[groundStep] && typeof groundInputs[groundStep] === 'object' ? groundInputs[groundStep][i] : '') || '',
                       onChange: function(e) {
@@ -1148,6 +1153,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
             h('textarea', {
               value: gratDraft,
+              'aria-label': 'Gratitude journal entry',
               onChange: function(e) { upd('gratDraft', e.target.value); },
               placeholder: band === 'elementary'
                 ? 'I am thankful for...'
@@ -1430,6 +1436,7 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Goal:'),
                       h('select', {
                         value: weeklyGoal,
+                        'aria-label': 'Weekly mindfulness goal in minutes',
                         onChange: function(e) { upd('weeklyGoal', parseInt(e.target.value) || 3); },
                         style: { padding: '2px 6px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 11 }
                       },
@@ -1951,6 +1958,7 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } }, currentRainStep.guidance[band]),
                   h('textarea', {
                     value: techRainInputs[techRainStep] || '',
+                    'aria-label': 'RAIN technique response',
                     onChange: function(e) {
                       var newInputs = techRainInputs.slice();
                       newInputs[techRainStep] = e.target.value;
@@ -2109,6 +2117,7 @@ window.SelHub = window.SelHub || {
                           h('span', { style: { fontSize: 14, color: sense.color, fontWeight: 700, width: 20, textAlign: 'center', flexShrink: 0 } }, i + 1),
                           h('input', {
                             type: 'text',
+                            'aria-label': sense.sense + ' item ' + (i + 1),
                             placeholder: sense.sense.toLowerCase() + ' #' + (i + 1) + '...',
                             value: (techRainInputs[techStep] && typeof techRainInputs[techStep] === 'object' ? techRainInputs[techStep][i] : '') || '',
                             onChange: function(e) {

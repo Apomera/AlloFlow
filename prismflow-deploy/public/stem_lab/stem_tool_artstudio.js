@@ -1320,11 +1320,11 @@ const d = labToolData.artStudio || {};
 
             ),
 
-            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200" },
+            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200", role: 'tablist', 'aria-label': 'Art Studio sections' },
 
               [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'spirograph', icon: '\uD83C\uDF00', label: 'Spirograph' }, { id: 'generative', icon: '\uD83C\uDF86', label: 'Generative' }, { id: 'spinArt', icon: '\uD83C\uDF00', label: 'Spin Art' }, { id: 'stringArt', icon: '\uD83D\uDD78', label: 'String Art' }, { id: 'opArt', icon: '\uD83D\uDC41', label: 'Op Art' }, { id: 'tessellation', icon: '\uD83D\uDD37', label: 'Tessellation' }, { id: 'fractal', icon: '\uD83D\uDD2E', label: 'Fractals' }, { id: 'gradient', icon: '\uD83C\uDF08', label: 'Gradient' }, { id: 'stereogram', icon: '\uD83D\uDC53', label: 'Stereogram' }, { id: 'life', icon: '\uD83E\uDDEC', label: 'Game of Life' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
 
-                return React.createElement("button", { key: tb.id, onClick: function () { upd('tab', tb.id); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
+                return React.createElement("button", { key: tb.id, onClick: function () { upd('tab', tb.id); }, role: 'tab', 'aria-selected': tab === tb.id, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
 
               })
 
@@ -1334,7 +1334,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
 
-                React.createElement("canvas", { ref: wheelRef, width: 320, height: 320, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
+                React.createElement("canvas", { ref: wheelRef, width: 320, height: 320, role: "img", 'aria-label': 'Interactive color wheel', className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
 
                 React.createElement("div", { className: "flex-1 space-y-3" },
 
@@ -1362,7 +1362,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[10px] font-bold text-pink-600 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
 
                       );
 
@@ -1404,7 +1404,7 @@ const d = labToolData.artStudio || {};
 
                   [{ k: 'mix1H', max: 360, val: mix1.h }, { k: 'mix1S', max: 100, val: mix1.s }, { k: 'mix1L', max: 100, val: mix1.l }].map(function (s) {
 
-                    return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-indigo-500 mb-1" });
+                    return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.k + ' channel', onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-indigo-500 mb-1" });
 
                   })
 
@@ -1416,7 +1416,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("p", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83C\uDFAF Result"),
 
-                  React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
+                  React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), 'aria-label': 'Color mix ratio', onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
 
                   React.createElement("p", { className: "text-[10px] text-slate-500" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
 
@@ -1430,7 +1430,7 @@ const d = labToolData.artStudio || {};
 
                   [{ k: 'mix2H', max: 360, val: mix2.h }, { k: 'mix2S', max: 100, val: mix2.s }, { k: 'mix2L', max: 100, val: mix2.l }].map(function (s) {
 
-                    return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-rose-500 mb-1" });
+                    return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.k + ' filter', onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-rose-500 mb-1" });
 
                   })
 
@@ -1512,7 +1512,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
+              React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, role: "img", 'aria-label': 'Pixel art canvas', className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
 
             ),
 
@@ -1530,7 +1530,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
 
-                React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
+                React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, 'aria-label': 'Brush size', onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
 
@@ -1584,7 +1584,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: '#0f172a' } })
+              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img", 'aria-label': 'Symmetry drawing canvas', key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: '#0f172a' } })
 
               ), // end symmetryCanvasContainer
 
@@ -1632,7 +1632,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] text-slate-500 font-bold" }, s.label + ': ' + s.val),
 
-                      React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
+                      React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.label || s.k, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
 
                     );
 
@@ -1652,7 +1652,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] text-slate-500 font-bold" }, s.label + ': ' + s.val),
 
-                      React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
+                      React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.label || s.k, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
 
                     );
 
@@ -1714,7 +1714,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('spiroReset', Date.now()); }, className: "w-full accent-indigo-600" })
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('spiroReset', Date.now()); }, className: "w-full accent-indigo-600" })
 
                       );
 
@@ -1754,7 +1754,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0f172a' },
+                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'Spirograph canvas', className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0f172a' },
 
                   ref: function (canvas) {
 
@@ -1870,13 +1870,13 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Density:"),
 
-                React.createElement("input", { type: "range", min: 20, max: 300, value: d.genDensity || 100, onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 accent-fuchsia-600" }),
+                React.createElement("input", { type: "range", min: 20, max: 300, value: d.genDensity || 100, 'aria-label': 'Particle density', onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 accent-fuchsia-600" }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-400" }, (d.genDensity || 100) + ' particles')
+                React.createElement("span", { className: "text-[10px] text-slate-500" }, (d.genDensity || 100) + ' particles')
 
               ),
 
-              React.createElement("canvas", { id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0a0a1a' },
+              React.createElement("canvas", { id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, role: "img", 'aria-label': 'Generative art canvas', className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0a0a1a' },
 
                 ref: function (canvas) {
 
@@ -2108,7 +2108,7 @@ const d = labToolData.artStudio || {};
 
               }),
 
-              React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic mt-1" }, "\uD83D\uDC46 Click or drag on the canvas to create particle bursts")
+              React.createElement("p", { className: "text-[10px] text-center text-slate-500 italic mt-1" }, "\uD83D\uDC46 Click or drag on the canvas to create particle bursts")
 
             ),
 
@@ -2120,13 +2120,13 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83C\uDF00 RPM:"),
 
-                React.createElement("input", { type: "range", min: 20, max: 300, value: d.spinRPM || 120, onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 accent-orange-600" }),
+                React.createElement("input", { type: "range", min: 20, max: 300, value: d.spinRPM || 120, 'aria-label': 'Spin speed RPM', onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 accent-orange-600" }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, (d.spinRPM || 120) + ' rpm'),
+                React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, (d.spinRPM || 120) + ' rpm'),
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
 
-                React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
+                React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, 'aria-label': 'Spin brush size', onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
 
                 React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
@@ -2172,7 +2172,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
+              React.createElement("canvas", { id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'Spin art canvas', className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
 
                 ref: function (canvas) {
 
@@ -2331,7 +2331,7 @@ const d = labToolData.artStudio || {};
 
               }),
 
-              React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic mt-1" }, "\uD83D\uDC46 Click and drag to drip paint on the spinning canvas"),
+              React.createElement("p", { className: "text-[10px] text-center text-slate-500 italic mt-1" }, "\uD83D\uDC46 Click and drag to drip paint on the spinning canvas"),
 
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
 
@@ -2397,7 +2397,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('strReset', Date.now()); }, className: "w-full accent-rose-600" })
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('strReset', Date.now()); }, className: "w-full accent-rose-600" })
 
                       );
 
@@ -2437,7 +2437,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0f172a' },
+                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", 'aria-label': 'String art canvas', className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0f172a' },
 
                   ref: function (canvas) {
 
@@ -2643,7 +2643,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[10px] font-bold text-fuchsia-600 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-fuchsia-600" })
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-fuchsia-600" })
 
                       );
 
@@ -2703,7 +2703,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'opArtCanvas', width: 512, height: 512, className: "rounded-xl border-2 border-fuchsia-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
+                React.createElement("canvas", { id: 'opArtCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Op art canvas', className: "rounded-xl border-2 border-fuchsia-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
 
                   ref: function (canvas) {
 
@@ -2991,7 +2991,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-teal-600" })
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-teal-600" })
 
                       );
 
@@ -3065,11 +3065,11 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic" }, "\uD83D\uDC46 Click tiles to cycle their colors")
+                  React.createElement("p", { className: "text-[10px] text-center text-slate-500 italic" }, "\uD83D\uDC46 Click tiles to cycle their colors")
 
                 ),
 
-                React.createElement("canvas", { id: 'tessCanvas', width: 512, height: 512, className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: '#0f172a' },
+                React.createElement("canvas", { id: 'tessCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Tessellation canvas', className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: '#0f172a' },
 
                   key: 'tess-' + (d.tessShape || 'hexagon') + '-' + (d.tessGrid || 6) + '-' + (d.tessRotation || 0) + '-' + (d.tessWarpAmt || 0) + '-' + (d.tessScheme || 'rainbow'),
 
@@ -3427,7 +3427,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[10px] font-bold text-violet-600 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
 
                       );
 
@@ -3447,7 +3447,7 @@ const d = labToolData.artStudio || {};
 
                           React.createElement("label", { className: "text-[10px] font-bold text-violet-600" }, s.label + ': ' + (val / 100).toFixed(2)),
 
-                          React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-500" })
+                          React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-500" })
 
                         );
 
@@ -3527,7 +3527,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'fractalCanvas', width: 512, height: 512, className: "rounded-xl border-2 border-violet-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
+                React.createElement("canvas", { id: 'fractalCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Fractal art canvas', className: "rounded-xl border-2 border-violet-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
 
                   key: 'frac-' + (d.fractalType || 'mandelbrot') + '-' + (d.fractalReset || 0),
 
@@ -3821,7 +3821,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic mt-1" }, "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out")
+              React.createElement("p", { className: "text-[10px] text-center text-slate-500 italic mt-1" }, "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out")
 
             ),
 
@@ -3857,7 +3857,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
 
-                      React.createElement("input", { type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
+                      React.createElement("input", { type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, 'aria-label': 'Gradient angle', onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
 
                     ),
 
@@ -3917,7 +3917,7 @@ const d = labToolData.artStudio || {};
 
                             React.createElement("div", { className: "flex-1" },
 
-                              React.createElement("input", { type: "range", min: 0, max: 360, value: stop.hue, onChange: function (e) {
+                              React.createElement("input", { type: "range", min: 0, max: 360, value: stop.hue, 'aria-label': 'Stop ' + (idx + 1) + ' hue', onChange: function (e) {
 
                                 var newStops = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
 
@@ -3931,7 +3931,7 @@ const d = labToolData.artStudio || {};
 
                             React.createElement("div", { style: { width: 60, flexShrink: 0 } },
 
-                              React.createElement("input", { type: "range", min: 0, max: 100, value: stop.pos, onChange: function (e) {
+                              React.createElement("input", { type: "range", min: 0, max: 100, value: stop.pos, 'aria-label': 'Stop ' + (idx + 1) + ' position', onChange: function (e) {
 
                                 var newStops2 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
 
@@ -3945,7 +3945,7 @@ const d = labToolData.artStudio || {};
 
                             ),
 
-                            React.createElement("span", { className: "text-[9px] text-slate-400 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
+                            React.createElement("span", { className: "text-[9px] text-slate-500 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
 
                             stops.length > 2 && React.createElement("button", { onClick: function () {
 
@@ -3999,7 +3999,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-400" }, "\uD83D\uDCCB CSS Output"),
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDCCB CSS Output"),
 
                       React.createElement("button", { onClick: function () {
 
@@ -4065,7 +4065,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
+                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", 'aria-label': 'Gradient designer canvas', className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
 
                   key: 'grad-' + (d.gradType || 'linear') + '-' + (d.gradAngle || 90) + '-' + (d.gradBlend || 'smooth') + '-' + JSON.stringify(d.gradStops || []),
 
@@ -4359,7 +4359,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
 
-                      React.createElement("input", { type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
+                      React.createElement("input", { type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, 'aria-label': 'Stereogram brush size', onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
                     ),
 
@@ -4389,7 +4389,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
 
                       );
 
@@ -4561,7 +4561,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("p", { className: "text-[10px] font-bold text-cyan-600 mb-1" }, "\uD83C\uDFA8 Depth Map Canvas"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-400 mb-1" }, "White = pops out \u2022 Gray = middle \u2022 Black = far"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-1" }, "White = pops out \u2022 Gray = middle \u2022 Black = far"),
 
                     React.createElement("canvas", { id: 'depthMapCanvas', width: 400, height: 400,
 
@@ -4725,7 +4725,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("p", { className: "text-xs font-bold text-teal-700" }, "\uD83D\uDC53 Stereogram Output"),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-400 mb-1" }, "Relax your eyes and look \u2018through\u2019 the image to see 3D"),
+                  React.createElement("p", { className: "text-[10px] text-slate-500 mb-1" }, "Relax your eyes and look \u2018through\u2019 the image to see 3D"),
 
                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
 
@@ -4963,7 +4963,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\u270F\uFE0F Draw Depth Keyframes"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them."),
+                    React.createElement("p", { className: "text-[10px] text-slate-500" }, "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them."),
 
                     React.createElement("div", { className: "flex gap-1 mb-2" },
 
@@ -4981,7 +4981,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] font-bold text-purple-600" }, "Brush: " + (d.stereoAnimDrawSize || 20)),
 
-                      React.createElement("input", { type: "range", min: 5, max: 60, value: d.stereoAnimDrawSize || 20, onChange: function(e) { upd('stereoAnimDrawSize', parseInt(e.target.value)); }, className: "flex-1 accent-purple-600" })
+                      React.createElement("input", { type: "range", min: 5, max: 60, value: d.stereoAnimDrawSize || 20, 'aria-label': 'Draw size', onChange: function(e) { upd('stereoAnimDrawSize', parseInt(e.target.value)); }, className: "flex-1 accent-purple-600" })
 
                     ),
 
@@ -5173,9 +5173,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83D\uDCC2 Upload Depth Map Image"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform."),
+                    React.createElement("p", { className: "text-[10px] text-slate-500" }, "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform."),
 
                     React.createElement("input", { type: "file", accept: "image/png,image/jpeg,image/webp",
+
+                      'aria-label': 'Upload depth map image',
 
                       className: "text-xs file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200",
 
@@ -5271,7 +5273,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83D\uDD04 Transform Depth Map"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map."),
+                    React.createElement("p", { className: "text-[10px] text-slate-500" }, "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map."),
 
                     React.createElement("div", { className: "mt-2" },
 
@@ -5307,7 +5309,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83E\uDD16 AI-Generated Depth Map"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Describe a 3D scene and AI will generate a depth map, then animate it with a transform."),
+                    React.createElement("p", { className: "text-[10px] text-slate-500" }, "Describe a 3D scene and AI will generate a depth map, then animate it with a transform."),
 
                     callImagen ? React.createElement("div", null,
 
@@ -5435,7 +5437,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, "Frames: " + (d.stereoAnimFrameCount || 12)),
 
-                      React.createElement("input", { type: "range", min: 6, max: 24, value: d.stereoAnimFrameCount || 12, onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                      React.createElement("input", { type: "range", min: 6, max: 24, value: d.stereoAnimFrameCount || 12, 'aria-label': 'Frame count', onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
                     ),
 
@@ -5443,7 +5445,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, "Speed: " + (d.stereoAnimSpeed || 8) + " FPS"),
 
-                      React.createElement("input", { type: "range", min: 2, max: 15, value: d.stereoAnimSpeed || 8, onChange: function(e) { upd('stereoAnimSpeed', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                      React.createElement("input", { type: "range", min: 2, max: 15, value: d.stereoAnimSpeed || 8, 'aria-label': 'Animation speed', onChange: function(e) { upd('stereoAnimSpeed', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
                     )
 
@@ -5477,7 +5479,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, s.label + ': ' + val),
 
-                      React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function(e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                      React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, 'aria-label': s.label, onChange: function(e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
 
                     );
 
@@ -5731,7 +5733,7 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-400 mb-2" }, "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move"),
+                  React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move"),
 
                   React.createElement("canvas", { id: 'stereoAnimCanvas', width: 512, height: 512,
 
@@ -5859,7 +5861,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-0.5" }, 'Speed: ' + (typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10) + ' fps'),
 
-                      React.createElement("input", { type: "range", min: 1, max: 30, value: typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10, onChange: function (e) { upd('lifeSpeed', parseInt(e.target.value)); }, className: "w-full accent-emerald-600" })
+                      React.createElement("input", { type: "range", min: 1, max: 30, value: typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10, 'aria-label': 'Simulation speed', onChange: function (e) { upd('lifeSpeed', parseInt(e.target.value)); }, className: "w-full accent-emerald-600" })
 
                     ),
 
@@ -5935,7 +5937,7 @@ const d = labToolData.artStudio || {};
 
                       ),
 
-                      React.createElement("p", { className: "text-[9px] text-slate-400 mt-1 italic" }, (d.lifeVizMode || 'normal') === 'heatmap' ? '\uD83C\uDF21 Bright = newborn, dark = old survivors' : (d.lifeVizMode || 'normal') === 'xray' ? '\uD83D\uDD2C Numbers show neighbor count \u2014 see WHY cells live/die' : 'Standard cell coloring')
+                      React.createElement("p", { className: "text-[9px] text-slate-500 mt-1 italic" }, (d.lifeVizMode || 'normal') === 'heatmap' ? '\uD83C\uDF21 Bright = newborn, dark = old survivors' : (d.lifeVizMode || 'normal') === 'xray' ? '\uD83D\uDD2C Numbers show neighbor count \u2014 see WHY cells live/die' : 'Standard cell coloring')
 
                     ),
 
@@ -6061,7 +6063,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[9px] font-bold text-purple-600 block" }, 'Birth (B)'),
 
-                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '3' })
+                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', 'aria-label': 'Birth rule', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '3' })
 
                       ),
 
@@ -6069,7 +6071,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[9px] font-bold text-purple-600 block" }, 'Survival (S)'),
 
-                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '23' })
+                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', 'aria-label': 'Survival rule', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '23' })
 
                       )
 
@@ -6099,7 +6101,7 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    React.createElement("p", { className: "text-[9px] text-slate-400 mt-1 italic" }, 'Currently: B' + (d.lifeRuleB || '3') + '/S' + (d.lifeRuleS || '23') + ((d.lifeRuleB || '3') === '3' && (d.lifeRuleS || '23') === '23' ? ' (Conway\'s classic rules)' : ' (custom rules)'))
+                    React.createElement("p", { className: "text-[9px] text-slate-500 mt-1 italic" }, 'Currently: B' + (d.lifeRuleB || '3') + '/S' + (d.lifeRuleS || '23') + ((d.lifeRuleB || '3') === '3' && (d.lifeRuleS || '23') === '23' ? ' (Conway\'s classic rules)' : ' (custom rules)'))
 
                   ),
 
@@ -6199,7 +6201,7 @@ const d = labToolData.artStudio || {};
 
                         ),
 
-                        React.createElement("p", { className: "text-[10px] italic mt-1 text-slate-400" }, 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!')
+                        React.createElement("p", { className: "text-[10px] italic mt-1 text-slate-500" }, 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!')
 
                       ),
 
@@ -6233,7 +6235,7 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic" }, '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn')
+                  React.createElement("p", { className: "text-[10px] text-center text-slate-500 italic" }, '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn')
 
                 ),
 
@@ -6241,7 +6243,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { id: "lifeCanvasContainer", className: "space-y-2 bg-slate-900 aspect-square flex flex-col items-center justify-center p-2 rounded-xl" },
 
-                  React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600,
+                  React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600, role: "img", 'aria-label': 'Game of Life simulation canvas',
 
                     key: 'life-' + (d.lifeClear || 0) + '-' + (d.lifeSize || 60),
 
@@ -7065,7 +7067,7 @@ const d = labToolData.artStudio || {};
 
                   }),
 
-                  React.createElement("p", { className: "text-[9px] text-center text-slate-400" }, '\uD83D\uDCC8 Population over time')
+                  React.createElement("p", { className: "text-[9px] text-center text-slate-500" }, '\uD83D\uDCC8 Population over time')
 
                 )
 
@@ -7491,13 +7493,15 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               type: "text", value: chartTitle,
 
+              'aria-label': 'Chart title',
+
               onChange: function (e) { updDS('chartTitle', e.target.value); },
 
               placeholder: "Chart title...",
 
-              className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
+              className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center focus:ring-2 focus:ring-indigo-400",
 
-              style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+              style: { background: _card, border: '1px solid ' + _border, color: _text }
 
             }),
 
@@ -7931,11 +7935,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 type: "number", placeholder: "Min", value: filterMin,
 
+                'aria-label': 'Filter minimum value',
+
                 onChange: function (e) { updDS('filterMin', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
-                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
+                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono focus:ring-2 focus:ring-indigo-400",
 
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                style: { background: _card, border: '1px solid ' + _border, color: _text }
 
               }),
 
@@ -7945,11 +7951,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 type: "number", placeholder: "Max", value: filterMax,
 
+                'aria-label': 'Filter maximum value',
+
                 onChange: function (e) { updDS('filterMax', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
-                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
+                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono focus:ring-2 focus:ring-indigo-400",
 
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                style: { background: _card, border: '1px solid ' + _border, color: _text }
 
               }),
 
@@ -8089,19 +8097,23 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   type: "text", placeholder: "Label",
 
+                  'aria-label': 'Data point label',
+
                   value: editRow.label,
 
                   onChange: function (e) { updDS('editRow', { label: e.target.value, value: editRow.value }); },
 
-                  className: "flex-1 px-2 py-1.5 rounded-lg text-xs",
+                  className: "flex-1 px-2 py-1.5 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text }
 
                 }),
 
                 React.createElement("input", {
 
                   type: "number", placeholder: "Value",
+
+                  'aria-label': 'Data point value',
 
                   value: editRow.value,
 
@@ -8119,9 +8131,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   },
 
-                  className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
+                  className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono focus:ring-2 focus:ring-indigo-400",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text }
 
                 }),
 

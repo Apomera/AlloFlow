@@ -443,7 +443,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       value: imageTheme,
       onChange: (e) => setImageTheme(e.target.value),
       placeholder: t("word_sounds.theme_placeholder", "e.g. cartoon, pixel art, realistic..."),
-      className: "w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 outline-none"
+      className: "w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
     }
   ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, t("word_sounds.theme_hint", "Optional: Style for new word images (not glossary)"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.image_display_mode")), /* @__PURE__ */ React.createElement(ImageIcon, { size: 18, className: "text-violet-500" })), /* @__PURE__ */ React.createElement(
     "select",
@@ -451,7 +451,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       "aria-label": t("common.image_display_mode"),
       value: imageVisibilityMode,
       onChange: (e) => setImageVisibilityMode(e.target.value),
-      className: "w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-violet-400 outline-none",
+      className: "w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-violet-400 focus:outline-none",
       title: t("common.control_when_word_images_appear_during_activities")
     },
     /* @__PURE__ */ React.createElement("option", { value: "smart" }, "\u{1F9E0} Smart (Recommended) - Activity-specific"),
@@ -495,7 +495,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       "data-help-key": "ws_gen_family_select",
       value: selectedFamily,
       onChange: (e) => setSelectedFamily(e.target.value),
-      className: "mt-3 w-full p-2 rounded-lg border border-pink-200 bg-white text-sm focus:ring-2 focus:ring-pink-400 outline-none"
+      className: "mt-3 w-full p-2 rounded-lg border border-pink-200 bg-white text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("word_sounds.select_family", "Select family...")),
     Object.keys(WORD_FAMILY_PRESETS).map((k) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, k, " (", WORD_FAMILY_PRESETS[k].length, ")"))
@@ -510,7 +510,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       "data-help-key": "ws_gen_quick_add_input",
       type: "text",
       placeholder: t("word_sounds.add_word", "Add a word..."),
-      className: "flex-1 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 outline-none",
+      className: "flex-1 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none",
       onKeyDown: (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -542,10 +542,11 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
   )), /* @__PURE__ */ React.createElement(
     "textarea",
     {
+      "aria-label": t("word_sounds.type_words", "Type words here"),
       value: customText,
       onChange: (e) => setCustomText(e.target.value),
       placeholder: t("word_sounds.type_words", "Type words here (space or comma separated)..."),
-      className: "mt-2 w-full h-20 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-none"
+      className: "mt-2 w-full h-20 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none resize-none"
     }
   ))), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all ${includeSightWords ? "bg-amber-50 border-amber-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center gap-3 cursor-pointer", onClick: () => setIncludeSightWords((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeSightWords ? "bg-amber-600 border-amber-600" : "border-slate-300"}` }, includeSightWords && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(BookOpen, { size: 18, className: "text-amber-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_sight_words", "\u{1F4DA} Sight Words"))), includeSightWords && /* @__PURE__ */ React.createElement(
     "select",
@@ -553,7 +554,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       "aria-label": t("common.selection"),
       value: selectedSightWordList,
       onChange: (e) => setSelectedSightWordList(e.target.value),
-      className: "mt-3 w-full p-2 rounded-lg border border-amber-200 bg-white text-sm focus:ring-2 focus:ring-amber-400 outline-none"
+      className: "mt-3 w-full p-2 rounded-lg border border-amber-200 bg-white text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "Select a sight word list..."),
     Object.keys(SIGHT_WORD_PRESETS).map((k) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, k, " (", SIGHT_WORD_PRESETS[k].length, " words)"))
@@ -564,7 +565,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       value: aiTopic,
       onChange: (e) => setAiTopic(e.target.value),
       placeholder: "e.g. Space, Ocean...",
-      className: "flex-1 p-2 rounded-lg border border-violet-200 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+      className: "flex-1 p-2 rounded-lg border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -619,7 +620,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
         onDragEnd: () => setDraggedActivity(null),
         className: `bg-white p-3 rounded-lg border transition-all cursor-move ${draggedActivity === activity.id ? "border-indigo-500 shadow-lg scale-[1.02]" : "border-indigo-100 hover:border-indigo-300"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14, className: "text-slate-400 cursor-grab active:cursor-grabbing" }), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14, className: "text-slate-500 cursor-grab active:cursor-grabbing" }), /* @__PURE__ */ React.createElement(
         "input",
         {
           "aria-label": t("common.toggle_enabled"),
@@ -684,7 +685,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${isSelected ? "bg-violet-600 border-violet-600" : "border-slate-300 bg-white"}` }, isSelected && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", { className: `font-bold text-lg capitalize ${isSelected ? "text-violet-900" : "text-slate-600"}` }, word)),
       /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-2 h-2 rounded-full bg-indigo-400", title: t("common.phonemes") }), /* @__PURE__ */ React.createElement("span", { className: "w-2 h-2 rounded-full bg-pink-400", title: t("common.image") }))
     );
-  })) : /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center text-slate-400" }, /* @__PURE__ */ React.createElement(Layers, { size: 48, className: "mb-4 opacity-50" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("word_sounds.no_words", "No words selected")), /* @__PURE__ */ React.createElement("p", { className: "text-sm" }, t("word_sounds.choose_source_hint", "Choose a source to begin")))))));
+  })) : /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center text-slate-500" }, /* @__PURE__ */ React.createElement(Layers, { size: 48, className: "mb-4 opacity-50" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("word_sounds.no_words", "No words selected")), /* @__PURE__ */ React.createElement("p", { className: "text-sm" }, t("word_sounds.choose_source_hint", "Choose a source to begin")))))));
 });
 var WordSoundsReviewPanel = ({
   preloadedWords,
@@ -1013,7 +1014,7 @@ var WordSoundsReviewPanel = ({
     onReorderWords(newList);
     setExpandedIndex(null);
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0" }, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black flex items-center gap-2" }, "\u{1F4CB} Pre-Activity Review", /* @__PURE__ */ React.createElement("span", { className: "relative group ml-2" }, /* @__PURE__ */ React.createElement("span", { className: "cursor-help text-white/70 hover:text-white text-base" }, "\u2139\uFE0F"), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, "single sounds"), " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500" }, 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { className: "text-sm opacity-80 mt-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, "Review and edit words \u2022 ", preloadedWords.length, " words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce" }), " Generating more..."))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { className: "animate-pulse" }, "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0" }, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black flex items-center gap-2" }, "\u{1F4CB} Pre-Activity Review", /* @__PURE__ */ React.createElement("span", { className: "relative group ml-2" }, /* @__PURE__ */ React.createElement("span", { className: "cursor-help text-white/70 hover:text-white text-base" }, "\u2139\uFE0F"), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, "single sounds"), " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500" }, 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { className: "text-sm opacity-80 mt-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, "Review and edit words \u2022 ", preloadedWords.length, " words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce" }), " Generating more..."))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { className: "animate-pulse" }, "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: word.id || `word-${word.targetWord || word.word}-${idx}`,
@@ -1062,7 +1063,7 @@ var WordSoundsReviewPanel = ({
             moveWord(idx, "up");
           },
           disabled: idx === 0,
-          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? "text-slate-200" : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"}`,
+          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? "text-slate-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-600"}`,
           "data-help-key": "word_sounds_review_move_word",
           title: t("common.move_up")
         },
@@ -1076,7 +1077,7 @@ var WordSoundsReviewPanel = ({
             moveWord(idx, "down");
           },
           disabled: idx === preloadedWords.length - 1,
-          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? "text-slate-200" : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"}`,
+          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? "text-slate-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-600"}`,
           "data-help-key": "word_sounds_review_move_word",
           title: t("common.move_down")
         },
@@ -1214,14 +1215,14 @@ var WordSoundsReviewPanel = ({
         /* @__PURE__ */ React.createElement("option", { value: "medium" }, "\u{1F7E1} Medium"),
         /* @__PURE__ */ React.createElement("option", { value: "hard" }, "\u{1F534} Hard")
       ), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full" }, word.phonemes?.length || 0, " sounds")),
-      /* @__PURE__ */ React.createElement(ChevronDown, { size: 20, className: `text-slate-400 transition-transform ${expandedIndex === idx ? "rotate-180" : ""}` })
+      /* @__PURE__ */ React.createElement(ChevronDown, { size: 20, className: `text-slate-500 transition-transform ${expandedIndex === idx ? "rotate-180" : ""}` })
     ),
     expandedIndex === idx && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider" }, t("word_sounds.phonemes")), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => onRegenerateWord && onRegenerateWord(idx),
         disabled: regeneratingIndex === idx,
-        className: `text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? "bg-slate-100 text-slate-400" : "bg-violet-100 text-violet-600 hover:bg-violet-200"}`,
+        className: `text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? "bg-slate-100 text-slate-500" : "bg-violet-100 text-violet-600 hover:bg-violet-200"}`,
         title: "Re-check phonemes with Gemini"
       },
       regeneratingIndex === idx ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" }) : "\u2728",
@@ -1296,7 +1297,7 @@ var WordSoundsReviewPanel = ({
         "aria-label": t("common.rhyme_time_options"),
         value: word.rhymeWord || "",
         onChange: (e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }),
-        className: "px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 outline-none",
+        className: "px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300",
         "data-help-key": "word_sounds_review_distractor_input",
         placeholder: t("common.placeholder_correct_rhyme")
       }
@@ -1310,7 +1311,7 @@ var WordSoundsReviewPanel = ({
           newDist[i] = e.target.value;
           onUpdateWord(idx, { ...word, rhymeDistractors: newDist });
         },
-        className: "flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 outline-none",
+        className: "flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300",
         "data-help-key": "word_sounds_review_distractor_input",
         placeholder: t("common.placeholder_distractor")
       }
@@ -1374,7 +1375,7 @@ var WordSoundsReviewPanel = ({
           newDist[i] = e.target.value;
           onUpdateWord(idx, { ...word, blendingDistractors: newDist });
         },
-        className: "flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 outline-none"
+        className: "flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-300"
       }
     ), /* @__PURE__ */ React.createElement(
       "button",
@@ -1442,7 +1443,7 @@ var WordSoundsReviewPanel = ({
         alt: word.targetWord || word.word,
         className: "w-24 h-24 rounded-xl object-cover border-2 border-indigo-200 shadow-md"
       }
-    ) : /* @__PURE__ */ React.createElement("div", { className: "w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 bg-slate-50" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 32 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement("div", { className: "w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-500 bg-slate-50" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 32 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         "aria-label": t("common.refresh"),

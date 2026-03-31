@@ -1870,6 +1870,7 @@
                 value: turtleSkin,
                 onChange: function(e) { upd('turtleSkin', e.target.value); },
                 title: 'Turtle Skin',
+                'aria-label': 'Turtle skin',
                 className: "px-1.5 py-1 rounded-lg bg-indigo-900/50 text-white text-xs border border-indigo-400/30 cursor-pointer"
               },
                 TURTLE_SKINS.map(function(sk) {
@@ -2076,8 +2077,9 @@
                             React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
                             b.type === 'repeatR' && React.createElement("input", {
                               type: "number", min: 1, max: 20, value: b.times || 3,
+                              'aria-label': 'Repeat count',
                               onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
-                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none"
+                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
                             }),
                             React.createElement("button", {
                               onClick: function() { removeRobotBlock(bi); },
@@ -2244,6 +2246,7 @@
                         // Param editor (single-param basic blocks only)
                         def && def.param && b.type !== 'color' && b.type !== 'goto' && b.type !== 'setVar' && b.type !== 'changeVar' && b.type !== 'ifelse' && React.createElement("input", {
                           type: "number", value: b[def.param] || def.defaultVal,
+                          'aria-label': (def.label || b.type) + ' parameter',
                           onChange: function (e) { updateBlockParam(idx, def.param, parseInt(e.target.value) || def.defaultVal); },
                           className: "w-12 px-1 py-0.5 rounded text-xs bg-white/20 text-white text-center",
                           style: { appearance: 'textfield' }
@@ -2253,6 +2256,7 @@
                           React.createElement("span", { className: "text-[10px] text-white/60" }, "x"),
                           React.createElement("input", {
                             type: "number", value: b.x != null ? b.x : 250,
+                            'aria-label': 'Goto X coordinate',
                             onChange: function (e) { updateBlockParam(idx, 'x', parseInt(e.target.value) || 0); },
                             className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2260,6 +2264,7 @@
                           React.createElement("span", { className: "text-[10px] text-white/60" }, "y"),
                           React.createElement("input", {
                             type: "number", value: b.y != null ? b.y : 250,
+                            'aria-label': 'Goto Y coordinate',
                             onChange: function (e) { updateBlockParam(idx, 'y', parseInt(e.target.value) || 0); },
                             className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2268,6 +2273,7 @@
                         // Color picker
                         b.type === 'color' && React.createElement("input", {
                           type: "color", value: b.color || '#6366f1',
+                          'aria-label': 'Pen color',
                           onChange: function (e) { updateBlockParam(idx, 'color', e.target.value); },
                           className: "w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
                         }),
@@ -2275,6 +2281,7 @@
                         b.type === 'setVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
                           React.createElement("input", {
                             type: "text", value: b.varName || 'size',
+                            'aria-label': 'Variable name',
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
                             className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             placeholder: "name"
@@ -2282,6 +2289,7 @@
                           React.createElement("span", { className: "text-[10px] text-white/60" }, "="),
                           React.createElement("input", {
                             type: "number", value: b.varValue != null ? b.varValue : 50,
+                            'aria-label': 'Variable value',
                             onChange: function (e) { updateBlockParam(idx, 'varValue', parseFloat(e.target.value) || 0); },
                             className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2291,6 +2299,7 @@
                         b.type === 'changeVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
                           React.createElement("input", {
                             type: "text", value: b.varName || 'size',
+                            'aria-label': 'Variable name to change',
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
                             className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             placeholder: "name"
@@ -2298,6 +2307,7 @@
                           React.createElement("span", { className: "text-[10px] text-white/60" }, "+="),
                           React.createElement("input", {
                             type: "number", value: b.varDelta != null ? b.varDelta : 10,
+                            'aria-label': 'Change amount',
                             onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
                             className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2306,6 +2316,7 @@
                         // ── ifelse condition editor ──
                         b.type === 'ifelse' && React.createElement("input", {
                           type: "text", value: b.condition || 'x > 250',
+                          'aria-label': 'If-else condition',
                           onChange: function (e) { updateBlockParam(idx, 'condition', e.target.value); },
                           className: "w-24 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center font-mono",
                           placeholder: "x > 250"
@@ -2452,12 +2463,13 @@
                 ),
                 // Camera Elevation
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[9px] text-slate-400 flex justify-between" },
+                  React.createElement("label", { className: "text-[9px] text-slate-500 flex justify-between" },
                     React.createElement("span", null, "Elevation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotX) + "\u00b0")
                   ),
                   React.createElement("input", {
                     type: "range", min: -90, max: 90, value: cameraRotX,
+                    'aria-label': 'Camera elevation',
                     onChange: function(e) { upd('cameraRotX', parseInt(e.target.value)); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2465,12 +2477,13 @@
                 ),
                 // Camera Azimuth
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[9px] text-slate-400 flex justify-between" },
+                  React.createElement("label", { className: "text-[9px] text-slate-500 flex justify-between" },
                     React.createElement("span", null, "Rotation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotZ) + "\u00b0")
                   ),
                   React.createElement("input", {
                     type: "range", min: 0, max: 360, value: cameraRotZ,
+                    'aria-label': 'Camera rotation',
                     onChange: function(e) { upd('cameraRotZ', parseInt(e.target.value)); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2478,12 +2491,13 @@
                 ),
                 // Zoom
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[9px] text-slate-400 flex justify-between" },
+                  React.createElement("label", { className: "text-[9px] text-slate-500 flex justify-between" },
                     React.createElement("span", null, "Zoom"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, (cameraZoom * 100).toFixed(0) + "%")
                   ),
                   React.createElement("input", {
                     type: "range", min: 30, max: 300, value: Math.round(cameraZoom * 100),
+                    'aria-label': 'Camera zoom',
                     onChange: function(e) { upd('cameraZoom', parseInt(e.target.value) / 100); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2529,6 +2543,7 @@
                   min: 0,
                   max: Math.max(0, timelineFrames.length - 1),
                   value: timelinePos >= 0 ? timelinePos : 0,
+                  'aria-label': 'Animation timeline position',
                   onChange: function(e) { seekTimeline(parseInt(e.target.value)); },
                   className: "w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
                   style: { accentColor: '#6366f1' }

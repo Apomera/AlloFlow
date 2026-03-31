@@ -382,6 +382,26 @@ If `callGemini` or TTS fails in Canvas with `401` or `Failed to fetch`:
 3. **TTS 401 is the same root cause** — if Canvas can't proxy `generateContent`, it also can't proxy `generateContent` for TTS.
 4. The app degrades gracefully: TTS failures are caught and logged; `callGemini` surfaces user-friendly errors.
 
+### Troubleshooting Canvas "Something Went Wrong (13)" Share Error
+
+**Root cause:** Error 13 is a **server-side session/state error**, NOT a content filter. Google's backend caches the processing state of each Canvas artifact. If an artifact's backend state becomes corrupted (network hiccup, server crash during processing, stale session), ALL subsequent share attempts on that artifact will fail with error 13 — even if the content is identical to a working artifact.
+
+**What does NOT cause error 13:**
+- File size (larger files share fine)
+- Specific code patterns or keywords
+- Inline HTML templates or CDN URLs
+- Non-ASCII characters, emoji, or JavaScript syntax
+
+**How to fix it:**
+1. **Create a new Canvas artifact** — paste the same content into a fresh Canvas app. This gets a new backend session. This is the proven fix.
+2. If that doesn't work: clear browser cache/cookies, try incognito, or a different browser.
+
+**How to avoid wasted debugging time:**
+- If error 13 appears, try a fresh artifact FIRST before investigating code content.
+- Keep a known-good shareable artifact URL as backup.
+
+**Lesson learned (March 30, 2026):** Several hours were spent diffing file content, testing CDN hash changes, and considering modularization — when the fix was simply creating a new Canvas app. The identical file shared successfully from a fresh artifact.
+
 ---
 
 ## Accessibility Architecture

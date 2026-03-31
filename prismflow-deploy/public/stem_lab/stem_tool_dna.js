@@ -261,6 +261,7 @@ window.StemLab = window.StemLab || {
       var ArrowLeft = ctx.icons.ArrowLeft;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var awardStemXP = ctx.awardXP;
       var getStemXP = ctx.getXP;
       var setStemLabTool = ctx.setStemLabTool;
@@ -943,7 +944,7 @@ window.StemLab = window.StemLab || {
               h(ArrowLeft, { size: 18, className: "text-slate-500" })),
             h("div", null,
               h("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDEC DNA / Genetics Lab"),
-              h("p", { className: "text-xs text-slate-400" }, "Build \u2022 Replicate \u2022 Transcribe \u2022 Translate \u2022 Mutate \u2022 CRISPR \u2022 Forensics"))
+              h("p", { className: "text-xs text-slate-500" }, "Build \u2022 Replicate \u2022 Transcribe \u2022 Translate \u2022 Mutate \u2022 CRISPR \u2022 Forensics"))
           ),
           h("div", { className: "flex items-center gap-2" },
             h("span", { className: "text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full" }, "\u2B50 " + getStemXP('dnaLab') + "/100 XP"),
@@ -983,7 +984,7 @@ window.StemLab = window.StemLab || {
 
         // ═══ BADGE BAR ═══
         h("div", { className: "flex items-center gap-1 flex-wrap" },
-          h("span", { className: "text-[9px] font-bold text-slate-400 mr-1" }, "\uD83C\uDFC6 " + earnedBadgeCount + "/" + DNA_BADGES.length),
+          h("span", { className: "text-[9px] font-bold text-slate-500 mr-1" }, "\uD83C\uDFC6 " + earnedBadgeCount + "/" + DNA_BADGES.length),
           DNA_BADGES.map(function(b) {
             var earned = badges[b.id];
             return h("span", { key: b.id, className: "w-6 h-6 flex items-center justify-center rounded-full text-xs cursor-default transition-all " + (earned ? 'bg-amber-100 shadow-sm scale-100' : 'bg-slate-100 grayscale opacity-40'), title: b.label + ': ' + b.desc + (earned ? ' \u2705' : '') }, b.icon);
@@ -1014,7 +1015,7 @@ window.StemLab = window.StemLab || {
                 }, base);
               })
             ),
-            h("div", { className: "text-xs text-slate-400" }, "Complement: ", h("span", { className: "font-mono font-bold text-slate-600" }, complementStrand), " | " + dnaSeq.length + " bp"),
+            h("div", { className: "text-xs text-slate-500" }, "Complement: ", h("span", { className: "font-mono font-bold text-slate-600" }, complementStrand), " | " + dnaSeq.length + " bp"),
             h("div", { className: "flex gap-2 text-[10px] text-slate-500 pt-2 border-t border-slate-100" },
               h("span", null, "GC: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'G' || b === 'C'; }).length / dnaSeq.length) * 100) + "%"),
               h("span", null, "AT: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'A' || b === 'T'; }).length / dnaSeq.length) * 100) + "%")
@@ -1086,7 +1087,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex justify-between text-xs text-slate-500 mb-2" }, h("span", null, animStep + "/" + dnaSeq.length), h("span", null, Math.round(animStep / dnaSeq.length * 100) + "%")),
             h("div", { className: "w-full bg-slate-100 rounded-full h-2" }, h("div", { className: "bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full h-2 transition-all", style: { width: (animStep / dnaSeq.length * 100) + '%' } })),
             mRNA && h("div", { className: "mt-3" }, h("span", { className: "text-xs font-bold text-violet-600" }, "mRNA: "), h("span", { className: "font-mono text-xs text-slate-700 break-all" }, mRNA)),
-            h("div", { className: "mt-2 text-[10px] text-slate-400 bg-slate-50 rounded-lg p-2" }, "\uD83D\uDCA1 RNA Polymerase reads template 3'\u21925', builds mRNA 5'\u21923'. T becomes U in RNA.")
+            h("div", { className: "mt-2 text-[10px] text-slate-500 bg-slate-50 rounded-lg p-2" }, "\uD83D\uDCA1 RNA Polymerase reads template 3'\u21925', builds mRNA 5'\u21923'. T becomes U in RNA.")
           )
         ),
 
@@ -1145,7 +1146,7 @@ window.StemLab = window.StemLab || {
               h("div", { className: "font-mono text-xs break-all" },
                 dnaSeq.split('').map(function(base, idx) { return h("span", { key: idx, className: "inline-block w-5 h-5 text-center leading-5 rounded font-bold text-white text-[10px] m-px", style: { background: BASE_COLORS[base] } }, base); })
               ),
-              h("p", { className: "text-[10px] text-slate-400 mt-2" }, "Protein: " + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return p.aa; }).join('-') + (fullProtein.some(function(p) { return p.aa === 'Stop'; }) ? ' [STOP]' : ''))
+              h("p", { className: "text-[10px] text-slate-500 mt-2" }, "Protein: " + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return p.aa; }).join('-') + (fullProtein.some(function(p) { return p.aa === 'Stop'; }) ? ' [STOP]' : ''))
             ),
             (d.mutationLog && d.mutationLog.length > 0) && h("div", { className: "mt-2" },
               h("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "\uD83D\uDCCB Mutation Log:"),
@@ -1317,7 +1318,7 @@ window.StemLab = window.StemLab || {
                   return h("div", { key: idx, className: "flex flex-col items-center gap-0.5 p-1.5 rounded-lg min-w-[44px] hover:scale-105 transition-transform cursor-default", title: pr.full + ' (' + p.codon + ') - ' + pr.type },
                     h("span", { className: "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-sm", style: { background: pr.color } }, pr.abbr),
                     h("span", { className: "text-[8px] font-bold text-slate-600" }, p.aa),
-                    h("span", { className: "text-[7px] text-slate-400 font-mono" }, p.codon),
+                    h("span", { className: "text-[7px] text-slate-500 font-mono" }, p.codon),
                     idx < fullProtein.length - 1 && p.aa !== 'Stop' ? h("span", { className: "text-[8px] text-slate-300" }, '\u2500') : null
                   );
                 })

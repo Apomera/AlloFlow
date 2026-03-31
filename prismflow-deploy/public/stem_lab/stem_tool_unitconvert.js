@@ -58,6 +58,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       var stemBeep = ctx.beep;
       var callGemini = ctx.callGemini;
       var setToolSnapshots = ctx.setToolSnapshots;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
 
       return (function() {
         var d = labToolData.unitConvert || {};
@@ -400,11 +402,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // Tool tabs
-          h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200' },
+          h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Unit Converter sections' },
             [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem']].map(function(item, idx) {
               return h('button', {
                 key: item[0],
                 onClick: function() { upd('tab', item[0]); },
+                role: 'tab', 'aria-selected': tab === item[0],
                 className: 'px-3 py-1.5 text-xs font-bold transition-all ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : 'text-slate-500 hover:text-slate-700'),
                 title: (idx + 1) + ' key'
               }, item[1]);
@@ -432,7 +435,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         if (Object.keys(tu).length >= 3) checkBadges({ tempMaster: true });
                       }
                     },
-                    className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-300 outline-none py-1',
+                    'aria-label': 'Value to convert',
+                    className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-300 outline-none focus:ring-2 focus:ring-cyan-500 py-1',
                     step: '0.01'
                   }),
                   h('select', {
@@ -647,7 +651,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('input', {
                     type: 'number', value: d.value,
                     onChange: function(e) { upd('value', parseFloat(e.target.value) || 0); },
-                    className: 'w-24 text-right text-sm font-bold border border-slate-200 rounded-lg px-2 py-1 outline-none',
+                    className: 'w-24 text-right text-sm font-bold border border-slate-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500',
                     step: '0.01'
                   }),
                   h('span', { className: 'text-xs font-bold text-slate-500' }, d.fromUnit),
@@ -729,7 +733,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('input', {
                       type: 'number', placeholder: 'Your answer...', autoFocus: true,
                       step: '0.01',
-                      className: 'flex-1 px-3 py-2 border-2 border-cyan-200 rounded-lg font-mono text-sm outline-none focus:border-cyan-400',
+                      'aria-label': 'Quiz answer',
+                      className: 'flex-1 px-3 py-2 border-2 border-cyan-200 rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400',
                       onKeyDown: function(e) {
                         if (e.key !== 'Enter') return;
                         var ans = parseFloat(e.target.value);

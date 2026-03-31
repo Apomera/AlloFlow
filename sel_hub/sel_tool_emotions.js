@@ -461,6 +461,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
@@ -554,27 +556,31 @@ window.SelHub = window.SelHub || {
       var showBadgePopup  = d.showBadgePopup || null;
       var showBadgesPanel = d.showBadgesPanel || false;
 
-      // ── Initialize face challenge order (shuffle) ──
-      if (!faceOrder) {
-        var order = FACE_CHALLENGES.map(function(_, i) { return i; });
-        for (var i = order.length - 1; i > 0; i--) {
-          var j = Math.floor(Math.random() * (i + 1));
-          var tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+      // ── Initialize face challenge order (shuffle, deferred to useEffect) ──
+      React.useEffect(function() {
+        var fd = (ctx.toolData && ctx.toolData.emotions) || {};
+        if (!fd.faceOrder) {
+          var order = FACE_CHALLENGES.map(function(_, i) { return i; });
+          for (var i = order.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+          }
+          if (ctx.update) ctx.update('emotions', 'faceOrder', order);
         }
-        upd('faceOrder', order);
-        faceOrder = order;
-      }
+      }, []);
 
-      // ── Initialize body language challenge order ──
-      if (!bodyLangOrder) {
-        var blOrder = BODY_LANGUAGE_CHALLENGES.map(function(_, i) { return i; });
-        for (var bi = blOrder.length - 1; bi > 0; bi--) {
-          var bj = Math.floor(Math.random() * (bi + 1));
-          var btmp = blOrder[bi]; blOrder[bi] = blOrder[bj]; blOrder[bj] = btmp;
+      // ── Initialize body language challenge order (deferred to useEffect) ──
+      React.useEffect(function() {
+        var fd = (ctx.toolData && ctx.toolData.emotions) || {};
+        if (!fd.bodyLangOrder) {
+          var blOrder = BODY_LANGUAGE_CHALLENGES.map(function(_, i) { return i; });
+          for (var bi = blOrder.length - 1; bi > 0; bi--) {
+            var bj = Math.floor(Math.random() * (bi + 1));
+            var btmp = blOrder[bi]; blOrder[bi] = blOrder[bj]; blOrder[bj] = btmp;
+          }
+          if (ctx.update) ctx.update('emotions', 'bodyLangOrder', blOrder);
         }
-        upd('bodyLangOrder', blOrder);
-        bodyLangOrder = blOrder;
-      }
+      }, []);
 
       // ── Vocab Quiz generator ──
       function generateQuiz() {
@@ -640,12 +646,14 @@ window.SelHub = window.SelHub || {
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Emotions Wheel tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', {
             key: tab.id,
+            role: 'tab', 'aria-selected': isActive,
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -1010,6 +1018,7 @@ window.SelHub = window.SelHub || {
               ),
               h('input', {
                 type: 'text', value: checkinFeeling || '',
+                'aria-label': 'Type your own feeling word',
                 onChange: function(e) { upd('checkinFeeling', e.target.value); },
                 placeholder: 'Or type your own word...',
                 style: { width: '100%', marginTop: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
@@ -1026,6 +1035,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 11, color: '#64748b' } }, band === 'elementary' ? 'tiny' : '1'),
               h('input', {
                 type: 'range', min: 1, max: 10, value: checkinIntensity,
+                'aria-label': 'Emotion intensity',
                 onChange: function(e) { upd('checkinIntensity', parseInt(e.target.value)); },
                 style: { flex: 1, accentColor: '#3b82f6' }
               }),
@@ -1045,6 +1055,7 @@ window.SelHub = window.SelHub || {
             ),
             h('textarea', {
               value: checkinNote,
+              'aria-label': 'Emotion check-in note',
               onChange: function(e) { upd('checkinNote', e.target.value); },
               placeholder: band === 'elementary' ? 'My friend said something mean...' : 'Describe the situation briefly...',
               rows: 2,
@@ -1576,6 +1587,7 @@ window.SelHub = window.SelHub || {
               ),
               h('input', {
                 type: 'text', value: journalEmotion,
+                'aria-label': 'Type an emotion for journaling',
                 onChange: function(e) { upd('journalEmotion', e.target.value); },
                 placeholder: 'Or type any emotion...',
                 style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' }
@@ -1583,6 +1595,7 @@ window.SelHub = window.SelHub || {
             ),
             h('textarea', {
               value: journalDraft,
+              'aria-label': 'Emotion journal entry',
               onChange: function(e) { upd('journalDraft', e.target.value); },
               placeholder: band === 'elementary'
                 ? 'Today I felt ___ because ___. It made my body feel ___.'

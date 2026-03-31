@@ -69,6 +69,190 @@
   var Wifi = lucide.Wifi || function() { return null; };
   // ── End dependency shims ───────────────────────────────────────
 
+  // ── Full-Screen Probe Overlay Component ────────────────────────
+  // Renders active probes in a focused full-screen overlay with countdown,
+  // keyboard shortcuts, and large touch targets for rapid teacher scoring.
+  var ProbeOverlay = function ProbeOverlay(props) {
+    var h = React.createElement;
+    var isActive = props.isActive;
+    var probeType = props.probeType || 'Probe';
+    var timer = props.timer;
+    var timerTotal = props.timerTotal || 60;
+    var currentIndex = props.currentIndex || 0;
+    var totalItems = props.totalItems || 0;
+    var correctCount = props.correctCount || 0;
+    var incorrectCount = props.incorrectCount || 0;
+    var onCorrect = props.onCorrect;
+    var onIncorrect = props.onIncorrect;
+    var onSkip = props.onSkip;
+    var onEndEarly = props.onEndEarly;
+    var children = props.children;
+    var showScoreButtons = props.showScoreButtons !== false;
+    var instruction = props.instruction || '';
+
+    var _countdown = React.useState(isActive ? 3 : 0);
+    var countdown = _countdown[0];
+    var setCountdown = _countdown[1];
+    var _started = React.useState(false);
+    var started = _started[0];
+    var setStarted = _started[1];
+    var prevActiveRef = React.useRef(false);
+
+    // Countdown logic: when probe becomes active, show 3-2-1 countdown
+    React.useEffect(function () {
+      if (isActive && !prevActiveRef.current) {
+        setCountdown(3);
+        setStarted(false);
+      }
+      if (!isActive) {
+        setStarted(false);
+        setCountdown(0);
+      }
+      prevActiveRef.current = isActive;
+    }, [isActive]);
+
+    React.useEffect(function () {
+      if (countdown <= 0) {
+        if (isActive && !started) {
+          setStarted(true);
+          if (typeof props.onCountdownDone === 'function') props.onCountdownDone();
+        }
+        return;
+      }
+      var tid = setTimeout(function () { setCountdown(countdown - 1); }, 1000);
+      return function () { clearTimeout(tid); };
+    }, [countdown, isActive, started]);
+
+    // Keyboard shortcuts
+    React.useEffect(function () {
+      if (!isActive || !started || !showScoreButtons) return;
+      function handleKey(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        var key = e.key.toLowerCase();
+        if ((key === '1' || key === 'c' || key === 'arrowright') && onCorrect) {
+          e.preventDefault(); onCorrect();
+        } else if ((key === '2' || key === 'x' || key === 'arrowleft') && onIncorrect) {
+          e.preventDefault(); onIncorrect();
+        } else if ((key === ' ' || key === 's') && onSkip) {
+          e.preventDefault(); onSkip();
+        } else if (key === 'escape' && onEndEarly) {
+          e.preventDefault(); onEndEarly();
+        }
+      }
+      window.addEventListener('keydown', handleKey);
+      return function () { window.removeEventListener('keydown', handleKey); };
+    }, [isActive, started, showScoreButtons, onCorrect, onIncorrect, onSkip, onEndEarly]);
+
+    if (!isActive) return null;
+
+    var timerPct = timerTotal > 0 ? Math.max(0, timer / timerTotal * 100) : 0;
+    var timerMin = Math.floor((timer || 0) / 60);
+    var timerSec = String((timer || 0) % 60).padStart(2, '0');
+    var isTimeLow = timer !== undefined && timer <= 10;
+    var progressPct = totalItems > 0 ? Math.round(currentIndex / totalItems * 100) : 0;
+
+    // Countdown overlay
+    if (countdown > 0) {
+      return ReactDOM.createPortal(
+        h('div', {
+          className: 'fixed inset-0 z-[250] bg-slate-900/95 flex items-center justify-center',
+          style: { backdropFilter: 'blur(8px)' }
+        },
+          h('div', { className: 'text-center' },
+            h('div', {
+              className: 'text-[10rem] font-black text-white animate-pulse',
+              style: { textShadow: '0 0 60px rgba(99,102,241,0.5)' }
+            }, countdown),
+            h('div', { className: 'text-2xl text-white/60 font-bold mt-4' }, probeType + ' — Get Ready'),
+            instruction && h('div', { className: 'text-lg text-white/40 mt-2 max-w-md mx-auto' }, instruction)
+          )
+        ), document.body
+      );
+    }
+
+    // Active probe overlay
+    return ReactDOM.createPortal(
+      h('div', {
+        className: 'fixed inset-0 z-[250] bg-white flex flex-col',
+        style: { minHeight: '100vh' }
+      },
+        // Top bar: probe type, timer, progress, end early
+        h('div', {
+          className: 'flex items-center justify-between px-6 py-3 bg-slate-50 border-b border-slate-200 shrink-0'
+        },
+          h('div', { className: 'flex items-center gap-4' },
+            h('span', {
+              className: 'px-3 py-1 rounded-full text-sm font-black uppercase tracking-wider bg-indigo-100 text-indigo-700'
+            }, probeType),
+            h('span', { className: 'text-sm font-medium text-slate-500' },
+              'Item ' + (currentIndex + 1) + ' of ' + totalItems)
+          ),
+          h('div', { className: 'flex items-center gap-4' },
+            // Score tally
+            h('div', { className: 'flex items-center gap-3 text-sm font-bold' },
+              h('span', { className: 'text-green-600' }, '\u2705 ' + correctCount),
+              h('span', { className: 'text-red-500' }, '\u274C ' + incorrectCount)
+            ),
+            // Timer
+            timer !== undefined && h('div', {
+              className: 'flex items-center gap-2 px-4 py-2 rounded-xl text-lg font-black tabular-nums ' +
+                (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'),
+              'aria-live': 'polite'
+            }, '\u23F1 ' + timerMin + ':' + timerSec),
+            h('button', {
+              onClick: onEndEarly,
+              className: 'px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors'
+            }, '\u23F9 End Early')
+          )
+        ),
+        // Timer progress bar
+        timer !== undefined && h('div', { className: 'w-full bg-slate-100 h-1.5 shrink-0' },
+          h('div', {
+            className: 'h-full transition-all duration-1000 rounded-r ' + (isTimeLow ? 'bg-red-500' : 'bg-indigo-500'),
+            style: { width: timerPct + '%' }
+          })
+        ),
+        // Progress bar
+        h('div', { className: 'w-full bg-slate-100 h-1 shrink-0' },
+          h('div', {
+            className: 'h-full bg-emerald-400 transition-all',
+            style: { width: progressPct + '%' }
+          })
+        ),
+        // Instruction
+        instruction && h('div', {
+          className: 'text-center py-2 text-xs text-slate-500 font-semibold uppercase tracking-wider bg-slate-50/50 shrink-0'
+        }, instruction),
+        // Main content area (probe-specific content)
+        h('div', { className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
+          children
+        ),
+        // Bottom scoring bar (for teacher-scored probes)
+        showScoreButtons && h('div', {
+          className: 'flex items-center justify-center gap-6 px-6 py-5 bg-slate-50 border-t border-slate-200 shrink-0'
+        },
+          h('button', {
+            onClick: onCorrect,
+            className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black text-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-xl shadow-green-200 active:scale-95'
+          }, '\u2705 Correct', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/20 px-2 py-0.5 rounded' }, '1')),
+          h('button', {
+            onClick: onIncorrect,
+            className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-2xl font-black text-xl hover:from-red-600 hover:to-rose-600 transition-all shadow-xl shadow-red-200 active:scale-95'
+          }, '\u274C Incorrect', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/20 px-2 py-0.5 rounded' }, '2')),
+          onSkip && h('button', {
+            onClick: onSkip,
+            className: 'flex items-center gap-2 px-8 py-5 bg-slate-200 text-slate-600 rounded-2xl font-bold text-lg hover:bg-slate-300 transition-all active:scale-95'
+          }, 'Skip \u2192', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/30 px-2 py-0.5 rounded' }, 'Space'))
+        ),
+        // Keyboard hint
+        showScoreButtons && h('div', {
+          className: 'text-center py-1.5 text-[10px] text-slate-500 bg-slate-50 shrink-0'
+        }, 'Keyboard: 1/\u2192/C = Correct \u00B7 2/\u2190/X = Incorrect \u00B7 Space/S = Skip \u00B7 Esc = End Early')
+      ), document.body
+    );
+  };
+  // ── End Probe Overlay ──────────────────────────────────────────
+
   // @section STUDENT_ANALYTICS — RTI probes and student analytics
   const StudentAnalyticsPanel = React.memo(({
     isOpen,
@@ -145,11 +329,6 @@
         loadPsychometricProbes();
       }
     }, []);
-    React.useEffect(() => {
-      if (typeof loadPsychometricProbes === 'function') {
-        loadPsychometricProbes();
-      }
-    }, []);
     const [importProgress, setImportProgress] = React.useState({
       current: 0,
       total: 0
@@ -159,8 +338,25 @@
     const [searchQuery, setSearchQuery] = React.useState('');
     const [showRTISettings, setShowRTISettings] = React.useState(false);
     const [mathProbeGrade, setMathProbeGrade] = React.useState("1");
+    // Independent grade/form state per probe type (decoupled from mathProbeGrade/mathProbeForm)
+    const [nwfGrade, setNwfGrade] = React.useState("K");
+    const [nwfForm, setNwfForm] = React.useState("A");
+    const [lnfForm, setLnfForm] = React.useState("A");
+    const [ranGrade, setRanGrade] = React.useState("K");
+    const [ranForm, setRanForm] = React.useState("A");
+    const [mnGrade, setMnGrade] = React.useState("1");
+    const [mnForm, setMnForm] = React.useState("A");
+    const [qdGrade, setQdGrade] = React.useState("K");
+    const [qdForm, setQdForm] = React.useState("A");
+    // Probe overlay: track whether countdown is done and timer should start
+    const [probeTimerPending, setProbeTimerPending] = React.useState(null); // null or {type, ...params}
     const [mathProbeForm, setMathProbeForm] = React.useState("A");
     const [mathProbeStudent, setMathProbeStudent] = React.useState(null);
+    // Unified active student for all probes
+    const [activeStudent, setActiveStudent] = React.useState(null);
+    // Screening queue state
+    const [screeningQueue, setScreeningQueue] = React.useState([]);
+    const [screeningQueueActive, setScreeningQueueActive] = React.useState(false);
     const [mnProbeActive, setMnProbeActive] = React.useState(false);
     const [mnProbeProblems, setMnProbeProblems] = React.useState([]);
     const [mnProbeIndex, setMnProbeIndex] = React.useState(0);
@@ -182,38 +378,12 @@
         setMnProbeActive(false);
       }
     }, [mnProbeTimer, mnProbeActive, mnProbeProblems, mnProbeResults]);
-    React.useEffect(() => {
-      if (mnProbeActive && mnProbeTimer === 0 && mnProbeTimerRef.current === null && mnProbeProblems.length > 0 && !mnProbeResults) {
-        const answered = mnProbeProblems.filter(p => p.studentAnswer !== null);
-        const correct = answered.filter(p => p.correct).length;
-        setMnProbeResults({
-          correct,
-          total: answered.length,
-          problems: mnProbeProblems,
-          type: 'missing_number'
-        });
-        setMnProbeActive(false);
-      }
-    }, [mnProbeTimer, mnProbeActive, mnProbeProblems, mnProbeResults]);
     const [qdProbeActive, setQdProbeActive] = React.useState(false);
     const [qdProbeProblems, setQdProbeProblems] = React.useState([]);
     const [qdProbeIndex, setQdProbeIndex] = React.useState(0);
     const [qdProbeResults, setQdProbeResults] = React.useState(null);
     const [qdProbeTimer, setQdProbeTimer] = React.useState(0);
     const qdProbeTimerRef = React.useRef(null);
-    React.useEffect(() => {
-      if (qdProbeActive && qdProbeTimer === 0 && qdProbeTimerRef.current === null && qdProbeProblems.length > 0 && !qdProbeResults) {
-        const answered = qdProbeProblems.filter(p => p.studentAnswer !== null);
-        const correct = answered.filter(p => p.correct).length;
-        setQdProbeResults({
-          correct,
-          total: answered.length,
-          problems: qdProbeProblems,
-          type: 'quantity_discrimination'
-        });
-        setQdProbeActive(false);
-      }
-    }, [qdProbeTimer, qdProbeActive, qdProbeProblems, qdProbeResults]);
     React.useEffect(() => {
       if (qdProbeActive && qdProbeTimer === 0 && qdProbeTimerRef.current === null && qdProbeProblems.length > 0 && !qdProbeResults) {
         const answered = qdProbeProblems.filter(p => p.studentAnswer !== null);
@@ -305,6 +475,47 @@
         setOrfProbeActive(false);
       }
     }, [orfProbeTimer, orfProbeActive, orfProbeWords, orfProbeResults, orfProbeLastWord]);
+    // Cleanup all probe timers on unmount to prevent memory leaks
+    React.useEffect(() => {
+      return () => {
+        if (mnProbeTimerRef.current) clearInterval(mnProbeTimerRef.current);
+        if (qdProbeTimerRef.current) clearInterval(qdProbeTimerRef.current);
+        if (nwfProbeTimerRef.current) clearInterval(nwfProbeTimerRef.current);
+        if (lnfProbeTimerRef.current) clearInterval(lnfProbeTimerRef.current);
+        if (ranProbeTimerRef.current) clearInterval(ranProbeTimerRef.current);
+        if (orfProbeTimerRef.current) clearInterval(orfProbeTimerRef.current);
+        if (mathFluencyTimerRef && mathFluencyTimerRef.current) clearInterval(mathFluencyTimerRef.current);
+      };
+    }, []);
+    // Start probe timer after ProbeOverlay countdown completes
+    const startProbeTimer = React.useCallback(() => {
+      if (!probeTimerPending) return;
+      var tp = probeTimerPending;
+      setProbeTimerPending(null);
+      if (tp.type === 'nwf') {
+        if (nwfProbeTimerRef.current) clearInterval(nwfProbeTimerRef.current);
+        nwfProbeTimerRef.current = setInterval(() => {
+          setNwfProbeTimer(prev => {
+            if (prev <= 1) { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; return 0; }
+            return prev - 1;
+          });
+        }, 1000);
+      } else if (tp.type === 'lnf') {
+        if (lnfProbeTimerRef.current) clearInterval(lnfProbeTimerRef.current);
+        lnfProbeTimerRef.current = setInterval(() => {
+          setLnfProbeTimer(prev => {
+            if (prev <= 1) { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; return 0; }
+            return prev - 1;
+          });
+        }, 1000);
+      } else if (tp.type === 'ran') {
+        ranProbeStartRef.current = Date.now();
+        if (ranProbeTimerRef.current) clearInterval(ranProbeTimerRef.current);
+        ranProbeTimerRef.current = setInterval(() => {
+          setRanProbeElapsed(Math.floor((Date.now() - ranProbeStartRef.current) / 1000));
+        }, 250);
+      }
+    }, [probeTimerPending]);
     const [reportStartDate, setReportStartDate] = React.useState('');
     const [reportEndDate, setReportEndDate] = React.useState('');
     const [safetyFlaggingVisible, setSafetyFlaggingVisible] = React.useState(() => {
@@ -758,87 +969,87 @@
         reasons,
         recommendations: recs
       };
-      const classifyScreeningRisk = results => {
-        if (!results || results.length === 0) return {
-          tier: 0,
-          label: 'No Data',
-          color: '#94a3b8',
-          bg: '#f1f5f9',
-          border: '#e2e8f0',
-          emoji: '⚪',
-          avgAccuracy: 0,
-          reasons: []
-        };
-        const exportScreeningCSV = () => {
-          const rows = [['Student', 'Grade', 'Form', 'Date', 'Subtest', 'Correct', 'Total', 'Accuracy%', 'Items/min', 'Risk Level']];
-          importedStudents.forEach(s => {
-            (s.screeningHistory || []).forEach(h => {
-              const risk = h.accuracy >= 80 ? 'Low' : h.accuracy >= 60 ? 'Some' : 'At Risk';
-              rows.push([s.nickname || s.name, h.grade || '', h.form || '', h.timestamp ? new Date(h.timestamp).toLocaleDateString() : '', h.activity || '', h.correct || 0, h.total || 0, h.accuracy || 0, h.itemsPerMin || 0, risk]);
-            });
-          });
-          const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
-          const blob = new Blob([csv], {
-            type: 'text/csv'
-          });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'screening_results_' + new Date().toISOString().slice(0, 10) + '.csv';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          addToast('Screening CSV exported', 'success');
-        };
-        const avgAccuracy = Math.round(results.reduce((s, r) => s + (r.accuracy || 0), 0) / results.length);
-        const reasons = [];
-        let tier = 1;
-        if (avgAccuracy < 60) {
-          tier = 3;
-          reasons.push('Composite accuracy ' + avgAccuracy + '% — intensive support needed');
-        } else if (avgAccuracy < 80) {
-          tier = 2;
-          reasons.push('Composite accuracy ' + avgAccuracy + '% — strategic support recommended');
-        } else {
-          reasons.push('Composite accuracy ' + avgAccuracy + '% — on track');
-        }
-        results.forEach(r => {
-          if (r.accuracy < 50) {
-            tier = Math.max(tier, 3);
-            reasons.push((r.activity || 'Subtest') + ' critically low (' + r.accuracy + '%)');
-          }
-        });
-        const labels = {
-          1: {
-            label: 'Low Risk',
-            color: '#16a34a',
-            bg: '#dcfce7',
-            border: '#86efac',
-            emoji: '🟢'
-          },
-          2: {
-            label: 'Some Risk',
-            color: '#d97706',
-            bg: '#fef9c3',
-            border: '#fcd34d',
-            emoji: '🟡'
-          },
-          3: {
-            label: 'At Risk',
-            color: '#dc2626',
-            bg: '#fee2e2',
-            border: '#fca5a5',
-            emoji: '🔴'
-          }
-        };
-        return {
-          tier,
-          avgAccuracy,
-          reasons,
-          ...labels[tier]
-        };
+    };
+    const classifyScreeningRisk = results => {
+      if (!results || results.length === 0) return {
+        tier: 0,
+        label: 'No Data',
+        color: '#94a3b8',
+        bg: '#f1f5f9',
+        border: '#e2e8f0',
+        emoji: '⚪',
+        avgAccuracy: 0,
+        reasons: []
       };
+      const avgAccuracy = Math.round(results.reduce((s, r) => s + (r.accuracy || 0), 0) / results.length);
+      const reasons = [];
+      let tier = 1;
+      if (avgAccuracy < 60) {
+        tier = 3;
+        reasons.push('Composite accuracy ' + avgAccuracy + '% — intensive support needed');
+      } else if (avgAccuracy < 80) {
+        tier = 2;
+        reasons.push('Composite accuracy ' + avgAccuracy + '% — strategic support recommended');
+      } else {
+        reasons.push('Composite accuracy ' + avgAccuracy + '% — on track');
+      }
+      results.forEach(r => {
+        if (r.accuracy < 50) {
+          tier = Math.max(tier, 3);
+          reasons.push((r.activity || 'Subtest') + ' critically low (' + r.accuracy + '%)');
+        }
+      });
+      const labels = {
+        1: {
+          label: 'Low Risk',
+          color: '#16a34a',
+          bg: '#dcfce7',
+          border: '#86efac',
+          emoji: '🟢'
+        },
+        2: {
+          label: 'Some Risk',
+          color: '#d97706',
+          bg: '#fef9c3',
+          border: '#fcd34d',
+          emoji: '🟡'
+        },
+        3: {
+          label: 'At Risk',
+          color: '#dc2626',
+          bg: '#fee2e2',
+          border: '#fca5a5',
+          emoji: '🔴'
+        }
+      };
+      return {
+        tier,
+        avgAccuracy,
+        reasons,
+        ...labels[tier]
+      };
+    };
+    const exportScreeningCSV = () => {
+      const rows = [['Student', 'Grade', 'Form', 'Date', 'Subtest', 'Correct', 'Total', 'Accuracy%', 'Items/min', 'Risk Level']];
+      importedStudents.forEach(s => {
+        (s.screeningHistory || []).forEach(h => {
+          const risk = h.accuracy >= 80 ? 'Low' : h.accuracy >= 60 ? 'Some' : 'At Risk';
+          rows.push([s.nickname || s.name, h.grade || '', h.form || '', h.timestamp ? new Date(h.timestamp).toLocaleDateString() : '', h.activity || '', h.correct || 0, h.total || 0, h.accuracy || 0, h.itemsPerMin || 0, risk]);
+        });
+      });
+      const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], {
+        type: 'text/csv'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'screening_results_' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addToast('Screening CSV exported', 'success');
     };
     const generateRTICSV = () => {
       if (!importedStudents || importedStudents.length === 0) return;
@@ -900,7 +1111,7 @@
         }, React.createElement('p', {
           className: 'text-sm text-slate-500'
         }, '\u{1F4CA} Need at least 2 progress snapshots to generate insights. Currently: ' + insights.snapshots + ' snapshot(s), ' + insights.probes + ' probe(s).'), React.createElement('p', {
-          className: 'text-xs text-slate-400 mt-1'
+          className: 'text-xs text-slate-500 mt-1'
         }, 'Import student data at different time points to build a longitudinal profile.'));
       }
       const strengthColor = {
@@ -964,7 +1175,7 @@
         key: label,
         className: 'text-center p-2 rounded-lg ' + (val > 0 ? 'bg-emerald-50' : val < 0 ? 'bg-red-50' : 'bg-slate-50')
       }, React.createElement('div', {
-        className: 'text-lg font-black ' + (val > 0 ? 'text-emerald-600' : val < 0 ? 'text-red-500' : 'text-slate-400')
+        className: 'text-lg font-black ' + (val > 0 ? 'text-emerald-600' : val < 0 ? 'text-red-500' : 'text-slate-500')
       }, (val > 0 ? '+' : '') + Math.round(val) + unit), React.createElement('div', {
         className: 'text-[10px] text-slate-500 mt-0.5'
       }, label))))), insights.correlations.practiceToQuiz && !insights.correlations.practiceToQuiz.insufficient ? React.createElement('div', {
@@ -978,7 +1189,7 @@
       }, 'r = ' + insights.correlations.practiceToQuiz.r), React.createElement('div', null, React.createElement('div', {
         className: 'text-xs font-bold ' + (strengthColor[insights.correlations.practiceToQuiz.strength] || '')
       }, insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation'), React.createElement('div', {
-        className: 'text-[10px] text-slate-400'
+        className: 'text-[10px] text-slate-500'
       }, 'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy ↔ Quiz performance)')))) : null, insights.growthTrajectory.length > 1 ? React.createElement('div', {
         className: 'bg-white rounded-xl border border-slate-200 p-4'
       }, React.createElement('h5', {
@@ -1152,6 +1363,7 @@
       }, React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Student'), React.createElement('select', {
+        'aria-label': 'Select student',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: cbmForm.student,
         onChange: e => setCBMForm(p => ({
@@ -1166,6 +1378,7 @@
       }, s.name)))), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'CBM Source'), React.createElement('select', {
+        'aria-label': 'CBM source',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: cbmForm.source,
         onChange: e => setCBMForm(p => ({
@@ -1179,6 +1392,7 @@
       }, s)))), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Measure'), React.createElement('select', {
+        'aria-label': 'CBM measure',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: cbmForm.measure,
         onChange: e => setCBMForm(p => ({
@@ -1195,6 +1409,7 @@
       }, React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Score'), React.createElement('input', {
+        'aria-label': 'CBM score',
         type: 'number',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: cbmForm.score,
@@ -1206,6 +1421,7 @@
       })), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Date'), React.createElement('input', {
+        'aria-label': 'CBM date',
         type: 'date',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: cbmForm.date,
@@ -1218,6 +1434,7 @@
       }, React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Percentile (optional)'), React.createElement('input', {
+        'aria-label': 'CBM percentile',
         type: 'number',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: cbmForm.percentile,
@@ -1229,6 +1446,7 @@
       })), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Benchmark Status'), React.createElement('select', {
+        'aria-label': 'Benchmark status',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: cbmForm.benchmark,
         onChange: e => setCBMForm(p => ({
@@ -1428,6 +1646,7 @@
       }, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, showSurveyModal === 'student' ? 'Student Name' : showSurveyModal === 'teacher' ? 'Teacher Name' : 'Parent/Guardian Name'), React.createElement('input', {
+        'aria-label': 'Survey respondent name',
         type: 'text',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: surveyRespondent,
@@ -1585,7 +1804,7 @@
         fill: '#94a3b8',
         textAnchor: 'end'
       }, Math.round(yMax))), React.createElement('p', {
-        className: 'text-[10px] text-slate-400 text-center mt-1'
+        className: 'text-[10px] text-slate-500 text-center mt-1'
       }, 'Dashed line = trend (' + (slope > 0 ? 'positive' : slope < 0 ? 'negative' : 'flat') + '). ' + snapshots.length + ' data points.'));
     };
     const renderResearchToolbar = () => {
@@ -1719,6 +1938,7 @@
       }, React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Study Name'), React.createElement('input', {
+        'aria-label': 'Study name',
         type: 'text',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: researchSetupForm.studyName,
@@ -1730,6 +1950,7 @@
       })), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Auto-Survey Frequency'), React.createElement('select', {
+        'aria-label': 'Auto-survey frequency',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: researchSetupForm.surveyFrequency,
         onChange: e => setResearchSetupForm(p => ({
@@ -1749,6 +1970,7 @@
       }, 'Never (manual only)'))), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'IRB Number (optional)'), React.createElement('input', {
+        'aria-label': 'IRB number',
         type: 'text',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
         value: researchSetupForm.irb,
@@ -1760,6 +1982,7 @@
       })), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Notes'), React.createElement('textarea', {
+        'aria-label': 'Research notes',
         className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm resize-none',
         rows: 2,
         value: researchSetupForm.notes,
@@ -1895,13 +2118,13 @@
       }, responseRate + '%'), React.createElement('div', {
         className: 'text-[9px] text-slate-500'
       }, 'Survey Response Rate'), React.createElement('div', {
-        className: 'text-[8px] text-slate-400'
+        className: 'text-[8px] text-slate-500'
       }, studentSurveys + '/' + expectedSurveys + ' expected')) : React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
-        className: 'text-sm text-slate-400'
+        className: 'text-sm text-slate-500'
       }, 'No auto-surveys yet'), React.createElement('div', {
-        className: 'text-[9px] text-slate-400'
+        className: 'text-[9px] text-slate-500'
       }, sessionCounter + ' sessions completed')), topActivity ? React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
@@ -1911,9 +2134,9 @@
       }, 'Most Used Activity (' + topActivity[1] + 'x)')) : React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
-        className: 'text-sm text-slate-400'
+        className: 'text-sm text-slate-500'
       }, 'No sessions logged'), React.createElement('div', {
-        className: 'text-[9px] text-slate-400'
+        className: 'text-[9px] text-slate-500'
       }, 'Activities will appear here'))), fidelityLog.length > 0 ? React.createElement('div', {
         className: 'mt-3 bg-white/70 rounded-lg p-3'
       }, React.createElement('h5', {
@@ -1928,9 +2151,9 @@
       }, entry.student), React.createElement('span', {
         className: 'text-slate-500'
       }, entry.activity), React.createElement('span', {
-        className: 'text-slate-400'
+        className: 'text-slate-500'
       }, entry.duration + ' min'), React.createElement('span', {
-        className: 'text-slate-400'
+        className: 'text-slate-500'
       }, entry.weekday + ' ' + new Date(entry.date).toLocaleDateString()))))) : null, React.createElement('div', {
         className: 'mt-3 flex gap-2'
       }, React.createElement('button', {
@@ -2903,12 +3126,16 @@
       className: "flex border-b border-slate-200 bg-slate-50/50 px-4 shrink-0"
     }, [{
       id: 'assessments',
-      label: '🎯 Assessments',
-      desc: 'Probes & benchmarks'
+      label: '🎯 Administer',
+      desc: 'Run probes'
+    }, {
+      id: 'students',
+      label: '📋 Student Data',
+      desc: 'Import & review'
     }, {
       id: 'research',
-      label: '📊 Research & Insights',
-      desc: 'Analytics & growth'
+      label: '📊 Research',
+      desc: 'Insights & growth'
     }].map(tab => /*#__PURE__*/React.createElement("button", {
       key: tab.id,
       onClick: () => {
@@ -2920,21 +3147,88 @@
       },
       className: `flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all ${assessmentCenterTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`
     }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
-      className: `text-[10px] font-normal ${assessmentCenterTab === tab.id ? 'text-indigo-400' : 'text-slate-400'}`
+      className: `text-[10px] font-normal ${assessmentCenterTab === tab.id ? 'text-indigo-400' : 'text-slate-500'}`
     }, tab.desc)))), /*#__PURE__*/React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4",
       style: {
-        display: !isIndependentMode && assessmentCenterTab === 'research' ? 'none' : undefined
+        display: !isIndependentMode && (assessmentCenterTab === 'research' || assessmentCenterTab === 'students') ? 'none' : undefined
       }
-    }, !isIndependentMode && importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
-      className: "mb-3"
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "text",
-      placeholder: t('class_analytics.search_placeholder') || 'Search students...',
-      value: searchQuery,
-      onChange: e => setSearchQuery(e.target.value),
-      className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 outline-none transition-all text-sm"
-    })), isIndependentMode && /*#__PURE__*/React.createElement("div", {
+    },
+    // ── Unified Student Selector + Screening Queue (Administer tab top bar) ──
+    !isIndependentMode && assessmentCenterTab === 'assessments' && React.createElement("div", {
+      className: "mb-4 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-3"
+    },
+      React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
+        React.createElement("div", { className: "flex items-center gap-2" },
+          React.createElement("span", { className: "text-sm font-black text-indigo-700" }, '\uD83C\uDFAF Active Student:'),
+          React.createElement("select", {
+            "aria-label": "Select active student for all probes",
+            value: activeStudent || '',
+            onChange: function(e) {
+              var val = e.target.value || null;
+              setActiveStudent(val);
+              setProbeTargetStudent(val);
+              setMathProbeStudent(val);
+            },
+            className: "text-sm font-bold border-2 border-indigo-300 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[200px]"
+          },
+            React.createElement("option", { value: "" }, '\uD83C\uDFAF Practice Mode (No Student)'),
+            importedStudents.map(function(s) {
+              return React.createElement("option", { key: s.id || s.name, value: s.nickname || s.name }, s.nickname || s.name);
+            }),
+            // Also show roster students if no imports
+            rosterKey && rosterKey.students && Object.keys(rosterKey.students).map(function(name) {
+              if (importedStudents.some(function(s) { return (s.nickname || s.name) === name; })) return null;
+              return React.createElement("option", { key: 'roster-' + name, value: name }, name);
+            })
+          )
+        ),
+        // Screening Queue controls
+        React.createElement("div", { className: "flex items-center gap-2 ml-auto" },
+          screeningQueueActive && screeningQueue.length > 0 && React.createElement("div", {
+            className: "flex items-center gap-1 bg-white/80 px-3 py-1.5 rounded-lg border border-indigo-200"
+          },
+            React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, 'Queue:'),
+            screeningQueue.map(function(name, idx) {
+              return React.createElement("span", {
+                key: idx,
+                className: 'text-xs px-1.5 py-0.5 rounded-full font-medium ' + (name === activeStudent ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600')
+              }, name);
+            }),
+            React.createElement("button", {
+              onClick: function() {
+                if (screeningQueue.length > 0) {
+                  var next = screeningQueue[0];
+                  var rest = screeningQueue.slice(1);
+                  setScreeningQueue(rest);
+                  setActiveStudent(next);
+                  setProbeTargetStudent(next);
+                  setMathProbeStudent(next);
+                  if (rest.length === 0) setScreeningQueueActive(false);
+                  addToast('Now assessing: ' + next, 'info');
+                }
+              },
+              className: "text-xs px-2 py-1 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors ml-1"
+            }, 'Next \u2192')
+          ),
+          !screeningQueueActive && importedStudents.length > 1 && React.createElement("button", {
+            onClick: function() {
+              var names = importedStudents.map(function(s) { return s.nickname || s.name; });
+              setScreeningQueue(names.slice(1));
+              setActiveStudent(names[0]);
+              setProbeTargetStudent(names[0]);
+              setMathProbeStudent(names[0]);
+              setScreeningQueueActive(true);
+              addToast('Screening queue started with ' + names.length + ' students', 'info');
+            },
+            className: "text-xs px-3 py-2 bg-white border border-indigo-300 text-indigo-700 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center gap-1"
+          }, '\uD83D\uDCCB Start Screening Queue')
+        )
+      ),
+      activeStudent && React.createElement("div", { className: "mt-2 text-xs text-indigo-500 font-medium" },
+        'All probes below will record results for: ' + activeStudent
+      )
+    ), isIndependentMode && /*#__PURE__*/React.createElement("div", {
       className: "mb-6 space-y-4"
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-6 rounded-2xl border border-indigo-100"
@@ -2977,24 +3271,26 @@
       value: reportStartDate,
       onChange: e => setReportStartDate(e.target.value),
       className: "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700",
-      placeholder: "Start"
+      placeholder: "Start",
+      "aria-label": "Report start date"
     }), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-400"
+      className: "text-xs text-slate-500"
     }, "to"), /*#__PURE__*/React.createElement("input", {
       type: "date",
       value: reportEndDate,
       onChange: e => setReportEndDate(e.target.value),
       className: "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700",
-      placeholder: "End"
+      placeholder: "End",
+      "aria-label": "Report end date"
     }), (reportStartDate || reportEndDate) && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setReportStartDate('');
         setReportEndDate('');
       },
-      className: "text-xs text-slate-400 hover:text-red-500 px-1",
+      className: "text-xs text-slate-500 hover:text-red-500 px-1",
       title: "Clear dates"
     }, "\u2716")), /*#__PURE__*/React.createElement("p", {
-      className: "text-[10px] text-slate-400 mt-1"
+      className: "text-[10px] text-slate-500 mt-1"
     }, t('learner.leave_empty_all_sessions'))), /*#__PURE__*/React.createElement("button", {
       onClick: () => generateStudentFriendlyReport({
         history,
@@ -3079,7 +3375,7 @@
           setLiveSyncCode('');
         }
       },
-      className: "w-28 px-2 py-1 text-xs border-none bg-transparent outline-none placeholder-blue-300",
+      className: "w-28 px-2 py-1 text-xs border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-300 rounded placeholder-blue-300",
       autoFocus: true,
       "aria-label": t('common.session_code_for_live_sync')
     }), /*#__PURE__*/React.createElement("button", {
@@ -3156,7 +3452,7 @@
       "data-help-key": "dashboard_stat_flags",
       className: `${classSummary.studentsWithFlags > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'} border rounded-xl p-3 text-center`
     }, /*#__PURE__*/React.createElement("div", {
-      className: `text-2xl font-bold ${classSummary.studentsWithFlags > 0 ? 'text-rose-600' : 'text-slate-400'}`
+      className: `text-2xl font-bold ${classSummary.studentsWithFlags > 0 ? 'text-rose-600' : 'text-slate-500'}`
     }, classSummary.studentsWithFlags), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
     }, t('class_analytics.students_with_flags'))), /*#__PURE__*/React.createElement("div", {
@@ -3176,11 +3472,11 @@
     }, "\uD83C\uDFAF RTI Tier Distribution"), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-400"
+      className: "text-xs text-slate-500"
     }, classSummary.totalStudents, " students"), /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.configure_rti_thresholds'),
       onClick: () => setShowRTISettings(true),
-      className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200",
+      className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-500 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200",
       title: t('common.configure_rti_thresholds')
     }, /*#__PURE__*/React.createElement(Settings, {
       size: 14
@@ -3311,7 +3607,7 @@
       size: 18
     })), "RTI Threshold Configuration"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowRTISettings(false),
-      className: "p-2 rounded-full hover:bg-slate-100 text-slate-400",
+      className: "p-2 rounded-full hover:bg-slate-100 text-slate-500",
       "aria-label": t('common.close')
     }, /*#__PURE__*/React.createElement(X, {
       size: 18
@@ -3383,7 +3679,7 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-sm font-semibold text-slate-700"
     }, item.label), /*#__PURE__*/React.createElement("div", {
-      className: "text-xs text-slate-400"
+      className: "text-xs text-slate-500"
     }, item.desc)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("input", {
@@ -3498,7 +3794,7 @@
     }, "\u25B6 Start Battery")), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] text-slate-400 font-semibold"
+      className: "text-[10px] text-slate-500 font-semibold"
     }, "Battery order:"), (GRADE_SUBTEST_BATTERIES[probeGradeLevel] || []).map((act, i, arr) => /*#__PURE__*/React.createElement("span", {
       key: act,
       className: "text-[10px] font-bold text-violet-600"
@@ -3595,7 +3891,7 @@
       "aria-label": "Start math probe",
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-bold text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
     }, "\u25B6 Start Math Probe")), /*#__PURE__*/React.createElement("div", {
-      className: "mt-2 text-[10px] text-slate-400 font-semibold"
+      className: "mt-2 text-[10px] text-slate-500 font-semibold"
     }, window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"] ? `✅ ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].problems.length} problems · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].operation} · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].difficulty}` : "⏳ Loading math probes...")), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -3612,8 +3908,8 @@
       className: "grid grid-cols-1 sm:grid-cols-3 gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: () => {
-        const grade = mathProbeGrade || 'K';
-        const form = mathProbeForm || 'A';
+        const grade = nwfGrade || 'K';
+        const form = nwfForm || 'A';
         if (!window.NWF_PROBE_BANKS || !window.NWF_PROBE_BANKS[grade] || !window.NWF_PROBE_BANKS[grade][form]) {
           addToast('NWF probes not loaded yet — loading now', 'error');
           loadPsychometricProbes();
@@ -3631,18 +3927,8 @@
         setNwfProbeTimer(data.timeLimit || 60);
         setNwfProbeGrade(grade);
         setNwfProbeActive(true);
-        if (nwfProbeTimerRef.current) clearInterval(nwfProbeTimerRef.current);
-        nwfProbeTimerRef.current = setInterval(() => {
-          setNwfProbeTimer(prev => {
-            if (prev <= 1) {
-              clearInterval(nwfProbeTimerRef.current);
-              nwfProbeTimerRef.current = null;
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        addToast('NWF Probe started — 60 seconds', 'info');
+        // Timer starts after ProbeOverlay countdown completes (via onCountdownDone)
+        setProbeTimerPending({ type: 'nwf', timeLimit: data.timeLimit || 60 });
       },
       className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
@@ -3652,11 +3938,11 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "NWF"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-400 font-normal"
+      className: "text-[10px] text-slate-500 font-normal"
     }, t('probes.nwf')))), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         const grade = 'K';
-        const form = mathProbeForm || 'A';
+        const form = lnfForm || 'A';
         if (!window.LNF_PROBE_BANKS || !window.LNF_PROBE_BANKS[grade] || !window.LNF_PROBE_BANKS[grade][form]) {
           addToast('LNF probes not loaded yet — loading now', 'error');
           loadPsychometricProbes();
@@ -3673,18 +3959,7 @@
         setLnfProbeResults(null);
         setLnfProbeTimer(data.timeLimit || 60);
         setLnfProbeActive(true);
-        if (lnfProbeTimerRef.current) clearInterval(lnfProbeTimerRef.current);
-        lnfProbeTimerRef.current = setInterval(() => {
-          setLnfProbeTimer(prev => {
-            if (prev <= 1) {
-              clearInterval(lnfProbeTimerRef.current);
-              lnfProbeTimerRef.current = null;
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        addToast('LNF Probe started — 60 seconds', 'info');
+        setProbeTimerPending({ type: 'lnf', timeLimit: data.timeLimit || 60 });
       },
       className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
@@ -3694,11 +3969,11 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "LNF"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-400 font-normal"
+      className: "text-[10px] text-slate-500 font-normal"
     }, t('probes.lnf')))), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
-        const grade = mathProbeGrade || 'K';
-        const form = mathProbeForm || 'A';
+        const grade = ranGrade || 'K';
+        const form = ranForm || 'A';
         if (!window.RAN_PROBE_BANKS || !window.RAN_PROBE_BANKS[grade] || !window.RAN_PROBE_BANKS[grade][form]) {
           addToast('RAN probes not loaded yet — loading now', 'error');
           loadPsychometricProbes();
@@ -3717,12 +3992,7 @@
         setRanProbeType(data.type || 'colors');
         setRanProbeGrade(grade);
         setRanProbeActive(true);
-        ranProbeStartRef.current = Date.now();
-        if (ranProbeTimerRef.current) clearInterval(ranProbeTimerRef.current);
-        ranProbeTimerRef.current = setInterval(() => {
-          setRanProbeElapsed(Math.floor((Date.now() - ranProbeStartRef.current) / 1000));
-        }, 250);
-        addToast('RAN Probe started — stopwatch running', 'info');
+        setProbeTimerPending({ type: 'ran' });
       },
       className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
@@ -3732,7 +4002,7 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "RAN"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-400 font-normal"
+      className: "text-[10px] text-slate-500 font-normal"
     }, t('probes.ran')))))), nwfProbeActive && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border-2 border-emerald-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
     }, /*#__PURE__*/React.createElement("div", {
@@ -3775,7 +4045,7 @@
         width: `${nwfProbeIndex / nwfProbeWords.length * 100}%`
       }
     })), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wider text-center"
+      className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
     }, "Say: \u201CLook at this word. Tell me the sounds.\u201D \u2014 Score each sound"), nwfProbeTimer > 0 && nwfProbeIndex < nwfProbeWords.length ? (() => {
       const currentWord = nwfProbeWords[nwfProbeIndex];
       const markWord = isCorrect => {
@@ -3808,7 +4078,7 @@
       return /*#__PURE__*/React.createElement("div", {
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
-        className: "text-xs text-slate-400 mb-2 font-semibold uppercase tracking-wider"
+        className: "text-xs text-slate-500 mb-2 font-semibold uppercase tracking-wider"
       }, "Student reads aloud \u2014 Teacher scores"), /*#__PURE__*/React.createElement("div", {
         className: "bg-gradient-to-br from-slate-50 to-emerald-50 rounded-2xl p-8 mb-6 border border-emerald-100"
       }, /*#__PURE__*/React.createElement("div", {
@@ -3842,9 +4112,9 @@
             setNwfProbeActive(false);
           }
         },
-        className: "text-sm text-slate-400 hover:text-slate-600 font-bold px-4 py-2"
+        className: "text-sm text-slate-500 hover:text-slate-600 font-bold px-4 py-2"
       }, "Skip \u2192")), /*#__PURE__*/React.createElement("div", {
-        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-400"
+        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-500"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-green-500 font-bold"
       }, nwfProbeWords.filter(w => w.scored && w.correct).length, " correct"), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
@@ -3855,7 +4125,8 @@
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-lg font-bold text-red-600"
     }, "\u23F0 Time's Up!"))), nwfProbeResults && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-4"
+      className: "mt-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-4",
+      "data-probe-results": "nwf"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "font-bold text-slate-700 mb-2"
     }, "\uD83D\uDD24 NWF Probe Results"), /*#__PURE__*/React.createElement("div", {
@@ -3867,7 +4138,7 @@
     }, nwfProbeResults.cls), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-500"
     }, "CLS"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-400"
+      className: "text-[10px] text-slate-500"
     }, "Correct Letter Sounds")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
@@ -3897,14 +4168,14 @@
           totalScored: nwfProbeResults.totalScored,
           accuracy: nwfProbeResults.totalScored > 0 ? Math.round(nwfProbeResults.correctWords / nwfProbeResults.totalScored * 100) : 0,
           grade: nwfProbeGrade,
-          form: mathProbeForm
+          form: nwfForm
         });
         addToast('NWF results saved for ' + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        const el = event.target.closest("[class*=bg-gradient]");
+      onClick: (event) => {
+        const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
         if (el) {
           const w = window.open("", "_blank");
           w.document.write("<html><head><title>Probe Results - AlloFlow</title><style>body{font-family:system-ui;padding:2rem}h4{margin:0 0 1rem}.grid{display:grid;gap:0.75rem}.bg-white{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}.text-2xl,.text-3xl{font-size:1.5rem;font-weight:bold}</style></head><body>" + el.innerHTML + "<p style=\"color:gray;margin-top:2rem;font-size:12px\">AlloFlow Assessment Center • " + new Date().toLocaleDateString() + "</p></body></html>");
@@ -3912,7 +4183,7 @@
           w.print();
         }
       },
-      className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-400 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
+      className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
     }, "\uD83D\uDDA8\uFE0F Print Results"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setNwfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
@@ -3982,9 +4253,9 @@
         }
       };
       return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-        className: "text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wider text-center"
+        className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
       }, "Student names each letter \u2014 Teacher scores"), /*#__PURE__*/React.createElement("p", {
-        className: "text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wider text-center"
+        className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
       }, "Say: \u201CPoint to each letter and tell me its name.\u201D Start timing on first response"), /*#__PURE__*/React.createElement("div", {
         className: "grid grid-cols-10 gap-1 mb-6"
       }, lnfProbeLetters.map((item, idx) => /*#__PURE__*/React.createElement("div", {
@@ -4017,9 +4288,9 @@
             setLnfProbeActive(false);
           }
         },
-        className: "text-sm text-slate-400 hover:text-slate-600 font-bold px-4 py-2"
+        className: "text-sm text-slate-500 hover:text-slate-600 font-bold px-4 py-2"
       }, "Skip \u2192")), /*#__PURE__*/React.createElement("div", {
-        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-400"
+        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-500"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-green-500 font-bold"
       }, lnfProbeLetters.filter(l => l.scored && l.correct).length, " correct"), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
@@ -4030,7 +4301,8 @@
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-lg font-bold text-red-600"
     }, "\u23F0 Time's Up!"))), lnfProbeResults && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4"
+      className: "mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4",
+      "data-probe-results": "lnf"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "font-bold text-slate-700 mb-2"
     }, "\uD83C\uDD70\uFE0F LNF Probe Results"), /*#__PURE__*/React.createElement("div", {
@@ -4042,7 +4314,7 @@
     }, lnfProbeResults.lpm), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-500"
     }, "LPM"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-400"
+      className: "text-[10px] text-slate-500"
     }, "Letters Per Minute")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
@@ -4066,14 +4338,14 @@
           totalScored: lnfProbeResults.totalScored,
           accuracy: lnfProbeResults.totalScored > 0 ? Math.round(lnfProbeResults.correct / lnfProbeResults.totalScored * 100) : 0,
           grade: 'K',
-          form: mathProbeForm
+          form: lnfForm
         });
         addToast('LNF results saved for ' + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        const el = event.target.closest("[class*=bg-gradient]");
+      onClick: (event) => {
+        const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
         if (el) {
           const w = window.open("", "_blank");
           w.document.write("<html><head><title>Probe Results - AlloFlow</title><style>body{font-family:system-ui;padding:2rem}h4{margin:0 0 1rem}.grid{display:grid;gap:0.75rem}.bg-white{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}.text-2xl,.text-3xl{font-size:1.5rem;font-weight:bold}</style></head><body>" + el.innerHTML + "<p style=\"color:gray;margin-top:2rem;font-size:12px\">AlloFlow Assessment Center • " + new Date().toLocaleDateString() + "</p></body></html>");
@@ -4081,7 +4353,7 @@
           w.print();
         }
       },
-      className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-400 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
+      className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
     }, "\uD83D\uDDA8\uFE0F Print Results"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setLnfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
@@ -4096,7 +4368,7 @@
     }, "\u26A1 RAN PROBE"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-medium text-slate-600"
     }, "Item ", ranProbeIndex + 1, " of ", ranProbeItems.length), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-400 capitalize"
+      className: "text-xs text-slate-500 capitalize"
     }, ranProbeType)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
@@ -4166,7 +4438,7 @@
         }
       };
       return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-        className: "text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wider text-center"
+        className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
       }, "Student names each item as fast as possible \u2014 Teacher scores"), /*#__PURE__*/React.createElement("div", {
         className: "grid grid-cols-10 gap-1.5 mb-6"
       }, ranProbeItems.map((entry, idx) => {
@@ -4215,16 +4487,17 @@
             setRanProbeActive(false);
           }
         },
-        className: "text-sm text-slate-400 hover:text-slate-600 font-bold px-4 py-2"
+        className: "text-sm text-slate-500 hover:text-slate-600 font-bold px-4 py-2"
       }, "Skip \u2192")), /*#__PURE__*/React.createElement("div", {
-        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-400"
+        className: "mt-4 flex items-center justify-center gap-2 text-xs text-slate-500"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-green-500 font-bold"
       }, ranProbeItems.filter(it => it.scored && it.correct).length, " correct"), /*#__PURE__*/React.createElement("span", null, "\xB7"), /*#__PURE__*/React.createElement("span", {
         className: "text-red-500 font-bold"
       }, ranProbeItems.filter(it => it.scored && !it.correct).length, " incorrect")));
     })() : null), ranProbeResults && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4"
+      className: "mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4",
+      "data-probe-results": "ran"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "font-bold text-slate-700 mb-2"
     }, "\u26A1 RAN Probe Results"), /*#__PURE__*/React.createElement("div", {
@@ -4254,7 +4527,7 @@
     }, ranProbeResults.totalScored > 0 ? Math.round(ranProbeResults.correct / ranProbeResults.totalScored * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-500"
     }, "Accuracy"))), /*#__PURE__*/React.createElement("div", {
-      className: "text-center text-xs text-slate-400 mb-2"
+      className: "text-center text-xs text-slate-500 mb-2"
     }, "Type: ", /*#__PURE__*/React.createElement("span", {
       className: "font-bold capitalize"
     }, ranProbeResults.subType), " \xB7 Grade ", ranProbeResults.grade), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
@@ -4269,14 +4542,14 @@
           totalScored: ranProbeResults.totalScored,
           accuracy: ranProbeResults.totalScored > 0 ? Math.round(ranProbeResults.correct / ranProbeResults.totalScored * 100) : 0,
           grade: ranProbeResults.grade,
-          form: mathProbeForm
+          form: ranForm
         });
         addToast('RAN results saved for ' + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-amber-500 text-white rounded-lg font-bold text-sm hover:bg-amber-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        const el = event.target.closest("[class*=bg-gradient]");
+      onClick: (event) => {
+        const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
         if (el) {
           const w = window.open("", "_blank");
           w.document.write("<html><head><title>Probe Results - AlloFlow</title><style>body{font-family:system-ui;padding:2rem}h4{margin:0 0 1rem}.grid{display:grid;gap:0.75rem}.bg-white{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}.text-2xl,.text-3xl{font-size:1.5rem;font-weight:bold}</style></head><body>" + el.innerHTML + "<p style=\"color:gray;margin-top:2rem;font-size:12px\">AlloFlow Assessment Center • " + new Date().toLocaleDateString() + "</p></body></html>");
@@ -4284,7 +4557,7 @@
           w.print();
         }
       },
-      className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-400 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
+      className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
     }, "\uD83D\uDDA8\uFE0F Print Results"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setRanProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
@@ -4319,7 +4592,7 @@
         width: `${orfProbeTimer > 0 ? (60 - orfProbeTimer) / 60 * 100 : 100}%`
       }
     })), orfProbeTimer > 0 ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wider text-center"
+      className: "text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider text-center"
     }, "Say: \u201CStart here. Read this story aloud. Do your best reading.\u201D Tap words read INCORRECTLY"), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-slate-50 to-rose-50 rounded-2xl p-6 mb-4 border border-rose-100 leading-relaxed"
     }, orfProbeWords.map((item, idx) => /*#__PURE__*/React.createElement("span", {
@@ -4334,7 +4607,7 @@
       },
       className: `inline-block cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none ${item.error ? 'bg-red-200 text-red-700 line-through font-bold' : 'hover:bg-rose-100 text-slate-800'}`
     }, item.word))), /*#__PURE__*/React.createElement("div", {
-      className: "text-center text-xs text-slate-400"
+      className: "text-center text-xs text-slate-500"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-red-500 font-bold"
     }, orfProbeWords.filter(w => w.error).length, " errors marked"), /*#__PURE__*/React.createElement("span", {
@@ -4365,7 +4638,8 @@
       },
       className: `inline-block cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none hover:bg-amber-200 hover:ring-2 hover:ring-amber-400 ${item.error ? 'bg-red-200 text-red-700 line-through' : 'text-slate-800'}`
     }, item.word)))) : null), orfProbeResults && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200 p-4"
+      className: "mt-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200 p-4",
+      "data-probe-results": "orf"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "font-bold text-slate-700 mb-2"
     }, "\uD83D\uDCD6 ORF Probe Results \u2014 ", orfProbeResults.title), /*#__PURE__*/React.createElement("div", {
@@ -4377,7 +4651,7 @@
     }, orfProbeResults.wcpm), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-500 font-bold"
     }, "WCPM"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-400"
+      className: "text-[10px] text-slate-500"
     }, "Words Correct Per Min")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
@@ -4428,11 +4702,11 @@
         key: oi,
         className: `text-xs px-2 py-1 rounded-full cursor-default ${opt === q.answer ? 'bg-green-100 text-green-700 font-bold ring-1 ring-green-300' : 'bg-slate-100 text-slate-500'}`
       }, opt, " ", opt === q.answer ? '✅' : ''))))), /*#__PURE__*/React.createElement("p", {
-        className: "text-[10px] text-slate-400 mt-2 italic"
+        className: "text-[10px] text-slate-500 mt-2 italic"
       }, "Ask each question orally. Correct answers highlighted."));
     })(), /*#__PURE__*/React.createElement("button", {
-      onClick: () => {
-        const el = event.target.closest("[class*=bg-gradient]");
+      onClick: (event) => {
+        const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
         if (el) {
           const w = window.open("", "_blank");
           w.document.write("<html><head><title>Probe Results - AlloFlow</title><style>body{font-family:system-ui;padding:2rem}h4{margin:0 0 1rem}.grid{display:grid;gap:0.75rem}.bg-white{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}.text-2xl,.text-3xl{font-size:1.5rem;font-weight:bold}</style></head><body>" + el.innerHTML + "<p style=\"color:gray;margin-top:2rem;font-size:12px\">AlloFlow Assessment Center • " + new Date().toLocaleDateString() + "</p></body></html>");
@@ -4440,7 +4714,7 @@
           w.print();
         }
       },
-      className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-400 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
+      className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
     }, "\uD83D\uDDA8\uFE0F Print Results"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setOrfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
@@ -4474,8 +4748,8 @@
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
       "aria-label": "Missing number probe grade",
-      value: mathProbeGrade || "1",
-      onChange: e => setMathProbeGrade(e.target.value),
+      value: mnGrade || "1",
+      onChange: e => setMnGrade(e.target.value),
       className: "text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
@@ -4485,8 +4759,8 @@
       value: "2"
     }, "Grade 2")), /*#__PURE__*/React.createElement("select", {
       "aria-label": "Missing number form",
-      value: mathProbeForm || "A",
-      onChange: e => setMathProbeForm(e.target.value),
+      value: mnForm || "A",
+      onChange: e => setMnForm(e.target.value),
       className: "text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-purple-50 text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
@@ -4496,8 +4770,8 @@
       value: "C"
     }, "Form C (Spring)")), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
-        const grade = mathProbeGrade || "1";
-        const form = mathProbeForm || "A";
+        const grade = mnGrade || "1";
+        const form = mnForm || "A";
         const bank = window.MISSING_NUMBER_PROBES;
         if (!bank || !bank[grade] || !bank[grade][form]) {
           addToast("Missing Number probes not loaded yet", "error");
@@ -4581,6 +4855,7 @@
       }, /*#__PURE__*/React.createElement("input", {
         ref: mnProbeInputRef,
         type: "number",
+        "aria-label": "Math probe answer",
         value: mnProbeAnswer,
         onChange: e => setMnProbeAnswer(e.target.value),
         onKeyDown: e => {
@@ -4642,7 +4917,7 @@
             setMnProbeActive(false);
           }
         },
-        className: "text-sm text-slate-400 hover:text-slate-600 font-bold"
+        className: "text-sm text-slate-500 hover:text-slate-600 font-bold"
       }, "Skip \u2192")));
     })() : /*#__PURE__*/React.createElement("div", {
       className: "text-center py-4"
@@ -4694,8 +4969,8 @@
           correct: mnProbeResults.correct,
           total: mnProbeResults.total,
           accuracy: mnProbeResults.total > 0 ? Math.round(mnProbeResults.correct / mnProbeResults.total * 100) : 0,
-          grade: mathProbeGrade,
-          form: mathProbeForm
+          grade: mnGrade,
+          form: mnForm
         });
         addToast(`Probe results saved for ${mathProbeStudent}`, 'success');
       },
@@ -4716,8 +4991,8 @@
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
       "aria-label": "QD probe grade",
-      value: mathProbeGrade || "K",
-      onChange: e => setMathProbeGrade(e.target.value),
+      value: qdGrade || "K",
+      onChange: e => setQdGrade(e.target.value),
       className: "text-xs font-bold border border-cyan-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
@@ -4725,8 +5000,8 @@
       value: "1"
     }, "Grade 1")), /*#__PURE__*/React.createElement("select", {
       "aria-label": "QD form",
-      value: mathProbeForm || "A",
-      onChange: e => setMathProbeForm(e.target.value),
+      value: qdForm || "A",
+      onChange: e => setQdForm(e.target.value),
       className: "text-xs font-bold border border-cyan-200 rounded-lg px-3 py-2 bg-cyan-50 text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
@@ -4736,8 +5011,8 @@
       value: "C"
     }, "Form C (Spring)")), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
-        const grade = mathProbeGrade || "K";
-        const form = mathProbeForm || "A";
+        const grade = qdGrade || "K";
+        const form = qdForm || "A";
         const bank = window.QUANTITY_DISCRIMINATION_PROBES;
         if (!bank || !bank[grade] || !bank[grade][form]) {
           addToast("Quantity Discrimination probes not loaded yet", "error");
@@ -4892,8 +5167,8 @@
           correct: qdProbeResults.correct,
           total: qdProbeResults.total,
           accuracy: qdProbeResults.total > 0 ? Math.round(qdProbeResults.correct / qdProbeResults.total * 100) : 0,
-          grade: mathProbeGrade,
-          form: mathProbeForm
+          grade: qdGrade,
+          form: qdForm
         });
         addToast(`QD results saved for ${mathProbeStudent}`, 'success');
       },
@@ -4914,8 +5189,8 @@
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
       "aria-label": "NWF grade",
-      value: mathProbeGrade || "K",
-      onChange: e => setMathProbeGrade(e.target.value),
+      value: nwfGrade || "K",
+      onChange: e => setNwfGrade(e.target.value),
       className: "text-xs font-bold border border-emerald-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
@@ -4923,8 +5198,8 @@
       value: "1"
     }, "Grade 1")), /*#__PURE__*/React.createElement("select", {
       "aria-label": "NWF form",
-      value: mathProbeForm || "A",
-      onChange: e => setMathProbeForm(e.target.value),
+      value: nwfForm || "A",
+      onChange: e => setNwfForm(e.target.value),
       className: "text-xs font-bold border border-emerald-200 rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
@@ -4934,7 +5209,7 @@
       value: "C"
     }, "Form C (Spring)")), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-emerald-600 font-medium"
-    }, window.NWF_PROBE_BANKS ? `✅ ${window.NWF_PROBE_BANKS[mathProbeGrade || "K"]?.[mathProbeForm || "A"]?.words?.length || 0} words loaded` : "⏳ Loading..."))), /*#__PURE__*/React.createElement("div", {
+    }, window.NWF_PROBE_BANKS ? `✅ ${window.NWF_PROBE_BANKS[nwfGrade || "K"]?.[nwfForm || "A"]?.words?.length || 0} words loaded` : "⏳ Loading..."))), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-4 mb-4 border border-rose-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-3"
@@ -4950,8 +5225,8 @@
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
       "aria-label": "LNF form",
-      value: mathProbeForm || "A",
-      onChange: e => setMathProbeForm(e.target.value),
+      value: lnfForm || "A",
+      onChange: e => setLnfForm(e.target.value),
       className: "text-xs font-bold border border-rose-200 rounded-lg px-3 py-2 bg-rose-50 text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
@@ -4961,7 +5236,7 @@
       value: "C"
     }, "Form C (Spring)")), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-rose-600 font-medium"
-    }, window.LNF_PROBE_BANKS ? `✅ ${window.LNF_PROBE_BANKS["K"]?.[mathProbeForm || "A"]?.letters?.length || 0} letters loaded` : "⏳ Loading..."))), /*#__PURE__*/React.createElement("div", {
+    }, window.LNF_PROBE_BANKS ? `✅ ${window.LNF_PROBE_BANKS["K"]?.[lnfForm || "A"]?.letters?.length || 0} letters loaded` : "⏳ Loading..."))), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 mb-4 border border-amber-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-3"
@@ -4977,8 +5252,8 @@
       className: "flex gap-2 items-center flex-wrap"
     }, /*#__PURE__*/React.createElement("select", {
       "aria-label": "RAN grade",
-      value: mathProbeGrade || "K",
-      onChange: e => setMathProbeGrade(e.target.value),
+      value: ranGrade || "K",
+      onChange: e => setRanGrade(e.target.value),
       className: "text-xs font-bold border border-amber-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
@@ -4988,8 +5263,8 @@
       value: "2"
     }, "Grade 2 (Numbers)")), /*#__PURE__*/React.createElement("select", {
       "aria-label": "RAN form",
-      value: mathProbeForm || "A",
-      onChange: e => setMathProbeForm(e.target.value),
+      value: ranForm || "A",
+      onChange: e => setRanForm(e.target.value),
       className: "text-xs font-bold border border-amber-200 rounded-lg px-3 py-2 bg-amber-50 text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
@@ -4999,7 +5274,7 @@
       value: "C"
     }, "Form C (Spring)")), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-amber-600 font-medium"
-    }, window.RAN_PROBE_BANKS && window.RAN_PROBE_BANKS[mathProbeGrade || "K"]?.[mathProbeForm || "A"] ? `✅ ${window.RAN_PROBE_BANKS[mathProbeGrade || "K"][mathProbeForm || "A"].type} · ${window.RAN_PROBE_BANKS[mathProbeGrade || "K"][mathProbeForm || "A"].items.length} items` : "⏳ Loading..."))), importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, window.RAN_PROBE_BANKS && window.RAN_PROBE_BANKS[ranGrade || "K"]?.[ranForm || "A"] ? `✅ ${window.RAN_PROBE_BANKS[ranGrade || "K"][ranForm || "A"].type} · ${window.RAN_PROBE_BANKS[ranGrade || "K"][ranForm || "A"].items.length} items` : "⏳ Loading..."))), importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 mb-3 items-center"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: generateRTICSV,
@@ -5109,7 +5384,7 @@
         color: student.stats.focusRatio >= 80 ? '#166534' : student.stats.focusRatio >= 50 ? '#854d0e' : '#991b1b'
       }
     }, student.stats.focusRatio, "%") : /*#__PURE__*/React.createElement("span", {
-      className: "text-slate-300"
+      className: "text-slate-400"
     }, "\u2014")), safetyFlaggingVisible && /*#__PURE__*/React.createElement("td", {
       className: "p-2 text-center"
     }, (() => {
@@ -5135,7 +5410,7 @@
     }, (() => {
       const af = computeAnomalyFlags(student);
       if (af.length === 0) return /*#__PURE__*/React.createElement("span", {
-        className: "text-slate-300"
+        className: "text-slate-400"
       }, "\u2014");
       return /*#__PURE__*/React.createElement("div", {
         className: "flex flex-wrap gap-0.5 justify-center"
@@ -5537,6 +5812,7 @@
         }, "Baseline"), /*#__PURE__*/React.createElement("input", {
           type: "number",
           placeholder: latestWCPM || '—',
+          "aria-label": "Baseline score",
           defaultValue: studentGoal?.baseline || '',
           id: `rti-baseline-${selectedStudent.name}`,
           style: {
@@ -5558,6 +5834,7 @@
         }, t('probes.target_wcpm')), /*#__PURE__*/React.createElement("input", {
           type: "number",
           placeholder: "e.g. 72",
+          "aria-label": "Target WCPM",
           defaultValue: studentGoal?.target || '',
           id: `rti-target-${selectedStudent.name}`,
           style: {
@@ -5578,6 +5855,7 @@
           }
         }, t('probes.target_date')), /*#__PURE__*/React.createElement("input", {
           type: "date",
+          "aria-label": "Target date",
           defaultValue: studentGoal?.targetDate || '',
           id: `rti-date-${selectedStudent.name}`,
           style: {
@@ -5821,6 +6099,7 @@
       }, "Program/Curriculum"), /*#__PURE__*/React.createElement("input", {
         type: "text",
         placeholder: "e.g. Wilson Reading",
+        "aria-label": "Program or curriculum",
         id: `intv-program-${selectedStudent.name}`,
         style: {
           width: '100%',
@@ -5838,6 +6117,7 @@
           marginBottom: '2px'
         }
       }, "Frequency"), /*#__PURE__*/React.createElement("select", {
+        "aria-label": "Intervention frequency",
         id: `intv-freq-${selectedStudent.name}`,
         style: {
           width: '100%',
@@ -5865,6 +6145,7 @@
       }, "Minutes/Session"), /*#__PURE__*/React.createElement("input", {
         type: "number",
         placeholder: "30",
+        "aria-label": "Minutes per session",
         id: `intv-min-${selectedStudent.name}`,
         style: {
           width: '100%',
@@ -5884,6 +6165,7 @@
       }, t('probes.group_size')), /*#__PURE__*/React.createElement("input", {
         type: "number",
         placeholder: "4",
+        "aria-label": "Group size",
         id: `intv-group-${selectedStudent.name}`,
         style: {
           width: '100%',
@@ -5909,6 +6191,7 @@
         }
       }, t('probes.start_date')), /*#__PURE__*/React.createElement("input", {
         type: "date",
+        "aria-label": "Intervention start date",
         id: `intv-date-${selectedStudent.name}`,
         style: {
           width: '100%',
@@ -5928,6 +6211,7 @@
       }, "Notes"), /*#__PURE__*/React.createElement("input", {
         type: "text",
         placeholder: t('common.placeholder_optional_notes'),
+        "aria-label": "Intervention notes",
         id: `intv-notes-${selectedStudent.name}`,
         style: {
           width: '100%',
@@ -6148,7 +6432,7 @@
       }, /*#__PURE__*/React.createElement("span", {
         className: "font-medium text-sm text-slate-700"
       }, game.icon, " ", game.label), /*#__PURE__*/React.createElement("span", {
-        className: "text-xs text-slate-400"
+        className: "text-xs text-slate-500"
       }, s.attempts, " play", s.attempts !== 1 ? 's' : '')), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-3"
       }, /*#__PURE__*/React.createElement("div", {
@@ -6156,7 +6440,7 @@
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-lg font-bold text-violet-600"
       }, Math.round(s.best), "%"), /*#__PURE__*/React.createElement("div", {
-        className: "text-[10px] text-slate-400 uppercase"
+        className: "text-[10px] text-slate-500 uppercase"
       }, "Best")), /*#__PURE__*/React.createElement("div", {
         className: "flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"
       }, /*#__PURE__*/React.createElement("div", {
@@ -6168,9 +6452,9 @@
       })), s.attempts > 1 && /*#__PURE__*/React.createElement("div", {
         className: "text-center"
       }, /*#__PURE__*/React.createElement("div", {
-        className: `text-xs font-bold ${s.best > s.initial ? 'text-emerald-600' : 'text-slate-400'}`
+        className: `text-xs font-bold ${s.best > s.initial ? 'text-emerald-600' : 'text-slate-500'}`
       }, s.best > s.initial ? `+${Math.round(s.best - s.initial)}%` : '—'), /*#__PURE__*/React.createElement("div", {
-        className: "text-[10px] text-slate-400 uppercase"
+        className: "text-[10px] text-slate-500 uppercase"
       }, "Growth"))));
     }))), selectedStudent.data?.labelChallengeResults?.length > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_label_challenge",
@@ -6207,7 +6491,7 @@
     }, /*#__PURE__*/React.createElement("span", {
       className: `font-bold ${result.score >= 80 ? 'text-emerald-600' : result.score >= 50 ? 'text-amber-600' : 'text-rose-600'}`
     }, result.score, "% \u2014 ", result.totalCorrect, "/", result.totalExpected, " correct"), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs text-slate-400"
+      className: "text-xs text-slate-500"
     }, result.timestamp ? new Date(result.timestamp).toLocaleDateString() : '')), result.feedback && /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-500 mt-1 italic"
     }, result.feedback))))), selectedStudent.data?.socraticChatHistory?.messages?.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -6235,8 +6519,133 @@
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-medium text-xs text-slate-500 mb-1"
     }, msg.role === 'user' || msg.sender === 'student' ? 'Student' : 'Character'), msg.content || msg.text)))) : /*#__PURE__*/React.createElement("div", {
-      className: "text-center py-8 text-slate-400"
-    }, t('class_analytics.no_transcript'), !isIndependentMode && assessmentCenterTab === 'research' && /*#__PURE__*/React.createElement("div", {
+      className: "text-center py-8 text-slate-500"
+    }, t('class_analytics.no_transcript'),
+    // ── Student Data Tab ──
+    !isIndependentMode && assessmentCenterTab === 'students' && React.createElement("div", {
+      className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
+    },
+      // Import toolbar
+      React.createElement("div", { className: "flex flex-wrap gap-3 mb-4" },
+        React.createElement("label", { className: "cursor-pointer" },
+          React.createElement("input", {
+            "aria-label": t('common.upload_json_file'),
+            type: "file", accept: ".json", multiple: true,
+            onChange: handleFileImport, className: "hidden"
+          }),
+          React.createElement("div", {
+            className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Upload, { size: 16 }), t('class_analytics.import_button'))
+        ),
+        importedStudents.length > 0 && React.createElement(React.Fragment, null,
+          React.createElement("button", {
+            onClick: handleExportCSV,
+            className: "bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Download, { size: 16 }), t('class_analytics.export_csv')),
+          React.createElement("button", {
+            onClick: exportScreeningCSV,
+            className: "bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Download, { size: 16 }), "Screening CSV"),
+          React.createElement("button", {
+            onClick: generateRTICSV,
+            className: "bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Download, { size: 16 }), "RTI Report"),
+          React.createElement("button", {
+            onClick: () => { setImportedStudents([]); },
+            className: "bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Trash2, { size: 16 }), t('class_analytics.clear_data'))
+        )
+      ),
+      // Summary + student search
+      importedStudents.length > 0 && React.createElement("div", { className: "mb-3" },
+        React.createElement("input", {
+          type: "text", placeholder: t('class_analytics.search_placeholder') || 'Search students...',
+          "aria-label": "Search students", value: searchQuery,
+          onChange: e => setSearchQuery(e.target.value),
+          className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 focus:outline-none transition-all text-sm"
+        })
+      ),
+      // Summary cards
+      classSummary && React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" },
+        React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center" },
+          React.createElement("div", { className: "text-2xl font-bold text-indigo-600" }, classSummary.totalStudents),
+          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.total_students'))
+        ),
+        React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center" },
+          React.createElement("div", { className: "text-2xl font-bold text-emerald-600" }, classSummary.avgQuizScore + '%'),
+          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.avg_quiz_score'))
+        ),
+        React.createElement("div", { className: (classSummary.studentsWithFlags > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200') + ' border rounded-xl p-3 text-center' },
+          React.createElement("div", { className: 'text-2xl font-bold ' + (classSummary.studentsWithFlags > 0 ? 'text-rose-600' : 'text-slate-500') }, classSummary.studentsWithFlags),
+          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.students_with_flags'))
+        ),
+        React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" },
+          React.createElement("div", { className: "text-2xl font-bold text-purple-600" }, importedStudents.reduce(function(acc, s) { return acc + s.stats.totalActivities; }, 0)),
+          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.total_activities'))
+        )
+      ),
+      // RTI tier distribution summary
+      classSummary && classSummary.rtiDistribution && React.createElement("div", {
+        className: "mb-4 p-4 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-200 rounded-xl"
+      },
+        React.createElement("h3", { className: "font-bold text-slate-700 flex items-center gap-2 mb-3" }, '\uD83C\uDFAF RTI Tier Distribution'),
+        React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+          [{ tier: 1, label: 'Tier 1', emoji: '\uD83D\uDFE2', color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
+           { tier: 2, label: 'Tier 2', emoji: '\uD83D\uDFE1', color: '#d97706', bg: '#fef9c3', border: '#fcd34d' },
+           { tier: 3, label: 'Tier 3', emoji: '\uD83D\uDD34', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' }
+          ].map(function(t) {
+            var students = classSummary.rtiDistribution[t.tier] || [];
+            return React.createElement("div", {
+              key: t.tier, className: "rounded-xl p-3 text-center border-2",
+              style: { background: t.bg, borderColor: t.border }
+            },
+              React.createElement("div", { style: { fontSize: '20px' } }, t.emoji),
+              React.createElement("div", { style: { fontSize: '24px', fontWeight: 800, color: t.color } }, students.length),
+              React.createElement("div", { style: { fontSize: '11px', fontWeight: 700, color: t.color } }, t.label),
+              React.createElement("div", { className: "flex flex-wrap gap-1 mt-1 justify-center" },
+                students.slice(0, 5).map(function(name, i) {
+                  return React.createElement("span", { key: i, className: "text-[10px] px-1.5 py-0.5 rounded-full bg-white/70 font-medium", style: { color: t.color } }, name);
+                }),
+                students.length > 5 && React.createElement("span", { className: "text-[10px] text-slate-500" }, '+' + (students.length - 5) + ' more')
+              )
+            );
+          })
+        )
+      ),
+      // Charts
+      importedStudents.length > 0 && React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" },
+        React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4", style: { minHeight: '200px' } },
+          React.createElement("canvas", { ref: quizChartRef })
+        ),
+        classSummary && classSummary.totalFlags > 0 && React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4", style: { minHeight: '200px' } },
+          React.createElement("canvas", { ref: flagsChartRef })
+        )
+      ),
+      // Student table
+      sortedAndFiltered.length > 0 && React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+        React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-600" },
+          '\uD83D\uDCCB ' + sortedAndFiltered.length + ' Student' + (sortedAndFiltered.length !== 1 ? 's' : '') + ' Loaded'
+        ),
+        React.createElement("div", { className: "p-2 text-xs text-slate-500 text-center" },
+          'Click a student name in the Assessments tab to view their full detail profile.'
+        )
+      ),
+      // Empty state
+      importedStudents.length === 0 && React.createElement("div", {
+        className: "bg-slate-50 rounded-xl p-8 text-center border border-slate-200"
+      },
+        React.createElement("div", { className: "text-4xl mb-3" }, '\uD83D\uDCCB'),
+        React.createElement("h3", { className: "text-lg font-bold text-slate-700 mb-2" }, 'Import Student Data'),
+        React.createElement("p", { className: "text-sm text-slate-500 mb-4" }, 'Upload exported student JSON files to view analytics, RTI classification, and progress data.'),
+        React.createElement("label", { className: "cursor-pointer inline-block" },
+          React.createElement("input", { type: "file", accept: ".json", multiple: true, onChange: handleFileImport, className: "hidden", "aria-label": "Upload student JSON files" }),
+          React.createElement("div", { className: "bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition-colors" },
+            React.createElement(Upload, { size: 18 }), 'Import Student Files'
+          )
+        )
+      )
+    ),
+    !isIndependentMode && assessmentCenterTab === 'research' && /*#__PURE__*/React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "space-y-6"
@@ -6245,7 +6654,7 @@
     }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
       className: "text-lg font-bold text-slate-800"
     }, "\uD83D\uDCCA Research & Insights"), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-400"
+      className: "text-xs text-slate-500"
     }, "Longitudinal analytics, growth tracking, and practice-to-outcome correlations")), importedStudents.length > 0 && /*#__PURE__*/React.createElement("select", {
       value: researchStudent || '',
       onChange: e => setResearchStudent(e.target.value || null),
@@ -6288,7 +6697,7 @@
       onClick: () => setResearchStudent(null),
       className: "text-sm text-indigo-600 hover:text-indigo-800 font-bold"
     }, "\u2190 Back to class"), /*#__PURE__*/React.createElement("span", {
-      className: "text-sm text-slate-400"
+      className: "text-sm text-slate-500"
     }, "|"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-slate-700"
     }, researchStudent)), renderInsightsPanel(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
@@ -6313,13 +6722,170 @@
         title: f.detail,
         className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-600'}`
       }, f.icon, " ", f.label))), /*#__PURE__*/React.createElement("div", {
-        className: "text-xs text-slate-400 mt-1"
+        className: "text-xs text-slate-500 mt-1"
       }, "View insights \u2192"));
     }))), typeof renderResearchDashboard === 'function' && /*#__PURE__*/React.createElement("div", {
       className: "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-bold text-slate-600 mb-3"
-    }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMImport && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal())))))))), document.body);
+    }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMImport && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal(),
+    // ── Probe Focus Overlays (full-screen with countdown + keyboard shortcuts) ──
+    React.createElement(ProbeOverlay, {
+      isActive: nwfProbeActive && !nwfProbeResults,
+      probeType: '\uD83D\uDD24 NWF Probe',
+      timer: nwfProbeTimer,
+      timerTotal: 60,
+      currentIndex: nwfProbeIndex,
+      totalItems: nwfProbeWords.length,
+      correctCount: nwfProbeWords.filter(function(w) { return w.scored && w.correct; }).length,
+      incorrectCount: nwfProbeWords.filter(function(w) { return w.scored && !w.correct; }).length,
+      instruction: 'Say: \u201CLook at this word. Tell me the sounds.\u201D \u2014 Score each sound',
+      onCountdownDone: startProbeTimer,
+      onCorrect: function() {
+        if (nwfProbeIndex >= nwfProbeWords.length) return;
+        var updated = nwfProbeWords.slice();
+        updated[nwfProbeIndex] = Object.assign({}, updated[nwfProbeIndex], { scored: true, correct: true });
+        setNwfProbeWords(updated);
+        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
+        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = updated.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:updated.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
+      },
+      onIncorrect: function() {
+        if (nwfProbeIndex >= nwfProbeWords.length) return;
+        var updated = nwfProbeWords.slice();
+        updated[nwfProbeIndex] = Object.assign({}, updated[nwfProbeIndex], { scored: true, correct: false });
+        setNwfProbeWords(updated);
+        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
+        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = updated.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:updated.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
+      },
+      onSkip: function() {
+        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
+        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = nwfProbeWords.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:nwfProbeWords.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
+      },
+      onEndEarly: function() {
+        if (window.confirm('End NWF probe early?')) {
+          clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null;
+          var sc = nwfProbeWords.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0);
+          setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:nwfProbeWords.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false);
+        }
+      }
+    },
+      // Content: current word displayed large
+      nwfProbeIndex < nwfProbeWords.length && React.createElement('div', { className: 'text-center' },
+        React.createElement('div', {
+          className: 'bg-gradient-to-br from-slate-50 to-emerald-50 rounded-3xl p-12 border border-emerald-100 shadow-inner'
+        }, React.createElement('div', {
+          className: 'text-8xl font-bold text-slate-800 tracking-[0.2em] font-mono select-none'
+        }, nwfProbeWords[nwfProbeIndex].word))
+      )
+    ),
+    React.createElement(ProbeOverlay, {
+      isActive: lnfProbeActive && !lnfProbeResults,
+      probeType: '\uD83C\uDD70\uFE0F LNF Probe',
+      timer: lnfProbeTimer,
+      timerTotal: 60,
+      currentIndex: lnfProbeIndex,
+      totalItems: lnfProbeLetters.length,
+      correctCount: lnfProbeLetters.filter(function(l) { return l.scored && l.correct; }).length,
+      incorrectCount: lnfProbeLetters.filter(function(l) { return l.scored && !l.correct; }).length,
+      instruction: 'Say: \u201CPoint to each letter and tell me its name.\u201D Start timing on first response',
+      onCountdownDone: startProbeTimer,
+      onCorrect: function() {
+        if (lnfProbeIndex >= lnfProbeLetters.length) return;
+        var updated = lnfProbeLetters.slice();
+        updated[lnfProbeIndex] = Object.assign({}, updated[lnfProbeIndex], { scored: true, correct: true });
+        setLnfProbeLetters(updated);
+        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
+        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = updated.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:updated.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
+      },
+      onIncorrect: function() {
+        if (lnfProbeIndex >= lnfProbeLetters.length) return;
+        var updated = lnfProbeLetters.slice();
+        updated[lnfProbeIndex] = Object.assign({}, updated[lnfProbeIndex], { scored: true, correct: false });
+        setLnfProbeLetters(updated);
+        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
+        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = updated.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:updated.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
+      },
+      onSkip: function() {
+        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
+        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = lnfProbeLetters.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:lnfProbeLetters.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
+      },
+      onEndEarly: function() {
+        if (window.confirm('End LNF probe early?')) {
+          clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null;
+          var sc = lnfProbeLetters.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length;
+          setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:lnfProbeLetters.length,lpm:co,type:'lnf'}); setLnfProbeActive(false);
+        }
+      }
+    },
+      // Content: current letter displayed large + letter grid
+      lnfProbeIndex < lnfProbeLetters.length && React.createElement('div', { className: 'text-center' },
+        React.createElement('div', {
+          className: 'bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-12 border border-blue-100 shadow-inner mb-6'
+        }, React.createElement('div', {
+          className: 'text-[10rem] font-bold text-slate-800 font-mono select-none leading-none'
+        }, lnfProbeLetters[lnfProbeIndex].letter)),
+        React.createElement('div', { className: 'grid grid-cols-13 gap-1 max-w-lg mx-auto' },
+          lnfProbeLetters.map(function(item, idx) {
+            return React.createElement('div', {
+              key: idx,
+              className: 'flex items-center justify-center w-8 h-8 rounded text-sm font-bold transition-all ' +
+                (idx === lnfProbeIndex ? 'bg-blue-500 text-white ring-2 ring-blue-300 scale-110 shadow-lg' :
+                 idx < lnfProbeIndex && item.scored ? (item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through') :
+                 idx < lnfProbeIndex ? 'bg-slate-100 text-slate-300' : 'bg-slate-50 text-slate-500')
+            }, item.letter);
+          })
+        )
+      )
+    ),
+    React.createElement(ProbeOverlay, {
+      isActive: ranProbeActive && !ranProbeResults,
+      probeType: '\u26A1 RAN Probe',
+      timer: undefined, // RAN uses a stopwatch, not countdown
+      currentIndex: ranProbeIndex,
+      totalItems: ranProbeItems.length,
+      correctCount: ranProbeItems.filter(function(i) { return i.scored && i.correct; }).length,
+      incorrectCount: ranProbeItems.filter(function(i) { return i.scored && !i.correct; }).length,
+      instruction: 'Say: \u201CName each one as fast as you can.\u201D \u2014 Stopwatch: ' + ranProbeElapsed + 's',
+      onCountdownDone: startProbeTimer,
+      onCorrect: function() {
+        if (ranProbeIndex >= ranProbeItems.length) return;
+        var updated = ranProbeItems.slice();
+        updated[ranProbeIndex] = Object.assign({}, updated[ranProbeIndex], { scored: true, correct: true });
+        setRanProbeItems(updated);
+        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
+        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = updated.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:updated.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
+      },
+      onIncorrect: function() {
+        if (ranProbeIndex >= ranProbeItems.length) return;
+        var updated = ranProbeItems.slice();
+        updated[ranProbeIndex] = Object.assign({}, updated[ranProbeIndex], { scored: true, correct: false });
+        setRanProbeItems(updated);
+        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
+        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = updated.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:updated.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
+      },
+      onSkip: function() {
+        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
+        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = ranProbeItems.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:ranProbeItems.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
+      },
+      onEndEarly: function() {
+        if (window.confirm('End RAN probe early?')) {
+          clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null;
+          var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = ranProbeItems.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length;
+          setRanProbeResults({correct:co,totalScored:sc.length,totalItems:ranProbeItems.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false);
+        }
+      }
+    },
+      // Content: current item displayed large
+      ranProbeIndex < ranProbeItems.length && React.createElement('div', { className: 'text-center' },
+        React.createElement('div', {
+          className: 'bg-gradient-to-br from-slate-50 to-amber-50 rounded-3xl p-12 border border-amber-100 shadow-inner mb-4'
+        }, React.createElement('div', {
+          className: 'text-8xl font-bold text-slate-800 select-none'
+        }, ranProbeItems[ranProbeIndex].item)),
+        React.createElement('div', { className: 'text-3xl font-black text-amber-600 tabular-nums' }, '\u23F1 ' + ranProbeElapsed + 's')
+      )
+    )
+    )))))))), document.body);
   });
 
   // Register module

@@ -1334,7 +1334,7 @@ var d = labToolData || {};
 
               React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, '\uD83D\uDCB0 Economics Lab'),
 
-              React.createElement('span', { className: 'text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' }, '5 simulators'),
+              React.createElement('span', { className: 'text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full' }, '5 simulators'),
 
               React.createElement('span', {
 
@@ -1748,7 +1748,7 @@ var d = labToolData || {};
               React.createElement('div', { className: 'flex justify-between items-center mb-2' },
                 econStreak > 0 ? React.createElement('span', { className: 'inline-block px-3 py-0.5 rounded-full text-[9px] font-bold ' + (econStreak >= 5 ? 'bg-amber-500 text-white animate-pulse' : econStreak >= 3 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + econStreak + ' streak!' + (econStreak >= 5 ? ' AMAZING!' : econStreak >= 3 ? ' On fire!' : '')) : null,
-                React.createElement('span', { className: 'text-[9px] text-slate-400' }, 'Score: ' + econScenarioScore + '/' + econScenarioTotal + ' | Best: ' + econBestStreak)
+                React.createElement('span', { className: 'text-[9px] text-slate-500' }, 'Score: ' + econScenarioScore + '/' + econScenarioTotal + ' | Best: ' + econBestStreak)
               ),
               (function() {
                 var sc = ECON_SCENARIOS[econScenarioIdx];
@@ -1924,7 +1924,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'text-2xl font-black text-red-600' }, '$' + futureValue.toFixed(2)),
                     React.createElement('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, 'Your $' + amt + ' will only buy $' + futureValue.toFixed(2) + ' worth of today\'s goods in ' + yrs + ' years'),
                     React.createElement('div', { className: 'text-[10px] font-bold text-red-500 mt-1' }, '\uD83D\uDCC9 ' + lostPct + '% of purchasing power lost!'),
-                    React.createElement('div', { className: 'text-[9px] text-slate-400 mt-1 italic' }, 'Rule of 72: Money loses half its value in ~' + Math.round(72 / ((d.inflationRate || 3))) + ' years at ' + (d.inflationRate || 3) + '% inflation')
+                    React.createElement('div', { className: 'text-[9px] text-slate-500 mt-1 italic' }, 'Rule of 72: Money loses half its value in ~' + Math.round(72 / ((d.inflationRate || 3))) + ' years at ' + (d.inflationRate || 3) + '% inflation')
                   );
                 })()
               )
@@ -1969,7 +1969,7 @@ var d = labToolData || {};
                       React.createElement('span', { className: 'text-2xl' }, phase.icon),
                       React.createElement('div', null,
                         React.createElement('div', { className: 'text-[11px] font-black', style: { color: phase.color } }, phase.name),
-                        React.createElement('div', { className: 'text-[8px] text-slate-400' }, 'Duration: ' + phase.duration)
+                        React.createElement('div', { className: 'text-[8px] text-slate-500' }, 'Duration: ' + phase.duration)
                       )
                     ),
                     React.createElement('div', { className: 'text-[9px] font-bold text-slate-600 mb-1' }, 'Characteristics:'),
@@ -2031,7 +2031,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'text-2xl font-black text-emerald-600' }, '$' + Math.round(fv).toLocaleString()),
                     React.createElement('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, 'From $' + p.toLocaleString() + ' invested at ' + (d.pfRate || 7) + '% for ' + y + ' years'),
                     React.createElement('div', { className: 'text-[10px] font-bold text-emerald-500 mt-1' }, '\uD83D\uDCC8 $' + Math.round(earned).toLocaleString() + ' earned through compound interest!'),
-                    React.createElement('div', { className: 'text-[9px] text-slate-400 mt-1 italic' }, '"Compound interest is the eighth wonder of the world." \u2014 Albert Einstein (attributed)')
+                    React.createElement('div', { className: 'text-[9px] text-slate-500 mt-1 italic' }, '"Compound interest is the eighth wonder of the world." \u2014 Albert Einstein (attributed)')
                   );
                 })()
               )
@@ -2056,7 +2056,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                       React.createElement('span', { className: 'text-lg' }, rule.icon),
                       React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, rule.name),
-                      React.createElement('span', { className: 'text-[9px] text-slate-400' }, rule.desc)
+                      React.createElement('span', { className: 'text-[9px] text-slate-500' }, rule.desc)
                     ),
                     isActive && React.createElement('div', null,
                       // Visual bar
@@ -2079,7 +2079,7 @@ var d = labToolData || {};
                           },
                             React.createElement('div', { className: 'text-[10px] font-bold', style: { color: part.color } }, part.label + ' (' + part.pct + '%)'),
                             React.createElement('div', { className: 'text-[11px] font-black text-slate-800' }, '$' + allocated.toLocaleString() + '/mo'),
-                            React.createElement('div', { className: 'text-[8px] text-slate-400' }, part.items)
+                            React.createElement('div', { className: 'text-[8px] text-slate-500' }, part.items)
                           );
                         })
                       )
@@ -2119,7 +2119,7 @@ var d = labToolData || {};
                       },
                         React.createElement('div', { className: 'p-1.5 text-[9px]' },
                           React.createElement('span', { className: 'font-bold', style: { color: school.color } }, school.icon + ' ' + school.name),
-                          React.createElement('div', { className: 'text-[7px] text-slate-400' }, school.era)
+                          React.createElement('div', { className: 'text-[7px] text-slate-500' }, school.era)
                         ),
                         React.createElement('div', { className: 'p-1.5 text-[9px] text-slate-600 border-l border-slate-100' }, school.govRole),
                         React.createElement('div', { className: 'p-1.5 text-[9px] text-slate-600 border-l border-slate-100' }, school.onRecession),
@@ -2266,7 +2266,7 @@ var d = labToolData || {};
                         style: { background: comp.color, height: barH + '%', minHeight: 8, opacity: 0.8 }
                       }),
                       React.createElement('div', { className: 'text-[9px] font-bold text-slate-600 mt-1' }, comp.id),
-                      React.createElement('div', { className: 'text-[7px] text-slate-400' }, comp.name)
+                      React.createElement('div', { className: 'text-[7px] text-slate-500' }, comp.name)
                     );
                   })
                 ),
@@ -2311,7 +2311,7 @@ var d = labToolData || {};
                       React.createElement('div', { className: 'flex-1' },
                         React.createElement('div', { className: 'flex items-center gap-2' },
                           React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, econ.name),
-                          React.createElement('span', { className: 'text-[8px] text-slate-400 font-mono' }, econ.years)
+                          React.createElement('span', { className: 'text-[8px] text-slate-500 font-mono' }, econ.years)
                         ),
                         React.createElement('div', { className: 'text-[9px] text-violet-600 font-bold' }, econ.contribution)
                       ),
@@ -2382,6 +2382,8 @@ var d = labToolData || {};
             React.createElement('canvas', {
 
               ref: canvasRef,
+
+              'aria-label': 'Interactive economics lab supply and demand visualization', tabIndex: 0,
 
               className: 'w-full rounded-xl border border-slate-200',
 
@@ -2565,7 +2567,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-[9px] font-bold text-cyan-700' }, 'Elastic (>1)'),
 
-                      React.createElement('div', { className: 'text-[8px] text-slate-400' }, 'Luxury goods, restaurants, vacations')
+                      React.createElement('div', { className: 'text-[8px] text-slate-500' }, 'Luxury goods, restaurants, vacations')
 
                     ),
 
@@ -2575,7 +2577,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-[9px] font-bold text-cyan-700' }, 'Unit Elastic (=1)'),
 
-                      React.createElement('div', { className: 'text-[8px] text-slate-400' }, 'Revenue unchanged by price')
+                      React.createElement('div', { className: 'text-[8px] text-slate-500' }, 'Revenue unchanged by price')
 
                     ),
 
@@ -2585,7 +2587,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-[9px] font-bold text-cyan-700' }, 'Inelastic (<1)'),
 
-                      React.createElement('div', { className: 'text-[8px] text-slate-400' }, 'Medicine, gasoline, utilities')
+                      React.createElement('div', { className: 'text-[8px] text-slate-500' }, 'Medicine, gasoline, utilities')
 
                     )
 
@@ -2873,7 +2875,7 @@ var d = labToolData || {};
 
                     React.createElement('div', { className: 'text-lg' }, s.icon),
 
-                    React.createElement('div', { className: 'text-[10px] text-slate-400 font-bold uppercase tracking-wide' }, s.label),
+                    React.createElement('div', { className: 'text-[10px] text-slate-500 font-bold uppercase tracking-wide' }, s.label),
 
                     React.createElement('div', { className: 'text-sm font-bold text-' + s.color + '-600' }, s.val)
 
@@ -2883,7 +2885,7 @@ var d = labToolData || {};
 
               ),
 
-              React.createElement('div', { className: 'text-xs text-slate-400 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + ((d.pfCash || 2000) - (d.pfDebt || 0)).toLocaleString() + ' | Credit: ' + (d.pfCredit || 650) + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance')),
+              React.createElement('div', { className: 'text-xs text-slate-500 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + ((d.pfCash || 2000) - (d.pfDebt || 0)).toLocaleString() + ' | Credit: ' + (d.pfCredit || 650) + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance')),
 
               // Next Year / Generate Event button
 
@@ -2967,7 +2969,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-[10px] font-bold text-slate-700' }, h.label),
 
-                      React.createElement('div', { className: 'text-[8px] text-slate-400' }, h.desc),
+                      React.createElement('div', { className: 'text-[8px] text-slate-500' }, h.desc),
 
                       React.createElement('div', { className: 'text-[9px] font-bold text-orange-600 mt-1' }, h.cost)
 
@@ -3059,7 +3061,7 @@ var d = labToolData || {};
 
                   return React.createElement('div', { key: hi, className: 'flex justify-between text-[10px] py-1 border-b border-slate-50' },
 
-                    React.createElement('span', { className: 'text-slate-400' }, 'Age ' + h.age),
+                    React.createElement('span', { className: 'text-slate-500' }, 'Age ' + h.age),
 
                     React.createElement('span', { className: 'text-slate-600 flex-1 px-2 truncate' }, h.event + ' \u2192 ' + h.choice),
 
@@ -3219,7 +3221,7 @@ var d = labToolData || {};
 
                         ((smCompanies[smSelected].price / smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] - 1) * 100).toFixed(1) + '%'),
 
-                        React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Held: ' + (smPortfolio[smCompanies[smSelected].ticker] || 0) + ' shares ($' + ((smPortfolio[smCompanies[smSelected].ticker] || 0) * smCompanies[smSelected].price).toFixed(0) + ')')
+                        React.createElement('div', { className: 'text-[9px] text-slate-500' }, 'Held: ' + (smPortfolio[smCompanies[smSelected].ticker] || 0) + ' shares ($' + ((smPortfolio[smCompanies[smSelected].ticker] || 0) * smCompanies[smSelected].price).toFixed(0) + ')')
 
                       )
 
@@ -3501,7 +3503,7 @@ var d = labToolData || {};
 
                         React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
 
-                          React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Total P&L'),
+                          React.createElement('div', { className: 'text-[9px] text-slate-500' }, 'Total P&L'),
 
                           React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal - 10000 >= 0 ? 'text-green-600' : 'text-red-500') },
 
@@ -3511,7 +3513,7 @@ var d = labToolData || {};
 
                         React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
 
-                          React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Return %'),
+                          React.createElement('div', { className: 'text-[9px] text-slate-500' }, 'Return %'),
 
                           React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal >= 10000 ? 'text-green-600' : 'text-red-500') },
 
@@ -3521,7 +3523,7 @@ var d = labToolData || {};
 
                         React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
 
-                          React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Holdings'),
+                          React.createElement('div', { className: 'text-[9px] text-slate-500' }, 'Holdings'),
 
                           React.createElement('div', { className: 'text-sm font-bold text-slate-700' },
 
@@ -3657,7 +3659,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg font-bold ' + ((d.enBizCash || 0) >= 0 ? 'text-green-600' : 'text-red-500') }, '$' + (d.enBizCash || 0).toLocaleString()),
 
-                      React.createElement('div', { className: 'text-[10px] text-slate-400' }, 'Day ' + (d.enBizDay || 1) + ' | Rep: ' + (d.enBizRep || 50) + '/100 | Staff: ' + (d.enBizEmployees || 0))
+                      React.createElement('div', { className: 'text-[10px] text-slate-500' }, 'Day ' + (d.enBizDay || 1) + ' | Rep: ' + (d.enBizRep || 50) + '/100 | Staff: ' + (d.enBizEmployees || 0))
 
                     )
 
@@ -3863,7 +3865,7 @@ var d = labToolData || {};
 
                   return React.createElement('div', { key: dhi, className: 'flex justify-between text-[10px] py-1 border-b border-slate-50' },
 
-                    React.createElement('span', { className: 'text-slate-400' }, 'Day ' + dh.day),
+                    React.createElement('span', { className: 'text-slate-500' }, 'Day ' + dh.day),
 
                     React.createElement('span', { className: 'text-slate-500' }, dh.customers + ' customers'),
 

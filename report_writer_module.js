@@ -1318,9 +1318,9 @@ Return ONLY valid JSON:
                     ),
                     h('div', { className: 'flex items-center gap-2' },
                         h('label', { className: 'text-[10px] text-slate-500' }, 'Age:'),
-                        h('input', { type: 'number', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'yrs', value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 }),
+                        h('input', { type: 'number', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'yrs', 'aria-label': 'Student age', value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 }),
                         h('label', { className: 'text-[10px] text-slate-500 ml-2' }, 'Grade:'),
-                        h('input', { type: 'text', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'e.g. 3', value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
+                        h('input', { type: 'text', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'e.g. 3', 'aria-label': 'Student grade', value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
                     )
                 ),
                 // Step indicator
@@ -1328,7 +1328,7 @@ Return ONLY valid JSON:
                     STEPS.map((s, i) =>
                         h('button', {
                             key: s.num,
-                            className: `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-400 border border-slate-200'}`,
+                            className: `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-500 border border-slate-200'}`,
                             onClick: () => setCurrentStep(s.num)
                         }, h('span', null, s.icon), ` ${s.label}`)
                     )
@@ -1345,6 +1345,7 @@ Return ONLY valid JSON:
                     h('label', { className: 'text-[10px] font-medium text-slate-600 block' }, 'Select from Class Roster:'),
                     h('select', {
                         className: 'w-full text-xs border rounded-lg px-3 py-2 bg-white',
+                        'aria-label': 'Select student from roster',
                         value: selectedStudentId,
                         onChange: e => {
                             const id = e.target.value;
@@ -1362,21 +1363,21 @@ Return ONLY valid JSON:
                         h('option', { value: '' }, '— Choose a student —'),
                         dashboardData.map((s, i) => h('option', { key: i, value: s.id || s.name || s.student }, s.name || s.student || 'Student ' + (i + 1)))
                     ),
-                    h('div', { className: 'text-[9px] text-slate-400' }, 'Or enter manually below')
+                    h('div', { className: 'text-[9px] text-slate-500' }, 'Or enter manually below')
                 ) : null,
                 // Manual entry
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                     h('div', null,
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Student Code Name'),
-                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'e.g., Student A', value: manualStudentName, onChange: e => setManualStudentName(e.target.value) })
+                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'e.g., Student A', 'aria-label': 'Student code name', value: manualStudentName, onChange: e => setManualStudentName(e.target.value) })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Age'),
-                        h('input', { type: 'number', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'Years', value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 })
+                        h('input', { type: 'number', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'Years', 'aria-label': 'Student age in years', value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Grade'),
-                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'e.g., 3rd', value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
+                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'e.g., 3rd', 'aria-label': 'Student grade level', value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
                     )
                 ),
                 // Demo data
@@ -1451,6 +1452,7 @@ Return ONLY valid JSON:
                     ),
                     h('textarea', {
                         className: 'w-full text-xs border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 h-40',
+                        'aria-label': (clinicalObs[activeObsTab]?.source || activeObsTab) + ' observations',
                         placeholder: OBS_TAB_META.find(t => t.key === activeObsTab)?.placeholder || 'Enter observations...',
                         value: clinicalObs[activeObsTab]?.text || '',
                         onChange: e => setClinicalObs(prev => ({
@@ -1458,7 +1460,7 @@ Return ONLY valid JSON:
                             [activeObsTab]: { ...prev[activeObsTab], text: e.target.value }
                         }))
                     }),
-                    h('div', { className: 'flex items-center gap-2 text-[9px] text-slate-400' },
+                    h('div', { className: 'flex items-center gap-2 text-[9px] text-slate-500' },
                         h('span', null, '\u{1F4CE} Source attribution: '),
                         h('span', { className: 'font-medium text-slate-600' }, clinicalObs[activeObsTab]?.source || 'Unknown'),
                         h('span', null, ' \u2014 will be tracked through fact extraction')
@@ -1469,7 +1471,7 @@ Return ONLY valid JSON:
                     OBS_TAB_META.map(tab =>
                         h('span', {
                             key: tab.key,
-                            className: 'text-[9px] px-2 py-0.5 rounded-full ' + (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-400')
+                            className: 'text-[9px] px-2 py-0.5 rounded-full ' + (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-500')
                         }, tab.icon + ' ' + tab.label + (clinicalObs[tab.key]?.text?.trim() ? ' (' + clinicalObs[tab.key].text.length + ' chars)' : ' \u2014'))
                     )
                 ),
@@ -1487,11 +1489,11 @@ Return ONLY valid JSON:
                 h('div', { className: 'flex flex-wrap items-end gap-3' },
                     h('div', { className: 'flex-1 min-w-[140px]' },
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Assessment'),
-                        h('select', { className: 'w-full text-xs border rounded-lg px-2 py-1.5 bg-white', value: selectedAssessment, onChange: e => setSelectedAssessment(e.target.value) },
+                        h('select', { className: 'w-full text-xs border rounded-lg px-2 py-1.5 bg-white', 'aria-label': 'Select assessment', value: selectedAssessment, onChange: e => setSelectedAssessment(e.target.value) },
                             Object.keys(ASSESSMENT_PRESETS).map(a => h('option', { key: a, value: a }, a))
                         )
                     ),
-                    h('div', { className: 'text-[10px] text-slate-400 bg-slate-50 rounded px-2 py-1' },
+                    h('div', { className: 'text-[10px] text-slate-500 bg-slate-50 rounded px-2 py-1' },
                         `${(ASSESSMENT_PRESETS[selectedAssessment]?.scoreType || 'standard')} scores | Mean=${ASSESSMENT_PRESETS[selectedAssessment]?.mean || 100} SD=${ASSESSMENT_PRESETS[selectedAssessment]?.sd || 15}`
                     )
                 ),
@@ -1505,6 +1507,7 @@ Return ONLY valid JSON:
                                 h('span', { className: 'text-[10px] text-slate-600 flex-1 truncate' }, sub),
                                 !existing ? h('input', {
                                     type: 'number', className: 'w-16 text-xs border rounded px-1.5 py-0.5 text-center',
+                                    'aria-label': 'Score for ' + sub,
                                     placeholder: 'Score',
                                     onKeyDown: e => { if (e.key === 'Enter' && e.target.value) { addScoreEntry(sub, e.target.value); e.target.value = ''; } }
                                 }) : h('span', { className: `text-[10px] px-2 py-0.5 rounded-full ${cBadge(existing.classColor)}` }, `${existing.score} — ${existing.classification}`)
@@ -1516,11 +1519,11 @@ Return ONLY valid JSON:
                 h('div', { className: 'flex items-end gap-2 pt-2 border-t border-slate-100' },
                     h('div', { className: 'flex-1' },
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Custom Subtest'),
-                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-2 py-1.5', placeholder: 'Subtest name...', value: customSubtest, onChange: e => setCustomSubtest(e.target.value) })
+                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-2 py-1.5', placeholder: 'Subtest name...', 'aria-label': 'Custom subtest name', value: customSubtest, onChange: e => setCustomSubtest(e.target.value) })
                     ),
                     h('div', { className: 'w-20' },
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Score'),
-                        h('input', { type: 'number', className: 'w-full text-xs border rounded-lg px-2 py-1.5 text-center', placeholder: '0', value: customScore, onChange: e => setCustomScore(e.target.value) })
+                        h('input', { type: 'number', className: 'w-full text-xs border rounded-lg px-2 py-1.5 text-center', placeholder: '0', 'aria-label': 'Custom subtest score', value: customScore, onChange: e => setCustomScore(e.target.value) })
                     ),
                     h('button', {
                         className: 'px-3 py-1.5 bg-violet-600 text-white text-xs rounded-lg hover:bg-violet-700 transition-colors',
@@ -1539,7 +1542,7 @@ Return ONLY valid JSON:
                                 h('span', { className: 'font-medium text-slate-800 flex-1' }, `${s.assessment} — ${s.subtest}`),
                                 h('span', { className: `font-bold ${cText(s.classColor)}` }, `${s.score}`),
                                 h('span', { className: `px-2 py-0.5 rounded-full text-[9px] ${cBadge(s.classColor)}` }, s.classification),
-                                s.percentile !== null && h('span', { className: 'text-slate-400' }, `${s.percentile}%ile`),
+                                s.percentile !== null && h('span', { className: 'text-slate-500' }, `${s.percentile}%ile`),
                                 h('button', { className: 'ml-2 text-red-400 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
                             )
                         )
@@ -1577,6 +1580,7 @@ Return ONLY valid JSON:
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, label),
                         h('textarea', {
                             className: 'w-full text-xs border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400',
+                            'aria-label': label,
                             rows, placeholder, value: bgSections[key],
                             onChange: e => setBgSections(prev => ({ ...prev, [key]: e.target.value }))
                         })
@@ -1595,14 +1599,14 @@ Return ONLY valid JSON:
                             h('div', { key: ref.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-200 flex items-center justify-between text-[10px]' },
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('span', { className: 'font-medium text-slate-800 block truncate' }, ref.name),
-                                    h('span', { className: 'text-slate-400 text-[8px]' }, ref.text.substring(0, 80) + '...')
+                                    h('span', { className: 'text-slate-500 text-[8px]' }, ref.text.substring(0, 80) + '...')
                                 ),
                                 h('button', { className: 'ml-2 text-red-400 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
                             )
                         ),
                         h('div', { className: 'space-y-1 mt-2 bg-white rounded-lg p-2 border border-indigo-100' },
-                            h('input', { type: 'text', className: 'w-full text-[10px] border rounded px-2 py-1', placeholder: 'Reference name (e.g., "MUSER Ch. 101")...', value: newRefName, onChange: e => setNewRefName(e.target.value) }),
-                            h('textarea', { className: 'w-full text-[10px] border rounded px-2 py-1 h-20 resize-none font-mono', placeholder: 'Paste reference text here...', value: newRefText, onChange: e => setNewRefText(e.target.value) }),
+                            h('input', { type: 'text', className: 'w-full text-[10px] border rounded px-2 py-1', placeholder: 'Reference name (e.g., "MUSER Ch. 101")...', 'aria-label': 'Reference name', value: newRefName, onChange: e => setNewRefName(e.target.value) }),
+                            h('textarea', { className: 'w-full text-[10px] border rounded px-2 py-1 h-20 resize-none font-mono', placeholder: 'Paste reference text here...', 'aria-label': 'Reference text', value: newRefText, onChange: e => setNewRefText(e.target.value) }),
                             newRefName.trim() && newRefText.trim() && h('button', {
                                 className: 'px-3 py-1 bg-indigo-600 text-white text-[10px] rounded hover:bg-indigo-700',
                                 onClick: () => { setReferenceLibrary(prev => [...prev, { id: uid(), name: newRefName.trim(), text: newRefText.trim(), addedAt: new Date().toISOString() }]); setNewRefName(''); setNewRefText(''); if (addToast) addToast('Reference added', 'success'); }
@@ -1623,7 +1627,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'flex items-center gap-3 bg-slate-50 rounded-lg p-2' },
                     h('span', { className: 'text-[10px] font-medium text-slate-600' }, `${totalChunks} total`),
                     h('span', { className: 'text-[10px] font-medium text-green-600' }, `✅ ${verifiedCount} verified`),
-                    h('span', { className: 'text-[10px] font-medium text-slate-400' }, `⏳ ${totalChunks - verifiedCount} pending`),
+                    h('span', { className: 'text-[10px] font-medium text-slate-500' }, `⏳ ${totalChunks - verifiedCount} pending`),
                     deficitCount > 0 && h('span', { className: 'text-[10px] font-medium text-red-600' }, `⚠️ ${deficitCount} deficits`),
                     totalChunks > 0 && verifiedCount < totalChunks && h('button', {
                         className: 'ml-auto text-[10px] px-2 py-0.5 bg-green-600 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
@@ -1635,7 +1639,7 @@ Return ONLY valid JSON:
                 ),
                 // Chunk cards
                 !extracting && h('div', { className: 'space-y-2 max-h-[400px] overflow-y-auto' },
-                    factChunks.length === 0 && h('div', { className: 'text-center py-8 text-slate-400' },
+                    factChunks.length === 0 && h('div', { className: 'text-center py-8 text-slate-500' },
                         h('p', { className: 'text-sm' }, 'No fact chunks yet'),
                         h('button', { className: 'mt-2 px-3 py-1.5 bg-violet-600 text-white text-xs rounded-lg', onClick: extractFactChunks }, '🔍 Extract Facts')
                     ),
@@ -1663,7 +1667,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'flex justify-between pt-2' },
                     h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(4) }, '← Scores'),
                     h('button', {
-                        className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${verifiedCount > 0 ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`,
+                        className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${verifiedCount > 0 ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`,
                         disabled: verifiedCount === 0, onClick: () => setCurrentStep(6)
                     }, `Next: Hypotheses (${verifiedCount} facts) →`)
                 )
@@ -1687,7 +1691,7 @@ Return ONLY valid JSON:
                     ),
                     // Custom hypothesis
                     h('div', { className: 'flex gap-2 mt-1' },
-                        h('input', { type: 'text', className: 'flex-1 text-[10px] border rounded-lg px-2 py-1', placeholder: 'Custom hypothesis...', value: newHypothesis, onChange: e => setNewHypothesis(e.target.value), onKeyDown: e => { if (e.key === 'Enter' && newHypothesis.trim()) { setHypotheses(prev => [...prev, newHypothesis.trim()]); setNewHypothesis(''); } } }),
+                        h('input', { type: 'text', className: 'flex-1 text-[10px] border rounded-lg px-2 py-1', placeholder: 'Custom hypothesis...', 'aria-label': 'Custom hypothesis', value: newHypothesis, onChange: e => setNewHypothesis(e.target.value), onKeyDown: e => { if (e.key === 'Enter' && newHypothesis.trim()) { setHypotheses(prev => [...prev, newHypothesis.trim()]); setNewHypothesis(''); } } }),
                         h('button', { className: 'px-3 py-1 bg-violet-600 text-white text-[10px] rounded-lg hover:bg-violet-700', disabled: !newHypothesis.trim(), onClick: () => { if (newHypothesis.trim()) { setHypotheses(prev => [...prev, newHypothesis.trim()]); setNewHypothesis(''); } } }, 'Add')
                     )
                 ),
@@ -1697,7 +1701,7 @@ Return ONLY valid JSON:
                     hypotheses.map((hyp, i) =>
                         h('div', { key: i, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border text-[10px] ' + (selectedHypotheses.includes(hyp) ? 'border-violet-300 bg-violet-50' : 'border-slate-200') },
                             h('div', { className: 'flex items-center gap-2 flex-1' },
-                                h('input', { type: 'checkbox', checked: selectedHypotheses.includes(hyp), onChange: e => { if (e.target.checked) setSelectedHypotheses(prev => [...prev, hyp]); else setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }),
+                                h('input', { type: 'checkbox', 'aria-label': 'Include hypothesis: ' + hyp, checked: selectedHypotheses.includes(hyp), onChange: e => { if (e.target.checked) setSelectedHypotheses(prev => [...prev, hyp]); else setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }),
                                 h('span', { className: 'font-medium text-slate-800' }, hyp),
                                 differentialResults[hyp] && h('span', {
                                     className: 'px-1.5 py-0.5 rounded-full text-[8px] font-bold ' + (differentialResults[hyp].strengthScore >= 7 ? 'bg-green-100 text-green-700' : differentialResults[hyp].strengthScore >= 4 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')
@@ -1706,7 +1710,7 @@ Return ONLY valid JSON:
                             hyp !== 'No Diagnosis / Does Not Qualify' && h('button', { className: 'text-red-400 hover:text-red-600 ml-2', onClick: () => { setHypotheses(prev => prev.filter(h => h !== hyp)); setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }, '\u2715')
                         )
                     ),
-                    h('p', { className: 'text-[8px] text-slate-400 mt-1' }, '\u2611\uFE0F Check hypotheses to include in report generation. "No Diagnosis" is always evaluated as baseline.')
+                    h('p', { className: 'text-[8px] text-slate-500 mt-1' }, '\u2611\uFE0F Check hypotheses to include in report generation. "No Diagnosis" is always evaluated as baseline.')
                 ),
                 // Run analysis button
                 factChunks.filter(c => c.verified).length > 0 && h('div', { className: 'pt-2' },
@@ -1760,6 +1764,7 @@ Return ONLY valid JSON:
                     h('label', { className: 'text-[10px] font-medium text-slate-600' }, 'Report Type:'),
                     h('select', {
                         className: 'text-xs border rounded-lg px-2 py-1',
+                        'aria-label': 'Report type',
                         value: reportType,
                         onChange: e => {
                             const t = e.target.value;
@@ -1777,23 +1782,24 @@ Return ONLY valid JSON:
                             h('div', { className: 'flex items-center gap-2' },
                                 h('div', { className: 'flex flex-col gap-0.5' },
                                     h('button', {
-                                        className: 'text-[9px] text-slate-400 hover:text-slate-700 leading-none',
+                                        className: 'text-[9px] text-slate-500 hover:text-slate-700 leading-none',
                                         disabled: idx === 0,
                                         onClick: () => { const nw = [...blueprint]; const tmp = nw[idx]; nw[idx] = nw[idx - 1]; nw[idx - 1] = tmp; setBlueprint(nw); }
                                     }, '\u25B2'),
                                     h('button', {
-                                        className: 'text-[9px] text-slate-400 hover:text-slate-700 leading-none',
+                                        className: 'text-[9px] text-slate-500 hover:text-slate-700 leading-none',
                                         disabled: idx === blueprint.length - 1,
                                         onClick: () => { const nw = [...blueprint]; const tmp = nw[idx]; nw[idx] = nw[idx + 1]; nw[idx + 1] = tmp; setBlueprint(nw); }
                                     }, '\u25BC')
                                 ),
-                                h('input', { type: 'checkbox', checked: section.enabled, onChange: e => { const nw = [...blueprint]; nw[idx] = { ...nw[idx], enabled: e.target.checked }; setBlueprint(nw); } }),
+                                h('input', { type: 'checkbox', 'aria-label': 'Enable section: ' + section.name, checked: section.enabled, onChange: e => { const nw = [...blueprint]; nw[idx] = { ...nw[idx], enabled: e.target.checked }; setBlueprint(nw); } }),
                                 h('span', { className: 'text-[10px] font-medium text-slate-800 flex-1' }, (idx + 1) + '. ' + section.name),
                                 h('button', { className: 'text-red-400 hover:text-red-600 text-xs', onClick: () => setBlueprint(prev => prev.filter(s => s.id !== section.id)) }, '\u2715')
                             ),
                             h('input', {
                                 type: 'text',
                                 className: 'w-full text-[9px] border rounded px-2 py-0.5 mt-1 text-slate-500',
+                                'aria-label': 'Notes for section: ' + section.name,
                                 placeholder: 'Section notes (e.g., "focus on classroom accommodations")...',
                                 value: section.notes,
                                 onChange: e => { const nw = [...blueprint]; nw[idx] = { ...nw[idx], notes: e.target.value }; setBlueprint(nw); }
@@ -1812,6 +1818,7 @@ Return ONLY valid JSON:
                         h('p', { className: 'text-[9px] text-amber-600 mb-1' }, 'Paste a redacted sample report to match your professional writing style.'),
                         h('textarea', {
                             className: 'w-full text-[10px] border rounded-lg px-2 py-1 h-32 resize-none font-mono',
+                            'aria-label': 'Writing style sample report',
                             placeholder: 'Paste a sample report here (redact student names)...',
                             value: styleProfile,
                             onChange: e => setStyleProfile(e.target.value)
@@ -1830,7 +1837,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'flex items-center gap-3 mb-2' },
                     h('div', { className: 'flex-1' },
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Report Title'),
-                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-1.5', value: reportTitle, onChange: e => setReportTitle(e.target.value) })
+                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-1.5', 'aria-label': 'Report title', value: reportTitle, onChange: e => setReportTitle(e.target.value) })
                     ),
                     h('button', {
                         className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${generating ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-700'}`,
@@ -1859,6 +1866,7 @@ Return ONLY valid JSON:
                                     // Grade-level adaptation dropdown
                                     h('select', {
                                         className: `text-[9px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-700 cursor-wait border-teal-300' : 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100'}`,
+                                        'aria-label': 'Adapt grade level for ' + section,
                                         disabled: adaptingSection === section,
                                         value: '',
                                         onChange: e => { if (e.target.value) adaptSectionGradeLevel(section, text, e.target.value); }
@@ -1882,6 +1890,7 @@ Return ONLY valid JSON:
                                 h('p', { className: 'text-[9px] text-amber-700 font-medium' }, 'Custom instructions for regeneration (optional):'),
                                 h('textarea', {
                                     className: 'w-full text-[10px] border rounded px-2 py-1 h-16 resize-none',
+                                    'aria-label': 'Regeneration instructions',
                                     placeholder: 'e.g., "Make more concise" or "Emphasize processing speed findings"...',
                                     value: regenInstructions,
                                     onChange: e => setRegenInstructions(e.target.value)
@@ -1902,6 +1911,7 @@ Return ONLY valid JSON:
                                 ? h('div', { className: 'space-y-1' },
                                     h('textarea', {
                                         className: 'w-full text-[11px] text-slate-700 leading-relaxed border rounded-lg px-2 py-1.5 h-48 resize-y font-mono',
+                                        'aria-label': 'Edit section text',
                                         value: editSectionText,
                                         onChange: e => setEditSectionText(e.target.value)
                                     }),
@@ -1921,7 +1931,7 @@ Return ONLY valid JSON:
                                 ),
                             // Evidence chips
                             (sectionEvidenceMap[section] || []).length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-2 pt-1 border-t border-slate-100' },
-                                h('span', { className: 'text-[8px] text-slate-400 mr-1 self-center' }, 'Evidence:'),
+                                h('span', { className: 'text-[8px] text-slate-500 mr-1 self-center' }, 'Evidence:'),
                                 (sectionEvidenceMap[section] || []).map(chunkId => {
                                     const chunk = factChunks.find(c => c.id === chunkId);
                                     const chipColor = chunk ? (chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') : 'bg-slate-100 text-slate-500';
@@ -1940,7 +1950,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'flex justify-between pt-2' },
                     h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(7) }, '← Blueprint'),
                     h('button', {
-                        className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${Object.keys(reportSections).length > 0 ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`,
+                        className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${Object.keys(reportSections).length > 0 ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`,
                         disabled: Object.keys(reportSections).length === 0, onClick: () => { setCurrentStep(9); if (accuracyResults.length === 0) runAccuracyCheck(); }
                     }, 'Next: Accuracy Check →')
                 )
@@ -1992,7 +2002,7 @@ Return ONLY valid JSON:
                         )
                     ),
                     accuracyResults.length === 0 && h('div', { className: 'text-center py-8' },
-                        h('p', { className: 'text-slate-400 text-xs' }, 'No accuracy results yet'),
+                        h('p', { className: 'text-slate-500 text-xs' }, 'No accuracy results yet'),
                         h('button', { className: 'mt-2 px-4 py-2 bg-violet-600 text-white text-xs rounded-lg', onClick: runAccuracyCheck }, '🎯 Run Accuracy Check')
                     )
                 ),
@@ -2047,7 +2057,7 @@ Return ONLY valid JSON:
                     h('div', { className: 'px-3 pb-3 space-y-2' },
                         h('p', { className: 'text-[9px] text-sky-600' }, 'Translate the full report for multilingual families. Clinical terms use accepted equivalents.'),
                         h('div', { className: 'flex items-center gap-2' },
-                            h('select', { className: 'text-xs border rounded-lg px-2 py-1.5 bg-white flex-1', value: translationLang, onChange: e => setTranslationLang(e.target.value) },
+                            h('select', { className: 'text-xs border rounded-lg px-2 py-1.5 bg-white flex-1', 'aria-label': 'Translation language', value: translationLang, onChange: e => setTranslationLang(e.target.value) },
                                 ['Spanish', 'French', 'Portuguese', 'Chinese (Simplified)', 'Chinese (Traditional)', 'Arabic', 'Vietnamese', 'Korean', 'Haitian Creole', 'Somali', 'Russian', 'German', 'Japanese', 'Tagalog', 'Hindi', 'Urdu'].map(lang => h('option', { key: lang, value: lang }, lang))
                             ),
                             h('button', {
@@ -2072,6 +2082,7 @@ Return ONLY valid JSON:
                     h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Import JSON (paste previously exported data):'),
                     h('textarea', {
                         id: 'rw-import-area', className: 'w-full text-[10px] border rounded-lg px-3 py-2 font-mono resize-none h-20',
+                        'aria-label': 'Import JSON data',
                         placeholder: 'Paste JSON data here...', value: importText, onChange: e => setImportText(e.target.value)
                     }),
                     importText.trim() && h('button', { className: 'mt-1 px-3 py-1 bg-emerald-600 text-white text-[10px] rounded-lg hover:bg-emerald-700', onClick: importJSON }, '📂 Import Data')
@@ -2080,7 +2091,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'mt-3 bg-violet-50 rounded-lg border border-violet-200 p-3 space-y-2' },
                     h('h4', { className: 'text-xs font-bold text-violet-800 flex items-center gap-1' }, '📚 Saved Reports'),
                     h('div', { className: 'flex items-center gap-2' },
-                        h('input', { type: 'text', className: 'flex-1 text-[10px] border rounded-lg px-2 py-1', placeholder: 'Report name (optional)...', value: saveReportName, onChange: e => setSaveReportName(e.target.value) }),
+                        h('input', { type: 'text', className: 'flex-1 text-[10px] border rounded-lg px-2 py-1', placeholder: 'Report name (optional)...', 'aria-label': 'Report name', value: saveReportName, onChange: e => setSaveReportName(e.target.value) }),
                         h('button', { className: 'px-3 py-1 bg-violet-600 text-white text-[10px] font-medium rounded-lg hover:bg-violet-700 transition-colors whitespace-nowrap', onClick: saveReportToGallery }, '💾 Save Report'),
                         h('button', { className: 'px-3 py-1 bg-red-100 text-red-600 text-[10px] font-medium rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap', onClick: clearDraft }, '🗑️ New Report')
                     ),
@@ -2089,7 +2100,7 @@ Return ONLY valid JSON:
                             h('div', { key: r.id, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border border-violet-100 text-[10px]' },
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('span', { className: 'font-medium text-slate-800 truncate block' }, r.name),
-                                    h('span', { className: 'text-slate-400' }, new Date(r.savedAt).toLocaleDateString() + ' • ' + (r.scoreEntries?.length || 0) + ' scores')
+                                    h('span', { className: 'text-slate-500' }, new Date(r.savedAt).toLocaleDateString() + ' • ' + (r.scoreEntries?.length || 0) + ' scores')
                                 ),
                                 h('div', { className: 'flex gap-1 ml-2' },
                                     h('button', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 rounded hover:bg-violet-200', onClick: () => loadSavedReport(r) }, 'Load'),
@@ -2148,7 +2159,7 @@ Return ONLY valid JSON:
                 className: 'bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative'
             },
                 h('button', {
-                    className: 'absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl',
+                    className: 'absolute top-4 right-4 text-slate-500 hover:text-slate-600 text-xl',
                     onClick: onClose
                 }, '✕'),
                 h(ReportWriterPanel, {

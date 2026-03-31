@@ -1173,7 +1173,7 @@ var d = labToolData || {};
 
                 React.createElement('p', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDDFA\uFE0F ' + geoTarget.name),
 
-                React.createElement('p', { className: 'text-[10px] text-slate-400' }, geoTarget.continent + ' \u2022 ' + geoTarget.region)
+                React.createElement('p', { className: 'text-[10px] text-slate-500' }, geoTarget.continent + ' \u2022 ' + geoTarget.region)
 
               ),
 
@@ -1221,7 +1221,7 @@ var d = labToolData || {};
 
                 React.createElement('p', { className: 'text-2xl font-bold text-slate-800 mb-1' }, '\uD83C\uDFDB\uFE0F ' + geoTarget.name),
 
-                React.createElement('p', { className: 'text-xs text-slate-400' }, geoTarget.continent),
+                React.createElement('p', { className: 'text-xs text-slate-500' }, geoTarget.continent),
 
                 React.createElement('div', { className: 'flex gap-2 max-w-md mx-auto mt-3' },
 
@@ -1230,6 +1230,8 @@ var d = labToolData || {};
                     type: 'text',
 
                     placeholder: 'Type the capital city...',
+
+                    'aria-label': 'Capital city answer',
 
                     value: d.geoCapitalInput || '',
 
@@ -1441,7 +1443,7 @@ var d = labToolData || {};
 
                     }, '\u25C0 Previous'),
 
-                    React.createElement('span', { className: 'text-[10px] text-slate-400 self-center' }, (geoLandmarkIdx + 1) + '/' + GEO_LANDMARKS.length),
+                    React.createElement('span', { className: 'text-[10px] text-slate-500 self-center' }, (geoLandmarkIdx + 1) + '/' + GEO_LANDMARKS.length),
 
                     React.createElement('button', {
 
@@ -1491,7 +1493,7 @@ var d = labToolData || {};
 
                     React.createElement('h4', { className: 'text-lg font-bold text-slate-800' }, c.name),
 
-                    React.createElement('p', { className: 'text-xs text-slate-400' }, c.continent),
+                    React.createElement('p', { className: 'text-xs text-slate-500' }, c.continent),
 
                     React.createElement('p', { className: 'text-[10px] text-slate-300 mt-1' }, 'Click if bigger')
 
@@ -1501,7 +1503,7 @@ var d = labToolData || {};
 
               ),
 
-              React.createElement('p', { className: 'text-center text-[10px] text-slate-400 mt-3' }, '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!')
+              React.createElement('p', { className: 'text-center text-[10px] text-slate-500 mt-3' }, '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!')
 
             ),
 
@@ -1546,6 +1548,8 @@ var d = labToolData || {};
                   type: 'text',
 
                   placeholder: 'e.g. "Quiz me on African capitals" or "European rivers"',
+
+                  'aria-label': 'Geography quiz prompt',
 
                   value: d.geoQuizInput || '',
 
@@ -1629,7 +1633,7 @@ var d = labToolData || {};
 
                   React.createElement('h4', { className: 'text-sm font-bold text-slate-800 mb-2' }, q.question),
 
-                  q.hint && React.createElement('p', { className: 'text-[10px] text-slate-400 mb-2' }, '\uD83D\uDCA1 Hint: ' + q.hint),
+                  q.hint && React.createElement('p', { className: 'text-[10px] text-slate-500 mb-2' }, '\uD83D\uDCA1 Hint: ' + q.hint),
 
                   React.createElement('div', { className: 'flex gap-2' },
 
@@ -1638,6 +1642,8 @@ var d = labToolData || {};
                       type: 'text',
 
                       placeholder: 'Your answer...',
+
+                      'aria-label': 'Quiz answer',
 
                       value: d.geoQuizAnswer || '',
 
@@ -1724,9 +1730,10 @@ var d = labToolData || {};
                     onChange: function(e) { upd('geoDistGuess', e.target.value); },
                     onKeyDown: function(e) { if (e.key === 'Enter') checkDistanceAnswer(); },
                     placeholder: 'Distance in km...',
+                    'aria-label': 'Distance guess in kilometers',
                     className: 'w-48 px-3 py-2 rounded-lg border border-teal-200 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400'
                   }),
-                  React.createElement('span', { className: 'text-xs text-slate-400 font-bold' }, 'km'),
+                  React.createElement('span', { className: 'text-xs text-slate-500 font-bold' }, 'km'),
                   React.createElement('button', {
                     onClick: checkDistanceAnswer,
                     className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 transition-colors'
@@ -1743,15 +1750,15 @@ var d = labToolData || {};
                 }, geoDistFeedback.msg),
 
                 // Stats
-                React.createElement('div', { className: 'text-center text-xs text-slate-400' },
+                React.createElement('div', { className: 'text-center text-xs text-slate-500' },
                   '\uD83C\uDFAF Distance challenges nailed: ' + geoDistCorrect
                 )
-              ) : React.createElement('div', { className: 'text-center py-8 text-slate-400' }, 'Loading...')
+              ) : React.createElement('div', { className: 'text-center py-8 text-slate-500' }, 'Loading...')
             ),
 
             // ── Badge shelf ──
             React.createElement('div', { className: 'px-4 py-2 border-t border-slate-100 flex flex-wrap gap-1 items-center' },
-              React.createElement('span', { className: 'text-[10px] text-slate-400 mr-1' }, 'Badges:'),
+              React.createElement('span', { className: 'text-[10px] text-slate-500 mr-1' }, 'Badges:'),
               GEO_BADGES.map(function(b) {
                 return React.createElement('span', {
                   key: b.id,
@@ -2093,7 +2100,7 @@ var d = labToolData || {};
                 },
                   isMatched
                     ? React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-lg'},matchedPair.icon), React.createElement('span',{className:'text-xs font-bold text-emerald-700'},matchedPair.theorem), React.createElement('span',{className:'text-xs text-emerald-500 ml-auto'},'✅'))
-                    : React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-[10px] text-slate-400 font-bold'},(slot+1)+'.'), React.createElement('span',{className:'text-xs text-slate-600'},pair.desc), !isMatched&&React.createElement('span',{className:'text-[10px] text-violet-400 ml-auto italic'},gp.matchDragOver===slot?'⬇ Drop!':gp.selectedMatch!=null?'👆 Click':'🧩 Drop'))
+                    : React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-[10px] text-slate-500 font-bold'},(slot+1)+'.'), React.createElement('span',{className:'text-xs text-slate-600'},pair.desc), !isMatched&&React.createElement('span',{className:'text-[10px] text-violet-400 ml-auto italic'},gp.matchDragOver===slot?'⬇ Drop!':gp.selectedMatch!=null?'👆 Click':'🧩 Drop'))
                 );
               })
             ),
@@ -2288,7 +2295,7 @@ var d = labToolData || {};
           if (gpInvestigate&&!gpRevealed) return React.createElement('div',{className:'bg-amber-50 rounded-xl p-3 border-2 border-amber-200 border-dashed'},
             React.createElement('div',{className:'flex items-center gap-2 mb-2'}, React.createElement('span',{className:'text-base'},'🔍'), React.createElement('p',{className:'text-sm font-bold text-amber-700 flex-1'},`${theorems.length} relationship${theorems.length>1?'s':''} detected!`)),
             React.createElement('p',{className:'text-xs text-amber-600 mb-2'},'Investigate Mode ON — write your prediction before revealing!'),
-            React.createElement('textarea',{rows:2,placeholder:'What theorems or rules do you think apply here?',value:gp.prediction||'',onChange:e=>gpUpd('prediction',e.target.value),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 resize-none'}),
+            React.createElement('textarea',{rows:2,placeholder:'What theorems or rules do you think apply here?','aria-label':'Theorem prediction',value:gp.prediction||'',onChange:e=>gpUpd('prediction',e.target.value),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 resize-none'}),
             React.createElement('button',{onClick:()=>gpUpd('revealed',true),disabled:!(gp.prediction||'').trim(),className:'w-full py-2 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all disabled:opacity-40'},'👁 Reveal Theorems')
           );
           return React.createElement('div',{className:'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-200'},
@@ -2296,7 +2303,7 @@ var d = labToolData || {};
             React.createElement('div',{className:'space-y-2'},
               theorems.map((th,ti)=>React.createElement('div',{key:ti,className:`flex items-start gap-2 bg-white rounded-lg p-2.5 border ${th.valid?'border-emerald-200':'border-amber-200'}`},
                 React.createElement('span',{className:'text-lg leading-none pt-0.5'},th.icon),
-                React.createElement('div',{className:'flex-1 min-w-0'}, React.createElement('p',{className:`text-xs font-bold ${th.valid?'text-emerald-700':'text-amber-700'}`},th.label), React.createElement('p',{className:'text-[11px] text-slate-600 font-mono break-words'},th.desc), React.createElement('p',{className:'text-[10px] text-slate-400 mt-0.5 italic'},th.detail)),
+                React.createElement('div',{className:'flex-1 min-w-0'}, React.createElement('p',{className:`text-xs font-bold ${th.valid?'text-emerald-700':'text-amber-700'}`},th.label), React.createElement('p',{className:'text-[11px] text-slate-600 font-mono break-words'},th.desc), React.createElement('p',{className:'text-[10px] text-slate-500 mt-0.5 italic'},th.detail)),
                 React.createElement('span',{className:`text-xs font-bold ${th.valid?'text-emerald-500':'text-amber-500'}`},th.valid?'✓':'≈')
               ))
             )
@@ -2360,7 +2367,7 @@ var d = labToolData || {};
                     isCorrect ? React.createElement('div',{className:'text-[10px] font-bold text-emerald-600 bg-emerald-100 rounded px-2 py-1 gp-snap'},'✅ '+step.reason)
                     : canAnswer ? React.createElement('div',{className:`h-8 flex items-center justify-center rounded-lg border-2 border-dashed transition-all ${isHovered?'border-violet-400 bg-violet-50 text-violet-600':'border-emerald-200 text-emerald-400'} ${ans&&!isCorrect?'border-red-300 text-red-500':''} text-[10px] font-semibold`},
                         ans&&!isCorrect ? '❌ Try again — drag the correct reason here' : isHovered ? '⬇ Drop here!' : selectedChip ? '👆 Click to place' : '🧩 Drag reason here')
-                    : React.createElement('div',{className:'text-[10px] text-slate-400 italic px-2 py-1'},'🔒 Locked')
+                    : React.createElement('div',{className:'text-[10px] text-slate-500 italic px-2 py-1'},'🔒 Locked')
                   ),
                   React.createElement('div',{className:'col-span-1 p-2 text-center text-sm'},isCorrect?'✅':ans?'❌':canAnswer?'⭕':'⏳')
                 );
@@ -2396,7 +2403,7 @@ var d = labToolData || {};
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('span',{className:'text-xl'},'📐'),
               React.createElement('p',{className:'text-sm font-bold text-orange-700 flex-1'},'Angle Sorter'),
-              React.createElement('button',{onClick:function(){gpUpd('mission',null);gpUpd('sorter',null);},className:'text-[10px] text-slate-400 hover:text-slate-600 underline'},'Exit')
+              React.createElement('button',{onClick:function(){gpUpd('mission',null);gpUpd('sorter',null);},className:'text-[10px] text-slate-500 hover:text-slate-600 underline'},'Exit')
             ),
             renderAngleSorter()
           );
@@ -2414,11 +2421,11 @@ var d = labToolData || {};
               React.createElement('span',{className:'text-xl'},mission.icon),
               React.createElement('div',{className:'flex-1'}, React.createElement('p',{className:'text-sm font-bold text-violet-800'},mission.title), React.createElement('div',{className:'w-full h-1.5 bg-violet-100 rounded-full mt-1 overflow-hidden'}, React.createElement('div',{className:'h-full bg-gradient-to-r from-violet-400 to-purple-400 rounded-full transition-all duration-500',style:{width:pct+'%'}}))),
               React.createElement('span',{className:'text-[10px] font-bold text-violet-500 bg-violet-100 px-2 py-0.5 rounded-full'},`${step+1}/${mission.steps.length}`),
-              React.createElement('button',{onClick:()=>gpUpd('mission',null),className:'text-[10px] text-slate-400 hover:text-slate-600 underline'},'Exit')
+              React.createElement('button',{onClick:()=>gpUpd('mission',null),className:'text-[10px] text-slate-500 hover:text-slate-600 underline'},'Exit')
             ),
             React.createElement('div',{className:'bg-white rounded-xl p-3 border-2 border-violet-200'},
               cs.type==='action'&&React.createElement('div',null, React.createElement('p',{className:'text-[10px] font-bold text-violet-500 uppercase mb-1'},'📋 Do This'), React.createElement('p',{className:'text-sm text-slate-700 mb-2'},cs.text), React.createElement('button',{onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-violet-500 text-white font-bold rounded-lg text-xs hover:bg-violet-600 transition-all'},'Done →')),
-              cs.type==='predict'&&React.createElement('div',null, React.createElement('p',{className:'text-[10px] font-bold text-amber-500 uppercase mb-1'},'🤔 Make a Prediction'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('input',{type:'text',placeholder:cs.ph,value:data[cs.field]||'',onChange:e=>gpUpd('mission',{...gpMission,data:{...data,[cs.field]:e.target.value}}),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 font-semibold'}), React.createElement('button',{disabled:!(data[cs.field]||'').trim(),onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-xs hover:bg-amber-600 transition-all disabled:opacity-40'},'Commit Prediction →')),
+              cs.type==='predict'&&React.createElement('div',null, React.createElement('p',{className:'text-[10px] font-bold text-amber-500 uppercase mb-1'},'🤔 Make a Prediction'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('input',{type:'text','aria-label':'Mission prediction',placeholder:cs.ph,value:data[cs.field]||'',onChange:e=>gpUpd('mission',{...gpMission,data:{...data,[cs.field]:e.target.value}}),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 font-semibold'}), React.createElement('button',{disabled:!(data[cs.field]||'').trim(),onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-xs hover:bg-amber-600 transition-all disabled:opacity-40'},'Commit Prediction →')),
               cs.type==='check'&&React.createElement('div',null, React.createElement('p',{className:'text-[10px] font-bold text-blue-500 uppercase mb-1'},'🔬 Investigate'), React.createElement('p',{className:'text-sm text-slate-700 mb-2'},cs.text), React.createElement('button',{onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-blue-500 text-white font-bold rounded-lg text-xs hover:bg-blue-600 transition-all'},'I verified it →')),
               cs.type==='reflect'&&React.createElement('div',null, React.createElement('p',{className:'text-[10px] font-bold text-purple-500 uppercase mb-1'},'💭 Reflect'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('div',{className:'flex flex-col gap-1.5'}, cs.opts.map(opt=>React.createElement('button',{key:opt,onClick:()=>{ gpUpd('mission',{...gpMission,data:{...data,[cs.field]:opt}}); setTimeout(()=>{ advanceMission(step+1); if(opt===cs.correct&&typeof awardStemXP==='function') awardStemXP('geometryProver',5,'discovery'); },500); },className:`px-3 py-2 text-sm font-semibold rounded-lg border-2 text-left transition-all ${data[cs.field]===opt?'bg-purple-500 text-white border-purple-500':'bg-white text-slate-700 border-purple-200 hover:border-purple-400'}`},opt)))),
               cs.type==='conclude'&&React.createElement('div',null, React.createElement('p',{className:'text-[10px] font-bold text-emerald-500 uppercase mb-1'},'🎯 Big Idea'), React.createElement('div',{className:'bg-emerald-50 rounded-xl p-3 border border-emerald-200 mb-2'}, React.createElement('p',{className:'text-sm text-emerald-800'},mission.bigIdea)), React.createElement('button',{onClick:()=>{ advanceMission(step+1); if(typeof awardStemXP==='function') awardStemXP('geometryProver',20,mission.id+' complete'); addToast('🎉 Discovery complete! +20 XP','success'); setExploreScore(prev=>({correct:prev.correct+1,total:prev.total+1})); },className:'w-full py-2 bg-emerald-500 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all'},'✅ Got it! Complete Mission'))
@@ -2455,7 +2462,7 @@ var d = labToolData || {};
           gpTab==='build'&&React.createElement('div',{className:'space-y-3'},
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('button',{onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpInvestigate?'bg-amber-500 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
-              React.createElement('span',{className:'text-[10px] text-slate-400 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
+              React.createElement('span',{className:'text-[10px] text-slate-500 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
             ),
             React.createElement('div',{className:'flex gap-1.5 flex-wrap'},
               [{id:'freeform',label:'✏️ Freeform',color:'violet',action:()=>{gpUpd('mode','freeform');gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('guided',null);}},
@@ -2496,7 +2503,7 @@ var d = labToolData || {};
               React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-3'},'🎯 '+gpChallenge.question),
               gpChallenge.type==='polygon_sum'&&React.createElement('p',{className:'text-[11px] text-violet-600 italic mb-2'},'💡 How many triangles fit inside the polygon?'),
               React.createElement('div',{className:'flex gap-2'},
-                React.createElement('input',{type:'text',value:gp.challengeAnswer||'',onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:'Your answer (°)',className:'flex-1 px-3 py-2 border-2 border-violet-300 rounded-lg text-sm font-bold text-center focus:border-violet-500 outline-none'}),
+                React.createElement('input',{type:'text','aria-label':'Challenge answer in degrees',value:gp.challengeAnswer||'',onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:'Your answer (°)',className:'flex-1 px-3 py-2 border-2 border-violet-300 rounded-lg text-sm font-bold text-center focus:border-violet-500 focus:ring-2 focus:ring-violet-300 outline-none'}),
                 React.createElement('button',{onClick:checkChallenge,className:'px-4 py-2 bg-violet-500 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all'},'✔ Check')
               ),
               gpFeedback&&React.createElement('div',{className:`mt-3 p-3 rounded-xl border ${gpFeedback.correct?'bg-emerald-50 border-emerald-200':'bg-red-50 border-red-200'}`}, React.createElement('p',{className:`text-sm font-bold ${gpFeedback.correct?'text-emerald-700':'text-red-600'}`},gpFeedback.msg))
@@ -2511,7 +2518,7 @@ var d = labToolData || {};
           // Footer
           React.createElement('div',{className:'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200 text-center'},
             React.createElement('p',{className:'text-[10px] text-violet-600'},React.createElement('strong',null,'📐 Euclidean Geometry'),' — drag points to explore how angles change.'),
-            React.createElement('p',{className:'text-[9px] text-slate-400 mt-0.5'},'Place points • Draw segments • Drag to explore • Discover theorems')
+            React.createElement('p',{className:'text-[9px] text-slate-500 mt-0.5'},'Place points • Draw segments • Drag to explore • Discover theorems')
           )
         );
       })();

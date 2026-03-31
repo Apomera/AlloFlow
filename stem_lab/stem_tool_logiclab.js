@@ -854,6 +854,7 @@ window.StemLab = window.StemLab || {
                     type: "text", value: expr,
                     onChange: function(e) { upd({ expression: e.target.value }); },
                     placeholder: "Or type: P \u2192 Q",
+                    'aria-label': 'Logic expression input',
                     className: "flex-1 px-3 py-2 rounded-lg border border-violet-200 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
                   }),
                   React.createElement("button", {
@@ -1016,7 +1017,7 @@ window.StemLab = window.StemLab || {
 
                 var table = genTable(expr);
 
-                if (!table) return React.createElement("div", { className: "p-8 text-center text-slate-400 text-sm" }, "Enter an expression above to generate a truth table");
+                if (!table) return React.createElement("div", { className: "p-8 text-center text-slate-500 text-sm" }, "Enter an expression above to generate a truth table");
 
                 var typeBadge = table.type === 'tautology' ? { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', label: '\u2705 Tautology (always true)', glow: '0 0 20px rgba(16,185,129,0.3)' }
 
@@ -1092,7 +1093,7 @@ window.StemLab = window.StemLab || {
 
                             table.vars.map(function(v) {
 
-                              return React.createElement("td", { key: v, className: "px-4 py-2 text-center font-bold bg-white group-hover:bg-violet-50 transition-colors " + (row.env[v] ? "text-emerald-600" : "text-slate-400") },
+                              return React.createElement("td", { key: v, className: "px-4 py-2 text-center font-bold bg-white group-hover:bg-violet-50 transition-colors " + (row.env[v] ? "text-emerald-600" : "text-slate-500") },
 
                                 row.env[v] ? "T" : "F"
 
@@ -1308,7 +1309,7 @@ window.StemLab = window.StemLab || {
 
                         React.createElement("code", { className: "font-mono font-bold text-violet-800 flex-1" }, step.result),
 
-                        React.createElement("span", { className: "text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded" }, step.rule),
+                        React.createElement("span", { className: "text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded" }, step.rule),
 
                         step.result === activeCh.conclusion && React.createElement("span", { className: "text-emerald-500 font-black text-sm" }, "\uD83C\uDF89")
 
@@ -1435,7 +1436,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("div", { className: "text-[10px] font-mono text-slate-500 mt-0.5" }, rule.form),
 
-                      React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 italic" }, rule.eng)
+                      React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5 italic" }, rule.eng)
 
                     );
 
@@ -1461,7 +1462,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("span", { className: "font-black text-violet-800 text-sm" }, "Score: " + score),
                 React.createElement("span", { className: "text-violet-300 font-bold" }, "|"),
                 React.createElement("span", { className: "font-black text-amber-600 text-sm" }, "\uD83D\uDD25 Streak: " + streak + " (Best: " + bestStreak + ")"),
-                React.createElement("button", { onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[10px] text-slate-400 hover:text-red-400 font-bold" }, "Reset")
+                React.createElement("button", { onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[10px] text-slate-500 hover:text-red-400 font-bold" }, "Reset")
               ),
 
               // Challenge type tabs
@@ -1500,6 +1501,8 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd({ userTopic: e.target.value }); },
 
                   placeholder: "Your interests (basketball, cooking, video games...)",
+
+                  'aria-label': 'Your interests for AI personalization',
 
                   className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-200 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none"
 
@@ -1768,7 +1771,7 @@ window.StemLab = window.StemLab || {
 
                         return React.createElement("tr", { key: ri },
 
-                          table.vars.map(function(v) { return React.createElement("td", { key: v, className: "px-4 py-2 text-center font-bold bg-white " + (row.env[v] ? "text-emerald-600" : "text-slate-400") }, row.env[v] ? "T" : "F"); }),
+                          table.vars.map(function(v) { return React.createElement("td", { key: v, className: "px-4 py-2 text-center font-bold bg-white " + (row.env[v] ? "text-emerald-600" : "text-slate-500") }, row.env[v] ? "T" : "F"); }),
 
                           React.createElement("td", { className: "px-4 py-2 text-center" },
 
@@ -2054,8 +2057,8 @@ window.StemLab = window.StemLab || {
                         rows2.map(function(r2,ri2) {
                           var isActive2 = r2.A===gateInputs.A && (isUnaryGate||r2.B===gateInputs.B);
                           return React.createElement("tr", { key:ri2, style:{background:isActive2?'#ede9fe':'transparent'} },
-                            React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.A?"text-emerald-600":"text-slate-400")},r2.A?"T":"F"),
-                            !isUnaryGate&&React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.B?"text-emerald-600":"text-slate-400")},r2.B?"T":"F"),
+                            React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.A?"text-emerald-600":"text-slate-500")},r2.A?"T":"F"),
+                            !isUnaryGate&&React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.B?"text-emerald-600":"text-slate-500")},r2.B?"T":"F"),
                             React.createElement("td",{className:"px-4 py-2 text-center font-black "+(r2.out?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600")},r2.out?"\u2705 T":"\u274C F")
                           );
                         })

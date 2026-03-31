@@ -165,6 +165,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var t = ctx.t;
       var callGemini = ctx.callGemini;
 
@@ -414,28 +415,26 @@ window.StemLab = window.StemLab || {
         });
       }
 
-      // ── Keyboard shortcuts ──
-      React.useEffect(function() {
-        function handleKey(e) {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-          var key = e.key.toLowerCase();
-          if (key === 'q') { e.preventDefault(); nextProblem(); }
-          if (key === 's' && !_mt.active) {
-            e.preventDefault();
-            nextProblem();
-            _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
-            if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
-            labToolData._multTimerInterval = null;
-            playSound('speedStart');
-            addToast('\u23F1\uFE0F Speed Run started! 2 minutes on the clock!', 'success');
-          }
-          if (key === 'h') { e.preventDefault(); setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); }
-          if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askAI(); }
-          if (key === 'b') { e.preventDefault(); extUpd({ showBadges: !_ext.showBadges }); }
+      // ── Keyboard shortcuts (managed without useEffect) ──
+      if (window._multTableKbHandler) window.removeEventListener('keydown', window._multTableKbHandler);
+      window._multTableKbHandler = function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        var key = e.key.toLowerCase();
+        if (key === 'q') { e.preventDefault(); nextProblem(); }
+        if (key === 's' && !_mt.active) {
+          e.preventDefault();
+          nextProblem();
+          _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
+          if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
+          labToolData._multTimerInterval = null;
+          playSound('speedStart');
+          addToast('\u23F1\uFE0F Speed Run started! 2 minutes on the clock!', 'success');
         }
-        window.addEventListener('keydown', handleKey);
-        return function() { window.removeEventListener('keydown', handleKey); };
-      });
+        if (key === 'h') { e.preventDefault(); setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); }
+        if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askAI(); }
+        if (key === 'b') { e.preventDefault(); extUpd({ showBadges: !_ext.showBadges }); }
+      };
+      window.addEventListener('keydown', window._multTableKbHandler);
 
       // ── Difficulty button row ──
       var diffModes = [

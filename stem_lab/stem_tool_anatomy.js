@@ -2208,7 +2208,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
             h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
             h('div', null,
               h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDEC0 Human Anatomy Explorer'),
-              h('p', { className: 'text-xs text-slate-400' }, sys.desc)
+              h('p', { className: 'text-xs text-slate-500' }, sys.desc)
             ),
             h('button', {
               onClick: takeSnapshot,
@@ -2356,7 +2356,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
                 },
                 className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all shadow-sm'
               }, '\uD83C\uDFAF Start Spotter Test'),
-              spotterTotal > 0 ? h('p', { className: 'text-[10px] text-slate-400 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
+              spotterTotal > 0 ? h('p', { className: 'text-[10px] text-slate-500 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
             ) : h('div', { className: 'space-y-3' },
               h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200 text-center' },
                 h('p', { className: 'text-sm font-bold text-amber-900 mb-1' }, 'What structure is marked on the figure?'),
@@ -2549,10 +2549,10 @@ if (!window.StemLab.isRegistered('anatomy')) {
                   (flashcardFlipped ? 'border-teal-400 bg-teal-50' : 'border-slate-300 bg-gradient-to-br from-white to-slate-50')
               },
                 !flashcardFlipped ? h('div', null,
-                  h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase mb-3' }, 'STRUCTURE NAME'),
+                  h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-3' }, 'STRUCTURE NAME'),
                   h('h3', { className: 'text-xl font-black text-slate-800 mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].name),
                   PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('p', { className: 'text-xs text-indigo-500 italic' }, '\uD83D\uDD0A ' + PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id]) : null,
-                  h('p', { className: 'text-[10px] text-slate-400 mt-4' }, 'Tap to reveal function \u2192')
+                  h('p', { className: 'text-[10px] text-slate-500 mt-4' }, 'Tap to reveal function \u2192')
                 ) : h('div', null,
                   h('p', { className: 'text-[10px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
@@ -2652,7 +2652,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
 
             // Progress tracker
             h('div', { className: 'mb-3 flex items-center gap-2' },
-              h('span', { className: 'text-[10px] font-bold text-slate-400' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
+              h('span', { className: 'text-[10px] font-bold text-slate-500' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
               h('div', { className: 'flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
                 h('div', { className: 'h-full rounded-full transition-all', style: { width: progressPct + '%', background: sys.accent } })
               ),
@@ -2661,7 +2661,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
 
             // Layer toggle bar
             h('div', { className: 'flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-200' },
-              h('span', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
+              h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
               LAYER_DEFS.map(function(ld) {
                 var isOn = layers[ld.id] || ld.id === autoLayerId;
                 return h('button', {
@@ -2836,16 +2836,16 @@ if (!window.StemLab.isRegistered('anatomy')) {
                       ),
                       h('div', { className: 'space-y-2.5' },
                         h('div', null,
-                          h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase mb-0.5' }, 'Function', ttsBtn(sel.fn)),
+                          h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-0.5' }, 'Function', ttsBtn(sel.fn)),
                           h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.fn)
                         ),
                         sel.origin && h('div', { className: 'grid grid-cols-2 gap-2' },
                           h('div', null,
-                            h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase mb-0.5' }, 'Origin'),
+                            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-0.5' }, 'Origin'),
                             h('p', { className: 'text-xs text-slate-600' }, sel.origin)
                           ),
                           h('div', null,
-                            h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase mb-0.5' }, 'Insertion'),
+                            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-0.5' }, 'Insertion'),
                             h('p', { className: 'text-xs text-slate-600' }, sel.insertion)
                           )
                         ),
@@ -2854,7 +2854,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
                           h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2' }, sel.clinical)
                         ),
                         sel.detail && h('div', null,
-                          h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase mb-0.5' }, 'Detail'),
+                          h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-0.5' }, 'Detail'),
                           h('p', { className: 'text-xs text-slate-500 leading-relaxed' }, sel.detail)
                         ),
                         // Brain Waves Section
@@ -2921,22 +2921,22 @@ if (!window.StemLab.isRegistered('anatomy')) {
                           ),
                           h('tbody', null,
                             h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-400' }, 'System'),
+                              h('td', { className: 'py-1 font-bold text-slate-500' }, 'System'),
                               h('td', { className: 'py-1 text-slate-600' }, sys.name),
                               h('td', { className: 'py-1 text-slate-600' }, sys.name)
                             ),
                             h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-400' }, 'View'),
+                              h('td', { className: 'py-1 font-bold text-slate-500' }, 'View'),
                               h('td', { className: 'py-1 text-slate-600' }, sel.v === 'b' ? 'Both' : sel.v === 'a' ? 'Anterior' : 'Posterior'),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.v === 'b' ? 'Both' : compareSel.v === 'a' ? 'Anterior' : 'Posterior')
                             ),
                             sel.origin && compareSel.origin ? h('tr', { className: 'border-b border-slate-100' },
-                              h('td', { className: 'py-1 font-bold text-slate-400' }, 'Origin'),
+                              h('td', { className: 'py-1 font-bold text-slate-500' }, 'Origin'),
                               h('td', { className: 'py-1 text-slate-600' }, sel.origin),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.origin)
                             ) : null,
                             sel.insertion && compareSel.insertion ? h('tr', null,
-                              h('td', { className: 'py-1 font-bold text-slate-400' }, 'Insertion'),
+                              h('td', { className: 'py-1 font-bold text-slate-500' }, 'Insertion'),
                               h('td', { className: 'py-1 text-slate-600' }, sel.insertion),
                               h('td', { className: 'py-1 text-slate-600' }, compareSel.insertion)
                             ) : null
@@ -2957,7 +2957,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
                           style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
                         },
                           h('div', { className: 'font-bold text-slate-800' }, st.name),
-                          h('div', { className: 'text-[10px] text-slate-400 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
+                          h('div', { className: 'text-[10px] text-slate-500 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
                         );
                       })
                     )
@@ -3010,7 +3010,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
 
             // Badge section
             h('div', { className: 'mt-4 bg-slate-50 rounded-xl border border-slate-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
+              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 BADGE_DEFS.map(function(bd) {
                   var earned = badges[bd.id];

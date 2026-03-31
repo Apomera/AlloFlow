@@ -258,6 +258,7 @@ window.StemLab = window.StemLab || {
           var addToast = ctx.addToast;
           var awardXP = ctx.awardXP;
           var announceToSR = ctx.announceToSR;
+          var a11yClick = ctx.a11yClick;
           var callGemini = ctx.callGemini;
           var callTTS = ctx.callTTS;
           var setToolSnapshots = ctx.setToolSnapshots;
@@ -609,7 +610,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // ── Grade-band intro ──
-            h('p', { className: 'text-xs text-slate-400 italic -mt-1 mb-3' }, introText),
+            h('p', { className: 'text-xs text-slate-500 italic -mt-1 mb-3' }, introText),
 
             // ══════════════════════════════════════
             // SVG Schematic
@@ -871,7 +872,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all'
               }, '\uD83D\uDDD1 Clear'),
 
-              components.length > 0 && h('span', { className: 'self-center text-xs text-slate-400 ml-auto' }, components.length + ' component' + (components.length > 1 ? 's' : ''))
+              components.length > 0 && h('span', { className: 'self-center text-xs text-slate-500 ml-auto' }, components.length + ' component' + (components.length > 1 ? 's' : ''))
             ),
 
             // ══════════════════════════════════════
@@ -1008,7 +1009,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Formula reminder
-              h('div', { className: 'mt-2 flex items-center gap-2 text-[10px] text-slate-400' },
+              h('div', { className: 'mt-2 flex items-center gap-2 text-[10px] text-slate-500' },
                 h('span', null, '\u2696 V = IR'),
                 h('span', null, '\u2022'),
                 h('span', null, 'P = IV'),
@@ -1076,7 +1077,7 @@ window.StemLab = window.StemLab || {
                 className: 'flex items-center gap-2 w-full text-left'
               },
                 h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83D\uDCCB Circuit Presets'),
-                h('span', { className: 'ml-auto text-slate-400 text-xs' }, showPresets ? '\u25B2' : '\u25BC')
+                h('span', { className: 'ml-auto text-slate-500 text-xs' }, showPresets ? '\u25B2' : '\u25BC')
               ),
               showPresets && h('div', { className: 'flex flex-wrap gap-2 mt-2' },
                 CIRCUIT_PRESETS.map(function(preset) {
@@ -1087,7 +1088,7 @@ window.StemLab = window.StemLab || {
                     title: preset.desc
                   },
                     h('span', { className: 'font-bold text-slate-700 block' }, preset.label),
-                    h('span', { className: 'text-[10px] text-slate-400' }, preset.desc)
+                    h('span', { className: 'text-[10px] text-slate-500' }, preset.desc)
                   );
                 })
               )
@@ -1202,8 +1203,8 @@ window.StemLab = window.StemLab || {
                   },
                     h('span', { className: 'text-lg' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', null,
-                      h('p', { className: 'font-bold ' + (earned ? 'text-amber-700' : 'text-slate-400') }, b.name),
-                      h('p', { className: 'text-[10px] ' + (earned ? 'text-amber-600' : 'text-slate-400') }, b.desc)
+                      h('p', { className: 'font-bold ' + (earned ? 'text-amber-700' : 'text-slate-500') }, b.name),
+                      h('p', { className: 'text-[10px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, b.desc)
                     )
                   );
                 })
@@ -1534,7 +1535,7 @@ window.StemLab = window.StemLab || {
                     ),
                     expanded ? h('div', null,
                       h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, app.desc),
-                      h('span', { className: 'text-[9px] text-slate-400 font-bold' }, '\uD83D\uDD27 Key parts: ' + app.comps)
+                      h('span', { className: 'text-[9px] text-slate-500 font-bold' }, '\uD83D\uDD27 Key parts: ' + app.comps)
                     ) : null
                   );
                 })

@@ -18,6 +18,8 @@
     render: function (ctx) {
     var React = ctx.React;
     var el = React.createElement;
+    var announceToSR = ctx.announceToSR;
+    var a11yClick = ctx.a11yClick;
 
           // ── State (hook-free: reads from ctx.toolData) ──
           var d = (ctx.toolData && ctx.toolData.cyberDefense) || {};
@@ -755,8 +757,10 @@
                         el('input', { value: pwInput, type: pwShowPassword ? 'text' : 'password',
                           onChange: function(e) { upd({ pwInput: e.target.value, pwBruteAnim: null, pwBreachResult: null }); },
                           placeholder: 'Type a password to analyze...',
-                          style: { width: '100%', padding: '12px 40px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 14, fontWeight: 600, outline: 'none', boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' } }),
+                          'aria-label': 'Password to analyze',
+                          style: { width: '100%', padding: '12px 40px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 14, fontWeight: 600, boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                         el('button', { onClick: function() { upd('pwShowPassword', !pwShowPassword); },
+                          'aria-label': pwShowPassword ? 'Hide password' : 'Show password',
                           style: { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 16, padding: 4 } },
                           pwShowPassword ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEE1\uFE0F')
                       ),
@@ -922,8 +926,8 @@
                 el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Plain Text' : 'Encoded Text'),
-                    el('textarea', { value: cipherInput, onChange: function(e) { upd('cipherInput', e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...',
-                      style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, outline: 'none', resize: 'none', boxSizing: 'border-box' } })
+                    el('textarea', { value: cipherInput, onChange: function(e) { upd('cipherInput', e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...', 'aria-label': cipherEncode ? 'Plain text to encode' : 'Encoded text to decode',
+                      style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, resize: 'none', boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
                   ),
                   el('div', null,
                     el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Encoded Output' : 'Decoded Output'),
@@ -950,8 +954,8 @@
                     upd('cipherChallenge', val);
                     if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); }
                     else { upd('challengeSolved', false); }
-                  }, placeholder: 'Type the decoded message...', disabled: challengeSolved,
-                    style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, outline: 'none', boxSizing: 'border-box' } }),
+                  }, placeholder: 'Type the decoded message...', 'aria-label': 'Cipher challenge answer', disabled: challengeSolved,
+                    style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                   challengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
                 )
               ),
