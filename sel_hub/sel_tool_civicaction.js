@@ -716,6 +716,7 @@ window.SelHub = window.SelHub || {
       // ═══════════════════════════════════════
 
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },

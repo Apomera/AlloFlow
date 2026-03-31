@@ -757,6 +757,7 @@ const d = labToolData.molecule;
             
 
 return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : "") },
+            React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" } }, d._srMsg || ""),
 
             // Header
 

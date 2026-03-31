@@ -786,6 +786,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontWeight: 700, color: '#fca5a5', fontSize: 13, marginBottom: 6 } }, '\uD83D\uDCDE If you need help RIGHT NOW:'),
             CRISIS_RESOURCES.map(function(cr, i) {
               return h('div', { key: i, style: { padding: '4px 0', fontSize: 12, color: '#fde2e2' } },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
                 h('span', { style: { fontWeight: 600 } }, cr.icon + ' ' + cr.name + ': '),
                 h('span', null, cr.contact)
               );

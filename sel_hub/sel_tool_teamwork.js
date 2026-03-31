@@ -582,6 +582,7 @@ window.SelHub = window.SelHub || {
         // ── Quick Reflection Prompt (reusable) ──
         function renderQuickReflection(activityType) {
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155' } },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
             h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflection'),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'What teamwork skill did you practice?'),
             h('select', {

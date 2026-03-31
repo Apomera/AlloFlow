@@ -698,6 +698,7 @@ window.StemLab = window.StemLab || {
       // ── Loading state ──
       if (!labToolData._threeLoaded) {
         return h('div', { className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
           h('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
           h('div', { className: 'text-slate-400 text-lg' }, 'Loading 3D engine...')
         );

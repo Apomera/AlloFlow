@@ -1036,6 +1036,7 @@ window.SelHub = window.SelHub || {
         var bgDark = '#0f172a';
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: bgDark, color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: 'linear-gradient(135deg, #78350f, #92400e)', borderBottom: '1px solid rgba(245,158,11,0.3)' } },

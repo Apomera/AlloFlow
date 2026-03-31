@@ -885,6 +885,7 @@ window.SelHub = window.SelHub || {
                     usedWords.forEach(function(w) { pending[w] = true; });
                     var displayCount = Object.keys(pending).length;
                     return h('div', { style: { marginTop: 10, textAlign: 'center', fontSize: 11, color: '#64748b' } },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
                       '\uD83D\uDCDA Your Emotion Vocabulary: ' + displayCount + ' word' + (displayCount !== 1 ? 's' : '') + ' used',
                       displayCount >= 10 && h('span', { style: { color: '#22c55e', marginLeft: 6, fontWeight: 600 } }, '\u2605 Wordsmith!')
                     );
