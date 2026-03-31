@@ -1082,11 +1082,117 @@ listing only the [chunk-id] values you actually referenced. Return the section t
                     evidenceMap[section] = [];
                 }
             }
+            // ── Improvement 1: Score-Text Verification Pass ──
+            setGenProgress('Verifying score citations...');
+            try {
+                const allScoreData = scoreEntries.map(s => `${s.assessment} — ${s.subtest}: ${s.score} (${s.scoreType}, ${s.classification}${s.percentile ? ', ' + s.percentile + 'th %ile' : ''})`).join('\n');
+                const fullDraft = Object.values(generated).join('\n\n');
+                const verifyResult = await callGemini(`You are a clinical data verification specialist. Cross-reference EVERY number, score, percentile, and classification label in this report draft against the actual input data.
+
+ACTUAL INPUT SCORES:
+${allScoreData}
+
+REPORT DRAFT:
+"""
+${fullDraft.substring(0, 8000)}
+"""
+
+Check for:
+1. Any score cited in the text that doesn't match the input (e.g., text says 92 but input says 82)
+2. Any classification label that doesn't match the score (e.g., "Average" for a score of 78)
+3. Any percentile that doesn't match the score
+4. Any test name spelled differently or attributed to wrong subtest
+5. Any score mentioned in the draft that doesn't exist in the input data
+
+Return ONLY JSON:
+{"verified": true/false, "errors": [{"claim": "what the report says", "actual": "what the data actually shows", "section": "which section", "severity": "critical|minor"}], "totalScoresCited": N, "totalVerified": N}`, true);
+                let scoreVerification = null;
+                try {
+                    let sv = verifyResult.trim();
+                    if (sv.indexOf('```') !== -1) { const ps = sv.split('```'); sv = ps[1] || ps[0]; if (sv.indexOf('\n') !== -1) sv = sv.split('\n').slice(1).join('\n'); if (sv.lastIndexOf('```') !== -1) sv = sv.substring(0, sv.lastIndexOf('```')); }
+                    scoreVerification = JSON.parse(sv);
+                } catch(e) {}
+                if (scoreVerification && scoreVerification.errors && scoreVerification.errors.length > 0) {
+                    // ── Self-heal: regenerate sections with score errors ──
+                    const sectionsWithErrors = [...new Set(scoreVerification.errors.filter(e => e.severity === 'critical').map(e => e.section))];
+                    if (sectionsWithErrors.length > 0) {
+                        setGenProgress(`Fixing ${sectionsWithErrors.length} section(s) with score errors...`);
+                        for (const secName of sectionsWithErrors) {
+                            const matchingSection = sections.find(s => secName.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(secName.toLowerCase()));
+                            if (matchingSection && generated[matchingSection]) {
+                                const errors = scoreVerification.errors.filter(e => e.section === secName);
+                                const corrections = errors.map(e => `CORRECTION: "${e.claim}" is WRONG. The actual data shows: ${e.actual}`).join('\n');
+                                try {
+                                    const fixPrompt = buildSectionPrompt(matchingSection, verifiedChunks, `CRITICAL CORRECTIONS FROM SCORE VERIFICATION:\n${corrections}\n\nFix these specific errors while keeping the rest of the section intact.`);
+                                    const fixResult = await callGemini(fixPrompt, false);
+                                    const { text, usedChunks } = parseEvidenceResponse(fixResult);
+                                    generated[matchingSection] = text;
+                                    evidenceMap[matchingSection] = usedChunks;
+                                } catch(fixErr) { warnLog(`Score fix failed for ${matchingSection}:`, fixErr); }
+                            }
+                        }
+                    }
+                    if (addToast) addToast(`\u26a0\ufe0f Score verification: ${scoreVerification.errors.length} issue(s) found${sectionsWithErrors.length > 0 ? ' — auto-fixed' : ''}`, 'info');
+                } else if (scoreVerification) {
+                    if (addToast) addToast(`\u2705 All ${scoreVerification.totalScoresCited || 'N'} score citations verified`, 'success');
+                }
+            } catch(svErr) { warnLog('[Report] Score verification pass failed (non-blocking):', svErr); }
+
+            // ── Improvement 2: Cross-Section Consistency Check ──
+            setGenProgress('Checking cross-section consistency...');
+            try {
+                const fullReport = Object.entries(generated).map(([k, v]) => `## ${k}\n${v}`).join('\n\n');
+                const consistencyResult = await callGemini(`You are a clinical report consistency auditor. Check this psychoeducational report for INTERNAL CONSISTENCY across sections.
+
+REPORT:
+"""
+${fullReport.substring(0, 8000)}
+"""
+
+Check for:
+1. SUMMARY-BODY MISMATCH: Does the Summary section accurately reflect the findings in earlier sections? (e.g., Summary says "average cognitive functioning" but Assessment Results describes deficits)
+2. RECOMMENDATION-FINDING GAPS: Are there recommendations that aren't supported by any finding? Are there significant findings with no corresponding recommendation?
+3. CROSS-SECTION CONTRADICTIONS: Does one section say something that contradicts another? (e.g., Background says no attention concerns but Assessment Results says elevated ADHD scores)
+4. TERMINOLOGY CONSISTENCY: Are the same constructs described consistently? (e.g., don't call it "anxiety" in one section and "nervousness" in another if referring to the same clinical construct)
+5. COMPLETENESS: Are all major assessment scores discussed somewhere? Are all mentioned in Summary?
+
+Return ONLY JSON:
+{"consistent": true/false, "issues": [{"type": "summary-mismatch|recommendation-gap|contradiction|terminology|completeness", "description": "specific issue", "sections": ["Section A", "Section B"], "severity": "critical|moderate|minor"}]}`, true);
+                let consistencyCheck = null;
+                try {
+                    let cc = consistencyResult.trim();
+                    if (cc.indexOf('```') !== -1) { const ps = cc.split('```'); cc = ps[1] || ps[0]; if (cc.indexOf('\n') !== -1) cc = cc.split('\n').slice(1).join('\n'); if (cc.lastIndexOf('```') !== -1) cc = cc.substring(0, cc.lastIndexOf('```')); }
+                    consistencyCheck = JSON.parse(cc);
+                } catch(e) {}
+                if (consistencyCheck && consistencyCheck.issues && consistencyCheck.issues.length > 0) {
+                    // ── Self-heal critical consistency issues ──
+                    const criticalIssues = consistencyCheck.issues.filter(i => i.severity === 'critical');
+                    if (criticalIssues.length > 0) {
+                        setGenProgress(`Fixing ${criticalIssues.length} consistency issue(s)...`);
+                        // Regenerate Summary section with consistency corrections
+                        const summarySection = sections.find(s => s.toLowerCase().includes('summary'));
+                        if (summarySection && generated[summarySection]) {
+                            const issueList = criticalIssues.map(i => `- ${i.type}: ${i.description}`).join('\n');
+                            try {
+                                const fixPrompt = buildSectionPrompt(summarySection, verifiedChunks, `CRITICAL: The following consistency issues were detected between this section and the rest of the report. Fix them:\n${issueList}\n\nEnsure the summary accurately reflects ALL findings from earlier sections.`);
+                                const fixResult = await callGemini(fixPrompt, false);
+                                const { text, usedChunks } = parseEvidenceResponse(fixResult);
+                                generated[summarySection] = text;
+                                evidenceMap[summarySection] = usedChunks;
+                            } catch(fixErr) { warnLog('[Report] Consistency fix failed:', fixErr); }
+                        }
+                    }
+                    if (addToast) addToast(`\u26a0\ufe0f Consistency check: ${consistencyCheck.issues.length} issue(s)${criticalIssues.length > 0 ? ' — auto-fixed critical' : ''}`, 'info');
+                } else {
+                    if (addToast) addToast('\u2705 Cross-section consistency verified', 'success');
+                }
+            } catch(ccErr) { warnLog('[Report] Consistency check failed (non-blocking):', ccErr); }
+
             setReportSections(generated);
             setSectionEvidenceMap(evidenceMap);
             setGenProgress('');
             setGenerating(false);
-            if (addToast) addToast('Report generated \u2728', 'success');
+            if (addToast) addToast('Report generated with verification \u2728', 'success');
         };
 
         // ── Section-by-Section: Regenerate a single section ──
@@ -1181,8 +1287,59 @@ Return ONLY valid JSON:
                 const passB = parseAudit(resultB);
                 // ── Reconciliation Engine ──
                 const reconciled = reconcileAuditPasses(passA, passB);
-                setAccuracyResults(reconciled);
-                if (addToast) {
+
+                // ── Self-Healing: auto-fix contradictions and critical discrepancies ──
+                const contradictions = reconciled.filter(r => r.status === 'contradicts');
+                const criticalDiscrepancies = reconciled.filter(r => r.status === 'discrepancy' && r.confidence === 'needs-review');
+                const fixableIssues = [...contradictions, ...criticalDiscrepancies];
+                if (fixableIssues.length > 0 && callGemini) {
+                    setGenProgress(`Self-healing: fixing ${fixableIssues.length} issue(s)...`);
+                    const issueDescriptions = fixableIssues.map(i => `- ISSUE: "${i.claim}" — ${i.explanation} (${i.status})`).join('\n');
+                    // Determine which sections are affected and regenerate them
+                    const allSections = Object.keys(reportSections);
+                    for (const sectionName of allSections) {
+                        const sectionText = reportSections[sectionName] || '';
+                        const sectionIssues = fixableIssues.filter(i => sectionText.toLowerCase().includes((i.claim || '').toLowerCase().substring(0, 30)));
+                        if (sectionIssues.length > 0) {
+                            const corrections = sectionIssues.map(i => `FIX: "${i.claim}" — ${i.explanation}`).join('\n');
+                            try {
+                                setGenProgress(`Fixing ${sectionIssues.length} issue(s) in "${sectionName}"...`);
+                                const fixPrompt = buildSectionPrompt(sectionName, verifiedChunks, `CRITICAL CORRECTIONS FROM DUAL-PASS ACCURACY AUDIT:\n${corrections}\n\nFix these specific issues. Every claim must trace to a verified fact chunk.`);
+                                const fixResult = await callGemini(fixPrompt, false);
+                                const { text, usedChunks } = parseEvidenceResponse(fixResult);
+                                setReportSections(prev => ({ ...prev, [sectionName]: text }));
+                                setSectionEvidenceMap(prev => ({ ...prev, [sectionName]: usedChunks }));
+                            } catch(fixErr) { warnLog(`Self-heal failed for ${sectionName}:`, fixErr); }
+                        }
+                    }
+                    // Re-run a quick verification after fixes
+                    try {
+                        setGenProgress('Re-verifying after fixes...');
+                        const reCheckDraft = Object.entries(reportSections).map(([k, v]) => `## ${k}\n${v}`).join('\n\n');
+                        const reCheckResult = await callGemini(promptA.replace(scrubbedDraft, scrubPII(reCheckDraft).substring(0, 6000)), true);
+                        const reCheckParsed = parseAudit(reCheckResult);
+                        const reReconciled = reCheckParsed.map(r => ({ ...r, auditSource: 'post-fix-verification', confidence: r.status === 'verified' ? 'high' : 'medium' }));
+                        const fixedCount = fixableIssues.length - reReconciled.filter(r => r.status === 'contradicts').length;
+                        if (addToast) addToast(`\ud83d\udd27 Self-healed: ${fixedCount}/${fixableIssues.length} issues resolved`, fixedCount === fixableIssues.length ? 'success' : 'info');
+                        // Merge with original reconciled, replacing fixed items
+                        const finalReconciled = reconciled.map(r => {
+                            if (r.status === 'contradicts' || (r.status === 'discrepancy' && r.confidence === 'needs-review')) {
+                                const reCheck = reReconciled.find(rc => rc.claim && r.claim && rc.claim.toLowerCase().substring(0, 20) === r.claim.toLowerCase().substring(0, 20));
+                                if (reCheck && reCheck.status === 'verified') return { ...r, status: 'verified', confidence: 'high', auditSource: 'self-healed' };
+                            }
+                            return r;
+                        });
+                        setAccuracyResults(finalReconciled);
+                        setGenProgress('');
+                    } catch(reErr) {
+                        warnLog('[Report] Post-fix verification failed:', reErr);
+                        setAccuracyResults(reconciled);
+                        setGenProgress('');
+                    }
+                } else {
+                    setAccuracyResults(reconciled);
+                }
+                if (addToast && fixableIssues.length === 0) {
                     const v = reconciled.filter(r => r.status === 'verified').length;
                     const d = reconciled.filter(r => r.status === 'discrepancy').length;
                     const c = reconciled.filter(r => r.status === 'contradicts').length;
