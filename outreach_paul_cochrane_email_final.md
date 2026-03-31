@@ -1,33 +1,34 @@
 # Email to Paul Cochrane - Ready to Send
 
 **To:** Paul Cochrane, Center for Academic Innovation, USM
-**Subject:** Free WCAG-compliant EdTech platform + PDF accessibility pipeline - partnership opportunity
+**Subject:** PDF accessibility pipeline for USM - built in response to Flynn Ross's feedback
 
 ---
 
 Dear Paul,
 
-I hope this finds you well. My name is Aaron Pomeranz. I'm a school psychologist (PsyD) who just started at Portland Public Schools in Maine. I'm reaching out because I've built something I think could be directly relevant to USM's accessibility compliance needs, and I'd love to explore a research partnership.
+My name is Aaron Pomeranz. I'm a school psychologist (PsyD) who just started at Portland Public Schools in Maine. I recently had the opportunity to speak with Flynn Ross about the challenges USM faces with Title II ADA compliance for document accessibility. She emphasized how significant the PDF remediation burden is for the university, and I took that feedback seriously.
 
-**The tool:** AlloFlow is a free, open-source (GNU AGPL v3), AI-powered educational platform with 80+ tools for differentiation, assessment, and clinical reporting. It's live at https://prismflow-911fe.web.app.
+Over the past several days, I built a free, open-source PDF accessibility remediation pipeline specifically designed to address this problem. I'd love to explore whether USM would be interested in piloting it.
 
-**The accessibility pipeline:** With the Title II ADA deadline for WCAG 2.1 AA compliance, I've built a PDF accessibility remediation system that:
-- Audits any PDF with 5-10 parallel AI auditors and statistical reliability metrics (ICC, Cronbach's alpha, 95% confidence intervals)
-- Auto-remediates to accessible HTML with a self-healing loop verified by axe-core (the industry standard from Deque)
-- Offers a preview editor with themes, inline editing, brand matching, and an accessibility inspector
-- Translates into 17+ languages and simplifies to any grade level (K-10th), stackable in one document
-- Generates formatted compliance reports
-- All free. All open source.
+**What the pipeline does:** Upload any PDF. In a few minutes (long enough to help a student or grab a coffee), it:
+- Runs a 5-10 auditor triangulated accessibility audit with statistical reliability metrics
+- Auto-remediates to fully accessible HTML, verified by axe-core (the industry-standard WCAG checker from Deque)
+- Offers a preview editor where you can customize themes, fonts, and branding to match USM's visual identity
+- Translates into 17+ languages and simplifies to any grade level, all stackable in one document
+- Exports as accessible PDF, HTML, or a detailed compliance report
 
-**Why USM:** Every document your faculty produces, from syllabi to course catalogs, needs to meet WCAG 2.1 AA. I've tested the pipeline on USM's Professional Development Programs Course Catalogue (35 pages). The result scored 90+ with axe-core verification and looks better than the original.
+I tested it on USM's Professional Development Programs Course Catalogue (35 pages). The output scored 90+ on axe-core verification and looks better than the original.
 
-**The VPAT:** AlloFlow has a formal VPAT 2.5 self-assessment. Eight criteria are marked "Partially Supports" pending runtime verification. That testing is specifically designed as a graduate student project and could be a great fit for USM's programs.
+**The cost angle:** Document remediation through vendors typically costs $5-25 per page. For a university with thousands of documents, this adds up quickly. This pipeline is free and open source. If it can reliably handle 70-80% of straightforward educational documents (syllabi, handouts, course materials, newsletters), that's a significant reallocation of funds that could go toward expert remediation of the complex 20-30% that genuinely need it.
 
-**What I'm asking:** A 30-minute demo meeting where I can walk through the platform and discuss whether there's a research partnership that makes sense. I have an IRB-ready pilot protocol and the embedded research tools to support a study.
+**What I'm proposing:** A pilot study at USM, starting with a validation study for the PDF pipeline. Graduate students could test the tool against a sample of real USM documents, measure the before/after accessibility scores, and compare output quality to vendor-remediated versions. This produces publishable research data while simultaneously remediating real documents.
 
-I'm available on [insert 3-4 dates/times].
+The pipeline is part of a larger platform called AlloFlow (80+ tools for differentiation, assessment, and clinical reporting), which also has a VPAT 2.5 self-assessment. The VPAT's runtime verification section is specifically designed as a graduate student testing project.
 
-The platform is free, it will stay free, and it stores zero student PII. I'm not selling anything. I'm looking for collaborators who can help validate whether this actually works for the students it's built to serve.
+I'm available for a 30-minute demo on [insert 3-4 dates/times]. I'd be happy to walk through the pipeline using an actual USM document so you can see the quality firsthand.
+
+This is free, it will stay free, and it stores zero student PII. I'm not selling anything. I'm a practitioner who built a tool because the problem Flynn described matters, and I'd like USM's help validating whether it works.
 
 Warm regards,
 Aaron Pomeranz, PsyD
