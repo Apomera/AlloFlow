@@ -576,7 +576,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
                 h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#64748b' } }, badge.name),
-                h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } }, badge.desc)
+                h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, badge.desc)
               );
             })
           ),
@@ -649,7 +649,7 @@ window.SelHub = window.SelHub || {
                 // Body cues
                 h('div', { style: { marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 } },
                   zone.bodyAreas.slice(0, 2).map(function(area) {
-                    return h('span', { key: area, style: { fontSize: 9, padding: '1px 6px', borderRadius: 6, background: '#334155', color: '#94a3b8' } }, area);
+                    return h('span', { key: area, style: { fontSize: 11, padding: '1px 6px', borderRadius: 6, background: '#334155', color: '#94a3b8' } }, area);
                   })
                 )
               );
@@ -811,7 +811,7 @@ window.SelHub = window.SelHub || {
                     },
                       h('span', { style: { fontSize: 16 } }, s.icon),
                       h('span', { style: { flex: 1, fontSize: 12, color: '#e2e8f0' } }, s.text),
-                      h('span', { style: { fontSize: 9, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || '#64748b') + '22', color: typeColors[s.type] || '#64748b', fontWeight: 600 } }, s.type),
+                      h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || '#64748b') + '22', color: typeColors[s.type] || '#64748b', fontWeight: 600 } }, s.type),
                       h('button', {
                         onClick: function() {
                           if (isInToolbox) {
@@ -1599,8 +1599,8 @@ window.SelHub = window.SelHub || {
                     })
                   ),
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4 } },
-                    h('span', { style: { fontSize: 9, color: '#64748b' } }, 'Older'),
-                    h('span', { style: { fontSize: 9, color: '#64748b' } }, 'Recent')
+                    h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Older'),
+                    h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Recent')
                   )
                 ),
 

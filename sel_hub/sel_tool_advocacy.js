@@ -1267,7 +1267,7 @@ window.SelHub = window.SelHub || {
         h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', { onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b', position: 'relative' } },
           '\uD83C\uDFC5',
-          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#fff', borderRadius: '50%', width: 14, height: 14, fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#fff', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
         )
       );
 
@@ -1485,7 +1485,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: 24, marginBottom: 4 } }, card.icon),
                 h('div', { style: { fontSize: 11, fontWeight: 600, color: isCurrent ? ACCENT : '#e2e8f0' } }, card.title),
-                isViewed && h('div', { style: { fontSize: 9, color: '#22c55e', marginTop: 2 } }, '\u2713 Viewed')
+                isViewed && h('div', { style: { fontSize: 11, color: '#22c55e', marginTop: 2 } }, '\u2713 Viewed')
               );
             })
           ),
@@ -2073,7 +2073,7 @@ window.SelHub = window.SelHub || {
                     }, String(val));
                   })
                 ),
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 9, color: '#64748b' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: '#64748b' } },
                   h('span', null, 'Strongly Disagree'),
                   h('span', null, 'Strongly Agree')
                 )

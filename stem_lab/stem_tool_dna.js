@@ -962,7 +962,7 @@ window.StemLab = window.StemLab || {
               className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-fuchsia-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-fuchsia-50 border border-slate-200')
             }, gb);
           }),
-          h("span", { className: "ml-auto px-2 py-0.5 bg-fuchsia-50 text-fuchsia-600 text-[9px] font-bold rounded-full border border-fuchsia-200" },
+          h("span", { className: "ml-auto px-2 py-0.5 bg-fuchsia-50 text-fuchsia-600 text-[11px] font-bold rounded-full border border-fuchsia-200" },
             gradeBand === 'K-2' ? '\uD83E\uDDF8 Elementary' : gradeBand === '3-5' ? '\uD83D\uDCDA Upper Elementary' : gradeBand === '6-8' ? '\uD83E\uDD13 Middle School' : '\uD83C\uDF93 High School'
           )
         ),
@@ -984,7 +984,7 @@ window.StemLab = window.StemLab || {
 
         // ═══ BADGE BAR ═══
         h("div", { className: "flex items-center gap-1 flex-wrap" },
-          h("span", { className: "text-[9px] font-bold text-slate-500 mr-1" }, "\uD83C\uDFC6 " + earnedBadgeCount + "/" + DNA_BADGES.length),
+          h("span", { className: "text-[11px] font-bold text-slate-500 mr-1" }, "\uD83C\uDFC6 " + earnedBadgeCount + "/" + DNA_BADGES.length),
           DNA_BADGES.map(function(b) {
             var earned = badges[b.id];
             return h("span", { key: b.id, className: "w-6 h-6 flex items-center justify-center rounded-full text-xs cursor-default transition-all " + (earned ? 'bg-amber-100 shadow-sm scale-100' : 'bg-slate-100 grayscale opacity-40'), title: b.label + ': ' + b.desc + (earned ? ' \u2705' : '') }, b.icon);
@@ -1060,7 +1060,7 @@ window.StemLab = window.StemLab || {
                 '\uD83E\uDDEC Replication initiates at origins (OriC in prokaryotes). Helicase unwinds; SSB proteins stabilize. Primase lays RNA primers. Pol III extends 5\u2032\u21923\u2032 (leading = continuous, lagging = Okazaki fragments). Pol I replaces primers; ligase seals nicks. Proofreading by 3\u2032\u21925\u2032 exonuclease achieves ~10\u207B\u2079 error rate.'
               )
             ),
-            h("div", { className: "flex gap-3 flex-wrap text-[9px] text-slate-500 pt-2 border-t border-slate-100" },
+            h("div", { className: "flex gap-3 flex-wrap text-[11px] text-slate-500 pt-2 border-t border-slate-100" },
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-violet-500" }), 'Helicase'),
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-emerald-500" }), 'DNA Pol III'),
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-sky-400" }), 'Leading (continuous)'),
@@ -1125,7 +1125,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\uD83E\uDDA0"),
               h("h4", { className: "text-sm font-bold text-rose-800" }, "Mutation Simulator"),
-              h("span", { className: "px-2 py-0.5 bg-rose-200 text-rose-800 text-[9px] font-bold rounded-full" }, "INTERACTIVE")
+              h("span", { className: "px-2 py-0.5 bg-rose-200 text-rose-800 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
             ),
             h("p", { className: "text-xs text-slate-600" },
               gradeText(
@@ -1195,7 +1195,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\u2702\uFE0F"),
               h("h4", { className: "text-sm font-bold text-violet-800" }, "CRISPR-Cas9 Gene Editor"),
-              h("span", { className: "px-2 py-0.5 text-[9px] font-bold rounded-full " + (
+              h("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (
                 crisprPhase === 'design' ? 'bg-blue-200 text-blue-800' :
                 crisprPhase === 'scanning' ? 'bg-amber-200 text-amber-800 animate-pulse' :
                 crisprPhase === 'cut' ? 'bg-red-200 text-red-800' :
@@ -1250,12 +1250,12 @@ window.StemLab = window.StemLab || {
               h("div", { className: "grid grid-cols-2 gap-2" },
                 h("button", { onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-300 bg-amber-50 hover:bg-amber-100 transition-all text-left" },
                   h("p", { className: "text-xs font-bold text-amber-700" }, '\uD83D\uDD27 NHEJ'),
-                  h("p", { className: "text-[9px] text-amber-600 mt-0.5" }, 'Non-Homologous End Joining'),
+                  h("p", { className: "text-[11px] text-amber-600 mt-0.5" }, 'Non-Homologous End Joining'),
                   h("p", { className: "text-[8px] text-slate-500 mt-1" }, gradeText('Quick fix \u2014 might make mistakes!', 'Error-prone, may add or delete bases.', 'Error-prone. Introduces indels. Used for gene knockouts.', 'Error-prone. Introduces indels. Used for gene knockouts.'))
                 ),
                 h("button", { onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-all text-left" },
                   h("p", { className: "text-xs font-bold text-emerald-700" }, '\uD83E\uDDEC HDR'),
-                  h("p", { className: "text-[9px] text-emerald-600 mt-0.5" }, 'Homology-Directed Repair'),
+                  h("p", { className: "text-[11px] text-emerald-600 mt-0.5" }, 'Homology-Directed Repair'),
                   h("p", { className: "text-[8px] text-slate-500 mt-1" }, gradeText('Careful fix \u2014 uses a template!', 'Precise editing using a template.', 'Precise editing using donor template. Used for gene knock-ins.', 'Precise editing using donor template. Used for gene knock-ins and corrections.'))
                 )
               )
@@ -1325,28 +1325,28 @@ window.StemLab = window.StemLab || {
               ),
               h("div", { className: "grid grid-cols-2 gap-2 mt-2" },
                 h("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-100" },
-                  h("p", { className: "text-[9px] font-bold text-amber-700 uppercase" }, 'Nonpolar (Hydrophobic)'),
+                  h("p", { className: "text-[11px] font-bold text-amber-700 uppercase" }, 'Nonpolar (Hydrophobic)'),
                   h("p", { className: "text-sm font-black text-amber-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'nonpolar'; }).length),
                   h("p", { className: "text-[8px] text-amber-500" }, 'Ala, Val, Leu, Ile, Pro, Phe, Trp, Met, Gly')
                 ),
                 h("div", { className: "bg-blue-50 rounded-lg p-2 border border-blue-100" },
-                  h("p", { className: "text-[9px] font-bold text-blue-700 uppercase" }, 'Polar (Hydrophilic)'),
+                  h("p", { className: "text-[11px] font-bold text-blue-700 uppercase" }, 'Polar (Hydrophilic)'),
                   h("p", { className: "text-sm font-black text-blue-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'polar'; }).length),
                   h("p", { className: "text-[8px] text-blue-500" }, 'Ser, Thr, Cys, Tyr, Asn, Gln')
                 ),
                 h("div", { className: "bg-red-50 rounded-lg p-2 border border-red-100" },
-                  h("p", { className: "text-[9px] font-bold text-red-700 uppercase" }, 'Positively Charged'),
+                  h("p", { className: "text-[11px] font-bold text-red-700 uppercase" }, 'Positively Charged'),
                   h("p", { className: "text-sm font-black text-red-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'positive'; }).length),
                   h("p", { className: "text-[8px] text-red-500" }, 'Arg, Lys, His')
                 ),
                 h("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-100" },
-                  h("p", { className: "text-[9px] font-bold text-purple-700 uppercase" }, 'Negatively Charged'),
+                  h("p", { className: "text-[11px] font-bold text-purple-700 uppercase" }, 'Negatively Charged'),
                   h("p", { className: "text-sm font-black text-purple-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'negative'; }).length),
                   h("p", { className: "text-[8px] text-purple-500" }, 'Asp, Glu')
                 )
               ),
               h("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-200 mt-1" },
-                h("p", { className: "text-[9px] font-bold text-slate-500" }, '\u2696\uFE0F Estimated MW: ~' + (fullProtein.length * 110) + ' Da (' + (fullProtein.length * 110 / 1000).toFixed(1) + ' kDa) | Seq: ' + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return (AA_PROPS[p.aa] || {}).abbr || '?'; }).join(''))
+                h("p", { className: "text-[11px] font-bold text-slate-500" }, '\u2696\uFE0F Estimated MW: ~' + (fullProtein.length * 110) + ' Da (' + (fullProtein.length * 110 / 1000).toFixed(1) + ' kDa) | Seq: ' + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return (AA_PROPS[p.aa] || {}).abbr || '?'; }).join(''))
               ),
               h("div", { className: "flex gap-3 text-[10px] text-slate-500 pt-2 border-t flex-wrap" },
                 [{ t: 'nonpolar', c: '#f59e0b', l: 'Nonpolar' }, { t: 'polar', c: '#3b82f6', l: 'Polar' }, { t: 'positive', c: '#ef4444', l: 'Positive (+)' }, { t: 'negative', c: '#a855f7', l: 'Negative (\u2212)' }].map(function(lg) { return h("span", { key: lg.t, className: "flex items-center gap-1" }, h("span", { className: "w-3 h-3 rounded-full", style: { background: lg.c } }), lg.l); })
@@ -1392,7 +1392,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\uD83D\uDD0D"),
               h("h4", { className: "text-sm font-bold text-cyan-800" }, "DNA Forensics \u2014 Gel Electrophoresis"),
-              h("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[9px] font-bold rounded-full" }, "CASE " + (forensicCase + 1) + "/" + FORENSIC_CASES.length)
+              h("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "CASE " + (forensicCase + 1) + "/" + FORENSIC_CASES.length)
             ),
             h("p", { className: "text-xs text-slate-600" },
               gradeText(
@@ -1507,7 +1507,7 @@ window.StemLab = window.StemLab || {
               h("h4", { className: "text-sm font-bold text-slate-700" }, "\uD83C\uDFAF DNA Challenge"),
               h("div", { className: "flex items-center gap-2" },
                 h("span", { className: "text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full" }, "\u2B50 " + score + " pts"),
-                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[9px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
+                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
               )
             ),
 
@@ -1568,7 +1568,7 @@ window.StemLab = window.StemLab || {
           ),
           h("details", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
             h("summary", { className: "px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50" }, "\uD83D\uDCD6 Codon Reference Table"),
-            h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[9px] font-mono max-h-60 overflow-y-auto" },
+            h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[11px] font-mono max-h-60 overflow-y-auto" },
               Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-500" }, "\u2192 " + aa2)); })
             )
           )
@@ -1582,7 +1582,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\u2694\uFE0F"),
               h("h4", { className: "text-sm font-bold text-red-800" }, "Gene Defense Battle"),
-              !battleDone && battleOrder.length > 0 && h("span", { className: "px-2 py-0.5 bg-red-200 text-red-800 text-[9px] font-bold rounded-full animate-pulse" }, "Round " + (battleRound + 1) + "/" + (battleUseAI ? 10 : BATTLE_QS.length) + (battleUseAI ? ' \uD83E\uDDE0' : ''))
+              !battleDone && battleOrder.length > 0 && h("span", { className: "px-2 py-0.5 bg-red-200 text-red-800 text-[11px] font-bold rounded-full animate-pulse" }, "Round " + (battleRound + 1) + "/" + (battleUseAI ? 10 : BATTLE_QS.length) + (battleUseAI ? ' \uD83E\uDDE0' : ''))
             ),
             h("p", { className: "text-xs text-slate-600" }, gradeText(
               'A virus is attacking the cell! Answer genetics questions to fight it off!',

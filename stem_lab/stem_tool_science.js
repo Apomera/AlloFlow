@@ -454,7 +454,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                         React.createElement("circle", { cx: 220, cy: cy, r: 10, fill: '#eff6ff', stroke: '#2563eb', strokeWidth: 1.5 }),
 
-                        React.createElement("text", { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#2563eb' }, 'A')
+                        React.createElement("text", { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#2563eb' }, 'A')
 
                       )
 
@@ -464,7 +464,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                         React.createElement("circle", { cx: 220, cy: cy, r: 10, fill: '#fefce8', stroke: '#ca8a04', strokeWidth: 1.5 }),
 
-                        React.createElement("text", { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#ca8a04' }, 'V')
+                        React.createElement("text", { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#ca8a04' }, 'V')
 
                       )
 

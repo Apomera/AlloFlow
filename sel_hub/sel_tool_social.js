@@ -1040,7 +1040,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#64748b' } }, badge.name),
-                  h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, badge.desc)
                 );
               })
             ),

@@ -2221,7 +2221,7 @@ window.SelHub = window.SelHub || {
                         }),
                         // Labels
                         points.map(function(p, pi) {
-                          return h('text', { key: 'lbl' + pi, x: p.labelX, y: p.labelY, fill: p.color, fontSize: 9, fontWeight: 'bold', textAnchor: 'middle', dominantBaseline: 'central' }, p.label + ' (' + p.count + ')');
+                          return h('text', { key: 'lbl' + pi, x: p.labelX, y: p.labelY, fill: p.color, fontSize: 11, fontWeight: 'bold', textAnchor: 'middle', dominantBaseline: 'central' }, p.label + ' (' + p.count + ')');
                         })
                       )
                     );
@@ -2265,7 +2265,7 @@ window.SelHub = window.SelHub || {
                       ].map(function(s, si) {
                         return h('div', { key: si },
                           h('div', { style: { fontSize: 20, fontWeight: 'bold', color: s.color } }, String(s.val)),
-                          h('div', { style: { fontSize: 9, color: '#64748b' } }, s.label)
+                          h('div', { style: { fontSize: 11, color: '#64748b' } }, s.label)
                         );
                       })
                     )

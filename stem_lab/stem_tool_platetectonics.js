@@ -1386,7 +1386,7 @@ var d = labToolData.plateTectonics || {};
                       style: { background: isActive ? 'linear-gradient(135deg, #fecaca, #fca5a5)' : 'white', border: '2px solid ' + (isActive ? '#ef4444' : '#fecaca') }
                     },
                       React.createElement('div', { className: 'text-lg' }, era.icon || '\uD83C\uDF0D'),
-                      React.createElement('div', { className: 'text-[9px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-500') }, era.name),
+                      React.createElement('div', { className: 'text-[11px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-500') }, era.name),
                       React.createElement('div', { className: 'text-[8px] text-slate-500' }, era.mya)
                     );
                   })

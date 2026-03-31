@@ -666,7 +666,7 @@ window.SelHub = window.SelHub || {
           },
             '\uD83C\uDFC5',
             Object.keys(earnedBadges).length > 0 && h('span', {
-              style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#0f172a', borderRadius: '50%', width: 14, height: 14, fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+              style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#0f172a', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, Object.keys(earnedBadges).length)
           )
         );

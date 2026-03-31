@@ -1437,7 +1437,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Total Trials"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, "Total Trials"),
 
                   React.createElement("p", { className: "text-lg font-black text-violet-800" }, d.trials)
 
@@ -1445,7 +1445,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Max Deviation"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, "Max Deviation"),
 
                   React.createElement("p", { className: "text-lg font-black text-violet-800" }, (function () {
 
@@ -1469,7 +1469,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "\u03C7\u00B2 Statistic"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, "\u03C7\u00B2 Statistic"),
 
                   React.createElement("p", { className: "text-lg font-black " + (chiPass ? 'text-emerald-600' : 'text-red-600') }, chiSq.toFixed(2))
 
@@ -1477,7 +1477,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Fairness (\u03B1=0.05)"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, "Fairness (\u03B1=0.05)"),
 
                   React.createElement("p", { className: "text-lg font-black " + (chiPass ? 'text-emerald-600' : 'text-red-600') }, chiPass ? '\u2705 Fair' : '\u274C Biased')
 
@@ -1531,7 +1531,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "flex-1" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } }, "\uD83C\uDFAF Theoretical"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } }, "\uD83C\uDFAF Theoretical"),
 
                   React.createElement("div", { className: "space-y-1.5" },
 
@@ -1543,7 +1543,7 @@ var d = (labToolData.probability) || {};
 
                         React.createElement("div", { style: { width: 10, height: 10, borderRadius: '50%', background: barColors[k] || '#8b5cf6', flexShrink: 0 } }),
 
-                        React.createElement("span", { className: "text-[9px] font-bold w-12 truncate", style: { color: _text } }, k),
+                        React.createElement("span", { className: "text-[11px] font-bold w-12 truncate", style: { color: _text } }, k),
 
                         React.createElement("div", { className: "flex-1 rounded-full overflow-hidden", style: { height: '10px', background: isDark || isContrast ? 'rgba(255,255,255,0.08)' : '#f1f5f9' } },
 
@@ -1551,7 +1551,7 @@ var d = (labToolData.probability) || {};
 
                         ),
 
-                        React.createElement("span", { className: "text-[9px] font-mono w-10 text-right", style: { color: _muted } }, expPct.toFixed(1) + '%')
+                        React.createElement("span", { className: "text-[11px] font-mono w-10 text-right", style: { color: _muted } }, expPct.toFixed(1) + '%')
 
                       );
 
@@ -1569,7 +1569,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "flex-1" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#16a34a' } }, "\uD83D\uDD2C Observed (" + d.trials + " draws)"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#16a34a' } }, "\uD83D\uDD2C Observed (" + d.trials + " draws)"),
 
                   React.createElement("div", { className: "space-y-1.5" },
 
@@ -1585,7 +1585,7 @@ var d = (labToolData.probability) || {};
 
                         React.createElement("div", { style: { width: 10, height: 10, borderRadius: '50%', background: barColors[k] || '#8b5cf6', flexShrink: 0 } }),
 
-                        React.createElement("span", { className: "text-[9px] font-bold w-12 truncate", style: { color: _text } }, k),
+                        React.createElement("span", { className: "text-[11px] font-bold w-12 truncate", style: { color: _text } }, k),
 
                         React.createElement("div", { className: "flex-1 rounded-full overflow-hidden", style: { height: '10px', background: isDark || isContrast ? 'rgba(255,255,255,0.08)' : '#f1f5f9' } },
 
@@ -1593,7 +1593,7 @@ var d = (labToolData.probability) || {};
 
                         ),
 
-                        React.createElement("span", { className: "text-[9px] font-mono w-10 text-right font-bold", style: { color: Math.abs(diff) < 3 ? (isDark || isContrast ? '#86efac' : '#16a34a') : Math.abs(diff) < 8 ? '#f59e0b' : '#ef4444' } }, obsPct.toFixed(1) + '%')
+                        React.createElement("span", { className: "text-[11px] font-mono w-10 text-right font-bold", style: { color: Math.abs(diff) < 3 ? (isDark || isContrast ? '#86efac' : '#16a34a') : Math.abs(diff) < 8 ? '#f59e0b' : '#ef4444' } }, obsPct.toFixed(1) + '%')
 
                       );
 
@@ -1656,15 +1656,15 @@ var d = (labToolData.probability) || {};
 
                     React.createElement("div", { className: "text-center p-2 rounded-lg", style:{background:isDark||isContrast?'rgba(139,92,246,0.1)':'rgba(139,92,246,0.06)',border:'1px solid '+_border} },
 
-                      React.createElement("p", { className:"text-[9px] font-bold", style:{color:_accent} }, 'π Estimate'),
+                      React.createElement("p", { className:"text-[11px] font-bold", style:{color:_accent} }, 'π Estimate'),
 
                       React.createElement("p", { className:"text-2xl font-black font-mono", style:{color:_piErrCol} }, _piEstV.toFixed(4)),
 
-                      React.createElement("p", { className:"text-[9px]", style:{color:_muted} }, 'True π = 3.14159…')
+                      React.createElement("p", { className:"text-[11px]", style:{color:_muted} }, 'True π = 3.14159…')
 
                     ),
 
-                    React.createElement("div", { className:"grid grid-cols-2 gap-1 text-center text-[9px]" },
+                    React.createElement("div", { className:"grid grid-cols-2 gap-1 text-center text-[11px]" },
 
                       React.createElement("div", { className:"p-1 rounded", style:{background:'#22c55e20'} },
 
@@ -1686,7 +1686,7 @@ var d = (labToolData.probability) || {};
 
                     React.createElement("div", { className:"p-1.5 rounded-lg text-center", style:{background:isDark||isContrast?'rgba(139,92,246,0.06)':'#faf5ff'} },
 
-                      React.createElement("p", { className:"text-[9px] font-bold", style:{color:_accent} }, 'Error from π'),
+                      React.createElement("p", { className:"text-[11px] font-bold", style:{color:_accent} }, 'Error from π'),
 
                       React.createElement("p", { className:"text-base font-black font-mono", style:{color:_piErrCol} }, '±' + _piErrV.toFixed(5)),
 
@@ -1694,7 +1694,7 @@ var d = (labToolData.probability) || {};
 
                     ),
 
-                    React.createElement("p", { className:"text-[9px] italic leading-relaxed text-center", style:{color:_muted} }, '~10k points needed for 2 decimal places of π')
+                    React.createElement("p", { className:"text-[11px] italic leading-relaxed text-center", style:{color:_muted} }, '~10k points needed for 2 decimal places of π')
 
                   )
 
@@ -1728,7 +1728,7 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("span", { className: "text-[10px] font-mono text-slate-900" }, count),
 
-                      React.createElement("span", { className: "text-[9px] text-slate-500" }, "(" + pct.toFixed(1) + "%)")
+                      React.createElement("span", { className: "text-[11px] text-slate-500" }, "(" + pct.toFixed(1) + "%)")
 
                     );
 
@@ -1756,7 +1756,7 @@ var d = (labToolData.probability) || {};
 
                 ),
 
-                d.results.length > 30 && React.createElement("p", { className:"text-[9px] text-center mt-1", style:{color:_muted} }, '(showing last 30 of ' + d.results.length + ')')
+                d.results.length > 30 && React.createElement("p", { className:"text-[11px] text-center mt-1", style:{color:_muted} }, '(showing last 30 of ' + d.results.length + ')')
 
               )
 
@@ -1815,7 +1815,7 @@ var d = (labToolData.probability) || {};
 
                         React.createElement("p", { className:"text-[10px] font-bold truncate", style:{color:_text} }, ch.name + ' — ' + ch.xp + ' XP'),
 
-                        React.createElement("p", { className:"text-[9px] truncate", style:{color:_muted} }, ch.desc)
+                        React.createElement("p", { className:"text-[11px] truncate", style:{color:_muted} }, ch.desc)
 
                       ),
 
@@ -1835,7 +1835,7 @@ var d = (labToolData.probability) || {};
 
                           }, className:"px-2 py-0.5 rounded text-[10px] font-bold flex-shrink-0", style:{background:_btnBg,color:'#fff'} }, 'Claim ' + ch.xp + ' XP')
 
-                        : React.createElement("span", { className:"text-[9px] flex-shrink-0", style:{color:_muted} }, '🔒 In progress')
+                        : React.createElement("span", { className:"text-[11px] flex-shrink-0", style:{color:_muted} }, '🔒 In progress')
 
                     );
 

@@ -13,7 +13,7 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
 };
 
-if (!window.StemLab.isRegistered('anatomy')) {
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 (function() {
   'use strict';
 
@@ -2160,7 +2160,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
         var ttsBtn = function(text) {
           return h('button', {
             onClick: function() { speakText(text, callTTS); },
-            className: 'ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-200',
+            className: 'ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-200',
             title: 'Read aloud', 'aria-label': 'Read aloud'
           }, '\uD83D\uDD0A');
         };
@@ -2201,7 +2201,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
         // UI RENDER
         // ══════════════════════════════════════
 
-        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200', tabIndex: 0, onKeyDown: handleKeyNav, style: { outline: 'none' } },
+        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1', tabIndex: 0, onKeyDown: handleKeyNav },
 
           // Header
           h('div', { className: 'flex items-center gap-3 mb-3' },
@@ -2220,33 +2220,40 @@ if (!window.StemLab.isRegistered('anatomy')) {
           // Grade-band intro
           h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800' }, gradeIntro),
 
-          // Tab bar (4 tabs)
-          h('div', { className: 'flex gap-1 mb-3' },
+          // Tab bar (7 tabs)
+          h('div', { className: 'flex gap-1 mb-3', role: 'tablist', 'aria-label': 'Anatomy tool sections' },
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'explore'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
             }, '\uD83E\uDEC0 Explore'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'tour'); if (!tourActive) { upd('_tourActive', true); upd('_tourStepIdx', 0); } },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200')
             }, '\uD83E\uDDED Tour'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'connections'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-200')
             }, '\uD83D\uDD17 Connect'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'aiTutor'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200')
             }, '\uD83E\uDD16 AI Tutor'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'spotter'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200')
             }, '\uD83C\uDFAF Spotter'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'pathways'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200')
             }, '\uD83D\uDEE4 Pathways'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'flashcards'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-600 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-200')
             }, '\uD83C\uDCCF Cards'),
@@ -3031,52 +3038,52 @@ if (!window.StemLab.isRegistered('anatomy')) {
                 // Structures Viewed
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-indigo-700' }, String(Object.keys(structuresViewed).length)),
-                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Structures')
+                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Structures')
                 ),
                 // Systems Explored
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-emerald-600' }, String(Object.keys(systemsExplored).length) + '/10'),
-                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Systems')
+                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Systems')
                 ),
                 // Quiz Score
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-amber-600' }, String(totalCorrect)),
-                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Quiz Correct')
+                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Quiz Correct')
                 ),
                 // Spotter Score
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-rose-600' }, String(spotterScore)),
-                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Spotter IDs')
+                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Spotter IDs')
                 ),
                 // Pathways Completed
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-teal-600' }, String(Object.keys(pathwaysCompleted).length)),
-                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Pathways')
+                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Pathways')
                 ),
                 // Comparisons
                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                   h('p', { className: 'text-lg font-black text-purple-600' }, String(comparisons)),
-                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Comparisons')
+                  h('p', { className: 'text-[11px] text-slate-500 font-semibold' }, 'Comparisons')
                 )
               ),
               // Secondary stats row
               h('div', { className: 'mt-2 flex flex-wrap gap-2' },
-                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
                   '\uD83D\uDD25 Streak: ' + streak
                 ),
-                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
                   '\uD83E\uDD16 AI Questions: ' + aiQuestions
                 ),
-                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
                   '\uD83E\uDDE0 Mnemonics: ' + Object.keys(mnemonicsViewed).length
                 ),
-                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
                   '\uD83D\uDD0D Searches: ' + searchFinds
                 ),
-                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
                   '\uD83E\uDE7A Clinical Cases: ' + clinicalSolved
                 ),
-                spotterBestTime < 999 ? h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold' },
+                spotterBestTime < 999 ? h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold' },
                   '\u26A1 Best Spotter: ' + spotterBestTime.toFixed(1) + 's'
                 ) : null
               ),
@@ -3089,8 +3096,8 @@ if (!window.StemLab.isRegistered('anatomy')) {
               // Progress bar
               h('div', { className: 'mt-2' },
                 h('div', { className: 'flex justify-between mb-1' },
-                  h('span', { className: 'text-[9px] text-slate-500 font-semibold' }, 'System Progress'),
-                  h('span', { className: 'text-[9px] font-bold text-indigo-600' }, progressPct + '%')
+                  h('span', { className: 'text-[11px] text-slate-500 font-semibold' }, 'System Progress'),
+                  h('span', { className: 'text-[11px] font-bold text-indigo-600' }, progressPct + '%')
                 ),
                 h('div', { className: 'w-full bg-slate-200 rounded-full h-1.5' },
                   h('div', {

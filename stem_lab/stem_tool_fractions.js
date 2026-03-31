@@ -660,7 +660,7 @@ window.StemLab = window.StemLab || {
               var x = 20 + i * (360 / nlMax);
               return h('g', { key: 't' + i },
                 h('line', { x1: x, y1: 24, x2: x, y2: 36, stroke: '#64748b', strokeWidth: 2 }),
-                h('text', { x: x, y: 46, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#475569' }, i)
+                h('text', { x: x, y: 46, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, i)
               );
             }),
             h('circle', { cx: 20 + val1 * (360 / nlMax), cy: 30, r: 6, fill: '#3b82f6', stroke: 'white', strokeWidth: 2 }),
@@ -1151,7 +1151,7 @@ window.StemLab = window.StemLab || {
               pieces2.push(h('text', {
                 key: 'label-' + rowIdx, x: 14, y: 5 + rowIdx * (stripH + 2) + stripH / 2 + 4,
                 textAnchor: 'middle', fill: '#64748b',
-                style: { fontSize: '9px', fontWeight: 'bold' }
+                style: { fontSize: '11px', fontWeight: 'bold' }
               }, '/' + den));
               return h('g', { key: 'row' + rowIdx }, pieces2);
             })
@@ -1302,7 +1302,7 @@ window.StemLab = window.StemLab || {
                 return h('button', {
                   key: d,
                   onClick: function() { sfxClick(); upd({ difficulty: d }); },
-                  className: 'text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
+                  className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                     (difficulty === d
                       ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-rose-500 text-white')
                       : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
@@ -1311,7 +1311,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Challenge type counter
-          h('span', { className: 'text-[9px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/7 types')
+          h('span', { className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/7 types')
         ),
         !challenge
           ? h('button', {
@@ -1320,8 +1320,8 @@ window.StemLab = window.StemLab || {
             }, '\uD83C\uDFB2 Generate Challenge')
           : h('div', { className: 'space-y-2' },
               h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[9px] font-bold uppercase text-rose-400 bg-rose-100 px-2 py-0.5 rounded-full' }, challenge.type),
-                streak > 0 && h('span', { className: 'text-[9px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
+                h('span', { className: 'text-[11px] font-bold uppercase text-rose-400 bg-rose-100 px-2 py-0.5 rounded-full' }, challenge.type),
+                streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
               ),
               h('p', { className: 'text-sm font-bold text-rose-800' }, challenge.question),
               h('div', { className: 'flex gap-2' },
@@ -1385,7 +1385,7 @@ window.StemLab = window.StemLab || {
       ),
 
       // Keyboard shortcuts hint
-      h('div', { className: 'text-center text-[9px] text-slate-300 mt-2' },
+      h('div', { className: 'text-center text-[11px] text-slate-300 mt-2' },
         '\u2328\uFE0F 1-6: tabs | N: new challenge | B: benchmarks | P: pie/bar | ?: AI tutor'
       )
     );

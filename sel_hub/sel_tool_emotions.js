@@ -716,7 +716,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#64748b' } }, badge.name),
-                  h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, badge.desc)
                 );
               })
             ),
@@ -864,7 +864,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 36, marginBottom: 6 } }, fam.emoji),
                 h('div', { style: { fontWeight: 700, color: fam.color, fontSize: 14, marginBottom: 2 } }, fam.label),
                 h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.3 } }, fam.desc[band]),
-                explored && h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 4 } }, '\u2713 explored')
+                explored && h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, '\u2713 explored')
               );
             })
           ),
@@ -1107,7 +1107,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', margin: 0 } },
                 '\uD83E\uDEC0 ' + (band === 'elementary' ? 'Where Do You Feel It?' : 'Body Sensations Map')
               ),
-              !bodyMapViewed[checkinFamily] && h('span', { style: { fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#3b82f622', color: '#60a5fa', fontWeight: 600 } }, 'NEW')
+              !bodyMapViewed[checkinFamily] && h('span', { style: { fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#3b82f622', color: '#60a5fa', fontWeight: 600 } }, 'NEW')
             ),
             h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12, lineHeight: 1.4 } },
               band === 'elementary' ? 'Feelings live in your body too! See where this feeling shows up:' :
@@ -1734,7 +1734,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 } },
                 // Day-of-week headers
                 ['S','M','T','W','T','F','S'].map(function(dn, di) {
-                  return h('div', { key: 'hdr-' + di, style: { textAlign: 'center', fontSize: 9, color: '#64748b', fontWeight: 700, paddingBottom: 2 } }, dn);
+                  return h('div', { key: 'hdr-' + di, style: { textAlign: 'center', fontSize: 11, color: '#64748b', fontWeight: 700, paddingBottom: 2 } }, dn);
                 }),
                 // Pad first week to correct day alignment
                 (function() {
@@ -1769,7 +1769,7 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 10 } },
                 EMOTION_FAMILIES.map(function(fam) {
-                  return h('div', { key: fam.id, style: { display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#64748b' } },
+                  return h('div', { key: fam.id, style: { display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#64748b' } },
                     h('div', { style: { width: 8, height: 8, borderRadius: 2, background: fam.color } }),
                     fam.label
                   );
@@ -1843,8 +1843,8 @@ window.SelHub = window.SelHub || {
                     })
                   ),
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4 } },
-                    h('span', { style: { fontSize: 9, color: '#64748b' } }, 'Oldest'),
-                    h('span', { style: { fontSize: 9, color: '#64748b' } }, 'Recent')
+                    h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Oldest'),
+                    h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Recent')
                   )
                 ),
 

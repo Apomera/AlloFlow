@@ -3751,7 +3751,7 @@ var d = labToolData.cell;
                     React.createElement("span", { className: "text-lg" }, earned ? b.icon : "\uD83D\uDD12"),
                     React.createElement("div", null,
                       React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-400") }, b.label),
-                      React.createElement("p", { className: "text-[9px] " + (earned ? "text-amber-600" : "text-slate-300") }, b.desc)
+                      React.createElement("p", { className: "text-[11px] " + (earned ? "text-amber-600" : "text-slate-300") }, b.desc)
                     )
                   );
                 })

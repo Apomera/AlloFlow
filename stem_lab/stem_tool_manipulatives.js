@@ -628,7 +628,7 @@ window.StemLab = window.StemLab || {
                 regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10 && b10.thousands < 9, '#2563eb', '#db2777'),
                 regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#db2777', '#2563eb')
               ),
-              h('p', { className: 'text-[9px] text-violet-400 text-center mt-1.5 italic' }, '\uD83D\uDCA1 10 of one place value always equals 1 of the next!')
+              h('p', { className: 'text-[11px] text-violet-400 text-center mt-1.5 italic' }, '\uD83D\uDCA1 10 of one place value always equals 1 of the next!')
             )
           ),
 
@@ -967,7 +967,7 @@ window.StemLab = window.StemLab || {
               return h('div', { key: cat.name, className: 'bg-orange-50 rounded-lg p-2 border border-orange-200 text-center' },
                 h('div', { className: 'text-base mb-0.5' }, cat.icon),
                 h('div', { className: 'text-[10px] font-bold text-orange-800' }, cat.name),
-                h('div', { className: 'text-[9px] text-orange-500' }, cat.desc)
+                h('div', { className: 'text-[11px] text-orange-500' }, cat.desc)
               );
             })
           ),

@@ -12,7 +12,7 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
 
-if (!window.StemLab.isRegistered('a11yAuditor')) {
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))) {
 
 (function() {
   'use strict';
@@ -282,7 +282,7 @@ if (!window.StemLab.isRegistered('a11yAuditor')) {
                   var color = val >= 8 ? 'bg-green-100 text-green-700 border-green-200' : val >= 5 ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-red-100 text-red-700 border-red-200';
                   return h('div', { key: key, className: 'text-center p-2 rounded-lg border ' + color },
                     h('div', { className: 'text-lg font-black' }, val, '/10'),
-                    h('div', { className: 'text-[9px] font-bold uppercase' }, key)
+                    h('div', { className: 'text-[11px] font-bold uppercase' }, key)
                   );
                 })
               )
@@ -393,7 +393,7 @@ if (!window.StemLab.isRegistered('a11yAuditor')) {
               return h('div', { key: badge.id, className: 'text-center p-3 rounded-xl border-2 transition-all ' + (earned ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50') },
                 h('div', { className: 'text-2xl' }, badge.icon),
                 h('div', { className: 'text-[10px] font-bold text-slate-700 mt-1' }, badge.name),
-                h('p', { className: 'text-[9px] text-slate-500 mt-0.5' }, badge.desc)
+                h('p', { className: 'text-[11px] text-slate-500 mt-0.5' }, badge.desc)
               );
             })
           )

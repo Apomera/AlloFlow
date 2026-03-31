@@ -28,7 +28,7 @@ window.StemLab = window.StemLab || {
 // ═══ End Guard ═══
 
 // Dedup: skip if already registered (hub may have loaded inline copy)
-if (!window.StemLab.isRegistered('solarSystem')) {
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))) {
 
 (function() {
   'use strict';
@@ -639,7 +639,7 @@ const d = labToolData.solarSystem;
 
               // Sun glow sprite
 
-              const glowCanvas = document.createElement('canvas'); glowCanvas.width = 128; glowCanvas.height = 128;
+              const glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = 128; glowCanvas.height = 128;
 
               const gctx = glowCanvas.getContext('2d');
 
@@ -663,7 +663,7 @@ const d = labToolData.solarSystem;
 
               function makePlanetTex(rgb, variation) {
 
-                const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+                const c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 128; c.height = 64;
 
                 const ctx = c.getContext('2d');
 
@@ -785,7 +785,7 @@ const d = labToolData.solarSystem;
 
                   const ringGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.2, 64);
 
-                  const ringCanvas = document.createElement('canvas'); ringCanvas.width = 256; ringCanvas.height = 1;
+                  const ringCanvas = document.createElement('canvas'); ringCanvas.setAttribute('aria-hidden', 'true'); ringCanvas.width = 256; ringCanvas.height = 1;
 
                   const rctx = ringCanvas.getContext('2d');
 
@@ -1376,7 +1376,7 @@ const d = labToolData.solarSystem;
 
                 React.createElement("div", { className: "flex items-center gap-1.5 flex-1 max-w-[180px] bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10" },
 
-                  React.createElement("span", { className: "text-[9px] text-white/60 font-bold whitespace-nowrap" }, "Speed"),
+                  React.createElement("span", { className: "text-[11px] text-white/60 font-bold whitespace-nowrap" }, "Speed"),
 
                   React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, 'aria-label': 'Simulation speed', onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '12px' } }),
 
@@ -1392,7 +1392,7 @@ const d = labToolData.solarSystem;
 
                 }, "\uD83C\uDFE0 Reset View"),
 
-                React.createElement("span", { className: "text-[9px] text-white/40 ml-auto hidden sm:inline" }, "Drag to orbit \u2022 Scroll to zoom \u2022 Click a planet")
+                React.createElement("span", { className: "text-[11px] text-white/40 ml-auto hidden sm:inline" }, "Drag to orbit \u2022 Scroll to zoom \u2022 Click a planet")
 
               )
 
@@ -1616,7 +1616,7 @@ const d = labToolData.solarSystem;
 
                       return React.createElement("div", { key: item[0], className: "bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm" },
 
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, item[0]),
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, item[0]),
 
                         React.createElement("p", { className: "text-xs font-bold" }, item[1])
 
@@ -2097,7 +2097,7 @@ const d = labToolData.solarSystem;
 
                         var skyGeo = new THREE.SphereGeometry(200, 32, 16);
 
-                        var skyCv = document.createElement('canvas'); skyCv.width = 512; skyCv.height = 256;
+                        var skyCv = document.createElement('canvas'); skyCv.setAttribute('aria-hidden', 'true'); skyCv.width = 512; skyCv.height = 256;
 
                         var sCtx = skyCv.getContext('2d');
 
@@ -2161,7 +2161,7 @@ const d = labToolData.solarSystem;
 
                           terrainGeo.computeVertexNormals();
 
-                          var tCv = document.createElement('canvas'); tCv.width = 256; tCv.height = 256;
+                          var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 256; tCv.height = 256;
 
                           var tCx = tCv.getContext('2d');
 
@@ -2205,7 +2205,7 @@ const d = labToolData.solarSystem;
 
                             var clGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
 
-                            var clCv = document.createElement('canvas'); clCv.width = 256; clCv.height = 64;
+                            var clCv = document.createElement('canvas'); clCv.setAttribute('aria-hidden', 'true'); clCv.width = 256; clCv.height = 64;
 
                             var clCx = clCv.getContext('2d');
 
@@ -4426,7 +4426,7 @@ const d = labToolData.solarSystem;
                       className: "w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer",
                       style: { direction: 'rtl' } // 100 = top, 0 = bottom
                     }),
-                    React.createElement("div", { className: "flex justify-between text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') },
+                    React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') },
                       React.createElement("span", null, "Surface"),
                       React.createElement("span", null, "High Atmosphere")
                     )
@@ -4492,7 +4492,7 @@ const d = labToolData.solarSystem;
                           style: { width: pctWidth + '%', background: p.color, opacity: isSel ? 1 : 0.6 }
                         })
                       ),
-                      React.createElement("span", { className: "text-[9px] w-14 " + (isDark ? 'text-slate-400' : 'text-slate-500') }, (PLANET_RADII[p.name] || '?').toLocaleString() + ' km')
+                      React.createElement("span", { className: "text-[11px] w-14 " + (isDark ? 'text-slate-400' : 'text-slate-500') }, (PLANET_RADII[p.name] || '?').toLocaleString() + ' km')
                     );
                   })
                 )
@@ -4524,14 +4524,14 @@ const d = labToolData.solarSystem;
                       var speedPct = Math.min(100, p.speed / 4.15 * 100); // Mercury is fastest
                       var isSel2 = sel && sel.name === p.name;
                       return React.createElement("div", { key: p.name, className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-[9px] w-14 text-right " + (isSel2 ? 'font-bold ' : '') + (isDark ? 'text-slate-400' : 'text-slate-500') }, p.emoji + ' ' + p.name),
+                        React.createElement("span", { className: "text-[11px] w-14 text-right " + (isSel2 ? 'font-bold ' : '') + (isDark ? 'text-slate-400' : 'text-slate-500') }, p.emoji + ' ' + p.name),
                         React.createElement("div", { className: "flex-1 h-2 " + (isDark ? 'bg-slate-700' : 'bg-purple-100') + " rounded-full overflow-hidden" },
                           React.createElement("div", {
                             className: "h-full rounded-full",
                             style: { width: speedPct + '%', background: 'linear-gradient(to right, #8b5cf6, #a78bfa)', opacity: isSel2 ? 1 : 0.5 }
                           })
                         ),
-                        React.createElement("span", { className: "text-[9px] w-12 " + (isDark ? 'text-slate-400' : 'text-slate-500') }, (p.speed * 29.78).toFixed(1) + ' km/s')
+                        React.createElement("span", { className: "text-[11px] w-12 " + (isDark ? 'text-slate-400' : 'text-slate-500') }, (p.speed * 29.78).toFixed(1) + ' km/s')
                       );
                     })
                   )
@@ -4619,14 +4619,14 @@ const d = labToolData.solarSystem;
                     return React.createElement("div", { key: ei, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-teal-100') + " rounded-lg p-2 border" },
                       React.createElement("div", { className: "flex items-center justify-between" },
                         React.createElement("span", { className: "text-[10px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, exo.name),
-                        React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full " + (exo.habitable ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600') }, exo.habitable ? 'Habitable zone' : 'Not habitable')
+                        React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full " + (exo.habitable ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600') }, exo.habitable ? 'Habitable zone' : 'Not habitable')
                       ),
-                      React.createElement("div", { className: "grid grid-cols-3 gap-1 text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " mt-1" },
+                      React.createElement("div", { className: "grid grid-cols-3 gap-1 text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " mt-1" },
                         React.createElement("span", null, "\uD83D\uDCCD " + exo.dist),
                         React.createElement("span", null, "\u2696 " + exo.mass),
                         React.createElement("span", null, "\uD83C\uDF21 " + exo.temp)
                       ),
-                      React.createElement("div", { className: "text-[9px] " + (isDark ? 'text-teal-400' : 'text-teal-600') + " mt-1 italic" }, exo.note)
+                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-teal-400' : 'text-teal-600') + " mt-1 italic" }, exo.note)
                     );
                   })
                 )
@@ -4727,7 +4727,7 @@ const d = labToolData.solarSystem;
                       React.createElement("div", { className: isDark ? 'text-slate-400' : 'text-slate-500' }, "\u2696 Total \u0394v needed:"),
                       React.createElement("div", { className: "font-bold text-rose-600" }, (HOHMANN[sel.name].dv1 + HOHMANN[sel.name].dv2).toFixed(1) + " km/s")
                     ),
-                    React.createElement("div", { className: "mt-2 text-[9px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic" },
+                    React.createElement("div", { className: "mt-2 text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic" },
                       "\u0394v = change in velocity. Earth\'s escape velocity is 11.2 km/s. The Saturn V rocket achieved about 11.2 km/s."
                     )
                   ),
@@ -4836,7 +4836,7 @@ const d = labToolData.solarSystem;
                           style: { width: pctW + '%', background: isSel3 ? 'linear-gradient(to right, #ef4444, #f97316)' : '#fca5a5', opacity: isSel3 ? 1 : 0.6 }
                         })
                       ),
-                      React.createElement("span", { className: "text-[9px] w-14 font-mono " + (isDark ? 'text-slate-400' : 'text-slate-500') }, ev + ' km/s')
+                      React.createElement("span", { className: "text-[11px] w-14 font-mono " + (isDark ? 'text-slate-400' : 'text-slate-500') }, ev + ' km/s')
                     );
                   })
                 )

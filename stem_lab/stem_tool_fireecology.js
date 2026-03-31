@@ -15,7 +15,7 @@ window.StemLab = window.StemLab || {
 };
 // ═══ End Guard ═══
 
-if (!window.StemLab.isRegistered('fireEcology')) {
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))) {
 
 (function() {
   'use strict';
@@ -1724,7 +1724,7 @@ if (!window.StemLab.isRegistered('fireEcology')) {
                   return h('div', { key: si, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
                     h('div', { title: 'Biodiversity: ' + snap.biodiversity, style: { width: '100%', height: Math.max(2, snap.biodiversity * 1.1) + 'px', background: '#3b82f6', borderRadius: '2px 2px 0 0', transition: 'height 0.3s' } }),
                     h('div', { title: 'Fuel: ' + snap.fuel, style: { width: '100%', height: Math.max(2, snap.fuel * 1.1) + 'px', background: snap.fuel > 50 ? '#ef4444' : '#f59e0b', borderRadius: '0 0 2px 2px', transition: 'height 0.3s' } }),
-                    h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } }, 'Y' + snap.year)
+                    h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, 'Y' + snap.year)
                   );
                 })
               ),
@@ -2029,7 +2029,8 @@ if (!window.StemLab.isRegistered('fireEcology')) {
                 style: {
                   flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #334155',
                   background: '#1e293b', color: '#e2e8f0', fontSize: 14, outline: 'none'
-                }
+                },
+                onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #f97316'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
               }),
               h('button', {
                 onClick: askAI,
@@ -2605,7 +2606,7 @@ if (!window.StemLab.isRegistered('fireEcology')) {
                 ].map(function(zone, zi) {
                   return h('div', { key: zi, style: { width: zone.w, padding: '8px 2px', background: zone.bg, borderRadius: zi === 0 ? '8px 0 0 8px' : zi === 7 ? '0 8px 8px 0' : 0, textAlign: 'center' } },
                     h('div', { style: { fontSize: 18, marginBottom: 2 } }, zone.emoji),
-                    h('div', { style: { fontSize: 9, color: '#cbd5e1', whiteSpace: 'pre-line', lineHeight: 1.2 } }, zone.label)
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', whiteSpace: 'pre-line', lineHeight: 1.2 } }, zone.label)
                   );
                 })
               ),
@@ -3081,7 +3082,7 @@ if (!window.StemLab.isRegistered('fireEcology')) {
                 { label: 'Village', value: (gs.villageHealth || 100) + '%', color: (gs.villageHealth || 100) > 50 ? '#22c55e' : '#ef4444' }
               ].map(function(s) {
                 return h('div', { key: s.label, style: { background: '#0f172a', borderRadius: 8, padding: '6px 12px', flex: 1, minWidth: 70 } },
-                  h('div', { style: { fontSize: 9, color: '#64748b' } }, s.label),
+                  h('div', { style: { fontSize: 11, color: '#64748b' } }, s.label),
                   h('div', { style: { fontSize: 16, fontWeight: 700, color: s.color } }, s.value)
                 );
               })

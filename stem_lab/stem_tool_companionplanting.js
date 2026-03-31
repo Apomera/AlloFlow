@@ -29,7 +29,7 @@ window.StemLab = window.StemLab || {
 // ═══ End Guard ═══
 
 // Dedup: skip if already registered (hub may have loaded inline copy)
-if (!window.StemLab.isRegistered('companionPlanting')) {
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlanting'))) {
 
 (function() {
   'use strict';
@@ -2759,7 +2759,7 @@ var d = (labToolData.companionPlanting) || {};
 
                       ),
 
-                      React.createElement("div", { className: "text-[9px] text-slate-500" }, syn.desc),
+                      React.createElement("div", { className: "text-[11px] text-slate-500" }, syn.desc),
 
                       React.createElement("div", { className: "text-[10px] font-bold", style: { color: c.text } }, Math.round(syn.val) + '%')
 
@@ -2845,7 +2845,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("span", { className: "text-sm font-bold text-amber-700" }, _totalYield + ' units'),
 
-                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" }, '✨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
+                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" }, '✨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
 
                   )
 
@@ -3196,7 +3196,7 @@ var d = (labToolData.companionPlanting) || {};
                       style: { borderColor: isActive ? sys.color : sys.color + '30', background: isActive ? sys.color + '10' : '#fff' }
                     },
                       React.createElement("div", { className: "text-xl" }, sys.icon),
-                      React.createElement("div", { className: "text-[9px] font-black", style: { color: sys.color } }, sys.name)
+                      React.createElement("div", { className: "text-[11px] font-black", style: { color: sys.color } }, sys.name)
                     );
                   })
                 ),
@@ -3209,7 +3209,7 @@ var d = (labToolData.companionPlanting) || {};
                   return React.createElement("div", { className: "space-y-2 mb-3" },
                     metrics.map(function(metric) {
                       return React.createElement("div", { key: metric.key },
-                        React.createElement("div", { className: "text-[9px] font-bold text-slate-600 mb-0.5" }, metric.label),
+                        React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mb-0.5" }, metric.label),
                         React.createElement("div", { className: "flex gap-0.5 items-center" },
                           FARMING_SYSTEMS.map(function(sys) {
                             var val = metric.getVal(sys);
@@ -3234,7 +3234,7 @@ var d = (labToolData.companionPlanting) || {};
                     className: "rounded-xl p-3 border bg-white",
                     style: { borderColor: sys.color + '40' }
                   },
-                    React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[9px]" },
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[11px]" },
                       React.createElement("div", { className: "rounded-lg p-2 bg-red-50 border border-red-100" },
                         React.createElement("div", { className: "font-bold text-red-700 mb-0.5" }, "\u26A1 Energy"),
                         React.createElement("div", { className: "text-slate-600" }, sys.energy.input + ' cal input \u2192 ' + sys.energy.output + ' cal food'),
@@ -3324,7 +3324,7 @@ var d = (labToolData.companionPlanting) || {};
                   React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-amber-500" }), ' Grocery Store'),
                   React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-red-500" }), ' Imported')
                 ),
-                React.createElement("div", { className: "mt-2 text-center rounded-lg p-2 bg-green-50 border border-green-200 text-[9px] text-green-700 font-bold" },
+                React.createElement("div", { className: "mt-2 text-center rounded-lg p-2 bg-green-50 border border-green-200 text-[11px] text-green-700 font-bold" },
                   '\uD83C\uDF0D A 4\u00D78 garden bed can save ~500 lbs CO\u2082/year compared to buying the same food imported!')
               )
             ),
@@ -3348,7 +3348,7 @@ var d = (labToolData.companionPlanting) || {};
                     var pct = Math.max(3, (crop.gallons / maxGal) * 100);
                     return React.createElement("div", { key: ci, className: "flex items-center gap-1.5" },
                       React.createElement("span", { className: "text-sm w-5 text-center" }, crop.icon),
-                      React.createElement("span", { className: "text-[9px] w-14 font-bold text-slate-600 truncate" }, crop.crop),
+                      React.createElement("span", { className: "text-[11px] w-14 font-bold text-slate-600 truncate" }, crop.crop),
                       React.createElement("div", { className: "flex-1 h-3 rounded-full bg-slate-100 overflow-hidden" },
                         React.createElement("div", { className: "h-full rounded-full transition-all", style: { width: pct + '%', background: crop.color } })
                       ),
@@ -3356,7 +3356,7 @@ var d = (labToolData.companionPlanting) || {};
                     );
                   })
                 ),
-                React.createElement("div", { className: "mt-2 text-[9px] text-cyan-700 bg-cyan-50 rounded-lg p-2 border border-cyan-100" },
+                React.createElement("div", { className: "mt-2 text-[11px] text-cyan-700 bg-cyan-50 rounded-lg p-2 border border-cyan-100" },
                   '\uD83D\uDCA1 Notice: plant-based proteins (beans: 43 gal/lb) use 43x LESS water than beef (1,847 gal/lb). The Three Sisters provide complete protein at a fraction of the water cost!')
               )
             ),
@@ -3382,8 +3382,8 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement("div", { className: "text-lg" }, p.icon),
                     React.createElement("div", { className: "text-[8px] font-black text-violet-700" }, '#' + p.num + ' ' + p.name),
                     isActive && React.createElement("div", { className: "text-left mt-1.5" },
-                      React.createElement("div", { className: "text-[9px] text-slate-600" }, p.desc),
-                      React.createElement("div", { className: "text-[9px] text-emerald-600 mt-1 bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83C\uDF31 Example: ' + p.example)
+                      React.createElement("div", { className: "text-[11px] text-slate-600" }, p.desc),
+                      React.createElement("div", { className: "text-[11px] text-emerald-600 mt-1 bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83C\uDF31 Example: ' + p.example)
                     )
                   );
                 })
@@ -3415,8 +3415,8 @@ var d = (labToolData.companionPlanting) || {};
                       React.createElement("span", { className: "text-[7px] px-1.5 py-0.5 rounded-full font-bold ml-auto " + diffColor }, practice.difficulty)
                     ),
                     isActive && React.createElement("div", { className: "mt-1.5 pl-7 space-y-1" },
-                      React.createElement("div", { className: "text-[9px] text-slate-600" }, practice.benefit),
-                      React.createElement("div", { className: "text-[9px] text-emerald-700 font-bold bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83D\uDCCA Impact: ' + practice.impact)
+                      React.createElement("div", { className: "text-[11px] text-slate-600" }, practice.benefit),
+                      React.createElement("div", { className: "text-[11px] text-emerald-700 font-bold bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83D\uDCCA Impact: ' + practice.impact)
                     )
                   );
                 })
@@ -3430,9 +3430,9 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("h4", { className: "text-sm font-bold text-rose-800 mb-2" }, "\uD83C\uDFAF Garden Scenarios (" + (gardenScenarioIdx + 1) + "/" + GARDEN_SCENARIOS.length + ")"),
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
-                gardenStreak > 0 ? React.createElement("span", { className: "px-3 py-0.5 rounded-full text-[9px] font-bold " + (gardenStreak >= 5 ? 'bg-amber-500 text-white animate-pulse' : gardenStreak >= 3 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600') },
+                gardenStreak > 0 ? React.createElement("span", { className: "px-3 py-0.5 rounded-full text-[11px] font-bold " + (gardenStreak >= 5 ? 'bg-amber-500 text-white animate-pulse' : gardenStreak >= 3 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + gardenStreak + ' streak!') : null,
-                React.createElement("span", { className: "text-[9px] text-slate-500" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
+                React.createElement("span", { className: "text-[11px] text-slate-500" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
               ),
               (function() {
                 var sc = GARDEN_SCENARIOS[gardenScenarioIdx];
@@ -3479,7 +3479,7 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement("div", { className: "rounded-xl p-2.5 text-[10px] " + (isCorrect ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') },
                       (isCorrect ? '\u2705 ' : '\u274C ') + sc.explain
                     ),
-                    React.createElement("div", { className: "rounded-xl p-2 text-[9px] bg-indigo-50 border border-indigo-200 text-indigo-700" },
+                    React.createElement("div", { className: "rounded-xl p-2 text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700" },
                       '\uD83D\uDCDA Concept: ' + sc.concept
                     ),
                     React.createElement("button", {
@@ -3501,7 +3501,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xl" }, '\uD83E\uDD14'),
                 React.createElement("div", { className: "flex-1" },
-                  React.createElement("div", { className: "text-[9px] font-bold text-indigo-500 uppercase tracking-wider" }, 'Did You Know?'),
+                  React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-wider" }, 'Did You Know?'),
                   React.createElement("div", { className: "text-[10px] text-indigo-800 leading-relaxed" }, GARDEN_FACTS[factIdx % GARDEN_FACTS.length])
                 ),
                 React.createElement("button", {
@@ -3532,7 +3532,7 @@ var d = (labToolData.companionPlanting) || {};
                       React.createElement("span", { className: "text-lg" }, card.icon),
                       React.createElement("span", { className: "text-[10px] font-black", style: { color: card.color } }, card.title)
                     ),
-                    React.createElement("div", { className: "text-[9px] text-slate-600 leading-relaxed" }, card.content)
+                    React.createElement("div", { className: "text-[11px] text-slate-600 leading-relaxed" }, card.content)
                   );
                 })
               )
@@ -3572,7 +3572,7 @@ var d = (labToolData.companionPlanting) || {};
                   var step = NITROGEN_CYCLE[d.nitroCycleIdx || 0];
                   return React.createElement("div", { className: "rounded-xl p-2.5 border bg-white text-center", style: { borderColor: step.color + '40' } },
                     React.createElement("div", { className: "text-[10px] font-bold", style: { color: step.color } }, 'Step ' + step.step + ': ' + step.name),
-                    React.createElement("div", { className: "text-[9px] text-slate-600 mt-0.5" }, step.desc),
+                    React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, step.desc),
                     step.step === 2 && React.createElement("div", { className: "text-[8px] text-emerald-600 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!')
                   );
                 })()
@@ -3596,7 +3596,7 @@ var d = (labToolData.companionPlanting) || {};
                   React.createElement("div", { className: "rounded-xl p-2 border border-green-300 bg-green-50" },
                     React.createElement("div", { className: "text-[10px] font-bold text-green-700 mb-1" }, "\uD83C\uDF3F GREENS (Nitrogen)"),
                     COMPOST_GREENS.map(function(g, gi) {
-                      return React.createElement("div", { key: gi, className: "flex items-center gap-1 text-[9px] text-green-800" },
+                      return React.createElement("div", { key: gi, className: "flex items-center gap-1 text-[11px] text-green-800" },
                         React.createElement("span", null, g.icon), React.createElement("span", null, g.name)
                       );
                     })
@@ -3604,14 +3604,14 @@ var d = (labToolData.companionPlanting) || {};
                   React.createElement("div", { className: "rounded-xl p-2 border border-amber-300 bg-amber-50" },
                     React.createElement("div", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83C\uDF42 BROWNS (Carbon)"),
                     COMPOST_BROWNS.map(function(b, bi) {
-                      return React.createElement("div", { key: bi, className: "flex items-center gap-1 text-[9px] text-amber-800" },
+                      return React.createElement("div", { key: bi, className: "flex items-center gap-1 text-[11px] text-amber-800" },
                         React.createElement("span", null, b.icon), React.createElement("span", null, b.name)
                       );
                     })
                   )
                 ),
                 React.createElement("div", { className: "rounded-lg p-2 bg-red-50 border border-red-200" },
-                  React.createElement("div", { className: "text-[9px] font-bold text-red-600" }, "\u274C NEVER compost: " + COMPOST_NEVER.join(' \u2022 '))
+                  React.createElement("div", { className: "text-[11px] font-bold text-red-600" }, "\u274C NEVER compost: " + COMPOST_NEVER.join(' \u2022 '))
                 )
               )
             ),
@@ -3645,8 +3645,8 @@ var d = (labToolData.companionPlanting) || {};
                           return React.createElement("span", { key: pi, className: "px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-emerald-100 text-emerald-700" }, p);
                         })
                       ),
-                      React.createElement("div", { className: "text-[9px] text-blue-600" }, "\uD83D\uDEE0\uFE0F Tasks: " + season.tasks),
-                      React.createElement("div", { className: "text-[9px] text-amber-600 italic" }, "\uD83D\uDCA1 " + season.tip)
+                      React.createElement("div", { className: "text-[11px] text-blue-600" }, "\uD83D\uDEE0\uFE0F Tasks: " + season.tasks),
+                      React.createElement("div", { className: "text-[11px] text-amber-600 italic" }, "\uD83D\uDCA1 " + season.tip)
                     )
                   );
                 })
@@ -3719,7 +3719,7 @@ var d = (labToolData.companionPlanting) || {};
                   ['all', 'friend', 'enemy'].map(function(f) {
                     return React.createElement("button", { key: f,
                       onClick: function() { upd('pairFilter', f); },
-                      className: "px-2 py-0.5 rounded-full text-[9px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-600 text-white' : 'bg-white text-green-700 border border-green-200')
+                      className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-600 text-white' : 'bg-white text-green-700 border border-green-200')
                     }, f === 'all' ? 'All' : f === 'friend' ? '\u2705 Friends' : '\u274C Enemies');
                   })
                 ),
@@ -3734,7 +3734,7 @@ var d = (labToolData.companionPlanting) || {};
                         React.createElement("span", { className: "text-lg" }, pair.icon1),
                         React.createElement("span", { className: "text-[10px] " + (pair.type === 'enemy' ? 'text-red-500' : 'text-green-500') + " font-bold" }, pair.type === 'enemy' ? '\u2718' : '\u2764'),
                         React.createElement("span", { className: "text-lg" }, pair.icon2),
-                        React.createElement("span", { className: "text-[9px] font-bold text-slate-700" }, pair.plant1 + ' + ' + pair.plant2)
+                        React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, pair.plant1 + ' + ' + pair.plant2)
                       ),
                       React.createElement("div", { className: "text-[8px] text-slate-500 mt-0.5" }, pair.benefit),
                       isActive && React.createElement("div", { className: "mt-1 text-[8px] text-indigo-600 bg-indigo-50 rounded p-1 border border-indigo-100" },
@@ -3772,8 +3772,8 @@ var d = (labToolData.companionPlanting) || {};
                       React.createElement("span", { className: "text-[8px] text-slate-500 ml-auto" }, fam.members)
                     ),
                     isActive && React.createElement("div", { className: "mt-1.5 space-y-1 pl-7" },
-                      React.createElement("div", { className: "text-[9px] text-blue-600" }, "\uD83D\uDD04 Rotation: " + fam.rotation),
-                      React.createElement("div", { className: "text-[9px] text-emerald-600" }, "\uD83C\uDF31 Nutrients: " + fam.nutrients)
+                      React.createElement("div", { className: "text-[11px] text-blue-600" }, "\uD83D\uDD04 Rotation: " + fam.rotation),
+                      React.createElement("div", { className: "text-[11px] text-emerald-600" }, "\uD83C\uDF31 Nutrients: " + fam.nutrients)
                     )
                   );
                 })
@@ -3828,11 +3828,11 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "flex gap-1 mb-2" },
                   React.createElement("button", {
                     onClick: function() { upd('pestTab', 'pests'); },
-                    className: "px-2 py-0.5 rounded-full text-[9px] font-bold " + ((d.pestTab || 'pests') === 'pests' ? 'bg-red-500 text-white' : 'bg-white text-red-600 border border-red-200')
+                    className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'pests' ? 'bg-red-500 text-white' : 'bg-white text-red-600 border border-red-200')
                   }, "\uD83D\uDC1B Pests (" + GARDEN_PESTS.length + ")"),
                   React.createElement("button", {
                     onClick: function() { upd('pestTab', 'beneficial'); },
-                    className: "px-2 py-0.5 rounded-full text-[9px] font-bold " + ((d.pestTab || 'pests') === 'beneficial' ? 'bg-green-500 text-white' : 'bg-white text-green-600 border border-green-200')
+                    className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'beneficial' ? 'bg-green-500 text-white' : 'bg-white text-green-600 border border-green-200')
                   }, "\uD83D\uDC1E Allies (" + BENEFICIAL_INSECTS.length + ")")
                 ),
                 (d.pestTab || 'pests') === 'pests' ?
@@ -3849,9 +3849,9 @@ var d = (labToolData.companionPlanting) || {};
                           React.createElement("span", { className: "text-[8px] text-slate-500 ml-auto" }, pest.damage.substring(0, 30) + '...')
                         ),
                         isActive && React.createElement("div", { className: "mt-1.5 space-y-0.5 pl-7" },
-                          React.createElement("div", { className: "text-[9px] text-red-600" }, "\uD83D\uDCA5 Damage: " + pest.damage),
-                          React.createElement("div", { className: "text-[9px] text-green-600" }, "\uD83C\uDF3F Organic control: " + pest.organic),
-                          React.createElement("div", { className: "text-[9px] text-blue-600" }, "\uD83C\uDF31 Companion fix: " + pest.companion)
+                          React.createElement("div", { className: "text-[11px] text-red-600" }, "\uD83D\uDCA5 Damage: " + pest.damage),
+                          React.createElement("div", { className: "text-[11px] text-green-600" }, "\uD83C\uDF3F Organic control: " + pest.organic),
+                          React.createElement("div", { className: "text-[11px] text-blue-600" }, "\uD83C\uDF31 Companion fix: " + pest.companion)
                         )
                       );
                     })

@@ -1513,7 +1513,7 @@ const d = labToolData.waterCycle;
                   className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50 border border-slate-200')
                 }, gb);
               }),
-              React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded-full border border-indigo-200" },
+              React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[11px] font-bold rounded-full border border-indigo-200" },
                 gradeBand === 'K-2' ? '\uD83E\uDDF8 Elementary' : gradeBand === '3-5' ? '\uD83D\uDCDA Upper Elementary' : gradeBand === '6-8' ? '\uD83E\uDD13 Middle School' : '\uD83C\uDF93 High School'
               )
             ),
@@ -1523,9 +1523,9 @@ const d = labToolData.waterCycle;
               React.createElement("canvas", { ref: canvasRef, id: "wcCanvas", "data-active-stage": d.activeStage || 'evaporation', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), style: { width: "100%", height: "100%", display: "block" } }),
 
               // Weather badge overlay
-              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[9px] font-bold rounded-full backdrop-blur-sm" }, "\u2744\uFE0F SNOW"),
-              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[9px] font-bold rounded-full backdrop-blur-sm" }, "\u26A1 STORM"),
-              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-2 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[9px] font-bold rounded-full backdrop-blur-sm" }, "\uD83C\uDF19 NIGHT")
+              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\u2744\uFE0F SNOW"),
+              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\u26A1 STORM"),
+              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-2 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\uD83C\uDF19 NIGHT")
 
             ),
 
@@ -1534,7 +1534,7 @@ const d = labToolData.waterCycle;
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-lg" }, "\uD83C\uDF21"),
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "Climate Lab"),
-                React.createElement("span", { className: "px-2 py-0.5 bg-amber-200 text-amber-800 text-[9px] font-bold rounded-full" }, "INTERACTIVE")
+                React.createElement("span", { className: "px-2 py-0.5 bg-amber-200 text-amber-800 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
               ),
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                 // Solar Intensity
@@ -1584,7 +1584,7 @@ const d = labToolData.waterCycle;
                 )
               ),
               // Weather readout
-              React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 text-[9px] font-bold" },
+              React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold" },
                 (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded" }, "\u2744\uFE0F Snow active"),
                 (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded" }, "\u26A1 Thunderstorm"),
                 (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded" }, "\uD83C\uDF08 Rainbow"),
@@ -1622,7 +1622,7 @@ const d = labToolData.waterCycle;
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { className: "text-xl" }, "\uD83D\uDCA7"),
                   React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "Journey Mode"),
-                  React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[9px] font-bold rounded-full" }, "PLAY AS WATER")
+                  React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "PLAY AS WATER")
                 ),
                 !d.journeyActive
                   ? React.createElement("button", {
@@ -1671,7 +1671,7 @@ const d = labToolData.waterCycle;
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
                       React.createElement("p", { className: "text-[10px] font-bold text-blue-700" }, "River Runoff"),
-                      React.createElement("p", { className: "text-[9px] text-blue-500" }, "Fast path!")
+                      React.createElement("p", { className: "text-[11px] text-blue-500" }, "Fast path!")
                     ),
                     React.createElement("button", {
                       onClick: function() {
@@ -1684,7 +1684,7 @@ const d = labToolData.waterCycle;
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
                       React.createElement("p", { className: "text-[10px] font-bold text-amber-700" }, "Underground"),
-                      React.createElement("p", { className: "text-[9px] text-amber-500" }, "Slow + deep")
+                      React.createElement("p", { className: "text-[11px] text-amber-500" }, "Slow + deep")
                     ),
                     React.createElement("button", {
                       onClick: function() {
@@ -1697,7 +1697,7 @@ const d = labToolData.waterCycle;
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
                       React.createElement("p", { className: "text-[10px] font-bold text-emerald-700" }, "Enter Plant"),
-                      React.createElement("p", { className: "text-[9px] text-emerald-500" }, "Transpiration!")
+                      React.createElement("p", { className: "text-[11px] text-emerald-500" }, "Transpiration!")
                     )
                   ),
                   d.journeyState === 'complete' && React.createElement("button", {
@@ -1877,7 +1877,7 @@ const d = labToolData.waterCycle;
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
               d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
-              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[9px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
+              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
               (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
               d.wcQuiz && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-xl p-3 border border-sky-200 shadow-sm" },

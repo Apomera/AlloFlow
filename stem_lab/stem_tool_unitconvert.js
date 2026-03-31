@@ -317,7 +317,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           '@keyframes spin{to{transform:rotate(360deg)}}';
 
         // ── RENDER ──
-        return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200', onKeyDown: handleKey, tabIndex: -1, style: { outline: 'none' } },
+        return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1 },
 
           h('style', null, css),
 
@@ -358,7 +358,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   title: badge.desc
                 },
                   h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                  h('div', { className: 'text-[9px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
+                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
                 );
               })
             )

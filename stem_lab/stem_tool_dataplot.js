@@ -887,8 +887,8 @@ window.StemLab = window.StemLab || {
                 var gy = yMin + gi * (yMax - yMin) / nt;
                 elems.push(h('line', { key: 'gv'+gi, x1: toSX(gx), y1: pad, x2: toSX(gx), y2: H-pad, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }));
                 elems.push(h('line', { key: 'gh'+gi, x1: pad, y1: toSY(gy), x2: W-pad, y2: toSY(gy), stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }));
-                elems.push(h('text', { key: 'xt'+gi, x: toSX(gx), y: H-pad+14, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '9px' } }, (Math.round(gx*10)/10).toString()));
-                elems.push(h('text', { key: 'yt'+gi, x: pad-5, y: toSY(gy)+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '9px' } }, (Math.round(gy*10)/10).toString()));
+                elems.push(h('text', { key: 'xt'+gi, x: toSX(gx), y: H-pad+14, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '11px' } }, (Math.round(gx*10)/10).toString()));
+                elems.push(h('text', { key: 'yt'+gi, x: pad-5, y: toSY(gy)+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '11px' } }, (Math.round(gy*10)/10).toString()));
               }
               return elems;
             })(),
@@ -991,7 +991,7 @@ window.StemLab = window.StemLab || {
               return h('g', { key: 'hb'+i },
                 h('rect', { x: barX, y: H-pad-barH, width: barW, height: Math.max(1, barH), fill: pal.fill, fillOpacity: 0.8, rx: 2 }),
                 h('text', { x: barX+barW/2, y: H-pad+12, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '8px' } }, bin.low.toFixed(0) + '-' + bin.high.toFixed(0)),
-                h('text', { x: barX+barW/2, y: H-pad-barH-4, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '9px', fontWeight: 'bold' } }, bin.count)
+                h('text', { x: barX+barW/2, y: H-pad-barH-4, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, bin.count)
               );
             }),
             // Normal distribution overlay
@@ -1034,13 +1034,13 @@ window.StemLab = window.StemLab || {
                 h('line', { x1: bx(yMax_), y1: 60, x2: bx(yMax_), y2: 100, stroke: '#64748b', strokeWidth: 1.5 }),
                 h('rect', { x: bx(q1), y: 55, width: Math.max(2, bx(q3) - bx(q1)), height: 50, fill: pal.fill, fillOpacity: 0.3, stroke: pal.fill, strokeWidth: 2, rx: 4 }),
                 h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: '#ef4444', strokeWidth: 2.5 }),
-                h('text', { x: bx(yMin_), y: 50, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '9px' } }, 'Min: ' + yMin_.toFixed(1)),
-                h('text', { x: bx(q1), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '9px', fontWeight: 'bold' } }, 'Q1: ' + q1.toFixed(1)),
-                h('text', { x: bx(yMedian), y: 120, textAnchor: 'middle', fill: '#ef4444', style: { fontSize: '9px', fontWeight: 'bold' } }, 'Med: ' + yMedian.toFixed(1)),
-                h('text', { x: bx(q3), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '9px', fontWeight: 'bold' } }, 'Q3: ' + q3.toFixed(1)),
-                h('text', { x: bx(yMax_), y: 50, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '9px' } }, 'Max: ' + yMax_.toFixed(1)),
+                h('text', { x: bx(yMin_), y: 50, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '11px' } }, 'Min: ' + yMin_.toFixed(1)),
+                h('text', { x: bx(q1), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, 'Q1: ' + q1.toFixed(1)),
+                h('text', { x: bx(yMedian), y: 120, textAnchor: 'middle', fill: '#ef4444', style: { fontSize: '11px', fontWeight: 'bold' } }, 'Med: ' + yMedian.toFixed(1)),
+                h('text', { x: bx(q3), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, 'Q3: ' + q3.toFixed(1)),
+                h('text', { x: bx(yMax_), y: 50, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '11px' } }, 'Max: ' + yMax_.toFixed(1)),
                 outliers.map(function(o, i) { return h('circle', { key: 'out'+i, cx: bx(o.y), cy: 80, r: 5, fill: '#ef4444', stroke: '#fff', strokeWidth: 1 }); }),
-                h('text', { x: bx((q1+q3)/2), y: 145, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '9px' } }, 'IQR: ' + iqr.toFixed(1))
+                h('text', { x: bx((q1+q3)/2), y: 145, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '11px' } }, 'IQR: ' + iqr.toFixed(1))
               );
             })()
           ),
@@ -1059,7 +1059,7 @@ window.StemLab = window.StemLab || {
                 var gy = oToY(n * pct / 100);
                 return h('g', { key: 'og'+pct },
                   h('line', { x1: pad, y1: gy, x2: W-pad, y2: gy, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }),
-                  h('text', { x: pad-5, y: gy+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '9px' } }, pct + '%')
+                  h('text', { x: pad-5, y: gy+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '11px' } }, pct + '%')
                 );
               }),
               h('line', { x1: pad, y1: oH-pad, x2: W-pad, y2: oH-pad, stroke: '#64748b', strokeWidth: 1.5 }),
@@ -1192,7 +1192,7 @@ window.StemLab = window.StemLab || {
                   { label: 'Spearman \u03C1', value: spearmanR.toFixed(4), icon: '\uD83C\uDFC5' }
                 ].map(function(stat) {
                   return h('div', { key: stat.label, className: 'p-2 bg-white rounded-lg border border-teal-100 text-center', onClick: stat.label === 'Spearman \u03C1' ? function() { checkBadges({ spearmanViewed: true }); } : undefined },
-                    h('div', { className: 'text-[9px] font-bold text-teal-600 uppercase' }, stat.icon + ' ' + stat.label),
+                    h('div', { className: 'text-[11px] font-bold text-teal-600 uppercase' }, stat.icon + ' ' + stat.label),
                     h('div', { className: 'text-sm font-bold text-teal-900' }, stat.value)
                   );
                 })
@@ -1269,7 +1269,7 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'text-[10px] text-cyan-500' }, 'z = (value \u2212 mean) / std dev = (value \u2212 ' + meanY.toFixed(2) + ') / ' + stdDev.toFixed(2)),
                     // Mini visual
                     h('div', { className: 'flex items-center gap-1 mt-1' },
-                      h('span', { className: 'text-[9px] text-slate-400' }, '-3\u03C3'),
+                      h('span', { className: 'text-[11px] text-slate-400' }, '-3\u03C3'),
                       h('div', { className: 'flex-1 h-4 bg-slate-100 rounded-full relative overflow-hidden' },
                         h('div', { style: { position: 'absolute', left: '2.3%', width: '13.5%', height: '100%', backgroundColor: '#fee2e2' } }),
                         h('div', { style: { position: 'absolute', left: '15.8%', width: '34.2%', height: '100%', backgroundColor: '#dcfce7' } }),
@@ -1282,7 +1282,7 @@ window.StemLab = window.StemLab || {
                           return h('div', { style: { position: 'absolute', left: pct2 + '%', top: 0, width: '3px', height: '100%', backgroundColor: '#0d9488', borderRadius: '2px' } });
                         })()
                       ),
-                      h('span', { className: 'text-[9px] text-slate-400' }, '+3\u03C3')
+                      h('span', { className: 'text-[11px] text-slate-400' }, '+3\u03C3')
                     )
                   )
               ),
@@ -1303,7 +1303,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-slate-600 tracking-wider' }, row.leaves.join(' '))
                     );
                   }),
-                  h('div', { className: 'text-[9px] text-slate-400 font-sans mt-2' }, 'Key: stem|leaf = stem\u00D710 + leaf (e.g. 7|3 = 73)')
+                  h('div', { className: 'text-[11px] text-slate-400 font-sans mt-2' }, 'Key: stem|leaf = stem\u00D710 + leaf (e.g. 7|3 = 73)')
                 )
               )
             )
@@ -1430,7 +1430,7 @@ window.StemLab = window.StemLab || {
                     }, tr.icon + ' ' + tr.label);
                   })
                 ),
-                h('div', { className: 'text-[9px] text-amber-500' }, '\uD83D\uDCA1 Transformations modify data in-place. Use Undo (\u21A9) to revert.')
+                h('div', { className: 'text-[11px] text-amber-500' }, '\uD83D\uDCA1 Transformations modify data in-place. Use Undo (\u21A9) to revert.')
               )
           ),
 

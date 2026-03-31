@@ -2090,7 +2090,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 30 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? '#f1f5f9' : '#64748b', marginTop: 6 } }, b.name),
                   h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 3 } }, b.desc),
-                  earned && h('div', { style: { fontSize: 9, color: '#4ade80', marginTop: 4 } }, '\u2705 Earned ' + new Date(earnedBadges[b.id]).toLocaleDateString())
+                  earned && h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 4 } }, '\u2705 Earned ' + new Date(earnedBadges[b.id]).toLocaleDateString())
                 );
               })
             ),

@@ -1455,7 +1455,7 @@
                 } },
                   el('span', { style: { width: 16, height: 16, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.15)' } }),
                   m.icon + ' ' + m.label,
-                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 9, color: '#64748b' } }, '\uD83D\uDCB2' + m.cost)
+                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#64748b' } }, '\uD83D\uDCB2' + m.cost)
                 );
               })
             )
@@ -1498,7 +1498,7 @@
             ),
             // Budget slider
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 } },
-              el('span', { style: { fontSize: 9, color: '#64748b' } }, '\uD83D\uDCB2' + budget),
+              el('span', { style: { fontSize: 11, color: '#64748b' } }, '\uD83D\uDCB2' + budget),
               el('input', { type: 'range', min: 50, max: 500, step: 25, value: budget, onChange: function (e) { upd('budget', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#f59e0b' } })
             )
           ),
@@ -1510,7 +1510,7 @@
               el('span', { style: { fontSize: 10, color: viewLayer === -1 ? '#4ade80' : '#f59e0b', fontWeight: 700, minWidth: 28 } }, viewLayer === -1 ? 'All' : 'Y' + viewLayer),
               el('input', { type: 'range', min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
             ),
-            viewLayer >= 0 && el('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } },
+            viewLayer >= 0 && el('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } },
               blocks.filter(function (b) { return b.y === viewLayer; }).length + ' blocks at Y=' + viewLayer
             )
           ),
@@ -1523,7 +1523,7 @@
                 var done = !!completedChallenges[chItem.id];
                 var isActive = activeChallenge === chItem.id;
                 return el('button', { key: chItem.id, onClick: function () { if (!done) upd('activeChallenge', isActive ? -1 : chItem.id); }, style: {
-                  display: 'flex', alignItems: 'center', gap: 5, padding: '5px 6px', fontSize: 9, fontWeight: 600,
+                  display: 'flex', alignItems: 'center', gap: 5, padding: '5px 6px', fontSize: 11, fontWeight: 600,
                   border: done ? '1px solid #22c55e' : isActive ? '2px solid #f59e0b' : '1px solid #334155',
                   borderRadius: 8, background: done ? 'rgba(34,197,94,.1)' : isActive ? 'rgba(245,158,11,.1)' : 'transparent',
                   color: done ? '#4ade80' : isActive ? '#fbbf24' : '#94a3b8', cursor: done ? 'default' : 'pointer', textAlign: 'left', width: '100%', opacity: done ? 0.7 : 1
@@ -1533,7 +1533,7 @@
                     el('div', { style: { fontWeight: 700, fontSize: 10 } }, chItem.title),
                     el('div', { style: { fontSize: 8, color: done ? '#22c55e' : '#64748b' } }, done ? 'Done!' : chItem.desc)
                   ),
-                  el('span', { style: { fontSize: 9, color: done ? '#22c55e' : '#f59e0b', fontWeight: 700, flexShrink: 0 } }, done ? '\u2605' : '+' + chItem.xp)
+                  el('span', { style: { fontSize: 11, color: done ? '#22c55e' : '#f59e0b', fontWeight: 700, flexShrink: 0 } }, done ? '\u2605' : '+' + chItem.xp)
                 );
               })
             ),
@@ -1556,8 +1556,8 @@
                       el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, item.name),
                       el('div', { style: { fontSize: 8, color: '#64748b' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
                     ),
-                    el('button', { onClick: function () { loadBuild(item); }, style: { background: 'rgba(96,165,250,.15)', border: '1px solid #60a5fa', color: '#93c5fd', borderRadius: 6, padding: '3px 8px', fontSize: 9, fontWeight: 700, cursor: 'pointer' } }, '\u21E9'),
-                    el('button', { onClick: function () { deleteBuild(item.id); }, style: { background: 'rgba(239,68,68,.15)', border: '1px solid #ef4444', color: '#fca5a5', borderRadius: 6, padding: '3px 6px', fontSize: 9, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
+                    el('button', { onClick: function () { loadBuild(item); }, style: { background: 'rgba(96,165,250,.15)', border: '1px solid #60a5fa', color: '#93c5fd', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u21E9'),
+                    el('button', { onClick: function () { deleteBuild(item.id); }, style: { background: 'rgba(239,68,68,.15)', border: '1px solid #ef4444', color: '#fca5a5', borderRadius: 6, padding: '3px 6px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
                   );
                 })
               )
@@ -1587,7 +1587,7 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF0B Earthquake Test'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
-              el('span', { style: { fontSize: 9, color: '#64748b', minWidth: 20 } }, quakeIntensity + '/10'),
+              el('span', { style: { fontSize: 11, color: '#64748b', minWidth: 20 } }, quakeIntensity + '/10'),
               el('input', { type: 'range', min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#ef4444' } })
             ),
             el('button', { onClick: runEarthquake, disabled: !blocks.length, style: {
@@ -1595,7 +1595,7 @@
               background: blocks.length ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'rgba(71,85,105,.3)',
               color: blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: blocks.length ? 'pointer' : 'default'
             } }, '\uD83C\uDF0B Shake! (Intensity ' + quakeIntensity + ')'),
-            quakeResult && el('div', { style: { marginTop: 4, padding: '5px 8px', background: quakeResult.pct >= 70 ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)', border: '1px solid ' + (quakeResult.pct >= 70 ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.3)'), borderRadius: 8, fontSize: 9, color: quakeResult.pct >= 70 ? '#4ade80' : '#fca5a5', lineHeight: 1.4 } },
+            quakeResult && el('div', { style: { marginTop: 4, padding: '5px 8px', background: quakeResult.pct >= 70 ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)', border: '1px solid ' + (quakeResult.pct >= 70 ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.3)'), borderRadius: 8, fontSize: 11, color: quakeResult.pct >= 70 ? '#4ade80' : '#fca5a5', lineHeight: 1.4 } },
               quakeResult.rating + ' \u2022 ' + quakeResult.pct + '% survived \u2022 ' + quakeResult.fallen + ' fell'
             )
           ),
@@ -1613,7 +1613,7 @@
           // Real-World Scale
           totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCF Real-World Scale'),
-            el('div', { style: { fontSize: 9, color: '#cbd5e1', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
+            el('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
               el('div', null, '\uD83D\uDCCF ' + realW + 'm \u00D7 ' + realD + 'm \u00D7 ' + realH + 'm'),
               el('div', null, '\uD83D\uDCCF ' + realWFt + 'ft wide \u00D7 ' + realHFt + 'ft tall'),
               el('div', null, '\uD83D\uDCE6 Volume: ' + realVolM3.toFixed(1) + ' m\u00B3'),
@@ -1625,7 +1625,7 @@
           // Bill of Materials
           showBOM && totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Bill of Materials'),
-            el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 2, fontWeight: 600 } }, 'By Material:'),
+            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2, fontWeight: 600 } }, 'By Material:'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               bomMaterialEntries.map(function (e) {
                 return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9 } },
@@ -1636,7 +1636,7 @@
                 );
               })
             ),
-            el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 2, marginTop: 6, fontWeight: 600 } }, 'By Shape:'),
+            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2, marginTop: 6, fontWeight: 600 } }, 'By Shape:'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               bomShapeEntries.map(function (e) {
                 return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9 } },
@@ -1651,14 +1651,14 @@
           // Block Statistics Chart
           showStats && totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCA Block Stats'),
-            el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 3, fontWeight: 600 } }, 'Material Distribution'),
+            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3, fontWeight: 600 } }, 'Material Distribution'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
               bomMaterialEntries.map(function (e) {
                 var pct = maxMatCount > 0 ? Math.round((e.count / maxMatCount) * 100) : 0;
                 var mat = materials.find(function (m) { return m.id === e.id; });
                 var barColor = mat ? mat.color : '#94a3b8';
                 return el('div', { key: e.id },
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, marginBottom: 1 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 1 } },
                     el('span', { style: { color: '#cbd5e1' } }, e.icon + ' ' + e.label),
                     el('span', { style: { color: '#94a3b8' } }, e.count)
                   ),
@@ -1668,12 +1668,12 @@
                 );
               })
             ),
-            el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 3, marginTop: 8, fontWeight: 600 } }, 'Shape Distribution'),
+            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 3, marginTop: 8, fontWeight: 600 } }, 'Shape Distribution'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
               bomShapeEntries.map(function (e) {
                 var pct = maxShapeCount > 0 ? Math.round((e.count / maxShapeCount) * 100) : 0;
                 return el('div', { key: e.id },
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, marginBottom: 1 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 1 } },
                     el('span', { style: { color: '#cbd5e1' } }, e.icon + ' ' + e.label),
                     el('span', { style: { color: '#94a3b8' } }, e.count)
                   ),
@@ -1696,8 +1696,8 @@
                     el('span', { style: { fontWeight: 700, fontSize: 11, color: '#f8fafc' } }, st.name),
                     el('span', { style: { fontSize: 8, color: '#64748b', marginLeft: 'auto' } }, st.era)
                   ),
-                  el('div', { style: { fontSize: 9, color: '#94a3b8', lineHeight: 1.4, marginBottom: 3 } }, st.features),
-                  el('div', { style: { fontSize: 9, color: '#60a5fa', fontWeight: 600 } }, '\uD83D\uDCA1 ' + st.tips)
+                  el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4, marginBottom: 3 } }, st.features),
+                  el('div', { style: { fontSize: 11, color: '#60a5fa', fontWeight: 600 } }, '\uD83D\uDCA1 ' + st.tips)
                 );
               })
             )
@@ -1712,7 +1712,7 @@
                 return el('div', { key: pi, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 } },
                     el('span', { style: { fontWeight: 700, fontSize: 10, color: '#f8fafc' } }, (pi + 1) + '. ' + ph.name),
-                    el('span', { style: { fontSize: 9, color: '#64748b' } }, 'Y=' + ph.y + ' \u2022 ' + ph.count + ' blocks')
+                    el('span', { style: { fontSize: 11, color: '#64748b' } }, 'Y=' + ph.y + ' \u2022 ' + ph.count + ' blocks')
                   ),
                   el('div', { style: { height: 4, background: '#0f172a', borderRadius: 2, overflow: 'hidden', marginBottom: 2 } },
                     el('div', { style: { height: '100%', width: phPct + '%', background: 'linear-gradient(90deg,#2dd4bf,#14b8a6)', borderRadius: 2 } })
@@ -1737,7 +1737,7 @@
                 color: '#94a3b8', fontSize: 8, fontFamily: 'monospace', resize: 'none'
               }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
             ),
-            el('div', { style: { fontSize: 9, color: '#64748b', marginBottom: 4 } }, 'Paste a code below to import:'),
+            el('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 4 } }, 'Paste a code below to import:'),
             el('div', { style: { display: 'flex', gap: 3 } },
               el('input', { type: 'text', placeholder: 'Paste share code...', value: d.importCode || '',
                 onChange: function (e) { upd('importCode', e.target.value); },
@@ -1745,14 +1745,14 @@
               }),
               el('button', { onClick: function () { importShareCode(d.importCode); }, style: {
                 padding: '5px 10px', borderRadius: 6, border: 'none',
-                background: 'linear-gradient(135deg,#22c55e,#16a34a)', color: '#fff', fontWeight: 700, fontSize: 9, cursor: 'pointer'
+                background: 'linear-gradient(135deg,#22c55e,#16a34a)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
               } }, '\u21E9')
             )
           ),
 
           // Keyboard Shortcuts Reference
           el('div', { style: { marginTop: 4, padding: '6px 8px', background: 'rgba(15,23,42,.5)', borderRadius: 8, border: '1px solid #1e293b' } },
-            el('div', { style: { fontSize: 9, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2328\uFE0F Shortcuts'),
+            el('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2328\uFE0F Shortcuts'),
             el('div', { style: { fontSize: 8, color: '#475569', lineHeight: 1.6 } },
               el('div', null, 'Ctrl+Z Undo \u2022 Ctrl+Y Redo'),
               el('div', null, '1-9 Select shape \u2022 P/E/T Mode'),
@@ -1792,10 +1792,10 @@
             ),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
               el('input', { type: 'color', value: customColor, onChange: function (e) { upd({ activeColor: e.target.value, customColor: e.target.value }); }, style: { width: 28, height: 22, border: 'none', padding: 0, cursor: 'pointer', background: 'transparent' } }),
-              el('span', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' } }, customColor),
+              el('span', { style: { fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' } }, customColor),
               el('button', { onClick: function () { upd({ activeColor: customColor, mode: 'paint' }); }, style: {
                 marginLeft: 'auto', padding: '3px 8px', borderRadius: 6, border: 'none',
-                background: 'linear-gradient(135deg,#ec4899,#f472b6)', color: '#fff', fontWeight: 700, fontSize: 9, cursor: 'pointer'
+                background: 'linear-gradient(135deg,#ec4899,#f472b6)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
               } }, '\uD83C\uDFA8 Paint')
             )
           ),
@@ -1805,17 +1805,17 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD2C Cross-Section (Z)'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 4 } },
               el('button', { onClick: function () { upd('sliceZ', -1); }, style: {
-                padding: '3px 8px', borderRadius: 6, fontSize: 9, fontWeight: 600, cursor: 'pointer',
+                padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 background: sliceZ === -1 ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === -1 ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === -1 ? '#67e8f9' : '#64748b'
               } }, 'All'),
               sliceZLevels.map(function (z) {
                 return el('button', { key: z, onClick: function () { upd('sliceZ', z); }, style: {
-                  padding: '3px 6px', borderRadius: 6, fontSize: 9, fontWeight: 600, cursor: 'pointer',
+                  padding: '3px 6px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                   background: sliceZ === z ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === z ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === z ? '#67e8f9' : '#64748b'
                 } }, 'Z=' + z);
               })
             ),
-            sliceZ >= 0 && el('div', { style: { fontSize: 9, color: '#94a3b8', padding: '4px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 6 } },
+            sliceZ >= 0 && el('div', { style: { fontSize: 11, color: '#94a3b8', padding: '4px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 6 } },
               '\uD83D\uDD2C Slice Z=' + sliceZ + ': ' + sliceBlocks.length + ' block' + (sliceBlocks.length !== 1 ? 's' : ''),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 3 } },
                 sliceBlocks.map(function (b, i) {
@@ -1831,7 +1831,7 @@
           // ── Structural Load Heatmap Legend ──
           showHeatmap && totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD25 Load Heatmap'),
-            el('div', { style: { fontSize: 9, color: '#94a3b8', lineHeight: 1.5, marginBottom: 4 } },
+            el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, marginBottom: 4 } },
               'Shows load (weight supported) per block column. Blocks at the base carry the most load.'
             ),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
@@ -1862,9 +1862,9 @@
           showReplay && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\u23EA Construction Replay'),
             replayFrames === 0
-              ? el('div', { style: { fontSize: 9, color: '#64748b' } }, 'No undo history yet. Build something first!')
+              ? el('div', { style: { fontSize: 11, color: '#64748b' } }, 'No undo history yet. Build something first!')
               : el('div', null,
-                  el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
+                  el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
                   el('div', { style: { display: 'flex', gap: 4, justifyContent: 'center' } },
                     el('button', { onClick: function () { upd('replayStep', 0); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 10 } }, '\u23EE'),
                     el('button', { onClick: function () { stepReplay(-1); }, disabled: replayStep <= 0, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: replayStep > 0 ? '#e2e8f0' : '#475569', cursor: replayStep > 0 ? 'pointer' : 'default', fontSize: 10 } }, '\u25C0'),
@@ -1874,10 +1874,10 @@
                   el('div', { style: { marginTop: 4 } },
                     el('input', { type: 'range', min: 0, max: replayFrames, value: replayStep >= 0 ? replayStep : replayFrames, onChange: function (e) { upd('replayStep', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#fbbf24' } })
                   ),
-                  el('div', { style: { fontSize: 9, color: '#64748b', textAlign: 'center', marginTop: 2 } },
+                  el('div', { style: { fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 2 } },
                     (replayStep >= 0 && replayStep < replayFrames ? replayBlocks.length : totalBlocks) + ' blocks at this step'
                   ),
-                  el('button', { onClick: exitReplay, style: { width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'rgba(71,85,105,.3)', color: '#94a3b8', fontWeight: 600, fontSize: 9, cursor: 'pointer' } }, '\u2716 Exit Replay')
+                  el('button', { onClick: exitReplay, style: { width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'rgba(71,85,105,.3)', color: '#94a3b8', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, '\u2716 Exit Replay')
                 )
           ),
 
@@ -1885,7 +1885,7 @@
           showFilter && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD0D Block Filter'),
             el('div', { style: { marginBottom: 4 } },
-              el('div', { style: { fontSize: 9, color: '#64748b', marginBottom: 2 } }, 'Material:'),
+              el('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 2 } }, 'Material:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
                 el('button', { onClick: function () { upd('filterMaterial', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, 'All'),
                 materials.map(function (m) {
@@ -1894,7 +1894,7 @@
               )
             ),
             el('div', { style: { marginBottom: 4 } },
-              el('div', { style: { fontSize: 9, color: '#64748b', marginBottom: 2 } }, 'Shape:'),
+              el('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 2 } }, 'Shape:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
                 el('button', { onClick: function () { upd('filterShape', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, 'All'),
                 shapes.map(function (s) {
@@ -1902,12 +1902,12 @@
                 })
               )
             ),
-            el('div', { style: { padding: '4px 8px', background: filterActive ? 'rgba(96,165,250,.1)' : 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9, color: filterActive ? '#93c5fd' : '#64748b', fontWeight: 600 } },
+            el('div', { style: { padding: '4px 8px', background: filterActive ? 'rgba(96,165,250,.1)' : 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 11, color: filterActive ? '#93c5fd' : '#64748b', fontWeight: 600 } },
               '\uD83D\uDD0D ' + filterCount + ' block' + (filterCount !== 1 ? 's' : '') + ' match' + (filterCount === 1 ? 'es' : '')
             ),
             filterActive && el('button', { onClick: deleteFiltered, style: {
               width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none',
-              background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff', fontWeight: 700, fontSize: 9, cursor: 'pointer'
+              background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
             } }, '\uD83D\uDDD1\uFE0F Remove ' + filterCount + ' Matching Blocks')
           ),
 
@@ -1932,7 +1932,7 @@
           // ── Wind Resistance ──
           totalBlocks > 0 && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF2C\uFE0F Wind Resistance'),
-            el('div', { style: { fontSize: 9, color: '#cbd5e1', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
+            el('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
               el('div', null, windAnalysis.emoji + ' Rating: ' + windAnalysis.rating + (windAnalysis.score != null ? ' (' + windAnalysis.score + '%)' : '')),
               el('div', null, '\uD83D\uDCD0 Frontal area: ' + windAnalysis.frontalArea + ' u\u00B2'),
               el('div', null, '\uD83D\uDCD0 Side area: ' + windAnalysis.sideArea + ' u\u00B2'),
@@ -1990,7 +1990,7 @@
             : el('canvas', { id: 'arch-studio-canvas', 'aria-label': 'Interactive architecture studio 3D visualization', tabIndex: 0, style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
 
           // Controls overlay (top-right)
-          el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 9, color: '#64748b', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
+          el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: '#64748b', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
             el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
             el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
             el('div', null, '\u2747\uFE0F Right-drag \u2014 Pan'),
@@ -2001,7 +2001,7 @@
           // Mode indicator (top-left)
           el('div', { style: { position: 'absolute', top: 8, left: 8, background: mode === 'place' ? 'rgba(34,197,94,.2)' : mode === 'erase' ? 'rgba(239,68,68,.2)' : 'rgba(168,85,247,.2)', border: '1px solid ' + (mode === 'place' ? '#22c55e' : mode === 'erase' ? '#ef4444' : '#a855f7'), borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: mode === 'place' ? '#4ade80' : mode === 'erase' ? '#f87171' : '#c084fc' } },
             (mode === 'place' ? '\u2795 Place' : mode === 'erase' ? '\u274C Erase' : '\uD83C\uDFA8 Paint') + ' Mode',
-            activeRotation > 0 && el('span', { style: { marginLeft: 6, fontSize: 9, color: '#fbbf24' } }, activeRotation + '\u00B0')
+            activeRotation > 0 && el('span', { style: { marginLeft: 6, fontSize: 11, color: '#fbbf24' } }, activeRotation + '\u00B0')
           ),
 
           // Analysis overlay (right side)
@@ -2010,7 +2010,7 @@
             el('div', { style: { textAlign: 'center', marginBottom: 10, padding: '8px 0', background: 'rgba(30,41,59,.6)', borderRadius: 10, border: '1px solid #334155' } },
               el('div', { style: { fontSize: 24, marginBottom: 2 } }, analysis.stabilityEmoji),
               el('div', { style: { fontSize: 20, fontWeight: 800, color: analysis.stability >= 70 ? '#4ade80' : analysis.stability >= 40 ? '#fbbf24' : '#f87171' } }, analysis.stability + '%'),
-              el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 600 } }, analysis.stabilityLabel)
+              el('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, analysis.stabilityLabel)
             ),
             analysisBar('Load Support', analysis.supportedPct, 100, analysis.supportedPct >= 80 ? '#4ade80' : '#f87171', '%'),
             analysisBar('Symmetry', analysis.symmetry, 100, analysis.symmetry >= 70 ? '#60a5fa' : '#f87171', '%'),
@@ -2027,7 +2027,7 @@
                 );
               })
             ),
-            analysis.unsupported > 0 && el('div', { style: { marginTop: 6, padding: '6px 8px', background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.3)', borderRadius: 8, fontSize: 9, color: '#fca5a5', lineHeight: 1.4 } },
+            analysis.unsupported > 0 && el('div', { style: { marginTop: 6, padding: '6px 8px', background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.3)', borderRadius: 8, fontSize: 11, color: '#fca5a5', lineHeight: 1.4 } },
               '\u26A0\uFE0F ' + analysis.unsupported + ' floating block' + (analysis.unsupported > 1 ? 's' : '') + '!'
             )
           ),
@@ -2036,7 +2036,7 @@
           showAI && el('div', { style: { position: 'absolute', top: 44, left: 8, width: 240, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid #334155', zIndex: 10 } },
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
               el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2 } }, '\uD83E\uDD16 AI Architect'),
-              el('button', { onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 9, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask Again')
+              el('button', { onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask Again')
             ),
             aiLoading && !aiAdvice
               ? el('div', { style: { textAlign: 'center', padding: 12, color: '#64748b', fontSize: 11 } },

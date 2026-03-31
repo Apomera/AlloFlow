@@ -733,7 +733,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#64748b' } }, badge.name),
-                  h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, badge.desc)
                 );
               })
             ),
@@ -1468,7 +1468,7 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Last 28 Days'),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 4 } },
                     dayLabels.map(function(lbl, i) {
-                      return h('div', { key: 'lbl' + i, style: { textAlign: 'center', fontSize: 9, color: '#475569', fontWeight: 700, padding: '2px 0' } }, lbl);
+                      return h('div', { key: 'lbl' + i, style: { textAlign: 'center', fontSize: 11, color: '#475569', fontWeight: 700, padding: '2px 0' } }, lbl);
                     })
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 } },

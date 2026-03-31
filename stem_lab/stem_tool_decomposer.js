@@ -1350,7 +1350,7 @@
                           );
                         })
                       ),
-                      h('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-center text-[9px]' },
+                      h('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-center text-[11px]' },
                         h('div', { className: 'bg-slate-50 rounded p-1' },
                           h('div', { className: 'font-bold text-slate-500' }, 'Atoms'),
                           h('div', { className: 'font-black text-slate-700' }, tc)
@@ -1530,7 +1530,7 @@
                           h('div', { className: 'flex-1 h-2 rounded-full overflow-hidden', style: { background: complete ? '#d1fae5' : '#f1f5f9' } },
                             h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: pct + '%', background: complete ? '#10b981' : scene.accent } })
                           ),
-                          h('span', { className: 'text-[9px] font-bold min-w-[28px] text-right ' + (complete ? 'text-emerald-600' : 'text-slate-400') }, pct + '%')
+                          h('span', { className: 'text-[11px] font-bold min-w-[28px] text-right ' + (complete ? 'text-emerald-600' : 'text-slate-400') }, pct + '%')
                         )
                       )
                     )
@@ -2046,7 +2046,7 @@
                         return h('div', { key: el.sym, className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-200' },
                           h('div', { className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[10px] font-bold', style: { background: el.color } }, el.sym),
                           h('span', { className: 'text-[10px] font-bold text-slate-700' }, el.name),
-                          el.count > 1 ? h('span', { className: 'text-[9px] text-amber-600 font-bold' }, '\u00D7' + el.count) : null
+                          el.count > 1 ? h('span', { className: 'text-[11px] text-amber-600 font-bold' }, '\u00D7' + el.count) : null
                         );
                       })
                     ),
@@ -2490,19 +2490,19 @@
             h('div', { className: 'grid grid-cols-4 gap-2 mb-3' },
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, totalAtoms),
-                h('div', { className: 'text-[9px] font-bold text-slate-500' }, 'Total Atoms')
+                h('div', { className: 'text-[11px] font-bold text-slate-500' }, 'Total Atoms')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.elements.length),
-                h('div', { className: 'text-[9px] font-bold text-slate-500' }, 'Elements')
+                h('div', { className: 'text-[11px] font-bold text-slate-500' }, 'Elements')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.bondType.split(' ')[0]),
-                h('div', { className: 'text-[9px] font-bold text-slate-500' }, 'Bond Type')
+                h('div', { className: 'text-[11px] font-bold text-slate-500' }, 'Bond Type')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.state),
-                h('div', { className: 'text-[9px] font-bold text-slate-500' }, 'State')
+                h('div', { className: 'text-[11px] font-bold text-slate-500' }, 'State')
               )
             )
           ),
@@ -2724,7 +2724,7 @@
                   title: b.desc
                 },
                   h('div', { className: 'text-xl' }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { className: 'text-[9px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-400') },
+                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-400') },
                     b.label
                   ),
                   earned && h('div', { className: 'text-[8px] text-amber-500 font-bold' }, '+' + b.xp + ' XP')

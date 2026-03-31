@@ -577,7 +577,7 @@ window.StemLab = window.StemLab || {
                 title: badge.desc
               },
                 h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                h('div', { className: 'text-[9px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
+                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
               );
             })
           )

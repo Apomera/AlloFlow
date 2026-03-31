@@ -870,7 +870,7 @@ window.SelHub = window.SelHub || {
                         }
                       },
                         h('span', { style: { fontSize: 18 } }, exp.emoji),
-                        h('span', { style: { fontSize: 9, color: isSel ? col : '#94a3b8', fontWeight: 600 } }, exp.label)
+                        h('span', { style: { fontSize: 11, color: isSel ? col : '#94a3b8', fontWeight: 600 } }, exp.label)
                       );
                     })
                   ),
@@ -1835,7 +1835,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, b.icon),
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: earned ? '#f1f5f9' : '#64748b', marginBottom: 2 } }, b.name),
                   h('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#475569', lineHeight: 1.4 } }, b.desc),
-                  earned && h('div', { style: { fontSize: 9, color: ACCENT, marginTop: 4 } }, '\u2713 ' + new Date(earnedBadges[b.id]).toLocaleDateString())
+                  earned && h('div', { style: { fontSize: 11, color: ACCENT, marginTop: 4 } }, '\u2713 ' + new Date(earnedBadges[b.id]).toLocaleDateString())
                 );
               })
             )

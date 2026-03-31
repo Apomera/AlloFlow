@@ -952,7 +952,7 @@ window.SelHub = window.SelHub || {
                       return h('div', { key: idx, className: 'mb-2 p-3 rounded-lg ' + (isMine ? 'bg-indigo-50 border border-indigo-200' : 'bg-slate-50 border border-slate-200') },
                         h('div', { className: 'flex items-center gap-2' },
                           h('span', { className: 'font-bold text-xs ' + (isMine ? 'text-indigo-700' : 'text-slate-600') }, String.fromCharCode(65 + idx) + '. ' + ch.text),
-                          isMine && h('span', { className: 'text-[9px] text-indigo-500 font-bold' }, '(your choice)')
+                          isMine && h('span', { className: 'text-[11px] text-indigo-500 font-bold' }, '(your choice)')
                         ),
                         h('p', { className: 'text-[10px] text-slate-500 mt-1' }, 'Framework: ' + ch.framework + ' | ' + renderStars(ch.stars)),
                         h('p', { className: 'text-[10px] text-slate-500 italic' }, ch.result)
@@ -1221,7 +1221,7 @@ window.SelHub = window.SelHub || {
               }, aiLoading ? '...' : '\u2192')
             ),
 
-            h('p', { className: 'text-[9px] text-slate-500 text-center' }, 'The AI will challenge your thinking with questions \u2014 not give you answers. There are no wrong responses.')
+            h('p', { className: 'text-[11px] text-slate-500 text-center' }, 'The AI will challenge your thinking with questions \u2014 not give you answers. There are no wrong responses.')
           )
         ),
 
@@ -1289,7 +1289,7 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-[10px] text-slate-600 mb-1' }, '\uD83D\uDD35 Self-interest: "' + sc.levels.preconv + '"'),
                   h('p', { className: 'text-[10px] text-slate-600 mb-1' }, '\uD83D\uDFE2 Rules/Society: "' + sc.levels.conv + '"'),
                   h('p', { className: 'text-[10px] text-slate-600' }, '\uD83D\uDFE1 Universal principles: "' + sc.levels.postconv + '"'),
-                  h('p', { className: 'text-[9px] text-slate-500 mt-2 italic' }, 'Your answer doesn\u2019t have to match any of these exactly. Most people use a blend!')
+                  h('p', { className: 'text-[11px] text-slate-500 mt-2 italic' }, 'Your answer doesn\u2019t have to match any of these exactly. Most people use a blend!')
                 )
               ),
 
@@ -1341,11 +1341,11 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: lv.level, className: 'p-3 rounded-lg border ' + colorMap[lv.color] },
                     h('div', { className: 'font-bold text-xs' }, lv.level),
                     h('p', { className: 'text-[10px] mt-1' }, lv.desc),
-                    h('p', { className: 'text-[9px] mt-1 opacity-70 italic' }, lv.ages)
+                    h('p', { className: 'text-[11px] mt-1 opacity-70 italic' }, lv.ages)
                   );
                 })
               ),
-              h('p', { className: 'text-[9px] text-slate-500 mt-3 text-center italic' }, 'Most people use a mix of all three levels depending on the situation. Growth is a journey, not a destination.')
+              h('p', { className: 'text-[11px] text-slate-500 mt-3 text-center italic' }, 'Most people use a mix of all three levels depending on the situation. Growth is a journey, not a destination.')
             ),
 
             // Retake button
@@ -1730,7 +1730,7 @@ window.SelHub = window.SelHub || {
                         h('div', { className: 'text-[10px] text-slate-500 leading-tight' }, v.desc.substring(0, 50) + '...')
                       )
                     ),
-                    isSelected && h('div', { className: 'mt-1 text-[9px] text-rose-500 font-bold' }, '\u2713 Selected')
+                    isSelected && h('div', { className: 'mt-1 text-[11px] text-rose-500 font-bold' }, '\u2713 Selected')
                   );
                 })
               ),
@@ -1906,7 +1906,7 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-[10px] font-bold text-green-700 mb-1' }, '\uD83C\uDFDB\uFE0F Frameworks you\u2019ve learned:'),
                   h('div', { className: 'flex flex-wrap gap-1' },
                     (FRAMEWORKS_BY_BAND[gradeBand] || FRAMEWORKS_BY_BAND.elementary).map(function(fw) {
-                      return h('span', { key: fw.id, className: 'px-2 py-0.5 bg-white border border-green-200 rounded text-[9px] text-green-700 font-medium' }, fw.emoji + ' ' + fw.name);
+                      return h('span', { key: fw.id, className: 'px-2 py-0.5 bg-white border border-green-200 rounded text-[11px] text-green-700 font-medium' }, fw.emoji + ' ' + fw.name);
                     })
                   )
                 )
@@ -2015,7 +2015,7 @@ window.SelHub = window.SelHub || {
                     h('div', { className: 'font-bold text-sm text-slate-800' }, phil.name),
                     h('div', { className: 'text-[10px] text-slate-500 font-medium' }, phil.years + ' \u2014 ' + phil.tagline)
                   ),
-                  (d.philosophersExplored || []).indexOf(phil.id) !== -1 && h('span', { className: 'text-[9px] text-purple-500 font-bold' }, '\u2713 Explored')
+                  (d.philosophersExplored || []).indexOf(phil.id) !== -1 && h('span', { className: 'text-[11px] text-purple-500 font-bold' }, '\u2713 Explored')
                 )
               ),
               isExpanded && h('div', { className: 'px-4 pb-4 space-y-3' },
@@ -2068,7 +2068,7 @@ window.SelHub = window.SelHub || {
                   h('div', null,
                     h('p', { className: 'font-bold text-sm ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
                     h('p', { className: 'text-[10px] ' + (earned ? 'text-amber-600' : 'text-slate-400') }, badge.desc),
-                    earned && h('p', { className: 'text-[9px] text-amber-500 font-bold mt-1' }, '\u2713 Earned!')
+                    earned && h('p', { className: 'text-[11px] text-amber-500 font-bold mt-1' }, '\u2713 Earned!')
                   )
                 )
               );

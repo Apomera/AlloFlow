@@ -1852,7 +1852,7 @@ const d = labToolData.physics;
                   },
                     React.createElement("p", { className: "text-xs font-bold " + (completed ? 'text-emerald-700' : 'text-violet-700') }, completed ? '\u2705 ' + ch.label : ch.label),
                     React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, ch.desc),
-                    React.createElement("p", { className: "text-[9px] font-bold text-amber-500 mt-1" }, '+' + ch.reward + ' XP')
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-500 mt-1" }, '+' + ch.reward + ' XP')
                   );
                 })
               )
@@ -1908,7 +1908,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Range"),
+                React.createElement("p", { className: "text-[11px] font-bold text-sky-600 uppercase" }, "Range"),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var r = d.angle * Math.PI / 180; return ((d.velocity * d.velocity * Math.sin(2 * r)) / d.gravity).toFixed(1); })() + " m")
 
@@ -1916,7 +1916,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Max Height"),
+                React.createElement("p", { className: "text-[11px] font-bold text-sky-600 uppercase" }, "Max Height"),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (vy * vy / (2 * d.gravity)).toFixed(1); })() + " m")
 
@@ -1924,7 +1924,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Flight Time"),
+                React.createElement("p", { className: "text-[11px] font-bold text-sky-600 uppercase" }, "Flight Time"),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (2 * vy / d.gravity).toFixed(2); })() + " s")
 

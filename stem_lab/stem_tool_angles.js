@@ -576,7 +576,7 @@ window.StemLab = window.StemLab || {
           h('line', { key: 'tk' + a, x1: cx + (r - tickLen) * Math.cos(-ar), y1: cy + (r - tickLen) * Math.sin(-ar), x2: cx + (r + 2) * Math.cos(-ar), y2: cy + (r + 2) * Math.sin(-ar), stroke: major ? '#7c3aed' : '#a78bfa', strokeWidth: major ? 2 : mid ? 1.5 : 0.8 })
         ];
         if (a % 30 === 0) {
-          els.push(h('text', { key: 'tl' + a, x: cx + (r + 16) * Math.cos(-ar), y: cy + (r + 16) * Math.sin(-ar) + 3, textAnchor: 'middle', className: 'text-[9px] fill-purple-400 font-mono select-none' }, a + '\u00B0'));
+          els.push(h('text', { key: 'tl' + a, x: cx + (r + 16) * Math.cos(-ar), y: cy + (r + 16) * Math.sin(-ar) + 3, textAnchor: 'middle', className: 'text-[11px] fill-purple-400 font-mono select-none' }, a + '\u00B0'));
         }
         return h(React.Fragment, { key: 'tg' + a }, els);
       });
@@ -713,7 +713,7 @@ window.StemLab = window.StemLab || {
               // Center dot
               h('circle', { cx: cx, cy: cy, r: 4, fill: '#334155' }),
               // Vertex label
-              h('text', { x: cx - 12, y: cy + 5, className: 'text-[9px] fill-slate-500 font-mono select-none' }, 'V')
+              h('text', { x: cx - 12, y: cy + 5, className: 'text-[11px] fill-slate-500 font-mono select-none' }, 'V')
             ),
             // Overlay: type badge
             h('div', { className: 'absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold ' + cc.bg + ' ' + cc.text + ' ' + cc.border + ' border' }, angleClass)
@@ -792,17 +792,17 @@ window.StemLab = window.StemLab || {
             complementary != null && h('div', { className: 'flex-1 bg-blue-50 rounded-lg p-2 border border-blue-100 text-center min-w-[120px]' },
               h('div', { className: 'text-[10px] font-bold text-blue-500 uppercase' }, 'Complementary'),
               h('div', { className: 'text-sm font-bold text-blue-700' }, complementary + '\u00B0'),
-              h('div', { className: 'text-[9px] text-blue-400' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
+              h('div', { className: 'text-[11px] text-blue-400' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
             ),
             supplementary != null && h('div', { className: 'flex-1 bg-teal-50 rounded-lg p-2 border border-teal-100 text-center min-w-[120px]' },
               h('div', { className: 'text-[10px] font-bold text-teal-500 uppercase' }, 'Supplementary'),
               h('div', { className: 'text-sm font-bold text-teal-700' }, supplementary + '\u00B0'),
-              h('div', { className: 'text-[9px] text-teal-400' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
+              h('div', { className: 'text-[11px] text-teal-400' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
             ),
             h('div', { className: 'flex-1 bg-indigo-50 rounded-lg p-2 border border-indigo-100 text-center min-w-[120px]' },
               h('div', { className: 'text-[10px] font-bold text-indigo-500 uppercase' }, 'Vertical Angle'),
               h('div', { className: 'text-sm font-bold text-indigo-700' }, verticalAngle + '\u00B0'),
-              h('div', { className: 'text-[9px] text-indigo-400' }, 'Vertical angles are equal!')
+              h('div', { className: 'text-[11px] text-indigo-400' }, 'Vertical angles are equal!')
             )
           ),
 
@@ -1130,7 +1130,7 @@ window.StemLab = window.StemLab || {
                 // Hour numbers
                 [1,2,3,4,5,6,7,8,9,10,11,12].map(function(n) {
                   var na = (n * 30 - 90) * Math.PI / 180;
-                  return h('text', { key: n, x: 60 + 42 * Math.cos(na), y: 60 + 42 * Math.sin(na) + 4, textAnchor: 'middle', className: 'text-[9px] fill-sky-600 font-bold select-none' }, n);
+                  return h('text', { key: n, x: 60 + 42 * Math.cos(na), y: 60 + 42 * Math.sin(na) + 4, textAnchor: 'middle', className: 'text-[11px] fill-sky-600 font-bold select-none' }, n);
                 }),
                 // Hour hand
                 (function() {

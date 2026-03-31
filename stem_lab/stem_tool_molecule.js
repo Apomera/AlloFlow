@@ -1179,7 +1179,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("circle", { cx: a.x + 16, cy: a.y - 16, r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 1.5 }),
 
-                      React.createElement("text", { x: a.x + 16, y: a.y - 12.5, textAnchor: "middle", fill: "white", style: { fontSize: '9px', fontWeight: 'bold', pointerEvents: 'none' } }, "\u2715")
+                      React.createElement("text", { x: a.x + 16, y: a.y - 12.5, textAnchor: "middle", fill: "white", style: { fontSize: '11px', fontWeight: 'bold', pointerEvents: 'none' } }, "\u2715")
 
                     )
 
@@ -1477,7 +1477,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       detail && React.createElement("button", {
                         onClick: () => speakText(d.selectedElement.name + '. ' + detail.desc),
-                        className: "ml-1 px-1.5 py-0.5 rounded text-[9px] bg-slate-100 text-slate-500 hover:bg-slate-200 inline-flex items-center"
+                        className: "ml-1 px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-500 hover:bg-slate-200 inline-flex items-center"
                       }, "🔊"),
 
                     ),
@@ -1534,7 +1534,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\u269B\uFE0F Bohr Model"),
 
-                      React.createElement("span", { className: "ml-2 text-[9px] text-slate-400 font-normal" },
+                      React.createElement("span", { className: "ml-2 text-[11px] text-slate-400 font-normal" },
                         "Config: " + getElectronConfig(d.selectedElement.n) +
                         " | Valence: " + getValenceElectrons(d.selectedElement.n) + "e⁻" +
                         (ELECTRONEGATIVITY[d.selectedElement.s] ? " | EN: " + ELECTRONEGATIVITY[d.selectedElement.s] : "")
@@ -1820,7 +1820,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                           })()),
 
-                          React.createElement("p", { className: "text-[9px] text-slate-400 italic mt-1" }, "\u26A1 Electrons orbit the nucleus in energy levels called \"shells.\" Inner shells fill first before outer ones begin.")
+                          React.createElement("p", { className: "text-[11px] text-slate-400 italic mt-1" }, "\u26A1 Electrons orbit the nucleus in energy levels called \"shells.\" Inner shells fill first before outer ones begin.")
 
                         )
 
@@ -1874,7 +1874,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', t('stem.periodic.lanthanide')], ['actinide', t('stem.periodic.actinide')]].map(([cat, label]) =>
 
-                  React.createElement("span", { key: cat, className: "px-1.5 py-0.5 rounded text-[9px] font-bold border " + (catColors[cat] || '') }, label)
+                  React.createElement("span", { key: cat, className: "px-1.5 py-0.5 rounded text-[11px] font-bold border " + (catColors[cat] || '') }, label)
 
                 )
 
@@ -1990,10 +1990,10 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-xl" }, r.emoji),
                       React.createElement("span", { className: "text-sm font-bold text-indigo-800" }, r.name),
-                      React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[9px] font-bold " +
+                      React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[11px] font-bold " +
                         (r.difficulty === 1 ? 'bg-green-100 text-green-700' : r.difficulty === 2 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') },
                         r.difficulty === 1 ? 'Easy' : r.difficulty === 2 ? 'Medium' : 'Hard'),
-                      React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600" }, r.type)
+                      React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600" }, r.type)
                     ),
                     React.createElement("p", { className: "text-xs text-indigo-600" }, r.desc)
                   ),

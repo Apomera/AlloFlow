@@ -1209,7 +1209,7 @@ window.SelHub = window.SelHub || {
               // Goal of the Week spotlight
               goalOfTheWeek ? h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(52,211,153,0.06))', border: '1px solid rgba(34,197,94,0.20)', display: 'flex', alignItems: 'center', gap: 10 } },
                 h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1 } },
-                  h('div', { style: { fontSize: 9, fontWeight: 'bold', color: '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2B50 Goal of the Week'),
+                  h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2B50 Goal of the Week'),
                   h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 'bold' } }, goalOfTheWeek.text || '(unnamed)'),
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
                     h('div', { style: { flex: 1, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', maxWidth: 120 } },
@@ -1281,7 +1281,7 @@ window.SelHub = window.SelHub || {
                     [1, 2, 3, 4, 5].map(function(lvl) {
                       var info = DIFFICULTY_LABELS[lvl - 1];
                       var active = goalDiff === lvl;
-                      return h('button', { key: lvl, onClick: function() { updateGoal(goal.id, { difficulty: lvl }); sfxClick(); }, title: info.label + ' (' + info.xpMult + 'x XP)', style: { padding: '2px 8px', borderRadius: 12, background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(99,102,241,0.1)', color: active ? '#fbbf24' : '#64748b', fontSize: 9, fontWeight: 'bold', cursor: 'pointer' } }, getDifficultyFlames(lvl) + ' ' + info.label);
+                      return h('button', { key: lvl, onClick: function() { updateGoal(goal.id, { difficulty: lvl }); sfxClick(); }, title: info.label + ' (' + info.xpMult + 'x XP)', style: { padding: '2px 8px', borderRadius: 12, background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(99,102,241,0.1)', color: active ? '#fbbf24' : '#64748b', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, getDifficultyFlames(lvl) + ' ' + info.label);
                     })
                   ) : null,
                   // Progress bar with milestone markers
@@ -1336,15 +1336,15 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 14 } },
                     h('div', { style: { textAlign: 'center' } },
                       h('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#6366f1' } }, String(daysTaken)),
-                      h('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'Day' + (daysTaken !== 1 ? 's' : ''))
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Day' + (daysTaken !== 1 ? 's' : ''))
                     ),
                     h('div', { style: { textAlign: 'center' } },
                       h('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#a855f7' } }, String(stepsCount)),
-                      h('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'Steps Done')
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Steps Done')
                     ),
                     h('div', { style: { textAlign: 'center' } },
                       h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24' } }, getDifficultyFlames(celebGoal.difficulty || 1)),
-                      h('div', { style: { fontSize: 9, color: '#94a3b8' } }, diffInfo.label)
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, diffInfo.label)
                     )
                   ),
                   // "What I Learned" textarea
@@ -1380,8 +1380,8 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { fontSize: 10, letterSpacing: -2 } }, getDifficultyFlames(goalDiffLvl)),
                       h('span', { style: { fontSize: 10, color: '#34d399' } }, '\uD83C\uDF89 Done!'),
                       // Show celebration button if no journal yet
-                      !goal.completionJournal ? h('button', { onClick: function() { upd({ celebratingGoalId: goal.id }); }, style: { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, padding: '3px 8px', color: '#34d399', fontSize: 9, fontWeight: 'bold', cursor: 'pointer', marginLeft: 2 } }, '\uD83C\uDF89 Celebrate') : null,
-                      !hasReflections ? h('button', { onClick: function() { upd({ reflectingGoalId: isReflecting ? null : goal.id }); }, style: { background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 6, padding: '3px 8px', color: '#c4b5fd', fontSize: 9, fontWeight: 'bold', cursor: 'pointer', marginLeft: 4 } }, '\uD83D\uDCDD Reflect') : null,
+                      !goal.completionJournal ? h('button', { onClick: function() { upd({ celebratingGoalId: goal.id }); }, style: { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, padding: '3px 8px', color: '#34d399', fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginLeft: 2 } }, '\uD83C\uDF89 Celebrate') : null,
+                      !hasReflections ? h('button', { onClick: function() { upd({ reflectingGoalId: isReflecting ? null : goal.id }); }, style: { background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 6, padding: '3px 8px', color: '#c4b5fd', fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginLeft: 4 } }, '\uD83D\uDCDD Reflect') : null,
                       h('button', { onClick: function() { shareGoalToClipboard(goal); }, style: { background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: 11, padding: 2 } }, '\uD83D\uDCE4')
                     ),
                     // Completion stats line
@@ -1451,7 +1451,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.10), rgba(234,179,8,0.06))', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', gap: 10 } },
                   h('span', { style: { fontSize: 18 } }, '\u2B50'),
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: 9, fontWeight: 'bold', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, 'Habit of the Week'),
+                    h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, 'Habit of the Week'),
                     h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 'bold' } }, hotw.name),
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 } },
                       h('span', { style: { fontSize: 10 } }, hCat.emoji),
@@ -1511,12 +1511,12 @@ window.SelHub = window.SelHub || {
                         var dt = new Date(wd + 'T12:00:00');
                         var dayName = dayLabels[dt.getDay()];
                         var isToday = wd === new Date().toISOString().slice(0, 10);
-                        return h('th', { key: wd, style: { padding: '6px 4px', color: isToday ? '#a5b4fc' : '#64748b', fontWeight: isToday ? 'bold' : 'normal', fontSize: 9, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)', minWidth: 32 } },
+                        return h('th', { key: wd, style: { padding: '6px 4px', color: isToday ? '#a5b4fc' : '#64748b', fontWeight: isToday ? 'bold' : 'normal', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)', minWidth: 32 } },
                           h('div', null, dayName),
                           h('div', { style: { fontSize: 8 } }, wd.slice(5))
                         );
                       }),
-                      h('th', { style: { padding: '6px 4px', color: '#94a3b8', fontSize: 9, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)' } }, '%')
+                      h('th', { style: { padding: '6px 4px', color: '#94a3b8', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)' } }, '%')
                     )
                   ),
                   h('tbody', null,
@@ -1580,7 +1580,7 @@ window.SelHub = window.SelHub || {
                         var barH = Math.max(4, Math.round((cd.pct / 100) * maxBarH));
                         var barColor = cd.pct >= 80 ? '#22c55e' : cd.pct >= 50 ? '#f59e0b' : cd.pct > 0 ? '#6366f1' : 'rgba(255,255,255,0.06)';
                         return h('div', { key: ci, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 } },
-                          h('span', { style: { fontSize: 9, fontWeight: 'bold', color: cd.pct >= 80 ? '#34d399' : '#94a3b8' } }, cd.pct + '%'),
+                          h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cd.pct >= 80 ? '#34d399' : '#94a3b8' } }, cd.pct + '%'),
                           h('div', { style: { width: '100%', maxWidth: 28, height: barH, borderRadius: 4, background: barColor, transition: 'height 0.3s', border: isToday ? '2px solid #a5b4fc' : 'none' } }),
                           h('span', { style: { fontSize: 8, color: isToday ? '#a5b4fc' : '#64748b', fontWeight: isToday ? 'bold' : 'normal' } }, dayName)
                         );
@@ -1902,7 +1902,7 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: si, style: { textAlign: 'center', padding: 12, borderRadius: 10, background: s.color + '11', border: '1px solid ' + s.color + '33' } },
                     h('div', { style: { fontSize: 10, marginBottom: 4 } }, s.emoji),
                     h('div', { style: { fontSize: 22, fontWeight: 'bold', color: s.color } }, String(s.val)),
-                    h('div', { style: { fontSize: 9, color: '#64748b' } }, s.label)
+                    h('div', { style: { fontSize: 11, color: '#64748b' } }, s.label)
                   );
                 })
               ),

@@ -595,7 +595,7 @@
                 el('div', { style: { marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                   el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 } },
                     '\uD83D\uDCC1 Case #' + (casesClosed + 1) + (aiGeneratedEmail ? '' : ' \u2022 Email ' + ((phishIdx % filteredEmails.length) + 1) + '/' + filteredEmails.length),
-                    aiGeneratedEmail && el('span', { style: { padding: '2px 6px', borderRadius: 6, background: 'rgba(168,85,247,0.2)', color: '#c084fc', fontSize: 9, fontWeight: 800, border: '1px solid rgba(168,85,247,0.3)' } }, '\uD83E\uDD16 AI')
+                    aiGeneratedEmail && el('span', { style: { padding: '2px 6px', borderRadius: 6, background: 'rgba(168,85,247,0.2)', color: '#c084fc', fontSize: 11, fontWeight: 800, border: '1px solid rgba(168,85,247,0.3)' } }, '\uD83E\uDD16 AI')
                   ),
                   phishMode === 'triage' && !phishAnswer && triageActive && el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                     el('div', { style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
@@ -838,7 +838,7 @@
                       return el('div', { key: si, style: { marginBottom: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(0,0,0,0.2)' } },
                         el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
                           el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 700 } }, spd.icon + ' ' + spd.label),
-                          el('span', { style: { color: '#64748b', fontSize: 9, fontWeight: 600 } }, spd.rate.toExponential(0) + ' guesses/sec')
+                          el('span', { style: { color: '#64748b', fontSize: 11, fontWeight: 600 } }, spd.rate.toExponential(0) + ' guesses/sec')
                         ),
                         el('div', { style: { width: '100%', height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                           el('div', { style: { width: barPct + '%', height: '100%', borderRadius: 3, background: barColor, transition: 'width 0.8s ease-out' } })
@@ -1006,7 +1006,7 @@
                       el('span', { style: { color: '#64748b', fontSize: 10, fontFamily: 'monospace' } }, String(pkt.port)),
                       el('div', null,
                         el('div', { style: { color: '#cbd5e1', fontSize: 10, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, pkt.payload),
-                        netShowAnswer && el('div', { style: { color: pkt.suspicious ? '#fca5a5' : '#6ee7b7', fontSize: 9, marginTop: 2, fontWeight: 600 } }, pkt.reason)
+                        netShowAnswer && el('div', { style: { color: pkt.suspicious ? '#fca5a5' : '#6ee7b7', fontSize: 11, marginTop: 2, fontWeight: 600 } }, pkt.reason)
                       )
                     );
                   })

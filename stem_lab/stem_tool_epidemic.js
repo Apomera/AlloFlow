@@ -825,7 +825,7 @@ window.StemLab = window.StemLab || {
           });
           // tooltip
           hoverElements.push(h('rect', { key: 'ttbg', x: Math.min(hx + 8, w - 130), y: padT, width: 120, height: 16 + compartments.length * 14, rx: 4, fill: 'rgba(15,23,42,0.9)' }));
-          hoverElements.push(h('text', { key: 'ttd', x: Math.min(hx + 14, w - 124), y: padT + 12, fill: 'white', fontSize: 9, fontWeight: 'bold' }, 'Day ' + closest.day));
+          hoverElements.push(h('text', { key: 'ttd', x: Math.min(hx + 14, w - 124), y: padT + 12, fill: 'white', fontSize: 11, fontWeight: 'bold' }, 'Day ' + closest.day));
           compartments.forEach(function(comp, ci) {
             hoverElements.push(h('text', { key: 'tt' + comp, x: Math.min(hx + 14, w - 124), y: padT + 26 + ci * 14, fill: compColors[comp], fontSize: 9 },
               compLabels[comp] + ': ' + closest[comp].toFixed(1) + '%'));
@@ -1681,7 +1681,7 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'absolute inset-0 flex items-center justify-center text-[8px] font-bold ' + (hospPct > 50 ? 'text-white' : 'text-slate-600') },
                       hospPct.toFixed(0) + '% used (' + hospitalBeds + '% beds)')
                   ),
-                  exceeded && h('p', { className: 'text-[9px] font-bold text-red-600 mt-0.5' }, '\u26A0\uFE0F HOSPITALS OVERWHELMED \u2014 mortality increases!')
+                  exceeded && h('p', { className: 'text-[11px] font-bold text-red-600 mt-0.5' }, '\u26A0\uFE0F HOSPITALS OVERWHELMED \u2014 mortality increases!')
                 );
               })()
             )

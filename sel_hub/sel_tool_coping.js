@@ -816,7 +816,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#64748b' } }, badge.name),
-                  h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, badge.desc)
                 );
               })
             ),
@@ -2134,8 +2134,8 @@ window.SelHub = window.SelHub || {
                       })
                     ),
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4 } },
-                      h('span', { style: { fontSize: 9, color: '#64748b' } }, 'Oldest'),
-                      h('span', { style: { fontSize: 9, color: '#64748b' } }, 'Recent')
+                      h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Oldest'),
+                      h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Recent')
                     )
                   );
                 })(),
@@ -2149,7 +2149,7 @@ window.SelHub = window.SelHub || {
                     },
                       h('div', { style: { fontSize: 18 } }, type.icon),
                       h('div', { style: { fontSize: 14, fontWeight: 700, color: count > 0 ? type.color : '#64748b' } }, count),
-                      h('div', { style: { fontSize: 9, color: '#94a3b8' } }, type.label)
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, type.label)
                     );
                   })
                 ),
@@ -2173,7 +2173,7 @@ window.SelHub = window.SelHub || {
                         h('span', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 13 } },
                           strat ? (strat.name[band] || strat.name.elementary) : entry.strategyId
                         ),
-                        typeObj && h('span', { style: { fontSize: 9, padding: '2px 6px', borderRadius: 6, background: typeObj.color + '22', color: typeObj.color } }, typeObj.label),
+                        typeObj && h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: typeObj.color + '22', color: typeObj.color } }, typeObj.label),
                         h('span', { style: { fontSize: 10, color: '#64748b' } }, time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
                       ),
                       // Effectiveness rating
@@ -2257,7 +2257,7 @@ window.SelHub = window.SelHub || {
                 onMouseLeave: function(e) { e.currentTarget.style.borderColor = '#334155'; }
               },
                 h('span', { style: { fontSize: 22 } }, mood.emoji),
-                h('span', { style: { fontSize: 9, color: '#94a3b8' } }, mood.label)
+                h('span', { style: { fontSize: 11, color: '#94a3b8' } }, mood.label)
               );
             })
           )

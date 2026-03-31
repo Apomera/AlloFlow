@@ -1306,7 +1306,7 @@ window.SelHub = window.SelHub || {
                    isViewed ? 'border-cyan-300 bg-cyan-50' : 'border-slate-200 bg-white')
               },
                 h('div', { className: 'text-sm font-bold ' + (isCurrent ? 'text-rose-700' : 'text-slate-800') }, m.month.substring(0, 3)),
-                h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, m.celebrations.length + ' events'),
+                h('div', { className: 'text-[11px] text-slate-500 mt-0.5' }, m.celebrations.length + ' events'),
                 isCurrent && h('div', { className: 'text-[8px] text-rose-500 font-bold mt-0.5' }, 'This Month'),
                 isViewed && !isCurrent && h('div', { className: 'text-[8px] text-cyan-500 font-bold mt-0.5' }, '\u2713')
               );
