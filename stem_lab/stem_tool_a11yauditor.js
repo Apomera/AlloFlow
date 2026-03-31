@@ -45,7 +45,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
     label: 'Digital Accessibility Lab',
     desc: 'Audit websites and documents for WCAG 2.1 AA accessibility compliance. Learn about digital accessibility by analyzing real-world content.',
     color: 'teal',
-    category: 'creative',
+    category: 'coding',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -184,6 +184,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('p', { className: 'text-xs text-slate-500' }, 'Audit websites and documents for WCAG 2.1 AA compliance')
           ),
           auditsCompleted > 0 && h('span', { className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
+        ),
+
+        // Student-friendly intro (collapsible)
+        !d.introHidden && h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-2xl p-5 relative' },
+          h('button', { onClick: function() { upd('introHidden', true); }, className: 'absolute top-3 right-3 text-teal-400 hover:text-teal-600 text-xs font-bold', 'aria-label': 'Hide intro' }, '\u2716'),
+          h('h3', { className: 'text-base font-black text-teal-800 mb-2' }, '\u267F What is Digital Accessibility?'),
+          h('p', { className: 'text-sm text-teal-700 leading-relaxed mb-3' },
+            parseInt(gradeLevel, 10) <= 5
+              ? 'Imagine you visit a website but you can\u2019t see the screen. A special tool called a screen reader reads the page aloud to you. But what if the pictures don\u2019t have descriptions? Or the buttons don\u2019t say what they do? That\u2019s what happens when a website isn\u2019t accessible. In this lab, YOU become a detective \u2014 finding problems that make websites hard to use for people with disabilities!'
+              : parseInt(gradeLevel, 10) <= 8
+                ? 'Over 1 billion people worldwide have disabilities that affect how they use technology. Screen readers, keyboard navigation, and voice control are tools people rely on every day. But these tools only work when websites are built correctly. WCAG (Web Content Accessibility Guidelines) are the rules that make the internet work for everyone. In this lab, you\u2019ll audit real websites and learn to spot barriers that block people with disabilities.'
+                : '15% of the global population has a disability. Digital accessibility \u2014 governed by WCAG 2.1 AA standards and enforced by laws like the ADA and Section 508 \u2014 ensures websites, apps, and documents are usable by people with visual, auditory, motor, and cognitive disabilities. In this lab, you\u2019ll perform professional-grade accessibility audits, learn the technical criteria, and understand the human impact of each barrier.'
+          ),
+          h('div', { className: 'flex flex-wrap gap-2' },
+            [
+              { icon: '\uD83D\uDC41\uFE0F', label: 'Blind & low vision', desc: 'Need screen readers and alt text' },
+              { icon: '\uD83D\uDC42', label: 'Deaf & hard of hearing', desc: 'Need captions and transcripts' },
+              { icon: '\u270B', label: 'Motor disabilities', desc: 'Need keyboard-only navigation' },
+              { icon: '\uD83E\uDDE0', label: 'Cognitive disabilities', desc: 'Need clear language and structure' }
+            ].map(function(d2) {
+              return h('div', { key: d2.label, className: 'flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 border border-teal-100 text-xs' },
+                h('span', null, d2.icon),
+                h('div', null,
+                  h('span', { className: 'font-bold text-teal-800' }, d2.label),
+                  h('span', { className: 'text-teal-600 ml-1' }, '\u2014 ' + d2.desc)
+                )
+              );
+            })
+          )
         ),
 
         // Tabs
