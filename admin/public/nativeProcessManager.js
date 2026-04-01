@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { URL } = require('url');
+const crypto = require('crypto');
 
 const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
 const BINARIES_DIR = path.join(ALLOFLOW_DIR, 'bin');
@@ -974,8 +975,57 @@ async function pullOllamaModel(modelId, onProgress) {
 }
 
 /**
+ * Derive a machine-specific encryption key from hostname and fixed salt.
+ * Uses SHA-256 to create a consistent 32-byte key.
+ */
+function getMachineKey() {
+  const hostname = os.hostname();
+  const salt = 'alloflow-credential-encryption-v1';
+  return crypto.createHash('sha256').update(hostname + salt).digest();
+}
+
+/**
+ * Encrypt a JSON object using AES-256-GCM.
+ * Returns { iv, encryptedData, authTag } in hex format.
+ */
+function encryptData(data) {
+  const key = getMachineKey();
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  
+  const jsonStr = JSON.stringify(data);
+  let encrypted = cipher.update(jsonStr, 'utf-8', 'hex');
+  encrypted += cipher.final('hex');
+  
+  const authTag = cipher.getAuthTag();
+  
+  return {
+    iv: iv.toString('hex'),
+    encryptedData: encrypted,
+    authTag: authTag.toString('hex')
+  };
+}
+
+/**
+ * Decrypt data encrypted with encryptData().
+ * Input: { iv, encryptedData, authTag } in hex format.
+ * Returns: Parsed JSON object.
+ */
+function decryptData(encrypted) {
+  const key = getMachineKey();
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(encrypted.iv, 'hex'));
+  
+  decipher.setAuthTag(Buffer.from(encrypted.authTag, 'hex'));
+  
+  let decrypted = decipher.update(encrypted.encryptedData, 'hex', 'utf-8');
+  decrypted += decipher.final('utf-8');
+  
+  return JSON.parse(decrypted);
+}
+
+/**
  * Auto-create a PocketBase admin account if one doesn't exist.
- * Generates a secure random password and stores credentials in ~/.alloflow/pb_admin.json
+ * Generates a secure random password and stores encrypted credentials in ~/.alloflow/pb_admin.json
  * @returns {Promise<{email: string, password: string}>}
  */
 function createPocketBaseAdmin() {
@@ -997,12 +1047,13 @@ function createPocketBaseAdmin() {
     // Check if admin credentials already exist
     if (fs.existsSync(credFile)) {
       try {
-        const creds = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
+        const encrypted = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
+        const creds = decryptData(encrypted);
         console.log('[native-pm] PocketBase admin already configured');
         resolve(creds);
         return;
       } catch (err) {
-        console.warn('[native-pm] Could not read existing pb_admin.json, will regenerate');
+        console.warn('[native-pm] Could not read existing pb_admin.json, will regenerate:', err.message);
       }
     }
 
@@ -1013,9 +1064,15 @@ function createPocketBaseAdmin() {
       return;
     }
 
+    // Ensure the PocketBase data directory exists
+    const pbDataDir = path.join(getServiceDataDir('pocketbase'), 'pb_data');
+    if (!fs.existsSync(pbDataDir)) {
+      fs.mkdirSync(pbDataDir, { recursive: true });
+    }
+
     console.log('[native-pm] Creating PocketBase admin account...');
     const proc = spawn(pbPath, ['admin', 'create', email, '--password', password], {
-      cwd: path.join(DATA_DIR, 'pb_data'),
+      cwd: pbDataDir,
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -1035,11 +1092,12 @@ function createPocketBaseAdmin() {
 
     proc.on('close', (code) => {
       if (code === 0) {
-        // Success: save credentials
+        // Success: save encrypted credentials
         const creds = { email, password, createdAt: new Date().toISOString() };
         try {
-          fs.writeFileSync(credFile, JSON.stringify(creds, null, 2));
-          console.log('[native-pm] PocketBase admin created:', email);
+          const encrypted = encryptData(creds);
+          fs.writeFileSync(credFile, JSON.stringify(encrypted, null, 2));
+          console.log('[native-pm] PocketBase admin created and credentials encrypted:', email);
           resolve(creds);
         } catch (writeErr) {
           console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
@@ -1050,8 +1108,9 @@ function createPocketBaseAdmin() {
         // Try to check if it exists, if not generate default creds anyway
         const creds = { email, password, createdAt: new Date().toISOString() };
         try {
-          fs.writeFileSync(credFile, JSON.stringify(creds, null, 2));
-          console.log('[native-pm] Saved PocketBase admin credentials (may not be first-time creation)');
+          const encrypted = encryptData(creds);
+          fs.writeFileSync(credFile, JSON.stringify(encrypted, null, 2));
+          console.log('[native-pm] Saved encrypted PocketBase admin credentials (may not be first-time creation)');
           resolve(creds);
         } catch (writeErr) {
           console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
@@ -1062,15 +1121,41 @@ function createPocketBaseAdmin() {
 
     proc.on('error', (err) => {
       console.warn('[native-pm] Failed to create PocketBase admin:', err.message);
-      // Even if creation failed, save the creds for user reference
+      // Even if creation failed, save the encrypted creds for user reference
       const creds = { email, password, createdAt: new Date().toISOString() };
       try {
-        fs.writeFileSync(credFile, JSON.stringify(creds, null, 2));
+        const encrypted = encryptData(creds);
+        fs.writeFileSync(credFile, JSON.stringify(encrypted, null, 2));
       } catch (writeErr) {
         console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
       }
       resolve(creds); // Resolve anyway so deployment continues
     });
+  });
+}
+
+/**
+ * Read and decrypt PocketBase admin credentials from ~/.alloflow/pb_admin.json
+ * @returns {Promise<{email: string, password: string} | null>}
+ */
+function getPocketBaseAdmin() {
+  return new Promise((resolve) => {
+    const credFile = path.join(ALLOFLOW_DIR, 'pb_admin.json');
+    
+    if (!fs.existsSync(credFile)) {
+      resolve(null);
+      return;
+    }
+    
+    try {
+      const encrypted = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
+      const creds = decryptData(encrypted);
+      console.log('[native-pm] Successfully decrypted PocketBase admin credentials');
+      resolve(creds);
+    } catch (err) {
+      console.error('[native-pm] Failed to decrypt PocketBase credentials:', err.message);
+      resolve(null);
+    }
   });
 }
 
@@ -1089,6 +1174,7 @@ module.exports = {
   uninstallAll,
   pullOllamaModel,
   createPocketBaseAdmin,
+  getPocketBaseAdmin,
   BINARIES_DIR,
   DATA_DIR,
   ALLOFLOW_DIR
