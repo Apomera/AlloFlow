@@ -1,6 +1,6 @@
 {
   "name": "alloflow-admin",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "AlloFlow Admin - Setup Wizard & Management",
   "main": "public/main.js",
   "author": "AlloFlow Team",
@@ -54,7 +54,11 @@
     },
     "extraResources": [
       "docker_templates/flux-server/flux_server.py",
-      "uninstall.bat"
+      "uninstall.bat",
+      {
+        "from": "../prismflow-deploy/build",
+        "to": "webapp"
+      }
     ],
     "nsis": {
       "oneClick": false,

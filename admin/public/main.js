@@ -4,6 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const nativePM = require('./nativeProcessManager');
 const { startSearchServer, stopSearchServer } = require('./searchModule');
+const { startWebAppServer, stopWebAppServer, getWebAppPort } = require('./webAppServer');
 
 const isDev = !app.isPackaged;
 let mainWindow;
@@ -95,6 +96,14 @@ app.on('ready', async () => {
     console.error('[app:ready] Failed to start search server:', err.message);
   }
 
+  // Start the web app server (serves AlloFlow locally)
+  try {
+    const webPort = await startWebAppServer(3000, app.isPackaged);
+    console.log('[app:ready] Web app server started on port', webPort);
+  } catch (err) {
+    console.error('[app:ready] Failed to start web app server:', err.message);
+  }
+
   // If already configured, start native services
   const config = getConfig();
   if (config && config.deploymentType === 'local') {
@@ -118,6 +127,7 @@ app.on('ready', async () => {
 app.on('window-all-closed', () => {
   nativePM.stopAllServices();
   stopSearchServer();
+  stopWebAppServer();
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -126,6 +136,7 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   nativePM.stopAllServices();
   stopSearchServer();
+  stopWebAppServer();
 });
 
 app.on('activate', () => {
@@ -542,15 +553,28 @@ async function startDeployment(setupData, onProgress) {
       ...setupData
     });
     
+    // PHASE 6: Open AlloFlow web app in user's browser
+    const webAppPort = getWebAppPort();
+    const webAppUrl = `http://localhost:${webAppPort}`;
+    onProgress({ phase: 'launching', status: `Launching AlloFlow at ${webAppUrl}...`, progress: 98 });
+    try {
+      const { shell } = require('electron');
+      await shell.openExternal(webAppUrl);
+      console.log('[deploy:start] Opened AlloFlow web app in browser at', webAppUrl);
+    } catch (err) {
+      console.warn('[deploy:start] Could not open browser:', err.message);
+    }
+
     onProgress({
       phase: 'complete',
-      status: 'Setup complete!',
+      status: `Setup complete! AlloFlow is running at ${webAppUrl}`,
       progress: 100,
-      fluxGpuStatus
+      fluxGpuStatus,
+      webAppUrl
     });
     
     console.log('[deploy:start] Native deployment completed successfully');
-    return { success: true, fluxGpuStatus };
+    return { success: true, fluxGpuStatus, webAppUrl };
   } catch (err) {
     console.error('[deploy:start] Deployment failed:', err.message);
     return { success: false, error: err.message };

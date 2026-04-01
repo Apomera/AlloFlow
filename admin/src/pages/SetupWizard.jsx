@@ -49,6 +49,7 @@ export default function SetupWizard({ onComplete }) {
   const [selectedServices, setSelectedServices] = useState([]);
   const [deploymentProgress, setDeploymentProgress] = useState(null);
   const [gpuStatus, setGpuStatus] = useState(null); // { strategy, label, warning } or { gpu_accelerated, device, fallback_reason }
+  const [webAppUrl, setWebAppUrl] = useState(null);
 
   // Handle deployment type selection
   const handleSelectDeployment = async (typeId) => {
@@ -197,6 +198,9 @@ export default function SetupWizard({ onComplete }) {
               // Capture final Flux GPU status from deployment result
               if (event.fluxGpuStatus) {
                 setGpuStatus(prev => ({ ...prev, ...event.fluxGpuStatus }));
+              }
+              if (event.webAppUrl) {
+                setWebAppUrl(event.webAppUrl);
               }
               handleDeploymentComplete(setupData);
             }
@@ -702,6 +706,22 @@ export default function SetupWizard({ onComplete }) {
           <div className="info-box">
             <p>Launching dashboard...</p>
           </div>
+
+          {webAppUrl && (
+            <div style={{
+              background: '#e8f4fd', border: '1px solid #0ea5e9', borderRadius: '8px',
+              padding: '16px', margin: '16px 0', color: '#0c4a6e', textAlign: 'center'
+            }}>
+              <p style={{fontWeight: 'bold', margin: '0 0 8px 0'}}>🌐 AlloFlow is running locally</p>
+              <p style={{margin: '0 0 8px 0'}}>
+                Open <a href={webAppUrl} target="_blank" rel="noopener noreferrer"
+                  style={{color: '#0ea5e9', fontWeight: 'bold'}}>{webAppUrl}</a> in your browser
+              </p>
+              <p style={{margin: 0, fontSize: '0.85em', color: '#64748b'}}>
+                The app is auto-configured to use your local AI services
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );
