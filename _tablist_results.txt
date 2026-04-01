@@ -1,0 +1,7 @@
+﻿Tablist role injections: 1
+Tab role injections: 0
+Total: 1
+
+  stem_lab\stem_tool_multtable.js: 1 tablist
+
+Syntax: 1/1 valid

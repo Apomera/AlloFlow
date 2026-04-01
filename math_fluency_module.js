@@ -602,14 +602,14 @@
           h(Zap, { size: 16 }),
           h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 800, fontSize: '14px', color: '#92400e' } }, '\u26a1 Math Fluency Probe')
         ),
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '6px' } },
-          h('button', {
+        h('div', { 'aria-expanded': String(soundEnabled), role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '6px' } },
+          h('button', { 'aria-expanded': String(soundEnabled),
             onClick: function () { setSoundEnabled(!soundEnabled); },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
             'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects',
             style: { padding: '4px 8px', borderRadius: '8px', border: '1px solid #fde68a', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }
           }, soundEnabled ? h(Volume2, { size: 14 }) : h(VolumeX, { size: 14 })),
-          h('button', {
+          h('button', { 'aria-expanded': String(autoAdvance),
             onClick: function () { setAutoAdvance(!autoAdvance); },
             title: autoAdvance ? 'Disable auto-advance' : 'Enable auto-advance (moves to next on correct answer)',
             'aria-label': autoAdvance ? 'Disable auto-advance' : 'Enable auto-advance',

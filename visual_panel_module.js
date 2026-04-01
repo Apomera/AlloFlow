@@ -865,7 +865,7 @@ Return ONLY valid JSON:
     if (!panelOrder) return visualPlan.panels;
     return panelOrder.map((idx) => visualPlan.panels[idx]).filter(Boolean);
   }, [panelOrder, visualPlan.panels]);
-  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "visual-grid-controls", style: { display: "flex", flexWrap: "wrap", gap: "6px", padding: "8px 12px", background: "linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "8px", alignItems: "center" } }, !isStudentChallenge && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { "aria-expanded": String(labelsHidden), className: "visual-grid-controls", style: { display: "flex", flexWrap: "wrap", gap: "6px", padding: "8px 12px", background: "linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "8px", alignItems: "center" } }, !isStudentChallenge && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.toggle_labels"),

@@ -1,0 +1,7 @@
+﻿Additional aria-expanded injections: 12
+  behavior_lens_module.js: 9
+  math_fluency_module.js: 1
+  stem_lab\stem_tool_multtable.js: 1
+  visual_panel_module.js: 1
+
+Syntax: 4/4 valid
