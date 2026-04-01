@@ -476,29 +476,14 @@ async function startDeployment(setupData, onProgress) {
           progress: baseProgress
         });
         
-        try {
-          await nativePM.installService(serviceId, (p) => {
-            onProgress({
-              phase: 'install',
-              status: p.status,
-              progress: baseProgress + (p.progress / 100) * (60 / totalToInstall),
-              gpuStrategy: p.gpuStrategy || undefined
-            });
-          }, gpuInfo);
-        } catch (err) {
-          // Flux installation is non-fatal - allow deployment to continue
-          if (serviceId === 'flux') {
-            console.warn(`[deploy:start] Flux installation failed (non-fatal): ${err.message}`);
-            onProgress({
-              phase: 'install',
-              status: `⚠ Flux installation skipped (network/SSL issue). You can install it manually later.`,
-              progress: baseProgress + (60 / totalToInstall)
-            });
-          } else {
-            // Other services must succeed
-            throw err;
-          }
-        }
+        await nativePM.installService(serviceId, (p) => {
+          onProgress({
+            phase: 'install',
+            status: p.status,
+            progress: baseProgress + (p.progress / 100) * (60 / totalToInstall),
+            gpuStrategy: p.gpuStrategy || undefined
+          });
+        }, gpuInfo);
       }
       
       installed++;
