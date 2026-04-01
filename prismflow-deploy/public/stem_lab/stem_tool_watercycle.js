@@ -1645,7 +1645,7 @@ const d = labToolData.waterCycle;
                           var cv = document.getElementById('wcCanvas');
                           if (cv) { cv.dataset.journeyState = 'idle'; }
                         },
-                        className: "px-3 py-1.5 bg-slate-400 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
                       }, "\u23F9 End Journey")
                     )
               ),

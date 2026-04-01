@@ -647,7 +647,7 @@ window.StemLab = window.StemLab || {
             return h('button', { 'aria-label': 'Number Line',
               key: m,
               onClick: function() { sfxClick(); upd({ mode: m }); },
-              className: 'px-3 py-1 rounded-lg text-xs font-bold capitalize ' + (mode === m ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600')
+              className: 'px-3 py-1 rounded-lg text-xs font-bold capitalize ' + (mode === m ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600')
             }, m === 'bar' ? '\u2588 Bar' : '\u25CF Pie');
           })
         ),
@@ -694,7 +694,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-2 mb-2' },
             h('button', { 'aria-label': 'Which fraction is larger?',
               onClick: makeQuiz,
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (quiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + ' hover:opacity-90 transition-all'
+              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (quiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + ' hover:opacity-90 transition-all'
             }, quiz ? '\uD83D\uDD04 Next Round' : '\u26A1 Which is Larger?'),
             quizScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2B50 ' + quizScore + ' | \uD83D\uDD25 ' + quizStreak)
           ),
@@ -790,7 +790,7 @@ window.StemLab = window.StemLab || {
               key: op[0],
               onClick: function() { sfxClick(); upd({ opMode: op[0] }); },
               className: 'w-12 h-12 rounded-lg text-xl font-black transition-all ' +
-                (opMode === op[0] ? 'bg-orange-600 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50')
+                (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50')
             }, op[1]);
           })
         ),
@@ -931,11 +931,11 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-2 justify-center' },
           h('button', { 'aria-label': 'Fraction to Decimal',
             onClick: function() { sfxClick(); upd({ convDirection: 'fracToDec' }); },
-            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (convDirection === 'fracToDec' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-teal-50')
+            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (convDirection === 'fracToDec' ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-teal-50')
           }, '\uD83C\uDF55 \u2192 Fraction to Decimal'),
           h('button', { 'aria-label': '0.5 Decimal to Fraction',
             onClick: function() { sfxClick(); upd({ convDirection: 'decToFrac' }); },
-            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (convDirection === 'decToFrac' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-teal-50')
+            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (convDirection === 'decToFrac' ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-teal-50')
           }, '0.5 \u2192 Decimal to Fraction')
         ),
 
@@ -1009,7 +1009,7 @@ window.StemLab = window.StemLab || {
                 aiAsked: _f.aiAsked || 0
               });
             },
-            className: 'w-full py-2 bg-teal-600 text-white font-bold rounded-lg text-sm hover:bg-teal-700 transition-all'
+            className: 'w-full py-2 bg-teal-700 text-white font-bold rounded-lg text-sm hover:bg-teal-700 transition-all'
           }, '\u2705 Log This Conversion')
         ) : h(React.Fragment, null,
           // Decimal to fraction
@@ -1304,7 +1304,7 @@ window.StemLab = window.StemLab || {
                   onClick: function() { sfxClick(); upd({ difficulty: d }); },
                   className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                     (difficulty === d
-                      ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-rose-500 text-white')
+                      ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-rose-700 text-white')
                       : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                 }, d);
               })
@@ -1320,7 +1320,7 @@ window.StemLab = window.StemLab || {
             }, '\uD83C\uDFB2 Generate Challenge')
           : h('div', { className: 'space-y-2' },
               h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[11px] font-bold uppercase text-rose-400 bg-rose-100 px-2 py-0.5 rounded-full' }, challenge.type),
+                h('span', { className: 'text-[11px] font-bold uppercase text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full' }, challenge.type),
                 streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
               ),
               h('p', { className: 'text-sm font-bold text-rose-800' }, challenge.question),

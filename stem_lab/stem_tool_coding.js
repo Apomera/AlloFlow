@@ -1819,7 +1819,7 @@
               React.createElement("button", { "aria-label": "Templates",
                 onClick: function () { upd('showTemplates', !showTemplates); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (showTemplates ? 'bg-amber-500 text-white' : 'bg-white/15 text-white hover:bg-white/25')
+                  (showTemplates ? 'bg-amber-700 text-white' : 'bg-white/15 text-white hover:bg-white/25')
               }, "📂 Templates"),
 
 
@@ -1863,7 +1863,7 @@
                 onClick: function() { upd('show3D', !show3D); if (!show3D) { upd('pitchAngle', 0); upd('yawAngle', 0); } },
                 title: show3D ? 'Switch to 2D mode' : 'Switch to 3D isometric mode',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (show3D ? "bg-teal-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
+                  (show3D ? "bg-teal-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, show3D ? "\u{1F310} 3D" : "\u{1F4D0} 2D"),
               // Turtle Skin selector
               React.createElement("select", {
@@ -1893,21 +1893,21 @@
                 onClick: function() { upd('showCoordPicker', !showCoordPicker); },
                 title: showCoordPicker ? 'Cancel coordinate picker' : 'Click canvas to add goto(x,y)',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (showCoordPicker ? "bg-amber-500 text-white animate-pulse" : "bg-white/15 text-white hover:bg-white/25")
+                  (showCoordPicker ? "bg-amber-700 text-white animate-pulse" : "bg-white/15 text-white hover:bg-white/25")
               }, "📌 Pick"),
               // Background Music toggle
               React.createElement("button", { "aria-label": "Toggle Bg Music",
                 onClick: toggleBgMusic,
                 title: bgMusicPlaying ? 'Stop background music' : 'Play background music loop',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (bgMusicPlaying ? "bg-green-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
+                  (bgMusicPlaying ? "bg-green-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, bgMusicPlaying ? "🔊 Music" : "🔇 Music"),
               // Canvas Layer toggle
               React.createElement("button", { "aria-label": "Drawing layer: ",
                 onClick: function() { upd('canvasLayer', canvasLayer === 'foreground' ? 'background' : 'foreground'); },
                 title: 'Drawing layer: ' + canvasLayer,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (canvasLayer === 'background' ? "bg-purple-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
+                  (canvasLayer === 'background' ? "bg-purple-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, canvasLayer === 'background' ? "🎨 BG" : "🎨 FG"),
               // Canvas controls
               React.createElement("button", { "aria-label": "Change show grid",
@@ -2063,7 +2063,7 @@
                         onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-500 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
                     )
                   ),
@@ -2158,7 +2158,7 @@
                         ),
                         React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full border " +
                           (ch.concept === 'Sequencing' ? "border-blue-500/40 text-blue-400 bg-blue-500/10" :
-                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-400 bg-purple-500/10" :
+                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-700 bg-purple-500/10" :
                            ch.concept.indexOf('Conditional') >= 0 ? "border-red-500/40 text-red-400 bg-red-500/10" :
                            "border-amber-500/40 text-amber-400 bg-amber-500/10")
                         }, ch.concept)
@@ -2517,7 +2517,7 @@
                   }, "\u{1F4CD} Axes"),
                   React.createElement("button", { "aria-label": "Reset",
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },
-                    className: "flex-1 px-2 py-1 rounded text-[11px] font-bold bg-slate-700/50 text-slate-500 hover:text-white transition-all"
+                    className: "flex-1 px-2 py-1 rounded text-[11px] font-bold bg-slate-700/50 text-slate-300 hover:text-white transition-all"
                   }, "\u{1F504} Reset")
                 ),
                 // 3D coordinates display

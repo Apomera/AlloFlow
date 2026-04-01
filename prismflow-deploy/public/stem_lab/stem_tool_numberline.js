@@ -493,7 +493,7 @@ window.StemLab = window.StemLab || {
                     if (valEl) valEl.value = '';
                     if (labelEl) labelEl.value = '';
                   },
-                  className: 'px-4 py-1.5 bg-blue-500 text-white font-bold rounded-lg text-sm hover:bg-blue-600'
+                  className: 'px-4 py-1.5 bg-blue-700 text-white font-bold rounded-lg text-sm hover:bg-blue-600'
                 }, '+ Add'),
                 markers.length > 0 && h('button', { 'aria-label': 'Clear',
                   onClick: function() { upd({ markers: [] }); },
@@ -520,7 +520,7 @@ window.StemLab = window.StemLab || {
                         return h('button', { 'aria-label': 'Sfx Click',
                           key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                           className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
-                            (difficulty === d ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                         }, d);
                       })
                     )
@@ -535,7 +535,7 @@ window.StemLab = window.StemLab || {
                     }, '\uD83C\uDFB2 Generate Challenge')
                   : h('div', { className: 'space-y-2' },
                       h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'text-[11px] font-bold uppercase text-blue-400 bg-blue-100 px-2 py-0.5 rounded-full' }, challenge.type),
+                        h('span', { className: 'text-[11px] font-bold uppercase text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full' }, challenge.type),
                         streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
                       ),
                       h('p', { className: 'text-sm font-bold text-blue-800' }, challenge.question),

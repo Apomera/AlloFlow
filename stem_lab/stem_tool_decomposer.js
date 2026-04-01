@@ -1209,7 +1209,7 @@
                 },
                 className: 'w-full py-2.5 rounded-xl text-sm font-bold transition-all '
                   + (decomposed
-                    ? 'bg-amber-600 text-white shadow-lg'
+                    ? 'bg-amber-700 text-white shadow-lg'
                     : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u2697\uFE0F Decompose into Elements'),
 
@@ -1487,8 +1487,8 @@
                   h('h4', { className: 'text-xl font-black text-white mb-1 flex items-center justify-center gap-2' }, '\uD83E\uDDEA Chemistry Hunt'),
                   h('p', { className: 'text-xs text-indigo-300 leading-relaxed max-w-sm mx-auto' }, 'Explore real-world scenes. Can you find the object that contains each chemical compound?'),
                   huntScore > 0 ? h('div', { className: 'flex items-center justify-center gap-3 mt-3' },
-                    h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30' }, '\u2B50 Score: ' + huntScore),
-                    huntStreak >= 2 ? h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30' }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
+                    h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-900 border border-amber-500/30' }, '\u2B50 Score: ' + huntScore),
+                    huntStreak >= 2 ? h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-900 border border-orange-500/30' }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
                   ) : null
                 )
               ),
@@ -2051,7 +2051,7 @@
                       })
                     ),
                     h('div', { className: 'flex gap-2 mt-3' },
-                      h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-500 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all' }, '\u2697\uFE0F Explore'),
+                      h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all' }, '\u2697\uFE0F Explore'),
                       h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all' }, '\uD83C\uDFA8 Visualize'),
                       h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all' }, '\uD83D\uDD0A')
                     )
@@ -2123,7 +2123,7 @@
                     else if (!isA && !isB) { updMulti({ reactantA: m.name, reactantB: null, activeReaction: null }); }
                   },
                   className: 'px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ' +
-                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-amber-300')
+                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-700 text-white' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-amber-300')
                 }, m.emoji + ' ' + m.name);
               })
             ),
@@ -2186,7 +2186,7 @@
                     }, '\uD83D\uDD0A Listen'),
                     h('button', { 'aria-label': 'Try Another Combo',
                       onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); },
-                      className: 'flex-1 py-2 bg-amber-500 text-white font-bold text-xs rounded-lg hover:bg-amber-600'
+                      className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600'
                     }, '\uD83D\uDD04 Try Another Combo')
                   )
                 ) : null
@@ -2450,7 +2450,7 @@
                 },
                 className: 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all '
                   + (decomposed
-                    ? 'bg-red-500 text-white shadow-lg hover:bg-red-600'
+                    ? 'bg-red-700 text-white shadow-lg hover:bg-red-600'
                     : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u26A1 Decompose'),
               h('button', { 'aria-label': 'Describe',

@@ -1629,7 +1629,7 @@ var AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, ho
             },
             onPointerDown: (e) => e.stopPropagation(),
             onMouseDown: (e) => e.stopPropagation(),
-            className: `absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? "bg-red-500 text-white border-red-400 animate-pulse" : "bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-500 border-slate-100"}`,
+            className: `absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? "bg-red-700 text-white border-red-400 animate-pulse" : "bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-500 border-slate-100"}`,
             title: isListening ? t("bot.mic_stop_title") : t("bot.mic_start_title"),
             "aria-label": isListening ? t("bot.mic_stop_aria") : t("bot.mic_start_aria")
           },

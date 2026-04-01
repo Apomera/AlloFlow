@@ -1138,7 +1138,7 @@ var d = labToolData.plateTectonics || {};
 
                     onClick: function() { upd({ simTab: tab[0] }); },
 
-                    className: "px-4 py-2 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg scale-105" : "text-red-600 bg-red-50 hover:bg-red-100"),
+                    className: "px-4 py-2 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg scale-105" : "text-red-800 bg-red-50 hover:bg-red-100"),
 
                     style: active ? { background: _gRed, boxShadow: '0 4px 14px rgba(220,38,38,0.3)' } : {}
 
@@ -1397,7 +1397,7 @@ var d = labToolData.plateTectonics || {};
                   React.createElement('div', { className: 'flex items-center gap-2' },
                     React.createElement('span', { className: 'text-lg' }, ERAS[timelineEra].icon || '\uD83C\uDF0D'),
                     React.createElement('span', { className: 'text-lg font-black text-red-700' }, ERAS[timelineEra].name),
-                    React.createElement('span', { className: 'text-xs font-bold text-red-400 bg-red-50 px-2 py-0.5 rounded-full' }, ERAS[timelineEra].mya)
+                    React.createElement('span', { className: 'text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full' }, ERAS[timelineEra].mya)
                   ),
 
                   // Key event banner
@@ -1997,7 +1997,7 @@ var d = labToolData.plateTectonics || {};
 
                 onClick: function() { setStemLabTool(null); },
 
-                className: "px-6 py-2.5 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-all"
+                className: "px-6 py-2.5 text-sm font-bold text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-all"
 
               }, "\u2190 Back to Tools")
 

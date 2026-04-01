@@ -1815,7 +1815,7 @@ Return ONLY valid JSON:
                     h('span', { className: 'text-[10px] font-medium text-green-600' }, `✅ ${verifiedCount} verified`),
                     h('span', { className: 'text-[10px] font-medium text-slate-500' }, `⏳ ${totalChunks - verifiedCount} pending`),
                     deficitCount > 0 && h('span', { className: 'text-[10px] font-medium text-red-600' }, `⚠️ ${deficitCount} deficits`),
-                    totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': 'Verify all fact chunks', className: 'ml-auto text-[10px] px-2 py-0.5 bg-green-600 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
+                    totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': 'Verify all fact chunks', className: 'ml-auto text-[10px] px-2 py-0.5 bg-green-700 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
                     }, '✅ Verify All')
                 ),
                 extracting && h('div', { className: 'text-center py-6' },
@@ -1842,7 +1842,7 @@ Return ONLY valid JSON:
                                     chunk.devNormResult?.explanation && h('p', { className: `text-[9px] mt-0.5 ${cText(chunk.devNormResult.color)}` }, chunk.devNormResult.explanation)
                                 ),
                                 !chunk.verified && h('div', { className: 'flex items-center gap-1' },
-                                    h('button', { 'aria-label': 'Verify fact chunk', className: 'px-2 py-1 bg-green-600 text-white text-[10px] rounded hover:bg-green-700', onClick: () => verifyChunk(chunk.id), title: 'Verify & Lock' }, '✅'),
+                                    h('button', { 'aria-label': 'Verify fact chunk', className: 'px-2 py-1 bg-green-700 text-white text-[10px] rounded hover:bg-green-700', onClick: () => verifyChunk(chunk.id), title: 'Verify & Lock' }, '✅'),
                                     h('button', { 'aria-label': 'Reject fact chunk', className: 'px-2 py-1 bg-red-100 text-red-600 text-[10px] rounded hover:bg-red-200', onClick: () => rejectChunk(chunk.id), title: 'Reject' }, '✕')
                                 )
                             )
@@ -2076,7 +2076,7 @@ Return ONLY valid JSON:
                                     onChange: e => setRegenInstructions(e.target.value)
                                 }),
                                 h('div', { className: 'flex gap-1' },
-                                    h('button', { 'aria-label': 'Regenerate section', className: 'text-[9px] px-3 py-1 rounded bg-amber-500 text-white hover:bg-amber-600 font-medium', onClick: () => regenerateSection(section, regenInstructions)
+                                    h('button', { 'aria-label': 'Regenerate section', className: 'text-[9px] px-3 py-1 rounded bg-amber-700 text-white hover:bg-amber-600 font-medium', onClick: () => regenerateSection(section, regenInstructions)
                                     }, '\u2728 Regenerate'),
                                     h('button', { 'aria-label': 'Cancel regeneration', className: 'text-[9px] px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => { setShowRegenInput(null); setRegenInstructions(''); }
                                     }, 'Cancel')
@@ -2092,7 +2092,7 @@ Return ONLY valid JSON:
                                         onChange: e => setEditSectionText(e.target.value)
                                     }),
                                     h('div', { className: 'flex gap-1' },
-                                        h('button', { 'aria-label': 'Save section edit', className: 'text-[9px] px-3 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 font-medium',
+                                        h('button', { 'aria-label': 'Save section edit', className: 'text-[9px] px-3 py-1 rounded bg-emerald-700 text-white hover:bg-emerald-600 font-medium',
                                             onClick: () => { setReportSections(prev => ({ ...prev, [section]: editSectionText })); setEditingSection(null); setAccuracyResults([]); if (addToast) addToast(`"${section}" updated`, 'success'); }
                                         }, '\u2705 Save'),
                                         h('button', { 'aria-label': 'Cancel editing', className: 'text-[9px] px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => setEditingSection(null)
@@ -2256,7 +2256,7 @@ Return ONLY valid JSON:
                         'aria-label': 'Import JSON data',
                         placeholder: 'Paste JSON data here...', value: importText, onChange: e => setImportText(e.target.value)
                     }),
-                    importText.trim() && h('button', { 'aria-label': '📂 Import Data', className: 'mt-1 px-3 py-1 bg-emerald-600 text-white text-[10px] rounded-lg hover:bg-emerald-700', onClick: importJSON }, '📂 Import Data')
+                    importText.trim() && h('button', { 'aria-label': '📂 Import Data', className: 'mt-1 px-3 py-1 bg-emerald-700 text-white text-[10px] rounded-lg hover:bg-emerald-700', onClick: importJSON }, '📂 Import Data')
                 ),
                 // ── Saved Reports Gallery ──
                 h('div', { className: 'mt-3 bg-violet-50 rounded-lg border border-violet-200 p-3 space-y-2' },

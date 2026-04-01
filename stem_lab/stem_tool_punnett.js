@@ -1922,7 +1922,7 @@ window.StemLab = window.StemLab || {
                       if (!d._dnaDone) { upd('_dnaDone', true); awardXP('dnaTranslate', 15, 'DNA Translation'); }
                       punnettSound('translate');
                     },
-                    className: 'ml-auto px-3 py-1 text-[10px] font-bold text-white bg-fuchsia-500 rounded-lg hover:bg-fuchsia-600'
+                    className: 'ml-auto px-3 py-1 text-[10px] font-bold text-white bg-fuchsia-700 rounded-lg hover:bg-fuchsia-600'
                   }, '\u25B6 Translate')
                 )
               ),
@@ -2177,7 +2177,7 @@ window.StemLab = window.StemLab || {
                 chalFeedback && h('p', { className: 'text-xs text-slate-500 mt-1' }, chalFeedback),
                 h('button', { 'aria-label': 'Retry',
                   onClick: function() { updMulti({ _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); },
-                  className: 'mt-3 px-4 py-1.5 text-xs font-bold text-white bg-violet-500 rounded-lg hover:bg-violet-600'
+                  className: 'mt-3 px-4 py-1.5 text-xs font-bold text-white bg-violet-700 rounded-lg hover:bg-violet-600'
                 }, '\u21BA Retry ' + chalDiff.charAt(0).toUpperCase() + chalDiff.slice(1))
               )
             ),
@@ -2349,7 +2349,7 @@ window.StemLab = window.StemLab || {
                       }, '\u2192 Try Pedigree Builder'),
                       idx === 3 && h('button', { 'aria-label': 'Try Population Genetics',
                         onClick: function() { upd('subtool', 'population'); },
-                        className: 'mt-2 px-3 py-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100'
+                        className: 'mt-2 px-3 py-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100'
                       }, '\u2192 Try Population Genetics')
                     )
                   );

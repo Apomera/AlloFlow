@@ -1329,7 +1329,7 @@ window.StemLab = window.StemLab || {
 
                         },
 
-                        className: "px-3 py-1.5 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-all",
+                        className: "px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-all",
 
                         disabled: proofSteps.length === 0
 

@@ -672,7 +672,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-orange-800 mb-2' }, '\uD83C\uDFAF Show ' + b10Challenge.target.toLocaleString() + ' using base-10 blocks'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString())),
-              h('button', { 'aria-label': 'Check', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-orange-500 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': 'Check', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-orange-700 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all' }, '\u2714 Check')
             ),
             b10Feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (b10Feedback.correct ? 'text-green-600' : 'text-red-600') }, b10Feedback.msg)
           ),
@@ -681,7 +681,7 @@ window.StemLab = window.StemLab || {
           b10AddMode && b10Challenge && h('div', { className: 'bg-orange-50 rounded-lg p-3 border border-orange-200' },
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString()), ' (need ' + b10Challenge.target.toLocaleString() + ')'),
-              h('button', { 'aria-label': 'Check Sum', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all' }, '\u2714 Check Sum')
+              h('button', { 'aria-label': 'Check Sum', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all' }, '\u2714 Check Sum')
             ),
             b10Feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (b10Feedback.correct ? 'text-green-600' : 'text-red-600') }, b10Feedback.msg)
           )
@@ -775,7 +775,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83C\uDFAF Show ' + abacusChallenge.target.toLocaleString() + ' on the abacus'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-amber-600' }, 'Your value: ', h('span', { className: 'font-bold text-amber-900' }, abacusTotal.toLocaleString())),
-              h('button', { 'aria-label': 'Check', onClick: checkAbacus, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': 'Check', onClick: checkAbacus, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
             ),
             abacusFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (abacusFeedback.correct ? 'text-green-600' : 'text-red-600') }, abacusFeedback.msg)
           ),
@@ -783,7 +783,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, '\u23F1\uFE0F Speed: Show ' + speedChallenge.target.toLocaleString() + ' as fast as you can!'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-rose-600' }, 'Your value: ', h('span', { className: 'font-bold text-rose-900' }, abacusTotal.toLocaleString())),
-              h('button', { 'aria-label': 'Done!', onClick: checkSpeed, className: 'ml-auto px-4 py-1.5 bg-rose-500 text-white font-bold rounded-lg text-sm hover:bg-rose-600 transition-all' }, '\u2714 Done!')
+              h('button', { 'aria-label': 'Done!', onClick: checkSpeed, className: 'ml-auto px-4 py-1.5 bg-rose-700 text-white font-bold rounded-lg text-sm hover:bg-rose-600 transition-all' }, '\u2714 Done!')
             )
           ),
 
@@ -889,7 +889,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs text-amber-600 mb-2' }, '\uD83D\uDCA1 Set C-scale "1" to line up with ' + srProblem.a + ' on D, then find ' + srProblem.b + ' on C. Read D under it!'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-amber-600' }, 'Your result: ', h('span', { className: 'font-bold text-amber-900' }, '\u2248 ' + product.toFixed(1))),
-              h('button', { 'aria-label': 'Check', onClick: checkSR, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': 'Check', onClick: checkSR, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
             ),
             srFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (srFeedback.correct ? 'text-green-600' : 'text-red-600') }, srFeedback.msg)
           ),

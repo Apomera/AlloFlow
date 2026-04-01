@@ -480,13 +480,13 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Toggle hidden mode (H)',
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
-                (multTableHidden ? 'bg-pink-500 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200'),
+                (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: 'Toggle hidden mode (H)'
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
             h('div', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
             // Streak badge
             (_mt.streak || 0) >= 2 && h('div', {
-              className: 'text-xs font-bold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
+              className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + _mt.streak + ' streak!'),
             // Badge count
             earnedCount > 0 && h('button', { 'aria-label': 'View badges (B)',
@@ -558,9 +558,9 @@ window.StemLab = window.StemLab || {
               onClick: function() { setExploreDifficulty(dm.id); },
               className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' +
                 (active
-                  ? dm.id === 'easy' ? 'bg-green-500 text-white shadow-sm'
-                    : dm.id === 'medium' ? 'bg-blue-500 text-white shadow-sm'
-                    : dm.id === 'hard' ? 'bg-red-500 text-white shadow-sm'
+                  ? dm.id === 'easy' ? 'bg-green-700 text-white shadow-sm'
+                    : dm.id === 'medium' ? 'bg-blue-700 text-white shadow-sm'
+                    : dm.id === 'hard' ? 'bg-red-700 text-white shadow-sm'
                     : 'bg-purple-500 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200')
             }, dm.label + ' (' + dm.range + ')');
@@ -591,7 +591,7 @@ window.StemLab = window.StemLab || {
               playSound('speedEnd');
               addToast('\u23F1\uFE0F Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info');
             },
-            className: 'px-3 py-1.5 bg-red-500 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
+            className: 'px-3 py-1.5 bg-red-700 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
           }, 'Stop')
         ),
 
@@ -624,12 +624,12 @@ window.StemLab = window.StemLab || {
                 setInputDisabled(false);
                 _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: _mt.missed });
               },
-              className: 'mt-2 px-4 py-1.5 bg-red-500 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
+              className: 'mt-2 px-4 py-1.5 bg-red-700 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
             }, '\uD83C\uDFAF Practice These')
           ),
           h('button', { 'aria-label': 'Try Again',
             onClick: function() { _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: [], streak: 0 }); },
-            className: 'mt-2 px-4 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all'
+            className: 'mt-2 px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all'
           }, '\uD83D\uDD04 Try Again')
         ),
 
@@ -742,7 +742,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Check',
               onClick: checkMult,
               disabled: !multTableAnswer || inputDisabled,
-              className: 'px-4 py-2 bg-pink-500 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40'
+              className: 'px-4 py-2 bg-pink-700 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40'
             }, '\u2714 Check'),
             // AI hint button during challenge
             h('button', { 'aria-label': 'Ask A I',

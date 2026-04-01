@@ -1997,7 +1997,7 @@
         className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg',
         onClick: () => setShowResearchSetup(false)
       }, 'Cancel'), React.createElement('button', {
-        className: 'px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold',
+        className: 'px-4 py-2 text-sm bg-emerald-700 text-white rounded-lg hover:bg-emerald-700 font-bold',
         onClick: () => {
           toggleResearchMode({
             active: true,
@@ -3738,7 +3738,7 @@
     }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.benchmark_battery')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold text-violet-500 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-[10px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "Standardized")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 mb-3"
     }, "Curated word lists with fixed activity order per grade. No gamification \u2014 designed for formal assessment."), /*#__PURE__*/React.createElement("div", {
@@ -3807,7 +3807,7 @@
     }, "\uD83D\uDD22"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.math_fluency')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold text-orange-500 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-[10px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "Standardized")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 mb-3"
     }, "Fixed problem sets with DCPM scoring. 25 problems, 2-minute timer. Forms A/B/C for progress monitoring."), /*#__PURE__*/React.createElement("div", {
@@ -3901,7 +3901,7 @@
     }, "\uD83D\uDCD6"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.literacy_fluency')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "Standardized")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 mb-3"
     }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), and Rapid Automatized Naming (RAN) assessments."), /*#__PURE__*/React.createElement("div", {
@@ -4172,7 +4172,7 @@
         });
         addToast('NWF results saved for ' + mathProbeStudent, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
       onClick: (event) => {
         const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
@@ -4260,7 +4260,7 @@
         className: "grid grid-cols-10 gap-1 mb-6"
       }, lnfProbeLetters.map((item, idx) => /*#__PURE__*/React.createElement("div", {
         key: idx,
-        className: `flex items-center justify-center w-9 h-9 rounded-lg text-lg font-bold transition-all cursor-default ${idx === lnfProbeIndex ? 'bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1 scale-110 shadow-lg' : idx < lnfProbeIndex && item.scored ? item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through' : idx < lnfProbeIndex ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-600'}`
+        className: `flex items-center justify-center w-9 h-9 rounded-lg text-lg font-bold transition-all cursor-default ${idx === lnfProbeIndex ? 'bg-blue-700 text-white ring-2 ring-blue-300 ring-offset-1 scale-110 shadow-lg' : idx < lnfProbeIndex && item.scored ? item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through' : idx < lnfProbeIndex ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-600'}`
       }, item.letter))), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-4"
       }, /*#__PURE__*/React.createElement("button", {
@@ -4342,7 +4342,7 @@
         });
         addToast('LNF results saved for ' + mathProbeStudent, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-blue-700 text-white rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
       onClick: (event) => {
         const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
@@ -4546,7 +4546,7 @@
         });
         addToast('RAN results saved for ' + mathProbeStudent, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-amber-500 text-white rounded-lg font-bold text-sm hover:bg-amber-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-amber-700 text-white rounded-lg font-bold text-sm hover:bg-amber-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
       onClick: (event) => {
         const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
@@ -4680,7 +4680,7 @@
         });
         addToast('ORF results saved for ' + mathProbeStudent, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-rose-500 text-white rounded-lg font-bold text-sm hover:bg-rose-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-rose-700 text-white rounded-lg font-bold text-sm hover:bg-rose-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), (() => {
       const g = orfProbeGrade || '1';
       const fm = mathProbeForm || 'A';
@@ -4727,7 +4727,7 @@
     }, "\u2753"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.missing_number')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold text-purple-500 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-2")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 mb-3"
     }, "Find the missing number: \"3 + __ = 7\". Measures algebraic thinking and number relationships."), importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -4974,7 +4974,7 @@
         });
         addToast(`Probe results saved for ${mathProbeStudent}`, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-purple-500 text-white rounded-lg font-bold text-sm hover:bg-purple-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-purple-700 text-white rounded-lg font-bold text-sm hover:bg-purple-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"))), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-2xl p-4 mb-4 border border-cyan-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -4984,7 +4984,7 @@
     }, "\u2696\uFE0F"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.qd')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold text-cyan-500 bg-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-[10px] font-bold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-1")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 mb-3"
     }, "Circle the bigger number. 1-minute timed. Measures number magnitude understanding."), /*#__PURE__*/React.createElement("div", {
@@ -5172,7 +5172,7 @@
         });
         addToast(`QD results saved for ${mathProbeStudent}`, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-cyan-500 text-white rounded-lg font-bold text-sm hover:bg-cyan-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-cyan-700 text-white rounded-lg font-bold text-sm hover:bg-cyan-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"))), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -5182,7 +5182,7 @@
     }, "\uD83D\uDD24"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, "Nonsense Word Fluency (NWF)"), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-1")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 mb-3"
     }, "Student reads CVC pseudowords aloud (e.g., \"sig\", \"bim\", \"tob\"). Scored as Correct Letter Sounds (CLS) per minute. Tests phonetic decoding."), /*#__PURE__*/React.createElement("div", {
@@ -5218,7 +5218,7 @@
     }, "\uD83C\uDD70\uFE0F"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, "Letter Naming Fluency (LNF)"), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold text-rose-500 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 mb-3"
     }, "Student names randomly arranged uppercase and lowercase letters. Scored as letters per minute. Tests basic letter recognition."), /*#__PURE__*/React.createElement("div", {
@@ -5245,7 +5245,7 @@
     }, "\u26A1"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, "Rapid Automatized Naming (RAN)"), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-2")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 mb-3"
     }, "Student names colors (K), letters (1), or numbers (2) as fast as possible. Measures processing speed \u2014 a key predictor of reading fluency."), /*#__PURE__*/React.createElement("div", {
@@ -6829,7 +6829,7 @@
             return React.createElement('div', {
               key: idx,
               className: 'flex items-center justify-center w-8 h-8 rounded text-sm font-bold transition-all ' +
-                (idx === lnfProbeIndex ? 'bg-blue-500 text-white ring-2 ring-blue-300 scale-110 shadow-lg' :
+                (idx === lnfProbeIndex ? 'bg-blue-700 text-white ring-2 ring-blue-300 scale-110 shadow-lg' :
                  idx < lnfProbeIndex && item.scored ? (item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through') :
                  idx < lnfProbeIndex ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-500')
             }, item.letter);

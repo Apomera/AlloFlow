@@ -1634,7 +1634,7 @@ var d = labToolData.universe || {};
 
                     }, 50);
 
-                  }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                  }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (isPlaying ? "bg-red-700 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
 
                 }, isPlaying ? "\u23F9 Stop" : "\u25B6 Play"),
 
@@ -2161,7 +2161,7 @@ var d = labToolData.universe || {};
                     React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " mt-1" }, qScore >= 8 ? 'Amazing! You\'re a cosmic genius!' : qScore >= 5 ? 'Great job! Keep exploring!' : 'Keep learning \u2014 the universe is vast!'),
                     React.createElement("button", { "aria-label": "Retry",
                       onClick: function() { updMulti({ quizIdx: 0, quizScore: 0, quizAnswered: false }); },
-                      className: "mt-2 px-3 py-1 text-[10px] font-bold text-white bg-pink-500 rounded-lg hover:bg-pink-600"
+                      className: "mt-2 px-3 py-1 text-[10px] font-bold text-white bg-pink-700 rounded-lg hover:bg-pink-600"
                     }, "\uD83D\uDD04 Retry")
                   );
                 }
@@ -2753,7 +2753,7 @@ var d = labToolData.universe || {};
                 React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic mb-2" }, "These are the biggest unanswered questions in cosmology. Solving any one could win a Nobel Prize."),
                 React.createElement("div", { className: "space-y-2" },
                   COSMIC_MYSTERIES.map(function(cm, cmi) {
-                    var urgColors = { Critical: 'text-red-400 bg-red-900/30', Fundamental: 'text-amber-400 bg-amber-900/30', Philosophical: 'text-purple-400 bg-purple-900/30', Open: 'text-blue-400 bg-blue-900/30', 'Active debate': 'text-green-400 bg-green-900/30' };
+                    var urgColors = { Critical: 'text-red-200 bg-red-900/30', Fundamental: 'text-amber-400 bg-amber-900/30', Philosophical: 'text-purple-400 bg-purple-900/30', Open: 'text-blue-400 bg-blue-900/30', 'Active debate': 'text-green-400 bg-green-900/30' };
                     var uc = urgColors[cm.urgency] || 'text-slate-400 bg-slate-700';
                     return React.createElement("div", { key: cmi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-rose-100') + " rounded-lg p-2.5 border" },
                       React.createElement("div", { className: "flex items-center gap-2 mb-1" },

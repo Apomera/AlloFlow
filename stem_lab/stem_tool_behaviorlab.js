@@ -2617,7 +2617,7 @@ var d = labToolData || {};
 
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
 
-                      (isCurrent ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' :
+                      (isCurrent ? 'bg-amber-700 text-white shadow-lg shadow-amber-500/30' :
 
                         isComplete ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50' :
 
@@ -2791,7 +2791,7 @@ var d = labToolData || {};
 
                     className: "px-2.5 py-1 font-bold transition-all " +
 
-                      (blSpeed === sp ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700')
+                      (blSpeed === sp ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700')
 
                   }, sp + '\u00D7');
 
@@ -2819,7 +2819,7 @@ var d = labToolData || {};
 
                 onClick: function () { upd('blPaused', !blPaused); },
 
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
 
               }, blPaused ? '\u25B6 Resume' : '\u23F8 Pause')
 
@@ -4243,7 +4243,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "flex gap-2 mt-2 justify-center" },
                   React.createElement("button", { "aria-label": "Reset",
                     onClick: function() { upd('blSchedPaused', !blSchedPaused); },
-                    className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (blSchedPaused ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-300')
+                    className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (blSchedPaused ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-300')
                   }, blSchedPaused ? '\u25B6 Play' : '\u23F8 Pause'),
                   React.createElement("button", { "aria-label": "Reset",
                     onClick: function() { upd('blSchedTick', 0); upd('blSchedPaused', false); },
@@ -4571,7 +4571,7 @@ var d = labToolData || {};
               React.createElement("p", { className: "text-[10px] text-slate-500 font-bold mb-2 uppercase tracking-wider" }, "\uD83C\uDFAF Clinical Scenarios (" + (blScenarioIdx + 1) + "/" + SCENARIO_CHALLENGES.length + ")"),
               // Streak indicator
               blStreak > 0 && React.createElement("div", { className: "text-center mb-2" },
-                React.createElement("span", { className: "inline-block px-3 py-0.5 rounded-full text-[11px] font-bold " + (blStreak >= 5 ? 'bg-amber-600 text-white animate-pulse' : blStreak >= 3 ? 'bg-emerald-700 text-emerald-100' : 'bg-slate-700 text-slate-300') },
+                React.createElement("span", { className: "inline-block px-3 py-0.5 rounded-full text-[11px] font-bold " + (blStreak >= 5 ? 'bg-amber-700 text-white animate-pulse' : blStreak >= 3 ? 'bg-emerald-700 text-emerald-100' : 'bg-slate-700 text-slate-300') },
                   '\uD83D\uDD25 ' + blStreak + ' streak!' + (blStreak >= 5 ? ' AMAZING!' : blStreak >= 3 ? ' On fire!' : ''))
               ),
               // Score

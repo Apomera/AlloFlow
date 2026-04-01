@@ -5752,13 +5752,13 @@ var d = labToolData.dissection || {};
               // ── Tools toggle ──
               React.createElement("button", { "aria-label": "Tools",
                 onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50')
               }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
 
               // ── Study toggle ──
               React.createElement("button", { "aria-label": "Study",
                 onClick: function () { upd('toolbarStudyOpen', !d.toolbarStudyOpen); upd('toolbarViewOpen', false); upd('toolbarToolsOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-600 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-200 hover:bg-amber-50'))
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-200 hover:bg-amber-50'))
               }, '\uD83D\uDCDA Study ' + (d.toolbarStudyOpen ? '\u25B2' : '\u25BC'))
 
             ),
@@ -5810,13 +5810,13 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Ruler",
                 onClick: function () { upd('rulerMode', !d.rulerMode); if (!d.rulerMode) upd('annotateMode', false); },
                 title: 'Ruler' + ' — Measure distances on the specimen',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
               }, '\uD83D\uDCCF ' + 'Ruler'),
 
               React.createElement("button", { "aria-label": "Annotate",
                 onClick: function () { upd('annotateMode', !d.annotateMode); if (!d.annotateMode) upd('rulerMode', false); },
                 title: 'Annotate' + ' — Draw annotations on the canvas',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
               }, '\u270F ' + 'Annotate'),
 
               React.createElement("button", { "aria-label": "Screenshot",
@@ -5867,7 +5867,7 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Quiz",
                 onClick: function () { upd('quizMode', !d.quizMode); if (!d.quizMode) { upd('quizIdx', 0); upd('quizScore', 0); upd('quizTotal', 0); upd('quizFeedback', null); } },
                 title: 'Quiz' + ' — Test your knowledge of organ identification',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.quizMode ? 'bg-amber-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.quizMode ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
               }, '\uD83E\uDDE0 ' + 'Quiz'),
 
               React.createElement("button", { "aria-label": "Flashcard",
@@ -5879,13 +5879,13 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Guided",
                 onClick: function () { upd('guidedMode', !d.guidedMode); if (!d.guidedMode) upd('guidedStep', 0); },
                 title: 'Guided' + ' — Follow a step-by-step organ tour',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.guidedMode ? 'bg-teal-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.guidedMode ? 'bg-teal-700 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
               }, '\uD83E\uDDED ' + 'Guided'),
 
               React.createElement("button", { "aria-label": "Compare",
                 onClick: function () { upd('compareMode', !d.compareMode); },
                 title: 'Compare' + ' — Compare organs across specimens',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-700 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
               }, '\uD83D\uDD0D ' + 'Compare'),
 
               React.createElement("button", { "aria-label": "Action",
@@ -6017,7 +6017,7 @@ var d = labToolData.dissection || {};
 
                   onClick: function () { upd('traceNervous', !d.traceNervous); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); upd('showEndocrine', false); },
 
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceNervous ? 'bg-purple-500 text-white' : 'bg-purple-50 text-purple-700 border border-purple-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceNervous ? 'bg-purple-700 text-white' : 'bg-purple-50 text-purple-700 border border-purple-200')
 
                 }, d.traceNervous ? '\u23F9 ' + 'Stop Trace' : '\u26A1 ' + 'Trace Nervous'),
 
@@ -6025,7 +6025,7 @@ var d = labToolData.dissection || {};
 
                   onClick: function () { upd('showEndocrine', !d.showEndocrine); upd('traceNervous', false); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); },
 
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.showEndocrine ? 'bg-pink-500 text-white' : 'bg-pink-50 text-pink-700 border border-pink-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.showEndocrine ? 'bg-pink-700 text-white' : 'bg-pink-50 text-pink-700 border border-pink-200')
 
                 }, d.showEndocrine ? '\u23F9 ' + 'Hide Endocrine' : '\uD83E\uDDE0 ' + 'Show Endocrine')
 
@@ -6623,7 +6623,7 @@ var d = labToolData.dissection || {};
 
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); upd('quizExplanation', null); },
 
-                    className: "w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700"
+                    className: "w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700"
 
                   }, 'Next Question' + ' \u2192'),
 

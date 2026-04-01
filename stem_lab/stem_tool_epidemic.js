@@ -1386,7 +1386,7 @@ window.StemLab = window.StemLab || {
             slider('Vaccination (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
             h('div', { className: 'flex gap-2' },
-              h('button', { 'aria-label': '+ Add to Comparison', onClick: function() { runSim(); addR0Comparison(); }, className: 'flex-1 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all' }, '+ Add to Comparison'),
+              h('button', { 'aria-label': '+ Add to Comparison', onClick: function() { runSim(); addR0Comparison(); }, className: 'flex-1 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl hover:bg-teal-700 transition-all' }, '+ Add to Comparison'),
               h('button', { 'aria-label': 'Clear', onClick: function() { upd('r0Compared', []); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Clear')
             )
           ),
@@ -1458,7 +1458,7 @@ window.StemLab = window.StemLab || {
             slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination Rate', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
-            h('button', { 'aria-label': 'Simulate Vaccination', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDC89 Simulate Vaccination')
+            h('button', { 'aria-label': 'Simulate Vaccination', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-teal-700 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDC89 Simulate Vaccination')
           ),
           // Herd immunity visual
           h('div', { className: glassCard },
@@ -1530,7 +1530,7 @@ window.StemLab = window.StemLab || {
             slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
-            h('button', { 'aria-label': 'Simulate with NPIs', onClick: runNPISim, className: 'w-full py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDE37 Simulate with NPIs')
+            h('button', { 'aria-label': 'Simulate with NPIs', onClick: runNPISim, className: 'w-full py-2 text-sm font-bold bg-teal-700 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDE37 Simulate with NPIs')
           ),
           // Reduction summary
           npiResult && h('div', { className: glassCard },
@@ -1623,7 +1623,7 @@ window.StemLab = window.StemLab || {
               h('button', { 'aria-label': 'Generate Map', onClick: initMap, className: 'flex-1 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDDFA\uFE0F Generate Map'),
               mapGrid && h('button', { 'aria-label': 'Change map running',
                 onClick: function() { upd('mapRunning', !mapRunning); },
-                className: 'px-4 py-2 text-sm font-bold rounded-xl ' + (mapRunning ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white')
+                className: 'px-4 py-2 text-sm font-bold rounded-xl ' + (mapRunning ? 'bg-red-600 text-white' : 'bg-emerald-700 text-white')
               }, mapRunning ? '\u23F9 Stop' : '\u25B6 Run')
             )
           ),
@@ -1753,8 +1753,8 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'font-bold text-slate-500' }, 'Traces: ' + ctGuesses),
                 h('span', { className: 'font-bold text-red-600' }, 'Infected: ' + ctNetwork.solution.length)
               ),
-              ctComplete ? h('span', { className: 'text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg' }, '\u2705 All Found!') :
-              h('span', { className: 'text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg' },
+              ctComplete ? h('span', { className: 'text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg' }, '\u2705 All Found!') :
+              h('span', { className: 'text-xs font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded-lg' },
                 ctRevealed.filter(function(id) { return ctNetwork.solution.indexOf(id) >= 0; }).length + '/' + ctNetwork.solution.length + ' found')
             ),
             // Network graph (SVG)

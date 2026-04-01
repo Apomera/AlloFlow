@@ -390,7 +390,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       "aria-label": t("common.show"),
       "data-help-key": "ws_gen_review_btn",
       onClick: onShowReview,
-      className: "px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+      className: "px-4 py-1.5 bg-emerald-700 hover:bg-emerald-700 text-white rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
     },
     /* @__PURE__ */ React.createElement(Eye, { size: 14 }),
     "Review Words"
@@ -1232,7 +1232,7 @@ var WordSoundsReviewPanel = ({
       {
         "data-help-key": "word_sounds_review_phoneme_bank",
         onClick: () => setShowPhonemeBank(showPhonemeBank === idx ? null : idx),
-        className: `text-xs px-2 py-1 rounded-full transition-colors ${showPhonemeBank === idx ? "bg-pink-500 text-white" : "bg-pink-100 text-pink-600 hover:bg-pink-200"}`
+        className: `text-xs px-2 py-1 rounded-full transition-colors ${showPhonemeBank === idx ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-600 hover:bg-pink-200"}`
       },
       showPhonemeBank === idx ? "\u2715 Close Bank" : "+ Add Sound"
     )), /* @__PURE__ */ React.createElement(
@@ -1351,7 +1351,7 @@ var WordSoundsReviewPanel = ({
             });
           }
         },
-        className: "w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-400 hover:text-orange-600 transition-colors flex items-center justify-center",
+        className: "w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 hover:text-orange-600 transition-colors flex items-center justify-center",
         title: t("common.regenerate_this_option")
       },
       regeneratingOptions[`${idx}-rhyme-${i}`] ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : "\u{1F504}"
@@ -1413,7 +1413,7 @@ var WordSoundsReviewPanel = ({
             });
           }
         },
-        className: "w-8 h-8 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-400 hover:text-violet-600 transition-colors flex items-center justify-center",
+        className: "w-8 h-8 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 hover:text-violet-600 transition-colors flex items-center justify-center",
         title: t("common.regenerate_this_option")
       },
       regeneratingOptions[`${idx}-blend-${i}`] ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : "\u{1F504}"

@@ -994,7 +994,7 @@ window.SelHub = window.SelHub || {
                       ctx.awardXP(5);
                     }).catch(function() { upd('aiLoading', false); });
                   }, disabled: aiLoading,
-                    className: 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors disabled:opacity-40 flex items-center gap-2'
+                    className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors disabled:opacity-40 flex items-center gap-2'
                   }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\uD83D\uDCAC Discuss with AI'),
 
                   // AI discussion response
@@ -1478,7 +1478,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
                 h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, '\uD83C\uDFC6 Challenge: Can you argue the OTHER side just as well?'),
                 h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateSide: d.debateSide === 'for' ? 'against' : 'for', debateArgs: '', debateCounter: '', debateFeedback: null }); },
-                  className: 'px-4 py-2 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors'
+                  className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors'
                 }, 'Switch Sides & Try Again')
               ),
 
@@ -1590,7 +1590,7 @@ window.SelHub = window.SelHub || {
                 csSocratic.length > 0 && h('div', { className: 'space-y-2 max-h-[300px] overflow-y-auto' },
                   csSocratic.map(function(msg, i) {
                     return h('div', { key: i, className: 'flex ' + (msg.role === 'student' ? 'justify-end' : 'justify-start') },
-                      h('div', { className: 'max-w-[80%] rounded-2xl px-4 py-3 ' + (msg.role === 'student' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-800 border border-slate-200') },
+                      h('div', { className: 'max-w-[80%] rounded-2xl px-4 py-3 ' + (msg.role === 'student' ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-800 border border-slate-200') },
                         h('div', { className: 'text-[10px] font-bold mb-1 ' + (msg.role === 'student' ? 'text-teal-200' : 'text-slate-500') }, msg.role === 'student' ? 'You' : '\uD83C\uDFDB\uFE0F Socrates'),
                         h('p', { className: 'text-sm leading-relaxed' }, msg.text)
                       )
@@ -1641,7 +1641,7 @@ window.SelHub = window.SelHub || {
                       }).catch(function() { upd('aiLoading', false); });
                     }
                   },
-                    className: 'px-4 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40'
+                    className: 'px-4 py-3 bg-teal-700 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40'
                   }, aiLoading ? '...' : '\u2192')
                 )
               ),
@@ -1664,7 +1664,7 @@ window.SelHub = window.SelHub || {
                   if (completed.length >= 3) { addToast('\uD83D\uDCD6 Case Study Scholar badge earned!'); }
                 }).catch(function() { upd('aiLoading', false); });
               }, disabled: aiLoading,
-                className: 'w-full px-4 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
+                className: 'w-full px-4 py-3 bg-teal-700 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
               }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing...' : '\uD83D\uDCD6 Get AI Insight on My Analysis'),
 
               // AI insight response
@@ -1859,7 +1859,7 @@ window.SelHub = window.SelHub || {
             h('h4', { className: 'text-base font-bold text-green-800 mb-2' }, 'Build Your Ethical Decision Tree'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'Think through an ethical question step by step. At each step, you\u2019ll go deeper into the reasoning. At the end, you\u2019ll have a clear summary of your thinking process.'),
             h('button', { 'aria-label': ', dtDecision:', onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
-              className: 'px-6 py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors'
+              className: 'px-6 py-3 bg-green-700 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors'
             }, 'Start Building')
           ),
 
@@ -1927,7 +1927,7 @@ window.SelHub = window.SelHub || {
                     addToast('Please write a response before moving to the next step.');
                   }
                 },
-                  className: 'px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors'
+                  className: 'px-4 py-2 bg-green-700 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors'
                 }, 'Next \u2192'),
                 step === steps.length - 1 && d[currentStep.field] && d[currentStep.field].length > 10 && h('button', { 'aria-label': 'div', onClick: function() {
                   // Generate summary
@@ -1941,7 +1941,7 @@ window.SelHub = window.SelHub || {
                   ctx.awardXP(15);
                   addToast('\uD83C\uDF32 Decision Tree Builder badge earned!');
                 },
-                  className: 'px-6 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors flex items-center gap-2'
+                  className: 'px-6 py-2 bg-green-700 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors flex items-center gap-2'
                 }, '\u2705 Complete Decision Tree')
               )
             );

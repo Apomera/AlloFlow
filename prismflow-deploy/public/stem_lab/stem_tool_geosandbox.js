@@ -718,11 +718,11 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Challenge',
               onClick: generateChallenge,
               title: 'Challenge Mode [C]',
-              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700' : 'text-amber-300 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
+              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700' : 'text-amber-900 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
             }, '\uD83C\uDFAF Challenge'),
             gd.challengeMode && h('button', { 'aria-label': 'Exit',
               onClick: function() { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox||{}, { challengeMode:false, challenge:null, challengeAnswer:'', challengeResult:null }) }); }); },
-              className: 'px-3 py-1.5 text-xs font-bold text-slate-400 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
+              className: 'px-3 py-1.5 text-xs font-bold text-slate-200 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
             }, '\u2716 Exit'),
             h('button', { 'aria-label': 'Badges [B]',
               onClick: function() { updExt({ showBadges: !showBadges }); },
@@ -932,7 +932,7 @@ window.StemLab = window.StemLab || {
               m.name
             ),
             // Keyboard shortcuts overlay
-            h('div', { className: 'absolute top-2 right-2 text-[11px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded-md leading-relaxed' },
+            h('div', { className: 'absolute top-2 right-2 text-[11px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md leading-relaxed' },
               '1-7: shapes \u2022 C: challenge \u2022 W: wireframe \u2022 E: export \u2022 B: badges \u2022 /: AI'
             )
           )

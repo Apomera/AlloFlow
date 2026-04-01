@@ -396,7 +396,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   trackCategory(k);
                   checkBadges({ firstConvert: true });
                 },
-                className: 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all ' + (d.category === k ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50')
+                className: 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all ' + (d.category === k ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50')
               }, v.label);
             })
           ),
@@ -501,7 +501,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     addToast('\uD83D\uDCCC Pinned!', 'success');
                     if (newPinned.length >= 5) checkBadges({ pinCollector: true });
                   },
-                  className: 'px-4 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-bold hover:bg-amber-100 transition-all'
+                  className: 'px-4 py-1 bg-amber-50 text-amber-800 rounded-full text-xs font-bold hover:bg-amber-100 transition-all'
                 }, '\uD83D\uDCCC Pin'),
                 h('button', { 'aria-label': 'Tutor',
                   onClick: askTutor,
@@ -713,7 +713,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
                   stemBeep && stemBeep('click');
                 },
-                className: 'px-3 py-1.5 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all',
+                className: 'px-3 py-1.5 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all',
                 title: 'Next question (N)'
               }, d.quiz ? '\uD83D\uDD04 Next' : '\uD83E\uDDE0 Start Quiz')
             ),
@@ -793,7 +793,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                           upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
                           stemBeep && stemBeep('click');
                         },
-                        className: 'px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all'
+                        className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all'
                       }, '\uD83D\uDD04 Next Question'),
                       !d.quiz.correct && h('button', { 'aria-label': 'Explain',
                         onClick: askTutor,
@@ -832,7 +832,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     addToast('Could not generate problem. Try again.', 'error');
                   });
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-cyan-600 text-white hover:bg-cyan-700')
+                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-700')
               }, d.loadingWP ? '\u23F3 Generating...' : '\u2728 Generate')
             ),
 

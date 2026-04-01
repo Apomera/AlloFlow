@@ -1148,7 +1148,7 @@ const d = labToolData.rocks || {};
 
                       else { upd("quizMode", false); }
 
-                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                   },
 
@@ -2101,7 +2101,7 @@ const d = labToolData.rocks || {};
 
                     upd("quizIdx", nextIdx); upd("quizFeedback", null);
 
-                  }, className: "ml-3 px-2 py-0.5 bg-amber-600 text-white rounded text-xs"
+                  }, className: "ml-3 px-2 py-0.5 bg-amber-700 text-white rounded text-xs"
 
                 }, "Next \u2192")
 
@@ -3167,7 +3167,7 @@ const d = labToolData.rockCycle;
 
                   upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0 });
 
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + " transition-all"
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
 
               }, d.rcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
 

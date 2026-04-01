@@ -3495,7 +3495,7 @@
                       }, className: "px-3 py-1.5 border border-amber-200 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" });
                     }),
                     dmOptions.length < 5 && React.createElement("button", { "aria-label": "Criteria & Weights (1=low, 5=critical)", onClick: function () { upd('dmOptions', dmOptions.concat(['Option ' + String.fromCharCode(65 + dmOptions.length)])); },
-                      className: "px-3 py-1.5 border-2 border-dashed border-amber-300 rounded-lg text-xs font-bold text-amber-500 hover:bg-amber-50" }, "+")
+                      className: "px-3 py-1.5 border-2 border-dashed border-amber-300 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-50" }, "+")
                   )
                 ),
                 // Criteria input
@@ -3608,7 +3608,7 @@
                   }, className: "px-3 py-2 bg-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-300" }, "Reveal All"),
                   React.createElement("button", { "aria-label": "Health Insurance Navigator", onClick: function () {
                     upd('crLevel', crLevel + 1); upd('crFound', []); upd('crRevealed', false);
-                  }, className: "px-4 py-2 bg-orange-500 text-white rounded-xl text-xs font-bold hover:bg-orange-600 transition-colors" },
+                  }, className: "px-4 py-2 bg-orange-700 text-white rounded-xl text-xs font-bold hover:bg-orange-600 transition-colors" },
                     crLevel < crContracts.length - 1 ? 'Next Contract \u2192' : '\uD83D\uDD04 Start Over')
                 )
               ),
@@ -3673,7 +3673,7 @@
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   [{ id: 'tire', label: '\uD83D\uDE97 Gas Laws & Tires' }, { id: 'insulation', label: '\uD83C\uDFE0 Heat & Insulation' }, { id: 'cook', label: '\uD83C\uDF73 Cooking Chemistry' }, { id: 'circuit', label: '\u26A1 Circuits & Wattage' }, { id: 'car', label: '\uD83D\uDD27 Car Care' }, { id: 'plumbing', label: '\uD83E\uDEA0 Plumbing' }, { id: 'home', label: '\uD83C\uDFE0 Home Systems' }].map(function (s) {
                     return React.createElement("button", { "aria-label": "Change as tab", key: s.id, onClick: function () { upd('asTab', s.id); },
-                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (asTab === s.id ? 'bg-teal-500 text-white shadow-md' : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50')
+                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (asTab === s.id ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50')
                     }, s.label);
                   })
                 ),
@@ -3990,10 +3990,10 @@
                       var ok = ccCurrentDash.choices[ccDashAnswer] === ccCurrentDash.name;
                       upd('ccDashFb', ok ? '\u2705 Correct! ' + ccCurrentDash.desc : '\u274C Not quite. ' + ccCurrentDash.desc);
                       if (ok && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 15, 'dashboard quiz');
-                    }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all" }, "Submit"),
+                    }, className: "w-full px-3 py-2 bg-orange-700 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all" }, "Submit"),
                     ccDashFb && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium " + (ccDashFb.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, ccDashFb),
                     ccDashFb && React.createElement("button", { "aria-label": "Next Light", onClick: function () { upd('ccDashQ', (ccDashQ + 1) % dashLights.length); upd('ccDashAnswer', null); upd('ccDashFb', null); },
-                      className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all mt-2" }, "\u27A1\uFE0F Next Light")
+                      className: "w-full px-3 py-2 bg-orange-700 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all mt-2" }, "\u27A1\uFE0F Next Light")
                   )
                 ),
 
@@ -4260,7 +4260,7 @@
                     // Low-flow toggle
                     React.createElement("div", { className: "flex items-center gap-3 mb-2" },
                       React.createElement("button", { "aria-label": "Shower (min/day)", onClick: function () { upd('wuLowFlow', !wuLowFlow); },
-                        className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (wuLowFlow ? 'bg-emerald-500 text-white' : 'bg-white text-slate-600 border border-slate-200') },
+                        className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (wuLowFlow ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200') },
                         wuLowFlow ? '\u2705 Low-Flow Fixtures ON' : '\uD83D\uDCA7 Standard Fixtures'),
                       React.createElement("span", { className: "text-[11px] text-slate-500" }, wuLowFlow ? "Using WaterSense\u00AE rates (saves ~40%)" : "Using standard fixture rates")
                     ),
@@ -4360,7 +4360,7 @@
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                     [{ id: 'hvac', label: '\uD83C\uDF2C\uFE0F HVAC' }, { id: 'water', label: '\uD83D\uDCA7 Pressure' }, { id: 'panel', label: '\u26A1 Panel' }, { id: 'energy', label: '\uD83D\uDD0C Energy Audit' }, { id: 'fire', label: '\uD83D\uDD25 Fire Safety' }, { id: 'insulation', label: '\uD83C\uDFE0 Insulation' }, { id: 'heating', label: '\uD83D\uDD25 Heating' }, { id: 'heatpump', label: '\u2668\uFE0F Heat Pump' }, { id: 'solar', label: '\u2600\uFE0F Solar vs Gas' }].map(function (s) {
                       return React.createElement("button", { "aria-label": "HVAC Filter Analyzer (MERV Ratings)", key: s.id, onClick: function () { upd('homeTab', s.id); },
-                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50')
+                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-700 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50')
                       }, s.label);
                     })
                   ),
@@ -4520,10 +4520,10 @@
                         var ok = hsPanelAnswer === panelCurrentQ.answer;
                         upd('hsPanelFb', ok ? '\u2705 Correct! ' + panelCurrentQ.explain : '\u274C Not quite. ' + panelCurrentQ.explain);
                         if (ok && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 15, 'panel breaker quiz');
-                      }, className: "w-full px-3 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-xs hover:bg-purple-600 transition-all" }, "Submit"),
+                      }, className: "w-full px-3 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-xs hover:bg-purple-600 transition-all" }, "Submit"),
                       hsPanelFb && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium mt-2 " + (hsPanelFb.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, hsPanelFb),
                       hsPanelFb && React.createElement("button", { "aria-label": "Next Scenario", onClick: function () { upd('hsPanelQ', (hsPanelQ + 1) % panelQuizzes.length); upd('hsPanelAnswer', null); upd('hsPanelFb', null); },
-                        className: "w-full px-3 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-xs mt-2 hover:bg-purple-600 transition-all" }, "\u27A1\uFE0F Next Scenario")
+                        className: "w-full px-3 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-xs mt-2 hover:bg-purple-600 transition-all" }, "\u27A1\uFE0F Next Scenario")
                     ),
                     React.createElement("div", { className: "bg-red-50 rounded-lg p-3 border border-red-200" },
                       React.createElement("p", { className: "text-[10px] font-bold text-red-700" }, "\u26A0\uFE0F When to Call an Electrician:"),
@@ -4666,12 +4666,12 @@
                         upd('fsScore', newScore);
                         upd('fsFeedback', correct ? '\u2705 Correct! ' + fsQuizData[fsIdx].explain : '\u274C Incorrect. ' + fsQuizData[fsIdx].explain);
                         if (correct && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 12, 'fire safety quiz');
-                      }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "Check Answer"),
+                      }, className: "w-full px-3 py-2 bg-orange-700 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "Check Answer"),
                       fsFeedback !== '' && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium mt-2 " + (fsFeedback.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, fsFeedback),
                       fsFeedback !== '' && React.createElement("button", { "aria-label": "Change fs complete", onClick: function () {
                         if (fsIdx + 1 >= fsQuizData.length) { upd('fsComplete', true); } else { upd('fsIdx', fsIdx + 1); }
                         upd('fsCurrentPick', null); upd('fsFeedback', '');
-                      }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-2 hover:bg-orange-600 transition-all" },
+                      }, className: "w-full px-3 py-2 bg-orange-700 text-white font-bold rounded-lg text-xs mt-2 hover:bg-orange-600 transition-all" },
                         fsIdx + 1 >= fsQuizData.length ? "\uD83C\uDFC1 See Results" : "\u27A1\uFE0F Next Question")
                     ),
                     // Results
@@ -4680,7 +4680,7 @@
                       React.createElement("p", { className: "text-2xl font-black " + (fsGrade === 'A' ? 'text-emerald-600' : fsGrade === 'B' ? 'text-sky-600' : fsGrade === 'C' ? 'text-amber-600' : 'text-red-600') }, fsScore + "/" + fsQuizData.length),
                       React.createElement("p", { className: "text-xs font-bold text-slate-500 mt-1" }, fsGrade === 'A' ? 'Fire Safety Expert! You know your stuff.' : fsGrade === 'B' ? 'Good Knowledge! Review a few areas.' : fsGrade === 'C' ? 'Needs Improvement. Study fire safety basics.' : 'Critical! Please review home fire safety immediately.'),
                       React.createElement("button", { "aria-label": "Retake Quiz", onClick: function () { upd('fsIdx', 0); upd('fsScore', 0); upd('fsCurrentPick', null); upd('fsFeedback', ''); upd('fsComplete', false); },
-                        className: "px-4 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "\uD83D\uDD04 Retake Quiz")
+                        className: "px-4 py-2 bg-orange-700 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "\uD83D\uDD04 Retake Quiz")
                     ),
                     // Quick tips
                     React.createElement("div", { className: "bg-red-50 rounded-lg p-3 border border-red-200" },
@@ -4703,7 +4703,7 @@
                       React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-1" },
                         insZoneData.map(function (z) {
                           return React.createElement("button", { "aria-label": "Zone", key: z.zone, onClick: function () { upd('insZone', z.zone); },
-                            className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (insZone === z.zone ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50') },
+                            className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (insZone === z.zone ? 'bg-purple-700 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50') },
                             "Zone " + z.zone + " " + z.label);
                         })
                       )
@@ -4793,7 +4793,7 @@
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                   htSrcSystems.map(function (s) {
                     return React.createElement("button", { "aria-label": "Change ht src fuel", key: s.id, onClick: function () { upd('htSrcFuel', s.id); },
-                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (htSrcFuel === s.id ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50')
+                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (htSrcFuel === s.id ? 'bg-orange-700 text-white shadow-md' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50')
                     }, s.icon + " " + s.name);
                   })
                 ),
@@ -6665,7 +6665,7 @@
                 }),
                 React.createElement("button", { "aria-label": "FFT",
                   onClick: function () { upd('showFFT', !showFFT); },
-                  className: "w-6 h-6 rounded text-[10px] font-bold flex items-center justify-center transition-all " + (showFFT ? 'bg-green-500 text-white' : 'bg-white/10 text-white/50 hover:bg-white/20')
+                  className: "w-6 h-6 rounded text-[10px] font-bold flex items-center justify-center transition-all " + (showFFT ? 'bg-green-700 text-white' : 'bg-white/10 text-white/50 hover:bg-white/20')
                 }, "FFT")
               )
             ),
@@ -6708,7 +6708,7 @@
                 ),
                 React.createElement("button", { "aria-label": "Change scale lock",
                   onClick: function () { upd('scaleLock', !scaleLock); },
-                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (scaleLock ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-500')
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (scaleLock ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-500')
                 }, (scaleLock ? '\uD83D\uDD12' : '\uD83D\uDD13') + ' Scale Lock'),
                 React.createElement("select", {
                   'aria-label': 'Musical scale',
@@ -6807,7 +6807,7 @@
                   ),
                   React.createElement("button", { "aria-label": "Jazz Mode",
                     onClick: function () { upd('jazzMode', !jazzMode); },
-                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500')
+                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500')
                   }, "\uD83C\uDFB7 Jazz Mode")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
@@ -7016,7 +7016,7 @@
                   React.createElement("span", { className: "text-[11px] text-indigo-400 cursor-help", title: EFFECT_TIPS.arpeggiator.text }, "\u2753"),
                   React.createElement("button", { "aria-label": "Pattern",
                     onClick: function () { if (arpOn) stopArpeggiator(); else startArpeggiator(); },
-                    className: "ml-auto px-3 py-1 rounded-lg text-xs font-bold " + (arpOn ? 'bg-red-500 text-white' : 'bg-indigo-600 text-white')
+                    className: "ml-auto px-3 py-1 rounded-lg text-xs font-bold " + (arpOn ? 'bg-red-700 text-white' : 'bg-indigo-600 text-white')
                   }, arpOn ? '\u23F9 Stop' : '\u25B6 Start')
                 ),
                 React.createElement("div", { className: "flex gap-2 items-center" },
@@ -7084,7 +7084,7 @@
                     }, "\u25B6 Play Ascending"),
                     React.createElement("button", { "aria-label": "Descending",
                       onClick: function () { playScale(selectedRoot, selectedScale, true); },
-                      className: "px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500 text-white"
+                      className: "px-2 py-0.5 rounded text-[10px] font-bold bg-purple-700 text-white"
                     }, "\u25BC Descending")
                   ),
                   React.createElement("p", { className: "text-[10px] text-purple-600 mb-1.5" }, SCALES[selectedScale].desc),
@@ -7143,7 +7143,7 @@
                   React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.chords.text }, "\u2753"),
                   React.createElement("button", { "aria-label": "Jazz Mode",
                     onClick: function () { upd('jazzMode', !jazzMode); },
-                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500')
+                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500')
                   }, "\uD83C\uDFB7 Jazz Mode")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1 mb-3" },
@@ -7333,7 +7333,7 @@
               React.createElement("div", { className: "flex items-center gap-2 mb-3 bg-gradient-to-r from-slate-50 to-purple-50 rounded-xl border border-purple-200/50 p-2 flex-wrap" },
                 React.createElement("button", { "aria-label": "BPM",
                   onClick: function () { if (d.seqPlaying) stopSequencer(); else startSequencer(); },
-                  className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-500 text-white shadow-inner' : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-md')
+                  className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-700 text-white shadow-inner' : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-md')
                 }, d.seqPlaying ? '\u23F9 Stop' : '\u25B6 Play'),
                 // BPM
                 React.createElement("div", { className: "flex items-center gap-1" },
@@ -7356,7 +7356,7 @@
                   React.createElement("button", { "aria-label": "Clear", onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-500 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
                 ),
                 // Step Rec toggle
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-500 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
+                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
                 // Clear
                 React.createElement("button", { "aria-label": "Clear", onClick: function () { pushBpUndo(); upd('seqGrid', {}); upd('beatMelody', null); }, className: "ml-auto px-2 py-1 rounded text-[10px] font-bold bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all" }, "\uD83D\uDDD1 Clear")
               ),
@@ -7388,7 +7388,7 @@
                 React.createElement("div", { className: "border-l border-slate-200 h-6 mx-1" }),
                 React.createElement("button", { "aria-label": "A loop",
                   onClick: function () { upd('bpChainMode', !d.bpChainMode); },
-                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.bpChainMode ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100')
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.bpChainMode ? 'bg-orange-700 text-white' : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100')
                 }, "\uD83D\uDD17 Chain " + (d.bpChainMode ? 'ON' : 'OFF')),
                 d.bpChainMode && React.createElement("span", { className: "text-[11px] text-orange-500" }, "A\u2192B\u2192C\u2192D loop")
               ),
@@ -7422,10 +7422,10 @@
                       }),
                       React.createElement("span", { className: "text-[8px] text-slate-500 w-7 text-right" }, Math.round(vol * 100) + '%'),
                       React.createElement("button", { "aria-label": "M", onClick: function () { var m = Object.assign({}, d.chMutes || {}); m[row] = !m[row]; upd('chMutes', m); },
-                        className: "w-5 h-5 rounded text-[8px] font-black " + (muted ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                        className: "w-5 h-5 rounded text-[8px] font-black " + (muted ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                       }, "M"),
                       React.createElement("button", { "aria-label": "S", onClick: function () { upd('chSolo', soloed ? -1 : row); },
-                        className: "w-5 h-5 rounded text-[8px] font-black " + (soloed ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                        className: "w-5 h-5 rounded text-[8px] font-black " + (soloed ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                       }, "S")
                     );
                   })
@@ -7603,7 +7603,7 @@
                       upd('seqGrid', g);
                       addToast('\uD83E\uDD4A Rhythm loaded to Kick!', 'success');
                     },
-                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-rose-500 text-white hover:bg-rose-600 transition-all"
+                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-rose-700 text-white hover:bg-rose-600 transition-all"
                   }, "\u25B6 Load to Grid")
                 ) : React.createElement("p", { className: "text-[10px] text-rose-400 italic" }, "Click \"Challenge me!\" to practice rhythm patterns")
               ),
@@ -7663,11 +7663,11 @@
                       upd('beatSaveRefresh', Date.now());
                       addToast('\uD83D\uDCBE Beat saved!', 'success');
                     },
-                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-sm"
+                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all shadow-sm"
                   }, "\uD83D\uDCBE Save"),
-                  React.createElement("button", { "aria-label": "Share URL", onClick: sharePattern, className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all shadow-sm" }, "\uD83D\uDD17 Share URL"),
+                  React.createElement("button", { "aria-label": "Share URL", onClick: sharePattern, className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-blue-700 text-white hover:bg-blue-600 transition-all shadow-sm" }, "\uD83D\uDD17 Share URL"),
                   React.createElement("button", { "aria-label": "Snapshot", onClick: exportBeat, disabled: d.bpExporting,
-                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-sm " + (d.bpExporting ? 'bg-gray-300 text-gray-500' : 'bg-orange-500 text-white hover:bg-orange-600')
+                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-sm " + (d.bpExporting ? 'bg-gray-300 text-gray-500' : 'bg-orange-700 text-white hover:bg-orange-600')
                   }, d.bpExporting ? '\u23F3 Recording...' : '\uD83D\uDCE5 Export'),
                   React.createElement("button", { "aria-label": "Snapshot",
                     onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'bp-' + Date.now(), tool: 'synth', label: 'Beat Pad', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); },
@@ -7699,7 +7699,7 @@
                             s.splice(ci, 1); localStorage.setItem('alloflow_beats', JSON.stringify(s));
                             upd('beatSaveRefresh', Date.now());
                           },
-                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50"
+                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-red-700 hover:text-red-600 hover:bg-red-50"
                         }, "\u2715")
                       );
                     })
@@ -7726,7 +7726,7 @@
                     return React.createElement("button", { "aria-label": "Change omni voice",
                       key: v.id,
                       onClick: function () { upd('omniVoice', v.id); },
-                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-600 text-white shadow-md' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100')
+                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-700 text-white shadow-md' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100')
                     },
                       React.createElement("div", { className: "text-xs font-bold" }, v.label),
                       React.createElement("div", { className: "text-[11px] " + ((d.omniVoice || 'harp') === v.id ? 'text-amber-200' : 'text-amber-500') }, v.desc)
@@ -7851,7 +7851,7 @@
                     React.createElement("span", { className: "text-lg" }, "\uD83E\uDD41"),
                     React.createElement("span", { className: "text-sm font-bold text-white" }, "Beat Pad"),
                     React.createElement("span", { className: "text-[10px] text-indigo-400" }, "MPC-Lite"),
-                    d.midiConnected && React.createElement("span", { className: "px-2 py-0.5 bg-green-500/20 text-green-400 text-[11px] font-bold rounded-full border border-green-500/30" }, "\uD83C\uDFB9 MIDI")
+                    d.midiConnected && React.createElement("span", { className: "px-2 py-0.5 bg-green-500/20 text-green-900 text-[11px] font-bold rounded-full border border-green-500/30" }, "\uD83C\uDFB9 MIDI")
                   ),
                   React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold" }, "BPM"),
@@ -7878,7 +7878,7 @@
                 React.createElement("div", { className: "flex gap-2 mb-4" },
                   React.createElement("button", { "aria-label": "Clear",
                     onClick: function () { if (d.seqPlaying) stopSequencer(); else startSequencer(); },
-                    className: "flex-1 py-2.5 rounded-xl text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' : 'bg-emerald-500 text-white hover:bg-emerald-600')
+                    className: "flex-1 py-2.5 rounded-xl text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-700 text-white hover:bg-red-600 animate-pulse' : 'bg-emerald-700 text-white hover:bg-emerald-600')
                   }, d.seqPlaying ? "\u23F9 Stop" : "\u25B6 Play"),
                   React.createElement("button", { "aria-label": "Clear",
                     onClick: function () { upd('seqGrid', {}); },
@@ -7907,7 +7907,7 @@
                         var isCurrent = d.seqCurrentStep === i;
                         return React.createElement("div", {
                           key: i,
-                          className: "text-center text-[11px] font-bold rounded py-0.5 " + (isCurrent ? 'bg-amber-500 text-white' : isBeat ? 'text-indigo-300' : 'text-indigo-600')
+                          className: "text-center text-[11px] font-bold rounded py-0.5 " + (isCurrent ? 'bg-amber-700 text-white' : isBeat ? 'text-indigo-300' : 'text-indigo-600')
                         }, isBeat ? String(Math.floor(i / 4) + 1) : '·');
                       })
                     ),
@@ -8013,7 +8013,7 @@
                   React.createElement("span", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDC42 Ear Training"),
                   React.createElement("button", { "aria-label": "Replay",
                     onClick: startIntervalGame,
-                    className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+                    className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-700"
                   }, intervalGame ? '\uD83D\uDD04 New Interval' : '\u25B6 Start'),
                   intervalGame && React.createElement("button", { "aria-label": "Replay",
                     onClick: replayInterval,
@@ -8085,7 +8085,7 @@
                     return React.createElement("button", { "aria-label": "Change filter type",
                       key: ft,
                       onClick: function () { upd('filterType', ft); },
-                      className: "py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.filterType || 'lowpass') === ft ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-600')
+                      className: "py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.filterType || 'lowpass') === ft ? 'bg-cyan-700 text-white' : 'bg-slate-100 text-slate-600')
                     }, ft);
                   })
                 )
@@ -8122,7 +8122,7 @@
                 }),
                 React.createElement("button", { "aria-label": "Music Theory Quiz",
                   onClick: function () { playPlucked(noteFreq(selectedRoot, d.octave || 4), 'ks_test', d.ksBrightness || 0.8, d.ksDamping || 0.996); },
-                  className: "mt-2 px-4 py-2 rounded-lg text-sm font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all w-full"
+                  className: "mt-2 px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-700 transition-all w-full"
                 }, "\uD83C\uDFB8 Pluck " + selectedRoot + (d.octave || 4))
               ),
 
@@ -10455,10 +10455,10 @@
                 d.dilemmaResult.lesson && React.createElement('div', { className: 'mt-1 text-[11px] text-indigo-300 bg-indigo-900/50 rounded-lg px-2 py-1' }, '\uD83D\uDCDA ' + d.dilemmaResult.lesson),
                 d.dilemmaResult.values && React.createElement('div', { className: 'mt-1 flex gap-1 flex-wrap text-[8px]' },
                   Object.keys(d.dilemmaResult.values).filter(function (vk5) { return d.dilemmaResult.values[vk5] !== 0; }).map(function (vk5) {
-                    return React.createElement('span', { key: vk5, className: d.dilemmaResult.values[vk5] > 0 ? 'text-green-400 bg-green-900/30 px-1 rounded' : 'text-red-400 bg-red-900/30 px-1 rounded' },
+                    return React.createElement('span', { key: vk5, className: d.dilemmaResult.values[vk5] > 0 ? 'text-green-400 bg-green-900/30 px-1 rounded' : 'text-red-200 bg-red-900/30 px-1 rounded' },
                       vk5 + (d.dilemmaResult.values[vk5] > 0 ? '\u2191' : '\u2193'));
                   }),
-                  d.dilemmaResult.equity !== 0 && React.createElement('span', { className: d.dilemmaResult.equity > 0 ? 'text-cyan-400 bg-cyan-900/30 px-1 rounded' : 'text-red-400 bg-red-900/30 px-1 rounded' },
+                  d.dilemmaResult.equity !== 0 && React.createElement('span', { className: d.dilemmaResult.equity > 0 ? 'text-cyan-400 bg-cyan-900/30 px-1 rounded' : 'text-red-200 bg-red-900/30 px-1 rounded' },
                     '\u2696\uFE0F' + (d.dilemmaResult.equity > 0 ? '\u2191' : '\u2193'))
                 )
               ),
@@ -10769,7 +10769,7 @@
                         if (typeof addXP === 'function') addXP(30, 'Built ' + bdef2.name);
                       } else { if (addToast) addToast('\u274C Incorrect! Study and try again.', 'error'); upd('scienceGateInput', ''); }
                       upd('scienceGate', null);
-                    }, className: 'px-4 py-2 bg-purple-500 text-white rounded-xl text-xs font-bold'
+                    }, className: 'px-4 py-2 bg-purple-700 text-white rounded-xl text-xs font-bold'
                   }, '\u2705 Submit'),
                   React.createElement('button', { onClick: function () { upd('scienceGate', null); }, className: 'px-3 py-2 bg-slate-700 text-slate-300 rounded-xl text-xs' }, '\u2715')
                 ),
@@ -10914,7 +10914,7 @@
                           }
                         },
                         disabled: !canAdopt,
-                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-500')
+                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-500')
                       }, '\uD83D\uDD2C 10 sci')
                     );
                   })
@@ -11009,7 +11009,7 @@
                           }
                         },
                         disabled: !canResearch,
-                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (canResearch ? 'bg-violet-500 text-white' : 'bg-slate-700 text-slate-500')
+                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (canResearch ? 'bg-violet-700 text-white' : 'bg-slate-700 text-slate-500')
                       }, '\uD83D\uDD2C ' + rd2.cost + ' sci')
                     );
                   })

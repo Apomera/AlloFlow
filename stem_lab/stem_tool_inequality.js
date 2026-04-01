@@ -853,7 +853,7 @@ window.StemLab = window.StemLab || {
                   addToast('Could not parse. Try format: 3x - 7 \u2265 5', 'error');
                 }
               },
-              className: 'px-3 py-1.5 text-xs font-bold bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all'
+              className: 'px-3 py-1.5 text-xs font-bold bg-teal-700 text-white rounded-lg hover:bg-teal-700 transition-all'
             }, '\uD83D\uDD0D Solve'),
             solverSteps && solverSteps.solution && h('button', { 'aria-label': 'Graph It',
               onClick: function() {

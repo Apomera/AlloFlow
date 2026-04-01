@@ -1263,7 +1263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { className: 'flex flex-wrap gap-2 mb-2' },
               h('button', { 'aria-label': 'Act', onClick: function() { upd('actionMode', 'action'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '⚔️ Act'),
               h('button', { 'aria-label': 'Explore', onClick: function() { upd('actionMode', 'explore'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '🔍 Explore'),
-              h('button', { 'aria-label': 'Battle', onClick: function() { upd('actionMode', 'craft'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
+              h('button', { 'aria-label': 'Battle', onClick: function() { upd('actionMode', 'craft'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
               !activeBattle && !activeNPC && h('button', { 'aria-label': 'Battle', onClick: startBattle, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-red-100 text-red-700 hover:bg-red-200' }, '⚔️ Battle'),
               activeNPC && h('button', { 'aria-label': 'Leave', onClick: function() { updMulti({ activeNPC: null, actionMode: 'action' }); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200' }, '👋 Leave')
             ),
@@ -1508,7 +1508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               h('button', { 'aria-label': 'Change gm character prompt',
                 onClick: function() { if ((d.gmCharacterPrompt || '').trim()) { createGMCharacter(d.gmCharacterPrompt); upd('gmCharacterPrompt', ''); } },
                 disabled: !(d.gmCharacterPrompt || '').trim() || actionLoading,
-                className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
+                className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
               }, actionLoading ? 'Creating...' : '✨ Create Character'),
               gmCharacters.length > 0 && h('div', { className: 'space-y-2 mt-2' },
                 h('div', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-widest' }, 'Characters in World (' + gmCharacters.length + ')'),

@@ -1370,7 +1370,7 @@ const d = labToolData.solarSystem;
 
                   onClick: () => upd('paused', !paused),
 
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-700 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
 
                 }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
 

@@ -731,7 +731,7 @@ window.StemLab = window.StemLab || {
       // ── Tab button helper ──
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
-        return h('button', { 'aria-label': 'Change active tab', onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-200') }, icon + ' ' + label);
+        return h('button', { 'aria-label': 'Change active tab', onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-200') }, icon + ' ' + label);
       };
 
       // Regression line/curve path
@@ -852,7 +852,7 @@ window.StemLab = window.StemLab || {
               { id: 'ogive', icon: '\uD83D\uDCC9', label: 'Ogive' }
             ].map(function(ct) {
               return h('button', { 'aria-label': 'Switch Chart', key: ct.id, onClick: function() { switchChart(ct.id); },
-                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' + (chartType === ct.id ? 'bg-teal-600 text-white shadow' : 'bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100')
+                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' + (chartType === ct.id ? 'bg-teal-700 text-white shadow' : 'bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100')
               }, ct.icon + ' ' + ct.label);
             }),
             h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, 'aria-label': 'Color palette', className: 'ml-auto text-[10px] px-2 py-1 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
@@ -1111,7 +1111,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 items-end mb-2' },
               h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-500 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
               h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-500 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
-              h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-600 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
+              h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
             ),
             n > 0 && h('div', { className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-500' },
               visiblePoints.map(function(p, i) { return h('span', { key: i, className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); } }, '(' + p.x + ',' + p.y + ')'); })
@@ -1124,7 +1124,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Regression:'),
               ['linear', 'quadratic', 'exponential', 'logarithmic'].map(function(rt) {
                 return h('button', { 'aria-label': 'Pearson r / Spearman \u03C1', key: rt, onClick: function() { upd('regressionType', rt); },
-                  className: 'px-2 py-0.5 rounded text-[10px] font-bold transition-all ' + (regressionType === rt ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                  className: 'px-2 py-0.5 rounded text-[10px] font-bold transition-all ' + (regressionType === rt ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                 }, rt.charAt(0).toUpperCase() + rt.slice(1));
               })
             ),
@@ -1325,14 +1325,14 @@ window.StemLab = window.StemLab || {
               var active = quizType === qt.id;
               var used = !!quizTypesUsed[qt.id];
               return h('button', { 'aria-label': 'Make Quiz', key: qt.id, onClick: function() { upd('quizType', qt.id); },
-                className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50') + (used ? '' : '')
+                className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50') + (used ? '' : '')
               }, qt.icon + ' ' + qt.label + (used ? ' \u2713' : ''));
             }),
             dpScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-600 ml-auto' }, '\u2B50 ' + dpScore),
             dpStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + dpStreak)
           ),
 
-          h('button', { 'aria-label': 'Make Quiz', onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-600 text-white') + ' hover:opacity-90 transition-all' },
+          h('button', { 'aria-label': 'Make Quiz', onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-700 text-white') + ' hover:opacity-90 transition-all' },
             dpQuiz ? '\uD83D\uDD04 New Question' : '\uD83C\uDFAF Start Quiz'
           ),
 
@@ -1402,7 +1402,7 @@ window.StemLab = window.StemLab || {
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-4 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-xs font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Data Analyst'),
-              h('button', { 'aria-label': 'Ask A I', onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[10px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-500 text-white hover:bg-pink-600') },
+              h('button', { 'aria-label': 'Ask A I', onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[10px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600') },
                 aiLoading ? '\u23F3 Analyzing...' : '\u2728 Analyze Data')
             ),
             aiInsight
@@ -1488,7 +1488,7 @@ window.StemLab = window.StemLab || {
               } else {
                 if (addToast) addToast('\u26A0\uFE0F No valid data found. Format: x,y per line', 'error');
               }
-            }, className: 'mt-2 px-4 py-1.5 bg-teal-600 text-white font-bold rounded-lg text-sm hover:bg-teal-700' }, '\u21E9 Import')
+            }, className: 'mt-2 px-4 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-sm hover:bg-teal-700' }, '\u21E9 Import')
           )
         ),
 

@@ -799,7 +799,7 @@
                     var pick = all[Math.floor(Math.random() * all.length)];
                     upd('_classifyQ', pick);
                     upd('_classifyFb', null);
-                  }, className: 'px-4 py-2 text-xs font-bold text-white bg-purple-500 rounded-lg hover:bg-purple-600' }, '\u25B6 Start');
+                  }, className: 'px-4 py-2 text-xs font-bold text-white bg-purple-700 rounded-lg hover:bg-purple-600' }, '\u25B6 Start');
                 }
                 return h('div', null,
                   h('p', { className: 'text-sm font-bold text-slate-700 mb-2' }, classifyQ.eq),
@@ -979,7 +979,7 @@
             // Safety tabs
             h('div', { className: 'flex gap-2 mb-3' },
               [{ id: 'symbols', label: '\u26A0\uFE0F GHS Symbols' }, { id: 'emergencies', label: '\uD83D\uDEA8 Emergencies' }, { id: 'rules', label: '\uD83D\uDCCB Lab Rules' }].map(function(tab) {
-                return h('button', { 'aria-label': 'Change _safety tab', key: tab.id, onClick: function() { upd('_safetyTab', tab.id); }, className: 'px-3 py-1.5 text-[10px] font-bold rounded-lg border ' + (safetyTab === tab.id ? 'bg-red-500 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200 hover:border-red-300') }, tab.label);
+                return h('button', { 'aria-label': 'Change _safety tab', key: tab.id, onClick: function() { upd('_safetyTab', tab.id); }, className: 'px-3 py-1.5 text-[10px] font-bold rounded-lg border ' + (safetyTab === tab.id ? 'bg-red-700 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200 hover:border-red-300') }, tab.label);
               })
             ),
             // GHS Symbols
@@ -1005,7 +1005,7 @@
             safetyTab === 'emergencies' && h('div', null,
               h('div', { className: 'flex gap-1.5 mb-3' },
                 EMERGENCIES.map(function(em, idx) {
-                  return h('button', { 'aria-label': 'Change _emerg answer', key: idx, onClick: function() { updMulti({ _emergIdx: idx, _emergAnswer: null, _emergFeedback: null }); }, className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (emergIdx === idx ? 'bg-red-500 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200') }, (idx + 1) + '. ' + em.title);
+                  return h('button', { 'aria-label': 'Change _emerg answer', key: idx, onClick: function() { updMulti({ _emergIdx: idx, _emergAnswer: null, _emergFeedback: null }); }, className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (emergIdx === idx ? 'bg-red-700 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200') }, (idx + 1) + '. ' + em.title);
                 })
               ),
               (function() {
@@ -1167,7 +1167,7 @@
             ),
             battleActive && battleRound >= BATTLE_QS.length && !battleResult && h('div', { className: 'text-center bg-amber-50 rounded-xl border border-amber-200 p-6' },
               h('p', { className: 'text-lg font-bold text-amber-700' }, 'Battle Over! Score: ' + battleScore + '/' + BATTLE_QS.length),
-              h('button', { 'aria-label': 'Try Again', onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'mt-2 px-6 py-2 text-sm font-bold text-white bg-amber-500 rounded-lg' }, '\u2694\uFE0F Try Again')
+              h('button', { 'aria-label': 'Try Again', onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'mt-2 px-6 py-2 text-sm font-bold text-white bg-amber-700 rounded-lg' }, '\u2694\uFE0F Try Again')
             )
           ),
 
@@ -1193,7 +1193,7 @@
                     ),
                     idx === 0 && h('button', { 'aria-label': 'Explore Reaction Types', onClick: function() { upd('subtool', 'reactions'); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold text-lime-600 bg-lime-50 border border-lime-200 rounded-lg hover:bg-lime-100' }, '\u2192 Explore Reaction Types'),
                     idx === 2 && h('button', { 'aria-label': 'View Molecular Models', onClick: function() { upd('subtool', 'molecular'); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100' }, '\u2192 View Molecular Models'),
-                    idx === 3 && h('button', { 'aria-label': 'Try Stoichiometry Calculator', onClick: function() { upd('subtool', 'stoich'); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold text-teal-600 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100' }, '\u2192 Try Stoichiometry Calculator'),
+                    idx === 3 && h('button', { 'aria-label': 'Try Stoichiometry Calculator', onClick: function() { upd('subtool', 'stoich'); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100' }, '\u2192 Try Stoichiometry Calculator'),
                     callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(content); }, className: 'mt-2 ml-2 px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100' }, '\uD83D\uDD0A Read Aloud')
                   )
                 );

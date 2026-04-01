@@ -617,7 +617,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                     className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
-                      (difficulty === d ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-amber-500 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                      (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-amber-700 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                   }, d);
                 })
               )
@@ -642,7 +642,7 @@ window.StemLab = window.StemLab || {
               )
             : h('div', { className: 'space-y-2' },
                 h('div', { className: 'flex items-center gap-2' },
-                  h('span', { className: 'text-[11px] font-bold uppercase text-amber-400 bg-amber-100 px-2 py-0.5 rounded-full' }, challenge.mode || viewMode),
+                  h('span', { className: 'text-[11px] font-bold uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full' }, challenge.mode || viewMode),
                   streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
                 ),
                 h('p', { className: 'text-sm font-bold text-amber-800' }, challenge.question),
@@ -657,7 +657,7 @@ window.StemLab = window.StemLab || {
                   }),
                   h('button', { 'aria-label': 'Check',
                     onClick: checkChallenge,
-                    className: 'px-4 py-2 bg-amber-600 text-white font-bold rounded-lg text-sm hover:bg-amber-700'
+                    className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-700'
                   }, 'Check')
                 ),
                 feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),

@@ -2389,7 +2389,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, "🧪 Needs & Meters"),
 
-                    phase === 'grow' && React.createElement("span", { className: "text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full" },
+                    phase === 'grow' && React.createElement("span", { className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full" },
 
                       seasonName + ' • Day ' + dayInSeason + '/30'
 
@@ -2443,7 +2443,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   ),
 
-                  growthTime > 30 && React.createElement("div", { className: "text-[10px] text-red-600 bg-red-100 rounded-lg p-2 mt-1" },
+                  growthTime > 30 && React.createElement("div", { className: "text-[10px] text-red-800 bg-red-100 rounded-lg p-2 mt-1" },
 
                     "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over."
 
@@ -2617,7 +2617,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         onClick: function () { upd('growSpeed', s); },
 
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
 
                       }, s + '×');
 
@@ -2845,7 +2845,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("span", { className: "text-sm font-bold text-amber-700" }, _totalYield + ' units'),
 
-                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" }, '✨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
+                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full" }, '✨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
 
                   )
 
@@ -2959,7 +2959,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 onClick: function () { upd('showSciencePanel', !showSciencePanel); },
 
-                className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+                className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-700 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
 
               }, "\uD83D\uDCDA Science")
 
@@ -3430,7 +3430,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("h4", { className: "text-sm font-bold text-rose-800 mb-2" }, "\uD83C\uDFAF Garden Scenarios (" + (gardenScenarioIdx + 1) + "/" + GARDEN_SCENARIOS.length + ")"),
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
-                gardenStreak > 0 ? React.createElement("span", { className: "px-3 py-0.5 rounded-full text-[11px] font-bold " + (gardenStreak >= 5 ? 'bg-amber-500 text-white animate-pulse' : gardenStreak >= 3 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600') },
+                gardenStreak > 0 ? React.createElement("span", { className: "px-3 py-0.5 rounded-full text-[11px] font-bold " + (gardenStreak >= 5 ? 'bg-amber-700 text-white animate-pulse' : gardenStreak >= 3 ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + gardenStreak + ' streak!') : null,
                 React.createElement("span", { className: "text-[11px] text-slate-500" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
               ),
@@ -3573,7 +3573,7 @@ var d = (labToolData.companionPlanting) || {};
                   return React.createElement("div", { className: "rounded-xl p-2.5 border bg-white text-center", style: { borderColor: step.color + '40' } },
                     React.createElement("div", { className: "text-[10px] font-bold", style: { color: step.color } }, 'Step ' + step.step + ': ' + step.name),
                     React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, step.desc),
-                    step.step === 2 && React.createElement("div", { className: "text-[8px] text-emerald-600 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!')
+                    step.step === 2 && React.createElement("div", { className: "text-[8px] text-emerald-800 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!')
                   );
                 })()
               )
@@ -3719,7 +3719,7 @@ var d = (labToolData.companionPlanting) || {};
                   ['all', 'friend', 'enemy'].map(function(f) {
                     return React.createElement("button", { "aria-label": "Change pair filter", key: f,
                       onClick: function() { upd('pairFilter', f); },
-                      className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-600 text-white' : 'bg-white text-green-700 border border-green-200')
+                      className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-200')
                     }, f === 'all' ? 'All' : f === 'friend' ? '\u2705 Friends' : '\u274C Enemies');
                   })
                 ),
@@ -3828,11 +3828,11 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "flex gap-1 mb-2" },
                   React.createElement("button", { "aria-label": "Pests (",
                     onClick: function() { upd('pestTab', 'pests'); },
-                    className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'pests' ? 'bg-red-500 text-white' : 'bg-white text-red-600 border border-red-200')
+                    className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'pests' ? 'bg-red-700 text-white' : 'bg-white text-red-600 border border-red-200')
                   }, "\uD83D\uDC1B Pests (" + GARDEN_PESTS.length + ")"),
                   React.createElement("button", { "aria-label": "Allies (",
                     onClick: function() { upd('pestTab', 'beneficial'); },
-                    className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'beneficial' ? 'bg-green-500 text-white' : 'bg-white text-green-600 border border-green-200')
+                    className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'beneficial' ? 'bg-green-700 text-white' : 'bg-white text-green-600 border border-green-200')
                   }, "\uD83D\uDC1E Allies (" + BENEFICIAL_INSECTS.length + ")")
                 ),
                 (d.pestTab || 'pests') === 'pests' ?

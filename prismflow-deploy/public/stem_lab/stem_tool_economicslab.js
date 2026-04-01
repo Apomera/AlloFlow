@@ -1350,11 +1350,11 @@ var d = labToolData || {};
 
               }, '\uD83C\uDF93 Literacy: ' + econLiteracyScore + '%'),
 
-              React.createElement('span', { className: 'text-[11px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
+              React.createElement('span', { className: 'text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
 
               econAchievements.length > 0 && React.createElement('span', {
 
-                className: 'text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
+                className: 'text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
 
                 onClick: function () { upd('showAchievements', !(d.showAchievements)); }
 
@@ -1372,7 +1372,7 @@ var d = labToolData || {};
 
                 onClick: function () { upd('showQuiz', !(d.showQuiz)); },
 
-                className: 'text-[11px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
+                className: 'text-[11px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
 
               }, '\u270D\uFE0F Quiz Me'),
 
@@ -1746,7 +1746,7 @@ var d = labToolData || {};
               React.createElement('h4', { className: 'text-sm font-bold text-rose-800 mb-2' }, '\uD83C\uDFAF Economics Scenarios (' + (econScenarioIdx + 1) + '/' + ECON_SCENARIOS.length + ')'),
               // Streak + score
               React.createElement('div', { className: 'flex justify-between items-center mb-2' },
-                econStreak > 0 ? React.createElement('span', { className: 'inline-block px-3 py-0.5 rounded-full text-[11px] font-bold ' + (econStreak >= 5 ? 'bg-amber-500 text-white animate-pulse' : econStreak >= 3 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600') },
+                econStreak > 0 ? React.createElement('span', { className: 'inline-block px-3 py-0.5 rounded-full text-[11px] font-bold ' + (econStreak >= 5 ? 'bg-amber-700 text-white animate-pulse' : econStreak >= 3 ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + econStreak + ' streak!' + (econStreak >= 5 ? ' AMAZING!' : econStreak >= 3 ? ' On fire!' : '')) : null,
                 React.createElement('span', { className: 'text-[11px] text-slate-500' }, 'Score: ' + econScenarioScore + '/' + econScenarioTotal + ' | Best: ' + econBestStreak)
               ),
@@ -2657,7 +2657,7 @@ var d = labToolData || {};
 
                     },
 
-                    className: 'w-full py-2 rounded-lg text-xs font-bold bg-violet-500 text-white mb-1'
+                    className: 'w-full py-2 rounded-lg text-xs font-bold bg-violet-700 text-white mb-1'
 
                   }, '\u2705 Apply Scenario to Graph'),
 
@@ -3029,7 +3029,7 @@ var d = labToolData || {};
 
                       className: 'flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
 
-                        ((d.pfInvestType || '') === short ? 'bg-green-500 text-white shadow-sm' : 'bg-white text-slate-500 border border-green-200 hover:border-green-400')
+                        ((d.pfInvestType || '') === short ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-slate-500 border border-green-200 hover:border-green-400')
 
                     }, type);
 

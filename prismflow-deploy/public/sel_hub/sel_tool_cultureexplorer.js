@@ -922,7 +922,7 @@ window.SelHub = window.SelHub || {
               }),
               h('button', { 'aria-label': 'traditions', onClick: function() { if (customCulture.trim()) { updMulti({ culture: customCulture.trim(), tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(customCulture.trim(), 'traditions'); } },
                 disabled: !customCulture.trim(),
-                className: 'px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 disabled:opacity-40 transition-colors'
+                className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 disabled:opacity-40 transition-colors'
               }, 'Explore')
             )
           ),
@@ -1032,7 +1032,7 @@ window.SelHub = window.SelHub || {
                       updMulti({ culture: hl.name, tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null });
                       exploreCulture(hl.name, 'traditions');
                     },
-                    className: 'w-full mt-1 px-3 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
+                    className: 'w-full mt-1 px-3 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
                   }, '\uD83D\uDD2C AI Deep Dive into ' + hl.name)
                 )
               );
@@ -1086,7 +1086,7 @@ window.SelHub = window.SelHub || {
                 ),
                 h('button', { 'aria-label': 'Toggle option', onClick: function() { toggleRecipeTry(recipe.id); },
                   className: 'w-full px-4 py-2.5 rounded-lg text-sm font-bold transition-all ' +
-                    (wantToTry ? 'bg-amber-100 border-2 border-amber-300 text-amber-700 hover:bg-amber-200' : 'bg-amber-500 text-white hover:bg-amber-600')
+                    (wantToTry ? 'bg-amber-100 border-2 border-amber-300 text-amber-700 hover:bg-amber-200' : 'bg-amber-700 text-white hover:bg-amber-600')
                 }, wantToTry ? '\u2764\uFE0F On My List!' : '\uD83D\uDE0B I Want to Try This!')
               )
             );
@@ -1262,7 +1262,7 @@ window.SelHub = window.SelHub || {
 
                   // Mark as read
                   !isRead && h('button', { 'aria-label': 'Mark as read', onClick: function() { markStoryRead(story.id); },
-                    className: 'w-full px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors'
+                    className: 'w-full px-4 py-2.5 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors'
                   }, '\u2713 Mark as Read'),
 
                   isRead && h('div', { className: 'text-center text-xs text-emerald-600 font-bold' }, '\u2713 You\'ve read this story!')
@@ -1467,7 +1467,7 @@ window.SelHub = window.SelHub || {
                 COMPARISON_TOPICS.map(function(topic) {
                   return h('button', { 'aria-label': 'compTopic', key: topic.id, onClick: function() { upd('compTopic', topic.id); },
                     className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
-                      (compTopic === topic.id ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300')
+                      (compTopic === topic.id ? 'bg-cyan-700 text-white border-cyan-600' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300')
                   }, topic.emoji + ' ' + topic.label);
                 })
               )
@@ -1476,7 +1476,7 @@ window.SelHub = window.SelHub || {
             // Compare button
             h('button', { 'aria-label': 'Compare cultures', onClick: runComparison,
               disabled: aiLoading || !compCulture1.trim() || !compCulture2.trim(),
-              className: 'w-full px-4 py-3 bg-cyan-600 text-white rounded-lg text-sm font-bold hover:bg-cyan-700 disabled:opacity-40 transition-colors'
+              className: 'w-full px-4 py-3 bg-cyan-700 text-white rounded-lg text-sm font-bold hover:bg-cyan-700 disabled:opacity-40 transition-colors'
             }, aiLoading ? 'Comparing...' : '\uD83D\uDD0D Compare Cultures')
           ),
 
@@ -1565,7 +1565,7 @@ window.SelHub = window.SelHub || {
               return h('button', { 'aria-label': 'Select culture', key: aspect.id,
                 onClick: function() { updMulti({ aspect: aspect.id, cultureData: null, cultureImage: null, followUpAnswer: null }); exploreCulture(selectedCulture, aspect.id); },
                 className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
-                  (selectedAspect === aspect.id ? 'bg-cyan-600 text-white border-cyan-600 shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300')
+                  (selectedAspect === aspect.id ? 'bg-cyan-700 text-white border-cyan-600 shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300')
               }, aspect.emoji + ' ' + aspect.label);
             })
           ),
@@ -1641,7 +1641,7 @@ window.SelHub = window.SelHub || {
                   'aria-label': 'Follow-up question'
                 }),
                 h('button', { 'aria-label': 'followUpQ', onClick: function() { if (d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
-                  disabled: aiLoading, className: 'px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 disabled:opacity-40 transition-colors'
+                  disabled: aiLoading, className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 disabled:opacity-40 transition-colors'
                 }, aiLoading ? '...' : 'Ask')
               )
             ),
@@ -1676,7 +1676,7 @@ window.SelHub = window.SelHub || {
             h('p', { className: 'text-sm text-slate-600' }, 'Test your knowledge of world cultures! Answer 10 multiple-choice questions.'),
             quizBestScore > 0 && h('p', { className: 'text-xs text-cyan-600 font-bold' }, '\uD83C\uDFC6 Best score: ' + quizBestScore + '/10'),
             h('button', { 'aria-label': 'Start quiz', onClick: startQuiz,
-              className: 'px-6 py-3 bg-cyan-600 text-white rounded-lg text-sm font-bold hover:bg-cyan-700 transition-colors'
+              className: 'px-6 py-3 bg-cyan-700 text-white rounded-lg text-sm font-bold hover:bg-cyan-700 transition-colors'
             }, '\u25B6 Start Quiz')
           ),
 
@@ -1721,7 +1721,7 @@ window.SelHub = window.SelHub || {
 
               // Next button
               quizAnswer !== undefined && h('button', { 'aria-label': 'Next question', onClick: nextQuizQuestion,
-                className: 'w-full mt-4 px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
+                className: 'w-full mt-4 px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
               }, quizIndex + 1 >= quizQuestions.length ? 'See Results' : 'Next Question \u2192')
             )
           ),
@@ -1739,10 +1739,10 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { className: 'flex gap-3 justify-center' },
               h('button', { 'aria-label': 'Start quiz', onClick: startQuiz,
-                className: 'px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
+                className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
               }, '\uD83D\uDD04 Try Again'),
               h('button', { 'aria-label': 'choose', onClick: function() { upd('tab', 'choose'); },
-                className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors'
+                className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors'
               }, '\uD83C\uDF0D Explore More Cultures')
             )
           )
@@ -1804,7 +1804,7 @@ window.SelHub = window.SelHub || {
                       addToast('Reflection saved!', 'success');
                       checkBadges({ journalPromptsCompleted: newCompleted, journalCount: newCount });
                     },
-                    className: 'mt-1 px-3 py-1.5 bg-amber-500 text-white rounded-lg text-[10px] font-bold hover:bg-amber-600 transition-colors'
+                    className: 'mt-1 px-3 py-1.5 bg-amber-700 text-white rounded-lg text-[10px] font-bold hover:bg-amber-600 transition-colors'
                   }, '\uD83D\uDCBE Save Reflection')
                 );
               })
@@ -1842,7 +1842,7 @@ window.SelHub = window.SelHub || {
                 if (ctx.celebrate) ctx.celebrate();
                 checkBadges({ journalCount: newCount });
               },
-              className: 'mt-2 px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
+              className: 'mt-2 px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
             }, '\uD83D\uDC9B Save Journal Entry')
           ),
 

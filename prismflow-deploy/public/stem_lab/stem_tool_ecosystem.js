@@ -2081,7 +2081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             'aria-label': 'Back'
           }, h(ArrowLeft, { size: 18 })),
           h('span', { className: 'text-lg font-bold' }, '\uD83E\uDD8A Ecosystem Simulator'),
-          h('span', { className: 'ml-auto px-2 py-0.5 text-[10px] font-bold bg-emerald-500 text-white rounded-full animate-pulse' }, 'LIVE'),
+          h('span', { className: 'ml-auto px-2 py-0.5 text-[10px] font-bold bg-emerald-700 text-white rounded-full animate-pulse' }, 'LIVE'),
           h('span', { className: 'text-xs font-bold text-amber-600 dark:text-amber-400 ml-1' }, '\u2B50 ' + researchPoints + ' RP'),
         ),
 
@@ -2097,7 +2097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               key: bId,
               className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
                 (biome === bId
-                  ? 'border-emerald-500 bg-emerald-500 text-white shadow-md'
+                  ? 'border-emerald-500 bg-emerald-700 text-white shadow-md'
                   : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-emerald-400'),
               onClick: function() { changeBiome(bId); }
             }, bInfo.emoji + ' ' + bInfo.name);
@@ -2117,7 +2117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               key: t2,
               role: 'tab', 'aria-selected': tab === t2,
               className: 'flex-1 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
-                (tab === t2 ? 'bg-emerald-500 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'),
+                (tab === t2 ? 'bg-emerald-700 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'),
               onClick: function() {
                 upd('tab', t2);
                 // When switching to sandbox, set sandbox tool on canvas
@@ -2162,7 +2162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('button', { 'aria-label': 'Ecosystem action',
               className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                  ? 'bg-emerald-700 text-white hover:bg-emerald-600'
                   : 'bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-400'),
               onClick: function() {
                 var newPaused = !simPaused;
@@ -2294,12 +2294,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('div', { className: 'flex gap-1' },
                 h('button', { 'aria-label': 'Populations',
                   className: 'flex-1 px-2 py-1 text-[11px] font-semibold rounded ' +
-                    (ecoGraphView === 'population' ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
+                    (ecoGraphView === 'population' ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
                   onClick: function() { switchGraphView('population'); }
                 }, 'Populations'),
                 h('button', { 'aria-label': 'Environment',
                   className: 'flex-1 px-2 py-1 text-[11px] font-semibold rounded ' +
-                    (ecoGraphView === 'environment' ? 'bg-amber-500 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
+                    (ecoGraphView === 'environment' ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
                   onClick: function() { switchGraphView('environment'); }
                 }, 'Environment')
               ),
@@ -2441,7 +2441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               'Model predator\u2013prey dynamics using the Lotka\u2013Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'
             ),
             callTTS && h('button', { 'aria-label': 'Read aloud',
-              className: 'p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500',
+              className: 'p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-300',
               onClick: function() { speakText('Model predator-prey dynamics using the Lotka-Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'); },
               title: 'Read aloud'
             }, '\uD83D\uDD0A')
@@ -2710,7 +2710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('button', { 'aria-label': 'Ecosystem action',
               className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
-                  ? 'bg-teal-500 text-white hover:bg-teal-600'
+                  ? 'bg-teal-700 text-white hover:bg-teal-600'
                   : 'bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-400'),
               onClick: function() {
                 var newPaused = !simPaused;
@@ -2796,7 +2796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Instructions text ──
-          h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-400 space-y-1' },
+          h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-600 space-y-1' },
             h('p', { className: 'font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCA1 Sandbox Instructions'),
             h('p', null, 'Select a tool above, then click on the canvas to interact:'),
             h('ul', { className: 'list-disc pl-4 space-y-0.5' },
@@ -2874,7 +2874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 (quizAnswer === currentQ.answer ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300')
             }, quizFeedback),
             quizAnswer !== -1 && h('button', { 'aria-label': 'Next Question',
-              className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all',
+              className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all',
               onClick: nextQuiz
             }, 'Next Question \u2192')
           ),
@@ -2960,11 +2960,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ),
             h('div', { className: 'flex gap-2' },
               tutorialStep > 0 && h('button', { 'aria-label': 'Back',
-                className: 'px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700',
+                className: 'px-4 py-2 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700',
                 onClick: function() { upd('tutorialStep', tutorialStep - 1); }
               }, '\u2190 Back'),
               h('button', { 'aria-label': 'Ecosystem action',
-                className: 'flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 shadow-md',
+                className: 'flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 shadow-md',
                 onClick: tutorialStep < 4 ? advanceTutorial : dismissTutorial
               }, tutorialStep < 4 ? 'Next \u2192' : '\u2714 Start Exploring!')
             )

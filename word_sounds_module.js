@@ -2761,7 +2761,7 @@
               "div",
               {
                 className:
-                  "text-6xl font-black text-amber-500 w-24 h-24 rounded-full bg-amber-50 border-4 border-amber-200 flex items-center justify-center select-none",
+                  "text-6xl font-black text-amber-800 w-24 h-24 rounded-full bg-amber-50 border-4 border-amber-200 flex items-center justify-center select-none",
               },
               tapCount > 0 ? String(tapCount) : "?",
             ),
@@ -2770,7 +2770,7 @@
               {
                 onClick: onTap,
                 className:
-                  "w-32 h-32 rounded-full bg-amber-400 hover:bg-amber-500 active:scale-90 text-white text-5xl shadow-lg transition-all select-none",
+                  "w-32 h-32 rounded-full bg-amber-700 hover:bg-amber-700 active:scale-90 text-white text-5xl shadow-lg transition-all select-none",
                 "aria-label": "Tap to count syllables",
               },
               "\ud83d\udc4f",
@@ -2798,7 +2798,7 @@
                     {
                       onClick: () => onCheckAnswer?.(tapCount),
                       className:
-                        "px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow transition-all hover:scale-105",
+                        "px-8 py-3 bg-amber-700 hover:bg-amber-700 text-white rounded-xl font-bold shadow transition-all hover:scale-105",
                     },
                     "Submit \u2713",
                   ),
@@ -3420,7 +3420,7 @@
                       "div",
                       {
                         className:
-                          "bg-violet-500 text-white px-4 py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2",
+                          "bg-violet-700 text-white px-4 py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2",
                       },
                       soundOnlyMode ? "🔊" : word,
                       " ",
@@ -3539,7 +3539,7 @@
                           onPlayAudio(item.text);
                         },
                         className:
-                          "p-2 rounded-full text-violet-400 hover:text-violet-600 hover:bg-violet-50 transition-colors",
+                          "p-2 rounded-full text-violet-700 hover:text-violet-600 hover:bg-violet-50 transition-colors",
                         "aria-label": `Hear ${soundOnlyMode ? "option" : item.text}`,
                         title: t("common.hear_this_word"),
                       },
@@ -10720,7 +10720,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       {
                         "aria-label": t("common.voice_input"),
                         onClick: handleMicInput,
-                        className: `w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all ${isListening ? "bg-rose-500 text-white scale-110 ring-4 ring-rose-200 animate-pulse" : "bg-white text-slate-400 border-4 border-slate-100 hover:border-violet-200 hover:text-violet-500"}`,
+                        className: `w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all ${isListening ? "bg-rose-700 text-white scale-110 ring-4 ring-rose-200 animate-pulse" : "bg-white text-slate-400 border-4 border-slate-100 hover:border-violet-200 hover:text-violet-500"}`,
                       },
                           /*#__PURE__*/ React.createElement(Mic, { size: 40 }),
                     ),
@@ -11029,7 +11029,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   "div",
                   {
                     className:
-                      "absolute -top-2 -right-8 px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full animate-pulse",
+                      "absolute -top-2 -right-8 px-2 py-1 bg-orange-700 text-white text-xs font-bold rounded-full animate-pulse",
                   },
                   "\uD83D\uDD25 x",
                   currentStreak,
@@ -11114,7 +11114,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "aria-label": t("common.voice_input"),
                     onClick: checkSpellingBee,
                     disabled: !userAnswer,
-                    className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-amber-500 hover:bg-amber-600 text-white hover:scale-105" : "bg-slate-200 text-slate-400 cursor-not-allowed"}`,
+                    className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-amber-500 hover:bg-amber-700 text-white hover:scale-105" : "bg-slate-200 text-slate-400 cursor-not-allowed"}`,
                   },
                   ts("word_sounds.spelling_bee_check") || "Check Spelling ✓",
                 ),
@@ -11466,7 +11466,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "aria-label": t("common.voice_input"),
                     onClick: checkMissingLetter,
                     disabled: !userAnswer,
-                    className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105" : "bg-slate-200 text-slate-400 cursor-not-allowed"}`,
+                    className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-emerald-500 hover:bg-emerald-700 text-white hover:scale-105" : "bg-slate-200 text-slate-400 cursor-not-allowed"}`,
                   },
                   "Check Answer \u2713",
                 ),
@@ -11617,7 +11617,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     {
                       "aria-label": t("common.voice_input"),
                       onClick: handleMicInput,
-                      className: `w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all ${isListening ? "bg-rose-500 text-white scale-110 ring-4 ring-rose-200 animate-pulse" : "bg-white text-slate-400 border-4 border-slate-100 hover:border-violet-200 hover:text-violet-500"}`,
+                      className: `w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all ${isListening ? "bg-rose-700 text-white scale-110 ring-4 ring-rose-200 animate-pulse" : "bg-white text-slate-400 border-4 border-slate-100 hover:border-violet-200 hover:text-violet-500"}`,
                     },
                     /*#__PURE__*/ React.createElement(Mic, { size: 40 }),
                   ),
@@ -12744,7 +12744,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "div",
             {
               className:
-                "bg-red-500 text-white px-4 py-2 text-center text-sm font-medium animate-in slide-in-from-top",
+                "bg-red-700 text-white px-4 py-2 text-center text-sm font-medium animate-in slide-in-from-top",
             },
             "\u26A0\uFE0F ",
             errorMessage,
@@ -13066,7 +13066,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "aria-label": t("common.review_and_edit_word_list"),
                     onClick: () => setShowReviewPanel(true),
                     className:
-                      "flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors shadow-md",
+                      "flex items-center gap-1 px-3 py-1.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors shadow-md",
                     title: t("common.review_and_edit_word_list"),
                   },
                   "\u270F\uFE0F Review Words",
@@ -13093,7 +13093,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       setUseMicInput(!useMicInput);
                       if (useMicInput) setIsListening(false);
                     },
-                    className: `p-1.5 rounded-full transition-colors flex items-center justify-center ${useMicInput ? "bg-rose-500 text-white ring-2 ring-rose-300 shadow-md animate-pulse" : "bg-white/10 text-white hover:bg-white/20"}`,
+                    className: `p-1.5 rounded-full transition-colors flex items-center justify-center ${useMicInput ? "bg-rose-700 text-white ring-2 ring-rose-300 shadow-md animate-pulse" : "bg-white/10 text-white hover:bg-white/20"}`,
                     title: useMicInput
                       ? ts("word_sounds.switch_click_mode") ||
                       "Switch to Click Mode"
@@ -13367,7 +13367,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 {
                   key: activity.id,
                   onClick: () => startActivity(activity.id),
-                  className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${wordSoundsActivity === activity.id ? "bg-violet-500 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+                  className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${wordSoundsActivity === activity.id ? "bg-violet-700 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
                   title: activity.description,
                 },
                     /*#__PURE__*/ React.createElement(
@@ -13387,7 +13387,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   onClick: () => setAacMode((prev) => !prev),
-                  className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto ${aacMode ? "bg-teal-500 text-white shadow-md ring-2 ring-teal-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+                  className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto ${aacMode ? "bg-teal-700 text-white shadow-md ring-2 ring-teal-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
                   title: aacMode
                     ? "AAC Symbol Overlay ON — click to turn off"
                     : "Turn on AAC Symbol Overlay (generates images for answer choices)",
@@ -16346,7 +16346,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   "button",
                   {
                     className:
-                      "px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold",
+                      "px-4 py-2 text-sm bg-emerald-700 text-white rounded-lg hover:bg-emerald-700 font-bold",
                     onClick: () => {
                       toggleResearchMode({
                         active: true,
@@ -19268,7 +19268,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "span",
                     {
                       className:
-                        "text-[10px] font-bold text-violet-500 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
+                        "text-[10px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
                     "Standardized",
                   ),
@@ -19433,7 +19433,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "span",
                     {
                       className:
-                        "text-[10px] font-bold text-orange-500 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
+                        "text-[10px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
                     "Standardized",
                   ),
@@ -19618,7 +19618,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         "span",
                         {
                           className:
-                            "text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
+                            "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                         },
                         "Standardized",
                       ),
@@ -19795,7 +19795,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "span",
                     {
                       className:
-                        "text-[10px] font-bold text-purple-500 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
+                        "text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
                     "K-2",
                   ),
@@ -20287,7 +20287,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         );
                       },
                       className:
-                        "w-full mt-2 px-4 py-2 bg-purple-500 text-white rounded-lg font-bold text-sm hover:bg-purple-600 transition-colors",
+                        "w-full mt-2 px-4 py-2 bg-purple-700 text-white rounded-lg font-bold text-sm hover:bg-purple-600 transition-colors",
                     },
                     "\uD83D\uDCBE Save to Student Record",
                   ),
@@ -20316,7 +20316,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "span",
                     {
                       className:
-                        "text-[10px] font-bold text-cyan-500 bg-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
+                        "text-[10px] font-bold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
                     "K-1",
                   ),
@@ -20696,7 +20696,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         );
                       },
                       className:
-                        "w-full mt-2 px-4 py-2 bg-cyan-500 text-white rounded-lg font-bold text-sm hover:bg-cyan-600 transition-colors",
+                        "w-full mt-2 px-4 py-2 bg-cyan-700 text-white rounded-lg font-bold text-sm hover:bg-cyan-600 transition-colors",
                     },
                     "\uD83D\uDCBE Save to Student Record",
                   ),
@@ -20725,7 +20725,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "span",
                     {
                       className:
-                        "text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
+                        "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
                     "K-1",
                   ),
@@ -20815,7 +20815,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "span",
                     {
                       className:
-                        "text-[10px] font-bold text-rose-500 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
+                        "text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
                     "K",
                   ),
@@ -20885,7 +20885,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "span",
                     {
                       className:
-                        "text-[10px] font-bold text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
+                        "text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider",
                     },
                     "K-2",
                   ),

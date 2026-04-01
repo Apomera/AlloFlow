@@ -475,7 +475,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         "aria-label": t("common.continue"),
         "data-help-key": "wizard_content_next_btn",
         onClick: () => setStep(4),
-        className: "w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+        className: "w-full bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
       },
       t("common.next"),
       " ",
@@ -500,7 +500,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
         "data-help-key": "wizard_search_btn",
         onClick: handleWizardAiSearch,
         disabled: isFetching || !localData.searchQuery,
-        className: "bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
+        className: "bg-teal-700 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
       },
       isFetching ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 20, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Search, { size: 20 }),
       isFetching ? t("wizard.finding_button") : t("wizard.find_button")
@@ -547,7 +547,7 @@ var QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLo
       {
         "aria-label": t("common.continue"),
         onClick: () => setStep(4),
-        className: "flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+        className: "flex-grow bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
       },
       t("common.next"),
       " ",

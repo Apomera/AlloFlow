@@ -1278,7 +1278,7 @@ window.StemLab = window.StemLab || {
                 h('button', { 'aria-label': 'Process Move', onClick: function() { processMove('up'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B2'),
                 h('div', null),
                 h('button', { 'aria-label': 'Process Move', onClick: function() { processMove('left'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25C0'),
-                h('div', { className: 'p-3 rounded-lg bg-slate-800 text-center text-xs text-slate-500 font-bold' }, '\u2022'),
+                h('div', { className: 'p-3 rounded-lg bg-slate-800 text-center text-xs text-slate-300 font-bold' }, '\u2022'),
                 h('button', { 'aria-label': 'Play', onClick: function() { processMove('right'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B6'),
                 h('div', null),
                 h('button', { 'aria-label': 'Process Move', onClick: function() { processMove('down'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25BC'),
@@ -1303,7 +1303,7 @@ window.StemLab = window.StemLab || {
                 onClick: function() {
                   upd({ isPlaying: true, playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
                 },
-                className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-500 hover:bg-blue-600 shadow-md transition-all'
+                className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-600 shadow-md transition-all'
               }, '\uD83D\uDD04 Play Again'),
               h('div', { className: 'text-[10px] text-slate-500 self-center ml-2' }, 'Arrow keys / WASD to move \u2022 Click game area first')
             ),
@@ -1491,7 +1491,7 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-sm font-black ' + (isComplete ? 'text-green-800' : 'text-indigo-900') }, lesson.title),
-                        isComplete && h('span', { className: 'text-xs font-bold text-green-600 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713')
+                        isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713')
                       ),
                       h('p', { className: 'text-[11px] text-slate-500 mt-0.5' }, lesson.desc)
                     ),
@@ -1543,7 +1543,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded ' +
                         (ch.difficulty === 1 ? 'bg-green-200 text-green-700' : ch.difficulty === 2 ? 'bg-amber-200 text-amber-700' : 'bg-red-200 text-red-700')
                       }, ch.difficulty === 1 ? 'Beginner' : ch.difficulty === 2 ? 'Intermediate' : 'Advanced'),
-                      isComplete && h('span', { className: 'text-xs font-bold text-green-600 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713 +' + ch.xp + ' XP')
+                      isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713 +' + ch.xp + ' XP')
                     ),
                     h('p', { className: 'text-xs text-slate-600 mt-1' }, ch.desc)
                   )
@@ -1700,7 +1700,7 @@ window.StemLab = window.StemLab || {
                       if (addToast) addToast('\uD83D\uDCE5 Game loaded!', 'success');
                     } catch(err) { if (addToast) addToast('\u274C Invalid share code', 'error'); }
                   },
-                  className: 'px-3 py-1.5 text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 rounded-lg transition-all'
+                  className: 'px-3 py-1.5 text-xs font-bold text-white bg-rose-700 hover:bg-rose-600 rounded-lg transition-all'
                 }, 'Load')
               )
             ),
@@ -1755,7 +1755,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'mt-6 text-center' },
             h('button', { 'aria-label': 'Back to Tools',
               onClick: function() { setStemLabTool(null); },
-              className: 'px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-all'
+              className: 'px-6 py-2.5 text-sm font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-all'
             }, '\u2190 Back to Tools')
           )
         );

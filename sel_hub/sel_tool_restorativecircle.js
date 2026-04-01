@@ -1046,7 +1046,7 @@ window.SelHub = window.SelHub || {
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },
           h('div', { className: 'flex items-center gap-3' },
-            h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-amber-100 text-amber-600 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })),
+            h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-amber-100 text-amber-800 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })),
               h(ArrowLeft, { size: 20 })
             ),
             h('div', null,
@@ -1174,7 +1174,7 @@ window.SelHub = window.SelHub || {
                     incrementBadgeStat('circlesCompleted', 1);
                   }
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors'
+                className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 transition-colors'
               }, currentPromptIdx < prompts.length - 1 ? 'Next Round \u2192' : '\u2705 Close Circle')
             ),
 
@@ -1321,7 +1321,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, className: 'flex items-center' },
                 h('div', {
                   className: 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ' +
-                    (isComplete ? 'bg-emerald-500 text-white' : isCurrent ? 'bg-amber-500 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-500')
+                    (isComplete ? 'bg-emerald-700 text-white' : isCurrent ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-500')
                 }, isComplete ? '\u2713' : (i + 1)),
                 i < HARM_REPAIR_STEPS.length - 1 && h('div', { className: 'w-4 h-0.5 ' + (isComplete ? 'bg-emerald-400' : 'bg-slate-200') })
               );
@@ -1379,7 +1379,7 @@ window.SelHub = window.SelHub || {
                       incrementBadgeStat('harmRepairsCompleted', 1);
                     }
                   },
-                  className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors'
+                  className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 transition-colors'
                 }, harmStep < HARM_REPAIR_STEPS.length - 1 ? 'Next Step \u2192' : '\u2705 Complete Repair Process')
               )
             );
@@ -1422,7 +1422,7 @@ window.SelHub = window.SelHub || {
                     key: i,
                     onClick: function() { updMulti({ scenarioIdx: i, scenarioChoice: undefined, scenarioOutcome: null }); },
                     className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
-                      (scenarioIdx === i ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-amber-100')
+                      (scenarioIdx === i ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-amber-100')
                   }, sc.emoji + ' ' + sc.title);
                 })
               ),
@@ -1465,7 +1465,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'flex gap-2 justify-center' },
                     scenarioIdx < scenarios.length - 1 && h('button', { 'aria-label': 'Next Scenario',
                       onClick: function() { updMulti({ scenarioIdx: scenarioIdx + 1, scenarioChoice: undefined, scenarioOutcome: null }); },
-                      className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors'
+                      className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 transition-colors'
                     }, 'Next Scenario \u2192'),
                     h('button', { 'aria-label': 'Try a Different Choice',
                       onClick: function() { updMulti({ scenarioChoice: undefined, scenarioOutcome: null }); },
@@ -1550,7 +1550,7 @@ window.SelHub = window.SelHub || {
                   }
                 },
                 disabled: !customAgreement.trim(),
-                className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-30 transition-colors'
+                className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 disabled:opacity-30 transition-colors'
               }, '+ Add')
             )
           ),
@@ -1598,7 +1598,7 @@ window.SelHub = window.SelHub || {
                   if (ctx.celebrate) ctx.celebrate();
                   incrementBadgeStat('agreementsMade', 1);
                 },
-                className: 'flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
+                className: 'flex-1 px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
               }, '\u2705 Finalize Agreements')
             )
           ),
@@ -1702,7 +1702,7 @@ window.SelHub = window.SelHub || {
               addToast('Thank you for learning about these roots \uD83C\uDF0D', 'success');
               incrementBadgeStat('rootsStudied', 1);
             },
-            className: 'w-full px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
+            className: 'w-full px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
           }, '\u2705 I have read and reflected on these roots')
         ),
 
@@ -2106,7 +2106,7 @@ window.SelHub = window.SelHub || {
                       key: i,
                       onClick: function() { upd('compareScenarioIdx', i); },
                       className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
-                        (compareScenarioIdx === i ? 'bg-amber-500 text-white' : hasRating ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500 hover:bg-amber-100')
+                        (compareScenarioIdx === i ? 'bg-amber-700 text-white' : hasRating ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500 hover:bg-amber-100')
                     }, sc.emoji + ' ' + (i + 1));
                   })
                 ),
@@ -2197,7 +2197,7 @@ window.SelHub = window.SelHub || {
                     }, '\u2190 Previous'),
                     compareScenarioIdx < scenarios.length - 1 && h('button', { 'aria-label': 'Next Scenario',
                       onClick: function() { upd('compareScenarioIdx', compareScenarioIdx + 1); },
-                      className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors'
+                      className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 transition-colors'
                     }, 'Next Scenario \u2192')
                   )
                 )
@@ -2232,7 +2232,7 @@ window.SelHub = window.SelHub || {
                     ctx.awardXP(20);
                     if (ctx.celebrate) ctx.celebrate();
                   },
-                  className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
+                  className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
                 }, '\u2705 Complete Comparison Study')
               )
             );

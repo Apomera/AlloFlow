@@ -626,7 +626,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 items-center' },
             !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': 'Hint', onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-300' }, '\uD83D\uDCA1 Hint'),
             (gridFeedback && gridFeedback.hinted) && h('span', { className: 'text-[10px] text-amber-500 italic' }, '\uD83D\uDCA1 Hint used'),
-            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600' }, '\u2714 Check')
+            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600' }, '\u2714 Check')
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
         ),
@@ -643,7 +643,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); },
               className: 'flex-1 px-3 py-2 border border-green-300 rounded-lg text-sm font-mono'
             }),
-            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'px-4 py-2 bg-green-600 text-white font-bold rounded-lg text-sm hover:bg-green-700' }, '\u2714 Check')
+            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'px-4 py-2 bg-green-700 text-white font-bold rounded-lg text-sm hover:bg-green-700' }, '\u2714 Check')
           ),
           // Show midpoint info
           h('div', { className: 'mt-2 text-xs text-purple-600' },
@@ -658,7 +658,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 items-center' },
             h('span', { className: 'text-xs text-cyan-600' }, 'Quadrant: ', h('span', { className: 'font-bold' }, getQuadrant(gridChallenge.target.x, gridChallenge.target.y))),
             h('span', { className: 'text-xs text-cyan-600 ml-2' }, 'Points: ', h('span', { className: 'font-bold' }, gridPoints.length)),
-            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-cyan-500 text-white font-bold rounded-lg text-sm hover:bg-cyan-600' }, '\u2714 Check')
+            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-600' }, '\u2714 Check')
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
         ),

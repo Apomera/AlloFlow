@@ -321,7 +321,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('button', { 'aria-label': 'Try:',
                   onClick: function() { if (auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
                   disabled: !auditUrl.trim() || auditLoading,
-                  className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 disabled:opacity-40 transition-colors'
+                  className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 disabled:opacity-40 transition-colors'
                 }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit URL')
               ),
               h('p', { className: 'text-[10px] text-slate-400 mt-1' }, 'The AI will analyze the website\u2019s accessibility based on its known structure and common patterns.'),
@@ -361,7 +361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('div', { className: 'text-3xl mb-2' }, '\uD83D\uDCC4'),
               h('p', { className: 'text-sm text-slate-600 mb-3' }, 'Upload a PDF document to check its accessibility'),
               h('p', { className: 'text-[10px] text-slate-400 mb-3' }, 'The AI will check for: tagged structure, reading order, alt text on images, form labels, color contrast, language declaration, and heading hierarchy.'),
-              h('label', { className: 'inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 cursor-pointer transition-colors ' + (auditLoading ? 'opacity-40 pointer-events-none' : '') },
+              h('label', { className: 'inline-flex items-center gap-2 px-5 py-2.5 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 cursor-pointer transition-colors ' + (auditLoading ? 'opacity-40 pointer-events-none' : '') },
                 h('input', {
                   type: 'file', accept: 'application/pdf', className: 'hidden',
                   onChange: handleFileAudit, disabled: auditLoading,

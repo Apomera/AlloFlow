@@ -633,7 +633,7 @@ if (!safetyChecked) {
           },
             React.createElement("div", {
               className: "w-6 h-6 rounded-md flex items-center justify-center text-xs font-black shrink-0 " +
-                (checked ? "bg-emerald-500 text-white" : "bg-amber-900/50 text-amber-600 border border-amber-700")
+                (checked ? "bg-emerald-700 text-white" : "bg-amber-900/50 text-amber-600 border border-amber-700")
             }, checked ? "\u2714" : ""),
             React.createElement("span", { className: "text-lg" }, item.icon),
             React.createElement("div", { className: "flex-1 min-w-0" },
@@ -1639,7 +1639,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
           onClick: function() { updMulti({ incidentIdx: i, incidentAnswer: null }); },
           className: "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all " +
             (i === incidentIdx ? "ring-2 ring-offset-1 ring-offset-slate-900 ring-red-400 " : "") +
-            (completed ? "bg-emerald-600 text-white" : "bg-slate-800 text-slate-400 border border-slate-600 hover:border-slate-400"),
+            (completed ? "bg-emerald-700 text-white" : "bg-slate-800 text-slate-400 border border-slate-600 hover:border-slate-400"),
           title: sc.title
         }, completed ? "\u2714" : sc.icon);
       })
@@ -1657,7 +1657,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             React.createElement("h4", { className: "text-sm font-black text-white" }, scenario.title),
             React.createElement("span", {
               className: "text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
-                (scenario.urgency === 'critical' ? 'bg-red-600 text-white' : scenario.urgency === 'high' ? 'bg-amber-600 text-white' : 'bg-slate-600 text-slate-200')
+                (scenario.urgency === 'critical' ? 'bg-red-600 text-white' : scenario.urgency === 'high' ? 'bg-amber-700 text-white' : 'bg-slate-600 text-slate-200')
             }, scenario.urgency + " urgency")
           )
         ),

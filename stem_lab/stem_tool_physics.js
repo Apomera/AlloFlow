@@ -1594,28 +1594,28 @@ const d = labToolData.physics;
 
                 onClick: function () { upd('airResist', !d.airResist); },
 
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-500 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
 
               }, "\uD83C\uDF2C\uFE0F Air Drag " + (d.airResist ? 'ON' : 'OFF')),
 
               React.createElement("button", { "aria-label": "Vectors",
                 onClick: function () { upd('showVectors', !d.showVectors); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showVectors ? 'bg-purple-500 text-white shadow-md' : 'bg-purple-50 text-purple-700 border border-purple-200')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showVectors ? 'bg-purple-700 text-white shadow-md' : 'bg-purple-50 text-purple-700 border border-purple-200')
               }, "\u2197\uFE0F Vectors " + (d.showVectors ? 'ON' : 'OFF')),
 
               React.createElement("button", { "aria-label": "Learn",
                 onClick: function () { upd('showEnergy', !d.showEnergy); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showEnergy ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 border border-blue-200')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showEnergy ? 'bg-blue-700 text-white shadow-md' : 'bg-blue-50 text-blue-700 border border-blue-200')
               }, "\u26A1 Energy " + (d.showEnergy ? 'ON' : 'OFF')),
 
               React.createElement("button", { "aria-label": "Learn",
                 onClick: function () { upd('showLearn', !d.showLearn); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white shadow-md' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
               }, "\uD83D\uDCD6 Learn"),
 
               React.createElement("button", { "aria-label": "Data",
                 onClick: function () { upd('showFlightData', !d.showFlightData); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFlightData ? 'bg-cyan-500 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFlightData ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200')
               }, "\uD83D\uDCCA Data " + (d.showFlightData ? 'ON' : 'OFF')),
 
               PRESETS.map(function (p) {
@@ -1750,15 +1750,15 @@ const d = labToolData.physics;
                         },
                         disabled: !(d.targetList && d.targetList.every(function(t){return t.destroyed;})),
                         className: "px-3 py-1 text-[10px] font-bold rounded-lg transition-all " +
-                          (d.targetList && d.targetList.every(function(t){return t.destroyed;}) ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')
+                          (d.targetList && d.targetList.every(function(t){return t.destroyed;}) ? 'bg-emerald-700 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')
                       }, "\u27A1 Next Round"),
                       React.createElement("button", { "aria-label": "Retry",
                         onClick: function() { startTargetRound(d.targetRound || 1); },
-                        className: "px-3 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:bg-amber-600 transition-all"
+                        className: "px-3 py-1 bg-amber-700 text-white text-[10px] font-bold rounded-lg hover:bg-amber-600 transition-all"
                       }, "\u{1F504} Retry"),
                       React.createElement("button", { "aria-label": "End",
                         onClick: function() { upd('targetMode', false); upd('targetList', null); upd('targetConstraint', null); upd('targetFeedback', null); upd('targetShowScaffold', false); },
-                        className: "px-3 py-1 bg-slate-400 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                        className: "px-3 py-1 bg-slate-600 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
                       }, "\u2716 End")
                     )
               ),
@@ -1976,7 +1976,7 @@ const d = labToolData.physics;
 
                     upd('quizAnswer', qRange); upd('quizOptions', opts); upd('quizPicked', null); upd('quizFeedback', null);
 
-                  }, className: "px-3 py-1 bg-amber-600 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-all"
+                  }, className: "px-3 py-1 bg-amber-700 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-all"
 
                 }, d.quizActive ? "\uD83D\uDD04 New Question" : "\u25B6 Start Quiz")
 

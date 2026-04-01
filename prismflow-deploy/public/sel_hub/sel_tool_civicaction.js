@@ -995,7 +995,7 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': aiLoading ? 'Creating your plan...' : '\u2728 Generate My Action Plan',
               onClick: generateActionPlan,
               disabled: aiLoading,
-              className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center gap-2'
+              className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center gap-2'
             }, aiLoading ? 'Creating your plan...' : '\u2728 Generate My Action Plan'),
 
             // Display action plan
@@ -1003,7 +1003,7 @@ window.SelHub = window.SelHub || {
               actionPlan.steps.map(function(step, i) {
                 return h('div', { key: i, className: 'bg-white rounded-xl border border-teal-200 p-3' },
                   h('div', { className: 'flex items-start gap-2' },
-                    h('span', { className: 'bg-teal-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0' }, i + 1),
+                    h('span', { className: 'bg-teal-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0' }, i + 1),
                     h('div', null,
                       h('p', { className: 'text-sm font-bold text-slate-800' }, step.action),
                       h('p', { className: 'text-xs text-slate-500 mt-1' }, step.why),
@@ -1055,7 +1055,7 @@ window.SelHub = window.SelHub || {
               }, '\u2190 Previous') : h('div'),
               plannerStep < PLANNER_STEPS.length - 1 ? h('button', { 'aria-label': 'Next',
                 onClick: function() { upd('plannerStep', plannerStep + 1); ctx.awardXP(5); },
-                className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
               }, 'Next \u2192') : h('button', { 'aria-label': 'Next',
                 onClick: function() {
                   awardBadge('action_planner');
@@ -1063,7 +1063,7 @@ window.SelHub = window.SelHub || {
                   addToast('Your civic action plan is complete! You are a changemaker.', 'success');
                   ctx.celebrate();
                 },
-                className: 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
+                className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
               }, '\u2728 Complete My Plan')
             )
           ),
@@ -1079,7 +1079,7 @@ window.SelHub = window.SelHub || {
                   key: key,
                   onClick: function() { upd('selectedTemplate', selectedTemplate === key ? null : key); },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ' +
-                    (selectedTemplate === key ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-teal-600 border-teal-300 hover:bg-teal-50')
+                    (selectedTemplate === key ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-teal-600 border-teal-300 hover:bg-teal-50')
                 }, tmpl.title);
               })
             ),
@@ -1131,7 +1131,7 @@ window.SelHub = window.SelHub || {
             ),
             d.petitionTitle && d.petitionDesc && h('button', { 'aria-label': 'Save Petition Draft',
               onClick: function() { addToast('Petition draft saved! Share it with classmates to gather support.', 'success'); ctx.awardXP(10); },
-              className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700'
+              className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700'
             }, '\ud83d\udcbe Save Petition Draft')
           )
         ),
@@ -1203,7 +1203,7 @@ window.SelHub = window.SelHub || {
                       ctx.celebrate();
                     }
                   },
-                  className: 'w-full px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
+                  className: 'w-full px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
                 }, simStep < proposals.length - 1 ? 'Next Proposal \u2192' : '\u2728 See Overall Results')
               )
             );
@@ -1259,7 +1259,7 @@ window.SelHub = window.SelHub || {
                     ctx.awardXP(15);
                     ctx.celebrate();
                   },
-                  className: 'w-full px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
+                  className: 'w-full px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
                 }, '\ud83d\udcca Submit Budget & See Reactions')
               )
             );
@@ -1331,7 +1331,7 @@ window.SelHub = window.SelHub || {
                             updMulti({ legAllies: newAllies, legSupport: legSupport + ally.bonus });
                             ctx.awardXP(3);
                           },
-                          className: 'px-3 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700'
+                          className: 'px-3 py-1 bg-emerald-700 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700'
                         }, '\u2705 Accept & Recruit'),
                         h('button', { 'aria-label': 'Decline',
                           onClick: function() {
@@ -1377,7 +1377,7 @@ window.SelHub = window.SelHub || {
                             ctx.awardXP(5);
                             addToast('Strong answer! Support increased.', 'success');
                           },
-                          className: 'flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700'
+                          className: 'flex-1 px-3 py-2 bg-emerald-700 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700'
                         }, '\u2705 ' + cq.good),
                         h('button', { 'aria-label': '\u274c ' + cq.bad,
                           onClick: function() {
@@ -1461,7 +1461,7 @@ window.SelHub = window.SelHub || {
                 h('p', { className: 'text-sm text-slate-600' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
                 h('button', { 'aria-label': 'Try Again',
                   onClick: function() { updMulti({ simStep: 0, simChoices: {}, simDone: false }); },
-                  className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                  className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
                 }, '\ud83d\udd04 Try Again')
               );
             }
@@ -1492,7 +1492,7 @@ window.SelHub = window.SelHub || {
                 h('p', { className: 'text-sm text-slate-600 text-center mt-2' }, 'Budgeting is about balancing competing needs. There is no perfect answer \u2014 only thoughtful trade-offs.'),
                 h('button', { 'aria-label': 'Try Again',
                   onClick: function() { updMulti({ budgetAlloc: null, simDone: false }); },
-                  className: 'w-full px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                  className: 'w-full px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
                 }, '\ud83d\udd04 Try Again')
               );
             }
@@ -1575,11 +1575,11 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'Open-ended',
                 onClick: function() { upd('surveyCustomType', 'open'); },
-                className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'open' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
+                className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'open' ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
               }, 'Open-ended'),
               h('button', { 'aria-label': 'Multiple Choice',
                 onClick: function() { upd('surveyCustomType', 'choice'); },
-                className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'choice' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
+                className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'choice' ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
               }, 'Multiple Choice')
             ),
             surveyCustomType === 'choice' && h('div', null,
@@ -1600,7 +1600,7 @@ window.SelHub = window.SelHub || {
                 updMulti({ surveyQuestions: newQs, surveyCustomQ: '', surveyCustomOpts: '' });
                 ctx.awardXP(3);
               },
-              className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700'
+              className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700'
             }, '+ Add Question to Survey')
           ),
 
@@ -1652,7 +1652,7 @@ window.SelHub = window.SelHub || {
                   upd('surveyExported', true);
                   ctx.awardXP(15);
                 },
-                className: 'flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                className: 'flex-1 px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
               }, '\ud83d\udccb Export Survey as Text'),
               surveyExported && h('span', { className: 'self-center text-[10px] font-bold text-emerald-600' }, '\u2705 Exported!')
             )
@@ -1748,7 +1748,7 @@ window.SelHub = window.SelHub || {
                     }).catch(function() { upd('aiLoading', false); });
                   },
                   disabled: aiLoading,
-                  className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 flex items-center gap-2'
+                  className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 flex items-center gap-2'
                 }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\ud83d\udcac Get Feedback on Your Response')
               ),
 
@@ -1768,7 +1768,7 @@ window.SelHub = window.SelHub || {
                     addToast('You have explored all rights for your grade level!', 'success');
                     ctx.celebrate();
                   },
-                  className: 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
+                  className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
                 }, '\u2728 Complete Rights Explorer')
               )
             );
@@ -1827,7 +1827,7 @@ window.SelHub = window.SelHub || {
                   return h('div', {
                     key: pi,
                     className: 'flex-1 text-center py-2 rounded-lg text-[10px] font-bold ' +
-                      (isActive ? 'bg-teal-600 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')
+                      (isActive ? 'bg-teal-700 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')
                   }, phase.label);
                 })
               ),
@@ -1878,7 +1878,7 @@ window.SelHub = window.SelHub || {
                   }, '\u2190 Previous Phase') : h('div'),
                   servicePhase < SERVICE_PHASES.length - 1 ? h('button', { 'aria-label': 'Next Phase',
                     onClick: function() { upd('servicePhase', servicePhase + 1); ctx.awardXP(5); },
-                    className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                    className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
                   }, 'Next Phase \u2192') : h('button', { 'aria-label': 'Next Phase',
                     onClick: function() {
                       upd('serviceDone', true);
@@ -1887,7 +1887,7 @@ window.SelHub = window.SelHub || {
                       addToast('Service project plan complete! You logged ' + serviceHours.toFixed(1) + ' hours. Amazing work!', 'success');
                       ctx.celebrate();
                     },
-                    className: 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
+                    className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
                   }, '\u2728 Complete Project Plan')
                 )
               )
@@ -1921,7 +1921,7 @@ window.SelHub = window.SelHub || {
               h('p', { className: 'text-sm text-slate-600' }, 'Service is not just about helping others \u2014 it transforms you too. The skills you built here will serve you for a lifetime.'),
               h('button', { 'aria-label': 'Plan Another Project',
                 onClick: function() { updMulti({ serviceTemplate: null, servicePhase: 0, serviceNotes: {}, serviceHours: 0, serviceDone: false }); },
-                className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
               }, '\ud83d\udd04 Plan Another Project')
             );
           })()
@@ -1993,7 +1993,7 @@ window.SelHub = window.SelHub || {
                       if (quizScore === quizQuestions.length) awardBadge('quiz_champion');
                     }
                   },
-                  className: 'w-full px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
+                  className: 'w-full px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
                 }, quizIdx < quizQuestions.length - 1 ? 'Next Question \u2192' : 'See Results')
               )
             );
@@ -2011,7 +2011,7 @@ window.SelHub = window.SelHub || {
             ),
             h('button', { 'aria-label': 'Try Again',
               onClick: function() { updMulti({ quizIdx: 0, quizAnswer: undefined, quizScore: 0, quizDone: false, quizAnswered: false }); },
-              className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+              className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
             }, '\ud83d\udd04 Try Again')
           )
         ),
@@ -2162,7 +2162,7 @@ window.SelHub = window.SelHub || {
                 awardBadge('hope_keeper');
                 ctx.celebrate();
               },
-              className: 'mt-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
+              className: 'mt-2 px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
             }, '\ud83d\udc9b Save My Vision')
           ),
 

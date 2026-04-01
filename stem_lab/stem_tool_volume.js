@@ -518,7 +518,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-2 ml-2' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, score.correct + '/' + score.total),
             streak >= 2 && h('div', {
-              className: 'text-xs font-bold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
+              className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
             earnedCount > 0 && h('button', { 'aria-label': 'AI',
               onClick: function() { upd({ showBadges: !showBadges }); },
@@ -749,7 +749,7 @@ window.StemLab = window.StemLab || {
             }),
             h('button', { 'aria-label': 'Check',
               onClick: checkChallenge, disabled: !answer,
-              className: 'px-4 py-2 bg-amber-500 text-white font-bold rounded-lg text-sm disabled:opacity-40'
+              className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm disabled:opacity-40'
             }, 'Check'),
             h('button', { 'aria-label': 'Ask A I',
               onClick: askAI,

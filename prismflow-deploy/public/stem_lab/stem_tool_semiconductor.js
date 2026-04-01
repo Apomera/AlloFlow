@@ -277,7 +277,7 @@ window.StemLab = window.StemLab || {
       function btn(label, onClick, extraClass) {
         return h('button', Object.assign({
           onClick: onClick,
-          className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ' + (extraClass || 'bg-cyan-600 text-white hover:bg-cyan-700')
+          className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ' + (extraClass || 'bg-cyan-700 text-white hover:bg-cyan-700')
         }, a11yClick ? a11yClick(onClick) : {}), label);
       }
 
@@ -285,7 +285,7 @@ window.StemLab = window.StemLab || {
         return h('button', Object.assign({
           onClick: onClick,
           className: 'px-2.5 py-1 text-xs font-semibold rounded-full transition-all ' +
-            (active ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+            (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
         }, a11yClick ? a11yClick(onClick) : {}), label);
       }
 
@@ -1374,13 +1374,13 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-3 mt-3' },
             h('button', Object.assign({
               onClick: function() { upd('inputA', !inA); if (stemBeep) stemBeep(); },
-              className: 'flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ' + (inA ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+              className: 'flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ' + (inA ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
             }, a11yClick ? a11yClick(function() { upd('inputA', !inA); }) : {}), 'A = ' + (inA ? '1' : '0')),
             gate.inputs === 2 && h('button', Object.assign({
               onClick: function() { upd('inputB', !inB); if (stemBeep) stemBeep(); },
-              className: 'flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ' + (inB ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+              className: 'flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ' + (inB ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
             }, a11yClick ? a11yClick(function() { upd('inputB', !inB); }) : {}), 'B = ' + (inB ? '1' : '0')),
-            h('div', { className: 'ml-auto px-3 py-2 rounded-lg font-bold text-sm shadow-lg ' + (output ? 'bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-red-600 text-white shadow-red-500/20') },
+            h('div', { className: 'ml-auto px-3 py-2 rounded-lg font-bold text-sm shadow-lg ' + (output ? 'bg-emerald-700 text-white shadow-emerald-500/20' : 'bg-red-600 text-white shadow-red-500/20') },
               'Q = ' + (output ? '1' : '0')
             )
           ),
@@ -1676,7 +1676,7 @@ window.StemLab = window.StemLab || {
           // Controls
           h('div', { className: 'flex items-center gap-3 mb-3' },
             sliderRow('Supply', supplyV, 0, 12, 0.5, function(v) { upd('circuitVoltage', v); }, ' V'),
-            btn('\u25B6 Simulate', simulateCircuit, 'bg-emerald-600 text-white hover:bg-emerald-700'),
+            btn('\u25B6 Simulate', simulateCircuit, 'bg-emerald-700 text-white hover:bg-emerald-700'),
             btn('\uD83D\uDDD1 Clear', function() { updMulti({ circuitComponents: [], circuitSimResult: null }); }, 'bg-red-600/80 text-white hover:bg-red-700')
           ),
           // Simulation results
@@ -3320,7 +3320,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: i, className: 'py-0.5 ' + (entry.hit ? 'text-emerald-400' : 'text-red-400') }, entry.text);
               })
             ),
-            btn('Play Again', function() { updMulti({ battleActive: false }); }, 'bg-cyan-600 text-white hover:bg-cyan-700')
+            btn('Play Again', function() { updMulti({ battleActive: false }); }, 'bg-cyan-700 text-white hover:bg-cyan-700')
           );
         }
 
@@ -3389,7 +3389,7 @@ window.StemLab = window.StemLab || {
           feedback && h('div', { className: 'text-center' },
             btn('Next Round \u2192', function() {
               updMulti({ battleRound: round + 1, battleFeedback: null, battleEnemyHP: 5 });
-            }, feedback === 'correct' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white')
+            }, feedback === 'correct' ? 'bg-emerald-700 text-white' : 'bg-red-600 text-white')
           ),
           // Log
           log.length > 0 && h('div', { className: 'mt-3 max-h-24 overflow-y-auto text-xs bg-slate-800/60 rounded-lg border border-slate-700 p-2' },
@@ -3491,7 +3491,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
             h('div', { className: 'text-sm font-bold text-white' }, '\uD83D\uDCDA Semiconductor Concepts'),
-            h('div', { className: 'text-[10px] text-slate-500 px-2 py-0.5 rounded bg-slate-800' }, 'Grade band: ' + gradeBand)
+            h('div', { className: 'text-[10px] text-slate-300 px-2 py-0.5 rounded bg-slate-800' }, 'Grade band: ' + gradeBand)
           ),
           TOPICS.map(function(item) {
             return h('details', { className: 'group', key: item.title },
