@@ -14,7 +14,9 @@
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
     var style = document.createElement('style');
-    style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *,#ss-pq,#ss-pq *,#ss-pq-calming,#ss-pq-calming *,#ss-pq-sensory,#ss-pq-sensory *,#ss-pq-askme,#ss-pq-askme *,#ss-pq-bodycheck,#ss-pq-bodycheck *,#ss-pq-transition,#ss-pq-transition *{visibility:visible}#ss-pb,#ss-ps,#ss-py,#ss-pq,#ss-pq-calming,#ss-pq-sensory,#ss-pq-askme,#ss-pq-bodycheck,#ss-pq-transition{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}';
+    style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *,#ss-pq,#ss-pq *,#ss-pq-calming,#ss-pq-calming *,#ss-pq-sensory,#ss-pq-sensory *,#ss-pq-askme,#ss-pq-askme *,#ss-pq-bodycheck,#ss-pq-bodycheck *,#ss-pq-transition,#ss-pq-transition *{visibility:visible}#ss-pb,#ss-ps,#ss-py,#ss-pq,#ss-pq-calming,#ss-pq-sensory,#ss-pq-askme,#ss-pq-bodycheck,#ss-pq-transition{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}'
+    + ' .ss-focus-visible *:focus-visible{outline:2px solid #7c3aed!important;outline-offset:2px!important;border-radius:4px!important}'
+    + ' .ss-focus-visible *:focus:not(:focus-visible){outline:none!important}';
     document.head.appendChild(style);
   })();
 
@@ -292,25 +294,60 @@
     return 'Icon style illustration of "' + label.trim() + '"' + ctx + '.' + charCtx + ' ' + styleStr + ' White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.';
   }
 
+  // ── ensureBase64: convert blob/object URLs to raw base64 for image editing ──
+  async function ensureBase64(imageData) {
+    if (!imageData) return null;
+    // Already a data URL — extract the base64 portion
+    if (imageData.startsWith('data:')) {
+      var parts = imageData.split(',');
+      return parts.length > 1 ? parts[1] : null;
+    }
+    // Blob or object URL — fetch and convert to base64
+    if (imageData.startsWith('blob:') || imageData.startsWith('http')) {
+      try {
+        var resp = await fetch(imageData);
+        var blob = await resp.blob();
+        return await new Promise(function (resolve) {
+          var reader = new FileReader();
+          reader.onload = function () {
+            var result = reader.result;
+            resolve(result ? result.split(',')[1] : null);
+          };
+          reader.onerror = function () { resolve(null); };
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) {
+        warnLog('ensureBase64 fetch failed:', e);
+        return null;
+      }
+    }
+    // Assume it's already raw base64
+    return imageData;
+  }
+
   async function genImage(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarBase64, width) {
     var imageUrl = await onCallImagen(prompt, width || 400, 0.85);
     // Pass 2: auto-clean text
     if (autoClean && imageUrl) {
       try {
-        var raw = imageUrl.split(',')[1];
-        var cleaned = await onCallGeminiImageEdit("Remove all text, labels, letters, and numbers from the image. Keep the illustration clean and simple.", raw, width || 400, 0.85);
-        if (cleaned) imageUrl = cleaned;
+        var raw = await ensureBase64(imageUrl);
+        if (raw) {
+          var cleaned = await onCallGeminiImageEdit("Remove all text, labels, letters, and numbers from the image. Keep the illustration clean and simple.", raw, width || 400, 0.85);
+          if (cleaned) imageUrl = cleaned;
+        }
       } catch (e) { warnLog("Auto-clean failed:", e.message); }
     }
     // Pass 3: character consistency (if avatar provided)
     if (avatarBase64 && imageUrl) {
       try {
-        var raw2 = imageUrl.split(',')[1];
-        var consistent = await onCallGeminiImageEdit(
-          "Make the child or person in this illustration visually consistent with the reference portrait. Maintain the same flat icon art style. White background. STRICTLY NO TEXT.",
-          raw2, width || 400, 0.85, avatarBase64
-        );
-        if (consistent) imageUrl = consistent;
+        var raw2 = await ensureBase64(imageUrl);
+        if (raw2) {
+          var consistent = await onCallGeminiImageEdit(
+            "Make the child or person in this illustration visually consistent with the reference portrait. Maintain the same flat icon art style. White background. STRICTLY NO TEXT.",
+            raw2, width || 400, 0.85, avatarBase64
+          );
+          if (consistent) imageUrl = consistent;
+        }
       } catch (e) { warnLog("Character consistency pass failed:", e.message); }
     }
     return imageUrl;
@@ -356,6 +393,10 @@
     var onCallGemini = props.onCallGemini;
     var onCallTTS = props.onCallTTS;
     var selectedVoice = props.selectedVoice;
+    var onSetVoice = props.onSetVoice || null; // callback to update app-wide voice
+    var geminiVoices = props.geminiVoices || []; // Gemini TTS voice list from main app
+    var kokoroVoices = props.kokoroVoices || []; // Kokoro TTS voice list from main app
+    var isCanvasEnv = props.isCanvasEnv || false;
     var addToast = props.addToast;
     var onClose = props.onClose;
     var isOpen = props.isOpen;
@@ -473,19 +514,9 @@
     var _customTemplates = useState(function () { return load(STORAGE_CUSTOM_TEMPLATES, []); });
     var customTemplates = _customTemplates[0]; var setCustomTemplates = _customTemplates[1];
 
-    // Global voice picker
-    var STORAGE_VOICE = 'alloSymbolVoice';
-    var _globalVoice = useState(function () { return load(STORAGE_VOICE, 'Kore'); });
-    var globalVoice = _globalVoice[0]; var setGlobalVoice = _globalVoice[1];
-    var _availableVoices = useState([]); var availableVoices = _availableVoices[0]; var setAvailableVoices = _availableVoices[1];
-    useEffect(function () {
-      var loadV = function () {
-        var v = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-        if (v.length) setAvailableVoices(v.map(function (x) { return { name: x.name, lang: x.lang }; }));
-      };
-      loadV();
-      if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = loadV;
-    }, []);
+    // Voice — uses app-wide selectedVoice prop (synced with main AlloFlow header)
+    // No separate voice state needed; quick-access panel calls onSetVoice to update app-wide
+    var currentVoice = selectedVoice || 'Kore';
 
     // ── Multilingual board labels ──
     var STORAGE_BOARD_LANG = 'alloSymbolBoardLang';
@@ -713,8 +744,8 @@
         var prompt = 'Friendly stylized portrait of a child: ' + avatarDesc.trim() + '. Soft cartoon style, centered head and shoulders, warm expression, white background. STRICTLY NO TEXT.';
         var img = await onCallImagen(prompt, 300, 0.9);
         if (onCallGeminiImageEdit && img) {
-          var raw = img.split(',')[1];
-          img = await onCallGeminiImageEdit('Refine this child portrait. Make it warm, friendly, and consistent with the description: "' + avatarDesc.trim() + '". Clean white background. Remove any text.', raw, 300, 0.9) || img;
+          var raw = await ensureBase64(img);
+          if (raw) img = await onCallGeminiImageEdit('Refine this child portrait. Make it warm, friendly, and consistent with the description: "' + avatarDesc.trim() + '". Clean white background. Remove any text.', raw, 300, 0.9) || img;
         }
         var patchedProfiles = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { image: img, name: avatarName, description: avatarDesc }) : p; });
         setProfiles(patchedProfiles); store(STORAGE_PROFILES, patchedProfiles);
@@ -831,18 +862,27 @@
 
     var refineSymbol = useCallback(async function (id, instruction) {
       var item = gallery.find(function (i) { return i.id === id; });
-      if (!item || !instruction.trim() || !onCallGeminiImageEdit) return;
+      if (!item || !instruction.trim()) { addToast && addToast('Please enter an edit instruction', 'error'); return; }
+      if (!onCallGeminiImageEdit) { addToast && addToast('Image editing is not available', 'error'); return; }
+      if (!item.image) { addToast && addToast('No image to refine — generate one first', 'error'); return; }
       setSymLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
+      addToast && addToast('Refining icon…', 'info');
       try {
-        var raw = item.image.split(',')[1];
-        var refined = await onCallGeminiImageEdit('Edit this educational icon. ' + instruction + ' Maintain simple, flat vector art style. White background. STRICTLY NO TEXT.', raw, 400, 0.85);
+        var raw = await ensureBase64(item.image);
+        if (!raw) throw new Error('Could not extract image data');
+        var refinementPrompt = 'Edit this educational icon. Instruction: ' + instruction + '. Maintain the simple, flat vector art style. White background. STRICTLY NO TEXT.';
+        var refined = await onCallGeminiImageEdit(refinementPrompt, raw, 400, 0.85);
         if (refined) {
           var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: refined }) : i; });
           setGallery(updated); store(STORAGE_GALLERY, updated);
           setSymRefine(function (p) { var n = Object.assign({}, p); n[id] = ''; return n; });
+          addToast && addToast('Icon refined!', 'success');
+        } else {
+          addToast && addToast('Refinement returned no image', 'error');
         }
       } catch (e) {
-        addToast && addToast('Refinement failed', 'error');
+        warnLog('Symbol refinement failed:', e);
+        addToast && addToast('Refinement failed: ' + (e.message || 'Unknown error'), 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [gallery, onCallGeminiImageEdit, addToast]);
 
@@ -1551,11 +1591,11 @@
 
     var speakCell = useCallback(function (label) {
       if (!onCallTTS) return;
-      var voice = selectedVoice || globalVoice || 'Kore';
+      var voice = selectedVoice || 'Kore';
       onCallTTS(label, voice, 1).then(function (url) {
         if (url) { var a = new Audio(url); a.play().catch(function () {}); }
       }).catch(function () {});
-    }, [onCallTTS, selectedVoice, globalVoice]);
+    }, [onCallTTS, selectedVoice]);
 
     // ── Schedule actions ──────────────────────────────────────────────────
     var generateSchedule = useCallback(async function () {
@@ -1676,11 +1716,11 @@
       } finally { setStoryGenerating(false); }
     }, [storySituation, storyStudentName, storyDetails, avatarRef, onCallGemini, onCallImagen, onCallGeminiImageEdit, addToast]);
 
-    // Helper: set browser TTS voice from globalVoice
+    // Helper: set browser TTS voice fallback
     var applyVoice = function (utt) {
       if (window.speechSynthesis) {
         var voices = window.speechSynthesis.getVoices();
-        var match = voices.find(function (v) { return v.name === globalVoice; });
+        var match = voices.find(function (v) { return v.name === (selectedVoice || 'Kore'); });
         if (match) utt.voice = match;
       }
       return utt;
@@ -1766,7 +1806,7 @@
     var speakPage = useCallback(function (text) {
       if (!onCallTTS) return;
       setStorySpeaking(true);
-      var voice = selectedVoice || globalVoice || 'Kore';
+      var voice = selectedVoice || 'Kore';
       onCallTTS(text, voice, 1).then(function (url) {
         if (url) {
           var a = new Audio(url);
@@ -1774,7 +1814,7 @@
           a.play().catch(function () { setStorySpeaking(false); });
         } else { setStorySpeaking(false); }
       }).catch(function () { setStorySpeaking(false); });
-    }, [onCallTTS, selectedVoice, globalVoice]);
+    }, [onCallTTS, selectedVoice]);
 
     var regenPageIllustration = useCallback(async function (pageId) {
       var page = storyPages.find(function (p) { return p.id === pageId; });
@@ -2017,8 +2057,17 @@
       var active = tab === t.id;
       return e('button', {
         key: t.id, onClick: function () { setTab(t.id); },
-        style: { flex: 1, padding: '6px 4px', borderRadius: '7px', border: 'none', background: active ? '#fff' : 'transparent', color: active ? PURPLE : 'rgba(255,255,255,0.8)', fontWeight: active ? 700 : 500, fontSize: '11px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', boxShadow: active ? '0 1px 4px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.15s' }
-      }, e('span', { style: { fontSize: '14px' } }, t.icon), t.label);
+        role: 'tab',
+        'aria-selected': active ? 'true' : 'false',
+        'aria-label': t.label + ' tab',
+        tabIndex: active ? 0 : -1,
+        onKeyDown: function (ev) {
+          var idx = TABS.findIndex(function (x) { return x.id === t.id; });
+          if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { ev.preventDefault(); var next = TABS[(idx + 1) % TABS.length]; setTab(next.id); }
+          if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { ev.preventDefault(); var prev = TABS[(idx - 1 + TABS.length) % TABS.length]; setTab(prev.id); }
+        },
+        style: { flex: 1, padding: '6px 4px', borderRadius: '7px', border: 'none', background: active ? '#fff' : 'transparent', color: active ? PURPLE : '#fff', fontWeight: active ? 700 : 500, fontSize: '11px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', boxShadow: active ? '0 1px 4px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.15s' }
+      }, e('span', { style: { fontSize: '14px' }, 'aria-hidden': 'true' }, t.icon), t.label);
     }
 
     function spinner(size) {
@@ -2026,7 +2075,7 @@
     }
 
     function sectionLabel(text) {
-      return e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, text);
+      return e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, text);
     }
 
     var BOARD_THEMES = {
@@ -2866,32 +2915,42 @@
               style: { fontSize: '10px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
             }, 'Reset')
           ),
-          e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '0' } }, 'Colors apply to boards and symbol cards'),
-          e('label', { style: Object.assign({}, S.lbl, { marginTop: '10px' }) }, 'TTS Voice'),
-          availableVoices.length > 0
-            ? e('select', {
-                value: globalVoice,
-                onChange: function (ev) { setGlobalVoice(ev.target.value); store(STORAGE_VOICE, ev.target.value); },
-                'aria-label': 'Text-to-speech voice',
-                style: Object.assign({}, S.input, { marginBottom: '4px' })
-              },
-              availableVoices.map(function (v) {
-                return e('option', { key: v.name, value: v.name }, v.name + ' (' + v.lang + ')');
-              })
-            )
-            : e('p', { style: { fontSize: '11px', color: '#9ca3af' } }, 'Loading voices...'),
+          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0' } }, 'Colors apply to boards and symbol cards'),
+          e('label', { style: Object.assign({}, S.lbl, { marginTop: '10px' }) }, '🔊 Quick Voice Settings'),
+          e('select', {
+              value: currentVoice,
+              onChange: function (ev) { if (onSetVoice) onSetVoice(ev.target.value); },
+              'aria-label': 'Text-to-speech voice selection',
+              style: Object.assign({}, S.input, { marginBottom: '4px' })
+            },
+            isCanvasEnv ? [
+              e('optgroup', { key: 'gemini', label: '✨ Gemini TTS (Cloud)' },
+                geminiVoices.slice(0, 15).map(function (v) {
+                  return e('option', { key: v.id, value: v.id }, v.label || v.id);
+                })
+              ),
+              e('optgroup', { key: 'kokoro', label: '🎤 Kokoro (Offline Fallback)' },
+                kokoroVoices.map(function (v) {
+                  return e('option', { key: v.id, value: v.id }, v.label);
+                })
+              )
+            ] : geminiVoices.map(function (v) {
+              return e('option', { key: v.id, value: v.id }, v.label || v.id);
+            })
+          ),
           e('button', {
             onClick: function () {
-              if (!window.speechSynthesis) return;
-              var u = new SpeechSynthesisUtterance('Hello! This is how I sound.');
-              var voices = window.speechSynthesis.getVoices();
-              var match = voices.find(function (v) { return v.name === globalVoice; });
-              if (match) u.voice = match;
-              window.speechSynthesis.speak(u);
+              if (!onCallTTS) return;
+              onCallTTS('Hello! This is how I sound.', currentVoice, 1).then(function (url) {
+                if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+              }).catch(function () {});
             },
+            'aria-label': 'Preview selected voice',
             style: Object.assign({}, { fontSize: '10px', color: PURPLE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, marginBottom: '4px' })
           }, '🔊 Preview voice'),
-          e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '0' } }, 'Used for read-aloud in stories, boards, and AAC mode')
+          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0' } },
+            onSetVoice ? 'Synced with app-wide voice settings' : 'Used for read-aloud in stories, boards, and AAC mode'
+          )
         ),
         // Backup & Restore
         e('div', { style: S.card },
@@ -3197,11 +3256,11 @@
                   )
                 )
               ),
-          e('button', { onClick: symMode === 'single' ? genSingle : genBatch, disabled: isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim()), style: S.btn(PURPLE, '#fff', isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim())) },
+          e('button', { onClick: symMode === 'single' ? genSingle : genBatch, disabled: isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim()), 'aria-label': isLoading ? 'Generating symbols' : 'Generate symbol' + (symMode === 'batch' ? ' batch' : ''), style: S.btn(PURPLE, '#fff', isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim())) },
             isLoading ? '⏳ Generating...' : '✨ Generate' + (symMode === 'batch' ? ' Batch' : '')
           ),
-          gallery.length > 0 && e('button', { onClick: downloadAll, style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
-          gallery.length > 0 && e('button', { onClick: clearGallery, style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
+          gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
+          gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': 'Clear all symbols from gallery', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
         ),
         // Preview + gallery
         e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '10px' } },
@@ -3213,15 +3272,15 @@
             e('div', { style: { flex: 1 } },
               e('h3', { style: { fontWeight: 700, fontSize: '16px', color: '#111827', margin: '0 0 6px' } }, selectedItem.label),
               e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' } },
-                e('button', { onClick: function () { regenSymbol(selectedItem.id); }, disabled: !!symLoading[selectedItem.id], style: S.btn(LIGHT_PURPLE, PURPLE, !!symLoading[selectedItem.id]) }, '🔄 Regen'),
-                e('button', { onClick: function () { refineSymbol(selectedItem.id, 'Remove all text, labels, letters, and words from the image. Keep the illustration clean.'); }, disabled: !!symLoading[selectedItem.id], style: S.btn('#fee2e2', '#b91c1c', !!symLoading[selectedItem.id]) }, '🚫 Remove Text'),
-                e('button', { onClick: function () { speakCell(selectedItem.label); }, style: S.btn('#dcfce7', '#166534', false) }, '🔊 Speak'),
-                e('button', { onClick: function () { downloadSym(selectedItem); }, style: S.btn('#dbeafe', '#1e40af', false) }, '⬇️ PNG'),
-                e('button', { onClick: function () { deleteSymbol(selectedItem.id); }, style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️')
+                e('button', { onClick: function () { regenSymbol(selectedItem.id); }, disabled: !!symLoading[selectedItem.id], 'aria-label': 'Regenerate symbol for ' + selectedItem.label, style: S.btn(LIGHT_PURPLE, PURPLE, !!symLoading[selectedItem.id]) }, '🔄 Regen'),
+                e('button', { onClick: function () { refineSymbol(selectedItem.id, 'Remove all text, labels, letters, and words from the image. Keep the illustration clean.'); }, disabled: !!symLoading[selectedItem.id], 'aria-label': 'Remove text from ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#b91c1c', !!symLoading[selectedItem.id]) }, '🚫 Remove Text'),
+                e('button', { onClick: function () { speakCell(selectedItem.label); }, 'aria-label': 'Speak ' + selectedItem.label, style: S.btn('#dcfce7', '#166534', false) }, '🔊 Speak'),
+                e('button', { onClick: function () { downloadSym(selectedItem); }, 'aria-label': 'Download ' + selectedItem.label + ' as PNG', style: S.btn('#dbeafe', '#1e40af', false) }, '⬇️ PNG'),
+                e('button', { onClick: function () { deleteSymbol(selectedItem.id); }, 'aria-label': 'Delete ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️')
               ),
               e('div', { style: { display: 'flex', gap: '6px' } },
-                e('input', { type: 'text', value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, placeholder: 'Edit: make it a girl, add red X, change background...', style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
-                e('button', { onClick: function () { if (symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id], style: S.btn('#fef3c7', '#92400e', !symRefine[selectedItem.id] || !!symLoading[selectedItem.id]) }, '✏️')
+                e('input', { type: 'text', value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, placeholder: 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
+                e('button', { onClick: function () { if (symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id], 'aria-label': 'Apply refinement to ' + selectedItem.label, style: S.btn('#fef3c7', '#92400e', !symRefine[selectedItem.id] || !!symLoading[selectedItem.id]) }, '✏️')
               )
             )
           ),
@@ -3230,8 +3289,8 @@
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                 e('span', { style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Gallery (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
-                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': 'Search symbols', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
-                e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
+                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': 'Search symbols in gallery', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
+                e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, 'aria-label': symShowFavs ? 'Show all symbols' : 'Show favorite symbols only', style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
               ),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 [['', 'All'], ['noun', 'Nouns'], ['verb', 'Verbs'], ['adjective', 'Adjectives'], ['other', 'Other']].map(function (pair) {
@@ -3248,16 +3307,24 @@
             filtered.length > 0
               ? e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(95px, 1fr))', gap: '7px' } },
                   filtered.map(function (item) {
-                    return e('div', { key: item.id, onClick: function () { setSelectedId(item.id); }, style: { cursor: 'pointer', borderRadius: '8px', border: item.id === selectedId ? '2px solid ' + PURPLE : '2px solid #e5e7eb', background: item.id === selectedId ? LIGHT_PURPLE : '#fafafa', padding: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'border-color 0.15s', position: 'relative' } },
+                    return e('div', {
+                      key: item.id,
+                      onClick: function () { setSelectedId(item.id); },
+                      onKeyDown: function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); setSelectedId(item.id); } },
+                      tabIndex: 0,
+                      role: 'button',
+                      'aria-label': 'Select symbol: ' + item.label + (item.isFavorite ? ' (favorite)' : ''),
+                      'aria-pressed': item.id === selectedId ? 'true' : 'false',
+                      style: { cursor: 'pointer', borderRadius: '8px', border: item.id === selectedId ? '2px solid ' + PURPLE : '2px solid #e5e7eb', background: item.id === selectedId ? LIGHT_PURPLE : '#fafafa', padding: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'border-color 0.15s', position: 'relative' } },
                       symLoading[item.id]
                         ? e('div', { style: { width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', borderRadius: '6px' } }, spinner(20))
                         : e('img', { src: item.image, alt: item.label, style: { width: 72, height: 72, objectFit: 'contain', borderRadius: '6px', background: '#fff' } }),
                       e('span', { style: { fontSize: '10px', color: '#4b5563', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 } }, item.label),
-                      e('button', { onClick: function (ev) { ev.stopPropagation(); toggleFavorite(item.id); }, style: { position: 'absolute', top: 3, right: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: item.isFavorite ? 1 : 0.3, padding: '1px' }, title: item.isFavorite ? 'Remove from favorites' : 'Add to favorites' }, '⭐')
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); toggleFavorite(item.id); }, 'aria-label': (item.isFavorite ? 'Remove ' : 'Add ') + item.label + (item.isFavorite ? ' from favorites' : ' to favorites'), style: { position: 'absolute', top: 3, right: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: item.isFavorite ? 1 : 0.3, padding: '1px' }, title: item.isFavorite ? 'Remove from favorites' : 'Add to favorites' }, '⭐')
                     );
                   })
                 )
-              : e('div', { style: { textAlign: 'center', color: '#9ca3af', padding: '30px 0', fontSize: '13px' } }, gallery.length === 0 ? 'Generate your first symbol using the panel on the left.' : (symShowFavs ? 'No favorite symbols yet — click ⭐ on any card.' : 'No symbols match "' + symFilter + '"'))
+              : e('div', { style: { textAlign: 'center', color: '#6b7280', padding: '30px 0', fontSize: '13px' } }, gallery.length === 0 ? 'Generate your first symbol using the panel on the left.' : (symShowFavs ? 'No favorite symbols yet — click ⭐ on any card.' : 'No symbols match "' + symFilter + '"'))
           )
         )
       );
@@ -4014,7 +4081,7 @@
         // Play custom recorded audio if available
         if (audioData) { var a = new Audio(audioData); a.play().catch(function () {}); return; }
         if (onCallTTS) {
-          var voice = selectedVoice || globalVoice || 'Kore';
+          var voice = selectedVoice || 'Kore';
           onCallTTS(label, voice).then(function (url) {
             if (url) { var a = new Audio(url); a.play().catch(function () {}); }
             else if (window.speechSynthesis) { var u = new window.SpeechSynthesisUtterance(label); applyVoice(u); window.speechSynthesis.speak(u); }
@@ -4031,7 +4098,7 @@
         setStripSpeaking(true);
         var done = function () { setStripSpeaking(false); };
         if (onCallTTS) {
-          var voice = selectedVoice || globalVoice || 'Kore';
+          var voice = selectedVoice || 'Kore';
           onCallTTS(phrase, voice).then(function (url) {
             if (url) { var a = new Audio(url); a.onended = done; a.play().catch(done); }
             else { done(); }
@@ -4200,7 +4267,7 @@
         var cell = scanCells[safeIdx];
         if (!cell) return;
         if (onCallTTS) {
-          var voice = selectedVoice || globalVoice || 'Kore';
+          var voice = selectedVoice || 'Kore';
           onCallTTS(cell.label, voice).then(function (url) {
             if (url) { var a = new Audio(url); a.play().catch(function () {}); }
             else if (window.speechSynthesis) { var utt2 = new window.SpeechSynthesisUtterance(cell.label); applyVoice(utt2); window.speechSynthesis.speak(utt2); }
@@ -4283,27 +4350,53 @@
       );
     }
 
-    return e('div', { style: S.overlay, onClick: function (ev) { if (ev.target === ev.currentTarget) onClose && onClose(); } },
+    // Focus trap handler for modal — keep Tab within the dialog
+    var modalRef = useRef(null);
+    var handleModalKeyDown = function (ev) {
+      if (ev.key === 'Escape') { onClose && onClose(); return; }
+      if (ev.key !== 'Tab') return;
+      var modal = modalRef.current;
+      if (!modal) return;
+      var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (!focusable.length) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (ev.shiftKey) {
+        if (document.activeElement === first) { ev.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { ev.preventDefault(); first.focus(); }
+      }
+    };
+
+    return e('div', {
+      style: S.overlay,
+      onClick: function (ev) { if (ev.target === ev.currentTarget) onClose && onClose(); },
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Visual Supports Studio',
+      className: 'ss-focus-visible',
+      onKeyDown: handleModalKeyDown
+    },
       // Spinner keyframes
       e('style', null, '@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}'),
-      e('div', { style: S.modal, onClick: function (ev) { ev.stopPropagation(); } },
+      e('div', { style: S.modal, onClick: function (ev) { ev.stopPropagation(); }, ref: modalRef },
         // Header
         e('div', { style: S.header },
           e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
-              e('span', { style: { fontSize: '22px' } }, '🎨'),
+              e('span', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '🎨'),
               e('div', null,
-                e('h2', { style: { color: '#fff', fontWeight: 800, fontSize: '17px', margin: 0 } }, 'Visual Supports Studio'),
-                e('p', { style: { color: 'rgba(255,255,255,0.75)', fontSize: '11px', margin: '2px 0 0' } }, 'AI-powered symbols • boards • schedules • social stories')
+                e('h2', { id: 'ss-dialog-title', style: { color: '#fff', fontWeight: 800, fontSize: '17px', margin: 0 } }, 'Visual Supports Studio'),
+                e('p', { style: { color: 'rgba(255,255,255,0.9)', fontSize: '11px', margin: '2px 0 0' } }, 'AI-powered symbols • boards • schedules • social stories')
               )
             ),
-            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': 'Close' }, '×')
+            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': 'Close Visual Supports Studio' }, '×')
           ),
           // Tab bar
-          e('div', { style: S.tabBar }, TABS.map(tabBtn))
+          e('div', { style: S.tabBar, role: 'tablist', 'aria-label': 'Studio sections' }, TABS.map(tabBtn))
         ),
         // Body
-        e('div', { style: S.body },
+        e('div', { style: S.body, role: 'tabpanel', 'aria-label': tab + ' panel' },
           renderSharedLeft(),
           e('div', { style: S.rightCol },
             tab === 'symbols' && renderSymbolsTab(),
