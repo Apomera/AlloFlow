@@ -2583,7 +2583,7 @@ var d = labToolData || {};
 
                   var isComplete = blCompletedLevels.indexOf(lvl.id) >= 0;
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Action",
 
                     key: lvl.id,
 
@@ -2655,7 +2655,7 @@ var d = labToolData || {};
 
               // Start button
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Action",
 
                 onClick: function () {
 
@@ -2783,7 +2783,7 @@ var d = labToolData || {};
 
                 [1, 2, 3].map(function (sp) {
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change bl speed",
 
                     key: sp,
 
@@ -2815,7 +2815,7 @@ var d = labToolData || {};
 
               // â”€â”€ Pause button â”€â”€
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Change bl paused",
 
                 onClick: function () { upd('blPaused', !blPaused); },
 
@@ -2989,7 +2989,7 @@ var d = labToolData || {};
 
                     else btnClass += 'bg-slate-800/60 text-slate-300 border-slate-600/30 hover:bg-slate-700/60';
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Action",
 
                       key: oi,
 
@@ -3051,7 +3051,7 @@ var d = labToolData || {};
 
               // Next level button
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Action",
 
                 onClick: function () {
 
@@ -3197,7 +3197,7 @@ var d = labToolData || {};
 
               }, "\uD83D\uDD14 Use the Classical Conditioning panel below") :
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Action",
 
                   onClick: function () {
 
@@ -3229,7 +3229,7 @@ var d = labToolData || {};
 
               // Level 3: extinction trigger
 
-              blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5 && React.createElement("button", {
+              blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5 && React.createElement("button", { "aria-label": "Start Extinction",
 
                 onClick: function () {
 
@@ -3531,7 +3531,7 @@ var d = labToolData || {};
 
                 // Ring Bell button
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Action",
 
                   onClick: function () {
 
@@ -3671,7 +3671,7 @@ var d = labToolData || {};
 
                 // Pair Bell + Food button (only in pairing phase)
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Action",
 
                   onClick: function () {
 
@@ -3893,7 +3893,7 @@ var d = labToolData || {};
 
                 // CSV Export button
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Action",
 
                   onClick: function () {
 
@@ -3983,7 +3983,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCA1 Four Functions of Behavior (FBA)"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show functions",
                   onClick: function() { upd('blShowFunctions', !d.blShowFunctions); },
                   className: "text-[10px] text-blue-400 hover:text-blue-300"
                 }, d.blShowFunctions ? 'Hide' : 'Learn \u2192')
@@ -4020,7 +4020,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCDA Famous Behaviorists"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show behaviorists",
                   onClick: function() { upd('blShowBehaviorists', !d.blShowBehaviorists); },
                   className: "text-[10px] text-amber-400 hover:text-amber-300"
                 }, d.blShowBehaviorists ? 'Hide' : 'Explore \u2192')
@@ -4049,7 +4049,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83C\uDF0D ABA in the Real World"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show apps",
                   onClick: function() { upd('blShowApps', !d.blShowApps); },
                   className: "text-[10px] text-green-400 hover:text-green-300"
                 }, d.blShowApps ? 'Hide' : 'Explore \u2192')
@@ -4077,7 +4077,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCCA Behavior Measurement Methods"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show measure",
                   onClick: function() { upd('blShowMeasure', !d.blShowMeasure); },
                   className: "text-[10px] text-cyan-400 hover:text-cyan-300"
                 }, d.blShowMeasure ? 'Hide' : 'Learn \u2192')
@@ -4113,7 +4113,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\u2696 Ethics in Applied Behavior Analysis"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show ethics",
                   onClick: function() { upd('blShowEthics', !d.blShowEthics); },
                   className: "text-[10px] text-purple-400 hover:text-purple-300"
                 }, d.blShowEthics ? 'Hide' : 'View \u2192')
@@ -4139,7 +4139,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCC8 Schedule Comparison"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl sched canvas",
                   onClick: function() { upd('blSchedCanvas', !blSchedCanvas); },
                   className: "text-[10px] text-amber-400 hover:text-amber-300"
                 }, blSchedCanvas ? 'Hide' : 'Compare Schedules \u2192')
@@ -4241,11 +4241,11 @@ var d = labToolData || {};
                 }),
                 // Controls
                 React.createElement("div", { className: "flex gap-2 mt-2 justify-center" },
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Reset",
                     onClick: function() { upd('blSchedPaused', !blSchedPaused); },
                     className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (blSchedPaused ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-300')
                   }, blSchedPaused ? '\u25B6 Play' : '\u23F8 Pause'),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Reset",
                     onClick: function() { upd('blSchedTick', 0); upd('blSchedPaused', false); },
                     className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600"
                   }, '\u21BB Reset')
@@ -4360,7 +4360,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-1" }, '\u2B06 Earn Tokens'),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   TOKEN_ITEMS.map(function(item) {
-                    return React.createElement("button", { key: item.id,
+                    return React.createElement("button", { "aria-label": "Change bl token balance", key: item.id,
                       onClick: function() {
                         upd('blTokenBalance', blTokenBalance + item.tokens);
                         var newLog = (blTokenLog || []).slice();
@@ -4386,7 +4386,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   TOKEN_REWARDS.map(function(rew) {
                     var canAfford = blTokenBalance >= rew.cost;
-                    return React.createElement("button", { key: rew.id,
+                    return React.createElement("button", { "aria-label": "Behaviorlab action", key: rew.id,
                       onClick: function() {
                         if (!canAfford) { if (addToast) addToast('\u274C Need ' + (rew.cost - blTokenBalance) + ' more tokens!', 'info'); return; }
                         upd('blTokenBalance', blTokenBalance - rew.cost);
@@ -4433,7 +4433,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDD2C Operant vs Classical Conditioning"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Aspect",
                   onClick: function() { upd('blShowCondCompare', !blShowCondCompare); },
                   className: "text-[10px] text-violet-400 hover:text-violet-300"
                 }, blShowCondCompare ? 'Hide' : 'Compare \u2192')
@@ -4464,7 +4464,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB Behavior Intervention Plan (BIP) Builder"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show bip planner",
                   onClick: function() { upd('blShowBipPlanner', !blShowBipPlanner); },
                   className: "text-[10px] text-red-400 hover:text-red-300"
                 }, blShowBipPlanner ? 'Hide' : 'Build a BIP \u2192')
@@ -4514,11 +4514,11 @@ var d = labToolData || {};
                         className: "w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-[10px] text-slate-200 placeholder-slate-600 focus:border-red-500 focus:outline-none resize-none"
                       }),
                       React.createElement("div", { className: "flex gap-2 justify-end" },
-                        blBipStep > 0 && React.createElement("button", {
+                        blBipStep > 0 && React.createElement("button", { "aria-label": "Back",
                           onClick: function() { upd('blBipStep', blBipStep - 1); },
                           className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600"
                         }, '\u2190 Back'),
-                        React.createElement("button", {
+                        React.createElement("button", { "aria-label": "Next",
                           onClick: function() {
                             if (!blBipData[s.field]) { if (addToast) addToast('\u270F\uFE0F Fill in this step first!', 'info'); return; }
                             upd('blBipStep', blBipStep + 1);
@@ -4547,11 +4547,11 @@ var d = labToolData || {};
                         })
                       ),
                       React.createElement("div", { className: "flex gap-2 justify-center" },
-                        React.createElement("button", {
+                        React.createElement("button", { "aria-label": "Edit",
                           onClick: function() { upd('blBipStep', 0); },
                           className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600"
                         }, '\u270F\uFE0F Edit'),
-                        React.createElement("button", {
+                        React.createElement("button", { "aria-label": "New Plan",
                           onClick: function() { upd('blBipStep', 0); upd('blBipData', { behavior: '', antecedent: '', consequence: '', func: '', replacement: '', strategy: '' }); },
                           className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-red-700 text-white hover:bg-red-600"
                         }, '\uD83D\uDD04 New Plan')
@@ -4598,7 +4598,7 @@ var d = labToolData || {};
                       var bgClass = !answered ? 'bg-slate-800/40 border-slate-600 hover:border-slate-400 cursor-pointer' :
                         isRight ? 'bg-emerald-900/30 border-emerald-500' :
                         isSelected && !isRight ? 'bg-red-900/30 border-red-500' : 'bg-slate-800/20 border-slate-700 opacity-40';
-                      return React.createElement("button", { key: oi,
+                      return React.createElement("button", { "aria-label": "Behaviorlab action", key: oi,
                         onClick: function() {
                           if (answered) return;
                           upd('blScenarioAnswer', oi);
@@ -4635,7 +4635,7 @@ var d = labToolData || {};
                       React.createElement("span", { className: "font-bold" }, '\uD83D\uDCA1 Better approach: '),
                       sc.better
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Next Scenario (",
                       onClick: function() {
                         var nextIdx = (blScenarioIdx + 1) % SCENARIO_CHALLENGES.length;
                         upd('blScenarioIdx', nextIdx);
@@ -4654,7 +4654,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCC5 ABA History Timeline"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show timeline",
                   onClick: function() { upd('blShowTimeline', !blShowTimeline); },
                   className: "text-[10px] text-blue-400 hover:text-blue-300"
                 }, blShowTimeline ? 'Hide' : 'Explore \u2192')
@@ -4702,7 +4702,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB Quick Reference Cards"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show quick ref",
                   onClick: function() { upd('blShowQuickRef', !blShowQuickRef); },
                   className: "text-[10px] text-emerald-400 hover:text-emerald-300"
                 }, blShowQuickRef ? 'Hide' : 'View \u2192')
@@ -4730,7 +4730,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCD6 ABA Glossary (" + ABA_GLOSSARY.length + " terms)"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change bl show glossary",
                   onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
                   className: "text-[10px] text-slate-400 hover:text-slate-300"
                 }, d.blShowGlossary ? 'Hide' : 'Browse \u2192')

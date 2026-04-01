@@ -754,7 +754,7 @@ window.StemLab = window.StemLab || {
 
                   var active = mode === m[0];
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Update setting",
 
                     key: m[0],
 
@@ -857,11 +857,11 @@ window.StemLab = window.StemLab || {
                     'aria-label': 'Logic expression input',
                     className: "flex-1 px-3 py-2 rounded-lg border border-violet-200 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
                   }),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Update setting",
                     onClick: function() { upd({ expression: expr.slice(0,-1).trimEnd() }); },
                     className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg text-sm"
                   }, "\u232B"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Clear",
                     onClick: function() { upd({ expression: '' }); },
                     className: "px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg text-sm"
                   }, "Clear")
@@ -871,7 +871,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "flex items-center gap-3 mb-4 p-3 bg-white rounded-xl border border-violet-200" },
                   React.createElement("code", { className: "text-lg font-mono font-bold text-violet-800 flex-1" }, expr),
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Update setting",
 
                     onClick: function() { upd({ showEnglish: !showEnglish }); },
 
@@ -911,7 +911,7 @@ window.StemLab = window.StemLab || {
 
                   Object.keys(CONN).map(function(sym) {
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Update setting",
 
                       key: sym,
 
@@ -933,7 +933,7 @@ window.StemLab = window.StemLab || {
 
                   ['P','Q','R','S','(',')'].map(function(v) {
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Select option",
 
                       key: v,
 
@@ -945,7 +945,7 @@ window.StemLab = window.StemLab || {
 
                   }),
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Update setting",
 
                     onClick: function() { upd({ expression: expr.length > 0 ? expr.slice(0, -1) : '' }); },
 
@@ -953,7 +953,7 @@ window.StemLab = window.StemLab || {
 
                   }, "\u232B"),
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Clear",
 
                     onClick: function() { upd({ expression: '' }); },
 
@@ -971,7 +971,7 @@ window.StemLab = window.StemLab || {
 
                   PRESETS.map(function(p) {
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Update setting",
 
                       key: p.label,
 
@@ -998,7 +998,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("span", { className: "font-black text-amber-800 text-sm flex-1" },
                     _t2.type === 'tautology' ? 'Always TRUE! You found a tautology!' : 'Always FALSE! You found a contradiction!'
                   ),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Claim XP",
                     onClick: function() {
                       var xp = _t2.type === 'tautology' ? 10 : 5;
                       if (typeof awardStemXP === 'function') awardStemXP('logicLab', xp, 'Found '+_t2.type);
@@ -1037,7 +1037,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-black border " + typeBadge.bg + " " + typeBadge.text + " " + typeBadge.border, style: { boxShadow: typeBadge.glow } }, typeBadge.label),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Logiclab action",
 
                       onClick: function() {
 
@@ -1153,7 +1153,7 @@ window.StemLab = window.StemLab || {
 
                     var isCompleted = ci < currentChallenge || (ci === currentChallenge && proofComplete);
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Update setting",
 
                       key: ci,
 
@@ -1179,7 +1179,7 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("div", { className: "mt-3 flex items-center gap-2" },
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "AI-Generate Proof Challenge",
 
                     onClick: function() {
 
@@ -1201,7 +1201,7 @@ window.StemLab = window.StemLab || {
 
                   aiLoading && React.createElement("span", { className: "text-xs text-violet-500 font-bold" }, "Generating..."),
 
-                  aiProof && React.createElement("button", {
+                  aiProof && React.createElement("button", { "aria-label": "Clear AI",
 
                     onClick: function() { upd({ aiProof: null, proofSteps: [], proofComplete: false }); },
 
@@ -1233,7 +1233,7 @@ window.StemLab = window.StemLab || {
 
                       var isSelected = (d.selectedSteps || []).indexOf('P' + pi) !== -1;
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Drag or click to select",
                         key: pi, draggable: true,
                         onDragStart: function(e) { _drag.proofKey = 'P'+pi; e.dataTransfer.effectAllowed='move'; },
                         onClick: function() {
@@ -1286,7 +1286,7 @@ window.StemLab = window.StemLab || {
 
                       var isSelected = (d.selectedSteps || []).indexOf('S' + si) !== -1;
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Select option",
                         key: si,
                         style: { animation: si === proofSteps.length-1 ? 'logicPop 0.3s ease-out' : 'none' },
                         onClick: function() {
@@ -1319,7 +1319,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "flex gap-2 mt-2" },
 
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Undo",
 
                         onClick: function() {
 
@@ -1335,7 +1335,7 @@ window.StemLab = window.StemLab || {
 
                       }, "\u21A9 Undo"),
 
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Reset",
 
                         onClick: function() { upd({ proofSteps: [], proofComplete: false, selectedSteps: [] }); },
 
@@ -1351,7 +1351,7 @@ window.StemLab = window.StemLab || {
 
                   // Hint
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Update setting",
 
                     onClick: function() { upd({ showHint: !d.showHint }); },
 
@@ -1371,7 +1371,7 @@ window.StemLab = window.StemLab || {
 
                   RULES.map(function(rule) {
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Action",
 
                       key: rule.id,
 
@@ -1462,7 +1462,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("span", { className: "font-black text-violet-800 text-sm" }, "Score: " + score),
                 React.createElement("span", { className: "text-violet-300 font-bold" }, "|"),
                 React.createElement("span", { className: "font-black text-amber-600 text-sm" }, "\uD83D\uDD25 Streak: " + streak + " (Best: " + bestStreak + ")"),
-                React.createElement("button", { onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[10px] text-slate-500 hover:text-red-400 font-bold" }, "Reset")
+                React.createElement("button", { "aria-label": "Reset", onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[10px] text-slate-500 hover:text-red-400 font-bold" }, "Reset")
               ),
 
               // Challenge type tabs
@@ -1472,7 +1472,7 @@ window.StemLab = window.StemLab || {
 
                   var active = challengeMode === ct[0];
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Update setting",
 
                     key: ct[0],
 
@@ -1552,7 +1552,7 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Valid",
                       onClick: function() {
                         var correct = f.valid === true;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
@@ -1565,7 +1565,7 @@ window.StemLab = window.StemLab || {
 
                     }, "\u2705 Valid"),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Invalid (Fallacy)",
                       onClick: function() {
                         var correct = f.valid === false;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
@@ -1597,7 +1597,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Next",
 
                         onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiFallacy: null }); },
 
@@ -1605,7 +1605,7 @@ window.StemLab = window.StemLab || {
 
                       }, "Next \u2192"),
 
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "AI Generate",
 
                         onClick: function() {
 
@@ -1657,7 +1657,7 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Valid",
 
                       onClick: function() { var c = af.valid === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
@@ -1665,7 +1665,7 @@ window.StemLab = window.StemLab || {
 
                     }, "\u2705 Valid"),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Invalid (Fallacy)",
 
                       onClick: function() { var c = af.valid === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
@@ -1687,7 +1687,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "text-xs text-slate-500" }, af.explain),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Generate Another",
 
                       onClick: function() {
 
@@ -1781,7 +1781,7 @@ window.StemLab = window.StemLab || {
 
                               : React.createElement("div", { className: "flex gap-1 justify-center" },
 
-                                  React.createElement("button", {
+                                  React.createElement("button", { "aria-label": "T",
 
                                     onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = true; upd({ qfAnswers: a }); },
 
@@ -1789,7 +1789,7 @@ window.StemLab = window.StemLab || {
 
                                   }, "T"),
 
-                                  React.createElement("button", {
+                                  React.createElement("button", { "aria-label": "F",
 
                                     onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = false; upd({ qfAnswers: a }); },
 
@@ -1819,7 +1819,7 @@ window.StemLab = window.StemLab || {
 
                     allCorrect && (function() { if (typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Quick-fire completed'); return null; })(),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Next Challenge",
 
                       onClick: function() { upd({ challengeIdx: challengeIdx + 1, qfAnswers: {} }); },
 
@@ -1869,11 +1869,11 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-300 transition-all text-sm" }, "\u2705 Yes"),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-300 transition-all text-sm" }, "\u2705 Yes"),
 
-                    React.createElement("button", { onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-300 transition-all text-sm" }, "\u274C No"),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-300 transition-all text-sm" }, "\u274C No"),
 
-                    React.createElement("button", { onClick: function() { var c = 'wrong'; upd({ challengeAnswer: c }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, "\u2753 Can't tell")
+                    React.createElement("button", { "aria-label": "Can't tell", onClick: function() { var c = 'wrong'; upd({ challengeAnswer: c }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, "\u2753 Can't tell")
 
                   ),
 
@@ -1887,9 +1887,9 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, "Next \u2192"),
+                      React.createElement("button", { "aria-label": "Next", onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, "Next \u2192"),
 
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "AI Mystery",
 
                         onClick: function() {
 
@@ -1939,11 +1939,11 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-300 transition-all text-sm" }, "\u2705 Yes"),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-300 transition-all text-sm" }, "\u2705 Yes"),
 
-                    React.createElement("button", { onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-300 transition-all text-sm" }, "\u274C No"),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-300 transition-all text-sm" }, "\u274C No"),
 
-                    React.createElement("button", { onClick: function() { upd({ challengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, "\u2753 Can't tell")
+                    React.createElement("button", { "aria-label": "Can't tell", onClick: function() { upd({ challengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, "\u2753 Can't tell")
 
                   ),
 
@@ -1955,7 +1955,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "text-xs text-slate-500" }, ad.explain),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Generate Another",
 
                       onClick: function() {
 
@@ -1994,7 +1994,7 @@ window.StemLab = window.StemLab || {
                 // Gate selector
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   GATE_TYPES.map(function(gt) {
-                    return React.createElement("button", { key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,50);},
+                    return React.createElement("button", { "aria-label": "Update setting", key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,50);},
                       className: "px-4 py-2 rounded-xl text-sm font-black transition-all",
                       style: { background: gateType===gt?'linear-gradient(135deg,#7c3aed,#a78bfa)':'#f5f3ff', color: gateType===gt?'white':'#7c3aed', boxShadow: gateType===gt?'0 4px 12px rgba(124,58,237,0.3)':'none' }
                     }, gt);
@@ -2008,7 +2008,7 @@ window.StemLab = window.StemLab || {
                       var val = gateInputs[inp];
                       return React.createElement("div", { key: inp, className: "flex items-center gap-2" },
                         React.createElement("span", { className: "text-xs font-black text-slate-500 w-4" }, inp),
-                        React.createElement("button", {
+                        React.createElement("button", { "aria-label": "Logiclab action",
                           onClick: function() {
                             var ni = Object.assign({}, gateInputs); ni[inp] = !ni[inp];
                             upd({ gateInputs: ni });
@@ -2069,7 +2069,7 @@ window.StemLab = window.StemLab || {
                       React.createElement("code", { className: "text-xs font-mono font-black text-violet-700" },
                         gateType==='AND'?'P \u2227 Q':gateType==='OR'?'P \u2228 Q':gateType==='NOT'?'\u00AC P':gateType==='NAND'?'\u00AC (P \u2227 Q)':gateType==='NOR'?'\u00AC (P \u2228 Q)':gateType==='XOR'?'P \u2295 Q':'\u00AC (P \u2295 Q)'
                       ),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Open in Truth Tables",
                         onClick: function() {
                           var fml = gateType==='AND'?'P \u2227 Q':gateType==='OR'?'P \u2228 Q':gateType==='NOT'?'\u00AC P':gateType==='NAND'?'\u00AC (P \u2227 Q)':gateType==='NOR'?'\u00AC (P \u2228 Q)':gateType==='XOR'?'P \u2295 Q':'\u00AC (P \u2295 Q)';
                           upd({ mode:'truth', expression: fml });
@@ -2087,7 +2087,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-6" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Update setting",
 
                 onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'First logic session'); },
 
@@ -2186,7 +2186,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-6 text-center" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Back to Tools",
 
                 onClick: function() { setStemLabTool(null); },
 

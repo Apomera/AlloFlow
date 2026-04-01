@@ -1243,7 +1243,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }, role: 'tablist', 'aria-label': 'Fire Ecology sections' },
             TABS.map(function(tt) {
               var active = tab === tt.id;
-              return h('button', {
+              return h('button', { 'aria-label': 'Change tab',
                 key: tt.id,
                 onClick: function() { upd('tab', tt.id); },
                 role: 'tab', 'aria-selected': active,
@@ -1278,7 +1278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
-              h('button', {
+              h('button', { 'aria-label': 'Back to All Nations',
                 onClick: function() { upd('selectedNation', null); },
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
               }, '\u2190 Back to All Nations'),
@@ -1339,7 +1339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               INDIGENOUS_FIRE_NATIONS.map(function(nation) {
                 var viewed = nationsViewed[nation.id];
-                return h('button', {
+                return h('button', { 'aria-label': 'Change selected nation',
                   key: nation.id,
                   onClick: function() { upd('selectedNation', nation.id); },
                   style: {
@@ -1383,7 +1383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
-              h('button', {
+              h('button', { 'aria-label': 'Back to All Ecosystems',
                 onClick: function() { upd('selectedEcosystem', null); },
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
               }, '\u2190 Back to All Ecosystems'),
@@ -1433,7 +1433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               FIRE_ECOSYSTEMS.map(function(eco) {
                 var viewed = ecosystemsViewed[eco.id];
-                return h('button', {
+                return h('button', { 'aria-label': 'Change selected ecosystem',
                   key: eco.id,
                   onClick: function() { upd('selectedEcosystem', eco.id); },
                   style: {
@@ -1592,7 +1592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             renderCanvas(),
 
             // Comparison mode toggle
-            h('button', {
+            h('button', { 'aria-label': 'Year',
               onClick: function() { updMulti({ comparisonMode: !comparisonMode }); },
               style: { background: comparisonMode ? '#7c3aed' : '#1e293b', border: '1px solid ' + (comparisonMode ? '#7c3aed' : '#334155'), borderRadius: 8, padding: '8px 16px', color: comparisonMode ? '#fff' : '#94a3b8', cursor: 'pointer', fontSize: 13, marginBottom: 12 }
             }, comparisonMode ? '\u2716 Exit Comparison Mode' : '\u2194\uFE0F Compare: Cultural Burn vs. Suppression'),
@@ -1621,22 +1621,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Action buttons
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
-              h('button', {
+              h('button', { 'aria-label': 'Cultural Burn (+10 yrs)',
                 onClick: function() { advanceDecade('culturalBurn'); },
                 style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 14 }
               }, '\uD83D\uDD25 Cultural Burn (+10 yrs)'),
-              h('button', {
+              h('button', { 'aria-label': 'Prescribed Burn (+10 yrs)',
                 onClick: function() { advanceDecade('prescribe'); },
                 style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#f59e0b', color: '#000', fontWeight: 700, fontSize: 14 }
               }, '\uD83D\uDCCB Prescribed Burn (+10 yrs)'),
-              h('button', {
+              h('button', { 'aria-label': 'Suppress Fire (+10 yrs)',
                 onClick: function() { advanceDecade('suppress'); },
                 style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontWeight: 700, fontSize: 14 }
               }, '\u26D4 Suppress Fire (+10 yrs)')
             ),
 
             // Reset
-            h('button', {
+            h('button', { 'aria-label': 'Reset Forest',
               onClick: function() { updMulti({ sim: Object.assign({}, SIM_DEFAULTS), simB: Object.assign({}, SIM_DEFAULTS) }); if (addToast) addToast('Forest reset to starting conditions.', 'info'); },
               style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 16px', color: '#94a3b8', cursor: 'pointer', fontSize: 13, marginBottom: 16 }
             }, '\uD83D\uDD04 Reset Forest'),
@@ -1645,7 +1645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             comparisonMode ? h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, border: '2px solid #7c3aed' } },
               h('div', { style: { fontWeight: 700, color: '#7c3aed', marginBottom: 12, fontSize: 15 } }, '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression'),
               h('p', { style: { margin: '0 0 12px 0', fontSize: 13, color: '#94a3b8' } }, 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.'),
-              h('button', {
+              h('button', { 'aria-label': 'Action',
                 onClick: function() {
                   // Advance Forest A (cultural burn)
                   var newA = Object.assign({}, sim);
@@ -1817,7 +1817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               slider('Fuel Moisture Content', burnFuelMoisture, 2, 40, 1, '%', 'burnFuelMoisture', '#22c55e')
             ),
 
-            h('button', {
+            h('button', { 'aria-label': 'Evaluate Burn Plan',
               onClick: evaluateBurn,
               style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 16 }
             }, '\uD83D\uDD25 Evaluate Burn Plan'),
@@ -1851,7 +1851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             if (!concept) { upd('selectedScience', null); return null; }
 
             return h('div', null,
-              h('button', {
+              h('button', { 'aria-label': 'Back to Concepts',
                 onClick: function() { upd('selectedScience', null); },
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
               }, '\u2190 Back to Concepts'),
@@ -1879,7 +1879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
               FIRE_SCIENCE.map(function(concept) {
-                return h('button', {
+                return h('button', { 'aria-label': 'Change selected science',
                   key: concept.id,
                   onClick: function() { upd('selectedScience', concept.id); },
                   style: {
@@ -1967,7 +1967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 var border = !answered ? '#334155' :
                              (isCorrect ? '#22c55e' : (isSelected ? '#ef4444' : '#334155'));
 
-                return h('button', {
+                return h('button', { 'aria-label': 'Select Answer',
                   key: ci,
                   onClick: function() { selectAnswer(ci); },
                   disabled: answered,
@@ -1984,7 +1984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }),
 
               quizAnswer >= 0 ? h('div', { style: { marginTop: 12 } },
-                h('button', {
+                h('button', { 'aria-label': 'Next Question',
                   onClick: nextQuestion,
                   style: { padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 14 }
                 }, 'Next Question \u2192')
@@ -2032,7 +2032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #f97316'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
               }),
-              h('button', {
+              h('button', { 'aria-label': 'Ask A I',
                 onClick: askAI,
                 disabled: aiLoading,
                 style: {
@@ -2180,7 +2180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
-              h('button', {
+              h('button', { 'aria-label': 'Back to Case Studies',
                 onClick: function() { upd('selectedCase', null); },
                 style: { background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontSize: 14, marginBottom: 12, padding: 0 }
               }, '\u2190 Back to Case Studies'),
@@ -2236,7 +2236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               CASE_STUDIES.map(function(cs) {
                 var viewed = casesViewed[cs.id];
-                return h('button', {
+                return h('button', { 'aria-label': 'Change selected case',
                   key: cs.id,
                   onClick: function() { upd('selectedCase', cs.id); },
                   style: {
@@ -2294,7 +2294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 onChange: function(e) { updMulti({ carbonAcres: parseInt(e.target.value), carbonCalculated: false }); },
                 style: { width: '100%', accentColor: '#f97316' }
               }),
-              h('button', {
+              h('button', { 'aria-label': 'Calculate Carbon Impact',
                 onClick: calculate,
                 style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 15, marginTop: 12 }
               }, '\u2601\uFE0F Calculate Carbon Impact')
@@ -2959,7 +2959,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   Object.keys(GAME_DIFFICULTIES).map(function(key) {
                     var gd = GAME_DIFFICULTIES[key];
                     var active = gameDifficulty === key;
-                    return h('button', { key: key, onClick: function() { upd('gameDifficulty', key); },
+                    return h('button', { 'aria-label': 'Start Game', key: key, onClick: function() { upd('gameDifficulty', key); },
                       style: { padding: '10px 16px', borderRadius: 8, border: '2px solid ' + (active ? '#f97316' : '#334155'), background: active ? '#431407' : '#0f172a', color: active ? '#fb923c' : '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: active ? 700 : 500, maxWidth: 200 }
                     },
                       h('div', { style: { fontWeight: 700 } }, gd.label),
@@ -2967,7 +2967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     );
                   })
                 ),
-                h('button', { onClick: startGame,
+                h('button', { 'aria-label': 'Begin the Challenge', onClick: startGame,
                   style: { padding: '14px 40px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 18 }
                 }, '\uD83D\uDD25 Begin the Challenge')
               )
@@ -2987,7 +2987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ),
                 h('p', { style: { color: '#c7d2fe', fontSize: 14, lineHeight: 1.6, marginBottom: 16 } }, pendingDecision.desc),
                 pendingDecision.choices.map(function(ch, ci) {
-                  return h('button', { key: ci, onClick: function() { resolveDecision(ci); },
+                  return h('button', { 'aria-label': 'Resolve Decision', key: ci, onClick: function() { resolveDecision(ci); },
                     style: { display: 'block', width: '100%', padding: 14, marginBottom: 10, borderRadius: 10, border: '2px solid #4f46e544', background: '#0f172a', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }
                   },
                     h('div', { style: { fontWeight: 700, color: '#e0e7ff', fontSize: 14, marginBottom: 2 } }, ch.label),
@@ -3064,7 +3064,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ) : null,
 
-              h('button', { onClick: function() { updMulti({ gameActive: false, gameState: null, gameEvent: null, gameScore: 0, gameOver: false, gameHistory: [], pendingDecision: null }); },
+              h('button', { 'aria-label': 'Play Again', onClick: function() { updMulti({ gameActive: false, gameState: null, gameEvent: null, gameScore: 0, gameOver: false, gameHistory: [], pendingDecision: null }); },
                 style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 16 }
               }, '\uD83D\uDD04 Play Again')
             );
@@ -3137,7 +3137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 { action: 'educate', label: '\uD83C\uDFEB Educate', desc: 'Village support +', color: '#f472b6' },
                 { action: 'nothing', label: '\u23F8\uFE0F Do Nothing', desc: 'Fuel accumulates...', color: '#ef4444' }
               ].map(function(opt) {
-                return h('button', { key: opt.action, onClick: function() { gameAdvance(opt.action); },
+                return h('button', { 'aria-label': 'Select option', key: opt.action, onClick: function() { gameAdvance(opt.action); },
                   style: { background: '#0f172a', border: '2px solid ' + opt.color + '33', borderRadius: 10, padding: 10, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontWeight: 700, color: opt.color, fontSize: 13, marginBottom: 2 } }, opt.label),
@@ -3194,7 +3194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('strong', { style: { color: '#f97316' } }, 'Did You Know? '),
               fact
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Next fact',
               onClick: function() {
                 var newIdx = (factIdx + 1) % FIRE_FACTS.length;
                 upd('factIdx', newIdx);

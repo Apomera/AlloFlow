@@ -731,7 +731,7 @@ window.StemLab = window.StemLab || {
       // ── Tab button helper ──
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
-        return h('button', { onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-200') }, icon + ' ' + label);
+        return h('button', { 'aria-label': 'Change active tab', onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-200') }, icon + ' ' + label);
       };
 
       // Regression line/curve path
@@ -776,10 +776,10 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-xs text-slate-500' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
           n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
           h('div', { className: 'ml-auto flex gap-1.5' },
-            h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
-            h('button', { onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\u2328\uFE0F'),
-            h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-            h('button', { onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[10px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
+            h('button', { 'aria-label': 'Select option', onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
+            h('button', { 'aria-label': 'Select option', onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\u2328\uFE0F'),
+            h('button', { 'aria-label': 'Select option', onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+            h('button', { 'aria-label': 'Set Tool Snapshots', onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[10px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
           )
         ),
 
@@ -821,8 +821,8 @@ window.StemLab = window.StemLab || {
         // ── Step-through banner ──
         stepMode && h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200 flex items-center gap-3' },
           h('span', { className: 'text-xs font-bold text-violet-700' }, '\uD83D\uDC63 Step-Through Mode: ' + stepIdx + '/' + points.length),
-          h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs hover:bg-violet-700' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next Point'),
-          h('button', { onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-200' }, '\u2716 Stop'),
+          h('button', { 'aria-label': 'Stop', onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs hover:bg-violet-700' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next Point'),
+          h('button', { 'aria-label': 'Stop', onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-200' }, '\u2716 Stop'),
           n >= 2 && h('span', { className: 'text-[10px] text-violet-500 ml-auto' }, 'R\u00B2=' + regR2.toFixed(3) + ' | Mean=' + meanY.toFixed(1)),
           h('span', { className: 'text-[10px] text-violet-400' }, '(or press \u2192)')
         ),
@@ -851,7 +851,7 @@ window.StemLab = window.StemLab || {
               { id: 'boxplot', icon: '\uD83D\uDCE6', label: 'Box Plot' },
               { id: 'ogive', icon: '\uD83D\uDCC9', label: 'Ogive' }
             ].map(function(ct) {
-              return h('button', { key: ct.id, onClick: function() { switchChart(ct.id); },
+              return h('button', { 'aria-label': 'Switch Chart', key: ct.id, onClick: function() { switchChart(ct.id); },
                 className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' + (chartType === ct.id ? 'bg-teal-600 text-white shadow' : 'bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100')
               }, ct.icon + ' ' + ct.label);
             }),
@@ -864,7 +864,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Datasets:'),
             datasetLibrary.map(function(ds) {
-              return h('button', { key: ds.label, onClick: function() { loadDataset(ds); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-all' }, ds.label);
+              return h('button', { 'aria-label': 'Load Dataset', key: ds.label, onClick: function() { loadDataset(ds); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-all' }, ds.label);
             })
           ),
 
@@ -1081,8 +1081,8 @@ window.StemLab = window.StemLab || {
 
           // ── Controls row ──
           h('div', { className: 'flex gap-2 flex-wrap items-center' },
-            h('button', { onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\u21A9 Undo'),
-            h('button', { onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\uD83D\uDDD1\uFE0F Clear'),
+            h('button', { 'aria-label': 'Undo', onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\u21A9 Undo'),
+            h('button', { 'aria-label': 'Clear', onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\uD83D\uDDD1\uFE0F Clear'),
             h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-violet-600 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showResiduals, onChange: function() { upd('showResiduals', !showResiduals); }, className: 'accent-violet-600' }), 'Residuals'),
             h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-teal-600 cursor-pointer' },
@@ -1100,9 +1100,9 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-slate-500 cursor-pointer' },
               h('input', { type: 'checkbox', checked: tableMode, onChange: function() { upd('tableMode', !tableMode); }, className: 'accent-teal-600' }), 'Table'),
             h('div', { className: 'ml-auto flex gap-1.5' },
-              h('button', { onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCE5 CSV'),
-              h('button', { onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCD0 SVG'),
-              h('button', { onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCBE Save')
+              h('button', { 'aria-label': 'CSV', onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCE5 CSV'),
+              h('button', { 'aria-label': 'SVG', onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCD0 SVG'),
+              h('button', { 'aria-label': 'Save', onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCBE Save')
             )
           ),
 
@@ -1111,7 +1111,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 items-end mb-2' },
               h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-500 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
               h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-500 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
-              h('button', { onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-600 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
+              h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-600 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
             ),
             n > 0 && h('div', { className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-500' },
               visiblePoints.map(function(p, i) { return h('span', { key: i, className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); } }, '(' + p.x + ',' + p.y + ')'); })
@@ -1123,7 +1123,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
               h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Regression:'),
               ['linear', 'quadratic', 'exponential', 'logarithmic'].map(function(rt) {
-                return h('button', { key: rt, onClick: function() { upd('regressionType', rt); },
+                return h('button', { 'aria-label': 'Pearson r / Spearman \u03C1', key: rt, onClick: function() { upd('regressionType', rt); },
                   className: 'px-2 py-0.5 rounded text-[10px] font-bold transition-all ' + (regressionType === rt ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                 }, rt.charAt(0).toUpperCase() + rt.slice(1));
               })
@@ -1155,12 +1155,12 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
                     h('span', { className: 'text-[10px] text-slate-500' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
                     h('span', { className: 'text-[10px] text-slate-500 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
-                    h('button', { onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, 'Load'),
-                    h('button', { onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[10px] font-bold text-red-400 hover:text-red-600' }, '\u2715')
+                    h('button', { 'aria-label': 'Load', onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, 'Load'),
+                    h('button', { 'aria-label': 'Remove item', onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[10px] font-bold text-red-400 hover:text-red-600' }, '\u2715')
                   );
                 }))
           ),
-          h('button', { onClick: function() { upd('showGallery', !showGallery); }, className: 'text-[10px] font-bold text-slate-500 hover:text-teal-600' }, showGallery ? '\u25B2 Hide Gallery' : '\u25BC Show Gallery (' + galleryItems.length + ')')
+          h('button', { 'aria-label': 'Add data points to see statistics', onClick: function() { upd('showGallery', !showGallery); }, className: 'text-[10px] font-bold text-slate-500 hover:text-teal-600' }, showGallery ? '\u25B2 Hide Gallery' : '\u25BC Show Gallery (' + galleryItems.length + ')')
         ),
 
         // ══════════════════════════════════════════════════════════
@@ -1289,7 +1289,7 @@ window.StemLab = window.StemLab || {
 
               // Stem-and-Leaf Display
               h('div', null,
-                h('button', { onClick: function() { upd('showStemLeaf', !showStemLeaf); }, className: 'text-[10px] font-bold ' + (showStemLeaf ? 'text-teal-600' : 'text-slate-500') + ' hover:text-teal-600' }, (showStemLeaf ? '\u25B2' : '\u25BC') + ' \uD83C\uDF3F Stem-and-Leaf Plot'),
+                h('button', { 'aria-label': 'Stem', onClick: function() { upd('showStemLeaf', !showStemLeaf); }, className: 'text-[10px] font-bold ' + (showStemLeaf ? 'text-teal-600' : 'text-slate-500') + ' hover:text-teal-600' }, (showStemLeaf ? '\u25B2' : '\u25BC') + ' \uD83C\uDF3F Stem-and-Leaf Plot'),
                 showStemLeaf && stemLeafData.length > 0 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 mt-1.5 font-mono text-sm' },
                   h('div', { className: 'flex gap-1 mb-2' },
                     h('span', { className: 'text-[10px] font-bold text-teal-600 font-sans' }, 'Stem'),
@@ -1324,7 +1324,7 @@ window.StemLab = window.StemLab || {
             ].map(function(qt) {
               var active = quizType === qt.id;
               var used = !!quizTypesUsed[qt.id];
-              return h('button', { key: qt.id, onClick: function() { upd('quizType', qt.id); },
+              return h('button', { 'aria-label': 'Make Quiz', key: qt.id, onClick: function() { upd('quizType', qt.id); },
                 className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50') + (used ? '' : '')
               }, qt.icon + ' ' + qt.label + (used ? ' \u2713' : ''));
             }),
@@ -1332,7 +1332,7 @@ window.StemLab = window.StemLab || {
             dpStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + dpStreak)
           ),
 
-          h('button', { onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-600 text-white') + ' hover:opacity-90 transition-all' },
+          h('button', { 'aria-label': 'Make Quiz', onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-600 text-white') + ' hover:opacity-90 transition-all' },
             dpQuiz ? '\uD83D\uDD04 New Question' : '\uD83C\uDFAF Start Quiz'
           ),
 
@@ -1347,7 +1347,7 @@ window.StemLab = window.StemLab || {
             // Options for correlation / guessR2 / matchChart
             dpQuiz.type !== 'outlier' && h('div', { className: 'flex gap-3 flex-wrap' },
               dpQuiz.opts.map(function(opt) {
-                return h('button', { key: opt, onClick: function() { answerQuiz(opt); },
+                return h('button', { 'aria-label': 'Select option', key: opt, onClick: function() { answerQuiz(opt); },
                   className: 'flex-1 min-w-[80px] px-4 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-teal-400 hover:bg-teal-50 transition-all cursor-pointer'
                 }, opt);
               })
@@ -1355,7 +1355,7 @@ window.StemLab = window.StemLab || {
             // Outlier quiz: clickable points
             dpQuiz.type === 'outlier' && h('div', { className: 'grid grid-cols-5 gap-2' },
               dpQuiz.pts.map(function(p, i) {
-                return h('button', { key: i, onClick: function() { answerQuiz(i.toString()); },
+                return h('button', { 'aria-label': '#', key: i, onClick: function() { answerQuiz(i.toString()); },
                   className: 'px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-slate-200 hover:border-red-400 hover:bg-red-50 transition-all'
                 }, '#' + (i+1) + ': (' + p.x + ',' + p.y + ')');
               })
@@ -1369,7 +1369,7 @@ window.StemLab = window.StemLab || {
               var ansText = dpQuiz.type === 'outlier' ? 'Point #' + (dpQuiz.answer + 1) : dpQuiz.answer;
               return isRight ? '\u2705 Correct! ' + ansText : '\u274C Answer: ' + ansText;
             })(),
-            h('button', { onClick: makeQuiz, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
+            h('button', { 'aria-label': 'Next', onClick: makeQuiz, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
           ),
 
           !dpQuiz && h('div', { className: 'text-center text-sm text-slate-400 py-4' }, 'Select a quiz type and click "Start Quiz"!')
@@ -1402,7 +1402,7 @@ window.StemLab = window.StemLab || {
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-4 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-xs font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Data Analyst'),
-              h('button', { onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[10px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-500 text-white hover:bg-pink-600') },
+              h('button', { 'aria-label': 'Ask A I', onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[10px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-500 text-white hover:bg-pink-600') },
                 aiLoading ? '\u23F3 Analyzing...' : '\u2728 Analyze Data')
             ),
             aiInsight
@@ -1425,7 +1425,7 @@ window.StemLab = window.StemLab || {
                     { id: 'sort', icon: '\uD83D\uDD22', label: 'Sort by X', desc: 'Sort points by X value' },
                     { id: 'flipXY', icon: '\uD83D\uDD00', label: 'Flip X\u2194Y', desc: 'Swap X and Y values' }
                   ].map(function(tr) {
-                    return h('button', { key: tr.id, onClick: function() { transformData(tr.id); }, title: tr.desc,
+                    return h('button', { 'aria-label': 'Transform Data', key: tr.id, onClick: function() { transformData(tr.id); }, title: tr.desc,
                       className: 'px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all'
                     }, tr.icon + ' ' + tr.label);
                   })
@@ -1447,7 +1447,7 @@ window.StemLab = window.StemLab || {
                 { r: -0.70, label: 'r\u2248-0.70', color: 'orange' },
                 { r: -0.95, label: 'r\u2248-0.95', color: 'red' }
               ].map(function(g) {
-                return h('button', { key: g.r, onClick: function() { generateRandom(g.r); },
+                return h('button', { 'aria-label': 'Step-Through Mode', key: g.r, onClick: function() { generateRandom(g.r); },
                   className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100 transition-all'
                 }, '\uD83C\uDFB2 ' + g.label);
               })
@@ -1459,11 +1459,11 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, '\uD83D\uDC63 Step-Through Mode'),
             h('div', { className: 'text-[10px] text-violet-500 mb-2' }, 'Watch how statistics change as each point is revealed one-by-one.'),
             !stepMode
-              ? h('button', { onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 disabled:opacity-40' }, '\u25B6 Start Step-Through (' + points.length + ' points)')
+              ? h('button', { 'aria-label': 'Stop', onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 disabled:opacity-40' }, '\u25B6 Start Step-Through (' + points.length + ' points)')
               : h('div', { className: 'flex items-center gap-3' },
                 h('span', { className: 'text-sm font-bold text-violet-700' }, stepIdx + ' / ' + points.length + ' revealed'),
-                h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next'),
-                h('button', { onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-200' }, 'Stop')
+                h('button', { 'aria-label': 'Stop', onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next'),
+                h('button', { 'aria-label': 'Stop', onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-200' }, 'Stop')
               )
           ),
 
@@ -1471,7 +1471,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200' },
             h('div', { className: 'text-xs font-bold text-slate-700 uppercase mb-2' }, '\uD83D\uDCCB Import Data (CSV)'),
             h('textarea', { id: 'dp-import-csv', placeholder: 'Paste CSV data:\nx,y\n1,5\n2,8\n3,12', className: 'w-full h-20 px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400 resize-none', rows: 4 }),
-            h('button', { onClick: function() {
+            h('button', { 'aria-label': 'Import', onClick: function() {
               var el = document.getElementById('dp-import-csv');
               if (!el || !el.value.trim()) return;
               var lines = el.value.trim().split('\n');

@@ -2210,7 +2210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDEC0 Human Anatomy Explorer'),
               h('p', { className: 'text-xs text-slate-500' }, sys.desc)
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Snapshot',
               onClick: takeSnapshot,
               className: 'ml-auto px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all',
               title: 'Save snapshot'
@@ -2222,37 +2222,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
           // Tab bar (7 tabs)
           h('div', { className: 'flex gap-1 mb-3', role: 'tablist', 'aria-label': 'Anatomy tool sections' },
-            h('button', {
+            h('button', { 'aria-label': 'Explore',
               role: 'tab', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'explore'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
             }, '\uD83E\uDEC0 Explore'),
-            h('button', {
+            h('button', { 'aria-label': 'Tour',
               role: 'tab', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'tour'); if (!tourActive) { upd('_tourActive', true); upd('_tourStepIdx', 0); } },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200')
             }, '\uD83E\uDDED Tour'),
-            h('button', {
+            h('button', { 'aria-label': 'Connect',
               role: 'tab', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'connections'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-200')
             }, '\uD83D\uDD17 Connect'),
-            h('button', {
+            h('button', { 'aria-label': 'AI Tutor',
               role: 'tab', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'aiTutor'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200')
             }, '\uD83E\uDD16 AI Tutor'),
-            h('button', {
+            h('button', { 'aria-label': 'Spotter',
               role: 'tab', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'spotter'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200')
             }, '\uD83C\uDFAF Spotter'),
-            h('button', {
+            h('button', { 'aria-label': 'Pathways',
               role: 'tab', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'pathways'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200')
             }, '\uD83D\uDEE4 Pathways'),
-            h('button', {
+            h('button', { 'aria-label': 'Cards',
               role: 'tab', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'flashcards'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-600 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-200')
@@ -2281,7 +2281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 sel ? 'Tell me about the ' + sel.name : 'What is the most important structure in this system?',
                 'What clinical conditions affect this system?'
               ].map(function(q, qi) {
-                return h('button', {
+                return h('button', { 'aria-label': 'Ask question',
                   key: qi,
                   onClick: function() { sendAiQuestion(q); },
                   className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200 transition-all'
@@ -2296,7 +2296,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 onKeyDown: function(e) { if (e.key === 'Enter') { sendAiQuestion(d._aiInput || ''); upd('_aiInput', ''); } },
                 className: 'flex-1 px-3 py-1.5 text-xs border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none'
               }),
-              h('button', {
+              h('button', { 'aria-label': 'Ask',
                 onClick: function() { sendAiQuestion(d._aiInput || ''); upd('_aiInput', ''); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 transition-all'
               }, 'Ask')
@@ -2319,7 +2319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ttsBtn(currentTourStep.narration)
               ) : null,
               h('div', { className: 'flex gap-2 justify-between' },
-                h('button', {
+                h('button', { 'aria-label': 'Previous',
                   onClick: function() {
                     var prev = tourStepIdx - 1;
                     if (prev >= 0) { upd('_tourStepIdx', prev); upd('selectedStructure', tourSteps[prev].structureId); playSound('guidedStep'); }
@@ -2327,13 +2327,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   disabled: tourStepIdx === 0,
                   className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (tourStepIdx === 0 ? 'bg-slate-100 text-slate-500' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200')
                 }, '\u2190 Previous'),
-                tourStepIdx < tourSteps.length - 1 ? h('button', {
+                tourStepIdx < tourSteps.length - 1 ? h('button', { 'aria-label': 'Next',
                   onClick: function() {
                     var next = tourStepIdx + 1;
                     upd('_tourStepIdx', next); upd('selectedStructure', tourSteps[next].structureId); playSound('guidedStep');
                   },
                   className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all'
-                }, 'Next \u2192') : h('button', {
+                }, 'Next \u2192') : h('button', { 'aria-label': 'Complete Tour!',
                   onClick: function() { upd('_tourCompleted', true); upd('_tourActive', false); upd('_activeTab', 'explore'); playSound('badge'); },
                   className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all'
                 }, '\uD83C\uDFC6 Complete Tour!')
@@ -2352,7 +2352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
             h('p', { className: 'text-xs text-slate-500 mb-3' }, 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.'),
             !spotterActive ? h('div', { className: 'text-center py-4' },
-              h('button', {
+              h('button', { 'aria-label': 'Start Spotter Test',
                 onClick: function() {
                   var pool = filtered.filter(function(s) { return s.fn; });
                   if (pool.length < 4) return;
@@ -2374,7 +2374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   var isCorrect = opt.id === spotterTarget;
                   var showResult = spotterFeedback !== null;
                   var wasChosen = showResult && spotterFeedback === opt.id;
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Anatomy action',
                     key: opt.id,
                     disabled: showResult,
                     onClick: function() {
@@ -2402,7 +2402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     spotterFeedback === spotterTarget ? '\u2705 Correct! (' + ((Date.now() - spotterStartTime) / 1000).toFixed(1) + 's)' : '\u274C The answer was: ' + (function() { for (var si3 = 0; si3 < filtered.length; si3++) { if (filtered[si3].id === spotterTarget) return filtered[si3].name; } return ''; })()
                   )
                 ),
-                h('button', {
+                h('button', { 'aria-label': 'Next Structure',
                   onClick: function() {
                     var pool = filtered.filter(function(s) { return s.fn; });
                     if (pool.length < 4) return;
@@ -2413,7 +2413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   },
                   className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all'
                 }, 'Next Structure \u2192'),
-                h('button', {
+                h('button', { 'aria-label': 'End Test',
                   onClick: function() { updMulti({ _spotterActive: false, _spotterTarget: null, _spotterFeedback: null }); },
                   className: 'w-full py-1.5 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-all'
                 }, 'End Test')
@@ -2431,7 +2431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             !activePathwayId ? h('div', { className: 'grid grid-cols-2 gap-2' },
               PATHWAYS.map(function(pw) {
                 var isDone = pathwaysCompleted[pw.id];
-                return h('button', {
+                return h('button', { 'aria-label': 'Change selected structure',
                   key: pw.id,
                   onClick: function() { updMulti({ _activePathway: pw.id, _pathwayStep: 0 }); upd('selectedStructure', pw.steps[0].structure); playSound('pathwayStep'); },
                   className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-300 bg-rose-50' : 'border-slate-200 hover:border-rose-200 hover:bg-rose-50/50')
@@ -2453,7 +2453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('div', { className: 'flex items-center gap-2 mb-2' },
                   h('span', { className: 'text-lg' }, pw.icon),
                   h('span', { className: 'text-sm font-black', style: { color: pw.color } }, pw.title),
-                  h('button', {
+                  h('button', { 'aria-label': 'Back',
                     onClick: function() { updMulti({ _activePathway: null, _pathwayStep: 0 }); },
                     className: 'ml-auto text-[10px] font-bold text-slate-500 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100'
                   }, '\u2190 Back')
@@ -2470,7 +2470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   ttsBtn(step.detail)
                 ) : null,
                 h('div', { className: 'flex gap-2 justify-between' },
-                  h('button', {
+                  h('button', { 'aria-label': 'Previous',
                     onClick: function() {
                       if (pathwayStepIdx > 0) {
                         var prev = pathwayStepIdx - 1;
@@ -2480,14 +2480,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     disabled: pathwayStepIdx === 0,
                     className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (pathwayStepIdx === 0 ? 'bg-slate-100 text-slate-500' : 'bg-rose-100 text-rose-700 hover:bg-rose-200')
                   }, '\u2190 Previous'),
-                  pathwayStepIdx < pw.steps.length - 1 ? h('button', {
+                  pathwayStepIdx < pw.steps.length - 1 ? h('button', { 'aria-label': 'Next',
                     onClick: function() {
                       var next = pathwayStepIdx + 1;
                       upd('_pathwayStep', next); upd('selectedStructure', pw.steps[next].structure); playSound('pathwayStep');
                     },
                     className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-90 transition-all',
                     style: { background: pw.color }
-                  }, 'Next \u2192') : h('button', {
+                  }, 'Next \u2192') : h('button', { 'aria-label': 'Complete Pathway!',
                     onClick: function() {
                       var newPC = Object.assign({}, pathwaysCompleted);
                       newPC[pw.id] = true;
@@ -2511,7 +2511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto' },
               CONNECTIONS.map(function(conn) {
                 var isViewed = connectionsViewed[conn.id];
-                return h('button', {
+                return h('button', { 'aria-label': 'Play sound',
                   key: conn.id,
                   onClick: function() {
                     playSound('connectionView');
@@ -2550,7 +2550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('p', { className: 'text-xs text-slate-500 mb-2' }, 'Click the card to flip. Study ' + sys.name + ' structures.'),
             flashcardPool.length > 0 ? h('div', { className: 'space-y-3' },
               // Flashcard
-              h('button', {
+              h('button', { 'aria-label': 'STRUCTURE NAME',
                 onClick: function() { upd('_flashcardFlipped', !flashcardFlipped); },
                 className: 'w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left cursor-pointer hover:shadow-md ' +
                   (flashcardFlipped ? 'border-teal-400 bg-teal-50' : 'border-slate-300 bg-gradient-to-br from-white to-slate-50')
@@ -2572,18 +2572,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               ),
               // Navigation
               h('div', { className: 'flex gap-2 justify-between' },
-                h('button', {
+                h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd('_flashcardIdx', flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1); upd('_flashcardFlipped', false); },
                   className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-100 text-teal-700 hover:bg-teal-200 transition-all'
                 }, '\u2190 Previous'),
-                h('button', {
+                h('button', { 'aria-label': 'Random',
                   onClick: function() {
                     var randIdx = Math.floor(Math.random() * flashcardPool.length);
                     upd('_flashcardIdx', randIdx); upd('_flashcardFlipped', false);
                   },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all'
                 }, '\uD83C\uDFB2 Random'),
-                h('button', {
+                h('button', { 'aria-label': 'Next',
                   onClick: function() { upd('_flashcardIdx', (flashcardIdx + 1) % flashcardPool.length); upd('_flashcardFlipped', false); },
                   className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition-all'
                 }, 'Next \u2192')
@@ -2597,7 +2597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
               Object.keys(SYSTEMS).map(function(key) {
                 var s = SYSTEMS[key];
-                return h('button', {
+                return h('button', { 'aria-label': 'Change system',
                   key: key,
                   onClick: function() {
                     upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', '');
@@ -2616,7 +2616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('span', { className: 'text-[10px] font-bold text-amber-700 uppercase' }, 'Did you know?'),
                 h('p', { className: 'text-xs text-amber-900 leading-relaxed' }, currentFact)
               ),
-              h('button', {
+              h('button', { 'aria-label': 'Next',
                 onClick: function() { upd('_factIdx', (factIdx + 1) % sysFacts.length); playSound('funFact'); },
                 className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all flex-shrink-0'
               }, 'Next \u2192')
@@ -2624,7 +2624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Mnemonics section
             MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'mb-3' },
-              h('button', {
+              h('button', { 'aria-label': 'Change _show mnemonics',
                 onClick: function() { upd('_showMnemonics', !d._showMnemonics); },
                 className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-all'
               },
@@ -2643,7 +2643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     isRevealed ? h('div', null,
                       h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, mn.meaning),
                       ttsBtn(mn.phrase + '. ' + mn.meaning)
-                    ) : h('button', {
+                    ) : h('button', { 'aria-label': 'Reveal meaning',
                       onClick: function() {
                         var newMV = Object.assign({}, mnemonicsViewed);
                         newMV[mn.id] = true;
@@ -2671,7 +2671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
               LAYER_DEFS.map(function(ld) {
                 var isOn = layers[ld.id] || ld.id === autoLayerId;
-                return h('button', {
+                return h('button', { 'aria-label': 'Toggle layer',
                   key: ld.id,
                   onClick: function() {
                     toggleLayer(ld.id);
@@ -2685,7 +2685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   style: isOn ? { background: ld.accent, borderColor: ld.accent } : {}
                 }, ld.icon + ' ' + ld.name);
               }),
-              h('button', {
+              h('button', { 'aria-label': 'Reset',
                 onClick: function() { upd('visibleLayers', { skin: true }); },
                 title: 'Reset all layers to default (skin only)',
                 className: 'ml-auto px-2 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200'
@@ -2696,7 +2696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
               h('div', { className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
                 ['anterior', 'posterior'].map(function(v) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Select option',
                     key: v,
                     onClick: function() { upd('view', v); upd('selectedStructure', null); playSound('viewSwitch'); },
                     className: 'px-3 py-1 text-xs font-bold transition-all ' + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
@@ -2712,13 +2712,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 },
                 className: 'flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
               }),
-              h('button', {
+              h('button', { 'aria-label': 'Change quiz mode',
                 onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               h('div', { className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
                 [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function(lv) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Change complexity',
                     key: lv.v, title: lv.tip + ' level',
                     onClick: function() { upd('complexity', lv.v); upd('selectedStructure', null); },
                     className: 'px-2 py-1 text-[10px] font-bold transition-all ' + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
@@ -2726,12 +2726,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 })
               ),
               h('span', { className: 'text-[10px] text-slate-500 font-bold' }, filtered.length + ' structures'),
-              h('button', {
+              h('button', { 'aria-label': 'Regions',
                 onClick: function() { upd('_showRegionLabels', !d._showRegionLabels); },
                 title: 'Toggle body region labels',
                 className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
               }, '\uD83C\uDFF7 Regions'),
-              h('button', {
+              h('button', { 'aria-label': 'X-ray',
                 onClick: function() { upd('_xrayMode', !xrayMode); },
                 title: 'Toggle X-ray radiograph mode',
                 className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
@@ -2786,7 +2786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         var isCorrect = opt.id === correctId;
                         var wasChosen = fb && fb.chosen === opt.id;
                         var showResult = fb !== null && fb !== undefined;
-                        return h('button', {
+                        return h('button', { 'aria-label': 'Anatomy action',
                           key: opt.id,
                           disabled: showResult,
                           onClick: function() {
@@ -2814,7 +2814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('p', { className: 'text-slate-700' }, h('span', { className: 'font-bold text-slate-500' }, 'Function: '), quizQ.fn.substring(0, 150)),
                       quizQ.clinical && h('p', { className: 'text-slate-600 italic' }, h('span', { className: 'font-bold text-rose-500' }, '\u26A0 Clinical: '), quizQ.clinical.substring(0, 120))
                     ),
-                    d.quizFeedback && h('button', {
+                    d.quizFeedback && h('button', { 'aria-label': 'Next Question',
                       onClick: function() { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
                       className: 'w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition-all'
                     }, 'Next Question \u2192')
@@ -2830,7 +2830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[sel.id] && SIMPLE_DESC[sel.id][gradeBand] ? h('p', { className: 'text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1.5 mt-1 border border-sky-200 leading-relaxed' }, SIMPLE_DESC[sel.id][gradeBand]) : null
                         ),
                         h('div', { className: 'flex gap-1' },
-                          h('button', {
+                          h('button', { 'aria-label': 'Change _compare structure',
                             onClick: function() {
                               if (compareStructureId === sel.id) { upd('_compareStructure', null); }
                               else { upd('_compareStructure', sel.id); upd('_comparisons', comparisons + 1); playSound('compareView'); }
@@ -2838,7 +2838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target (B)',
                             className: 'p-1 rounded text-[10px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'hover:bg-violet-50 text-violet-400')
                           }, '\u2696'),
-                          h('button', { onClick: function() { upd('selectedStructure', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-500' }))
+                          h('button', { 'aria-label': 'Function', onClick: function() { upd('selectedStructure', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-500' }))
                         )
                       ),
                       h('div', { className: 'space-y-2.5' },
@@ -2908,7 +2908,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       compareSel && compareSel.id !== sel.id ? h('div', { className: 'mt-3 pt-3 border-t-2 border-violet-200' },
                         h('div', { className: 'flex items-center justify-between mb-2' },
                           h('p', { className: 'text-[10px] font-bold text-violet-600 uppercase' }, '\u2696 Comparing with:'),
-                          h('button', {
+                          h('button', { 'aria-label': 'Clear',
                             onClick: function() { upd('_compareStructure', null); },
                             className: 'text-[10px] font-bold text-slate-500 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100'
                           }, '\u2715 Clear')
@@ -2956,7 +2956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('div', { className: 'space-y-1 max-h-[460px] overflow-y-auto pr-1' },
                       filtered.length === 0 && h('p', { className: 'text-xs text-slate-500 italic py-4 text-center' }, 'No structures match your search.'),
                       filtered.map(function(st) {
-                        return h('button', {
+                        return h('button', { 'aria-label': 'Change selected structure',
                           key: st.id,
                           onClick: function() { upd('selectedStructure', st.id); playSound('structureClick'); },
                           className: 'w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm ' +
@@ -2977,7 +2977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             complexity >= 3 ? h('div', { className: 'mt-4 bg-rose-50 rounded-xl border border-rose-200 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[10px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + (d._clinicalSolved || 0) + ' solved)'),
-                h('button', {
+                h('button', { 'aria-label': 'Select option',
                   onClick: function() { upd('_showClinical', !d._showClinical); },
                   className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all'
                 }, d._showClinical ? 'Hide' : 'Show Cases')
@@ -2993,7 +2993,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('p', { className: 'text-[10px] font-bold ' + (activeCaseFeedback === 'correct' ? 'text-green-800' : 'text-amber-800') }, activeCaseFeedback === 'correct' ? '\u2705 Correct!' : '\u274C Answer: ' + cs.answer),
                       h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mt-1' }, cs.explanation)
                     ) : h('div', { className: 'flex gap-1 flex-wrap' },
-                      h('button', {
+                      h('button', { 'aria-label': 'I got it!',
                         onClick: function() {
                           upd('_activeCaseIdx', ci);
                           upd('_activeCaseFeedback', 'correct');
@@ -3002,7 +3002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         },
                         className: 'px-2 py-1 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all'
                       }, '\u2705 I got it!'),
-                      h('button', {
+                      h('button', { 'aria-label': 'Reveal Answer',
                         onClick: function() {
                           upd('_activeCaseIdx', ci);
                           upd('_activeCaseFeedback', 'reveal');

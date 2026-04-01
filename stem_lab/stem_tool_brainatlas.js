@@ -3413,7 +3413,7 @@ var d = labToolData.brainAtlas || {};
 
                 var v = VIEWS[key];
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change view",
 
                   key: key,
 
@@ -3443,7 +3443,7 @@ var d = labToolData.brainAtlas || {};
 
               }),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Change quiz mode",
 
                 onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
 
@@ -3467,7 +3467,7 @@ var d = labToolData.brainAtlas || {};
 
                   var isActive = simScenario === s.id;
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change sim scenario",
 
                     key: s.id,
 
@@ -3610,7 +3610,7 @@ var d = labToolData.brainAtlas || {};
 
                       var showResult = fb !== null && fb !== undefined;
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Brainatlas action",
 
                         key: opt.id, disabled: showResult,
 
@@ -3650,7 +3650,7 @@ var d = labToolData.brainAtlas || {};
 
                   ),
 
-                  d.quizFeedback && React.createElement("button", {
+                  d.quizFeedback && React.createElement("button", { "aria-label": "Next Question",
 
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
 
@@ -3700,7 +3700,7 @@ var d = labToolData.brainAtlas || {};
 
                         var isActive = (d.brainwaveType || 'alpha') === waveType;
 
-                        return React.createElement("button", {
+                        return React.createElement("button", { "aria-label": "Change brainwave type",
 
                           key: waveType,
 
@@ -3986,7 +3986,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
 
-                      React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
+                      React.createElement("button", { "aria-label": "Function", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
 
                     ),
 
@@ -4084,7 +4084,7 @@ var d = labToolData.brainAtlas || {};
 
                     filtered.map(function (r) {
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Change selected region",
 
                         key: r.id,
 

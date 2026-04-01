@@ -600,7 +600,7 @@ if (!safetyChecked) {
   return React.createElement("div", { className: "space-y-4 max-w-2xl mx-auto animate-in fade-in duration-300" },
 
     // Back button
-    React.createElement("button", {
+    React.createElement("button", { "aria-label": "Back",
       onClick: function () { setStemLabTool(null); },
       className: "text-xs font-bold text-cyan-400 hover:text-white transition-colors"
     }, "\u2190 Back"),
@@ -621,7 +621,7 @@ if (!safetyChecked) {
       React.createElement("div", { className: "p-5 space-y-2" },
         safetyItems.map(function (item) {
           var checked = safetyChecks[item.id] || false;
-          return React.createElement("button", {
+          return React.createElement("button", { "aria-label": "Titration action",
             key: item.id,
             onClick: function () {
               var next = Object.assign({}, safetyChecks);
@@ -666,7 +666,7 @@ if (!safetyChecked) {
 
       // Enter button
       React.createElement("div", { className: "px-5 pb-5" },
-        React.createElement("button", {
+        React.createElement("button", { "aria-label": "Change safety checked",
           disabled: !allSafetyChecked,
           onClick: function () { upd('safetyChecked', true); },
           className: "w-full py-3 rounded-xl text-sm font-black transition-all " +
@@ -690,12 +690,12 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
   },
     React.createElement("div", { className: "flex items-center gap-1 text-base" }, "\uD83E\uDD7D\uD83E\uDDE4\uD83E\uDD7C"),
     React.createElement("span", { className: "text-[10px] font-bold text-amber-400/80 flex-1" }, "PPE Active \u2022 Lab Safety Verified"),
-    React.createElement("button", {
+    React.createElement("button", { "aria-label": "Safety Info",
       onClick: function () { upd('showSafetyRef', !showSafetyRef); },
       className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " +
         (showSafetyRef ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40" : "text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10")
     }, "\u26A0\uFE0F Safety Info"),
-    React.createElement("button", {
+    React.createElement("button", { "aria-label": "Hazards",
       onClick: function () { upd('showHazards', !showHazards); },
       className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " +
         (showHazards ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40" : "text-red-500/60 hover:text-red-400 hover:bg-red-500/10")
@@ -777,7 +777,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
     React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-      React.createElement("button", {
+      React.createElement("button", { "aria-label": "Back",
 
         onClick: function () { setStemLabTool(null); },
 
@@ -808,7 +808,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
       { id: 'molarity', label: '\uD83E\uDDEE Dilution Calc', color: '#a78bfa' }
     ].map(function(tab) {
       var active = labTab === tab.id;
-      return React.createElement("button", {
+      return React.createElement("button", { "aria-label": "Change lab tab",
         key: tab.id,
         role: "tab",
         'aria-selected': active,
@@ -830,7 +830,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       var active = p.id === presetId;
 
-      return React.createElement("button", {
+      return React.createElement("button", { "aria-label": "Update setting",
 
         key: p.id,
 
@@ -866,7 +866,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       var active = ind.id === indicatorId;
 
-      return React.createElement("button", {
+      return React.createElement("button", { "aria-label": "Change indicator",
 
         key: ind.id,
 
@@ -924,7 +924,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       [0.1, 0.5, 1, 5].map(function (amt) {
         var dropIcon = amt <= 0.1 ? '💧' : amt <= 1 ? '💧💧' : '🌊';
-        return React.createElement("button", {
+        return React.createElement("button", { "aria-label": "Update setting",
           key: amt,
           onClick: function () { updMulti({ volumeAdded: Math.min(maxVol, Math.round((volumeAdded + amt) * 10) / 10), _prevVolume: volumeAdded }); },
           className: "px-2 py-1 rounded-lg text-[10px] font-bold text-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-800/40 transition-all hover:scale-105",
@@ -932,7 +932,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
         }, dropIcon + " +" + amt);
       }),
 
-      React.createElement("button", {
+      React.createElement("button", { "aria-label": "Reset",
         onClick: function () { updMulti({ volumeAdded: 0, _reachedEquiv: false, _prevVolume: 0 }); if (addToast) addToast('♻️ ' + safetyTips.reset.text, 'info'); },
         className: "px-2 py-1 rounded-lg text-[10px] font-bold text-amber-300 bg-amber-900/30 hover:bg-amber-800/50 border border-amber-800/40 transition-all hover:scale-105"
       }, "↺ Reset")
@@ -1578,7 +1578,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             else if (showResult && isSelected && !isCorrect) cls += "bg-red-600 text-white";
             else if (showResult && isCorrect) cls += "bg-emerald-600/20 text-emerald-300 border border-emerald-500";
             else cls += "bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400";
-            return React.createElement("button", {
+            return React.createElement("button", { "aria-label": "Select option",
               key: opt, disabled: showResult,
               onClick: function() {
                 var correct = opt === cq.answer;
@@ -1600,7 +1600,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
           ),
           React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, cq.feedback),
           React.createElement("div", { className: "mt-2" },
-            React.createElement("button", {
+            React.createElement("button", { "aria-label": "Next Question",
               onClick: function() {
                 updMulti({ challengeIdx: (challengeIdx + 1) % challengeQuestions.length, challengeAnswer: null });
               },
@@ -1634,7 +1634,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
     React.createElement("div", { className: "flex gap-2 justify-center" },
       incidentScenarios.map(function(sc, i) {
         var completed = incidentCompleted[sc.id];
-        return React.createElement("button", {
+        return React.createElement("button", { "aria-label": "Update setting",
           key: sc.id,
           onClick: function() { updMulti({ incidentIdx: i, incidentAnswer: null }); },
           className: "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all " +
@@ -1672,7 +1672,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             else if (showResult && isSelected && !opt.correct) cls += "bg-red-600 text-white";
             else if (showResult && opt.correct) cls += "bg-emerald-600/20 text-emerald-300 border border-emerald-500";
             else cls += "bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400";
-            return React.createElement("button", {
+            return React.createElement("button", { "aria-label": "Titration action",
               key: opt.id, disabled: showResult,
               onClick: function() {
                 var newCompleted = Object.assign({}, incidentCompleted);
@@ -1701,7 +1701,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
               selected.correct ? "\u2705 Correct Response! +20 XP" : "\u274C Not the best response"
             ),
             React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, selected.feedback),
-            incidentIdx < incidentScenarios.length - 1 && React.createElement("button", {
+            incidentIdx < incidentScenarios.length - 1 && React.createElement("button", { "aria-label": "Next Scenario",
               onClick: function() { updMulti({ incidentIdx: incidentIdx + 1, incidentAnswer: null }); },
               className: "mt-2 px-4 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 transition-all"
             }, "Next Scenario \u2192")
@@ -1723,7 +1723,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
       labEquipment.map(function(eq) {
         var isSelected = selectedEquip === eq.id;
-        return React.createElement("button", {
+        return React.createElement("button", { "aria-label": "Change selected equip",
           key: eq.id,
           onClick: function() { upd('selectedEquip', isSelected ? null : eq.id); if (!isSelected && typeof awardStemXP === 'function') awardStemXP('equip-' + eq.id, 5, 'Studied ' + eq.name); },
           className: "text-left p-3 rounded-xl border transition-all " +
@@ -1888,7 +1888,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
   React.createElement("div", { className: "flex justify-end" },
 
-    React.createElement("button", {
+    React.createElement("button", { "aria-label": "Action",
 
       onClick: function () {
 

@@ -470,13 +470,13 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'text-xs font-bold uppercase mb-1', style: { color: color } }, symbol + ' ' + label),
           h('div', { className: 'flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center' }, renderBlock3D(color, lightColor, bw, bh, b10[place], gridC, gridR)),
           h('div', { className: 'flex items-center justify-center gap-2' },
-            h('button', {
+            h('button', { 'aria-label': 'Manipulatives action',
               onClick: function() { var n = Object.assign({}, b10); n[place] = Math.max(0, n[place] - 1); upd({ b10: n }); if (soundEnabled) sfxClick(); },
               className: 'w-8 h-8 rounded-full font-bold text-lg hover:opacity-80 transition-all flex items-center justify-center',
               style: { background: lightColor + '33', color: color }
             }, '\u2212'),
             h('span', { className: 'text-2xl font-bold w-8 text-center', style: { color: color } }, b10[place]),
-            h('button', {
+            h('button', { 'aria-label': 'Add',
               onClick: function() {
                 var n = Object.assign({}, b10); n[place] = Math.min(20, n[place] + 1); upd({ b10: n }); if (soundEnabled) sfxClick();
                 if (n[place] + n.tens * 10 + n.hundreds * 100 + n.thousands * 1000 + (place === 'ones' ? n[place] : b10.ones) >= 0) checkBadges({ totalValue: n.ones + n.tens * 10 + n.hundreds * 100 + n.thousands * 1000 });
@@ -491,7 +491,7 @@ window.StemLab = window.StemLab || {
 
       // ── Regroup Button ──
       var regroupBtn = function(label, from, to, enabled, colorFrom, colorTo) {
-        return h('button', {
+        return h('button', { 'aria-label': 'Select option',
           onClick: function() { if (label.indexOf('\u2192') > 0 && label.indexOf('10') === 0) doRegroup(from, to); else doUngroup(from, to); },
           disabled: !enabled,
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (enabled ? 'text-white shadow hover:shadow-md hover:scale-105' : 'bg-slate-100 text-slate-500 cursor-not-allowed'),
@@ -534,9 +534,9 @@ window.StemLab = window.StemLab || {
           streak >= 3 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak),
           h('div', { className: 'ml-auto flex gap-1.5' },
             h('span', { className: 'text-xs font-bold text-emerald-600 self-center' }, score.correct + '/' + score.total),
-            h('button', { onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
+            h('button', { 'aria-label': 'Badges', onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd({ soundEnabled: !soundEnabled }); }, 'aria-label': soundEnabled ? 'Mute sound' : 'Enable sound', className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-            callGemini && h('button', { onClick: askAI, disabled: aiLoading, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (aiLoading ? 'bg-pink-100 border-pink-200 text-pink-400' : 'bg-pink-50 border-pink-200 text-pink-600 hover:bg-pink-100') }, aiLoading ? '\u23F3' : '\uD83E\uDD16 Tutor')
+            callGemini && h('button', { 'aria-label': 'Badges', onClick: askAI, disabled: aiLoading, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (aiLoading ? 'bg-pink-100 border-pink-200 text-pink-400' : 'bg-pink-50 border-pink-200 text-pink-600 hover:bg-pink-100') }, aiLoading ? '\u23F3' : '\uD83E\uDD16 Tutor')
           )
         ),
 
@@ -570,7 +570,7 @@ window.StemLab = window.StemLab || {
            { id: 'slideRule', icon: '\uD83D\uDCCF', label: 'Slide Rule' },
            { id: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }
           ].map(function(m) {
-            return h('button', {
+            return h('button', { 'aria-label': 'Switch Mode',
               key: m.id, onClick: function() { switchMode(m.id); },
               className: 'flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all ' +
                 (manipMode === m.id ? 'bg-white text-orange-800 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50')
@@ -636,7 +636,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1.5 items-center flex-wrap' },
             h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Difficulty:'),
             [{ id: 'ones', label: '1\u20139', color: '#ea580c' }, { id: 'tens', label: '10\u201399', color: '#059669' }, { id: 'hundreds', label: '100\u2013999', color: '#2563eb' }, { id: 'thousands', label: '1K\u20139K', color: '#db2777' }, { id: 'any', label: 'Any', color: '#64748b' }].map(function(dl) {
-              return h('button', { key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
+              return h('button', { 'aria-label': 'Expanded Form', key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
                 className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'),
                 style: diffLevel === dl.id ? { backgroundColor: dl.color } : {}
               }, dl.label);
@@ -647,9 +647,9 @@ window.StemLab = window.StemLab || {
 
           // Action buttons
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', { onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-lg text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md' }, '\uD83C\uDFB2 Build Number'),
-            h('button', { onClick: genAdditionProblem, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md' }, '\u2795 Addition'),
-            h('button', { onClick: function() { upd({ b10: { ones: 0, tens: 0, hundreds: 0, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
+            h('button', { 'aria-label': 'Build Number', onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-lg text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md' }, '\uD83C\uDFB2 Build Number'),
+            h('button', { 'aria-label': 'Addition', onClick: genAdditionProblem, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md' }, '\u2795 Addition'),
+            h('button', { 'aria-label': 'Reset', onClick: function() { upd({ b10: { ones: 0, tens: 0, hundreds: 0, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
           ),
 
           // Addition problem display
@@ -672,7 +672,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-orange-800 mb-2' }, '\uD83C\uDFAF Show ' + b10Challenge.target.toLocaleString() + ' using base-10 blocks'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString())),
-              h('button', { onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-orange-500 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': 'Check', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-orange-500 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all' }, '\u2714 Check')
             ),
             b10Feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (b10Feedback.correct ? 'text-green-600' : 'text-red-600') }, b10Feedback.msg)
           ),
@@ -681,7 +681,7 @@ window.StemLab = window.StemLab || {
           b10AddMode && b10Challenge && h('div', { className: 'bg-orange-50 rounded-lg p-3 border border-orange-200' },
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString()), ' (need ' + b10Challenge.target.toLocaleString() + ')'),
-              h('button', { onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all' }, '\u2714 Check Sum')
+              h('button', { 'aria-label': 'Check Sum', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all' }, '\u2714 Check Sum')
             ),
             b10Feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (b10Feedback.correct ? 'text-green-600' : 'text-red-600') }, b10Feedback.msg)
           )
@@ -717,7 +717,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: rodIdx, className: 'flex flex-col items-center', style: { width: '48px' } },
                   h('div', { className: 'flex flex-col items-center gap-1 mb-1', style: { minHeight: '60px', justifyContent: 'flex-end' } },
                     h('div', { style: { position: 'absolute', width: '3px', height: '100%', background: 'linear-gradient(180deg, #92400e 0%, #b45309 100%)', borderRadius: '2px', zIndex: 0 } }),
-                    h('button', {
+                    h('button', { 'aria-label': 'Set Rod',
                       onClick: function() { setRod(rodIdx, heavenlyVal ? val - 5 : val + 5); },
                       className: 'relative z-10 transition-all duration-200',
                       style: {
@@ -732,7 +732,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'flex flex-col items-center gap-0.5 mt-2', style: { minHeight: '130px' } },
                     Array.from({ length: 5 }).map(function(_, bi) {
                       var isActive = bi < earthlyVal;
-                      return h('button', {
+                      return h('button', { 'aria-label': 'Manipulatives action',
                         key: bi,
                         onClick: function() {
                           var newE = isActive && bi === earthlyVal - 1 ? earthlyVal - 1 : !isActive && bi === earthlyVal ? earthlyVal + 1 : bi < earthlyVal ? bi : bi + 1;
@@ -759,15 +759,15 @@ window.StemLab = window.StemLab || {
 
           // Controls
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', { onClick: function() {
+            h('button', { 'aria-label': 'Challenge', onClick: function() {
               var target = 1 + Math.floor(Math.random() * 99999);
               upd({ abacusChallenge: { target: target }, abacusFeedback: null, abacus: { rods: [0, 0, 0, 0, 0] }, speedChallenge: null });
             }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md' }, '\uD83C\uDFB2 Challenge'),
-            h('button', { onClick: function() {
+            h('button', { 'aria-label': 'Speed', onClick: function() {
               var target = 1 + Math.floor(Math.random() * 99999);
               upd({ speedChallenge: { target: target, startTime: Date.now() }, abacusChallenge: null, abacusFeedback: null, abacus: { rods: [0, 0, 0, 0, 0] } });
             }, className: 'flex-1 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-lg text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md' }, '\u23F1\uFE0F Speed'),
-            h('button', { onClick: function() { upd({ abacus: { rods: [0, 0, 0, 0, 0] }, abacusChallenge: null, abacusFeedback: null, speedChallenge: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
+            h('button', { 'aria-label': 'Reset', onClick: function() { upd({ abacus: { rods: [0, 0, 0, 0, 0] }, abacusChallenge: null, abacusFeedback: null, speedChallenge: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
           ),
 
           // Challenge / Speed display
@@ -775,7 +775,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83C\uDFAF Show ' + abacusChallenge.target.toLocaleString() + ' on the abacus'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-amber-600' }, 'Your value: ', h('span', { className: 'font-bold text-amber-900' }, abacusTotal.toLocaleString())),
-              h('button', { onClick: checkAbacus, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': 'Check', onClick: checkAbacus, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
             ),
             abacusFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (abacusFeedback.correct ? 'text-green-600' : 'text-red-600') }, abacusFeedback.msg)
           ),
@@ -783,13 +783,13 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, '\u23F1\uFE0F Speed: Show ' + speedChallenge.target.toLocaleString() + ' as fast as you can!'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-rose-600' }, 'Your value: ', h('span', { className: 'font-bold text-rose-900' }, abacusTotal.toLocaleString())),
-              h('button', { onClick: checkSpeed, className: 'ml-auto px-4 py-1.5 bg-rose-500 text-white font-bold rounded-lg text-sm hover:bg-rose-600 transition-all' }, '\u2714 Done!')
+              h('button', { 'aria-label': 'Done!', onClick: checkSpeed, className: 'ml-auto px-4 py-1.5 bg-rose-500 text-white font-bold rounded-lg text-sm hover:bg-rose-600 transition-all' }, '\u2714 Done!')
             )
           ),
 
           // Culture cards
           h('div', null,
-            h('button', { onClick: function() { upd({ showCulture: !showCulture }); }, className: 'text-[10px] font-bold ' + (showCulture ? 'text-amber-600' : 'text-slate-500') + ' hover:text-amber-600' }, (showCulture ? '\u25B2' : '\u25BC') + ' \uD83C\uDF0F Abacus Around the World'),
+            h('button', { 'aria-label': 'Update setting', onClick: function() { upd({ showCulture: !showCulture }); }, className: 'text-[10px] font-bold ' + (showCulture ? 'text-amber-600' : 'text-slate-500') + ' hover:text-amber-600' }, (showCulture ? '\u25B2' : '\u25BC') + ' \uD83C\uDF0F Abacus Around the World'),
             showCulture && h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
               abacusFacts.map(function(fact) {
                 return h('div', { key: fact.name, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
@@ -876,11 +876,11 @@ window.StemLab = window.StemLab || {
 
           // Controls + practice problems
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', { onClick: function() {
+            h('button', { 'aria-label': 'Practice Problem', onClick: function() {
               var p = srProblems[Math.floor(Math.random() * srProblems.length)];
               upd({ srProblem: p, srFeedback: null, slideRule: { cOffset: 0, cursorPos: 0.301 } });
             }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md' }, '\uD83C\uDFAF Practice Problem'),
-            h('button', { onClick: function() { upd({ slideRule: { cOffset: 0, cursorPos: 0.301 }, srProblem: null, srFeedback: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
+            h('button', { 'aria-label': 'Reset', onClick: function() { upd({ slideRule: { cOffset: 0, cursorPos: 0.301 }, srProblem: null, srFeedback: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
           ),
 
           // Practice problem display
@@ -889,7 +889,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs text-amber-600 mb-2' }, '\uD83D\uDCA1 Set C-scale "1" to line up with ' + srProblem.a + ' on D, then find ' + srProblem.b + ' on C. Read D under it!'),
             h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-amber-600' }, 'Your result: ', h('span', { className: 'font-bold text-amber-900' }, '\u2248 ' + product.toFixed(1))),
-              h('button', { onClick: checkSR, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': 'Check', onClick: checkSR, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
             ),
             srFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (srFeedback.correct ? 'text-green-600' : 'text-red-600') }, srFeedback.msg)
           ),
@@ -919,7 +919,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs text-slate-500' }, 'Test your understanding of place value, expanded form, and number comparison')
           ),
 
-          h('button', { onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); },
+          h('button', { 'aria-label': 'Update setting', onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); },
             className: 'w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md'
           }, pvQuiz ? '\uD83D\uDD04 Next Question' : '\uD83C\uDFAF Start Quiz'),
 
@@ -941,14 +941,14 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-lg font-bold text-slate-800 mb-4' }, pvQuiz.q),
             !pvFeedback && h('div', { className: 'grid grid-cols-2 gap-3' },
               pvQuiz.opts.map(function(opt) {
-                return h('button', { key: opt, onClick: function() { answerPVQuiz(opt); },
+                return h('button', { 'aria-label': 'Next', key: opt, onClick: function() { answerPVQuiz(opt); },
                   className: 'px-4 py-3 rounded-xl text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer'
                 }, opt);
               })
             ),
             pvFeedback && h('div', { className: 'p-3 rounded-xl text-sm font-bold ' + (pvFeedback.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
               pvFeedback.msg,
-              h('button', { onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); }, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
+              h('button', { 'aria-label': 'Next', onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); }, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
             )
           ),
 

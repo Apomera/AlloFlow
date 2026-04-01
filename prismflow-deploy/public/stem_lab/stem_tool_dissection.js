@@ -5731,7 +5731,7 @@ var d = labToolData.dissection || {};
               SPEC_KEYS.map(function (sk) {
                 var sp = SPECIMENS[sk];
                 var isActive = sk === specimen;
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change specimen",
                   key: sk,
                   onClick: function () { upd('specimen', sk); upd('currentLayer', 0); upd('selectedOrgan', null); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
@@ -5744,19 +5744,19 @@ var d = labToolData.dissection || {};
             React.createElement("div", { className: "flex flex-wrap items-center gap-1 bg-slate-50 rounded-xl p-1.5 border border-slate-200" },
 
               // ── View toggle ──
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "View",
                 onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
                 className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50')
               }, '\uD83D\uDC41 View ' + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
 
               // ── Tools toggle ──
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Tools",
                 onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
                 className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50')
               }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
 
               // ── Study toggle ──
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Study",
                 onClick: function () { upd('toolbarStudyOpen', !d.toolbarStudyOpen); upd('toolbarViewOpen', false); upd('toolbarToolsOpen', false); },
                 className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-600 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-200 hover:bg-amber-50'))
               }, '\uD83D\uDCDA Study ' + (d.toolbarStudyOpen ? '\u25B2' : '\u25BC'))
@@ -5766,37 +5766,37 @@ var d = labToolData.dissection || {};
             // ── View group expanded ──
             d.toolbarViewOpen && React.createElement("div", { className: "flex flex-wrap gap-1 bg-blue-50 rounded-xl p-2 border border-blue-200 animate-[fadeIn_0.2s_ease-out]" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Labels",
                 onClick: function () { var m = d.labelMode === 'show' ? 'hidden' : 'show'; upd('labelMode', m); },
                 title: 'Labels' + ' — Toggle organ name labels on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
               }, '\uD83C\uDFF7 ' + 'Labels'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Hi-Con",
                 onClick: function () { upd('highContrast', !d.highContrast); },
                 title: 'Hi-Con' + ' — Enhance colors for accessibility',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.highContrast ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
               }, '\u2600 ' + 'Hi-Con'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Fullscreen",
                 onClick: function () { upd('viewDorsal', !d.viewDorsal); },
                 title: (d.viewDorsal ? 'Ventral' : 'Dorsal') + ' — Switch anatomical view orientation',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.viewDorsal ? 'bg-indigo-500 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
               }, d.viewDorsal ? '\uD83D\uDD04 Ventral' : '\uD83D\uDD04 Dorsal'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Fullscreen",
                 onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (c && c.requestFullscreen) c.requestFullscreen(); } catch (e) {} },
                 title: 'Fullscreen' + ' — Expand canvas to full screen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all"
               }, '\u26F6 ' + 'Fullscreen'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Animation Speed — Cycle: normal / slow / fast",
                 onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); },
                 title: 'Animation Speed — Cycle: normal / slow / fast',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all"
               }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Print",
                 onClick: function () { upd('printMode', !d.printMode); },
                 title: 'Print / Clean View — Remove UI chrome for printing',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.printMode ? 'bg-slate-700 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
@@ -5807,19 +5807,19 @@ var d = labToolData.dissection || {};
             // ── Tools group expanded ──
             d.toolbarToolsOpen && React.createElement("div", { className: "flex flex-wrap gap-1 bg-emerald-50 rounded-xl p-2 border border-emerald-200 animate-[fadeIn_0.2s_ease-out]" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Ruler",
                 onClick: function () { upd('rulerMode', !d.rulerMode); if (!d.rulerMode) upd('annotateMode', false); },
                 title: 'Ruler' + ' — Measure distances on the specimen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
               }, '\uD83D\uDCCF ' + 'Ruler'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Annotate",
                 onClick: function () { upd('annotateMode', !d.annotateMode); if (!d.annotateMode) upd('rulerMode', false); },
                 title: 'Annotate' + ' — Draw annotations on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
               }, '\u270F ' + 'Annotate'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Screenshot",
                 onClick: function () {
                   try {
                     var c = document.querySelector('[data-diss-canvas]');
@@ -5830,7 +5830,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
               }, '\uD83D\uDCF8 ' + 'Screenshot'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Change current layer",
                 onClick: function () {
                   var report = '\uD83E\uDD9A Lab Report: ' + spec.name + '\n';
                   report += '\u2500'.repeat(30) + '\n';
@@ -5846,7 +5846,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
               }, '\uD83D\uDCCB ' + 'Lab Report'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Reset",
                 onClick: function () {
                   upd('currentLayer', 0); upd('selectedOrgan', null); upd('exploredOrgans', {});
                   upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0);
@@ -5864,31 +5864,31 @@ var d = labToolData.dissection || {};
             // ── Study group expanded ──
             d.toolbarStudyOpen && React.createElement("div", { className: "flex flex-wrap gap-1 bg-amber-50 rounded-xl p-2 border border-amber-200 animate-[fadeIn_0.2s_ease-out]" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Quiz",
                 onClick: function () { upd('quizMode', !d.quizMode); if (!d.quizMode) { upd('quizIdx', 0); upd('quizScore', 0); upd('quizTotal', 0); upd('quizFeedback', null); } },
                 title: 'Quiz' + ' — Test your knowledge of organ identification',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.quizMode ? 'bg-amber-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
               }, '\uD83E\uDDE0 ' + 'Quiz'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Flashcard",
                 onClick: function () { upd('flashcardMode', !d.flashcardMode); if (!d.flashcardMode) { upd('flashcardIdx', 0); upd('flashcardFlipped', false); } },
                 title: 'Flashcard' + ' — Review organs with flip cards',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.flashcardMode ? 'bg-violet-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
               }, '\uD83C\uDCCF ' + 'Flashcard'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Guided",
                 onClick: function () { upd('guidedMode', !d.guidedMode); if (!d.guidedMode) upd('guidedStep', 0); },
                 title: 'Guided' + ' — Follow a step-by-step organ tour',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.guidedMode ? 'bg-teal-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
               }, '\uD83E\uDDED ' + 'Guided'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Compare",
                 onClick: function () { upd('compareMode', !d.compareMode); },
                 title: 'Compare' + ' — Compare organs across specimens',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
               }, '\uD83D\uDD0D ' + 'Compare'),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Action",
                 onClick: function () {
                   if (!d.practicalMode) {
                     upd('practicalMode', true);
@@ -5997,23 +5997,23 @@ var d = labToolData.dissection || {};
 
                 // Zoom control bar
                 React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-200" },
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change canvas zoom",
                     onClick: function () { var z = Math.max(0.5, (d.canvasZoom || 1) - 0.25); upd('canvasZoom', z); },
                     className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
                   }, '\u2796'),
                   React.createElement("span", { className: "text-[11px] font-mono text-slate-600 min-w-[40px] text-center" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change canvas zoom",
                     onClick: function () { var z = Math.min(3, (d.canvasZoom || 1) + 0.25); upd('canvasZoom', z); },
                     className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
                   }, '\u2795'),
-                  (d.canvasZoom || 1) !== 1 ? React.createElement("button", {
+                  (d.canvasZoom || 1) !== 1 ? React.createElement("button", { "aria-label": "100%",
                     onClick: function () { upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0); },
                     className: "px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200"
                   }, '\u21BA 100%') : null
                 ),
 
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change trace nervous",
 
                   onClick: function () { upd('traceNervous', !d.traceNervous); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); upd('showEndocrine', false); },
 
@@ -6021,7 +6021,7 @@ var d = labToolData.dissection || {};
 
                 }, d.traceNervous ? '\u23F9 ' + 'Stop Trace' : '\u26A1 ' + 'Trace Nervous'),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show endocrine",
 
                   onClick: function () { upd('showEndocrine', !d.showEndocrine); upd('traceNervous', false); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); },
 
@@ -6071,7 +6071,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mt-3" },
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Change flashcard idx",
 
                       onClick: function () { upd('flashcardIdx', Math.max(0, (d.flashcardIdx || 0) - 1)); upd('flashcardFlipped', false); },
 
@@ -6081,7 +6081,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("span", { className: "text-[10px] text-indigo-400" }, ((d.flashcardIdx || 0) + 1) + ' / ' + organs.length),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Next",
 
                       onClick: function () { upd('flashcardIdx', Math.min(organs.length - 1, (d.flashcardIdx || 0) + 1)); upd('flashcardFlipped', false); },
 
@@ -6191,7 +6191,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", { className: "flex gap-1" },
 
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Dissection action",
 
                         onClick: function () {
 
@@ -6205,7 +6205,7 @@ var d = labToolData.dissection || {};
 
                       }, '\u25C0'),
 
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Dissection action",
 
                         onClick: function () {
 
@@ -6427,7 +6427,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "mt-2 flex gap-1" },
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Dissection action",
 
                       onClick: function () {
 
@@ -6452,7 +6452,7 @@ var d = labToolData.dissection || {};
 
                     }, '\uD83E\uDD16 ' + 'AI Explain'),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Dissection action",
 
                       onClick: function () {
 
@@ -6536,7 +6536,7 @@ var d = labToolData.dissection || {};
 
                       var isExplored = (d.exploredOrgans || {})[specimen + '|' + org.id];
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Change selected organ",
 
                         key: org.id,
 
@@ -6590,7 +6590,7 @@ var d = labToolData.dissection || {};
 
                       var isWrong = isChosen && !isCorrect;
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Dissection action",
 
                         key: opt.id, disabled: !!fb,
 
@@ -6619,7 +6619,7 @@ var d = labToolData.dissection || {};
 
                   ),
 
-                  d.quizFeedback && React.createElement("button", {
+                  d.quizFeedback && React.createElement("button", { "aria-label": "Next Question",
 
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); upd('quizExplanation', null); },
 
@@ -6755,7 +6755,7 @@ var d = labToolData.dissection || {};
 
                     ),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Action",
 
                       onClick: function () {
 

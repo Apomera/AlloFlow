@@ -1363,11 +1363,11 @@ const d = labToolData.wave;
 
               [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
 
-                return React.createElement("button", { key: m[0], onClick: function () { upd('waveMode', m[0]); }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
+                return React.createElement("button", { "aria-label": "Toggle Sound", key: m[0], onClick: function () { upd('waveMode', m[0]); }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
 
               }),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Toggle Sound",
 
                 onClick: toggleSound,
 
@@ -1437,7 +1437,7 @@ const d = labToolData.wave;
 
               ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Upd",
 
                   key: wt, onClick: () => upd('waveType', wt),
 
@@ -1457,7 +1457,7 @@ const d = labToolData.wave;
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
-                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-600 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
+                return React.createElement("button", { "aria-label": "Change harmonic", key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-600 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
 
               }),
 
@@ -1744,7 +1744,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Wave action",
 
                 onClick: function () {
 
@@ -1756,7 +1756,7 @@ const d = labToolData.wave;
 
               }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Wave action",
 
                 onClick: function () {
 
@@ -1778,7 +1778,7 @@ const d = labToolData.wave;
 
               }, d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Change match target",
 
                 onClick: function () {
 
@@ -1800,7 +1800,7 @@ const d = labToolData.wave;
 
               }, (d.matchTarget && d.matchTarget.isEquation) ? "\uD83D\uDD04 New Equation" : "\uD83D\uDCDD Match Equation"),
 
-              d.matchTarget && React.createElement("button", {
+              d.matchTarget && React.createElement("button", { "aria-label": "Clear",
 
                 onClick: function () { upd('matchTarget', null); upd('matchXpClaimed', false); },
 
@@ -1826,7 +1826,7 @@ const d = labToolData.wave;
 
                   var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Select option",
 
                     key: opt, disabled: d.quiz.answered, onClick: function () {
 
@@ -1848,7 +1848,7 @@ const d = labToolData.wave;
 
             ),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
           )
       })();

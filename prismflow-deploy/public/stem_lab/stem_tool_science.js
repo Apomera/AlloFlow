@@ -222,7 +222,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
-                ["series", "parallel"].map(m => React.createElement("button", { key: m, onClick: () => upd("mode", m), className: "px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all " + (mode === m ? 'bg-yellow-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-yellow-50') }, m))
+                ["series", "parallel"].map(m => React.createElement("button", { "aria-label": "Upd", key: m, onClick: () => upd("mode", m), className: "px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all " + (mode === m ? 'bg-yellow-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-yellow-50') }, m))
 
               )
 
@@ -508,19 +508,19 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
             React.createElement("div", { className: "flex flex-wrap gap-2 mt-3 mb-3" },
 
-              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'resistor', value: 100, id: Date.now() }]), className: "px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm border border-yellow-300 hover:bg-yellow-200 transition-all" }, "\u2795 Resistor"),
+              React.createElement("button", { "aria-label": "Resistor", onClick: () => upd('components', [...d.components, { type: 'resistor', value: 100, id: Date.now() }]), className: "px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm border border-yellow-300 hover:bg-yellow-200 transition-all" }, "\u2795 Resistor"),
 
-              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'bulb', value: 50, id: Date.now() + 1 }]), className: "px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-sm border border-amber-300 hover:bg-amber-200 transition-all" }, "\uD83D\uDCA1 Bulb"),
+              React.createElement("button", { "aria-label": "Bulb", onClick: () => upd('components', [...d.components, { type: 'bulb', value: 50, id: Date.now() + 1 }]), className: "px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-sm border border-amber-300 hover:bg-amber-200 transition-all" }, "\uD83D\uDCA1 Bulb"),
 
-              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'switch', value: 0, id: Date.now() + 2, closed: true }]), className: "px-3 py-1.5 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-sm border border-emerald-300 hover:bg-emerald-200 transition-all" }, "\uD83D\uDD18 Switch"),
+              React.createElement("button", { "aria-label": "Switch", onClick: () => upd('components', [...d.components, { type: 'switch', value: 0, id: Date.now() + 2, closed: true }]), className: "px-3 py-1.5 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-sm border border-emerald-300 hover:bg-emerald-200 transition-all" }, "\uD83D\uDD18 Switch"),
 
-              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'led', value: 40, id: Date.now() + 3, ledColor: '#ef4444' }]), className: "px-3 py-1.5 bg-rose-100 text-rose-800 font-bold rounded-lg text-sm border border-rose-300 hover:bg-rose-200 transition-all" }, "\uD83D\uDD34 LED"),
+              React.createElement("button", { "aria-label": "LED", onClick: () => upd('components', [...d.components, { type: 'led', value: 40, id: Date.now() + 3, ledColor: '#ef4444' }]), className: "px-3 py-1.5 bg-rose-100 text-rose-800 font-bold rounded-lg text-sm border border-rose-300 hover:bg-rose-200 transition-all" }, "\uD83D\uDD34 LED"),
 
-              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'ammeter', value: 0, id: Date.now() + 4 }]), className: "px-3 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-lg text-sm border border-blue-300 hover:bg-blue-200 transition-all" }, "\u26A1 Ammeter"),
+              React.createElement("button", { "aria-label": "Ammeter", onClick: () => upd('components', [...d.components, { type: 'ammeter', value: 0, id: Date.now() + 4 }]), className: "px-3 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-lg text-sm border border-blue-300 hover:bg-blue-200 transition-all" }, "\u26A1 Ammeter"),
 
-              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'voltmeter', value: 0, id: Date.now() + 5 }]), className: "px-3 py-1.5 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm border border-orange-300 hover:bg-orange-200 transition-all" }, "\uD83D\uDD0B Voltmeter"),
+              React.createElement("button", { "aria-label": "Voltmeter", onClick: () => upd('components', [...d.components, { type: 'voltmeter', value: 0, id: Date.now() + 5 }]), className: "px-3 py-1.5 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm border border-orange-300 hover:bg-orange-200 transition-all" }, "\uD83D\uDD0B Voltmeter"),
 
-              React.createElement("button", { onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all" }, "\uD83D\uDDD1 Clear"),
+              React.createElement("button", { "aria-label": "Clear", onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all" }, "\uD83D\uDDD1 Clear"),
 
               d.components.length > 0 && React.createElement("span", { className: "self-center text-xs text-slate-500 ml-auto" }, d.components.length + " component" + (d.components.length > 1 ? 's' : ''))
 
@@ -558,11 +558,11 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                     (comp.type === 'resistor' || comp.type === 'bulb') && React.createElement("span", { className: "text-xs text-slate-500" }, "\u03A9"),
 
-                    comp.type === 'switch' && React.createElement("button", { onClick: function () { toggleSwitch(comp.id); }, className: "px-2 py-1 text-xs font-bold rounded border transition-all " + (comp.closed ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300') }, comp.closed ? 'Close' : 'Open'),
+                    comp.type === 'switch' && React.createElement("button", { "aria-label": "Close", onClick: function () { toggleSwitch(comp.id); }, className: "px-2 py-1 text-xs font-bold rounded border transition-all " + (comp.closed ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300') }, comp.closed ? 'Close' : 'Open'),
 
-                    comp.type === 'led' && React.createElement("button", { onClick: function () { cycleLedColor(comp.id); }, className: "w-5 h-5 rounded-full border-2 border-slate-300", style: { backgroundColor: comp.ledColor || '#ef4444' } }),
+                    comp.type === 'led' && React.createElement("button", { "aria-label": "Cycle Led Color", onClick: function () { cycleLedColor(comp.id); }, className: "w-5 h-5 rounded-full border-2 border-slate-300", style: { backgroundColor: comp.ledColor || '#ef4444' } }),
 
-                    React.createElement("button", { onClick: function () { upd('components', d.components.filter(function (_, j) { return j !== i; })); }, className: "text-red-400 hover:text-red-600 ml-auto" }, "\u00D7")
+                    React.createElement("button", { "aria-label": "Change components", onClick: function () { upd('components', d.components.filter(function (_, j) { return j !== i; })); }, className: "text-red-400 hover:text-red-600 ml-auto" }, "\u00D7")
 
                   );
 
@@ -716,7 +716,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                   var close = Math.abs(actual - ch.target) < ch.target * 0.05;
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Science action",
 
                     key: ch.label, onClick: function () {
 
@@ -784,7 +784,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Science action",
 
                     onClick: function () { var q = makeOhmQ(); upd('ohmQuiz', q); },
 
@@ -806,7 +806,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                     cq.opts.map(function (opt, oi) {
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Science action",
 
                         key: oi, onClick: function () {
 
@@ -844,7 +844,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
             })(),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V ' + mode, data: Object.assign({}, d, { mode: mode }), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V ' + mode, data: Object.assign({}, d, { mode: mode }), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
           )
       })();

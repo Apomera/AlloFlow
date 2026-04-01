@@ -974,7 +974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 resize-none h-16'
                   })
                 ),
-                callImagen && characterAppearance.trim().length > 10 && h('button', {
+                callImagen && characterAppearance.trim().length > 10 && h('button', { 'aria-label': 'Generate Character Portrait',
                   onClick: function() { generateCharacterPortrait(characterAppearance); },
                   disabled: characterPortraitLoading,
                   className: 'px-3 py-1.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg text-xs font-bold hover:from-violet-700 hover:to-purple-700 disabled:opacity-40 transition-all flex items-center gap-1.5'
@@ -986,7 +986,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           // World cards
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             WORLDS.map(function(w) {
-              return h('button', { key: w.id, onClick: function() { updMulti({ selectedWorld: w.id, currentRoom: w.rooms[0].id, writingPower: 10, roomsVisited: [w.rooms[0].id] }); if (awardStemXP) awardStemXP(5); moveToRoom(w.rooms[0].id); },
+              return h('button', { 'aria-label': 'Update setting', key: w.id, onClick: function() { updMulti({ selectedWorld: w.id, currentRoom: w.rooms[0].id, writingPower: 10, roomsVisited: [w.rooms[0].id] }); if (awardStemXP) awardStemXP(5); moveToRoom(w.rooms[0].id); },
                 className: 'p-5 rounded-2xl border-2 border-slate-200 bg-white text-left hover:border-violet-400 hover:shadow-lg transition-all hover:scale-[1.02]'
               },
                 h('div', { className: 'text-3xl mb-2' }, w.emoji),
@@ -1038,7 +1038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 var connRoom = world.rooms.find(function(r) { return r.id === connId; });
                 if (!connRoom) return null;
                 var visited = roomsVisited.indexOf(connId) >= 0;
-                return h('button', { key: connId, onClick: function() { moveToRoom(connId); },
+                return h('button', { 'aria-label': 'Move To Room', key: connId, onClick: function() { moveToRoom(connId); },
                   className: 'px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all hover:scale-105 ' +
                     (visited ? 'border-green-300 bg-green-50 text-green-700' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300')
                 }, connRoom.emoji + ' ' + connRoom.name + (visited ? ' ✓' : ''));
@@ -1051,7 +1051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { className: 'text-[10px] font-bold text-cyan-600 uppercase tracking-widest mb-2' }, '👥 People Here'),
             h('div', { className: 'flex flex-wrap gap-2' },
               gmCharacters.filter(function(npc) { return !npc.roomId || npc.roomId === currentRoom; }).map(function(npc, i) {
-                return h('button', { key: i, onClick: function() { interactWithNPC(npc); },
+                return h('button', { 'aria-label': 'Interact With N P C', key: i, onClick: function() { interactWithNPC(npc); },
                   className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-cyan-200 text-xs hover:border-cyan-400 hover:shadow-md transition-all'
                 },
                   h('span', { className: 'text-lg' }, npc.emoji),
@@ -1154,7 +1154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             ),
             h('p', { className: 'text-sm text-amber-900 font-medium leading-relaxed' }, gmMessage),
             gmSceneImage && h('img', { src: gmSceneImage, alt: 'Scene from the Game Master', className: 'w-full rounded-xl mt-2 border border-amber-200' }),
-            h('button', { onClick: function() { updMulti({ gmMessage: null, gmSceneImage: null }); }, className: 'mt-2 text-[10px] text-amber-500 hover:text-amber-700 font-bold' }, 'Dismiss')
+            h('button', { 'aria-label': 'Dismiss', onClick: function() { updMulti({ gmMessage: null, gmSceneImage: null }); }, className: 'mt-2 text-[10px] text-amber-500 hover:text-amber-700 font-bold' }, 'Dismiss')
           ),
 
           // Target vocabulary (teacher-set)
@@ -1261,19 +1261,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             ),
             h('p', { className: 'text-xs text-slate-500 mb-2' }, 'Describe your action with vivid detail. The better you write, the more powerful the outcome. Use sensory language, precise vocabulary, and creativity!'),
             h('div', { className: 'flex flex-wrap gap-2 mb-2' },
-              h('button', { onClick: function() { upd('actionMode', 'action'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '⚔️ Act'),
-              h('button', { onClick: function() { upd('actionMode', 'explore'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '🔍 Explore'),
-              h('button', { onClick: function() { upd('actionMode', 'craft'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
-              !activeBattle && !activeNPC && h('button', { onClick: startBattle, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-red-100 text-red-700 hover:bg-red-200' }, '⚔️ Battle'),
-              activeNPC && h('button', { onClick: function() { updMulti({ activeNPC: null, actionMode: 'action' }); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200' }, '👋 Leave')
+              h('button', { 'aria-label': 'Act', onClick: function() { upd('actionMode', 'action'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '⚔️ Act'),
+              h('button', { 'aria-label': 'Explore', onClick: function() { upd('actionMode', 'explore'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '🔍 Explore'),
+              h('button', { 'aria-label': 'Battle', onClick: function() { upd('actionMode', 'craft'); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
+              !activeBattle && !activeNPC && h('button', { 'aria-label': 'Battle', onClick: startBattle, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-red-100 text-red-700 hover:bg-red-200' }, '⚔️ Battle'),
+              activeNPC && h('button', { 'aria-label': 'Leave', onClick: function() { updMulti({ activeNPC: null, actionMode: 'action' }); }, className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200' }, '👋 Leave')
             ),
             // Craft sub-mode selector (Item vs Structure)
             d.actionMode === 'craft' && h('div', { className: 'flex gap-2 mb-2 ml-1' },
-              h('button', { onClick: function() { upd('craftSubMode', 'item'); },
+              h('button', { 'aria-label': 'Craft Item', onClick: function() { upd('craftSubMode', 'item'); },
                 className: 'px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
                   (craftSubMode === 'item' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300')
               }, '🔨 Craft Item' + (craftedThisTurn ? ' ✓' : '')),
-              h('button', { onClick: function() { upd('craftSubMode', 'structure'); },
+              h('button', { 'aria-label': 'Build Structure', onClick: function() { upd('craftSubMode', 'structure'); },
                 className: 'px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
                   (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300') +
                   (structureCooldown > 0 ? ' opacity-40' : '')
@@ -1322,7 +1322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             pasteDetected && h('div', { className: 'text-[10px] text-red-600 font-bold mt-1' }, '⚠ Pasting detected — please write your own words! Your writing power depends on YOUR creativity.'),
             h('div', { className: 'flex items-center justify-between mt-2' },
               h('span', { className: 'text-[10px] text-slate-400' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
-              h('button', {
+              h('button', { 'aria-label': 'Worldbuilder action',
                 onClick: function() { activeNPC ? respondToNPC() : activeBattle ? performBattleAction() : d.actionMode === 'craft' ? (craftSubMode === 'structure' ? buildStructure(actionText) : craftItem(actionText)) : performAction(); },
                 disabled: actionText.trim().length < 5 || actionLoading,
                 className: 'px-5 py-2.5 bg-gradient-to-r ' + (d.actionMode === 'craft' && craftSubMode === 'structure' ? 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' : d.actionMode === 'craft' ? 'from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' : 'from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700') + ' text-white rounded-xl font-bold text-sm disabled:opacity-40 transition-all shadow-lg flex items-center gap-2'
@@ -1397,8 +1397,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
             // TTS narrate both player and enemy
             callTTS && h('div', { className: 'flex gap-2' },
-              h('button', { onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[10px] text-violet-500 hover:text-violet-700 font-bold' }, '🔊 Hear your action'),
-              actionResult.enemyWriting && h('button', { onClick: function() { callTTS(actionResult.enemyWriting); }, className: 'text-[10px] text-red-500 hover:text-red-700 font-bold' }, '🔊 Hear enemy\'s response')
+              h('button', { 'aria-label': 'Hear your action', onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[10px] text-violet-500 hover:text-violet-700 font-bold' }, '🔊 Hear your action'),
+              actionResult.enemyWriting && h('button', { 'aria-label': 'Refresh', onClick: function() { callTTS(actionResult.enemyWriting); }, className: 'text-[10px] text-red-500 hover:text-red-700 font-bold' }, '🔊 Hear enemy\'s response')
             )
           ),
 
@@ -1465,7 +1465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('div', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1.5' }, '📋 Quick Scenarios (creates multiple characters)'),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                   SCENARIO_TEMPLATES.map(function(tmpl) {
-                    return h('button', { key: tmpl.type,
+                    return h('button', { 'aria-label': 'Action', key: tmpl.type,
                       onClick: function() {
                         upd('actionLoading', true);
                         var prompt = 'Create a multi-character scene for a ' + gradeLevel + ' literary RPG in the world "' + (world ? world.name : 'Fantasy') + '".\n\n' +
@@ -1505,7 +1505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 'aria-label': 'Describe a character for the world',
                 className: 'w-full text-sm p-3 border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-400 resize-none h-20'
               }),
-              h('button', {
+              h('button', { 'aria-label': 'Change gm character prompt',
                 onClick: function() { if ((d.gmCharacterPrompt || '').trim()) { createGMCharacter(d.gmCharacterPrompt); upd('gmCharacterPrompt', ''); } },
                 disabled: !(d.gmCharacterPrompt || '').trim() || actionLoading,
                 className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
@@ -1527,7 +1527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             )
           ),
 
-          h('button', { onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null }); }, className: 'text-[10px] text-slate-400 hover:text-slate-600 font-bold' }, '🔄 Start a New World')
+          h('button', { 'aria-label': 'Start a New World', onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null }); }, className: 'text-[10px] text-slate-400 hover:text-slate-600 font-bold' }, '🔄 Start a New World')
         )
       );
     }

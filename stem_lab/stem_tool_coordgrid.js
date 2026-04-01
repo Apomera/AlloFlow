@@ -485,7 +485,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
             h('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDD16 AI Coordinate Tutor'),
-            h('button', { onClick: function() { updCG({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
+            h('button', { 'aria-label': 'Upd C G', onClick: function() { updCG({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
           ),
           h('div', { className: 'flex gap-2' },
             h('input', {
@@ -495,14 +495,14 @@ window.StemLab = window.StemLab || {
               placeholder: 'Ask about coordinates...',
               className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
             }),
-            h('button', {
+            h('button', { 'aria-label': 'Ask A I Tutor',
               onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
               className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
             }, aiLoading ? '\u23F3' : 'Ask')
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
             ['What is slope?', 'How to find distance?', 'What is a midpoint?', 'What are quadrants?'].map(function(q) {
-              return h('button', {
+              return h('button', { 'aria-label': 'Ask question',
                 key: q, onClick: function() { updCG({ aiQuestion: q }); },
                 className: 'px-2 py-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
               }, q);
@@ -523,7 +523,7 @@ window.StemLab = window.StemLab || {
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
             bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
             h('span', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
-            h('button', {
+            h('button', { 'aria-label': 'Handle Grid Click',
               onClick: function() {
                 var snap = { id: 'snap-' + Date.now(), tool: 'coordinate', label: 'Grid: ' + gridPoints.length + ' points', data: { points: gridPoints.slice() }, timestamp: Date.now() };
                 setToolSnapshots(function(prev) { return prev.concat([snap]); });
@@ -549,7 +549,7 @@ window.StemLab = window.StemLab || {
 
         // Core Tools
         h('div', { className: 'flex gap-2 flex-wrap' },
-          h('button', {
+          h('button', { 'aria-label': 'Sfx Click',
             onClick: function() {
               sfxClick();
               if (connectMode) { setGridFeedback(null); } else { setGridFeedback({ connectMode: true, lines: gridLines, connectFirst: null }); }
@@ -557,7 +557,7 @@ window.StemLab = window.StemLab || {
             },
             className: 'flex-1 py-2 font-bold rounded-lg text-sm transition-all shadow-md ' + (connectMode ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600')
           }, connectMode ? '\u2714 Connect ON' : '\uD83D\uDD17 Connect Points'),
-          h('button', {
+          h('button', { 'aria-label': 'Clear',
             onClick: function() { setGridPoints([]); setGridChallenge(null); setGridFeedback(null); },
             className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all'
           }, '\u21BA Clear')
@@ -567,7 +567,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'space-y-2' },
           h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider' }, '\uD83C\uDFAF Challenges'),
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', {
+            h('button', { 'aria-label': 'Plot a Point',
               onClick: function() {
                 sfxClick();
                 var tx = -8 + Math.floor(Math.random() * 17);
@@ -577,7 +577,7 @@ window.StemLab = window.StemLab || {
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-cyan-600 hover:to-teal-600 transition-all shadow-md'
             }, '\uD83D\uDCCD Plot a Point'),
-            h('button', {
+            h('button', { 'aria-label': 'Find Slope',
               onClick: function() {
                 sfxClick();
                 var x1 = -6 + Math.floor(Math.random() * 13); var y1 = -6 + Math.floor(Math.random() * 13);
@@ -589,7 +589,7 @@ window.StemLab = window.StemLab || {
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
             }, '\uD83D\uDCCF Find Slope'),
-            h('button', {
+            h('button', { 'aria-label': 'Find Distance',
               onClick: function() {
                 sfxClick();
                 var x1 = -6 + Math.floor(Math.random() * 13); var y1 = -6 + Math.floor(Math.random() * 13);
@@ -624,9 +624,9 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex gap-2 items-center' },
-            !(gridFeedback && gridFeedback.hinted) && h('button', { onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-300' }, '\uD83D\uDCA1 Hint'),
+            !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': 'Hint', onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-300' }, '\uD83D\uDCA1 Hint'),
             (gridFeedback && gridFeedback.hinted) && h('span', { className: 'text-[10px] text-amber-500 italic' }, '\uD83D\uDCA1 Hint used'),
-            h('button', { onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600' }, '\u2714 Check')
+            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600' }, '\u2714 Check')
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
         ),
@@ -643,7 +643,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); },
               className: 'flex-1 px-3 py-2 border border-green-300 rounded-lg text-sm font-mono'
             }),
-            h('button', { onClick: checkGrid, className: 'px-4 py-2 bg-green-600 text-white font-bold rounded-lg text-sm hover:bg-green-700' }, '\u2714 Check')
+            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'px-4 py-2 bg-green-600 text-white font-bold rounded-lg text-sm hover:bg-green-700' }, '\u2714 Check')
           ),
           // Show midpoint info
           h('div', { className: 'mt-2 text-xs text-purple-600' },
@@ -658,7 +658,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 items-center' },
             h('span', { className: 'text-xs text-cyan-600' }, 'Quadrant: ', h('span', { className: 'font-bold' }, getQuadrant(gridChallenge.target.x, gridChallenge.target.y))),
             h('span', { className: 'text-xs text-cyan-600 ml-2' }, 'Points: ', h('span', { className: 'font-bold' }, gridPoints.length)),
-            h('button', { onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-cyan-500 text-white font-bold rounded-lg text-sm hover:bg-cyan-600' }, '\u2714 Check')
+            h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-cyan-500 text-white font-bold rounded-lg text-sm hover:bg-cyan-600' }, '\u2714 Check')
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
         ),
@@ -681,7 +681,7 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          h('button', { onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { lines: [], connectFirst: null }); }); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200' }, '\uD83D\uDDD1 Clear Lines')
+          h('button', { 'aria-label': 'Clear Lines', onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { lines: [], connectFirst: null }); }); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200' }, '\uD83D\uDDD1 Clear Lines')
         ),
 
         // Stats
@@ -712,7 +712,7 @@ window.StemLab = window.StemLab || {
         renderBadges(),
 
         // AI Tutor toggle + panel
-        !showAITutor && h('button', {
+        !showAITutor && h('button', { 'aria-label': 'AI Tutor',
           onClick: function() { sfxClick(); updCG({ showAITutor: true }); },
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
         }, '\uD83E\uDD16 AI Tutor'),

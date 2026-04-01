@@ -421,7 +421,7 @@
 
         var tabBar = h('div', { style: { display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }, role: 'tablist', 'aria-label': 'Algebra CAS sections' },
           TABS.map(function(t) {
-            return h('button', {
+            return h('button', { 'aria-label': 'Change tab',
               key: t.id, onClick: function() { upd('tab', t.id); },
               role: 'tab', 'aria-selected': tab === t.id,
               style: btnStyle(tab === t.id)
@@ -434,7 +434,7 @@
           return h('div', null,
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px', marginBottom: '10px' } },
               MODES.map(function(m) {
-                return h('button', { key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, style: btnStyle(mode === m.id) }, m.label);
+                return h('button', { 'aria-label': 'Select option', key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, style: btnStyle(mode === m.id) }, m.label);
               })
             ),
             h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
@@ -444,14 +444,14 @@
                 'aria-label': 'Algebra expression input',
                 style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
-              h('button', { onClick: handleSolve, disabled: isLoading || !expression.trim(),
+              h('button', { 'aria-label': 'TRY:', onClick: handleSolve, disabled: isLoading || !expression.trim(),
                 style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', opacity: (isLoading || !expression.trim()) ? 0.5 : 1, border: 'none' }
               }, isLoading ? '\u23F3 ...' : '\u25B6 ' + (mode.charAt(0).toUpperCase() + mode.slice(1)))
             ),
             h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' } },
               h('span', { style: { fontSize: '10px', fontWeight: '700', color: MUTED } }, 'TRY:'),
               (EXAMPLES[mode] || []).map(function(ex, i) {
-                return h('button', { key: i, onClick: function() { upd('expression', ex); },
+                return h('button', { 'aria-label': 'Step-by-Step Solution', key: i, onClick: function() { upd('expression', ex); },
                   style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace', background: CARD, border: '1px solid ' + BORDER, color: ACCENT, cursor: 'pointer' } }, ex);
               })
             ),
@@ -463,7 +463,7 @@
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, marginBottom: '6px' } }, '\uD83D\uDCDC Recent (' + history.length + ')'),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 history.slice().reverse().slice(0, 5).map(function(hi, i) {
-                  return h('button', { key: i, onClick: function() { updMulti({ expression: hi.expr, mode: hi.mode, result: hi.result }); },
+                  return h('button', { 'aria-label': 'Change _tried advanced', key: i, onClick: function() { updMulti({ expression: hi.expr, mode: hi.mode, result: hi.result }); },
                     style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace', background: CARD, border: '1px solid ' + BORDER, color: TEXT, cursor: 'pointer' } },
                     hi.mode + ': ' + hi.expr.substring(0, 20));
                 })
@@ -483,7 +483,7 @@
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Difficulty'),
               h('div', { style: { display: 'flex', gap: '4px' } },
                 DIFFICULTIES.map(function(df) {
-                  return h('button', { key: df.id, onClick: function() { updMulti({ difficulty: df.id, practiceQ: null, practiceFeedback: null }); if (df.id === 'advanced') upd('_triedAdvanced', true); }, style: btnStyle(difficulty === df.id) }, df.label);
+                  return h('button', { 'aria-label': 'Problem Type', key: df.id, onClick: function() { updMulti({ difficulty: df.id, practiceQ: null, practiceFeedback: null }); if (df.id === 'advanced') upd('_triedAdvanced', true); }, style: btnStyle(difficulty === df.id) }, df.label);
                 })
               )
             ),
@@ -491,13 +491,13 @@
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Problem Type'),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 PROBLEM_TYPES.map(function(pt) {
-                  return h('button', { key: pt.id, onClick: function() { updMulti({ practiceType: pt.id, practiceQ: null, practiceFeedback: null }); }, style: btnStyle(practiceType === pt.id) }, pt.label);
+                  return h('button', { 'aria-label': 'Handle Practice Gen', key: pt.id, onClick: function() { updMulti({ practiceType: pt.id, practiceQ: null, practiceFeedback: null }); }, style: btnStyle(practiceType === pt.id) }, pt.label);
                 })
               )
             ),
             !practiceQ ? h('div', { style: { textAlign: 'center', padding: '24px', borderRadius: '12px', background: CARD, border: '1px solid ' + BORDER } },
               h('p', { style: { fontSize: '12px', color: MUTED, marginBottom: '8px' } }, 'Generate a problem at ' + difficulty + ' level'),
-              h('button', { onClick: handlePracticeGen, disabled: isLoading,
+              h('button', { 'aria-label': 'PROBLEM', onClick: handlePracticeGen, disabled: isLoading,
                 style: { padding: '10px 20px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '13px', cursor: 'pointer', opacity: isLoading ? 0.5 : 1, border: 'none' }
               }, isLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Problem')
             ) : h('div', null,
@@ -514,21 +514,21 @@
                   'aria-label': 'Practice answer input',
                   style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
-                h('button', { onClick: handlePracticeCheck, disabled: isLoading || !practiceAnswer.trim(),
+                h('button', { 'aria-label': 'Handle Practice Check', onClick: handlePracticeCheck, disabled: isLoading || !practiceAnswer.trim(),
                   style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', cursor: 'pointer', opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1, border: 'none' }
                 }, isLoading ? '\u23F3' : '\u2705 Check')
               ) : null,
               practiceFeedback ? h('div', { style: { padding: '10px', borderRadius: '12px', background: practiceFeedback.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (practiceFeedback.correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'), marginBottom: '8px' } },
                 h('div', { style: { fontSize: '13px', fontWeight: '700', marginBottom: '6px' } }, practiceFeedback.correct ? '\uD83C\uDF89 Correct!' : '\u274C Not quite...'),
                 h('div', { style: { fontSize: '11px', marginBottom: '6px' } }, (function() { var fb = practiceFeedback.text.match(/FEEDBACK:\s*(.+)/i); return fb ? fb[1].trim() : ''; })()),
-                h('button', { onClick: function() { upd('showSolution', !showSolution); },
+                h('button', { 'aria-label': 'No solution available.', onClick: function() { upd('showSolution', !showSolution); },
                   style: { fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '8px', background: showSolution ? 'rgba(99,102,241,0.15)' : CARD, color: showSolution ? '#a5b4fc' : MUTED, border: '1px solid ' + BORDER, cursor: 'pointer', marginBottom: '6px' }
                 }, (showSolution ? '\u25BC' : '\u25B6') + ' Step-by-Step Solution'),
                 showSolution ? h('div', { style: { marginTop: '6px', padding: '8px', borderRadius: '10px', fontSize: '11px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.5', background: 'rgba(15,23,42,0.5)', border: '1px solid ' + BORDER } },
                   (function() { var sol = practiceFeedback.text.match(/SOLUTION:[\s\S]*/i); return sol ? renderSteps(sol[0]) : h('span', { style: { color: MUTED } }, 'No solution available.'); })()
                 ) : null
               ) : null,
-              h('button', { onClick: function() { updMulti({ practiceQ: null, practiceFeedback: null, practiceAnswer: '', showSolution: false }); handlePracticeGen(); },
+              h('button', { 'aria-label': 'New Problem', onClick: function() { updMulti({ practiceQ: null, practiceFeedback: null, practiceAnswer: '', showSolution: false }); handlePracticeGen(); },
                 style: { width: '100%', padding: '8px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, fontWeight: '700', fontSize: '11px', cursor: 'pointer' }
               }, '\uD83D\uDD04 New Problem')
             )
@@ -546,22 +546,22 @@
             h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '6px' } }, 'Tile Palette'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '12px' } },
               BUILDER_PALETTE.map(function(tile, i) {
-                return h('button', { key: i, onClick: function() { addTile(tile); }, style: tileBtnStyle(tile.cat) }, tile.v);
+                return h('button', { 'aria-label': 'Your Equation (click tile to remove)', key: i, onClick: function() { addTile(tile); }, style: tileBtnStyle(tile.cat) }, tile.v);
               })
             ),
             h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '6px' } }, 'Your Equation (click tile to remove)'),
             h('div', { style: { minHeight: '48px', padding: '10px', borderRadius: '12px', background: CARD, border: '2px dashed ' + BORDER, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', marginBottom: '10px' } },
               builderTiles.length === 0 ? h('span', { style: { color: MUTED, fontSize: '12px' } }, 'Click tiles above to build an equation...') :
               builderTiles.map(function(tile, i) {
-                return h('button', { key: i, onClick: function() { removeTile(i); },
+                return h('button', { 'aria-label': 'Solve It', key: i, onClick: function() { removeTile(i); },
                   style: { padding: '6px 10px', borderRadius: '6px', fontSize: '14px', fontWeight: '700', background: TILE_COLORS[tile.cat] || '#6366f1', color: '#fff', cursor: 'pointer', border: 'none' } }, tile.v);
               })
             ),
             builderTiles.length > 0 ? h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
               h('div', { style: { flex: '1', padding: '8px', borderRadius: '10px', background: 'rgba(99,102,241,0.05)', border: '1px solid ' + BORDER, fontFamily: 'monospace', fontSize: '14px', fontWeight: '700', textAlign: 'center' } }, builderToString()),
-              h('button', { onClick: sendBuilderToSolver,
+              h('button', { 'aria-label': 'Solve It', onClick: sendBuilderToSolver,
                 style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, '\uD83D\uDD0D Solve It'),
-              h('button', { onClick: function() { upd('builderTiles', []); },
+              h('button', { 'aria-label': 'Clear', onClick: function() { upd('builderTiles', []); },
                 style: { padding: '8px 12px', borderRadius: '10px', background: CARD, color: TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: '1px solid ' + BORDER } }, '\uD83D\uDDD1 Clear')
             ) : null,
             h('div', { style: { fontSize: '10px', color: MUTED, marginTop: '6px' } },
@@ -659,7 +659,7 @@
                   'aria-label': 'Balance scale equation input',
                   style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
-                h('button', { onClick: function() { updMulti({ scaleSteps: [], scaleSolved: false }); },
+                h('button', { 'aria-label': 'Load', onClick: function() { updMulti({ scaleSteps: [], scaleSolved: false }); },
                   style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, 'Load')
               )
             ),
@@ -670,7 +670,7 @@
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Apply to Both Sides'),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px' } },
                 [['Add', '+'], ['Subtract', '-'], ['Multiply', '\u00D7'], ['Divide', '\u00F7']].map(function(pair) {
-                  return h('button', { key: pair[0], onClick: function() {
+                  return h('button', { 'aria-label': 'Steps Applied:', key: pair[0], onClick: function() {
                     var val = prompt(pair[0] + ' what value to both sides?');
                     if (val) handleScaleOp(pair[0], val);
                   }, style: opBtnStyle }, pair[1] + ' ' + pair[0]);
@@ -681,7 +681,7 @@
                 scaleSteps.map(function(s, i) { return h('div', { key: i, style: { color: MUTED } }, (i + 1) + '. ' + s); })
               ) : null
             ) : null,
-            scaleSolved ? h('button', { onClick: function() { updMulti({ scaleEq: '', scaleSteps: [], scaleSolved: false }); },
+            scaleSolved ? h('button', { 'aria-label': 'New Equation', onClick: function() { updMulti({ scaleEq: '', scaleSteps: [], scaleSolved: false }); },
               style: { width: '100%', padding: '8px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer' } }, '\uD83D\uDD04 New Equation') : null
           );
         };
@@ -701,7 +701,7 @@
                     isUser ? msg.text : h('div', null,
                       h('span', { style: { fontSize: '10px', fontWeight: '700', color: '#a855f7' } }, '\uD83E\uDD16 Tutor'),
                       h('div', { style: { marginTop: '2px' } }, msg.text),
-                      callTTS ? h('button', { onClick: function() { speakText(msg.text, callTTS); },
+                      callTTS ? h('button', { 'aria-label': 'Listen', onClick: function() { speakText(msg.text, callTTS); },
                         style: { marginTop: '4px', fontSize: '10px', color: ACCENT, background: 'none', border: 'none', cursor: 'pointer', fontWeight: '700' } }, '\uD83D\uDD0A Listen') : null
                     )
                   )
@@ -715,14 +715,14 @@
                 'aria-label': 'Ask the algebra tutor',
                 style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontSize: '12px' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
-              h('button', { onClick: handleTutorSend, disabled: isLoading || !tutorInput.trim(),
+              h('button', { 'aria-label': 'Try:', onClick: handleTutorSend, disabled: isLoading || !tutorInput.trim(),
                 style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', cursor: 'pointer', opacity: (isLoading || !tutorInput.trim()) ? 0.5 : 1, border: 'none' }
               }, isLoading ? '\u23F3' : 'Send')
             ),
             h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               h('span', { style: { fontSize: '10px', fontWeight: '700', color: MUTED } }, 'Try:'),
               SUGGESTED.map(function(q, i) {
-                return h('button', { key: i, onClick: function() { upd('tutorInput', q); },
+                return h('button', { 'aria-label': 'Ask question', key: i, onClick: function() { upd('tutorInput', q); },
                   style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', background: CARD, border: '1px solid ' + BORDER, color: ACCENT, cursor: 'pointer' } }, q);
               })
             )
@@ -746,7 +746,7 @@
               h('h3', { style: { fontSize: '16px', fontWeight: '700', margin: 0 } }, '\uD83E\uDDEE Algebra CAS'),
               h('p', { style: { fontSize: '10px', color: MUTED, margin: '2px 0 0 0' } }, GRADE_INTROS[band] || 'Step-by-step symbolic math powered by AI')
             ),
-            h('button', { onClick: function() { setStemLabTool(null); },
+            h('button', { 'aria-label': 'Back', onClick: function() { setStemLabTool(null); },
               style: { padding: '6px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, fontWeight: '700', fontSize: '11px', cursor: 'pointer' } }, '\u2190 Back')
           ),
           badgeBar,

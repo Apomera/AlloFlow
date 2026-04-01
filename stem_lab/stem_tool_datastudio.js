@@ -347,7 +347,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", { className: "flex gap-2" },
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Upd D S",
 
                   onClick: function () { updDS('showStats', !showStats); },
 
@@ -357,7 +357,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 }, showStats ? '📊 Stats On' : '📊 Stats'),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Back",
 
                   onClick: function () { setStemLabTool(null); },
 
@@ -379,7 +379,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               CHART_TYPES.map(function (ct) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Datastudio action",
 
                   key: ct.id,
 
@@ -828,7 +828,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 var labels = { none: '— None', asc: '↑ Asc', desc: '↓ Desc' };
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Upd D S",
 
                   key: s,
 
@@ -874,7 +874,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               }),
 
-              (filterMin !== '' || filterMax !== '') && React.createElement("button", {
+              (filterMin !== '' || filterMax !== '') && React.createElement("button", { "aria-label": "Clear",
 
                 onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
 
@@ -888,7 +888,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Trendline toggle (for line/scatter)
 
-              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", {
+              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { "aria-label": "Upd D S",
 
                 onClick: function () { updDS('showTrendline', !showTrendline); },
 
@@ -910,7 +910,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               PRESETS.map(function (p, i) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Upd D S",
 
                   key: i,
 
@@ -932,7 +932,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Action",
 
                 onClick: function () {
 
@@ -968,7 +968,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               }, "📂 Import CSV"),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Export CSV",
 
                 onClick: function () {
 
@@ -1048,7 +1048,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 }),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "+ Add",
 
                   onClick: function () {
 
@@ -1084,7 +1084,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Upd D S",
 
                       onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
 
@@ -1100,7 +1100,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Clear
 
-              dataRows.length > 0 && React.createElement("button", {
+              dataRows.length > 0 && React.createElement("button", { "aria-label": "Clear All",
 
                 onClick: function () { updDS('dataRows', []); },
 

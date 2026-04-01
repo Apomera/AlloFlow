@@ -1669,7 +1669,7 @@
                 cdef ? cdef.label : child.type,
                 cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
               ),
-              React.createElement("button", { onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
+              React.createElement("button", { "aria-label": "Multiply", onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
             );
           }
 
@@ -1677,7 +1677,7 @@
           function renderQuickAdd(parentIdx, isElse) {
             return React.createElement("div", { className: "flex flex-wrap gap-1 mt-1" },
               ['forward', 'backward', 'right', 'left', 'circle', 'color', 'playNote', 'random'].map(function (ct) {
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Add Child Block",
                   key: ct, onClick: function () { addChildBlock(parentIdx, ct, isElse); },
                   className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
                 }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : ct === 'playNote' ? '+🎵' : ct === 'random' ? '+🎲' : '+🎨');
@@ -1696,7 +1696,7 @@
             },
               React.createElement("div", { className: "flex items-center justify-between mb-3" },
                 React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Multiply",
                   onClick: function () { upd('showTemplates', false); },
                   className: "text-slate-400 hover:text-white text-lg px-2"
                 }, "×")
@@ -1706,7 +1706,7 @@
                 style: { gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }
               },
                 TEMPLATES.map(function (tmpl, ti) {
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Load Template",
                     key: ti,
                     onClick: function () { loadTemplate(tmpl); },
                     className: "flex flex-col items-center gap-1 p-3 rounded-lg bg-slate-700/80 hover:bg-slate-600 border border-slate-600 hover:border-amber-500/50 transition-all text-left group"
@@ -1743,7 +1743,7 @@
                     })
                   )
                 ),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Got it!",
                   onClick: function () { upd('tutorialDismissed', true); },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-400 transition-all shrink-0"
                 }, "Got it! ✕")
@@ -1767,7 +1767,7 @@
               // Playground Mode Tabs (Turtle / Robot)
               React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20 mr-2" },
                 [{ key: 'turtle', icon: '\uD83D\uDC22', label: 'Turtle' }, { key: 'robot', icon: '\uD83E\uDD16', label: 'Robot' }].map(function(tab) {
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change playground mode",
                     key: tab.key,
                     onClick: function() { upd('playgroundMode', tab.key); },
                     className: "px-3 py-1.5 text-xs font-bold transition-all " +
@@ -1776,7 +1776,7 @@
                 })
               ),
               // Mode toggle
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Toggle Mode",
                 onClick: toggleMode,
                 className: "coding-mode-toggle flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
                   (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-500/90 text-white hover:bg-amber-500')
@@ -1811,12 +1811,12 @@
                   (redoStack.length > 0 ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-white/5 text-white/30 cursor-not-allowed')
               }, "↪"),
               // Export PNG
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "PNG",
                 onClick: handleExportPNG,
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "📥 PNG"),
               // Templates
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Templates",
                 onClick: function () { upd('showTemplates', !showTemplates); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showTemplates ? 'bg-amber-500 text-white' : 'bg-white/15 text-white hover:bg-white/25')
@@ -1825,21 +1825,21 @@
 
               // AI Assistant buttons
               callGemini && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Handle Explain Code",
                   onClick: handleExplainCode,
                   disabled: aiLoading || blocks.length === 0,
                   title: "AI explains what your code does",
                   className: "px-2.5 py-1.5 text-[10px] font-bold transition-all " +
                     (aiLoading ? "bg-white/5 text-white/30 cursor-wait" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, aiLoading ? "⏳" : "🤖 Explain"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Suggest",
                   onClick: handleSuggestNext,
                   disabled: aiLoading,
                   title: "AI suggests what to try next",
                   className: "px-2.5 py-1.5 text-[10px] font-bold transition-all border-l border-white/20 " +
                     (aiLoading ? "bg-white/5 text-white/30" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, "💡 Suggest"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Debug",
                   onClick: handleDebugHelp,
                   disabled: aiLoading || challengeIdx < 0,
                   title: "AI helps debug your challenge attempt",
@@ -1848,18 +1848,18 @@
                 }, "🐛 Debug")
               ),
               // SVG Export + Share
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "SVG",
                 onClick: handleExportSVG,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "📐 SVG"),
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Share",
                 onClick: handleShareLink,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "🔗 Share"),
 
 
               // 3D Mode toggle
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Change show3 d",
                 onClick: function() { upd('show3D', !show3D); if (!show3D) { upd('pitchAngle', 0); upd('yawAngle', 0); } },
                 title: show3D ? 'Switch to 2D mode' : 'Switch to 3D isometric mode',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
@@ -1878,52 +1878,52 @@
                 })
               ),
               // Import/Export
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Save",
                 onClick: handleExportJSON,
                 title: 'Export program as JSON',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "💾 Save"),
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Load",
                 onClick: handleImportJSON,
                 title: 'Import program from JSON',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "📂 Load"),
               // Coordinate Picker
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Pick",
                 onClick: function() { upd('showCoordPicker', !showCoordPicker); },
                 title: showCoordPicker ? 'Cancel coordinate picker' : 'Click canvas to add goto(x,y)',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showCoordPicker ? "bg-amber-500 text-white animate-pulse" : "bg-white/15 text-white hover:bg-white/25")
               }, "📌 Pick"),
               // Background Music toggle
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Toggle Bg Music",
                 onClick: toggleBgMusic,
                 title: bgMusicPlaying ? 'Stop background music' : 'Play background music loop',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (bgMusicPlaying ? "bg-green-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, bgMusicPlaying ? "🔊 Music" : "🔇 Music"),
               // Canvas Layer toggle
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Drawing layer: ",
                 onClick: function() { upd('canvasLayer', canvasLayer === 'foreground' ? 'background' : 'foreground'); },
                 title: 'Drawing layer: ' + canvasLayer,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (canvasLayer === 'background' ? "bg-purple-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, canvasLayer === 'background' ? "🎨 BG" : "🎨 FG"),
               // Canvas controls
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Change show grid",
                 onClick: function () { upd('showGrid', !showGrid); },
                 title: showGrid ? 'Hide grid' : 'Show grid',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showGrid ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "⊞"),
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Show tutorial",
                 onClick: function () { upd('showCoords', !showCoords); },
                 title: showCoords ? 'Hide coordinates' : 'Show coordinates',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showCoords ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "📐"),
               // Tutorial help button
-              tutorialDismissed && React.createElement("button", {
+              tutorialDismissed && React.createElement("button", { "aria-label": "Show tutorial",
                 onClick: function () { upd('tutorialDismissed', false); },
                 title: 'Show tutorial',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
@@ -1939,7 +1939,7 @@
                 React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
                 React.createElement("div", { className: "space-y-1" },
                   ROBOT_BLOCKS.map(function(rb) {
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Add",
                       key: rb.type,
                       onClick: function() { addRobotBlock(rb.type); },
                       disabled: robotRunning,
@@ -2044,12 +2044,12 @@
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
                     React.createElement("div", { className: "flex gap-1" },
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Clear",
                         onClick: function() { upd('robotBlocks', []); },
                         disabled: robotBlocks.length === 0,
                         className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\uD83D\uDDD1 Clear"),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Reset",
                         onClick: function() {
                           if (robotChallengeIdx >= 0) {
                             var ch = ROBOT_CHALLENGES[robotChallengeIdx];
@@ -2059,7 +2059,7 @@
                         },
                         className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\u21BA Reset"),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Handle Robot Run",
                         onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
@@ -2081,7 +2081,7 @@
                               onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
                               className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
                             }),
-                            React.createElement("button", {
+                            React.createElement("button", { "aria-label": "Select option",
                               onClick: function() { removeRobotBlock(bi); },
                               className: "text-white/60 hover:text-white text-xs px-1"
                             }, "\u2715")
@@ -2092,7 +2092,7 @@
                                 var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
                                 return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
                                   React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                  React.createElement("button", { onClick: function() {
+                                  React.createElement("button", { "aria-label": "Select option", onClick: function() {
                                     var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                     upd('robotBlocks', updated);
                                   }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
@@ -2100,7 +2100,7 @@
                               }),
                               React.createElement("div", { className: "flex gap-1 flex-wrap" },
                                 ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                  return React.createElement("button", {
+                                  return React.createElement("button", { "aria-label": "ELSE:",
                                     key: rb.type,
                                     onClick: function() { addRobotChildBlock(bi, rb.type, false); },
                                     className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
@@ -2114,7 +2114,7 @@
                                   var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
                                   return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
                                     React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                    React.createElement("button", { onClick: function() {
+                                    React.createElement("button", { "aria-label": "Select option", onClick: function() {
                                       var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                       upd('robotBlocks', updated);
                                     }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
@@ -2122,7 +2122,7 @@
                                 }),
                                 React.createElement("div", { className: "flex gap-1 flex-wrap mt-1" },
                                   ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                    return React.createElement("button", {
+                                    return React.createElement("button", { "aria-label": "Add",
                                       key: 'e' + rb.type,
                                       onClick: function() { addRobotChildBlock(bi, rb.type, true); },
                                       className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
@@ -2144,7 +2144,7 @@
                   ROBOT_CHALLENGES.map(function(ch, ci) {
                     var done = robotCompleted.indexOf(ch.id) >= 0;
                     var active = robotChallengeIdx === ci;
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Load Robot Challenge",
                       key: ch.id,
                       onClick: function() { loadRobotChallenge(ci); },
                       className: "w-full text-left p-2.5 rounded-lg border transition-all " +
@@ -2190,7 +2190,7 @@
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, "🧰 Toolbox"),
                 React.createElement("div", { className: "flex flex-col gap-1" },
                   BLOCK_TYPES.map(function (bt) {
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Add Block",
                       key: bt.type,
                       onClick: function () { addBlock(bt.type); },
                       disabled: running,
@@ -2322,9 +2322,9 @@
                           placeholder: "x > 250"
                         }),
                         // Move / Remove buttons
-                        React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
-                        React.createElement("button", { onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
+                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
+                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
+                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
                       ),
                       // ── Repeat children ──
                       b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
@@ -2384,17 +2384,17 @@
 
               // Controls
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Run",
                   onClick: handleRun,
                   disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
                   className: "coding-run-btn flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
                     (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-green-500/30')
                 }, "▶ Run"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Clear Canvas",
                   onClick: handleClear,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition-all"
                 }, "🗑️ Clear Canvas"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Reset All",
                   onClick: handleReset,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-600/80 text-white hover:bg-red-600 transition-all"
                 }, "⏪ Reset All"),
@@ -2405,12 +2405,12 @@
 
               // Options bar (turtle toggle + cumulative mode)
               React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show turtle",
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change cumulative mode",
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -2430,7 +2430,7 @@
                   CHALLENGES.map(function (ch, ci) {
                     var done = completed.indexOf(ch.id) >= 0;
                     var active = challengeIdx === ci;
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Change challenge idx",
                       key: ch.id,
                       onClick: function () { upd('challengeIdx', active ? -1 : ci); },
                       className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all " +
@@ -2505,17 +2505,17 @@
                 ),
                 // Toggle buttons
                 React.createElement("div", { className: "flex gap-1" },
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Grid",
                     onClick: function() { upd('show3DGrid', !show3DGrid); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
                       (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
                   }, "\u{2B1C} Grid"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Axes",
                     onClick: function() { upd('show3DAxes', !show3DAxes); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
                       (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
                   }, "\u{1F4CD} Axes"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Reset",
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold bg-slate-700/50 text-slate-500 hover:text-white transition-all"
                   }, "\u{1F504} Reset")
@@ -2575,7 +2575,7 @@
 
               // ── Accessibility Controls ──
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change high contrast mode",
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
                   className: "flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " +
                     (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-400 hover:text-white")
@@ -2587,7 +2587,7 @@
                   React.createElement("h4", { className: "text-xs font-bold text-blue-300 flex items-center gap-1" },
                     React.createElement("span", null, "🤖"), " AI Assistant"
                   ),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Thinking...",
                     onClick: function() { updMulti({ showAIPanel: false, aiExplanation: '' }); },
                     className: "text-slate-400 hover:text-white text-sm px-1"
                   }, "×")
@@ -2648,7 +2648,7 @@
               ),
 
               // Snapshot button
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Snapshot",
                 onClick: function () {
                   setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
                   if (addToast) addToast('📸 Code snapshot saved!', 'success');

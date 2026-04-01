@@ -1366,7 +1366,7 @@ const d = labToolData.solarSystem;
 
               React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto" },
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Upd",
 
                   onClick: () => upd('paused', !paused),
 
@@ -1384,7 +1384,7 @@ const d = labToolData.solarSystem;
 
                 ),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Reset View",
 
                   onClick: () => { upd('selectedPlanet', null); const c = document.querySelector('.solar3d-canvas'); if (c) { c.dataset.resetCamera = 'true'; } },
 
@@ -1402,7 +1402,7 @@ const d = labToolData.solarSystem;
 
             React.createElement("div", { className: "flex gap-1 mt-2 flex-wrap justify-center" },
 
-              PLANETS.map(p => React.createElement("button", {
+              PLANETS.map(p => React.createElement("button", { "aria-label": "Upd",
 
                 key: p.name,
 
@@ -1490,7 +1490,7 @@ const d = labToolData.solarSystem;
 
                     var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Change view tab",
 
                       key: tab, onClick: function () { upd('viewTab', tab); },
 
@@ -2041,7 +2041,7 @@ const d = labToolData.solarSystem;
 
 
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change view tab",
 
                   onClick: function () { upd('viewTab', 'drone'); addMissionEntry('\uD83D\uDE80 Deployed ' + (sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant') ? 'atmospheric probe' : 'rover') + ' on ' + (sel ? sel.name : 'planet')); },
 
@@ -4644,7 +4644,7 @@ const d = labToolData.solarSystem;
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Action",
 
                         onClick: () => {
 
@@ -4698,7 +4698,7 @@ const d = labToolData.solarSystem;
 
                           var cls = !d.quiz.answered ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50' : isCorrect ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : wasChosen && !isCorrect ? 'bg-red-100 text-red-800 border-red-300' : 'bg-slate-50 text-slate-500 border-slate-200';
 
-                          return React.createElement("button", {
+                          return React.createElement("button", { "aria-label": "Select option",
 
                             key: opt, disabled: d.quiz.answered, onClick: function () {
 
@@ -4792,7 +4792,7 @@ const d = labToolData.solarSystem;
               sel && NOTABLE_MOONS[sel.name] && React.createElement("div", { className: "mt-4 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83C\uDF19 Moons of " + sel.name + " (" + sel.moons + " total)"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change show moons",
                     onClick: function() { upd('showMoons', !d.showMoons); },
                     className: "text-[10px] text-indigo-500 hover:text-indigo-700"
                   }, d.showMoons ? 'Hide' : 'Explore \u2192')
@@ -4809,7 +4809,7 @@ const d = labToolData.solarSystem;
                         React.createElement("span", null, "\uD83D\uDCCD " + moon.dist + " from " + sel.name)
                       ),
                       React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " italic" }, moon.fact),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Listen",
                         onClick: function() { speakText(moon.name + '. ' + moon.fact); },
                         className: "mt-1 text-[10px] text-indigo-400 hover:text-indigo-600"
                       }, "\uD83D\uDD0A Listen")
@@ -4822,7 +4822,7 @@ const d = labToolData.solarSystem;
               sel && SKY_VIEWS[sel.name] && React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-900') + " rounded-xl p-3 border border-slate-700" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-sky-300" }, "\uD83C\uDF03 Night Sky from " + sel.name),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Visible objects:",
                     onClick: function() { upd('showSky', !d.showSky); },
                     className: "text-[10px] text-sky-400 hover:text-sky-200"
                   }, d.showSky ? 'Hide' : 'View \u2192')
@@ -4892,7 +4892,7 @@ const d = labToolData.solarSystem;
               sel && DESCENT_LAYERS[sel.name] && React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-b from-blue-50 to-orange-50 border-blue-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-blue-300' : 'text-blue-700') }, "\uD83E\uDE82 Atmosphere Descent \u2014 " + sel.name),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change show descent",
                     onClick: function() { upd('showDescent', !d.showDescent); if (!d.descentAlt && d.descentAlt !== 0) upd('descentAlt', 100); },
                     className: "text-[10px] text-blue-500 hover:text-blue-700"
                   }, d.showDescent ? 'Hide' : 'Descend \u2192')
@@ -4956,7 +4956,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-emerald-50 border-emerald-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, "\uD83D\uDCCF Planet Size Comparison"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change show scale",
                     onClick: function() { upd('showScale', !d.showScale); },
                     className: "text-[10px] text-emerald-500 hover:text-emerald-700"
                   }, d.showScale ? 'Hide' : 'Show \u2192')
@@ -4984,7 +4984,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-purple-50 border-purple-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') }, "\uD83C\uDF0C Orbital Mechanics"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Keplers Three Laws of Planetary Motion",
                     onClick: function() { upd('showOrbital', !d.showOrbital); },
                     className: "text-[10px] text-purple-500 hover:text-purple-700"
                   }, d.showOrbital ? 'Hide' : 'Learn \u2192')
@@ -5024,7 +5024,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-pink-50 to-rose-50 border-pink-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-pink-300' : 'text-pink-700') }, "\uD83C\uDFD7 Planet Builder"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Design your own hypothetical planet!",
                     onClick: function() { upd('showBuilder', !d.showBuilder); },
                     className: "text-[10px] text-pink-500 hover:text-pink-700"
                   }, d.showBuilder ? 'Hide' : 'Build \u2192')
@@ -5090,7 +5090,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-teal-50 border-teal-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-teal-300' : 'text-teal-700') }, "\uD83C\uDF0C Exoplanet Comparison"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change show exo",
                     onClick: function() { upd('showExo', !d.showExo); },
                     className: "text-[10px] text-teal-500 hover:text-teal-700"
                   }, d.showExo ? 'Hide' : 'Explore \u2192')
@@ -5118,7 +5118,7 @@ const d = labToolData.solarSystem;
               sel && WHAT_IF[sel.name] && React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-yellow-50 border-yellow-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-yellow-300' : 'text-yellow-700') }, "\uD83E\uDD14 What If? \u2014 " + sel.name),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change show what if",
                     onClick: function() { upd('showWhatIf', !d.showWhatIf); },
                     className: "text-[10px] text-yellow-500 hover:text-yellow-700"
                   }, d.showWhatIf ? 'Hide' : 'Think \u2192')
@@ -5128,7 +5128,7 @@ const d = labToolData.solarSystem;
                     return React.createElement("div", { key: wii, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-yellow-100') + " rounded-lg p-2.5 border" },
                       React.createElement("div", { className: "text-[10px] font-bold " + (isDark ? 'text-yellow-200' : 'text-yellow-800') + " mb-1" }, "\u2753 " + wi.q),
                       React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Listen",
                         onClick: function() { speakText(wi.q + ' ' + wi.a); },
                         className: "mt-1 text-[10px] text-yellow-400 hover:text-yellow-600"
                       }, "\uD83D\uDD0A Listen")
@@ -5157,7 +5157,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, "\uD83D\uDCC5 Space Exploration Timeline"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change show timeline",
                     onClick: function() { upd('showTimeline', !d.showTimeline); },
                     className: "text-[10px] text-slate-500 hover:text-slate-700"
                   }, d.showTimeline ? 'Hide' : 'View \u2192')
@@ -5187,7 +5187,7 @@ const d = labToolData.solarSystem;
               sel && sel.name !== 'Earth' && HOHMANN[sel.name] && React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-rose-50 border-rose-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-rose-300' : 'text-rose-700') }, "\uD83D\uDE80 Mission to " + sel.name + " (Hohmann Transfer)"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Earth departure v:",
                     onClick: function() { upd('showHohmann', !d.showHohmann); },
                     className: "text-[10px] text-rose-500 hover:text-rose-700"
                   }, d.showHohmann ? 'Hide' : 'Plan \u2192')
@@ -5298,7 +5298,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-red-50 border-red-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-red-300' : 'text-red-700') }, "\uD83D\uDE80 Escape Velocity"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Change show escape",
                     onClick: function() { upd('showEscape', !d.showEscape); },
                     className: "text-[10px] text-red-500 hover:text-red-700"
                   }, d.showEscape ? 'Hide' : 'Show \u2192')
@@ -5386,7 +5386,7 @@ const d = labToolData.solarSystem;
                     })()
                   )
                 ),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Calculate for all planets",
                   onClick: function() { updMulti({ lightCalcUsed: true }); setTimeout(checkChallenges, 50); playBeep(); },
                   className: "mt-1 text-[10px] text-cyan-500 hover:text-cyan-700 underline"
                 }, "\uD83D\uDCCA Calculate for all planets")
@@ -5404,7 +5404,7 @@ const d = labToolData.solarSystem;
                     onKeyDown: function(e) { if (e.key === 'Enter') askSpaceTutor(d.aiQuestion); },
                     className: "flex-1 px-3 py-1.5 border border-violet-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-400 outline-none"
                   }),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Ask Space Tutor",
                     onClick: function() { askSpaceTutor(d.aiQuestion); },
                     disabled: d.aiLoading,
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold text-white " + (d.aiLoading ? 'bg-gray-400' : 'bg-violet-600 hover:bg-violet-700')
@@ -5418,12 +5418,12 @@ const d = labToolData.solarSystem;
                     sel ? 'What would I see on ' + sel.name + '?' : 'What is a black hole?',
                     'How do planets form?'
                   ].map(function(q, qi) {
-                    return React.createElement("button", { key: qi, onClick: function() { askSpaceTutor(q); }, className: "text-[10px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors" }, q);
+                    return React.createElement("button", { "aria-label": "Read aloud", key: qi, onClick: function() { askSpaceTutor(q); }, className: "text-[10px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors" }, q);
                   })
                 ),
                 d.aiAnswer && React.createElement("div", { className: "bg-white rounded-lg p-2 text-xs text-slate-700 border border-violet-100 relative" },
                   React.createElement("div", null, d.aiAnswer),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Read aloud",
                     onClick: function() { speakText(d.aiAnswer); },
                     className: "absolute top-1 right-1 text-violet-400 hover:text-violet-600",
                     title: "Read aloud"
@@ -5464,7 +5464,7 @@ const d = labToolData.solarSystem;
               React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200') + " rounded-xl p-3 border" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, "\uD83D\uDCCB Mission Log"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "No entries yet. Start exploring!",
                     onClick: function() { upd('showLog', !d.showLog); },
                     className: "text-[10px] text-indigo-500 hover:text-indigo-700"
                   }, d.showLog ? 'Hide' : 'Show (' + (missionLog.length) + ')')
@@ -5520,14 +5520,14 @@ const d = labToolData.solarSystem;
                       );
                     })
                   ),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Start Exploring!",
                     onClick: function() { upd('tutorialDismissed', true); playBeep(); },
                     className: "mt-4 w-full py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg"
                   }, "\uD83D\uDE80 Start Exploring!")
                 )
               ),
 
-              React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
             )
 

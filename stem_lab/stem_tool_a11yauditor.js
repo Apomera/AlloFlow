@@ -275,7 +275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         // Tabs
         h('div', { role: 'tablist', 'aria-label': 'Accessibility Lab sections', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200' },
           [{ id: 'audit', label: '🔍 Audit' }, { id: 'learn', label: '📖 Learn WCAG' }, { id: 'history', label: '📊 History' }, { id: 'badges', label: '🏅 Badges' }].map(function(t) {
-            return h('button', {
+            return h('button', { 'aria-label': 'Change tab',
               key: t.id, role: 'tab', 'aria-selected': tab === t.id,
               onClick: function() { upd('tab', t.id); },
               className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-600/60 hover:text-teal-700')
@@ -298,7 +298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 { id: 'pdf', icon: '\uD83D\uDCC4', label: 'PDF Document' },
                 { id: 'screenshot', icon: '\uD83D\uDCF7', label: 'Screenshot' }
               ].map(function(mode) {
-                return h('button', {
+                return h('button', { 'aria-label': 'Change audit input mode',
                   key: mode.id,
                   onClick: function() { upd('auditInputMode', mode.id); },
                   className: 'flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all ' + (auditInputMode === mode.id ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500 hover:text-slate-700')
@@ -318,7 +318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   'aria-label': 'Website URL to audit',
                   className: 'flex-1 text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
                 }),
-                h('button', {
+                h('button', { 'aria-label': 'Try:',
                   onClick: function() { if (auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
                   disabled: !auditUrl.trim() || auditLoading,
                   className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 disabled:opacity-40 transition-colors'
@@ -329,7 +329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('div', { className: 'flex flex-wrap gap-2 pt-2' },
                 h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Try:'),
                 ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com', 'https://www.amazon.com'].map(function(url) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Change audit url',
                     key: url,
                     onClick: function() { upd('auditUrl', url); },
                     className: 'text-[10px] text-teal-600 hover:text-teal-800 font-medium hover:underline'
@@ -348,7 +348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 'aria-label': 'HTML code to audit',
                 className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-32'
               }),
-              h('button', {
+              h('button', { 'aria-label': 'A11yauditor action',
                 onClick: function() { if (auditHtml.trim()) runAudit(auditHtml.trim(), 'html'); },
                 disabled: !auditHtml.trim() || auditLoading,
                 className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-40 transition-colors'
@@ -453,8 +453,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // Action buttons
             h('div', { className: 'flex gap-2 justify-center' },
-              h('button', { onClick: downloadReport, className: 'px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors' }, '📥 Download Report'),
-              h('button', { onClick: function() { updMulti({ auditResult: null, auditUrl: '', auditHtml: '' }); }, className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors' }, '🔄 New Audit')
+              h('button', { 'aria-label': 'Download Report', onClick: downloadReport, className: 'px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors' }, '📥 Download Report'),
+              h('button', { 'aria-label': 'New Audit', onClick: function() { updMulti({ auditResult: null, auditUrl: '', auditHtml: '' }); }, className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors' }, '🔄 New Audit')
             )
           )
         ),
@@ -490,7 +490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
                   h('p', { className: 'text-xs text-teal-800 font-medium' }, '👤 Impact: ', criterion.impact)
                 ),
-                callTTS && h('button', {
+                callTTS && h('button', { 'aria-label': 'Read aloud',
                   onClick: function() { callTTS(criterion.desc + '. Impact: ' + criterion.impact); },
                   className: 'text-[10px] text-teal-500 hover:text-teal-700 font-bold'
                 }, '🔊 Read aloud')

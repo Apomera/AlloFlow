@@ -1130,7 +1130,7 @@
           /* ── Grade-band intro ── */
           h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 mb-3' },
             h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, gradeBandIntro()),
-            h('button', {
+            h('button', { 'aria-label': 'Read aloud',
               onClick: function() { speakText(gradeBandIntro()); },
               className: 'mt-1 text-[10px] text-amber-600 hover:text-amber-800 font-bold'
             }, '\uD83D\uDD0A Read aloud')
@@ -1140,7 +1140,7 @@
           h('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
             TABS.map(function(t) {
               var active = tab === t.id;
-              return h('button', {
+              return h('button', { 'aria-label': 'Change tab',
                 key: t.id,
                 onClick: function() { upd('tab', t.id); },
                 role: 'tab', 'aria-selected': active,
@@ -1155,7 +1155,7 @@
           /* ── Material selector chips (always visible) ── */
           h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
             MATERIALS.map(function(m) {
-              return h('button', {
+              return h('button', { 'aria-label': 'Decomposer action',
                 key: m.name,
                 onClick: function() {
                   SOUNDS.selectMaterial();
@@ -1196,7 +1196,7 @@
               ),
 
               /* Decompose / reassemble button */
-              h('button', {
+              h('button', { 'aria-label': 'Decomposer action',
                 onClick: function() {
                   var next = !decomposed;
                   if (next) {
@@ -1292,7 +1292,7 @@
 
               if (!cmpMode) {
                 return h('div', { className: 'mb-3' },
-                  h('button', {
+                  h('button', { 'aria-label': 'Compare Molecules',
                     onClick: function() {
                       SOUNDS.compare();
                       updMulti({ compareMode: true, compareTo: MATERIALS[1].name });
@@ -1317,7 +1317,7 @@
                       return h('option', { key: m.name, value: m.name }, m.emoji + ' ' + m.name);
                     })
                   ),
-                  h('button', {
+                  h('button', { 'aria-label': 'Close',
                     onClick: function() { upd('compareMode', false); },
                     className: 'ml-auto text-xs text-indigo-400 hover:text-indigo-600'
                   }, '\u2715 Close')
@@ -1374,7 +1374,7 @@
             h('div', { className: 'bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3 mb-3' },
               h('div', { className: 'flex items-center justify-between' },
                 h('p', { className: 'text-[10px] font-bold text-cyan-600 uppercase tracking-wider mb-1' }, '\uD83C\uDF0D Real World'),
-                h('button', {
+                h('button', { 'aria-label': 'Speak Text',
                   onClick: function() { speakText(sel.realUse); },
                   className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold'
                 }, '\uD83D\uDD0A')
@@ -1398,7 +1398,7 @@
               return facts.length > 0 ? h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mb-3' },
                 h('div', { className: 'flex items-center justify-between mb-1' },
                   h('span', { className: 'text-[10px] font-bold text-violet-600 uppercase tracking-wider' }, '\uD83D\uDCA1 Did You Know?'),
-                  h('button', {
+                  h('button', { 'aria-label': 'Next',
                     onClick: function() { upd('_factIdx', factIdx + 1); },
                     className: 'text-[10px] text-violet-500 hover:text-violet-700 font-bold'
                   }, 'Next \u2192')
@@ -1499,7 +1499,7 @@
                   scene.objects.forEach(function(obj) { if (foundObjects[obj.id]) sceneFound++; });
                   var complete = sceneFound === scene.objects.length;
                   var pct = Math.round(sceneFound / scene.objects.length * 100);
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Decomposer action',
                     key: scene.id,
                     onClick: function() {
                       SOUNDS.sceneSwitch();
@@ -1600,7 +1600,7 @@
               return h('div', null,
                 // Scene header
                 h('div', { className: 'flex items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
-                  h('button', { onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+                  h('button', { 'aria-label': 'Update setting', onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
                   h('div', {
                     className: 'flex items-center justify-center shrink-0 rounded-xl',
                     style: { width: 44, height: 44, background: 'white', border: '2px solid ' + scene.accent + '40', boxShadow: '0 2px 8px ' + scene.accent + '20' }
@@ -1668,7 +1668,7 @@
                       h('p', { className: 'text-xs font-bold text-red-700' }, 'Not quite! ' + wrongObj.name + ' contains:'),
                       h('p', { className: 'text-sm font-mono font-bold text-red-800 mt-0.5' }, wrongMat.formula + ' \u2014 ' + wrongMat.name)
                     ),
-                    h('button', { onClick: function() { upd('huntWrongGuess', null); }, className: 'p-1.5 hover:bg-red-100 rounded-lg transition-colors' }, h(X, { size: 14, className: 'text-red-400' }))
+                    h('button', { 'aria-label': 'Change hunt wrong guess', onClick: function() { upd('huntWrongGuess', null); }, className: 'p-1.5 hover:bg-red-100 rounded-lg transition-colors' }, h(X, { size: 14, className: 'text-red-400' }))
                   ),
                   targetMat ? h('p', { className: 'text-[10px] text-red-500 mt-2 font-medium pl-[52px]' }, '\uD83D\uDCA1 Keep looking for ' + targetMat.formula + ' (' + targetMat.name + ')') : null
                 ) : null,
@@ -1920,7 +1920,7 @@
                     var isTarget = huntTarget === obj.id;
                     var isWrong = huntWrongGuess === obj.id;
                     var isSelected = selectedSceneObj === obj.id;
-                    return h('button', {
+                    return h('button', { 'aria-label': 'Action',
                       key: obj.id,
                       onClick: function() {
                         if (isFound) {
@@ -2027,7 +2027,7 @@
                       h('h4', { className: 'font-bold text-slate-800' }, selObj.name),
                       h('span', { className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full' }, '\u2705 Identified')
                     ),
-                    h('button', { onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-500' }))
+                    h('button', { 'aria-label': 'Change selected scene obj', onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-500' }))
                   ),
                   h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -2051,9 +2051,9 @@
                       })
                     ),
                     h('div', { className: 'flex gap-2 mt-3' },
-                      h('button', { onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-500 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all' }, '\u2697\uFE0F Explore'),
-                      h('button', { onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all' }, '\uD83C\uDFA8 Visualize'),
-                      h('button', { onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all' }, '\uD83D\uDD0A')
+                      h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-500 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all' }, '\u2697\uFE0F Explore'),
+                      h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all' }, '\uD83C\uDFA8 Visualize'),
+                      h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all' }, '\uD83D\uDD0A')
                     )
                   )
                 ) : null,
@@ -2064,7 +2064,7 @@
                   h('div', { className: 'flex flex-wrap gap-1.5' },
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
                       var mat = MATERIALS.find(function(m) { return m.name === obj.material; });
-                      return h('button', {
+                      return h('button', { 'aria-label': 'Decomposer action',
                         key: obj.id,
                         onClick: function() { SOUNDS.elementClick(); upd('selectedSceneObj', selectedSceneObj === obj.id ? null : obj.id); },
                         className: 'px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
@@ -2095,7 +2095,7 @@
                 reactantA ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantA; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantA),
-                  h('button', { onClick: function() { updMulti({ reactantA: null, activeReaction: null }); }, className: 'text-[10px] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { 'aria-label': 'Remove', onClick: function() { updMulti({ reactantA: null, activeReaction: null }); }, className: 'text-[10px] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-indigo-400 text-center py-4' }, 'Select below \u2193')
               ),
               // Slot B
@@ -2104,7 +2104,7 @@
                 reactantB ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantB),
-                  h('button', { onClick: function() { updMulti({ reactantB: null, activeReaction: null }); }, className: 'text-[10px] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { 'aria-label': 'Remove', onClick: function() { updMulti({ reactantB: null, activeReaction: null }); }, className: 'text-[10px] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-rose-400 text-center py-4' }, 'Select below \u2193')
               )
             ),
@@ -2114,7 +2114,7 @@
               MATERIALS.map(function(m) {
                 var isA = reactantA === m.name;
                 var isB = reactantB === m.name;
-                return h('button', {
+                return h('button', { 'aria-label': 'Decomposer action',
                   key: m.name,
                   onClick: function() {
                     SOUNDS.selectMaterial();
@@ -2141,7 +2141,7 @@
 
               return h('div', null,
                 // Mix button
-                !activeReaction ? h('button', {
+                !activeReaction ? h('button', { 'aria-label': 'Mix',
                   onClick: function() {
                     SOUNDS.decompose();
                     if (reaction) {
@@ -2180,11 +2180,11 @@
                   ) : null,
                   // TTS + try another
                   h('div', { className: 'flex gap-2' },
-                    h('button', {
+                    h('button', { 'aria-label': 'Listen',
                       onClick: function() { speakText(activeReaction.name + '. ' + activeReaction.desc); },
                       className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200'
                     }, '\uD83D\uDD0A Listen'),
-                    h('button', {
+                    h('button', { 'aria-label': 'Try Another Combo',
                       onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); },
                       className: 'flex-1 py-2 bg-amber-500 text-white font-bold text-xs rounded-lg hover:bg-amber-600'
                     }, '\uD83D\uDD04 Try Another Combo')
@@ -2417,7 +2417,7 @@
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' },
                 'All matter is made of particles (atoms or molecules) that are always moving. In a solid, particles vibrate in a fixed arrangement held by strong bonds. As temperature increases, particles gain energy. At the melting point, they break free and flow as a liquid. At the boiling point, they escape into the air as gas.'
               ),
-              h('button', {
+              h('button', { 'aria-label': 'Listen',
                 onClick: function() { speakText('In a solid, particles vibrate in fixed positions. In a liquid, they slide past each other. In a gas, they fly freely and fill the container. Temperature controls how fast they move.'); },
                 className: 'mt-2 text-[10px] text-sky-600 hover:text-sky-800 font-bold'
               }, '\uD83D\uDD0A Listen')
@@ -2442,7 +2442,7 @@
 
             /* Canvas controls */
             h('div', { className: 'flex items-center gap-3 mb-3' },
-              h('button', {
+              h('button', { 'aria-label': 'Speak Text',
                 onClick: function() {
                   var next = !decomposed;
                   if (next) { SOUNDS.decompose(); updMulti({ decomposed: true, _hasDecomposed: true }); }
@@ -2453,7 +2453,7 @@
                     ? 'bg-red-500 text-white shadow-lg hover:bg-red-600'
                     : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u26A1 Decompose'),
-              h('button', {
+              h('button', { 'aria-label': 'Describe',
                 onClick: function() { speakText(sel.name + ' has the formula ' + sel.formula + '. ' + sel.desc); },
                 className: 'px-4 py-2.5 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100'
               }, '\uD83D\uDD0A Describe')
@@ -2531,7 +2531,7 @@
             (!quizMode || !quizQ) && h('div', { className: 'text-center py-8' },
               h('div', { className: 'text-5xl mb-3' }, '\uD83E\uDDEA'),
               h('p', { className: 'text-sm text-slate-600 mb-4' }, 'Ready to test your chemistry knowledge?'),
-              h('button', {
+              h('button', { 'aria-label': 'Start Quiz',
                 onClick: function() {
                   updMulti({ quizMode: true, quizQ: makeQuiz() });
                 },
@@ -2558,7 +2558,7 @@
                         ? 'bg-red-100 text-red-800 border-red-300'
                         : 'bg-slate-50 text-slate-500 border-slate-200';
 
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Select option',
                     key: opt,
                     disabled: quizQ.answered,
                     onClick: function() {
@@ -2586,7 +2586,7 @@
               ),
 
               /* Next question button (after answer) */
-              quizQ.answered && h('button', {
+              quizQ.answered && h('button', { 'aria-label': 'Next Question',
                 onClick: function() { upd('quizQ', makeQuiz()); },
                 className: 'w-full py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition-all'
               }, '\u27A1 Next Question')
@@ -2609,7 +2609,7 @@
             ),
 
             /* Reset quiz */
-            quizScore > 0 && h('button', {
+            quizScore > 0 && h('button', { 'aria-label': 'Reset Quiz',
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
               },
@@ -2647,7 +2647,7 @@
                         : 'bg-white text-slate-700 border border-slate-200 rounded-bl-sm')
                   },
                     msg.text,
-                    !isUser && h('button', {
+                    !isUser && h('button', { 'aria-label': 'Speak Text',
                       onClick: function() { speakText(msg.text); },
                       className: 'ml-2 text-[10px] text-purple-400 hover:text-purple-600'
                     }, '\uD83D\uDD0A')
@@ -2675,7 +2675,7 @@
                 placeholder: 'Ask about ' + sel.name + '...',
                 className: 'flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
               }),
-              h('button', {
+              h('button', { 'aria-label': 'Handle Ai Question',
                 onClick: function() {
                   if (aiInput.trim()) handleAiQuestion(aiInput.trim());
                 },
@@ -2692,7 +2692,7 @@
                 'Where is ' + sel.name + ' found in nature?',
                 band === 'g68' || band === 'g912' ? 'Explain the electron configuration' : 'Is ' + sel.name + ' safe to touch?'
               ].map(function(q, i) {
-                return h('button', {
+                return h('button', { 'aria-label': 'Ask question',
                   key: i,
                   onClick: function() { handleAiQuestion(q); },
                   className: 'px-2.5 py-1 bg-purple-50 text-purple-700 text-[10px] font-bold rounded-lg border border-purple-200 hover:bg-purple-100 transition-all'
@@ -2737,7 +2737,7 @@
           /* ═══════════════════════════════════════════════════
              Snapshot Button
              ═══════════════════════════════════════════════════ */
-          h('button', {
+          h('button', { 'aria-label': 'Snapshot',
             onClick: function() {
               SOUNDS.snapshot();
               setToolSnapshots(function(prev) {

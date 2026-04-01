@@ -1228,7 +1228,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Epidemic Simulator sections' },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
-            return h('button', {
+            return h('button', { 'aria-label': 'Update setting',
               key: st.id,
               onClick: function() { updMulti({ tab: st.id, hoverDay: null }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-indigo-50 border border-slate-200'),
@@ -1244,7 +1244,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-wrap gap-1.5' },
             PRESETS.map(function(p, idx) {
               var active = selectedPreset === idx;
-              return h('button', {
+              return h('button', { 'aria-label': 'Apply Preset',
                 key: p.name,
                 onClick: function() { applyPreset(idx); },
                 className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'),
@@ -1266,7 +1266,7 @@ window.StemLab = window.StemLab || {
             slider('Vaccination Rate (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period (days)', infectPeriod, 2, 30, 1, 'infectPeriod'),
             slider('Population', popSize, 1000, 10000000, 1000, 'popSize', fmtNum),
-            h('button', { onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md' }, '\u25B6 Run Simulation')
+            h('button', { 'aria-label': 'Run Simulation', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md' }, '\u25B6 Run Simulation')
           ),
           // Chart
           h('div', { className: glassCard },
@@ -1292,7 +1292,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, 'Particle Simulation'),
-              h('button', {
+              h('button', { 'aria-label': 'Change particle running',
                 onClick: function() { upd('particleRunning', !particleRunning); },
                 className: 'px-3 py-1 text-[10px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600')
               }, particleRunning ? '\u23F9 Stop' : '\u25B6 Start')
@@ -1328,7 +1328,7 @@ window.StemLab = window.StemLab || {
             slider('Infectious Period (days)', infectPeriod, 2, 30, 1, 'infectPeriod'),
             slider('Latent Period (days)', latentPeriod, 1, 21, 1, 'latentPeriod'),
             slider('Population', popSize, 1000, 10000000, 1000, 'popSize', fmtNum),
-            h('button', { onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all shadow-md' }, '\u25B6 Run SEIR Simulation')
+            h('button', { 'aria-label': 'Run SEIR Simulation', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all shadow-md' }, '\u25B6 Run SEIR Simulation')
           ),
           h('div', { className: glassCard },
             h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'SEIR Curves'),
@@ -1386,8 +1386,8 @@ window.StemLab = window.StemLab || {
             slider('Vaccination (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
             h('div', { className: 'flex gap-2' },
-              h('button', { onClick: function() { runSim(); addR0Comparison(); }, className: 'flex-1 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all' }, '+ Add to Comparison'),
-              h('button', { onClick: function() { upd('r0Compared', []); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Clear')
+              h('button', { 'aria-label': '+ Add to Comparison', onClick: function() { runSim(); addR0Comparison(); }, className: 'flex-1 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all' }, '+ Add to Comparison'),
+              h('button', { 'aria-label': 'Clear', onClick: function() { upd('r0Compared', []); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Clear')
             )
           ),
           // R0 Visual Scale
@@ -1458,7 +1458,7 @@ window.StemLab = window.StemLab || {
             slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination Rate', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
-            h('button', { onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDC89 Simulate Vaccination')
+            h('button', { 'aria-label': 'Simulate Vaccination', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDC89 Simulate Vaccination')
           ),
           // Herd immunity visual
           h('div', { className: glassCard },
@@ -1510,7 +1510,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
               NPI_INTERVENTIONS.map(function(npi) {
                 var active = activeNPIs.indexOf(npi.id) >= 0;
-                return h('button', {
+                return h('button', { 'aria-label': 'Subtract',
                   key: npi.id,
                   onClick: function() { toggleNPI(npi.id); },
                   className: 'p-2 rounded-xl text-left transition-all border ' + (active ? 'bg-teal-50 border-teal-400 ring-2 ring-teal-200' : 'bg-white border-slate-200 hover:border-teal-300')
@@ -1530,7 +1530,7 @@ window.StemLab = window.StemLab || {
             slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
-            h('button', { onClick: runNPISim, className: 'w-full py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDE37 Simulate with NPIs')
+            h('button', { 'aria-label': 'Simulate with NPIs', onClick: runNPISim, className: 'w-full py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDE37 Simulate with NPIs')
           ),
           // Reduction summary
           npiResult && h('div', { className: glassCard },
@@ -1608,7 +1608,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-wrap gap-1.5' },
               MAP_SCENARIOS.map(function(sc, idx) {
                 var active = mapScenario === idx;
-                return h('button', {
+                return h('button', { 'aria-label': 'Change map running',
                   key: sc.name,
                   onClick: function() { updMulti({ mapScenario: idx, mapGrid: null, mapHistory: [] }); },
                   className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200')
@@ -1620,8 +1620,8 @@ window.StemLab = window.StemLab || {
             slider('Pre-vaccinated (%)', mapVacc, 0, 90, 5, 'mapVacc', function(v) { return v + '%'; }),
             slider('Hospital Beds (% of pop)', hospitalBeds, 1, 15, 1, 'hospitalBeds', function(v) { return v + '%'; }),
             h('div', { className: 'flex gap-2' },
-              h('button', { onClick: initMap, className: 'flex-1 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDDFA\uFE0F Generate Map'),
-              mapGrid && h('button', {
+              h('button', { 'aria-label': 'Generate Map', onClick: initMap, className: 'flex-1 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDDFA\uFE0F Generate Map'),
+              mapGrid && h('button', { 'aria-label': 'Change map running',
                 onClick: function() { upd('mapRunning', !mapRunning); },
                 className: 'px-4 py-2 text-sm font-bold rounded-xl ' + (mapRunning ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white')
               }, mapRunning ? '\u23F9 Stop' : '\u25B6 Run')
@@ -1655,14 +1655,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-between' },
               h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, '\uD83D\uDEA7 Quarantine Zones (' + mapQuarantineZones.length + ')'),
               h('div', { className: 'flex gap-2' },
-                h('button', {
+                h('button', { 'aria-label': '+ Add Zone',
                   onClick: function() {
                     var sc = MAP_SCENARIOS[mapScenario];
                     addQuarantineZone(Math.floor(Math.random() * sc.gridSize), Math.floor(Math.random() * sc.gridSize));
                   },
                   className: 'px-2 py-1 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-lg'
                 }, '+ Add Zone'),
-                mapQuarantineZones.length > 0 && h('button', {
+                mapQuarantineZones.length > 0 && h('button', { 'aria-label': 'Clear',
                   onClick: function() { upd('mapQuarantineZones', []); },
                   className: 'px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-500 rounded-lg'
                 }, 'Clear')
@@ -1714,7 +1714,7 @@ window.StemLab = window.StemLab || {
           // AI Analysis
           callGemini && mapHistory && mapHistory.length > 5 && h('div', { className: glassCard },
             d.mapAnalysis ? h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, d.mapAnalysis) :
-            h('button', {
+            h('button', { 'aria-label': 'Change map analysis loading',
               onClick: function() {
                 upd('mapAnalysisLoading', true);
                 var lastC = countGrid(mapGrid);
@@ -1744,7 +1744,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-5xl mb-2' }, '\uD83D\uDD0D'),
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'Trace the infection chain!'),
             h('p', { className: 'text-xs text-slate-500' }, 'Click on people connected to known cases to test if they\'re infected.'),
-            h('button', { onClick: startContactTrace, className: 'px-6 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDD17 Start Tracing')
+            h('button', { 'aria-label': 'Start Tracing', onClick: startContactTrace, className: 'px-6 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDD17 Start Tracing')
           ) : h('div', { className: 'space-y-3' },
             // Score/status bar
             h('div', { className: glassCard + ' flex items-center justify-between' },
@@ -1806,8 +1806,8 @@ window.StemLab = window.StemLab || {
             ),
             // Controls
             h('div', { className: 'flex gap-2' },
-              h('button', { onClick: startContactTrace, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\u21BA New Network'),
-              ctComplete && callGemini && h('button', {
+              h('button', { 'aria-label': 'New Network', onClick: startContactTrace, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\u21BA New Network'),
+              ctComplete && callGemini && h('button', { 'aria-label': 'Change ct analysis loading',
                 onClick: function() {
                   upd('ctAnalysisLoading', true);
                   callGemini('A ' + gradeBand + ' student completed a contact tracing exercise. Network had ' + ctNetwork.nodes.length + ' people, ' + ctNetwork.solution.length + ' were infected. Student used ' + ctGuesses + ' traces and scored ' + ctScore + '. Give 2 sentences of encouraging feedback and one real-world contact tracing fact.').then(function(res) {
@@ -1855,7 +1855,7 @@ window.StemLab = window.StemLab || {
                   return h('div', { key: p.name, className: 'relative' },
                     // Timeline dot
                     h('div', { className: 'absolute -left-[26px] top-2 w-4 h-4 rounded-full border-2 border-white shadow-sm', style: { backgroundColor: p.color } }),
-                    h('button', {
+                    h('button', { 'aria-label': 'View Pandemic',
                       onClick: function() {
                         viewPandemic(p.name);
                         upd('historyExpanded', expanded ? null : p.name);
@@ -1904,8 +1904,8 @@ window.StemLab = window.StemLab || {
                       ),
                       // Actions
                       h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
-                        callTTS && h('button', { onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5']); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud'),
-                        h('button', { onClick: function() { applyPreset(PRESETS.findIndex(function(pr) { return pr.name === 'COVID-19'; }) || 0); updMulti({ tab: 'sir' }); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Simulate')
+                        callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5']); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud'),
+                        h('button', { 'aria-label': 'Simulate', onClick: function() { applyPreset(PRESETS.findIndex(function(pr) { return pr.name === 'COVID-19'; }) || 0); updMulti({ tab: 'sir' }); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Simulate')
                       )
                     )
                   );
@@ -1937,7 +1937,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-5xl mb-2' }, '\uD83C\uDFAD'),
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'AI Outbreak Scenario Generator'),
             h('p', { className: 'text-xs text-slate-500' }, 'Gemini will create a unique fictional outbreak for you to respond to.'),
-            callGemini ? h('button', { onClick: generateScenario, className: 'px-6 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 Generate Scenario') :
+            callGemini ? h('button', { 'aria-label': 'Generate Scenario', onClick: generateScenario, className: 'px-6 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 Generate Scenario') :
             h('p', { className: 'text-xs text-slate-500 italic' }, 'AI not available \u2014 requires Gemini integration.')
           ) : d.scenarioLoading ? h('div', { className: glassCard + ' text-center py-6' },
             h('div', { className: 'text-3xl animate-pulse mb-2' }, '\uD83E\uDDE0'),
@@ -1971,7 +1971,7 @@ window.StemLab = window.StemLab || {
                 scenarioData.options.map(function(opt, idx) {
                   var letters = ['A', 'B', 'C'];
                   var colors = ['#3b82f6', '#f59e0b', '#22c55e'];
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Choose Scenario',
                     key: idx,
                     onClick: function() { chooseScenario(idx); },
                     className: 'w-full p-3 text-left rounded-xl border-2 transition-all hover:shadow-md',
@@ -2006,8 +2006,8 @@ window.StemLab = window.StemLab || {
             ),
             // Play again
             h('div', { className: 'flex gap-2' },
-              h('button', { onClick: function() { updMulti({ scenarioData: null, scenarioChoice: null, scenarioResult: null }); generateScenario(); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 New Scenario'),
-              scenarioData.r0 && h('button', { onClick: function() { updMulti({ tab: 'sir', r0: scenarioData.r0 }); }, className: 'px-4 py-2 text-sm font-bold bg-indigo-100 text-indigo-600 rounded-xl' }, '\uD83D\uDD2C Simulate R\u2080=' + scenarioData.r0)
+              h('button', { 'aria-label': 'New Scenario', onClick: function() { updMulti({ scenarioData: null, scenarioChoice: null, scenarioResult: null }); generateScenario(); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 New Scenario'),
+              scenarioData.r0 && h('button', { 'aria-label': 'Simulate R=', onClick: function() { updMulti({ tab: 'sir', r0: scenarioData.r0 }); }, className: 'px-4 py-2 text-sm font-bold bg-indigo-100 text-indigo-600 rounded-xl' }, '\uD83D\uDD2C Simulate R\u2080=' + scenarioData.r0)
             )
           )
         ),
@@ -2022,7 +2022,7 @@ window.StemLab = window.StemLab || {
               [1, 2, 3].map(function(t) {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
                 var colors = { 1: 'bg-emerald-100 text-emerald-700', 2: 'bg-amber-100 text-amber-700', 3: 'bg-red-100 text-red-700' };
-                return h('button', {
+                return h('button', { 'aria-label': 'Change chal answer',
                   key: t,
                   onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalUseAI: null }); },
                   className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-500 border border-slate-200')
@@ -2052,10 +2052,10 @@ window.StemLab = window.StemLab || {
                 'aria-label': 'Challenge answer'
               }),
               h('div', { className: 'flex gap-2' },
-                h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, 'Check'),
-                h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
-                h('button', { onClick: chalNext, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
-                callGemini && h('button', { onClick: chalAINext, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl' }, '\u2728 AI Next')
+                h('button', { 'aria-label': 'Check', onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, 'Check'),
+                h('button', { 'aria-label': 'Hint', onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
+                h('button', { 'aria-label': 'Skip', onClick: chalNext, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
+                callGemini && h('button', { 'aria-label': 'AI Next', onClick: chalAINext, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl' }, '\u2728 AI Next')
               ),
               chalFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (chalFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, chalFeedback)
             )
@@ -2078,8 +2078,8 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-5xl mb-2' }, '\uD83E\uDDA0'),
             h('p', { className: 'text-sm font-bold text-red-600' }, 'A virus is threatening the population!'),
             h('div', { className: 'flex gap-2 justify-center' },
-              h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Start Battle'),
-              callGemini && h('button', { onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 AI Battle')
+              h('button', { 'aria-label': 'Start Battle', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Start Battle'),
+              callGemini && h('button', { 'aria-label': 'AI Battle', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 AI Battle')
             )
           ) : h('div', { className: glassCard },
             // HP bars
@@ -2107,8 +2107,8 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-500' }, 'Your HP: ' + battlePlayerHP + ' | Virus HP: ' + battleEnemyHP),
               battleFeedback && h('p', { className: 'text-xs font-bold mt-1 ' + (battleFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, battleFeedback),
               h('div', { className: 'flex gap-2 justify-center mt-2' },
-                h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u21BA Play Again'),
-                callGemini && h('button', { onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\u2728 AI Rematch')
+                h('button', { 'aria-label': 'Play Again', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u21BA Play Again'),
+                callGemini && h('button', { 'aria-label': 'AI Rematch', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\u2728 AI Rematch')
               )
             ) : h('div', { className: 'space-y-3' },
               (function() {
@@ -2125,8 +2125,8 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none', 'aria-label': 'Battle answer' }),
                   h('div', { className: 'flex gap-2' },
-                    h('button', { onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Attack!'),
-                    h('button', { onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
+                    h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Attack!'),
+                    h('button', { 'aria-label': 'Hint', onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
                   ),
                   battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)
                 );
@@ -2152,8 +2152,8 @@ window.StemLab = window.StemLab || {
               ),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
               h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
-                h('button', { onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-all' }, '\uD83D\uDD2C Try It'),
-                callTTS && h('button', { onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all' }, '\uD83D\uDD0A Read Aloud')
+                h('button', { 'aria-label': 'Try It', onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-all' }, '\uD83D\uDD2C Try It'),
+                callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all' }, '\uD83D\uDD0A Read Aloud')
               )
             );
           })

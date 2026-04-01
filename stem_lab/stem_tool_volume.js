@@ -520,12 +520,12 @@ window.StemLab = window.StemLab || {
             streak >= 2 && h('div', {
               className: 'text-xs font-bold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
-            earnedCount > 0 && h('button', {
+            earnedCount > 0 && h('button', { 'aria-label': 'AI',
               onClick: function() { upd({ showBadges: !showBadges }); },
               className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-            h('button', {
+            h('button', { 'aria-label': 'AI',
               onClick: askAI,
               className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
@@ -534,18 +534,18 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex-1' }),
           // Mode toggle
           h('div', { className: 'flex items-center gap-1 bg-emerald-50 rounded-lg p-1 border border-emerald-200' },
-            h('button', {
+            h('button', { 'aria-label': 'Slider',
               onClick: function() { upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); },
               className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (isSlider ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: 'Slider mode (S)'
             }, '\uD83C\uDF9A\uFE0F Slider'),
-            h('button', {
+            h('button', { 'aria-label': 'Freeform',
               onClick: function() { upd({ mode: 'freeform', challenge: null, feedback: null }); },
               className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (!isSlider ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: 'Freeform mode (F)'
             }, '\uD83E\uDDF1 Freeform')),
           // Paint toggle
-          h('button', {
+          h('button', { 'aria-label': 'Toggle paint (P)',
             onClick: function() {
               upd({ paintSurfaceArea: !paintSurfaceArea });
               if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true });
@@ -555,17 +555,17 @@ window.StemLab = window.StemLab || {
           }, paintSurfaceArea ? '\uD83E\uDDFC Wash Paint' : '\uD83C\uDFA8 Paint Surface'),
           // Zoom
           h('div', { className: 'flex items-center gap-1' },
-            h('button', { onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
+            h('button', { 'aria-label': 'Add', onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
             h('span', { className: 'text-[10px] text-emerald-600 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
-            h('button', { onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
-            h('button', { onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[10px] hover:bg-emerald-100' }, '\u21BA'))
+            h('button', { 'aria-label': 'Add', onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
+            h('button', { 'aria-label': 'Update setting', onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[10px] hover:bg-emerald-100' }, '\u21BA'))
         ),
 
         // ── Badge panel ──
         showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-            h('button', { onClick: function() { upd({ showBadges: false }); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
+            h('button', { 'aria-label': 'Update setting', onClick: function() { upd({ showBadges: false }); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
             BADGES.map(function(badge) {
@@ -587,7 +587,7 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Volume Tutor'),
-            h('button', { onClick: function() { upd({ showAI: false }); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
+            h('button', { 'aria-label': 'Ask A I', onClick: function() { upd({ showAI: false }); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
@@ -595,7 +595,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
-          !aiLoading && h('button', {
+          !aiLoading && h('button', { 'aria-label': 'Ask Again',
             onClick: askAI,
             className: 'mt-2 text-[10px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
           }, '\uD83D\uDD04 Ask Again')
@@ -627,7 +627,7 @@ window.StemLab = window.StemLab || {
         // Freeform instructions
         !isSlider && h('div', { className: 'flex items-center gap-2 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
           h('p', { className: 'text-xs text-indigo-600 flex-1' }, '\uD83D\uDC49 Click grid to place cubes \u2022 Click cube to remove \u2022 Click above to stack'),
-          h('button', {
+          h('button', { 'aria-label': 'Clear All',
             onClick: function() { upd({ positions: [], builderChallenge: null, builderFeedback: null }); },
             className: 'px-3 py-1.5 text-xs font-bold bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300'
           }, '\u21BA Clear All')
@@ -700,7 +700,7 @@ window.StemLab = window.StemLab || {
         // Challenge buttons
         h('div', { className: 'flex gap-2 flex-wrap' },
           isSlider ? h(React.Fragment, null,
-            h('button', {
+            h('button', { 'aria-label': 'Random Challenge',
               onClick: function() {
                 var l = Math.floor(Math.random()*8)+1, w = Math.floor(Math.random()*6)+1, hh = Math.floor(Math.random()*6)+1;
                 upd({ dims: {l:l,w:w,h:hh}, challenge: {l:l,w:w,h:hh,answer:l*w*hh}, answer: '', feedback: null, showLayers: null });
@@ -708,26 +708,26 @@ window.StemLab = window.StemLab || {
               className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md',
               title: 'New challenge (N)'
             }, '\uD83C\uDFB2 Random Challenge'),
-            h('button', {
+            h('button', { 'aria-label': 'Reset',
               onClick: function() { upd({ dims: {l:3,w:2,h:2}, challenge: null, feedback: null, showLayers: null, rotation: {x:-25,y:-35}, scale: 1.0 }); },
               className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300'
             }, '\u21BA Reset')
           ) : h(React.Fragment, null,
-            h('button', {
+            h('button', { 'aria-label': 'Build Prism',
               onClick: function() {
                 var pl=2+Math.floor(Math.random()*4), pw=2+Math.floor(Math.random()*3), ph=1+Math.floor(Math.random()*3);
                 upd({ mode: 'freeform', positions: [], builderChallenge: {type:'prism',target:{l:pl,w:pw,h:ph},answer:pl*pw*ph}, builderFeedback: null, challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
             }, '\uD83C\uDFD7\uFE0F Build Prism'),
-            h('button', {
+            h('button', { 'aria-label': 'L-Block Vol',
               onClick: function() {
                 var lb = generateLBlock();
                 upd({ mode: 'freeform', positions: lb.positions, builderChallenge: {type:'volume',answer:lb.volume,shape:'L-Block'}, builderFeedback: null, challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
             }, '\uD83D\uDCD0 L-Block Vol'),
-            h('button', {
+            h('button', { 'aria-label': 'Random Vol',
               onClick: function() {
                 var tv = 5+Math.floor(Math.random()*16);
                 upd({ mode: 'freeform', positions: [], builderChallenge: {type:'volume',answer:tv,shape:'any'}, builderFeedback: null, challenge: null, feedback: null });
@@ -747,11 +747,11 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
               placeholder: 'V = ?', 'aria-label': 'Volume answer', className: 'flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono'
             }),
-            h('button', {
+            h('button', { 'aria-label': 'Check',
               onClick: checkChallenge, disabled: !answer,
               className: 'px-4 py-2 bg-amber-500 text-white font-bold rounded-lg text-sm disabled:opacity-40'
             }, 'Check'),
-            h('button', {
+            h('button', { 'aria-label': 'Ask A I',
               onClick: askAI,
               className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
               title: 'Get a hint from AI'
@@ -771,12 +771,12 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-2 items-center' },
             h('span', { className: 'text-xs text-indigo-600' }, 'Cubes placed: ', h('span', { className: 'font-bold' }, posSet.size)),
-            h('button', {
+            h('button', { 'aria-label': 'Hint',
               onClick: askAI,
               className: 'px-3 py-1.5 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-xs',
               title: 'Get a hint from AI'
             }, '\uD83E\uDDE0 Hint'),
-            h('button', { onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-500 text-white font-bold rounded-lg text-sm hover:bg-indigo-600' }, '\u2714 Check')
+            h('button', { 'aria-label': 'Check', onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-500 text-white font-bold rounded-lg text-sm hover:bg-indigo-600' }, '\u2714 Check')
           ),
           builderFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (builderFeedback.correct ? 'text-green-600' : 'text-red-600') }, builderFeedback.msg)
         ),

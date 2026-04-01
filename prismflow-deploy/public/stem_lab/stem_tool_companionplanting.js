@@ -2279,7 +2279,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 }, "📜 Origins"),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Compare",
 
                   onClick: function () { upd('compareMode', !compareMode); },
 
@@ -2287,7 +2287,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 }, "🔬 Compare"),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Soil Science",
 
                   onClick: function () { upd('showSoilDetail', !showSoilDetail); },
 
@@ -2483,7 +2483,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("h4", { className: "text-sm font-bold text-indigo-900 flex items-center gap-2" }, eventPopup.emoji + ' ' + eventPopup.title),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change event popup",
 
                   onClick: function () { upd('eventPopup', null); },
 
@@ -2517,7 +2517,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase px-1" }, "Plant:"),
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Corn",
 
                     onClick: function () {
 
@@ -2537,7 +2537,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Beans",
 
                     onClick: function () {
 
@@ -2557,7 +2557,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Squash",
 
                     onClick: function () {
 
@@ -2579,7 +2579,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 ),
 
-                allPlanted && React.createElement("button", {
+                allPlanted && React.createElement("button", { "aria-label": "Grow!",
 
                   onClick: function () { upd('phase', 'grow'); awardStemXP('companion_planting_grow', 15, 'Started growth simulation'); },
 
@@ -2611,7 +2611,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     [1, 2, 5].map(function (s) {
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Change grow speed",
 
                         key: s,
 
@@ -2653,7 +2653,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     var pct = onCooldown ? Math.min(100, Math.round(((cd - day) / 5) * 100)) : 0;
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Action",
 
                       key: action.id,
 
@@ -2887,7 +2887,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 ),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Action",
 
                   onClick: function () {
 
@@ -2947,7 +2947,7 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "flex-1" }),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Quiz",
 
                 onClick: function () { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); },
 
@@ -2955,7 +2955,7 @@ var d = (labToolData.companionPlanting) || {};
 
               }, "🧠 Quiz"),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Science",
 
                 onClick: function () { upd('showSciencePanel', !showSciencePanel); },
 
@@ -3111,7 +3111,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   var showResult = quizAnswer !== '';
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Action",
 
                     key: opt,
 
@@ -3153,7 +3153,7 @@ var d = (labToolData.companionPlanting) || {};
 
               quizFeedback && React.createElement("div", { className: "text-xs leading-relaxed p-3 rounded-lg " + (quizAnswer === currentQuiz.correct ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700') }, quizFeedback),
 
-              quizFeedback && React.createElement("button", {
+              quizFeedback && React.createElement("button", { "aria-label": "Change quiz q",
 
                 onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
 
@@ -3179,7 +3179,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show farm compare",
                   onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
                   className: "text-[10px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showFarmCompare ? 'Hide' : 'Compare \u2192')
@@ -3190,7 +3190,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "flex gap-1 mb-3" },
                   FARMING_SYSTEMS.map(function(sys) {
                     var isActive = (d.farmSystemIdx || 'industrial') === sys.id;
-                    return React.createElement("button", { key: sys.id,
+                    return React.createElement("button", { "aria-label": "Change farm system idx", key: sys.id,
                       onClick: function() { upd('farmSystemIdx', sys.id); },
                       className: "flex-1 py-2 px-2 rounded-xl border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-md' : 'hover:scale-[1.02]'),
                       style: { borderColor: isActive ? sys.color : sys.color + '30', background: isActive ? sys.color + '10' : '#fff' }
@@ -3277,7 +3277,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\uD83D\uDE9A Food Miles & Carbon Calculator"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show food miles",
                   onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
                   className: "text-[10px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showFoodMiles ? 'Hide' : 'Calculate \u2192')
@@ -3335,7 +3335,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCA7 Water Footprint of Food"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show water foot",
                   onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
                   className: "text-[10px] text-cyan-600 hover:text-cyan-800 font-bold"
                 }, d.showWaterFoot ? 'Hide' : 'View \u2192')
@@ -3367,7 +3367,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF00 12 Permaculture Principles"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show permaculture",
                   onClick: function() { upd('showPermaculture', !d.showPermaculture); },
                   className: "text-[10px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showPermaculture ? 'Hide' : 'Explore \u2192')
@@ -3396,7 +3396,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDF31 Regenerative Practices"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show regen",
                   onClick: function() { upd('showRegen', !d.showRegen); },
                   className: "text-[10px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showRegen ? 'Hide' : 'Learn \u2192')
@@ -3451,7 +3451,7 @@ var d = (labToolData.companionPlanting) || {};
                       var cls = !answered ? 'border-rose-100 bg-white hover:border-rose-400 cursor-pointer' :
                         isRight ? 'border-green-400 bg-green-50' :
                         isSelected && !isRight ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white opacity-40';
-                      return React.createElement("button", { key: oi,
+                      return React.createElement("button", { "aria-label": "Companionplanting action", key: oi,
                         onClick: function() {
                           if (answered) return;
                           upd('gardenScenarioAnswer', oi);
@@ -3482,7 +3482,7 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement("div", { className: "rounded-xl p-2 text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700" },
                       '\uD83D\uDCDA Concept: ' + sc.concept
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Next Scenario",
                       onClick: function() {
                         upd('gardenScenarioIdx', (gardenScenarioIdx + 1) % GARDEN_SCENARIOS.length);
                         upd('gardenScenarioAnswer', -1);
@@ -3504,7 +3504,7 @@ var d = (labToolData.companionPlanting) || {};
                   React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-wider" }, 'Did You Know?'),
                   React.createElement("div", { className: "text-[10px] text-indigo-800 leading-relaxed" }, GARDEN_FACTS[factIdx % GARDEN_FACTS.length])
                 ),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Next",
                   onClick: function() { upd('factIdx', (factIdx + 1) % GARDEN_FACTS.length); },
                   className: "text-[10px] text-indigo-500 hover:text-indigo-700 font-bold"
                 }, 'Next \u2192')
@@ -3517,7 +3517,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDCCB Quick Reference Cards"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show garden ref",
                   onClick: function() { upd('showGardenRef', !d.showGardenRef); },
                   className: "text-[10px] text-teal-600 hover:text-teal-800 font-bold"
                 }, d.showGardenRef ? 'Hide' : 'View \u2192')
@@ -3545,7 +3545,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\u267B\uFE0F The Nitrogen Cycle"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show nitrogen",
                   onClick: function() { upd('showNitrogen', !d.showNitrogen); },
                   className: "text-[10px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showNitrogen ? 'Hide' : 'Explore \u2192')
@@ -3556,7 +3556,7 @@ var d = (labToolData.companionPlanting) || {};
                   NITROGEN_CYCLE.map(function(step, si) {
                     var isActive = (d.nitroCycleIdx || 0) === si;
                     return React.createElement("div", { key: si, className: "flex items-center" },
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Change nitro cycle idx",
                         onClick: function() { upd('nitroCycleIdx', si); },
                         className: "flex flex-col items-center px-2 py-1.5 rounded-xl border-2 transition-all " + (isActive ? 'scale-110 shadow-md' : 'hover:scale-105'),
                         style: { borderColor: isActive ? step.color : step.color + '30', background: isActive ? step.color + '10' : '#fff' }
@@ -3585,7 +3585,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\u267B\uFE0F Composting Guide"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "GREENS (Nitrogen)",
                   onClick: function() { upd('showCompost', !d.showCompost); },
                   className: "text-[10px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showCompost ? 'Hide' : 'Learn \u2192')
@@ -3622,7 +3622,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDCC5 Seasonal Planting Calendar"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show calendar",
                   onClick: function() { upd('showCalendar', !d.showCalendar); },
                   className: "text-[10px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showCalendar ? 'Hide' : 'Plan \u2192')
@@ -3659,7 +3659,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, "\u2696\uFE0F Soil pH & Plant Preferences"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show p h",
                   onClick: function() { upd('showPH', !d.showPH); },
                   className: "text-[10px] text-purple-600 hover:text-purple-800 font-bold"
                 }, d.showPH ? 'Hide' : 'View \u2192')
@@ -3708,7 +3708,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\uD83C\uDF31 Companion Planting Guide (" + COMPANION_PAIRS.length + " pairs)"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show pairs",
                   onClick: function() { upd('showPairs', !d.showPairs); },
                   className: "text-[10px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showPairs ? 'Hide' : 'Explore \u2192')
@@ -3717,7 +3717,7 @@ var d = (labToolData.companionPlanting) || {};
                 // Filter
                 React.createElement("div", { className: "flex gap-1 mb-2" },
                   ['all', 'friend', 'enemy'].map(function(f) {
-                    return React.createElement("button", { key: f,
+                    return React.createElement("button", { "aria-label": "Change pair filter", key: f,
                       onClick: function() { upd('pairFilter', f); },
                       className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-600 text-white' : 'bg-white text-green-700 border border-green-200')
                     }, f === 'all' ? 'All' : f === 'friend' ? '\u2705 Friends' : '\u274C Enemies');
@@ -3752,7 +3752,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF3E Plant Families & Crop Rotation"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show families",
                   onClick: function() { upd('showFamilies', !d.showFamilies); },
                   className: "text-[10px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showFamilies ? 'Hide' : 'Learn \u2192')
@@ -3786,7 +3786,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDEA8 Soil Types Guide"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show soil types",
                   onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
                   className: "text-[10px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showSoilTypes ? 'Hide' : 'Explore \u2192')
@@ -3819,18 +3819,18 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-red-800" }, "\uD83D\uDC1E Garden Pests & Allies"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Change show pests",
                   onClick: function() { upd('showPests', !d.showPests); },
                   className: "text-[10px] text-red-600 hover:text-red-800 font-bold"
                 }, d.showPests ? 'Hide' : 'Identify \u2192')
               ),
               d.showPests && React.createElement("div", null,
                 React.createElement("div", { className: "flex gap-1 mb-2" },
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Pests (",
                     onClick: function() { upd('pestTab', 'pests'); },
                     className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'pests' ? 'bg-red-500 text-white' : 'bg-white text-red-600 border border-red-200')
                   }, "\uD83D\uDC1B Pests (" + GARDEN_PESTS.length + ")"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Allies (",
                     onClick: function() { upd('pestTab', 'beneficial'); },
                     className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'beneficial' ? 'bg-green-500 text-white' : 'bg-white text-green-600 border border-green-200')
                   }, "\uD83D\uDC1E Allies (" + BENEFICIAL_INSECTS.length + ")")
@@ -3877,7 +3877,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Snapshot button ──
 
-            React.createElement("button", {
+            React.createElement("button", { "aria-label": "Snapshot",
 
               onClick: function () {
 

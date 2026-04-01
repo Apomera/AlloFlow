@@ -1504,7 +1504,7 @@ const d = labToolData.waterCycle;
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
               React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
               GRADE_BANDS.map(function(gb) {
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change wc grade override",
                   key: gb,
                   onClick: function() {
                     upd('wcGradeOverride', gb);
@@ -1600,7 +1600,7 @@ const d = labToolData.waterCycle;
 
               STAGES.map(function (stage) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change active stage",
 
                   key: stage.id, onClick: function () { upd('activeStage', stage.id); },
 
@@ -1625,7 +1625,7 @@ const d = labToolData.waterCycle;
                   React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "PLAY AS WATER")
                 ),
                 !d.journeyActive
-                  ? React.createElement("button", {
+                  ? React.createElement("button", { "aria-label": "Start Journey",
                       onClick: function() {
                         upd('journeyActive', true);
                         upd('journeyState', 'ocean');
@@ -1638,7 +1638,7 @@ const d = labToolData.waterCycle;
                       className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105"
                     }, "\uD83C\uDFAE Start Journey")
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "End Journey",
                         onClick: function() {
                           upd('journeyActive', false);
                           upd('journeyState', 'idle');
@@ -1660,7 +1660,7 @@ const d = labToolData.waterCycle;
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
                   ),
                   d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Change journey state",
                       onClick: function() {
                         upd('journeyState', 'river_runoff');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { runoff: (d.journeyPaths.runoff || 0) + 1 }));
@@ -1673,7 +1673,7 @@ const d = labToolData.waterCycle;
                       React.createElement("p", { className: "text-[10px] font-bold text-blue-700" }, "River Runoff"),
                       React.createElement("p", { className: "text-[11px] text-blue-500" }, "Fast path!")
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Change journey state",
                       onClick: function() {
                         upd('journeyState', 'infiltrating');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { infiltrate: (d.journeyPaths.infiltrate || 0) + 1 }));
@@ -1686,7 +1686,7 @@ const d = labToolData.waterCycle;
                       React.createElement("p", { className: "text-[10px] font-bold text-amber-700" }, "Underground"),
                       React.createElement("p", { className: "text-[11px] text-amber-500" }, "Slow + deep")
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Change journey state",
                       onClick: function() {
                         upd('journeyState', 'plant_absorb');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { plant: (d.journeyPaths.plant || 0) + 1 }));
@@ -1700,7 +1700,7 @@ const d = labToolData.waterCycle;
                       React.createElement("p", { className: "text-[11px] text-emerald-500" }, "Transpiration!")
                     )
                   ),
-                  d.journeyState === 'complete' && React.createElement("button", {
+                  d.journeyState === 'complete' && React.createElement("button", { "aria-label": "Start Another Loop",
                     onClick: function() {
                       upd('journeyState', 'ocean');
                       upd('journeyLoops', (d.journeyLoops || 0) + 1);
@@ -1785,7 +1785,7 @@ const d = labToolData.waterCycle;
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Action",
 
                 onClick: function () {
                   // Grade-tiered static quiz banks
@@ -1829,7 +1829,7 @@ const d = labToolData.waterCycle;
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
-              callGemini && React.createElement("button", {
+              callGemini && React.createElement("button", { "aria-label": "Action",
                 onClick: function() {
                   if (d.aiQuizLoading) return;
                   upd('aiQuizLoading', true);
@@ -1894,7 +1894,7 @@ const d = labToolData.waterCycle;
 
                     var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm' : isCorrect ? 'bg-emerald-100 border-emerald-400 shadow-sm' : wasChosen ? 'bg-red-100 border-red-400' : 'bg-slate-50 border-slate-200 opacity-40';
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Action",
 
                       key: opt, disabled: d.wcQuiz.answered, onClick: function () {
 
@@ -1931,7 +1931,7 @@ const d = labToolData.waterCycle;
 
             ),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
           );
       })();

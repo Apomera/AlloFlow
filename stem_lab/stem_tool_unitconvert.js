@@ -330,12 +330,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('span', { className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full' }, 'INTERACTIVE'),
             (d.score || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
             (d.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
-            earnedCount > 0 && h('button', {
+            earnedCount > 0 && h('button', { 'aria-label': 'AI',
               onClick: function() { upd('showBadges', !showBadges); },
               className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-            h('button', {
+            h('button', { 'aria-label': 'AI',
               onClick: askTutor,
               className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
@@ -346,7 +346,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
+              h('button', { 'aria-label': 'Change show badges', onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
             ),
             h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
               BADGES.map(function(badge) {
@@ -368,7 +368,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           showTutor && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Unit Tutor'),
-              h('button', { onClick: function() { upd('showTutor', false); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
+              h('button', { 'aria-label': 'Ask Tutor', onClick: function() { upd('showTutor', false); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
             ),
             tutorLoading
               ? h('div', { className: 'flex items-center gap-2' },
@@ -376,7 +376,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
                 )
               : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
-            !tutorLoading && h('button', {
+            !tutorLoading && h('button', { 'aria-label': 'Ask Again',
               onClick: askTutor,
               className: 'mt-2 text-[10px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
             }, '\uD83D\uDD04 Ask Again')
@@ -386,7 +386,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             Object.entries(CATEGORIES).map(function(e) {
               var k = e[0], v = e[1];
-              return h('button', {
+              return h('button', { 'aria-label': 'Change tab',
                 key: k,
                 onClick: function() {
                   var units = Object.keys(v.units);
@@ -404,7 +404,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // Tool tabs
           h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Unit Converter sections' },
             [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem']].map(function(item, idx) {
-              return h('button', {
+              return h('button', { 'aria-label': 'Change tab',
                 key: item[0],
                 onClick: function() { upd('tab', item[0]); },
                 role: 'tab', 'aria-selected': tab === item[0],
@@ -446,7 +446,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   }, Object.keys(cat.units).map(function(u) { return h('option', { key: u, value: u }, u); }))
                 ),
 
-                h('button', {
+                h('button', { 'aria-label': 'Swap units',
                   onClick: function() {
                     stemBeep && stemBeep('click');
                     setLabToolData(function(prev) {
@@ -477,7 +477,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               // Save / Pin / AI buttons
               h('div', { className: 'flex justify-center gap-2 mt-3' },
-                h('button', {
+                h('button', { 'aria-label': 'Save',
                   onClick: function() {
                     var entry = { from: d.value + ' ' + d.fromUnit, to: fmtResult + ' ' + d.toUnit, ts: Date.now() };
                     var newSaveCount = historySaveCount + 1;
@@ -490,7 +490,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   },
                   className: 'px-4 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold hover:bg-indigo-100 transition-all'
                 }, '\uD83D\uDCBE Save'),
-                h('button', {
+                h('button', { 'aria-label': 'Pin',
                   onClick: function() {
                     var pinned = d.pinnedConversions || [];
                     if (pinned.length >= 10) { addToast('Max 10 pinned conversions', 'warning'); return; }
@@ -503,7 +503,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   },
                   className: 'px-4 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-bold hover:bg-amber-100 transition-all'
                 }, '\uD83D\uDCCC Pin'),
-                h('button', {
+                h('button', { 'aria-label': 'Tutor',
                   onClick: askTutor,
                   className: 'px-4 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-bold hover:bg-purple-100 transition-all'
                 }, '\uD83E\uDDE0 Tutor')
@@ -577,7 +577,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCA1 Fun Fact'),
                 h('p', { key: factIdx, className: 'text-sm text-violet-800', style: { animation: 'ucFactSlide 0.4s ease-out' } }, currentFact)
               ),
-              h('button', {
+              h('button', { 'aria-label': 'Change fact idx',
                 onClick: function() { upd('factIdx', ((d.factIdx || 0) + 1) % facts.length); },
                 className: 'text-violet-400 hover:text-violet-600 text-xs font-bold shrink-0 pt-0.5'
               }, '\u27A1\uFE0F')
@@ -588,7 +588,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83D\uDCCC Pinned Conversions'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 d.pinnedConversions.map(function(p, i) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Unitconvert action',
                     key: p.key,
                     onClick: function() {
                       var c2 = CATEGORIES[p.category];
@@ -616,7 +616,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             d.history && d.history.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider' }, '\uD83D\uDCDD History'),
-                h('button', { onClick: function() { upd('history', []); }, className: 'text-[10px] text-red-400 hover:text-red-600 font-bold' }, 'Clear')
+                h('button', { 'aria-label': 'Clear', onClick: function() { upd('history', []); }, className: 'text-[10px] text-red-400 hover:text-red-600 font-bold' }, 'Clear')
               ),
               h('div', { className: 'space-y-1' },
                 d.history.map(function(item, i) {
@@ -630,7 +630,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Snapshot
-            h('button', {
+            h('button', { 'aria-label': 'Snapshot',
               onClick: function() {
                 setToolSnapshots(function(prev) {
                   return prev.concat([{ id: 'uc-' + Date.now(), tool: 'unitConvert', label: d.value + ' ' + d.fromUnit + ' \u2192 ' + d.toUnit, data: Object.assign({}, d), timestamp: Date.now() }]);
@@ -655,7 +655,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     step: '0.01'
                   }),
                   h('span', { className: 'text-xs font-bold text-slate-500' }, d.fromUnit),
-                  h('button', {
+                  h('button', { 'aria-label': 'Change',
                     onClick: function() { upd('tab', 'convert'); },
                     className: 'text-xs text-cyan-600 hover:underline font-bold'
                   }, 'Change \u2192')
@@ -682,7 +682,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       ),
                       h('td', { className: 'px-4 py-2 text-right font-mono ' + (isFrom ? 'text-cyan-700 font-bold' : 'text-slate-600') }, fmt(val)),
                       h('td', { className: 'px-4 py-2 text-right' },
-                        !isFrom && h('button', {
+                        !isFrom && h('button', { 'aria-label': 'Use',
                           onClick: function() { upd('toUnit', u); upd('tab', 'convert'); },
                           className: 'text-[10px] font-bold text-cyan-600 hover:underline'
                         }, 'Use \u2192')
@@ -707,7 +707,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('span', { className: 'px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full' }, '\uD83D\uDD25 ' + (d.streak || 0)),
                 (d.bestStreak || 0) > 0 && h('span', { className: 'px-2.5 py-1 bg-violet-100 text-violet-700 text-xs font-bold rounded-full' }, '\uD83C\uDFC6 Best: ' + d.bestStreak)
               ),
-              h('button', {
+              h('button', { 'aria-label': 'Next question (N)',
                 onClick: function() {
                   var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
                   upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
@@ -773,7 +773,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       }
                     }),
                     h('span', { className: 'text-xs text-slate-500 shrink-0' }, d.quiz.unit + ' \u2014 Enter'),
-                    h('button', {
+                    h('button', { 'aria-label': 'Ask Tutor',
                       onClick: askTutor,
                       className: 'px-2 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
                       title: 'Get a hint from AI'
@@ -787,7 +787,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     ),
                     d.quiz.correct && d.quiz.xp > 0 && h('p', { className: 'text-xs text-emerald-400 mb-2' }, '+' + d.quiz.xp + ' XP earned'),
                     h('div', { className: 'flex gap-2' },
-                      h('button', {
+                      h('button', { 'aria-label': 'Next Question',
                         onClick: function() {
                           var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
                           upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
@@ -795,7 +795,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         },
                         className: 'px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all'
                       }, '\uD83D\uDD04 Next Question'),
-                      !d.quiz.correct && h('button', {
+                      !d.quiz.correct && h('button', { 'aria-label': 'Explain',
                         onClick: askTutor,
                         className: 'px-4 py-2 bg-purple-100 text-purple-600 rounded-lg text-xs font-bold hover:bg-purple-200 transition-all'
                       }, '\uD83E\uDDE0 Explain')
@@ -810,7 +810,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('p', { className: 'text-sm text-slate-500' }, 'AI generates a real-world word problem for ' + (cat.label.replace(/[^\w\s]/g, '').trim()) + '.'),
-              h('button', {
+              h('button', { 'aria-label': 'Unitconvert action',
                 disabled: !!d.loadingWP,
                 onClick: function() {
                   if (d.loadingWP) return;
@@ -853,7 +853,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 return h('p', { key: i, className: 'mb-2 text-sm ' + (bold ? 'font-bold text-cyan-800' : 'text-slate-700') }, line);
               }),
               h('div', { className: 'mt-4 flex gap-2' },
-                h('button', {
+                h('button', { 'aria-label': 'New Problem',
                   disabled: !!d.loadingWP,
                   onClick: function() {
                     if (d.loadingWP) return;
@@ -876,7 +876,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   },
                   className: 'px-4 py-2 bg-cyan-50 text-cyan-600 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-all'
                 }, '\uD83D\uDD04 New Problem'),
-                h('button', {
+                h('button', { 'aria-label': 'Save',
                   onClick: function() {
                     setToolSnapshots(function(prev) {
                       return prev.concat([{ id: 'ucwp-' + Date.now(), tool: 'unitConvert', label: 'Word Problem: ' + cat.label, data: { wordProblem: d.wordProblem }, timestamp: Date.now() }]);

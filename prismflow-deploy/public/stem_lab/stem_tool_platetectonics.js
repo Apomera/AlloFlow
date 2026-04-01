@@ -1132,7 +1132,7 @@ var d = labToolData.plateTectonics || {};
 
                   var active = simTab === tab[0];
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Update setting",
 
                     key: tab[0],
 
@@ -1182,7 +1182,7 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-red-500" }, speed + "\u00D7"),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Labels",
 
                   onClick: function() { upd({ showLabels: !showLabels }); },
 
@@ -1190,7 +1190,7 @@ var d = labToolData.plateTectonics || {};
 
                 }, "\uD83C\uDFF7 Labels"),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Currents",
 
                   onClick: function() { upd({ showConvection: !showConvection }); },
 
@@ -1199,7 +1199,7 @@ var d = labToolData.plateTectonics || {};
                 }, "\uD83C\uDF00 Currents"),
 
                 // 🌋 Erupt! button
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Erupt!",
                   onClick: function() {
                     if (canvasRef._last && canvasRef._last._ptInit) {
                       // Dispatch eruption event
@@ -1843,7 +1843,7 @@ var d = labToolData.plateTectonics || {};
 
                   qz.opts.map(function(opt, oi) {
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Platetectonics action",
 
                       key: oi,
 
@@ -1897,7 +1897,7 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("div", { className: "text-center" },
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Next Question",
 
                       onClick: function() { upd({ quizIdx: quizIdx + 1, quizAnswer: null }); },
 
@@ -1919,7 +1919,7 @@ var d = labToolData.plateTectonics || {};
 
             React.createElement("div", { className: "mt-6" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Update setting",
 
                 onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('plateTectonics', 5, 'Learned about tectonics'); },
 
@@ -1993,7 +1993,7 @@ var d = labToolData.plateTectonics || {};
 
             React.createElement("div", { className: "mt-6 text-center" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Back to Tools",
 
                 onClick: function() { setStemLabTool(null); },
 

@@ -2093,7 +2093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         h('div', { className: 'flex gap-1 mb-1' },
           Object.keys(BIOME_COLORS).map(function(bId) {
             var bInfo = BIOME_COLORS[bId];
-            return h('button', {
+            return h('button', { 'aria-label': 'Change Biome',
               key: bId,
               className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
                 (biome === bId
@@ -2113,7 +2113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             else if (t2 === 'sandbox') tabLabel = '\uD83E\uDDEA Sandbox';
             else if (t2 === 'quiz') tabLabel = '\u2753 Quiz';
             else tabLabel = '\uD83C\uDFC5 Badges (' + badgeCount + '/' + BADGES.length + ')';
-            return h('button', {
+            return h('button', { 'aria-label': 'Change tab',
               key: t2,
               role: 'tab', 'aria-selected': tab === t2,
               className: 'flex-1 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
@@ -2159,7 +2159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── NEW: Canvas control bar: pause/resume + speed slider ──
           h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
-            h('button', {
+            h('button', { 'aria-label': 'Ecosystem action',
               className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'bg-emerald-500 text-white hover:bg-emerald-600'
@@ -2204,7 +2204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── NEW: Event injection buttons row ──
           h('div', { className: 'flex gap-1 flex-wrap' },
             eventDefs.map(function(ev) {
-              return h('button', {
+              return h('button', { 'aria-label': 'Select option',
                 key: ev.id,
                 className: 'flex-1 min-w-[60px] px-1.5 py-1.5 text-[10px] font-bold rounded-lg text-white transition-all hover:opacity-90 active:scale-95 ' + ev.color,
                 onClick: function() { triggerEvent(ev.id); },
@@ -2282,7 +2282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Live Population Graph Panel ──
           h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden' },
-            h('button', {
+            h('button', { 'aria-label': 'Change eco graph open',
               className: 'w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700',
               onClick: function() { upd('ecoGraphOpen', !ecoGraphOpen); }
             },
@@ -2292,12 +2292,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ecoGraphOpen && h('div', { className: 'px-3 pb-3 space-y-2' },
               // View tabs
               h('div', { className: 'flex gap-1' },
-                h('button', {
+                h('button', { 'aria-label': 'Populations',
                   className: 'flex-1 px-2 py-1 text-[11px] font-semibold rounded ' +
                     (ecoGraphView === 'population' ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
                   onClick: function() { switchGraphView('population'); }
                 }, 'Populations'),
-                h('button', {
+                h('button', { 'aria-label': 'Environment',
                   className: 'flex-1 px-2 py-1 text-[11px] font-semibold rounded ' +
                     (ecoGraphView === 'environment' ? 'bg-amber-500 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
                   onClick: function() { switchGraphView('environment'); }
@@ -2440,7 +2440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('p', { className: 'text-xs text-slate-600 dark:text-slate-400 flex-1' },
               'Model predator\u2013prey dynamics using the Lotka\u2013Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'
             ),
-            callTTS && h('button', {
+            callTTS && h('button', { 'aria-label': 'Read aloud',
               className: 'p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500',
               onClick: function() { speakText('Model predator-prey dynamics using the Lotka-Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'); },
               title: 'Read aloud'
@@ -2450,7 +2450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── Preset buttons ──
           h('div', { className: 'flex gap-1 flex-wrap' },
             presetNames.map(function(name, idx) {
-              return h('button', {
+              return h('button', { 'aria-label': 'Apply Preset',
                 key: name,
                 className: 'flex-1 min-w-[70px] px-2 py-1.5 text-[11px] font-semibold rounded-lg border transition-all ' +
                   (presetsUsed[name]
@@ -2540,7 +2540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Run Graph Simulation button ──
-          h('button', {
+          h('button', { 'aria-label': 'Run Graph Simulation',
             className: 'w-full py-2.5 rounded-xl font-bold text-white text-sm shadow-lg transition-all ' +
               'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98]',
             onClick: simulate
@@ -2616,14 +2616,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
           // ── Snapshot button ──
-          h('button', {
+          h('button', { 'aria-label': 'Take Snapshot',
             className: 'w-full py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all',
             onClick: takeSnapshot
           }, '\uD83D\uDCF7 Take Snapshot'),
 
           // ── AI Tutor ──
           callGemini && h('div', { className: 'bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-200 dark:border-indigo-700 space-y-2' },
-            h('button', {
+            h('button', { 'aria-label': 'Change show a i',
               className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700 dark:text-indigo-300',
               onClick: function() { upd('showAI', !showAI); }
             },
@@ -2633,7 +2633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             showAI && h('div', { className: 'space-y-2' },
               h('div', { className: 'flex gap-1 flex-wrap' },
                 ['What is Lotka-Volterra?', 'Why do populations oscillate?', 'What is carrying capacity?', 'Explain food webs'].map(function(question) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Thinking...',
                     key: question,
                     className: 'px-2 py-1 text-[10px] rounded-full border border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800',
                     onClick: function() { askAI(question); }
@@ -2643,7 +2643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               aiLoading && h('p', { className: 'text-xs text-indigo-500 animate-pulse' }, 'Thinking...'),
               aiResponse && h('div', { className: 'bg-white dark:bg-slate-800 rounded-lg p-2 text-xs text-slate-700 dark:text-slate-300 border border-indigo-100 dark:border-indigo-800' },
                 h('p', null, aiResponse),
-                callTTS && h('button', {
+                callTTS && h('button', { 'aria-label': 'Read aloud',
                   className: 'mt-1 text-[10px] text-indigo-500 hover:text-indigo-700',
                   onClick: function() { speakText(aiResponse); }
                 }, '\uD83D\uDD0A Read aloud')
@@ -2677,7 +2677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── Tool selector row ──
           h('div', { className: 'flex gap-1' },
             sandboxTools.map(function(tool) {
-              return h('button', {
+              return h('button', { 'aria-label': 'Change sandbox tool',
                 key: tool.id,
                 className: 'flex-1 px-1.5 py-2 text-[10px] font-bold rounded-lg border-2 transition-all text-center ' +
                   (sandboxTool === tool.id
@@ -2699,7 +2699,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('div', { className: 'flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg px-3 py-2' },
             h('span', { className: 'text-xs font-semibold text-teal-700 dark:text-teal-300' }, 'Entities Placed:'),
             h('span', { className: 'text-sm font-bold text-teal-600' }, sandboxPlaceCount),
-            h('button', {
+            h('button', { 'aria-label': 'Sync Count',
               className: 'text-[10px] text-teal-500 hover:text-teal-700 underline',
               onClick: syncSandboxCount
             }, 'Sync Count')
@@ -2707,7 +2707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Pause/Speed controls (shared) ──
           h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
-            h('button', {
+            h('button', { 'aria-label': 'Ecosystem action',
               className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'bg-teal-500 text-white hover:bg-teal-600'
@@ -2742,7 +2742,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('p', { className: 'text-[10px] font-bold text-teal-700 dark:text-teal-300' }, '\u26A1 Inject Events'),
             h('div', { className: 'flex gap-1 flex-wrap' },
               eventDefs.map(function(ev) {
-                return h('button', {
+                return h('button', { 'aria-label': 'Trigger Event',
                   key: 'sb-' + ev.id,
                   className: 'flex-1 min-w-[55px] px-1 py-1 text-[11px] font-bold rounded-lg text-white transition-all hover:opacity-90 active:scale-95 ' + ev.color,
                   onClick: function() { triggerEvent(ev.id); },
@@ -2839,7 +2839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('span', { className: 'text-xs text-emerald-600 font-bold' }, '\u2714 ' + quizCorrect + '/' + quizTotal)
             ),
             h('p', { className: 'text-sm font-semibold text-slate-800 dark:text-slate-100' }, currentQ.q),
-            callTTS && h('button', {
+            callTTS && h('button', { 'aria-label': 'Read question',
               className: 'text-[10px] text-slate-500 hover:text-slate-700',
               onClick: function() { speakText(currentQ.q); }
             }, '\uD83D\uDD0A Read question'),
@@ -2856,7 +2856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 } else if (showResult && isCorrectChoice) {
                   bgClass = 'border-green-400 bg-green-50/50 dark:bg-green-900/20';
                 }
-                return h('button', {
+                return h('button', { 'aria-label': 'Answer Quiz',
                   key: idx,
                   className: 'w-full text-left px-3 py-2 rounded-lg border text-xs transition-all ' + bgClass,
                   disabled: quizAnswer !== -1,
@@ -2873,7 +2873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               className: 'text-xs font-semibold p-2 rounded-lg ' +
                 (quizAnswer === currentQ.answer ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300')
             }, quizFeedback),
-            quizAnswer !== -1 && h('button', {
+            quizAnswer !== -1 && h('button', { 'aria-label': 'Next Question',
               className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all',
               onClick: nextQuiz
             }, 'Next Question \u2192')
@@ -2947,7 +2947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('span', { className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' },
                 '\uD83C\uDF3F Step ' + (tutorialStep + 1) + ' of 5'),
-              h('button', { className: 'text-slate-500 hover:text-slate-600 text-sm', onClick: dismissTutorial }, '\u2715')
+              h('button', { 'aria-label': 'Dismiss Tutorial', className: 'text-slate-500 hover:text-slate-600 text-sm', onClick: dismissTutorial }, '\u2715')
             ),
             h('p', { className: 'text-sm text-slate-700 dark:text-slate-200 mb-4 leading-relaxed' },
               [
@@ -2959,11 +2959,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ][tutorialStep]
             ),
             h('div', { className: 'flex gap-2' },
-              tutorialStep > 0 && h('button', {
+              tutorialStep > 0 && h('button', { 'aria-label': 'Back',
                 className: 'px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700',
                 onClick: function() { upd('tutorialStep', tutorialStep - 1); }
               }, '\u2190 Back'),
-              h('button', {
+              h('button', { 'aria-label': 'Ecosystem action',
                 className: 'flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 shadow-md',
                 onClick: tutorialStep < 4 ? advanceTutorial : dismissTutorial
               }, tutorialStep < 4 ? 'Next \u2192' : '\u2714 Start Exploring!')

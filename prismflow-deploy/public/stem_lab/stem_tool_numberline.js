@@ -455,7 +455,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Sfx Click',
                     key: pr.join('-'),
                     onClick: function() { sfxClick(); upd({ range: { min: pr[0], max: pr[1] } }); },
                     className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all'
@@ -480,7 +480,7 @@ window.StemLab = window.StemLab || {
                   className: 'flex-1 px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
                 }),
                 h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', 'aria-label': 'Marker color', className: 'w-8 h-8 rounded cursor-pointer' }),
-                h('button', {
+                h('button', { 'aria-label': '+ Add',
                   onClick: function() {
                     var valEl = document.getElementById('nlMarkerVal');
                     var labelEl = document.getElementById('nlMarkerLabel');
@@ -495,7 +495,7 @@ window.StemLab = window.StemLab || {
                   },
                   className: 'px-4 py-1.5 bg-blue-500 text-white font-bold rounded-lg text-sm hover:bg-blue-600'
                 }, '+ Add'),
-                markers.length > 0 && h('button', {
+                markers.length > 0 && h('button', { 'aria-label': 'Clear',
                   onClick: function() { upd({ markers: [] }); },
                   className: 'px-3 py-1.5 bg-slate-200 text-slate-600 font-bold rounded-lg text-sm hover:bg-slate-300'
                 }, 'Clear')
@@ -517,7 +517,7 @@ window.StemLab = window.StemLab || {
                     h('h4', { className: 'text-sm font-bold text-blue-800' }, '\uD83C\uDFAF Number Line Challenge'),
                     h('div', { className: 'flex gap-0.5 ml-2' },
                       ['easy', 'medium', 'hard'].map(function(d) {
-                        return h('button', {
+                        return h('button', { 'aria-label': 'Sfx Click',
                           key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                           className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                             (difficulty === d ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
@@ -529,7 +529,7 @@ window.StemLab = window.StemLab || {
                 ),
 
                 !challenge
-                  ? h('button', {
+                  ? h('button', { 'aria-label': 'Generate Challenge',
                       onClick: genChallenge,
                       className: 'w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
                     }, '\uD83C\uDFB2 Generate Challenge')
@@ -548,14 +548,14 @@ window.StemLab = window.StemLab || {
                           'aria-label': 'Challenge answer',
                           className: 'flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm font-mono'
                         }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
-                        h('button', {
+                        h('button', { 'aria-label': 'Check Answer',
                           onClick: checkAnswer,
                           disabled: challenge.type === 'place' && !answer,
                           className: 'px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-all'
                         }, challenge.type === 'place' ? 'Check Placement' : 'Check')
                       ),
                       feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),
-                      feedback && h('button', {
+                      feedback && h('button', { 'aria-label': 'Next Challenge',
                         onClick: genChallenge,
                         className: 'text-xs text-blue-600 font-bold hover:underline'
                       }, '\u27A1\uFE0F Next Challenge')
@@ -607,7 +607,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Count by:'),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Sfx Click',
                     key: s,
                     onClick: function() { sfxClick(); upd({ skipBy: s, skipFrom: 0, skipCount: 8 }); },
                     className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
@@ -638,7 +638,7 @@ window.StemLab = window.StemLab || {
                   '\uD83D\uDCA1 Pattern: ' + skipFrom + ', ' + (skipFrom + skipBy) + ', ' + (skipFrom + 2 * skipBy) + ', ... (adding ' + skipBy + ' each time)')
               ),
               // Toggle
-              h('button', {
+              h('button', { 'aria-label': 'Sfx Click',
                 onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
                 className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-500') + ' hover:text-violet-800 transition-colors'
               }, showSkipMarkers ? '\uD83D\uDC41 Hide markers on line' : '\uD83D\uDC41 Show markers on line')
@@ -674,7 +674,7 @@ window.StemLab = window.StemLab || {
             return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
               h('div', { className: 'flex items-center justify-between' },
                 h('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDD16 AI Number Line Tutor'),
-                h('button', {
+                h('button', { 'aria-label': 'Update setting',
                   onClick: function() { upd({ showAITutor: false }); },
                   className: 'text-sky-400 hover:text-sky-600 text-lg font-bold'
                 }, '\u00D7')
@@ -687,7 +687,7 @@ window.StemLab = window.StemLab || {
                   placeholder: 'Ask about number lines...',
                   className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
                 }),
-                h('button', {
+                h('button', { 'aria-label': 'Ask A I Tutor',
                   onClick: askAITutor,
                   disabled: aiLoading || !aiQuestion.trim(),
                   className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
@@ -695,7 +695,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 ['What is a number line?', 'How do I round numbers?', 'What is skip counting?', 'How do negative numbers work?'].map(function(q) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Ask question',
                     key: q,
                     onClick: function() { upd({ aiQuestion: q }); },
                     className: 'px-2 py-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
@@ -729,7 +729,7 @@ window.StemLab = window.StemLab || {
             // Tab bar
             h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': 'Number Line sections' },
               tabs.map(function(t2) {
-                return h('button', {
+                return h('button', { 'aria-label': 'Sfx Click',
                   key: t2.id,
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
                   role: 'tab', 'aria-selected': tab === t2.id,
@@ -749,7 +749,7 @@ window.StemLab = window.StemLab || {
 
             // AI Tutor toggle + panel
             h('div', { className: 'flex gap-2' },
-              !showAITutor && h('button', {
+              !showAITutor && h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { sfxClick(); upd({ showAITutor: true }); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
               }, '\uD83E\uDD16 AI Tutor')

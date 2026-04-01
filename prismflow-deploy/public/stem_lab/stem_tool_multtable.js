@@ -477,7 +477,7 @@ window.StemLab = window.StemLab || {
           }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
           h('h3', { className: 'text-lg font-bold text-pink-800' }, '\uD83D\uDD22 Multiplication Table'),
           h('div', { className: 'flex items-center gap-2 ml-2' },
-            h('button', {
+            h('button', { 'aria-label': 'Toggle hidden mode (H)',
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
                 (multTableHidden ? 'bg-pink-500 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200'),
@@ -489,13 +489,13 @@ window.StemLab = window.StemLab || {
               className: 'text-xs font-bold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + _mt.streak + ' streak!'),
             // Badge count
-            earnedCount > 0 && h('button', {
+            earnedCount > 0 && h('button', { 'aria-label': 'View badges (B)',
               onClick: function() { extUpd({ showBadges: !_ext.showBadges }); },
               className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             // AI tutor button
-            h('button', {
+            h('button', { 'aria-label': 'AI',
               onClick: askAI,
               className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
@@ -507,7 +507,7 @@ window.StemLab = window.StemLab || {
         _ext.showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-            h('button', {
+            h('button', { 'aria-label': 'Ext Upd',
               onClick: function() { extUpd({ showBadges: false }); },
               className: 'text-xs text-slate-500 hover:text-slate-600'
             }, '\u2715')
@@ -532,7 +532,7 @@ window.StemLab = window.StemLab || {
         _ext.showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
-            h('button', {
+            h('button', { 'aria-label': 'Ext Upd',
               onClick: function() { extUpd({ showAI: false }); },
               className: 'text-xs text-slate-500 hover:text-slate-600'
             }, '\u2715')
@@ -543,7 +543,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, _ext.aiResponse),
-          !_ext.aiLoading && h('button', {
+          !_ext.aiLoading && h('button', { 'aria-label': 'Ask Again',
             onClick: askAI,
             className: 'mt-2 text-[10px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
           }, '\uD83D\uDD04 Ask Again')
@@ -553,7 +553,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1 flex-wrap' },
           diffModes.map(function(dm) {
             var active = exploreDifficulty === dm.id;
-            return h('button', {
+            return h('button', { 'aria-label': 'Set Explore Difficulty',
               key: dm.id,
               onClick: function() { setExploreDifficulty(dm.id); },
               className: 'px-3 py-1 rounded-lg text-[10px] font-bold transition-all ' +
@@ -584,7 +584,7 @@ window.StemLab = window.StemLab || {
               }})
             )
           ),
-          h('button', {
+          h('button', { 'aria-label': 'Stop',
             onClick: function() {
               _mtUpd({ active: false });
               if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
@@ -613,7 +613,7 @@ window.StemLab = window.StemLab || {
                 );
               })
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Practice These',
               onClick: function() {
                 var missed = getUniqueMissed(_mt.missed);
                 var pick = missed[Math.floor(Math.random() * missed.length)];
@@ -627,7 +627,7 @@ window.StemLab = window.StemLab || {
               className: 'mt-2 px-4 py-1.5 bg-red-500 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
             }, '\uD83C\uDFAF Practice These')
           ),
-          h('button', {
+          h('button', { 'aria-label': 'Try Again',
             onClick: function() { _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: [], streak: 0 }); },
             className: 'mt-2 px-4 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all'
           }, '\uD83D\uDD04 Try Again')
@@ -688,12 +688,12 @@ window.StemLab = window.StemLab || {
 
         // ── Action buttons ──
         h('div', { className: 'flex gap-2 flex-wrap' },
-          h('button', {
+          h('button', { 'aria-label': 'Quick Quiz',
             onClick: function() { nextProblem(); },
             className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md',
             title: 'Quick Quiz (Q)'
           }, '\uD83C\uDFAF Quick Quiz'),
-          h('button', {
+          h('button', { 'aria-label': 'Speed Run (2min)',
             onClick: function() {
               nextProblem();
               _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
@@ -705,7 +705,7 @@ window.StemLab = window.StemLab || {
             className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md',
             title: 'Speed Run (S)'
           }, '\u23F1\uFE0F Speed Run (2min)'),
-          h('button', {
+          h('button', { 'aria-label': 'Reset',
             onClick: function() {
               setMultTableChallenge(null);
               setMultTableAnswer('');
@@ -739,13 +739,13 @@ window.StemLab = window.StemLab || {
               disabled: inputDisabled,
               id: 'multtable-input'
             }),
-            h('button', {
+            h('button', { 'aria-label': 'Check',
               onClick: checkMult,
               disabled: !multTableAnswer || inputDisabled,
               className: 'px-4 py-2 bg-pink-500 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40'
             }, '\u2714 Check'),
             // AI hint button during challenge
-            h('button', {
+            h('button', { 'aria-label': 'Ask A I',
               onClick: askAI,
               className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
               title: 'Get a hint from AI'
@@ -758,7 +758,7 @@ window.StemLab = window.StemLab || {
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { className: 'flex items-center justify-center gap-2 mt-1' },
             h('p', { className: 'text-[10px] text-slate-500 animate-pulse' }, 'Next question coming...'),
-            h('button', {
+            h('button', { 'aria-label': 'Skip Next',
               onClick: function() {
                 if (labToolData._multAdvanceTimer) clearTimeout(labToolData._multAdvanceTimer);
                 nextProblem();

@@ -490,7 +490,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
             h('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDD16 AI Area Model Tutor'),
-            h('button', { onClick: function() { upd({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
+            h('button', { 'aria-label': 'Update setting', onClick: function() { upd({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
           ),
           h('div', { className: 'flex gap-2' },
             h('input', {
@@ -501,14 +501,14 @@ window.StemLab = window.StemLab || {
               'aria-label': 'Ask the area model tutor',
               className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
             }),
-            h('button', {
+            h('button', { 'aria-label': 'Ask A I Tutor',
               onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
               className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
             }, aiLoading ? '\u23F3' : 'Ask')
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
             ['What is an area model?', 'How does distributive property work?', 'How to multiply 2-digit numbers?'].map(function(q) {
-              return h('button', {
+              return h('button', { 'aria-label': 'Ask question',
                 key: q, onClick: function() { upd({ aiQuestion: q }); },
                 className: 'px-2 py-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
               }, q);
@@ -539,7 +539,7 @@ window.StemLab = window.StemLab || {
             { id: 'distributive', icon: '\u2702\uFE0F', label: 'Distributive' },
             { id: 'multidigit', icon: '\uD83D\uDCCA', label: 'Partial Products' }
           ].map(function(m) {
-            return h('button', {
+            return h('button', { 'aria-label': 'Sfx Click',
               key: m.id,
               onClick: function() { sfxClick(); upd({ viewMode: m.id }); },
               className: 'flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all ' +
@@ -589,11 +589,11 @@ window.StemLab = window.StemLab || {
 
         // Commutative toggle (basic mode)
         viewMode === 'basic' && h('div', { className: 'flex items-center gap-3' },
-          h('button', {
+          h('button', { 'aria-label': 'Clear highlight',
             onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); },
             className: 'text-xs text-slate-500 hover:text-amber-600'
           }, 'Clear highlight'),
-          h('button', {
+          h('button', { 'aria-label': 'Commutative:',
             onClick: function() {
               sfxClick();
               upd({ swapped: !swapped, usedCommutative: true });
@@ -614,7 +614,7 @@ window.StemLab = window.StemLab || {
               h('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFAF Multiplication Challenge'),
               h('div', { className: 'flex gap-0.5 ml-2' },
                 ['easy', 'medium', 'hard'].map(function(d) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Sfx Click',
                     key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                     className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                       (difficulty === d ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-amber-500 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
@@ -627,15 +627,15 @@ window.StemLab = window.StemLab || {
 
           !challenge
             ? h('div', { className: 'flex gap-2' },
-                h('button', {
+                h('button', { 'aria-label': 'Grid Challenge',
                   onClick: function() { genChallenge('basic'); },
                   className: 'flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
                 }, '\uD83D\uDFE7 Grid Challenge'),
-                h('button', {
+                h('button', { 'aria-label': 'Distributive',
                   onClick: function() { genChallenge('distributive'); },
                   className: 'flex-1 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-xl text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
                 }, '\u2702\uFE0F Distributive'),
-                h('button', {
+                h('button', { 'aria-label': 'Partial',
                   onClick: function() { genChallenge('multidigit'); },
                   className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-xl text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'
                 }, '\uD83D\uDCCA Partial')
@@ -655,13 +655,13 @@ window.StemLab = window.StemLab || {
                     'aria-label': 'Challenge answer',
                     className: 'flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono'
                   }),
-                  h('button', {
+                  h('button', { 'aria-label': 'Check',
                     onClick: checkChallenge,
                     className: 'px-4 py-2 bg-amber-600 text-white font-bold rounded-lg text-sm hover:bg-amber-700'
                   }, 'Check')
                 ),
                 feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),
-                feedback && h('button', {
+                feedback && h('button', { 'aria-label': 'Next Challenge',
                   onClick: function() { genChallenge(challenge.mode || viewMode); },
                   className: 'text-xs text-amber-600 font-bold hover:underline'
                 }, '\u27A1\uFE0F Next Challenge')
@@ -673,7 +673,7 @@ window.StemLab = window.StemLab || {
 
         // AI Tutor toggle + panel
         h('div', { className: 'flex gap-2' },
-          !showAITutor && h('button', {
+          !showAITutor && h('button', { 'aria-label': 'AI Tutor',
             onClick: function() { sfxClick(); upd({ showAITutor: true }); },
             className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
           }, '\uD83E\uDD16 AI Tutor')

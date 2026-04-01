@@ -715,31 +715,31 @@ window.StemLab = window.StemLab || {
             '\uD83D\uDD37 Geometry Sandbox'
           ),
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', {
+            h('button', { 'aria-label': 'Challenge',
               onClick: generateChallenge,
               title: 'Challenge Mode [C]',
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700' : 'text-amber-300 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
             }, '\uD83C\uDFAF Challenge'),
-            gd.challengeMode && h('button', {
+            gd.challengeMode && h('button', { 'aria-label': 'Exit',
               onClick: function() { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox||{}, { challengeMode:false, challenge:null, challengeAnswer:'', challengeResult:null }) }); }); },
               className: 'px-3 py-1.5 text-xs font-bold text-slate-400 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
             }, '\u2716 Exit'),
-            h('button', {
+            h('button', { 'aria-label': 'Badges [B]',
               onClick: function() { updExt({ showBadges: !showBadges }); },
               title: 'Badges [B]',
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-500 to-fuchsia-600 shadow-md' : 'text-purple-300 bg-purple-500/20 border border-purple-500/30 hover:bg-purple-500/30')
             }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),
-            h('button', {
+            h('button', { 'aria-label': 'STL',
               onClick: askAI,
               title: 'AI Tutor [/]',
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (aiLoading ? 'text-white bg-gradient-to-r from-cyan-500 to-blue-600 animate-pulse' : showAI ? 'text-white bg-gradient-to-r from-cyan-500 to-blue-600 shadow-md' : 'text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 hover:bg-cyan-500/30')
             }, aiLoading ? '\u23F3 Thinking...' : '\uD83E\uDD16 AI Tutor'),
-            h('button', {
+            h('button', { 'aria-label': 'STL',
               onClick: doExportSTL,
               title: 'Export STL [E]',
               className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
             }, '\uD83D\uDCE6 STL'),
-            h('button', {
+            h('button', { 'aria-label': 'Back',
               onClick: function() { cleanupScene(); setStemLabTool(null); },
               className: 'px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
             }, '\u2190 Back')
@@ -766,7 +766,7 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('div', { className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, '\uD83E\uDD16 AI Geometry Tutor'),
-            h('button', { onClick: function() { updExt({ showAI: false }); }, className: 'text-xs text-slate-400 hover:text-slate-200' }, '\u2716')
+            h('button', { 'aria-label': 'Upd Ext', onClick: function() { updExt({ showAI: false }); }, className: 'text-xs text-slate-400 hover:text-slate-200' }, '\u2716')
           ),
           aiLoading
             ? h('div', { className: 'text-sm text-cyan-300 animate-pulse' }, 'Analyzing this ' + m.name + '...')
@@ -786,7 +786,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, 'Shapes'),
               h('div', { className: 'grid grid-cols-4 gap-1.5' },
                 shapes.map(function(s) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Select Shape',
                     key: s.id,
                     onClick: function() { selectShape(s.id); },
                     title: s.label + ' [' + s.key + ']',
@@ -826,7 +826,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-[10px] text-slate-300 mb-1' }, 'Color'),
                 h('div', { className: 'flex gap-1.5 flex-wrap' },
                   colorPalette.map(function(c) {
-                    return h('button', {
+                    return h('button', { 'aria-label': 'Change color',
                       key: c,
                       onClick: function() { upd('color', c); },
                       style: { backgroundColor: c },
@@ -838,7 +838,7 @@ window.StemLab = window.StemLab || {
               ),
               // Wireframe toggle
               h('div', { className: 'flex items-center gap-2 mt-3' },
-                h('button', {
+                h('button', { 'aria-label': 'Wireframe',
                   onClick: toggleWireframe,
                   title: 'Toggle wireframe [W]',
                   className: 'w-8 h-4 rounded-full transition-all relative ' + (wireframe ? 'bg-sky-500' : 'bg-slate-600')
@@ -982,7 +982,7 @@ window.StemLab = window.StemLab || {
               className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
               step: 'any'
             }),
-            h('button', {
+            h('button', { 'aria-label': 'Check',
               onClick: checkChallengeAnswer,
               disabled: !challengeAnswer.trim(),
               className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
@@ -1000,7 +1000,7 @@ window.StemLab = window.StemLab || {
                 )
               )
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Next Challenge',
               onClick: generateChallenge,
               className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700 transition-all'
             }, '\u27A1 Next Challenge')

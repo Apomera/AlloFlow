@@ -1578,7 +1578,7 @@ const d = labToolData.physics;
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Launch!",
 
                 onClick: function () {
 
@@ -1590,7 +1590,7 @@ const d = labToolData.physics;
 
               }, "\uD83D\uDE80 Launch!"),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Air Drag",
 
                 onClick: function () { upd('airResist', !d.airResist); },
 
@@ -1598,29 +1598,29 @@ const d = labToolData.physics;
 
               }, "\uD83C\uDF2C\uFE0F Air Drag " + (d.airResist ? 'ON' : 'OFF')),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Vectors",
                 onClick: function () { upd('showVectors', !d.showVectors); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showVectors ? 'bg-purple-500 text-white shadow-md' : 'bg-purple-50 text-purple-700 border border-purple-200')
               }, "\u2197\uFE0F Vectors " + (d.showVectors ? 'ON' : 'OFF')),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Learn",
                 onClick: function () { upd('showEnergy', !d.showEnergy); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showEnergy ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 border border-blue-200')
               }, "\u26A1 Energy " + (d.showEnergy ? 'ON' : 'OFF')),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Learn",
                 onClick: function () { upd('showLearn', !d.showLearn); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
               }, "\uD83D\uDCD6 Learn"),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Data",
                 onClick: function () { upd('showFlightData', !d.showFlightData); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFlightData ? 'bg-cyan-500 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200')
               }, "\uD83D\uDCCA Data " + (d.showFlightData ? 'ON' : 'OFF')),
 
               PRESETS.map(function (p) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change gravity",
 
                   key: p.label, onClick: function () { upd('gravity', p.gravity); },
 
@@ -1736,12 +1736,12 @@ const d = labToolData.physics;
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[10px] font-bold text-red-700 uppercase tracking-wider" }, "\u{1F3AF} Target Destruction Mode"),
                 !d.targetMode
-                  ? React.createElement("button", {
+                  ? React.createElement("button", { "aria-label": "Start Mission",
                       onClick: function() { upd('targetMode', true); startTargetRound(1); },
                       className: "px-3 py-1 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 transition-all"
                     }, "\u25B6 Start Mission")
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Next Round",
                         onClick: function() {
                           var allDone = d.targetList && d.targetList.every(function(t){return t.destroyed;});
                           if (allDone && d.targetRound < TARGET_LEVELS.length) {
@@ -1752,11 +1752,11 @@ const d = labToolData.physics;
                         className: "px-3 py-1 text-[10px] font-bold rounded-lg transition-all " +
                           (d.targetList && d.targetList.every(function(t){return t.destroyed;}) ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')
                       }, "\u27A1 Next Round"),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Retry",
                         onClick: function() { startTargetRound(d.targetRound || 1); },
                         className: "px-3 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:bg-amber-600 transition-all"
                       }, "\u{1F504} Retry"),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "End",
                         onClick: function() { upd('targetMode', false); upd('targetList', null); upd('targetConstraint', null); upd('targetFeedback', null); upd('targetShowScaffold', false); },
                         className: "px-3 py-1 bg-slate-400 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
                       }, "\u2716 End")
@@ -1838,7 +1838,7 @@ const d = labToolData.physics;
                 ].map(function(ch) {
                   var active = d.challengeTier === ch.tier;
                   var completed = d['challenge' + ch.tier + 'Done'];
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change challenge tier",
                     key: ch.tier,
                     onClick: function() {
                       upd('challengeTier', ch.tier);
@@ -1940,7 +1940,7 @@ const d = labToolData.physics;
 
                 React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF Predict the Landing"),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Action",
 
                   onClick: function () {
 
@@ -1996,7 +1996,7 @@ const d = labToolData.physics;
 
                     var wrong = picked && !correct;
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Change quiz picked",
 
                       key: oi, disabled: d.quizPicked !== null,
 
@@ -2034,7 +2034,7 @@ const d = labToolData.physics;
 
             ),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
           )
       })();

@@ -3359,7 +3359,7 @@ window.StemLab = window.StemLab || {
                 else if (showResult && isSelected) optClass += 'bg-red-600 text-white';
                 else optClass += 'bg-slate-700 text-slate-200 hover:bg-slate-600';
 
-                return h('button', {
+                return h('button', { 'aria-label': 'Select option',
                   key: opt, disabled: showResult,
                   onClick: function() {
                     var hit = opt === currentRound.answer;
@@ -3590,7 +3590,7 @@ window.StemLab = window.StemLab || {
       }
 
       // Enhanced snapshot with context
-      var snapshotBtn = h('button', {
+      var snapshotBtn = h('button', { 'aria-label': 'Action',
         onClick: function() {
           var label = tab === 'explore' ? subtool : tab;
           var detail = '';

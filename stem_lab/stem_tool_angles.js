@@ -597,7 +597,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
-        return h('button', { onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
+        return h('button', { 'aria-label': 'Change active tab', onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
           role: 'tab', 'aria-selected': active,
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
             (active ? 'bg-purple-500 text-white shadow-md' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-200')
@@ -622,13 +622,13 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex items-center gap-1 ml-auto' },
             // Badge count
-            h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200') },
+            h('button', { 'aria-label': 'Sound effects', onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200') },
               '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             // Sound toggle
-            h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1.5 py-0.5 rounded transition-colors hover:bg-slate-100', title: 'Sound effects' },
+            h('button', { 'aria-label': 'Sound effects', onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1.5 py-0.5 rounded transition-colors hover:bg-slate-100', title: 'Sound effects' },
               soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
             // Snapshot
-            h('button', {
+            h('button', { 'aria-label': 'Export S V G',
               onClick: function() {
                 var snap = { id: 'snap-' + Date.now(), tool: 'protractor', label: 'Angle: ' + angleValue + '\u00B0', data: { angle: angleValue }, timestamp: Date.now() };
                 setToolSnapshots(function(prev) { return prev.concat([snap]); });
@@ -638,7 +638,7 @@ window.StemLab = window.StemLab || {
               className: 'text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all'
             }, '\uD83D\uDCF8'),
             // SVG Export
-            h('button', { onClick: exportSVG, className: 'text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all' },
+            h('button', { 'aria-label': 'SVG', onClick: exportSVG, className: 'text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all' },
               '\uD83D\uDCE5 SVG')
           )
         ),
@@ -770,18 +770,18 @@ window.StemLab = window.StemLab || {
           // Quick angle buttons + Pin
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             [0, 30, 45, 60, 90, 120, 135, 150, 180, 270, 360].map(function(a) {
-              return h('button', { key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
+              return h('button', { 'aria-label': 'Pin', key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
                 className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' + (angleValue === a ? 'bg-purple-500 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-100')
               }, a + '\u00B0');
             }),
-            h('button', { onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200 transition-all', title: 'Pin this angle on protractor' }, '\uD83D\uDCCC Pin')
+            h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200 transition-all', title: 'Pin this angle on protractor' }, '\uD83D\uDCCC Pin')
           ),
 
           // Pinned angles
           anglePins.length > 0 && h('div', { className: 'flex gap-1.5 flex-wrap items-center' },
             h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Pins:'),
             anglePins.map(function(pin, i) {
-              return h('button', { key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-300 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-all', title: 'Click to remove' },
+              return h('button', { 'aria-label': 'Complementary', key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-300 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-all', title: 'Click to remove' },
                 pin.deg + '\u00B0 \u2715'
               );
             })
@@ -823,7 +823,7 @@ window.StemLab = window.StemLab || {
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-1.5' },
               h('span', { className: 'text-[10px] font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Angle Tutor'),
-              h('button', { onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[10px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-500 text-white hover:bg-pink-600 cursor-pointer') },
+              h('button', { 'aria-label': 'Click to get personalized angle tips!', onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[10px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-500 text-white hover:bg-pink-600 cursor-pointer') },
                 aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask for Tips')
             ),
             aiAdvice
@@ -847,7 +847,7 @@ window.StemLab = window.StemLab || {
 
           // ── Challenge buttons ──
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
-            h('button', {
+            h('button', { 'aria-label': 'Create',
               onClick: function() {
                 var ta = targetAngles[Math.floor(Math.random() * targetAngles.length)];
                 setAngleChallenge({ type: 'create', target: ta }); setAngleValue(0); setAngleFeedback(null);
@@ -855,7 +855,7 @@ window.StemLab = window.StemLab || {
               },
               className: 'py-2.5 bg-gradient-to-r from-purple-500 to-violet-500 text-white font-bold rounded-lg text-sm hover:from-purple-600 hover:to-violet-600 transition-all shadow-md'
             }, '\uD83C\uDFAF Create'),
-            h('button', {
+            h('button', { 'aria-label': 'Classify',
               onClick: function() {
                 var ta = targetAngles[Math.floor(Math.random() * targetAngles.length)];
                 setAngleChallenge({ type: 'classify', target: ta }); setAngleValue(ta); setAngleFeedback(null);
@@ -863,11 +863,11 @@ window.StemLab = window.StemLab || {
               },
               className: 'py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'
             }, '\uD83E\uDDE0 Classify'),
-            h('button', {
+            h('button', { 'aria-label': 'Estimate',
               onClick: startEstimate,
               className: 'py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
             }, '\uD83D\uDC41\uFE0F Estimate'),
-            h('button', {
+            h('button', { 'aria-label': 'Speed Round',
               onClick: startSpeedRound,
               disabled: speedActive,
               className: 'py-2.5 bg-gradient-to-r from-red-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-red-600 hover:to-rose-600 transition-all shadow-md disabled:opacity-50'
@@ -890,7 +890,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'flex gap-2 flex-wrap justify-center' },
                 ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
-                  return h('button', { key: cls, onClick: function() { answerSpeed(cls); },
+                  return h('button', { 'aria-label': 'Answer Speed', key: cls, onClick: function() { answerSpeed(cls); },
                     className: 'px-4 py-2 rounded-lg text-sm font-bold bg-white border-2 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-400 transition-all cursor-pointer'
                   }, cls);
                 })
@@ -909,15 +909,15 @@ window.StemLab = window.StemLab || {
                 className: 'flex-1 px-3 py-2 border-2 border-amber-300 rounded-lg text-sm font-bold text-amber-800 outline-none focus:border-amber-500'
               }),
               h('span', { className: 'text-sm text-amber-600' }, '\u00B0'),
-              h('button', { onClick: checkEstimate, className: 'px-4 py-2 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': 'Check', onClick: checkEstimate, className: 'px-4 py-2 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
             ),
             estimateResult && h('div', { className: 'mt-2 p-2 rounded-lg text-sm font-bold ' + (estimateResult.ok ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-red-100 text-red-700 border border-red-300') },
               estimateResult.ok
                 ? (estimateResult.exact ? '\uD83C\uDFAF Perfect! Exactly ' + estimateResult.target + '\u00B0!' : '\u2705 Close! You guessed ' + estimateResult.guess + '\u00B0, actual was ' + estimateResult.target + '\u00B0 (off by ' + estimateResult.diff + '\u00B0)')
                 : '\u274C Off by ' + estimateResult.diff + '\u00B0. You guessed ' + estimateResult.guess + '\u00B0, actual was ' + estimateResult.target + '\u00B0.',
-              h('button', { onClick: startEstimate, className: 'ml-2 text-xs font-bold underline' }, '\u27A1 Next')
+              h('button', { 'aria-label': 'Next', onClick: startEstimate, className: 'ml-2 text-xs font-bold underline' }, '\u27A1 Next')
             ),
-            h('button', { onClick: function() { upd({ estimateActive: false, estimateResult: null }); setAngleValue(45); }, className: 'mt-2 text-xs text-amber-600 font-bold hover:underline' }, '\u2716 Exit Estimate Mode')
+            h('button', { 'aria-label': 'Exit Estimate Mode', onClick: function() { upd({ estimateActive: false, estimateResult: null }); setAngleValue(45); }, className: 'mt-2 text-xs text-amber-600 font-bold hover:underline' }, '\u2716 Exit Estimate Mode')
           ),
 
           // ── Create/Classify Challenge UI ──
@@ -929,11 +929,11 @@ window.StemLab = window.StemLab || {
             ),
             angleChallenge.type === 'create' && h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-purple-600' }, 'Your angle: ', h('span', { className: 'font-bold text-purple-900' }, angleFeedback ? (angleValue + '\u00B0') : '\u2753')),
-              h('button', { onClick: checkAngle, className: 'ml-auto px-4 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all' }, '\u2714 Check')
+              h('button', { 'aria-label': 'Check', onClick: checkAngle, className: 'ml-auto px-4 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all' }, '\u2714 Check')
             ),
             angleChallenge.type === 'classify' && h('div', { className: 'flex gap-2 flex-wrap' },
               ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
-                return h('button', {
+                return h('button', { 'aria-label': 'Angles action',
                   key: cls,
                   onClick: function() {
                     var correctClass = classifyAngle(angleChallenge.target);
@@ -953,7 +953,7 @@ window.StemLab = window.StemLab || {
               })
             ),
             angleFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (angleFeedback.correct ? 'text-green-600' : 'text-red-600') }, angleFeedback.msg),
-            angleFeedback && h('button', {
+            angleFeedback && h('button', { 'aria-label': 'Next Challenge',
               onClick: function() {
                 var ta = targetAngles[Math.floor(Math.random() * targetAngles.length)];
                 setAngleChallenge({ type: angleChallenge.type, target: ta });
@@ -967,7 +967,7 @@ window.StemLab = window.StemLab || {
 
           // Reset
           h('div', { className: 'flex gap-2' },
-            h('button', {
+            h('button', { 'aria-label': 'Reset',
               onClick: function() { setAngleValue(45); setAngleChallenge(null); setAngleFeedback(null); upd({ estimateActive: false, speedActive: false, estimateResult: null }); },
               className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all'
             }, '\u21BA Reset')
@@ -1069,7 +1069,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 flex-wrap mb-3' },
               polygonData.map(function(p) {
                 var active = selectedPolygon === p.sides;
-                return h('button', { key: p.sides, onClick: function() {
+                return h('button', { 'aria-label': 'Change selected polygon', key: p.sides, onClick: function() {
                   upd('selectedPolygon', p.sides);
                   var explored = Object.assign({}, polygonsExplored);
                   explored[p.sides] = true;
@@ -1149,7 +1149,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-2xl font-bold text-sky-800' }, clockAngle.toFixed(1) + '\u00B0'),
               h('div', { className: 'text-xs text-sky-500' }, 'Angle between hands at ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute),
               h('div', { className: 'text-[10px] mt-1 font-bold ' + (classColors[classifyAngle(Math.round(clockAngle))] || classColors['Acute']).text }, classifyAngle(Math.round(clockAngle)) + ' angle'),
-              h('button', { onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[10px] font-bold text-sky-600 underline' }, '\u2192 Show on protractor')
+              h('button', { 'aria-label': 'Show on protractor', onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[10px] font-bold text-sky-600 underline' }, '\u2192 Show on protractor')
             )
           ),
 
@@ -1182,13 +1182,13 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold text-slate-700 uppercase' }, '\uD83D\uDCDC Recent Angles'),
-              angleHistory.length > 0 && h('button', { onClick: function() { upd('angleHistory', []); }, className: 'text-[10px] text-slate-500 hover:text-red-400' }, 'Clear')
+              angleHistory.length > 0 && h('button', { 'aria-label': 'Clear', onClick: function() { upd('angleHistory', []); }, className: 'text-[10px] text-slate-500 hover:text-red-400' }, 'Clear')
             ),
             angleHistory.length === 0
               ? h('div', { className: 'text-xs text-slate-500 text-center py-2' }, 'No angles explored yet')
               : h('div', { className: 'flex gap-1.5 flex-wrap' },
                   angleHistory.slice(0, 15).map(function(entry, i) {
-                    return h('button', { key: i, onClick: function() { setAngleValue(entry.deg); upd('activeTab', 'explore'); },
+                    return h('button', { 'aria-label': 'Set Angle Value', key: i, onClick: function() { setAngleValue(entry.deg); upd('activeTab', 'explore'); },
                       className: 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-700 border border-slate-200 transition-all'
                     }, entry.deg + '\u00B0');
                   })

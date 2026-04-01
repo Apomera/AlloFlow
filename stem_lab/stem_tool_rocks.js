@@ -1138,7 +1138,7 @@ const d = labToolData.rocks || {};
 
                 ['landscape', 'rocks', 'minerals', 'quiz'].map(function (m) {
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change mode",
 
                     key: m, onClick: function () {
 
@@ -1236,7 +1236,7 @@ const d = labToolData.rocks || {};
 
                 ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function (t) {
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change selected type",
 
                     key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
 
@@ -1260,7 +1260,7 @@ const d = labToolData.rocks || {};
 
                   const rt = ROCK_TYPES[rock.type];
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change selected rock",
 
                     key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
 
@@ -1927,7 +1927,7 @@ const d = labToolData.rocks || {};
                 // Mineral grid
                 React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
                   MINERALS.map(function (mineral) {
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Change selected mineral",
                       key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
                       className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
                         (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'bg-slate-50 border-slate-200 hover:border-violet-200'),
@@ -2069,7 +2069,7 @@ const d = labToolData.rocks || {};
 
                 quizQ.options.map(function (opt) {
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Select option",
 
                     key: opt, onClick: function () {
 
@@ -2093,7 +2093,7 @@ const d = labToolData.rocks || {};
 
                 d.quizFeedback.msg,
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Next",
 
                   onClick: function () {
 
@@ -2115,7 +2115,7 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Snapshot",
 
                 onClick: function () {
 
@@ -3029,7 +3029,7 @@ const d = labToolData.rockCycle;
 
               ROCKS.map(function (rock) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change selected rock",
 
                   key: rock.id, onClick: function () { upd('selectedRock', rock.id); },
 
@@ -3107,7 +3107,7 @@ const d = labToolData.rockCycle;
 
                   var isActive = d.selectedProcess && d.selectedProcess.label === proc.label && d.selectedProcess.from === proc.from;
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change selected process",
 
                     key: i, onClick: function () { upd('selectedProcess', proc); },
 
@@ -3135,7 +3135,7 @@ const d = labToolData.rockCycle;
 
             React.createElement("div", { className: "border-t border-slate-200 pt-3" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Action",
 
                 onClick: function () {
 
@@ -3187,7 +3187,7 @@ const d = labToolData.rockCycle;
 
                     var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Select option",
 
                       key: opt, disabled: d.rcQuiz.answered, onClick: function () {
 
@@ -3209,7 +3209,7 @@ const d = labToolData.rockCycle;
 
             ),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
           );
       })();

@@ -808,7 +808,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Life Skills sections' },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
-            return h('button', { key: st.id, onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
+            return h('button', { 'aria-label': 'Change pay rate', key: st.id, onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-teal-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-teal-50 border border-slate-200'),
               role: 'tab', 'aria-selected': active
             }, st.icon + ' ' + st.label);
@@ -874,7 +874,7 @@ window.StemLab = window.StemLab || {
                 var isCorrect = oi === dlCurrent.correct;
                 var isSelected = dlAnswer === oi;
                 var revealed = dlRevealed;
-                return h('button', { key: oi, onClick: function() {
+                return h('button', { 'aria-label': 'Select option', key: oi, onClick: function() {
                   if (!dlRevealed) {
                     updMulti({ dlAnswer: oi, dlRevealed: true, dlScore: dlScore + (oi === dlCurrent.correct ? 1 : 0) });
                     stemBeep(oi === dlCurrent.correct);
@@ -887,7 +887,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold ' + (dlAnswer === dlCurrent.correct ? 'text-emerald-700' : 'text-red-700') }, dlAnswer === dlCurrent.correct ? '\u2705 Correct!' : '\u274C Incorrect'),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, dlCurrent.explain)
             ),
-            dlRevealed && h('button', { onClick: function() { updMulti({ dlScenario: dlScenario + 1, dlAnswer: null, dlRevealed: false }); }, className: 'mt-2 px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl' }, 'Next Scenario \u27A1')
+            dlRevealed && h('button', { 'aria-label': 'Next Scenario', onClick: function() { updMulti({ dlScenario: dlScenario + 1, dlAnswer: null, dlRevealed: false }); }, className: 'mt-2 px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl' }, 'Next Scenario \u27A1')
           )
         ),
 
@@ -943,7 +943,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-1.5 mb-2' },
             CONTRACTS.map(function(c, i) {
-              return h('button', { key: i, onClick: function() { updMulti({ crLevel: i, crFound: [] }); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' + (crLevel % CONTRACTS.length === i ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600') }, c.title);
+              return h('button', { 'aria-label': 'Change cr found', key: i, onClick: function() { updMulti({ crLevel: i, crFound: [] }); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' + (crLevel % CONTRACTS.length === i ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600') }, c.title);
             })
           ),
           h('div', { className: glassCard },
@@ -952,7 +952,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid grid-cols-2 gap-2' },
               crCurrent.traps.map(function(trap) {
                 var found = crFound.indexOf(trap.id) >= 0;
-                return h('button', { key: trap.id, onClick: function() {
+                return h('button', { 'aria-label': 'Lifeskills action', key: trap.id, onClick: function() {
                   if (!found) {
                     var list = crFound.concat([trap.id]);
                     upd('crFound', list);
@@ -978,7 +978,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard + ' space-y-2' },
             h('div', { className: 'flex gap-2' },
               ['low', 'medium', 'high'].map(function(u) {
-                return h('button', { key: u, onClick: function() { upd('hiUsage', u); checkBadge('insured'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold ' + (hiUsage === u ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200') }, u.charAt(0).toUpperCase() + u.slice(1) + ' Usage');
+                return h('button', { 'aria-label': 'Select option', key: u, onClick: function() { upd('hiUsage', u); checkBadge('insured'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold ' + (hiUsage === u ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200') }, u.charAt(0).toUpperCase() + u.slice(1) + ' Usage');
               })
             ),
             h('p', { className: 'text-[10px] text-slate-500' }, 'Scenario: ' + hiScene.visits + ' doctor visits + ' + fmtMoney(hiScene.bills) + ' in medical bills')
@@ -1031,7 +1031,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-wrap gap-1.5' },
               COMMON_DEVICES.map(function(dev) {
                 var on = asRunning.indexOf(dev.name) >= 0;
-                return h('button', { key: dev.name, onClick: function() {
+                return h('button', { 'aria-label': 'Lifeskills action', key: dev.name, onClick: function() {
                   var list = asRunning.slice();
                   var idx = list.indexOf(dev.name);
                   if (idx >= 0) list.splice(idx, 1); else list.push(dev.name);
@@ -1101,7 +1101,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-center mb-3' }, h('span', { className: 'text-4xl' }, ccCurrentDash.icon), h('p', { className: 'text-xs font-bold text-slate-700 mt-1' }, 'What does this warning light mean?')),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               ccCurrentDash.choices.map(function(c, i) {
-                return h('button', { key: i, onClick: function() {
+                return h('button', { 'aria-label': 'Next Light', key: i, onClick: function() {
                   var correct = c === ccCurrentDash.name;
                   stemBeep(correct);
                   updMulti({ ccDashFb: correct ? '\u2705 Correct! ' + ccCurrentDash.desc : '\u274C Wrong! It\'s ' + ccCurrentDash.name + '. ' + ccCurrentDash.desc });
@@ -1110,7 +1110,7 @@ window.StemLab = window.StemLab || {
               })
             ),
             d.ccDashFb && h('p', { className: 'text-[10px] font-bold mt-2 p-2 rounded-lg ' + (d.ccDashFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.ccDashFb),
-            h('button', { onClick: function() { updMulti({ ccDashQ: ccDashQ + 1, ccDashFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[10px] font-bold bg-teal-600 text-white rounded-xl' }, 'Next Light \u27A1')
+            h('button', { 'aria-label': 'Next Light', onClick: function() { updMulti({ ccDashQ: ccDashQ + 1, ccDashFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[10px] font-bold bg-teal-600 text-white rounded-xl' }, 'Next Light \u27A1')
           ),
           // Maintenance Schedule
           h('div', { className: glassCard },
@@ -1141,7 +1141,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs text-slate-700 mb-2' }, '\uD83D\uDD0D Symptom: "' + plumbCurrent.symptom + '"'),
             h('div', { className: 'grid grid-cols-3 gap-1.5' },
               TOILET_PARTS.map(function(part) {
-                return h('button', { key: part.name, onClick: function() {
+                return h('button', { 'aria-label': 'Change paint l', key: part.name, onClick: function() {
                   var correct = part.name === plumbCurrent.answer;
                   stemBeep(correct);
                   updMulti({ plumbFb: correct ? '\u2705 Correct! ' + plumbCurrent.explain : '\u274C Not ' + part.name + '. Try again!' });
@@ -1152,7 +1152,7 @@ window.StemLab = window.StemLab || {
               })
             ),
             d.plumbFb && h('p', { className: 'text-[10px] font-bold mt-2 p-2 rounded-lg ' + (d.plumbFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.plumbFb),
-            h('button', { onClick: function() { updMulti({ plumbQ: plumbQ + 1, plumbFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[10px] font-bold bg-teal-600 text-white rounded-xl' }, 'Next Problem \u27A1')
+            h('button', { 'aria-label': 'Next Problem', onClick: function() { updMulti({ plumbQ: plumbQ + 1, plumbFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[10px] font-bold bg-teal-600 text-white rounded-xl' }, 'Next Problem \u27A1')
           ),
           // Paint Calculator
           h('div', { className: glassCard },
@@ -1188,7 +1188,7 @@ window.StemLab = window.StemLab || {
                 upd('homeALoading', true);
                 callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); }).catch(function() { upd('homeALoading', false); });
               }}, placeholder: 'e.g. "Why does my furnace make a clicking sound?"', className: 'flex-1 px-3 py-2 border border-slate-200 rounded-xl text-xs' }),
-              h('button', { onClick: function() {
+              h('button', { 'aria-label': 'Lifeskills action', onClick: function() {
                 if (!d.homeQ) return;
                 upd('homeALoading', true);
                 callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); checkBadge('homeExpert'); }).catch(function() { upd('homeALoading', false); });
@@ -1401,7 +1401,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-1' }, '\uD83D\uDCCF Recipe Scaler'),
             h('div', { className: 'flex gap-2 mb-2' },
               RECIPES.map(function(r, i) {
-                return h('button', { key: i, onClick: function() { updMulti({ cookRecipeIdx: i, cookScale: 1 }); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' + (cookRecipeIdx % RECIPES.length === i ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200') }, r.icon + ' ' + r.name);
+                return h('button', { 'aria-label': 'Update setting', key: i, onClick: function() { updMulti({ cookRecipeIdx: i, cookScale: 1 }); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' + (cookRecipeIdx % RECIPES.length === i ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200') }, r.icon + ' ' + r.name);
               })
             ),
             h('div', { className: 'flex items-center gap-3 mb-2' },
@@ -1453,7 +1453,7 @@ window.StemLab = window.StemLab || {
                   updMulti({ nutritionFb: correct ? '\u2705 Correct! ' + nutritionCurrent.explain : '\u274C Answer: ' + nutritionCurrent.answer + '. ' + nutritionCurrent.explain, nutritionScore: nutritionScore + (correct ? 1 : 0) });
                 }
               }, placeholder: 'Your answer...', className: 'flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm font-mono' }),
-              h('button', { onClick: function() {
+              h('button', { 'aria-label': 'Check', onClick: function() {
                 if (!nutritionAnswer.trim()) return;
                 var correct = nutritionAnswer.trim().replace(/[^0-9.]/g, '') === nutritionCurrent.answer;
                 stemBeep(correct);
@@ -1461,7 +1461,7 @@ window.StemLab = window.StemLab || {
               }, className: 'px-4 py-2 text-xs font-bold bg-teal-600 text-white rounded-xl' }, 'Check')
             ),
             nutritionFb && h('p', { className: 'text-[10px] font-bold p-2 rounded-lg ' + (nutritionFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, nutritionFb),
-            h('button', { onClick: function() { updMulti({ nutritionIdx: nutritionIdx + 1, nutritionAnswer: '', nutritionFb: '' }); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Next Label \u27A1')
+            h('button', { 'aria-label': 'Next Label', onClick: function() { updMulti({ nutritionIdx: nutritionIdx + 1, nutritionAnswer: '', nutritionFb: '' }); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Next Label \u27A1')
           ),
           // Food Safety Temps
           h('div', { className: glassCard + ' space-y-3' },
@@ -1485,7 +1485,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, '\uD83E\uDDE0 Quick Quiz: What is the safe temp for ' + foodSafetyCurrent.food + '?'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 [125, 145, 155, 160, 165, 180].map(function(temp) {
-                  return h('button', { key: temp, onClick: function() {
+                  return h('button', { 'aria-label': 'Next Food', key: temp, onClick: function() {
                     var correct = temp === foodSafetyCurrent.tempF;
                     stemBeep(correct);
                     updMulti({ foodSafetyFb: correct ? '\u2705 Correct! ' + foodSafetyCurrent.tempF + '\u00B0F for ' + foodSafetyCurrent.food : '\u274C It\'s ' + foodSafetyCurrent.tempF + '\u00B0F. ' + foodSafetyCurrent.danger, foodSafetyScore: foodSafetyScore + (correct ? 1 : 0) });
@@ -1494,7 +1494,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               d.foodSafetyFb && h('p', { className: 'text-[10px] font-bold mt-2 p-2 rounded-lg ' + (d.foodSafetyFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.foodSafetyFb),
-              h('button', { onClick: function() { updMulti({ foodSafetyQ: foodSafetyQ + 1, foodSafetyFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-xl' }, 'Next Food \u27A1')
+              h('button', { 'aria-label': 'Next Food', onClick: function() { updMulti({ foodSafetyQ: foodSafetyQ + 1, foodSafetyFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-xl' }, 'Next Food \u27A1')
             )
           )
         ),
@@ -1507,7 +1507,7 @@ window.StemLab = window.StemLab || {
               [1, 2, 3].map(function(t) {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
                 var colors = { 1: 'bg-emerald-100 text-emerald-700', 2: 'bg-amber-100 text-amber-700', 3: 'bg-red-100 text-red-700' };
-                return h('button', { key: t, onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '' }); },
+                return h('button', { 'aria-label': 'Change chal answer', key: t, onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '' }); },
                   className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-500 border border-slate-200') }, labels[t]);
               })
             ),
@@ -1520,10 +1520,10 @@ window.StemLab = window.StemLab || {
             chalQ && h('p', { className: 'text-sm font-medium text-slate-700' }, chalQ.q),
             h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-teal-400 outline-none', 'aria-label': 'Answer' }),
             h('div', { className: 'flex gap-2' },
-              h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl' }, 'Check'),
-              h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
-              h('button', { onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
-              callGemini && h('button', { onClick: function() {
+              h('button', { 'aria-label': 'Check', onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl' }, 'Check'),
+              h('button', { 'aria-label': 'Hint', onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
+              h('button', { 'aria-label': 'Skip', onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
+              callGemini && h('button', { 'aria-label': 'Change chal a i loading', onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
                 callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, home repair, car care, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
@@ -1545,8 +1545,8 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-5xl mb-2' }, '\uD83E\uDDED'),
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'The Adulting Boss challenges you!'),
             h('div', { className: 'flex gap-2 justify-center' },
-              h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl' }, '\u2694\uFE0F Start Battle'),
-              callGemini && h('button', { onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, '\uD83E\uDDE0 AI Battle')
+              h('button', { 'aria-label': 'Start Battle', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl' }, '\u2694\uFE0F Start Battle'),
+              callGemini && h('button', { 'aria-label': 'AI Battle', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, '\uD83E\uDDE0 AI Battle')
             )
           ) : h('div', { className: glassCard },
             h('div', { className: 'space-y-2 mb-4' },
@@ -1558,8 +1558,8 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-lg font-bold ' + (battleWon ? 'text-emerald-700' : 'text-red-700') }, battleWon ? 'You adulted successfully!' : 'The boss wins this round!'),
               battleFeedback && h('p', { className: 'text-xs ' + (battleFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, battleFeedback),
               h('div', { className: 'flex gap-2 justify-center mt-2' },
-                h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl' }, '\u21BA Again'),
-                callGemini && h('button', { onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, '\u2728 AI Rematch')
+                h('button', { 'aria-label': 'Again', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-600 text-white rounded-xl' }, '\u21BA Again'),
+                callGemini && h('button', { 'aria-label': 'AI Rematch', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, '\u2728 AI Rematch')
               )
             ) : h('div', { className: 'space-y-3' },
               (function() {
@@ -1571,8 +1571,8 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none' }),
                   h('div', { className: 'flex gap-2' },
-                    h('button', { onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl' }, '\u2694\uFE0F Attack!'),
-                    h('button', { onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
+                    h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl' }, '\u2694\uFE0F Attack!'),
+                    h('button', { 'aria-label': 'Hint', onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
                   ),
                   battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)
                 );
@@ -1593,8 +1593,8 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-lg' }, topic.icon), h('h5', { className: 'text-sm font-bold text-slate-700' }, topic.title)),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
               h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
-                h('button', { onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Try It'),
-                callTTS && h('button', { onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud')
+                h('button', { 'aria-label': 'Try It', onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Try It'),
+                callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud')
               )
             );
           })
