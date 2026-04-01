@@ -10,9 +10,9 @@ const SERVICE_DEFINITIONS = {
     name: 'PocketBase',
     description: 'NoSQL database and real-time API for storing student data, assessment results, and learning profiles',
     icon: '📦',
-    required: true,
-    optional: false,
-    defaultEnabled: true,
+    required: false,
+    optional: true,
+    defaultEnabled: false,
     native: true,
     port: 8090,
     healthCheck: {
@@ -226,7 +226,7 @@ const HARDWARE_PROFILES = {
       minDisk: 20000, // MB
       maxRAM: 4096
     },
-    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'search'], // No Flux
+    servicesToInclude: ['ollama', 'piper', 'search'], // No Flux
     limitations: [
       'Smaller LLMs only (7B models)',
       'No image generation',
@@ -258,7 +258,7 @@ const HARDWARE_PROFILES = {
       maxRAM: 16384,
       optionalGPU_VRAM: 4000
     },
-    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'search'], // Flux optional
+    servicesToInclude: ['ollama', 'piper', 'search'], // Flux optional
     limitations: [
       'Up to 13B LLMs recommended',
       'Image generation optional (GPU-dependent)',
@@ -289,7 +289,7 @@ const HARDWARE_PROFILES = {
       recommendedRAM: 32768,
       recommendedGPU_VRAM: 12000
     },
-    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'search', 'flux'],
+    servicesToInclude: ['ollama', 'piper', 'search', 'flux'],
     limitations: [],
     recommendations: [
       'Run large models (13B, 70B) for better quality',

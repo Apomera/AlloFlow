@@ -3,11 +3,45 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const nativePM = require('./nativeProcessManager');
+const ollamaManager = require('./ollamaManager');
 const { startSearchServer, stopSearchServer } = require('./searchModule');
 const { startWebAppServer, stopWebAppServer, getWebAppPort } = require('./webAppServer');
 
 const isDev = !app.isPackaged;
 let mainWindow;
+let updateDetectorInterval = null;
+
+// Start Ollama update detector (runs every 24 hours)
+function startOllamaUpdateDetector() {
+  if (updateDetectorInterval) return; // Already running
+  
+  const checkForUpdates = async () => {
+    try {
+      const updates = await ollamaManager.checkForUpdates();
+      if (updates && mainWindow) {
+        mainWindow.webContents.send('ollama:update-available', updates);
+        console.log('[ollama:updates] New version available:', updates.latestVersion);
+      }
+    } catch (err) {
+      // Silently fail — update checks are non-critical
+    }
+  };
+  
+  // Check immediately, then every 24 hours
+  checkForUpdates();
+  updateDetectorInterval = setInterval(checkForUpdates, 24 * 60 * 60 * 1000);
+  console.log('[ollama:updates] Update detector started');
+}
+
+// Stop update detector on app quit
+function stopOllamaUpdateDetector() {
+  if (updateDetectorInterval) {
+    clearInterval(updateDetectorInterval);
+    updateDetectorInterval = null;
+    console.log('[ollama:updates] Update detector stopped');
+  }
+}
+
 
 // AlloFlow config directory and files
 const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
@@ -185,6 +219,7 @@ app.on('window-all-closed', () => {
   nativePM.stopAllServices();
   stopSearchServer();
   stopWebAppServer();
+  stopOllamaUpdateDetector();
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -194,6 +229,7 @@ app.on('before-quit', () => {
   nativePM.stopAllServices();
   stopSearchServer();
   stopWebAppServer();
+  stopOllamaUpdateDetector();
 });
 
 app.on('activate', () => {
@@ -443,8 +479,9 @@ async function startDeployment(setupData, onProgress) {
       if (manifest && manifest.services) {
         const newServices = servicesToInstall.filter(s => !manifest.services.includes(s));
         if (newServices.length === 0 && servicesToInstall.every(s => manifest.services.includes(s))) {
-          console.log('[deploy:start] All services already deployed at current version, skipping installation phases...');
-          onProgress({ phase: 'preflight', status: 'Services already up-to-date, skipping installation...', progress: 10 });
+          // All services already deployed — skip download/install but still start and health-check
+          console.log('[deploy:start] All services already deployed at current version, skipping installation...');
+          onProgress({ phase: 'preflight', status: 'Services already installed, starting them up...', progress: 10 });
           needsInstallation = false;
         }
       }
@@ -489,7 +526,32 @@ async function startDeployment(setupData, onProgress) {
       installed++;
     }
     
-    // PHASE 3: Start services
+    } // End of needsInstallation block (only skips download/install)
+    
+    // PHASE 2.5: Create PocketBase admin BEFORE starting serve
+    // PocketBase auto-opens browser on first serve if no admin exists.
+    // By creating admin first via CLI, the browser auto-open is suppressed.
+    if (servicesToInstall.includes('pocketbase')) {
+      onProgress({ phase: 'pocketbase_admin', status: 'Configuring PocketBase admin account...', progress: 68 });
+      try {
+        const adminCreds = await nativePM.createPocketBaseAdmin();
+        console.log('[deploy:start] PocketBase admin ready:', adminCreds.email);
+        fs.writeFileSync(
+          path.join(ALLOFLOW_DIR, 'pb_admin_info.txt'),
+          `PocketBase Admin Credentials\n` +
+          `=============================\n` +
+          `Email: ${adminCreds.email}\n` +
+          `Password: ${adminCreds.password}\n` +
+          `Created: ${adminCreds.createdAt}\n` +
+          `\nAccess at: http://localhost:8090/_/\n`
+        );
+      } catch (err) {
+        console.warn('[deploy:start] PocketBase admin creation failed:', err.message);
+        onProgress({ phase: 'pocketbase_admin', status: `PocketBase admin setup warning: ${err.message}`, progress: 68 });
+      }
+    }
+
+    // PHASE 3: Start services (always runs — ensures services are up)
     onProgress({ phase: 'starting', status: 'Starting services...', progress: 70 });
     
     for (const serviceId of servicesToInstall) {
@@ -510,7 +572,7 @@ async function startDeployment(setupData, onProgress) {
       }
     }
     
-    // PHASE 4: Health checks
+    // PHASE 4: Health checks (always runs)
     onProgress({ phase: 'healthcheck', status: 'Waiting for services to become healthy...', progress: 85 });
     
     for (const serviceId of servicesToInstall) {
@@ -549,61 +611,122 @@ async function startDeployment(setupData, onProgress) {
         console.warn(`[deploy:start] ${serviceId} may not be fully healthy yet`);
       }
     }
-    } // End of needsInstallation block
 
-    // PHASE 4b: Auto-create PocketBase admin if deployed
+    // PHASE 4.5: REST API fallback for PocketBase admin creation
+    // If CLI admin creation in Phase 2.5 didn't work (e.g. wrong PB version),
+    // try the REST API now that PocketBase is running and healthy
     if (servicesToInstall.includes('pocketbase')) {
-      onProgress({ phase: 'pocketbase_admin', status: 'Configuring PocketBase admin account...', progress: 87 });
-      try {
-        // Wait a moment for PocketBase to fully initialize database before creating admin
-        console.log('[deploy:start] Waiting for PocketBase to fully initialize...');
-        await new Promise(r => setTimeout(r, 3000));
-        
-        const adminCreds = await nativePM.createPocketBaseAdmin();
-        console.log('[deploy:start] PocketBase admin created:', adminCreds.email);
-        // Store admin credentials path in config for reference
-        fs.writeFileSync(
-          path.join(ALLOFLOW_DIR, 'pb_admin_info.txt'),
-          `PocketBase Admin Credentials\n` +
-          `=============================\n` +
-          `Email: ${adminCreds.email}\n` +
-          `Password: ${adminCreds.password}\n` +
-          `Created: ${adminCreds.createdAt}\n` +
-          `\nAccess at: http://localhost:8090/_/\n` +
-          `(These credentials are also stored in: ~/.alloflow/pb_admin.json)`
-        );
-      } catch (err) {
-        console.warn('[deploy:start] PocketBase admin creation failed (non-fatal):', err.message);
-        onProgress({ phase: 'pocketbase_admin', status: `PocketBase admin setup warning: ${err.message}`, progress: 87 });
+      const credFile = path.join(ALLOFLOW_DIR, 'pb_admin.json');
+      let adminReady = false;
+      if (fs.existsSync(credFile)) {
+        try {
+          const encrypted = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
+          // If we can decrypt it, CLI probably worked
+          nativePM.getPocketBaseAdmin().then(() => { adminReady = true; }).catch(() => {});
+          adminReady = true;
+        } catch { /* will try API */ }
+      }
+      if (!adminReady) {
+        console.log('[deploy:start] PocketBase admin not yet confirmed — trying REST API fallback...');
+        try {
+          const apiCreds = await nativePM.createPocketBaseAdminViaAPI();
+          console.log('[deploy:start] PocketBase admin created via API:', apiCreds.email);
+          fs.writeFileSync(
+            path.join(ALLOFLOW_DIR, 'pb_admin_info.txt'),
+            `PocketBase Admin Credentials\n` +
+            `=============================\n` +
+            `Email: ${apiCreds.email}\n` +
+            `Password: ${apiCreds.password}\n` +
+            `Created: ${apiCreds.createdAt}\n` +
+            `\nAccess at: http://localhost:8090/_/\n`
+          );
+        } catch (apiErr) {
+          console.warn('[deploy:start] PocketBase API admin fallback also failed:', apiErr.message);
+        }
       }
     }
 
-    // PHASE 5: Pull default Ollama model
+    // PHASE 5: Set up Ollama models (interactive if needed)
     if (servicesToInstall.includes('ollama')) {
-      const defaultModel = hardware.tier === 'workstation' ? 'llama3.1:8b' : 'llama3.1:8b';
-      onProgress({ phase: 'models', status: `Downloading AI model: ${defaultModel}\n(~4 GB — this may take several minutes on first run)`, progress: 88 });
+      let modelToPull = null;
+      
+      // Check if models are already installed
       try {
-        await nativePM.pullOllamaModel(defaultModel, (p) => {
-          onProgress({ phase: 'models', status: p.status, progress: 88 + (p.progress / 100) * 4 });
-        });
-        console.log(`[deploy:start] Model ${defaultModel} ready`);
+        const status = await ollamaManager.checkOllamaStatus();
+        if (status.modelCount === 0) {
+          // No models — show user selection modal
+          onProgress({ phase: 'models', status: 'Waiting for model selection...', progress: 88 });
+          
+          console.log('[deploy:start] No Ollama models detected — showing selection modal');
+          
+          // Send event to renderer to show modal
+          mainWindow.webContents.send('ollama:no-models', {
+            availableModels: ollamaManager.getAvailableModels()
+          });
+          
+          // Wait for user selection via IPC (handled below)
+          modelToPull = await new Promise((resolve) => {
+            // Set a timeout — if user doesn't respond in 30s, use default
+            const timeout = setTimeout(() => {
+              console.log('[deploy:start] Model selection timeout — using default model');
+              resolve('neural-chat:7b');
+            }, 30000);
+            
+            // Listen for user selection
+            const handleModelSelected = (event, selectedModel) => {
+              clearTimeout(timeout);
+              ipcMain.removeListener('ollama:model-selected', handleModelSelected);
+              resolve(selectedModel);
+            };
+            
+            ipcMain.once('ollama:model-selected', handleModelSelected);
+          });
+        } else {
+          console.log(`[deploy:start] Found ${status.modelCount} Ollama models — skipping pull`);
+          modelToPull = null; // Already have models
+        }
       } catch (err) {
-        console.warn('[deploy:start] Model pull failed (non-fatal):', err.message);
-        onProgress({ phase: 'models', status: `Model download failed — you can pull models manually via Ollama later.`, progress: 92 });
+        console.warn('[deploy:start] Could not check Ollama models:', err.message);
+        modelToPull = 'neural-chat:7b'; // Default fallback
+      }
+      
+      // Pull model if needed
+      if (modelToPull) {
+        onProgress({ 
+          phase: 'models', 
+          status: `Downloading AI model: ${modelToPull}\n(This may take several minutes on first run)`, 
+          progress: 88 
+        });
+        
+        try {
+          await ollamaManager.pullModel(modelToPull, (progress) => {
+            const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
+            onProgress({ 
+              phase: 'models', 
+              status: `${progress.status}\n${Math.round(percent)}%`, 
+              progress: 88 + (percent / 100) * 4 
+            });
+          });
+          console.log(`[deploy:start] Model ${modelToPull} ready`);
+        } catch (err) {
+          console.warn('[deploy:start] Model pull failed (non-fatal):', err.message);
+          onProgress({ phase: 'models', status: `Model download failed — you can pull models manually via Ollama later.`, progress: 92 });
+        }
       }
 
       // Write ai_config.json for the web app to auto-configure itself
+      const defaultModel = modelToPull || 'neural-chat:7b';
       const aiConfig = {
         backend: 'ollama',
         apiKey: '',
         baseUrl: 'http://localhost:11434',
         models: {
-          default: 'llama3.1:8b',
-          flash: 'llama3.1:8b',
-          fallback: 'llama3.1:8b',
-          vision: 'llama3.1:8b',
+          default: defaultModel,
+          flash: defaultModel,
+          fallback: defaultModel,
+          vision: defaultModel,
           image: 'flux',
-          tts: 'llama3.1:8b'
+          tts: defaultModel
         },
         ttsProvider: 'browser',
         imageProvider: servicesToInstall.includes('flux') ? 'flux' : 'auto',
@@ -615,7 +738,11 @@ async function startDeployment(setupData, onProgress) {
         JSON.stringify(aiConfig, null, 2)
       );
       console.log('[deploy:start] Wrote ai_config.json for web app auto-configuration');
+      
+      // Start update detector in background
+      startOllamaUpdateDetector();
     }
+
 
     // PHASE 5c: Check Flux GPU status if Flux was deployed
     let fluxGpuStatus = null;
@@ -807,6 +934,15 @@ ipcMain.handle('setup:uninstall', async (event) => {
       }
     });
     
+    // Double-check: remove config files explicitly in case rmDirSafe failed
+    try {
+      if (fs.existsSync(CONFIG_FILE)) fs.unlinkSync(CONFIG_FILE);
+      if (fs.existsSync(VERSION_FILE)) fs.unlinkSync(VERSION_FILE);
+      if (fs.existsSync(DEPLOYMENT_MANIFEST)) fs.unlinkSync(DEPLOYMENT_MANIFEST);
+    } catch (e) {
+      console.warn('[ipc:uninstall] Could not remove some config files:', e.message);
+    }
+    
     // Explicitly reload the app to re-check for installation
     console.log('[ipc:uninstall] Reloading app to reset state...');
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -817,6 +953,91 @@ ipcMain.handle('setup:uninstall', async (event) => {
     return { success: true };
   } catch (err) {
     console.error('[ipc:uninstall] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC Handler: Selective uninstall — user picks which services to remove
+ipcMain.handle('setup:uninstall-services', async (event, { serviceIds, removeConfig }) => {
+  try {
+    console.log('[ipc:uninstall-services] Removing services:', serviceIds, 'removeConfig:', removeConfig);
+    
+    // Stop and uninstall selected services
+    for (let i = 0; i < serviceIds.length; i++) {
+      const serviceId = serviceIds[i];
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('uninstall:progress', {
+          status: `Uninstalling ${serviceId}...`,
+          progress: Math.round((i / serviceIds.length) * 80)
+        });
+      }
+      try {
+        await nativePM.uninstallService(serviceId);
+      } catch (err) {
+        console.error(`[ipc:uninstall-services] Error uninstalling ${serviceId}:`, err.message);
+      }
+    }
+    
+    // Update the deployment manifest to remove uninstalled services
+    const manifest = getDeploymentManifest();
+    if (manifest && manifest.services) {
+      manifest.services = manifest.services.filter(s => !serviceIds.includes(s));
+      saveDeploymentManifest(manifest);
+    }
+    
+    // Update config to remove uninstalled services from selectedServices
+    const config = getConfig();
+    if (config && config.selectedServices) {
+      config.selectedServices = config.selectedServices.filter(s => !serviceIds.includes(s));
+      saveConfig(config);
+    }
+    
+    if (removeConfig) {
+      // Full reset: remove all config files to trigger setup wizard
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('uninstall:progress', {
+          status: 'Removing configuration...',
+          progress: 90
+        });
+      }
+      try {
+        if (fs.existsSync(CONFIG_FILE)) fs.unlinkSync(CONFIG_FILE);
+        if (fs.existsSync(VERSION_FILE)) fs.unlinkSync(VERSION_FILE);
+        if (fs.existsSync(DEPLOYMENT_MANIFEST)) fs.unlinkSync(DEPLOYMENT_MANIFEST);
+      } catch (e) {
+        console.warn('[ipc:uninstall-services] Config removal error:', e.message);
+      }
+    }
+    
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('uninstall:progress', {
+        status: 'Uninstall complete',
+        progress: 100
+      });
+    }
+    
+    // Reload app if config was removed
+    if (removeConfig && mainWindow && !mainWindow.isDestroyed()) {
+      setTimeout(() => mainWindow.reload(), 500);
+    }
+    
+    return { success: true };
+  } catch (err) {
+    console.error('[ipc:uninstall-services] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC Handler: Get list of currently installed services
+ipcMain.handle('setup:get-installed-services', async (event) => {
+  try {
+    const allServices = ['ollama', 'pocketbase', 'piper', 'flux'];
+    const installed = {};
+    for (const serviceId of allServices) {
+      installed[serviceId] = nativePM.isServiceInstalled(serviceId);
+    }
+    return { success: true, services: installed };
+  } catch (err) {
     return { success: false, error: err.message };
   }
 });
@@ -832,5 +1053,76 @@ ipcMain.handle('pocketbase:check-admin', async (event) => {
   } catch (err) {
     console.error('[ipc:pocketbase:check-admin] Error:', err.message);
     return { configured: false, email: null };
+  }
+});
+
+// ============================================================================
+// OLLAMA MODEL MANAGEMENT
+// ============================================================================
+
+// IPC Handler: Get installed Ollama models
+ipcMain.handle('ollama:get-installed-models', async (event) => {
+  try {
+    const models = await ollamaManager.getInstalledModels();
+    return { success: true, models };
+  } catch (err) {
+    console.error('[ipc:ollama:get-installed-models] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC Handler: Get available models to pull
+ipcMain.handle('ollama:get-available-models', async (event) => {
+  try {
+    const models = ollamaManager.getAvailableModels();
+    return { success: true, models };
+  } catch (err) {
+    console.error('[ipc:ollama:get-available-models] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC Handler: Pull an Ollama model
+ipcMain.handle('ollama:pull-model', async (event, { modelId }) => {
+  try {
+    console.log('[ipc:ollama:pull-model] Starting pull of:', modelId);
+    
+    // Start the pull and send progress updates to renderer
+    await ollamaManager.pullModel(modelId, (progress) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('ollama:pull-progress', {
+          modelId,
+          ...progress
+        });
+      }
+    });
+    
+    console.log('[ipc:ollama:pull-model] Model pull completed:', modelId);
+    return { success: true };
+  } catch (err) {
+    console.error('[ipc:ollama:pull-model] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC Handler: Check Ollama status and update detector
+ipcMain.handle('ollama:check-status', async (event) => {
+  try {
+    const status = await ollamaManager.checkOllamaStatus();
+    return { success: true, ...status };
+  } catch (err) {
+    console.error('[ipc:ollama:check-status] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC Handler: Check for Ollama updates
+ipcMain.handle('ollama:check-updates', async (event) => {
+  try {
+    const updates = await ollamaManager.checkForUpdates();
+    return { success: true, updates };
+  } catch (err) {
+    console.error('[ipc:ollama:check-updates] Error:', err.message);
+    return { success: false, updates: null };
   }
 });

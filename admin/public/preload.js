@@ -52,6 +52,14 @@ contextBridge.exposeInMainWorld('alloAPI', {
       console.log('[preload:setup:uninstall] Starting uninstall');
       return ipcRenderer.invoke('setup:uninstall');
     },
+    uninstallServices: (options) => {
+      console.log('[preload:setup:uninstallServices] Selective uninstall:', options);
+      return ipcRenderer.invoke('setup:uninstall-services', options);
+    },
+    getInstalledServices: () => {
+      console.log('[preload:setup:getInstalledServices] Getting installed services');
+      return ipcRenderer.invoke('setup:get-installed-services');
+    },
     onUninstallProgress: (callback) => {
       ipcRenderer.on('uninstall:progress', (event, data) => {
         callback(data);

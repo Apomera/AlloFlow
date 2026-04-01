@@ -127,6 +127,20 @@ function startWebAppServer(port, isPackaged) {
         return;
       }
 
+      // Static assets (JS/CSS/media under /static/ or known extensions) must
+      // NEVER fall back to index.html — a missing hash-named file means the
+      // service worker has a stale reference. Return 404 so the browser
+      // discards the stale cache entry rather than parsing HTML as JS.
+      const isStaticAsset = urlPath.startsWith('/static/') ||
+        ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg',
+         '.ico', '.woff', '.woff2', '.ttf', '.map'].includes(path.extname(urlPath).toLowerCase());
+
+      if (isStaticAsset && !fs.existsSync(filePath)) {
+        res.writeHead(404);
+        res.end('Not Found');
+        return;
+      }
+
       // Serve index.html with injected config for SPA routes
       if (!fs.existsSync(filePath) || urlPath === '/index.html') {
         try {
@@ -138,7 +152,7 @@ function startWebAppServer(port, isPackaged) {
 
           res.writeHead(200, {
             'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
           });
           res.end(html);
         } catch (err) {
@@ -155,18 +169,29 @@ function startWebAppServer(port, isPackaged) {
         const contentType = MIME_TYPES[ext] || 'application/octet-stream';
         const content = fs.readFileSync(filePath);
 
+        // Service worker and manifest must never be cached so version
+        // updates take effect immediately
+        const noCache = ['/service-worker.js', '/manifest.json'].includes(urlPath);
         res.writeHead(200, {
           'Content-Type': contentType,
-          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Cache-Control': noCache
+            ? 'no-store, no-cache, must-revalidate'
+            : 'public, max-age=31536000, immutable',
         });
         res.end(content);
       } catch (err) {
-        // File not found — fall through to index.html (SPA routing)
+        // True file-not-found — static assets already handled above, so
+        // this can only be a SPA route; serve index.html.
+        if (isStaticAsset) {
+          res.writeHead(404);
+          res.end('Not Found');
+          return;
+        }
         try {
           let html = fs.readFileSync(indexPath, 'utf-8');
           const configScript = buildConfigScript();
           html = html.replace('<head>', '<head>' + configScript);
-          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
           res.end(html);
         } catch (innerErr) {
           res.writeHead(500);
