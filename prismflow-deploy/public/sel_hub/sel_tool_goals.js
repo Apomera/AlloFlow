@@ -1505,19 +1505,19 @@ window.SelHub = window.SelHub || {
               // 7-day grid
               habits.length > 0 ? h('div', { style: { overflowX: 'auto' } },
                 h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
-                  h('thead', null,
+                  h('caption', { className: 'sr-only' }, 'Read 30 min \uD83D\uDCDA'), h('thead', null,
                     h('tr', null,
-                      h('th', { style: { textAlign: 'left', padding: '6px 8px', color: '#94a3b8', fontWeight: 'bold', fontSize: 10, borderBottom: '1px solid rgba(99,102,241,0.1)' } }, 'Habit'),
+                      h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', color: '#94a3b8', fontWeight: 'bold', fontSize: 10, borderBottom: '1px solid rgba(99,102,241,0.1)' } }, 'Habit'),
                       weekDates.map(function(wd, wi) {
                         var dt = new Date(wd + 'T12:00:00');
                         var dayName = dayLabels[dt.getDay()];
                         var isToday = wd === new Date().toISOString().slice(0, 10);
-                        return h('th', { key: wd, style: { padding: '6px 4px', color: isToday ? '#a5b4fc' : '#64748b', fontWeight: isToday ? 'bold' : 'normal', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)', minWidth: 32 } },
+                        return h('th', { scope: 'col', key: wd, style: { padding: '6px 4px', color: isToday ? '#a5b4fc' : '#64748b', fontWeight: isToday ? 'bold' : 'normal', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)', minWidth: 32 } },
                           h('div', null, dayName),
                           h('div', { style: { fontSize: 8 } }, wd.slice(5))
                         );
                       }),
-                      h('th', { style: { padding: '6px 4px', color: '#94a3b8', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)' } }, '%')
+                      h('th', { scope: 'col', style: { padding: '6px 4px', color: '#94a3b8', fontSize: 11, textAlign: 'center', borderBottom: '1px solid rgba(99,102,241,0.1)' } }, '%')
                     )
                   ),
                   h('tbody', null,

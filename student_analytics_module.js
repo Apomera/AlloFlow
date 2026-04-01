@@ -5299,7 +5299,7 @@
       "data-help-key": "dashboard_student_table"
     }, /*#__PURE__*/React.createElement("table", {
       className: "w-full text-sm"
-    }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    }, /*#__PURE__*/React.createElement("caption", { className: "sr-only" }, "student analytics module data table"), React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
       className: "bg-slate-100 text-left"
     }, [{
       key: 'name',
@@ -5334,7 +5334,7 @@
       key: 'totalActivities',
       label: t('class_analytics.total_activities'),
       round: 'rounded-r-lg'
-    }].map(col => /*#__PURE__*/React.createElement("th", {
+    }].map(col => /*#__PURE__*/React.createElement("th", { scope: "col",
       key: col.key,
       onClick: () => handleSort(col.key),
       className: `p-2 ${col.align !== 'left' ? 'text-center' : ''} ${col.round || ''} cursor-pointer hover:bg-slate-200 select-none transition-colors`

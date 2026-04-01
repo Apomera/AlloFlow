@@ -545,11 +545,11 @@ window.StemLab = window.StemLab || {
             d.showTable && React.createElement("div", { className: "mt-2 bg-cyan-50 rounded-xl border border-cyan-200 p-3 overflow-x-auto" },
               React.createElement("p", { className: "text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCB Table of Values"),
               React.createElement("table", { className: "w-full text-xs" },
-                React.createElement("thead", null,
+                React.createElement("caption", { className: "sr-only" }, "funcgrapher data table"), React.createElement("thead", null,
                   React.createElement("tr", { className: "border-b border-cyan-200" },
-                    React.createElement("th", { className: "px-2 py-1 text-left font-bold text-cyan-800" }, "x"),
-                    React.createElement("th", { className: "px-2 py-1 text-left font-bold text-indigo-700" }, "f(x)"),
-                    d.showDeriv && React.createElement("th", { className: "px-2 py-1 text-left font-bold text-amber-700" }, "f\u2032(x)")
+                    React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-cyan-800" }, "x"),
+                    React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-indigo-700" }, "f(x)"),
+                    d.showDeriv && React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-amber-700" }, "f\u2032(x)")
                   )
                 ),
                 React.createElement("tbody", null,

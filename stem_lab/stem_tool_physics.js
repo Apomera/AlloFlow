@@ -1715,14 +1715,14 @@ const d = labToolData.physics;
                   ));
                 }
                 return React.createElement("table", { className: "w-full text-xs" },
-                  React.createElement("thead", null,
+                  React.createElement("caption", { className: "sr-only" }, "physics data table"), React.createElement("thead", null,
                     React.createElement("tr", { className: "border-b-2 border-cyan-300" },
-                      React.createElement("th", { className: "px-2 py-1 text-left font-bold text-cyan-800" }, "t (s)"),
-                      React.createElement("th", { className: "px-2 py-1 text-left font-bold text-slate-600" }, "x (m)"),
-                      React.createElement("th", { className: "px-2 py-1 text-left font-bold text-slate-600" }, "y (m)"),
-                      React.createElement("th", { className: "px-2 py-1 text-left font-bold text-green-700" }, "Vx"),
-                      React.createElement("th", { className: "px-2 py-1 text-left font-bold text-purple-700" }, "Vy"),
-                      React.createElement("th", { className: "px-2 py-1 text-left font-bold text-blue-700" }, "|v|")
+                      React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-cyan-800" }, "t (s)"),
+                      React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-slate-600" }, "x (m)"),
+                      React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-slate-600" }, "y (m)"),
+                      React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-green-700" }, "Vx"),
+                      React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-purple-700" }, "Vy"),
+                      React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-blue-700" }, "|v|")
                     )
                   ),
                   React.createElement("tbody", null, rows)

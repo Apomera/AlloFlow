@@ -2081,12 +2081,12 @@ window.StemLab = window.StemLab || {
                   // Growth table
                   React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
                     React.createElement("table", { className: "w-full text-xs" },
-                      React.createElement("thead", null,
+                      React.createElement("caption", { className: "sr-only" }, "money data table"), React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-50" },
-                          React.createElement("th", { className: "px-3 py-2 text-left font-bold text-slate-500" }, "Year"),
-                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-blue-600" }, "Compound"),
-                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-slate-500" }, "Simple"),
-                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-emerald-500" }, "Advantage")
+                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-left font-bold text-slate-500" }, "Year"),
+                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-blue-600" }, "Compound"),
+                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-slate-500" }, "Simple"),
+                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-emerald-500" }, "Advantage")
                         )
                       ),
                       React.createElement("tbody", null,
@@ -2149,11 +2149,11 @@ window.StemLab = window.StemLab || {
                   // Milestone table
                   React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden mt-4" },
                     React.createElement("table", { className: "w-full text-xs" },
-                      React.createElement("thead", null,
+                      React.createElement("caption", { className: "sr-only" }, "money data table"), React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-50" },
-                          React.createElement("th", { className: "px-3 py-2 text-left font-bold text-slate-500" }, "Age"),
-                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-violet-600" }, "Early Start"),
-                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-slate-500" }, "Late Start")
+                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-left font-bold text-slate-500" }, "Age"),
+                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-violet-600" }, "Early Start"),
+                          React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-slate-500" }, "Late Start")
                         )
                       ),
                       React.createElement("tbody", null,
@@ -2227,13 +2227,13 @@ window.StemLab = window.StemLab || {
                   // Amortization highlights
                   React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
                     React.createElement("table", { className: "w-full text-xs" },
-                      React.createElement("thead", null,
+                      React.createElement("caption", { className: "sr-only" }, "money data table"), React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-50" },
-                          React.createElement("th", { className: "px-2 py-2 text-left font-bold text-slate-500" }, "Month"),
-                          React.createElement("th", { className: "px-2 py-2 text-right font-bold text-slate-500" }, "Payment"),
-                          React.createElement("th", { className: "px-2 py-2 text-right font-bold text-blue-500" }, "Principal"),
-                          React.createElement("th", { className: "px-2 py-2 text-right font-bold text-red-500" }, "Interest"),
-                          React.createElement("th", { className: "px-2 py-2 text-right font-bold text-slate-500" }, "Balance")
+                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-left font-bold text-slate-500" }, "Month"),
+                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-slate-500" }, "Payment"),
+                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-blue-500" }, "Principal"),
+                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-red-500" }, "Interest"),
+                          React.createElement("th", { scope: "col", className: "px-2 py-2 text-right font-bold text-slate-500" }, "Balance")
                         )
                       ),
                       React.createElement("tbody", null,

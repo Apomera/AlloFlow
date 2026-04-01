@@ -848,7 +848,7 @@ window.StemLab = window.StemLab || {
           (gradeBand === '6-8' || gradeBand === '9-12') && h('div', { className: glassCard },
             h('p', { className: 'text-[10px] font-bold text-slate-500 mb-1' }, '\uD83D\uDCCA Federal Tax Brackets:'),
             h('table', { className: 'w-full text-[10px]' },
-              h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { className: 'px-2 py-1 text-left' }, 'Rate'), h('th', { className: 'px-2 py-1 text-right' }, 'Taxable'), h('th', { className: 'px-2 py-1 text-right text-red-500' }, 'Tax'))),
+              h('caption', { className: 'sr-only' }, 'lifeskills data table'), h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, 'Rate'), h('th', { className: 'px-2 py-1 text-right' }, 'Taxable'), h('th', { className: 'px-2 py-1 text-right text-red-500' }, 'Tax'))),
               h('tbody', null,
                 fedResult.breakdown.map(function(b, i) {
                   return h('tr', { key: i, className: i % 2 === 0 ? '' : 'bg-slate-50' }, h('td', { className: 'px-2 py-1 font-bold' }, b.rate + '%'), h('td', { className: 'px-2 py-1 text-right' }, fmtMoney(b.amount)), h('td', { className: 'px-2 py-1 text-right font-bold text-red-500' }, fmtMoney(b.tax)));
@@ -899,9 +899,9 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: glassCard },
             h('table', { className: 'w-full text-[10px]' },
-              h('thead', null, h('tr', { className: 'border-b border-slate-200' },
-                h('th', { className: 'px-2 py-1 text-left' }, 'Criteria (weight)'),
-                dmOptions.map(function(opt, oi) { return h('th', { key: oi, className: 'px-2 py-1 text-center' }, opt); })
+              h('caption', { className: 'sr-only' }, '\uD83E\uDDE0 Decision Matrix'), h('thead', null, h('tr', { className: 'border-b border-slate-200' },
+                h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, 'Criteria (weight)'),
+                dmOptions.map(function(opt, oi) { return h('th', { scope: 'col', key: oi, className: 'px-2 py-1 text-center' }, opt); })
               )),
               h('tbody', null,
                 dmCriteria.map(function(c, ci) {
@@ -1413,7 +1413,7 @@ window.StemLab = window.StemLab || {
             slider('Servings', cookScale, 0.25, 4, 0.25, 'cookScale', function(v) { return Math.round(cookRecipe.servings * v) + ' servings (' + v + 'x)'; }),
             h('div', { className: 'mt-2' },
               h('table', { className: 'w-full text-[10px]' },
-                h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { className: 'px-2 py-1 text-left' }, 'Ingredient'), h('th', { className: 'px-2 py-1 text-right' }, 'Original'), h('th', { className: 'px-2 py-1 text-right text-teal-600 font-bold' }, 'Scaled'))),
+                h('caption', { className: 'sr-only' }, 'Servings'), h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, 'Ingredient'), h('th', { className: 'px-2 py-1 text-right' }, 'Original'), h('th', { className: 'px-2 py-1 text-right text-teal-600 font-bold' }, 'Scaled'))),
                 h('tbody', null,
                   cookRecipe.ingredients.map(function(ing, i) {
                     var scaled = ing.amount * cookScale;

@@ -1953,7 +1953,7 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("table", { className: "w-full text-xs" },
 
-                    React.createElement("tbody", null,
+                    React.createElement("caption", { className: "sr-only" }, "Plate Boundaries"), React.createElement("tbody", null,
 
                       [['Convergent (\u2192\u2190)','Plates collide','Mountains, earthquakes, volcanoes'],['Divergent (\u2190\u2192)','Plates separate','Mid-ocean ridges, rift valleys'],['Transform (\u2191\u2193)','Plates slide past','Earthquakes (San Andreas Fault)'],['Subduction','Oceanic dives under continental','Deep trenches, volcanic arcs']].map(function(r) {
 

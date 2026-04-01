@@ -1117,11 +1117,11 @@ var d = (labToolData.probability) || {};
 
                   React.createElement("table", { className: "w-full text-[10px]" },
 
-                    React.createElement("thead", null, React.createElement("tr", { style: { background: isDark||isContrast?'rgba(251,191,36,0.15)':'#fef9c3' } },
+                    React.createElement("caption", { className: "sr-only" }, "probability data table"), React.createElement("thead", null, React.createElement("tr", { style: { background: isDark||isContrast?'rgba(251,191,36,0.15)':'#fef9c3' } },
 
-                      React.createElement("th", { className: "px-3 py-1.5 text-left font-bold", style:{color:isDark||isContrast?'#fbbf24':'#b45309'} }, 'People (n)'),
+                      React.createElement("th", { scope: "col", className: "px-3 py-1.5 text-left font-bold", style:{color:isDark||isContrast?'#fbbf24':'#b45309'} }, 'People (n)'),
 
-                      React.createElement("th", { className: "px-3 py-1.5 text-right font-bold", style:{color:isDark||isContrast?'#fbbf24':'#b45309'} }, 'P(shared birthday)')
+                      React.createElement("th", { scope: "col", className: "px-3 py-1.5 text-right font-bold", style:{color:isDark||isContrast?'#fbbf24':'#b45309'} }, 'P(shared birthday)')
 
                     )),
 

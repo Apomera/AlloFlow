@@ -836,10 +836,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     : h('div', { className: 'bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm' },
                         h('div', { className: 'overflow-x-auto' },
                             h('table', { className: 'w-full text-sm' },
-                                h('thead', null,
+                                h('caption', { className: 'sr-only' }, 'Clear all filters'), h('thead', null,
                                     h('tr', { className: 'bg-slate-50 border-b border-slate-200' },
                                         // Checkbox header
-                                        h('th', { className: 'px-2 py-2.5 text-center w-8' },
+                                        h('th', { scope: 'col', className: 'px-2 py-2.5 text-center w-8' },
                                             h('input', {
                                                 type: 'checkbox',
                                                 checked: selectedIds.size === sorted.length && sorted.length > 0,
@@ -849,7 +849,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                             })
                                         ),
                                         ['timestamp', 'antecedent', 'behavior', 'consequence', 'intensity'].map(col =>
-                                            h('th', {
+                                            h('th', { scope: 'col',
                                                 key: col,
                                                 onClick: () => {
                                                     if (sortField === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -864,10 +864,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                             )
                                         ),
                                         // Phase column header
-                                        entries.some(e => e.phase) && h('th', { className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-500 uppercase tracking-wide' }, t('behavior_lens.abc.phase') || 'Phase'),
+                                        entries.some(e => e.phase) && h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-500 uppercase tracking-wide' }, t('behavior_lens.abc.phase') || 'Phase'),
                                         // Notes indicator header
-                                        h('th', { className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-500 w-8' }, '📝'),
-                                        h('th', { className: 'px-3 py-2.5 text-right text-xs font-bold text-slate-500 uppercase' }, '')
+                                        h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-500 w-8' }, '📝'),
+                                        h('th', { scope: 'col', className: 'px-3 py-2.5 text-right text-xs font-bold text-slate-500 uppercase' }, '')
                                     )
                                 ),
                                 h('tbody', null,
@@ -1564,10 +1564,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('p', { className: 'text-[10px] text-slate-500 mb-3' }, t('behavior_lens.correlation_desc') || 'Darker cells indicate stronger co-occurrence between a trigger and behavior'),
                 h('div', { className: 'overflow-x-auto' },
                     h('table', { className: 'w-full text-xs', style: { borderCollapse: 'separate', borderSpacing: '2px' } },
-                        h('thead', null,
+                        h('caption', { className: 'sr-only' }, '🔗 '), h('thead', null,
                             h('tr', null,
-                                h('th', { className: 'text-right pr-2 text-[10px] text-slate-500 font-bold w-28' }, ''),
-                                ...stats.topBehaviors.map(b => h('th', { key: b, className: 'text-center text-[10px] text-slate-500 font-bold px-1 py-1 max-w-[80px] truncate', title: b }, b))
+                                h('th', { scope: 'col', className: 'text-right pr-2 text-[10px] text-slate-500 font-bold w-28' }, ''),
+                                ...stats.topBehaviors.map(b => h('th', { scope: 'col', key: b, className: 'text-center text-[10px] text-slate-500 font-bold px-1 py-1 max-w-[80px] truncate', title: b }, b))
                             )
                         ),
                         h('tbody', null,
@@ -4954,13 +4954,13 @@ Return ONLY valid JSON:
         const renderSheet = () => {
             if (method === 'frequency') {
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
-                    h('thead', null,
+                    h('caption', { className: 'sr-only' }, 'Latency Recording'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
                             ...Array.from({ length: numIntervals }, (_, i) =>
-                                h('th', { key: i, className: 'border border-slate-300 px-2 py-1.5' }, `Period ${i + 1}`)
+                                h('th', { scope: 'col', key: i, className: 'border border-slate-300 px-2 py-1.5' }, `Period ${i + 1}`)
                             ),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.total') || 'Total')
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.total') || 'Total')
                         )
                     ),
                     h('tbody', null,
@@ -4978,13 +4978,13 @@ Return ONLY valid JSON:
             }
             if (method === 'duration') {
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
-                    h('thead', null,
+                    h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.start_time') || 'Start Time'),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.end_time') || 'End Time'),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.duration') || 'Duration'),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.start_time') || 'Start Time'),
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.end_time') || 'End Time'),
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.duration') || 'Duration'),
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
                         )
                     ),
                     h('tbody', null,
@@ -5023,13 +5023,13 @@ Return ONLY valid JSON:
             }
             // latency
             return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
-                h('thead', null,
+                h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                     h('tr', { className: 'bg-slate-100' },
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.cue_given') || 'Cue Given'),
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.response_start') || 'Response Start'),
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.latency_sec') || 'Latency (sec)'),
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
+                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.cue_given') || 'Cue Given'),
+                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.response_start') || 'Response Start'),
+                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.latency_sec') || 'Latency (sec)'),
+                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
                     )
                 ),
                 h('tbody', null,
@@ -5627,11 +5627,11 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                     h('p', { className: 'text-sm text-blue-700' }, goalText)
                 ),
                 h('table', { className: 'w-full text-xs border-collapse' },
-                    h('thead', null,
+                    h('caption', { className: 'sr-only' }, '📐 Goal Attainment Scale'), h('thead', null,
                         h('tr', null,
-                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left w-16' }, t('behavior_lens.score') || 'Score'),
-                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left w-40' }, (t('behavior_lens.raw.level') || 'Level')),
-                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left' }, (t('behavior_lens.raw.descriptor') || 'Descriptor'))
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-3 py-2 text-left w-16' }, t('behavior_lens.score') || 'Score'),
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-3 py-2 text-left w-40' }, (t('behavior_lens.raw.level') || 'Level')),
+                            h('th', { scope: 'col', className: 'border border-slate-300 px-3 py-2 text-left' }, (t('behavior_lens.raw.descriptor') || 'Descriptor'))
                         )
                     ),
                     h('tbody', null,
@@ -9729,9 +9729,9 @@ Keep it concise and encouraging. Use plain language.`;
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🔥 Day × Time Heatmap'),
                 h('div', { className: 'overflow-x-auto' },
                     h('table', { className: 'w-full' },
-                        h('thead', null, h('tr', null,
-                            h('th', { className: 'text-[9px] text-slate-500 p-1' }),
-                            ...timeLabels.map(t => h('th', { key: t, className: 'text-[9px] text-slate-500 font-bold p-1 text-center' }, t))
+                        h('caption', { className: 'sr-only' }, '🔥 Day × Time Heatmap'), h('thead', null, h('tr', null,
+                            h('th', { scope: 'col', className: 'text-[9px] text-slate-500 p-1' }),
+                            ...timeLabels.map(t => h('th', { scope: 'col', key: t, className: 'text-[9px] text-slate-500 font-bold p-1 text-center' }, t))
                         )),
                         h('tbody', null,
                             ...heatmapData.map((row, dayIdx) => {
@@ -16251,11 +16251,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 // Data table
                 !showCsvImport && manualData.length > 0 && h('div', { className: 'bg-white rounded-lg border border-fuchsia-100 overflow-hidden' },
                     h('table', { className: 'w-full text-[10px]' },
-                        h('thead', null,
+                        h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                             h('tr', { className: 'bg-fuchsia-50' },
-                                h('th', { className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, (t('behavior_lens.raw.session') || 'Session')),
-                                h('th', { className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, (t('behavior_lens.raw.value') || 'Value')),
-                                h('th', { className: 'px-3 py-1.5 text-right font-bold text-fuchsia-700' }, (t('behavior_lens.raw.actions') || 'Actions'))
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, (t('behavior_lens.raw.session') || 'Session')),
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, (t('behavior_lens.raw.value') || 'Value')),
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-right font-bold text-fuchsia-700' }, (t('behavior_lens.raw.actions') || 'Actions'))
                             )
                         ),
                         h('tbody', null,
@@ -19290,10 +19290,10 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 // Grid
                 h('div', { className: 'overflow-x-auto' },
                     h('table', { className: 'w-full border-collapse' },
-                        h('thead', null,
+                        h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                             h('tr', null,
-                                h('th', { className: 'text-[9px] text-slate-500 font-bold p-1 text-left' }, (t('behavior_lens.raw.time') || 'Time')),
-                                ...DAY_LABELS.slice(0, days).map(d => h('th', { key: d, className: 'text-[9px] text-slate-500 font-bold p-1 text-center' }, d))
+                                h('th', { scope: 'col', className: 'text-[9px] text-slate-500 font-bold p-1 text-left' }, (t('behavior_lens.raw.time') || 'Time')),
+                                ...DAY_LABELS.slice(0, days).map(d => h('th', { scope: 'col', key: d, className: 'text-[9px] text-slate-500 font-bold p-1 text-center' }, d))
                             )
                         ),
                         h('tbody', null,
@@ -20340,10 +20340,10 @@ Keep the language professional but accessible.`;
             h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm overflow-x-auto' },
                 h('h3', { className: 'text-xs font-bold text-slate-700 mb-3' }, '🗺️ P(Behavior | Antecedent) — All Pairs'),
                 heatmapMatrix.rows.length > 0 ? h('table', { className: 'w-full text-center border-collapse' },
-                    h('thead', null,
+                    h('caption', { className: 'sr-only' }, '🗺️ P(Behavior | Antecedent) — All Pairs'), h('thead', null,
                         h('tr', null,
-                            h('th', { className: 'text-[9px] font-bold text-slate-500 p-2 text-left border-b border-slate-200' }, 'Antecedent ↓ / Behavior →'),
-                            ...heatmapMatrix.cols.map(b => h('th', { key: b, className: 'text-[9px] font-bold text-slate-600 p-2 border-b border-slate-200 max-w-[80px] truncate' }, b))
+                            h('th', { scope: 'col', className: 'text-[9px] font-bold text-slate-500 p-2 text-left border-b border-slate-200' }, 'Antecedent ↓ / Behavior →'),
+                            ...heatmapMatrix.cols.map(b => h('th', { scope: 'col', key: b, className: 'text-[9px] font-bold text-slate-600 p-2 border-b border-slate-200 max-w-[80px] truncate' }, b))
                         )
                     ),
                     h('tbody', null,
@@ -20442,12 +20442,12 @@ Keep the language professional but accessible.`;
                             h('span', { className: `text-[9px] px-2 py-0.5 rounded-full font-bold ${Math.abs(analysis.phi) >= 0.3 ? 'bg-red-100 text-red-700' : Math.abs(analysis.phi) >= 0.1 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}` }, `φ = ${analysis.phi.toFixed(3)}`)
                         ),
                         h('table', { className: 'w-full text-center border-collapse' },
-                            h('thead', null,
+                            h('caption', { className: 'sr-only' }, '📊 2×2 Contingency Table'), h('thead', null,
                                 h('tr', null,
-                                    h('th', { className: 'p-2 text-[9px] text-slate-500 border border-slate-200' }),
-                                    h('th', { className: 'p-2 text-[9px] font-bold text-indigo-700 border border-slate-200 bg-indigo-50' }, `B: "${selectedBehavior}"`),
-                                    h('th', { className: 'p-2 text-[9px] font-bold text-slate-600 border border-slate-200 bg-slate-50' }, 'No B'),
-                                    h('th', { className: 'p-2 text-[9px] font-bold text-slate-500 border border-slate-200' }, 'Total')
+                                    h('th', { scope: 'col', className: 'p-2 text-[9px] text-slate-500 border border-slate-200' }),
+                                    h('th', { scope: 'col', className: 'p-2 text-[9px] font-bold text-indigo-700 border border-slate-200 bg-indigo-50' }, `B: "${selectedBehavior}"`),
+                                    h('th', { scope: 'col', className: 'p-2 text-[9px] font-bold text-slate-600 border border-slate-200 bg-slate-50' }, 'No B'),
+                                    h('th', { scope: 'col', className: 'p-2 text-[9px] font-bold text-slate-500 border border-slate-200' }, 'Total')
                                 )
                             ),
                             h('tbody', null,
@@ -21841,9 +21841,9 @@ Keep the language professional but accessible.`;
                 ),
                 h('div', { className: 'overflow-x-auto max-h-80 overflow-y-auto' },
                     h('table', { className: 'w-full text-xs' },
-                        h('thead', null, h('tr', { className: 'bg-slate-50' },
+                        h('caption', { className: 'sr-only' }, 'Handle Import'), h('thead', null, h('tr', { className: 'bg-slate-50' },
                             (importMode === 'abc' ? abcHeaders : studentHeaders).map(hdr =>
-                                h('th', { key: hdr, className: 'px-3 py-2 text-left text-[10px] font-bold text-slate-500 uppercase' }, hdr)
+                                h('th', { scope: 'col', key: hdr, className: 'px-3 py-2 text-left text-[10px] font-bold text-slate-500 uppercase' }, hdr)
                             )
                         )),
                         h('tbody', null, parsedRows.slice(0, 50).map((row, i) =>

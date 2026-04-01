@@ -1338,10 +1338,10 @@ window.StemLab = window.StemLab || {
             : [[false, false], [false, true], [true, false], [true, true]];
           truthTableGrid = h('div', { className: 'mt-2 rounded-lg bg-slate-800/60 border border-slate-700 p-2 overflow-x-auto' },
             h('table', { className: 'w-full text-xs' },
-              h('thead', null, h('tr', null,
-                h('th', { className: 'text-left text-slate-500 px-2 py-1' }, 'A'),
-                gate.inputs === 2 && h('th', { className: 'text-left text-slate-500 px-2 py-1' }, 'B'),
-                h('th', { className: 'text-left text-cyan-400 px-2 py-1' }, 'Q')
+              h('caption', { className: 'sr-only' }, 'Data table: A, B, Q'), h('thead', null, h('tr', null,
+                h('th', { scope: 'col', className: 'text-left text-slate-500 px-2 py-1' }, 'A'),
+                gate.inputs === 2 && h('th', { scope: 'col', className: 'text-left text-slate-500 px-2 py-1' }, 'B'),
+                h('th', { scope: 'col', className: 'text-left text-cyan-400 px-2 py-1' }, 'Q')
               )),
               h('tbody', null, rows.map(function(r, ri) {
                 var qVal = gate.inputs === 1 ? gate.fn(r[0]) : gate.fn(r[0], r[1]);

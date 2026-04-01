@@ -2919,11 +2919,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           compareSel.clinical ? h('p', { className: 'text-[10px] text-rose-600 italic leading-relaxed' }, '\u26A0 ' + compareSel.clinical.substring(0, 150) + (compareSel.clinical.length > 150 ? '...' : '')) : null
                         ),
                         h('table', { className: 'w-full mt-2 text-[10px]' },
-                          h('thead', null,
+                          h('caption', { className: 'sr-only' }, 'anatomy data table'), h('thead', null,
                             h('tr', { className: 'border-b border-violet-200' },
-                              h('th', { className: 'text-left py-1 text-violet-600 font-bold' }, ''),
-                              h('th', { className: 'text-left py-1 font-bold', style: { color: sys.accent } }, sel.name),
-                              h('th', { className: 'text-left py-1 text-violet-700 font-bold' }, compareSel.name)
+                              h('th', { scope: 'col', className: 'text-left py-1 text-violet-600 font-bold' }, ''),
+                              h('th', { scope: 'col', className: 'text-left py-1 font-bold', style: { color: sys.accent } }, sel.name),
+                              h('th', { scope: 'col', className: 'text-left py-1 text-violet-700 font-bold' }, compareSel.name)
                             )
                           ),
                           h('tbody', null,

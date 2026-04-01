@@ -636,12 +636,12 @@ window.StemLab = window.StemLab || {
         // ── 12×12 Grid ──
         h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto' },
           h('table', { className: 'border-collapse w-full text-center' },
-            h('thead', null,
+            h('caption', { className: 'sr-only' }, 'Try Again'), h('thead', null,
               h('tr', null,
-                h('th', { className: 'w-8 h-8 text-[10px] font-bold text-pink-400' }, '\u00D7'),
+                h('th', { scope: 'col', className: 'w-8 h-8 text-[10px] font-bold text-pink-400' }, '\u00D7'),
                 Array.from({ length: maxNum }).map(function(_, c) {
                   var isColHL = multTableHover && multTableHover.c === c + 1;
-                  return h('th', { key: c, className: 'w-8 h-8 text-xs font-bold ' + (isColHL ? 'text-pink-700 bg-pink-100' : 'text-pink-500') }, c + 1);
+                  return h('th', { scope: 'col', key: c, className: 'w-8 h-8 text-xs font-bold ' + (isColHL ? 'text-pink-700 bg-pink-100' : 'text-pink-500') }, c + 1);
                 })
               )
             ),

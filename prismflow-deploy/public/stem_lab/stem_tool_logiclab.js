@@ -1069,17 +1069,17 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("table", { className: "w-full text-sm", style: { borderCollapse: 'separate', borderSpacing: '0 2px' } },
 
-                      React.createElement("thead", null,
+                      React.createElement("caption", { className: "sr-only" }, "logiclab data table"), React.createElement("thead", null,
 
                         React.createElement("tr", null,
 
                           table.vars.map(function(v) {
 
-                            return React.createElement("th", { key: v, className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100 first:rounded-l-lg last:rounded-r-lg" }, v);
+                            return React.createElement("th", { scope: "col", key: v, className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100 first:rounded-l-lg last:rounded-r-lg" }, v);
 
                           }),
 
-                          React.createElement("th", { className: "px-4 py-2 text-white font-black text-center rounded-lg", style: { background: _gViolet } }, expr)
+                          React.createElement("th", { scope: "col", className: "px-4 py-2 text-white font-black text-center rounded-lg", style: { background: _gViolet } }, expr)
 
                         )
 
@@ -1747,13 +1747,13 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("table", { className: "w-full text-sm", style: { borderCollapse: 'separate', borderSpacing: '0 2px' } },
 
-                    React.createElement("thead", null,
+                    React.createElement("caption", { className: "sr-only" }, "Fill the Result Column"), React.createElement("thead", null,
 
                       React.createElement("tr", null,
 
-                        table.vars.map(function(v) { return React.createElement("th", { key: v, className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100" }, v); }),
+                        table.vars.map(function(v) { return React.createElement("th", { scope: "col", key: v, className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100" }, v); }),
 
-                        React.createElement("th", { className: "px-4 py-2 text-white font-black text-center", style: { background: _gViolet } }, "Result?")
+                        React.createElement("th", { scope: "col", className: "px-4 py-2 text-white font-black text-center", style: { background: _gViolet } }, "Result?")
 
                       )
 
@@ -2048,10 +2048,10 @@ window.StemLab = window.StemLab || {
                   return React.createElement("div", null,
                     React.createElement("h4", { className: "text-xs font-black text-violet-600 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA " + gateType + " Truth Table"),
                     React.createElement("table", { className: "text-sm", style:{borderCollapse:'separate',borderSpacing:'0 2px',maxWidth:'280px'} },
-                      React.createElement("thead", null, React.createElement("tr", null,
-                        React.createElement("th", { className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100 rounded-lg" }, "A"),
-                        !isUnaryGate && React.createElement("th", { className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100 rounded-lg" }, "B"),
-                        React.createElement("th", { className: "px-4 py-2 text-white font-black text-center rounded-lg", style:{background:'linear-gradient(135deg,#7c3aed,#a78bfa)'} }, gateType)
+                      React.createElement("caption", { className: "sr-only" }, "\uD83D\uDCCA "), React.createElement("thead", null, React.createElement("tr", null,
+                        React.createElement("th", { scope: "col", className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100 rounded-lg" }, "A"),
+                        !isUnaryGate && React.createElement("th", { scope: "col", className: "px-4 py-2 text-violet-600 font-black text-center bg-violet-100 rounded-lg" }, "B"),
+                        React.createElement("th", { scope: "col", className: "px-4 py-2 text-white font-black text-center rounded-lg", style:{background:'linear-gradient(135deg,#7c3aed,#a78bfa)'} }, gateType)
                       )),
                       React.createElement("tbody", null,
                         rows2.map(function(r2,ri2) {
@@ -2121,7 +2121,7 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("table", { className: "w-full text-xs" },
 
-                    React.createElement("tbody", null,
+                    React.createElement("caption", { className: "sr-only" }, "Connective Symbols"), React.createElement("tbody", null,
 
                       [['∧','AND','Both must be true'],['∨','OR','At least one true'],['¬','NOT','Flips truth value'],['→','IF...THEN','False only when P true, Q false'],['↔','IFF','True when both same'],['⊕','XOR','True when exactly one true']].map(function(r) {
 

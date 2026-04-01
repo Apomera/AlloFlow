@@ -1090,11 +1090,11 @@ window.StemLab = window.StemLab || {
               // Punnett Grid
               h('div', { className: 'bg-white rounded-xl border border-violet-200 p-4 inline-block mx-auto', style: { display: 'flex', justifyContent: 'center' } },
                 h('table', { className: 'border-collapse' },
-                  h('thead', null, h('tr', null,
-                    h('th', { className: 'w-16 h-16' }),
+                  h('caption', { className: 'sr-only' }, 'punnett data table'), h('thead', null, h('tr', null,
+                    h('th', { scope: 'col', className: 'w-16 h-16' }),
                     isSexLinked
-                      ? [h('th', { key: 0, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, 'X' + parent2[0]), h('th', { key: 1, className: 'w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-200' }, 'Y')]
-                      : parent2.map(function(a, i) { return h('th', { key: i, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, a); })
+                      ? [h('th', { scope: 'col', key: 0, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, 'X' + parent2[0]), h('th', { key: 1, className: 'w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-200' }, 'Y')]
+                      : parent2.map(function(a, i) { return h('th', { scope: 'col', key: i, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, a); })
                   )),
                   h('tbody', null, parent1.map(function(a, r) {
                     var rowLabel = isSexLinked ? 'X' + a : a;
@@ -1369,10 +1369,10 @@ window.StemLab = window.StemLab || {
                   // 4x4 Punnett Grid
                   h('div', { className: 'bg-white rounded-xl border border-indigo-200 p-3 overflow-x-auto', style: { display: 'flex', justifyContent: 'center' } },
                     h('table', { className: 'border-collapse' },
-                      h('thead', null, h('tr', null,
-                        h('th', { className: 'w-14 h-10' }),
+                      h('caption', { className: 'sr-only' }, 'punnett data table'), h('thead', null, h('tr', null,
+                        h('th', { scope: 'col', className: 'w-14 h-10' }),
                         diGametes2.map(function(gam, ci) {
-                          return h('th', { key: ci, className: 'w-14 h-10 text-center text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200' }, gam);
+                          return h('th', { scope: 'col', key: ci, className: 'w-14 h-10 text-center text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200' }, gam);
                         })
                       )),
                       h('tbody', null, diGametes1.map(function(gam, ri) {

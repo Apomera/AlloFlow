@@ -411,11 +411,11 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-4 overflow-x-auto' },
             h('table', { className: 'mx-auto border-collapse' },
-              h('thead', null,
+              h('caption', { className: 'sr-only' }, 'areamodel data table'), h('thead', null,
                 h('tr', null,
-                  h('th', { className: 'p-2 text-sm font-bold text-slate-500' }, '\u00d7'),
-                  h('th', { className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tl-lg border border-indigo-200', style: { minWidth: '120px' } }, bTens),
-                  h('th', { className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tr-lg border border-indigo-200', style: { minWidth: '80px' } }, bOnes)
+                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-slate-500' }, '\u00d7'),
+                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tl-lg border border-indigo-200', style: { minWidth: '120px' } }, bTens),
+                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tr-lg border border-indigo-200', style: { minWidth: '80px' } }, bOnes)
                 )
               ),
               h('tbody', null,

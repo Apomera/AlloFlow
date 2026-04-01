@@ -1411,10 +1411,10 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2' }, 'Comparison Table'),
             h('div', { className: 'overflow-x-auto' },
               h('table', { className: 'w-full text-[10px]' },
-                h('thead', null,
+                h('caption', { className: 'sr-only' }, 'Extreme (>8)'), h('thead', null,
                   h('tr', { className: 'border-b border-slate-200' },
                     ['Disease', 'R\u2080', 'R_eff', 'Vacc%', 'Herd%', 'Peak I%', 'Peak Day', 'Total%'].map(function(col) {
-                      return h('th', { key: col, className: 'px-2 py-1 text-left font-bold text-slate-600' }, col);
+                      return h('th', { scope: 'col', key: col, className: 'px-2 py-1 text-left font-bold text-slate-600' }, col);
                     })
                   )
                 ),

@@ -3402,11 +3402,11 @@
                 React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
                   React.createElement("p", { className: "text-[10px] font-bold text-slate-500 px-3 pt-2" }, "\uD83D\uDCCA Federal Tax Brackets (your income fills each bracket):"),
                   React.createElement("table", { className: "w-full text-xs" },
-                    React.createElement("thead", null,
+                    React.createElement("caption", { className: "sr-only" }, "stem lab module data table"), React.createElement("thead", null,
                       React.createElement("tr", { className: "bg-slate-50" },
-                        React.createElement("th", { className: "px-3 py-2 text-left font-bold text-slate-500" }, "Rate"),
-                        React.createElement("th", { className: "px-3 py-2 text-right font-bold text-slate-500" }, "Taxable"),
-                        React.createElement("th", { className: "px-3 py-2 text-right font-bold text-red-500" }, "Tax Owed")
+                        React.createElement("th", { scope: "col", className: "px-3 py-2 text-left font-bold text-slate-500" }, "Rate"),
+                        React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-slate-500" }, "Taxable"),
+                        React.createElement("th", { scope: "col", className: "px-3 py-2 text-right font-bold text-red-500" }, "Tax Owed")
                       )
                     ),
                     React.createElement("tbody", null,
@@ -3524,11 +3524,11 @@
                 // Scoring matrix
                 React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-x-auto mb-4" },
                   React.createElement("table", { className: "w-full text-xs" },
-                    React.createElement("thead", null,
+                    React.createElement("caption", { className: "sr-only" }, "stem lab module data table"), React.createElement("thead", null,
                       React.createElement("tr", { className: "bg-slate-50" },
-                        React.createElement("th", { className: "px-3 py-2 text-left font-bold text-slate-500" }, "Criteria (weight)"),
+                        React.createElement("th", { scope: "col", className: "px-3 py-2 text-left font-bold text-slate-500" }, "Criteria (weight)"),
                         dmOptions.map(function (opt, oi) {
-                          return React.createElement("th", { key: oi, className: "px-3 py-2 text-center font-bold text-amber-600" }, opt);
+                          return React.createElement("th", { scope: "col", key: oi, className: "px-3 py-2 text-center font-bold text-amber-600" }, opt);
                         })
                       )
                     ),

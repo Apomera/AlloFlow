@@ -662,11 +662,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 )
               ),
               h('table', { className: 'w-full text-sm' },
-                h('thead', null,
+                h('caption', { className: 'sr-only' }, 'Change \u2192'), h('thead', null,
                   h('tr', { className: 'bg-cyan-50' },
-                    h('th', { className: 'text-left px-4 py-2 text-xs font-bold text-cyan-700' }, 'Unit'),
-                    h('th', { className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' }, 'Value'),
-                    h('th', { className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' }, '')
+                    h('th', { scope: 'col', className: 'text-left px-4 py-2 text-xs font-bold text-cyan-700' }, 'Unit'),
+                    h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' }, 'Value'),
+                    h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' }, '')
                   )
                 ),
                 h('tbody', null,
