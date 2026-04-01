@@ -29,6 +29,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-galaxy')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-galaxy';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ═══ 🔬 galaxy (galaxy) ═══
   window.StemLab.registerTool('galaxy', {
@@ -69,6 +82,7 @@ window.StemLab = window.StemLab || {
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
+      var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
       var renderTutorial = ctx.renderTutorial || function() { return null; };
       var _tutGalaxy = ctx._tutGalaxy || [];
@@ -427,6 +441,12 @@ if (!window._galaxyHasLoadedOnce) {
             if (canvasEl._galaxyInit) return;
 
             canvasEl._galaxyInit = true;
+            // Canvas Narration: galaxy init
+            if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'init', {
+              first: 'Galaxy Explorer loaded. A 3-D view of the Milky Way with ' + starCount.toLocaleString() + ' stars. Drag to orbit, scroll to zoom. Explore galaxy types, warp to locations, and travel through cosmic time.',
+              repeat: 'Galaxy Explorer ready.',
+              terse: 'Galaxy Explorer ready.'
+            });
 
             var doInit = function () { loadGalaxyPP(function () { initGalaxy(canvasEl); }); };
 
@@ -1322,7 +1342,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Action",
 
                     key: m.key, onClick: function () {
 
@@ -1351,7 +1371,18 @@ if (!window._galaxyHasLoadedOnce) {
                         }
                       }
 
-                      else { upd("quizMode", false); upd("simMode", m.key); }
+                      else {
+                        upd("quizMode", false); upd("simMode", m.key);
+                        // Canvas Narration: sim mode switch
+                        if (typeof canvasNarrate === 'function') {
+                          var modeDesc = m.key === 'galaxy' ? 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.' : 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.';
+                          canvasNarrate('galaxy', 'simMode', {
+                            first: 'Switched to ' + m.label + '. ' + modeDesc,
+                            repeat: m.label + ' mode active.',
+                            terse: m.label
+                          });
+                        }
+                      }
 
                     }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white')
 
@@ -1377,7 +1408,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var gt = GALAXY_TYPES[key];
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change galaxy type",
 
                     key: key,
 
@@ -1388,6 +1419,12 @@ if (!window._galaxyHasLoadedOnce) {
                       var cv = document.querySelector('[data-galaxy-canvas]');
 
                       if (cv) { cv._galaxyInit = false; cv._galaxyCleanup && cv._galaxyCleanup(); canvasRefCb(cv); }
+                      // Canvas Narration: galaxy type switch
+                      if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'galaxyType', {
+                        first: 'Switched to ' + gt.label + ' galaxy. ' + gt.desc + ' Example: ' + gt.example + '.',
+                        repeat: gt.label + ' galaxy active.',
+                        terse: gt.label
+                      });
 
                     },
 
@@ -1441,13 +1478,14 @@ if (!window._galaxyHasLoadedOnce) {
 
                     else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); orb.theta = Math.PI * 0.1; orb.phi = Math.PI * 0.35; orb.r = 1.2; upCam(); }
 
-                  }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none' }
+                  }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none' },
+                  onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #a78bfa'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 }),
 
                 // Star type legend
 
-                React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
+                React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[11px] text-white/80" },
 
                   React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
 
@@ -1457,7 +1495,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 // Scale info overlay
 
-                layers.grid && React.createElement("div", { className: "absolute bottom-2 right-2 bg-black/60 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
+                layers.grid && React.createElement("div", { className: "absolute bottom-2 right-2 bg-black/60 backdrop-blur rounded-lg px-2 py-1.5 text-[11px] text-white/80" },
 
                   React.createElement("div", { className: "font-bold mb-1 text-blue-300" }, "\uD83D\uDCCF Scale"),
 
@@ -1477,13 +1515,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var isOn = layers[lt.key] !== false;
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Toggle layer",
 
                     key: lt.key,
 
                     onClick: function () { toggleLayer(lt.key); },
 
-                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400')
+                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-500')
 
                   }, lt.icon + " " + lt.label);
 
@@ -1503,6 +1541,8 @@ if (!window._galaxyHasLoadedOnce) {
 
                   type: "range", min: 2500, max: 100000, step: 2500, value: starCount,
 
+                  'aria-label': 'Number of stars',
+
                   onChange: function (e) {
 
                     var val = parseInt(e.target.value);
@@ -1519,7 +1559,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
+                React.createElement("span", { className: "text-[10px] text-slate-500 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
 
               ),
 
@@ -1539,11 +1579,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex items-center gap-2" },
 
-                  React.createElement("span", { className: "text-[9px] text-violet-400 whitespace-nowrap" }, "Big Bang"),
+                  React.createElement("span", { className: "text-[11px] text-violet-400 whitespace-nowrap" }, "Big Bang"),
 
                   React.createElement("input", {
 
                     type: "range", min: 0.1, max: 14, step: 0.1, value: cosmicAge,
+
+                    'aria-label': 'Cosmic age in billion years',
 
                     onChange: function (e) {
 
@@ -1554,6 +1596,12 @@ if (!window._galaxyHasLoadedOnce) {
                       var cv = document.querySelector('[data-galaxy-canvas]');
 
                       if (cv && cv._updateAge) cv._updateAge(val);
+                      // Canvas Narration: cosmic age change
+                      if (typeof canvasNarrate === 'function') {
+                        var ep = getEpochNarration(val);
+                        var msg = val.toFixed(1) + ' billion years' + (ep ? '. ' + ep.title : '');
+                        canvasNarrate('galaxy', 'cosmicAge', msg, { debounce: 800 });
+                      }
 
                     },
 
@@ -1561,27 +1609,29 @@ if (!window._galaxyHasLoadedOnce) {
 
                   }),
 
-                  React.createElement("span", { className: "text-[9px] text-violet-400 whitespace-nowrap" }, "14 Gyr")
+                  React.createElement("span", { className: "text-[11px] text-violet-400 whitespace-nowrap" }, "14 Gyr")
 
                 ),
 
                 React.createElement("div", { className: "flex gap-1.5 mt-2" },
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Action",
 
-                    onClick: function () {
+                    onMouseDown: function (e) {
+
+                      e.preventDefault(); e.stopPropagation();
 
                       if (window._galaxyTimeLapse) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
 
                       upd("isPlaying", true);
 
-                      var age = cosmicAge;
+                      var age = d.cosmicAge !== undefined ? d.cosmicAge : cosmicAge;
 
                       window._galaxyTimeLapse = setInterval(function () {
 
                         age += 0.1;
 
-                        if (age > 14) { age = 0.1; }
+                        if (age > 14) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
 
                         upd("cosmicAge", parseFloat(age.toFixed(1)));
 
@@ -1595,11 +1645,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold select-none " + (window._galaxyTimeLapse ? "bg-red-700 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
 
-                  }, d.isPlaying ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
+                  }, window._galaxyTimeLapse ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Supernova!",
 
                     onClick: function () {
 
@@ -1609,11 +1659,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all"
 
                   }, "\uD83D\uDCA5 Supernova!"),
 
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Star Life",
 
                     onClick: function () { upd("quizMode", false); upd("simMode", "star"); },
 
@@ -1641,7 +1691,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   ].map(function (m) {
 
-                    return React.createElement("span", {
+                    return React.createElement("span", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                       key: m.age,
 
@@ -1695,7 +1745,15 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
 
-                WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
+                WARP_POINTS.map(function (wp) { return React.createElement("button", { "aria-label": "Warp to " + wp.label, key: wp.label, onClick: function () {
+                  var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc);
+                  // Canvas Narration: warp navigation
+                  if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'warp', {
+                    first: 'Warping to ' + wp.label + '. ' + (wp.desc || 'Camera repositioning to this location.'),
+                    repeat: 'Warped to ' + wp.label + '.',
+                    terse: wp.label
+                  });
+                }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
 
               ),
 
@@ -1765,7 +1823,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-center" },
 
-                  React.createElement("p", { className: "text-[9px] text-indigo-600" }, "\uD83D\uDD2D If our Sun were a basketball, a" + (selStar.id === 'O' ? 'n' : '') + " " + selStar.id + "-type star would be " + ({ 'O': 'a hot tub (6\u201315x wider)', 'B': 'a beach ball (2\u20137x wider)', 'A': 'a soccer ball (1.4\u20132x wider)', 'F': 'a volleyball (slightly bigger)', 'G': 'another basketball (same size!)', 'K': 'a softball (a bit smaller)', 'M': 'a tennis ball or smaller' }[selStar.id] || 'similar in size') + ".")
+                  React.createElement("p", { className: "text-[11px] text-indigo-600" }, "\uD83D\uDD2D If our Sun were a basketball, a" + (selStar.id === 'O' ? 'n' : '') + " " + selStar.id + "-type star would be " + ({ 'O': 'a hot tub (6\u201315x wider)', 'B': 'a beach ball (2\u20137x wider)', 'A': 'a soccer ball (1.4\u20132x wider)', 'F': 'a volleyball (slightly bigger)', 'G': 'another basketball (same size!)', 'K': 'a softball (a bit smaller)', 'M': 'a tennis ball or smaller' }[selStar.id] || 'similar in size') + ".")
 
                 )
 
@@ -1797,7 +1855,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
               )
 
@@ -1828,7 +1886,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   quizQ.options.map(function (opt) {
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Select option",
 
                       key: opt, disabled: !!d.quizFeedback,
 
@@ -1842,7 +1900,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         else { upd("quizStreak", 0); }
 
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-500 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
 
                     }, opt);
 
@@ -1854,7 +1912,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   d.quizFeedback.msg,
 
-                  React.createElement("button", { onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % ACTIVE_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
+                  React.createElement("button", { "aria-label": "Next", onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % ACTIVE_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
 
                 )
 
@@ -2353,7 +2411,7 @@ if (!window._galaxyHasLoadedOnce) {
                 }),
 
                 // ── Snapshot button (overlay, bottom-right of canvas) ──
-                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
 
               )
 
@@ -2379,7 +2437,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("h4", { className: "text-sm font-bold text-white" }, "Star Mass & Classification"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Adjust mass to explore how different stars live and die")
+                    React.createElement("p", { className: "text-[10px] text-slate-500" }, "Adjust mass to explore how different stars live and die")
 
                   ),
 
@@ -2399,7 +2457,15 @@ if (!window._galaxyHasLoadedOnce) {
 
                     type: "range", min: 0.5, max: 50, step: 0.5, value: lifecycleMass, "aria-label": "Star mass in solar masses",
 
-                    onChange: function (e) { upd("lifecycleMass", parseFloat(e.target.value)); },
+                    onChange: function (e) {
+                      var massVal = parseFloat(e.target.value);
+                      upd("lifecycleMass", massVal);
+                      // Canvas Narration: star mass change
+                      if (typeof canvasNarrate === 'function') {
+                        var cat = massVal < 0.5 ? 'Brown Dwarf' : massVal < 0.8 ? 'Red Dwarf' : massVal < 2 ? 'Sun-like star' : massVal < 8 ? 'Hot star' : massVal < 25 ? 'Massive star' : 'Hypermassive star';
+                        canvasNarrate('galaxy', 'starMass', cat + ' at ' + massVal + ' solar masses', { debounce: 800 });
+                      }
+                    },
 
                     className: "flex-1 h-2 accent-amber-400 cursor-pointer"
 
@@ -2445,7 +2511,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   ),
 
-                  React.createElement("span", { className: "text-[9px] text-slate-500 italic" },
+                  React.createElement("span", { className: "text-[11px] text-slate-500 italic" },
 
                     lifecycleMass < 0.5 ? "Too small for hydrogen fusion" :
 
@@ -2475,7 +2541,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("h4", { className: "text-sm font-bold text-white" }, "\u2728 Stellar Lifecycle Journey"),
 
-                  React.createElement("span", { className: "ml-auto text-[9px] text-indigo-400 bg-indigo-900/50 px-2 py-0.5 rounded-full border border-indigo-700/50" },
+                  React.createElement("span", { className: "ml-auto text-[11px] text-indigo-400 bg-indigo-900/50 px-2 py-0.5 rounded-full border border-indigo-700/50" },
 
                     lifecycleMass < 8 ? "\u2193 Gentle path" : "\u2193 Violent path")
 
@@ -2506,11 +2572,19 @@ if (!window._galaxyHasLoadedOnce) {
                         )
                       ) : null,
 
-                      React.createElement("div", { onClick: function() { upd('activeStage', s.id); }, className: "flex items-center gap-3 p-2 rounded-xl border transition-all cursor-pointer " + (isDeathBranch ? "ml-6 " : "") + (isActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isActive ? s.color : s.color + '55', background: isActive ? s.color + '25' : s.color + '15' } },
+                      React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function() {
+                        upd('activeStage', s.id);
+                        // Canvas Narration: lifecycle stage selection
+                        if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'stageSelect', {
+                          first: s.emoji + ' ' + s.name + '. ' + s.desc,
+                          repeat: s.name + ' stage selected.',
+                          terse: s.name
+                        });
+                      }, className: "flex items-center gap-3 p-2 rounded-xl border transition-all cursor-pointer " + (isDeathBranch ? "ml-6 " : "") + (isActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isActive ? s.color : s.color + '55', background: isActive ? s.color + '25' : s.color + '15' } },
                         React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("p", { className: "text-[11px] font-bold leading-tight", style: { color: s.color } }, s.name),
-                          React.createElement("p", { className: "text-[9px] text-slate-400 leading-tight" }, s.desc)
+                          React.createElement("p", { className: "text-[11px] text-slate-500 leading-tight" }, s.desc)
                         ),
                         React.createElement("span", { className: "text-[8px] text-slate-600 flex-shrink-0" },
                           s.id === 'nebula' ? "" :
@@ -2567,7 +2641,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       (lifecycleMass >= 16 && st.id === 'O');
 
-                    return React.createElement("div", {
+                    return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                       key: st.id,
 
@@ -2617,13 +2691,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed mb-2" }, st.desc),
 
-                    React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[9px]" },
+                    React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[11px]" },
 
                       [{ l: "Luminosity", v: st.luminosity }, { l: "Mass Range", v: st.mass || '?' }, { l: "Lifetime", v: st.lifetime || '?' }].map(function (item) {
 
                         return React.createElement("div", { key: item.l, className: "bg-white rounded-lg p-1.5 text-center border border-slate-100" },
 
-                          React.createElement("div", { className: "text-slate-400 font-bold" }, item.l),
+                          React.createElement("div", { className: "text-slate-500 font-bold" }, item.l),
 
                           React.createElement("div", { className: "font-bold", style: { color: st.color } }, item.v)
 
@@ -2635,7 +2709,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     st.whyItMatters ? React.createElement("div", { className: "mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200" },
 
-                      React.createElement("p", { className: "text-[9px] text-amber-700" }, "\uD83D\uDCA1 " + st.whyItMatters)
+                      React.createElement("p", { className: "text-[11px] text-amber-700" }, "\uD83D\uDCA1 " + st.whyItMatters)
 
                     ) : null
 
@@ -2693,7 +2767,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("div", { className: "rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-lg shadow-amber-200", style: { width: '40px', height: '40px' } }),
 
-                    React.createElement("span", { className: "text-[9px] text-slate-500 mt-1 font-bold" }, "Sun (1 M\u2609)")
+                    React.createElement("span", { className: "text-[11px] text-slate-500 mt-1 font-bold" }, "Sun (1 M\u2609)")
 
                   ),
 
@@ -2729,7 +2803,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     }),
 
-                    React.createElement("span", { className: "text-[9px] text-slate-500 mt-1 font-bold" }, lifecycleMass + " M\u2609")
+                    React.createElement("span", { className: "text-[11px] text-slate-500 mt-1 font-bold" }, lifecycleMass + " M\u2609")
 
                   )
 

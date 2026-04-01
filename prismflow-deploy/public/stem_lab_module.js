@@ -559,6 +559,86 @@
         setTimeout(function () { setA11yAnnouncement(''); try { var liveEl = document.getElementById('stem-a11y-live'); if (liveEl) liveEl.textContent = ''; } catch (e) { } }, 3000);
       }
 
+      // ── Canvas Narration: Dual-Channel (aria-live + TTS) with Smart Detection & Adaptive Verbosity ──
+      var _canvasNarrateDedupe = {};
+      var _canvasNarrateEncounters = {};
+
+      // Smart Detection: should TTS narration be active for this session?
+      function _canvasNarrateTTSEnabled() {
+        // Check URL override: ?a11y=tts
+        try { if (new URLSearchParams(window.location.search).get('a11y') === 'tts') return true; } catch(e) {}
+        // Check if global mute is on
+        if (window._alloGlobalMute) return false;
+        // Check if student profile has ttsSpeed configured (teacher-set)
+        try { if (props && props.ttsSpeed && props.ttsSpeed !== 1) return true; } catch(e) {}
+        // Check if Karaoke or Read-Aloud modes are active
+        try { if (props && (props.karaokeMode || props.readAloudActive)) return true; } catch(e) {}
+        // Check OS accessibility signals
+        try {
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+          if (window.matchMedia('(forced-colors: active)').matches) return true;
+        } catch(e) {}
+        // Check if a screen reader is likely active (heuristic)
+        try { if (document.querySelector('[aria-live="assertive"]') || navigator.userAgent.match(/NVDA|JAWS|VoiceOver/i)) return true; } catch(e) {}
+        // Check localStorage preference
+        try { if (localStorage.getItem('alloflow_canvas_narrate') === 'on') return true; } catch(e) {}
+        return false;
+      }
+
+      /**
+       * canvasNarrate — Dual-channel narration for canvas simulations
+       * @param {string} toolId — e.g., 'galaxy', 'physics', 'wave'
+       * @param {string} eventKey — e.g., 'launch', 'landing', 'paramChange'
+       * @param {object} variants — { first: 'Full narration...', repeat: 'Short version', terse: '142m' }
+       *     OR a plain string (treated as all-encounters-same narration)
+       * @param {object} options — { debounce: 2000, speak: true/false }
+       */
+      function canvasNarrate(toolId, eventKey, variants, options) {
+        options = options || {};
+        var debounceMs = options.debounce != null ? options.debounce : 2000;
+
+        // Resolve variants to the right verbosity level
+        var msg;
+        if (typeof variants === 'string') {
+          msg = variants;
+        } else {
+          var encounterKey = toolId + '::' + eventKey;
+          var count = _canvasNarrateEncounters[encounterKey] || 0;
+          _canvasNarrateEncounters[encounterKey] = count + 1;
+          if (count === 0 && variants.first) {
+            msg = variants.first;
+          } else if (count === 1 && variants.repeat) {
+            msg = variants.repeat;
+          } else {
+            msg = variants.terse || variants.repeat || variants.first || '';
+          }
+        }
+
+        if (!msg) return;
+
+        // Debounce: skip if same toolId+eventKey fired within window
+        var dedupeKey = toolId + ':' + eventKey;
+        if (debounceMs > 0 && _canvasNarrateDedupe[dedupeKey]) return;
+        if (debounceMs > 0) {
+          _canvasNarrateDedupe[dedupeKey] = true;
+          setTimeout(function() { delete _canvasNarrateDedupe[dedupeKey]; }, debounceMs);
+        }
+
+        // Channel 1: aria-live (always active — silent unless SR is running)
+        announceToSR(msg);
+
+        // Channel 2: AlloFlow TTS (only if Smart Detection says yes)
+        var speakAloud = options.speak != null ? options.speak : _canvasNarrateTTSEnabled();
+        if (speakAloud && callTTS) {
+          try { callTTS(msg); } catch(e) {}
+        }
+      }
+
+      // Manual toggle: let users flip canvas narration on/off
+      function setCanvasNarrateEnabled(enabled) {
+        try { localStorage.setItem('alloflow_canvas_narrate', enabled ? 'on' : 'off'); } catch(e) {}
+      }
+
       // ── Reduced Motion Detection (reads parent app's header button toggle) ──
       var _reduceMotion = false;
       try {
@@ -11360,6 +11440,8 @@
             awardXP: typeof awardStemXP === 'function' ? awardStemXP : function() {},
             getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },
             announceToSR: typeof announceToSR === 'function' ? announceToSR : function() {},
+            canvasNarrate: typeof canvasNarrate === 'function' ? canvasNarrate : function() {},
+            setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
             celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
             t: typeof t === 'function' ? t : function(k) { return k; },
