@@ -57,5 +57,11 @@ contextBridge.exposeInMainWorld('alloAPI', {
         callback(data);
       });
     }
+  },
+  pocketbase: {
+    checkAdmin: () => {
+      console.log('[preload:pocketbase:checkAdmin] Checking if admin is configured');
+      return ipcRenderer.invoke('pocketbase:check-admin');
+    }
   }
 });

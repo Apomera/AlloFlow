@@ -9,9 +9,21 @@ const { startWebAppServer, stopWebAppServer, getWebAppPort } = require('./webApp
 const isDev = !app.isPackaged;
 let mainWindow;
 
-// AlloFlow config directory and file
+// AlloFlow config directory and files
 const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
 const CONFIG_FILE = path.join(ALLOFLOW_DIR, 'config.json');
+const VERSION_FILE = path.join(ALLOFLOW_DIR, 'version.json');
+const DEPLOYMENT_MANIFEST = path.join(ALLOFLOW_DIR, 'deployment.json');
+
+// Get installer version from package.json
+function getInstallerVersion() {
+  try {
+    const pkg = require('../package.json');
+    return pkg.version;
+  } catch { return '0.0.0'; }
+}
+
+const INSTALLER_VERSION = getInstallerVersion();
 
 // Ensure AlloFlow directory exists
 function ensureAlloFlowDir() {
@@ -47,11 +59,56 @@ function saveConfig(config) {
   try {
     ensureAlloFlowDir();
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+    // Also save installer version when config is saved
+    fs.writeFileSync(VERSION_FILE, JSON.stringify({
+      installerVersion: INSTALLER_VERSION,
+      savedAt: new Date().toISOString()
+    }, null, 2));
     console.log('[setup:config] Saved config for deployment type:', config.deploymentType);
     return true;
   } catch (err) {
     console.error('[setup:config] Error saving config:', err.message);
     return false;
+  }
+}
+
+// Check if installed version differs from installer version
+function isVersionMismatch() {
+  try {
+    if (fs.existsSync(VERSION_FILE)) {
+      const versionData = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf-8'));
+      const mismatch = versionData.installerVersion !== INSTALLER_VERSION;
+      if (mismatch) {
+        console.log('[version:check] Version mismatch: installed', versionData.installerVersion, 'vs installer', INSTALLER_VERSION);
+      }
+      return mismatch;
+    }
+  } catch (err) {
+    console.warn('[version:check] Could not check version:', err.message);
+  }
+  return false;
+}
+
+// Get deployment manifest (tracks which services are installed)
+function getDeploymentManifest() {
+  try {
+    if (fs.existsSync(DEPLOYMENT_MANIFEST)) {
+      return JSON.parse(fs.readFileSync(DEPLOYMENT_MANIFEST, 'utf-8'));
+    }
+  } catch (err) {
+    console.warn('[manifest] Could not read manifest:', err.message);
+  }
+  return null;
+}
+
+// Save deployment manifest
+function saveDeploymentManifest(manifest) {
+  try {
+    ensureAlloFlowDir();
+    fs.writeFileSync(DEPLOYMENT_MANIFEST, JSON.stringify(manifest, null, 2));
+    console.log('[manifest] Saved deployment manifest');
+  } catch (err) {
+    console.error('[manifest] Error saving manifest:', err.message);
   }
 }
 
@@ -360,6 +417,15 @@ function detectHardware() {
 async function startDeployment(setupData, onProgress) {
   try {
     console.log('[deploy:start] Starting native deployment for:', setupData.deploymentType);
+    console.log('[deploy:start] Installer version:', INSTALLER_VERSION);
+    
+    // Check if version has changed
+    const versionChanged = isVersionMismatch();
+    if (versionChanged) {
+      console.log('[deploy:start] Version mismatch detected, will update services');
+    } else {
+      console.log('[deploy:start] Version unchanged, checking if redeploy needed...');
+    }
     
     const selectedServices = setupData.selectedServices || [];
     const servicesToInstall = selectedServices.filter(
@@ -370,13 +436,22 @@ async function startDeployment(setupData, onProgress) {
     const hardware = detectHardware();
     const gpuInfo = hardware.gpu || null;
     
-    // PHASE 1: Pre-flight
-    onProgress({ phase: 'preflight', status: 'Checking system requirements...', progress: 5 });
-    nativePM.ensureDirectories();
+    // PHASE 0: Check if deployment is needed (skip if version unchanged and no new services)
+    let needsInstallation = true;
+    if (!versionChanged) {
+      const manifest = getDeploymentManifest();
+      if (manifest && manifest.services) {
+        const newServices = servicesToInstall.filter(s => !manifest.services.includes(s));
+        if (newServices.length === 0 && servicesToInstall.every(s => manifest.services.includes(s))) {
+          console.log('[deploy:start] All services already deployed at current version, skipping installation phases...');
+          onProgress({ phase: 'preflight', status: 'Services already up-to-date, skipping installation...', progress: 10 });
+          needsInstallation = false;
+        }
+      }
+    }
     
-    // PHASE 2: Install services (download binaries)
-    const totalToInstall = servicesToInstall.length;
-    let installed = 0;
+    // Only run install and startup phases if needed
+    if (needsInstallation) {
     
     for (const serviceId of servicesToInstall) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
@@ -471,6 +546,7 @@ async function startDeployment(setupData, onProgress) {
         console.warn(`[deploy:start] ${serviceId} may not be fully healthy yet`);
       }
     }
+    } // End of needsInstallation block
 
     // PHASE 4b: Auto-create PocketBase admin if deployed
     if (servicesToInstall.includes('pocketbase')) {
@@ -579,6 +655,14 @@ async function startDeployment(setupData, onProgress) {
       setupDate: new Date().toISOString(),
       ...setupData
     });
+    
+    // Save deployment manifest for smart version checking
+    saveDeploymentManifest({
+      version: INSTALLER_VERSION,
+      services: servicesToInstall,
+      timestamp: new Date().toISOString()
+    });
+    console.log('[deploy:start] Deployment manifest saved with services:', servicesToInstall);
     
     // PHASE 7: Open AlloFlow web app in user's browser
     const webAppPort = getWebAppPort();
@@ -710,19 +794,40 @@ ipcMain.handle('setup:start-deployment', async (event, setupData) => {
 ipcMain.handle('setup:uninstall', async (event) => {
   try {
     console.log('[ipc:uninstall] Starting full uninstall...');
-    
-    // Stop search server
+    nativePM.stopAllServices();
     stopSearchServer();
     
+    // Uninstall all services (removes ~/.alloflow directory)
     await nativePM.uninstallAll((progress) => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('uninstall:progress', progress);
       }
     });
     
+    // Explicitly reload the app to re-check for installation
+    console.log('[ipc:uninstall] Reloading app to reset state...');
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      // Add a small delay to ensure files are deleted
+      setTimeout(() => mainWindow.reload(), 500);
+    }
+    
     return { success: true };
   } catch (err) {
     console.error('[ipc:uninstall] Error:', err.message);
     return { success: false, error: err.message };
+  }
+});
+
+// IPC Handler: Check if PocketBase admin is configured
+ipcMain.handle('pocketbase:check-admin', async (event) => {
+  try {
+    const creds = await nativePM.getPocketBaseAdmin();
+    return {
+      configured: creds !== null,
+      email: creds ? creds.email : null
+    };
+  } catch (err) {
+    console.error('[ipc:pocketbase:check-admin] Error:', err.message);
+    return { configured: false, email: null };
   }
 });
