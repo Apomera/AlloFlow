@@ -476,6 +476,10 @@ async function startDeployment(setupData, onProgress) {
     if (servicesToInstall.includes('pocketbase')) {
       onProgress({ phase: 'pocketbase_admin', status: 'Configuring PocketBase admin account...', progress: 87 });
       try {
+        // Wait a moment for PocketBase to fully initialize database before creating admin
+        console.log('[deploy:start] Waiting for PocketBase to fully initialize...');
+        await new Promise(r => setTimeout(r, 3000));
+        
         const adminCreds = await nativePM.createPocketBaseAdmin();
         console.log('[deploy:start] PocketBase admin created:', adminCreds.email);
         // Store admin credentials path in config for reference
@@ -491,6 +495,7 @@ async function startDeployment(setupData, onProgress) {
         );
       } catch (err) {
         console.warn('[deploy:start] PocketBase admin creation failed (non-fatal):', err.message);
+        onProgress({ phase: 'pocketbase_admin', status: `PocketBase admin setup warning: ${err.message}`, progress: 87 });
       }
     }
 
