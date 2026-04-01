@@ -4,6 +4,11 @@
 // Modeled after stem_lab_module.js but designed plugin-first (no inline tools).
 (function () {
   if (window.AlloModules && window.AlloModules.SelHub) { console.log('[CDN] SelHub already loaded, skipping duplicate'); } else {
+  // WCAG 2.4.3: Focus management for modal dialogs
+  var _alloFocusTrigger = null;
+  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
 
     // ── SelHub Plugin Registry ──
     // Initialize before plugins load so they can register immediately.

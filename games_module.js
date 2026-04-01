@@ -22,6 +22,12 @@
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useRef = React.useRef;
+
+  // WCAG 2.4.3: Focus management — save/restore focus on modal open/close
+  var _alloFocusTrigger = null;
+  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
   var useContext = React.useContext;
@@ -1833,7 +1839,7 @@ var CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGam
     setClues(newClues);
     setUserState({});
     setIsWon(false);
-    setShowErrors(false);
+    setShowErrors(false); alloRestoreFocus();
     setScore(0);
     setAnnouncement(t("games.crossword.announce_started"));
   }, [data, crosswordLang]);
@@ -1917,7 +1923,7 @@ var CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGam
     }
   };
   const checkPuzzle = () => {
-    setShowErrors(true);
+    alloSaveFocus(); setShowErrors(true);
     let correct = true;
     let currentScore = 0;
     for (let r = 0; r < grid.length; r++) {

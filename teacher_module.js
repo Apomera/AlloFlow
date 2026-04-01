@@ -22,6 +22,11 @@
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useRef = React.useRef;
+  // WCAG 2.4.3: Focus management — save/restore focus on modal open/close
+  var _alloFocusTrigger = null;
+  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
   var useContext = React.useContext;
@@ -2750,7 +2755,20 @@ var TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardDa
         return /* @__PURE__ */ React.createElement("div", { key: st.id, className: "bg-slate-50 rounded-xl p-4 border border-slate-200 hover:border-emerald-300 transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm text-slate-800" }, st.name), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500" }, new Date(st.createdAt).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", { className: "bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-full" }, totalXP, " XP"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" }, st.tools.map((toolId) => {
           const registry = window.STEM_TOOL_REGISTRY || [];
           const meta = registry.find((r) => r.id === toolId);
-          return /* @__PURE__ */ React.createElement("span", { key: toolId, className: "bg-white text-slate-600 text-[10px] font-medium px-2 py-1 rounded-lg border border-slate-200" }, "\u{1F9EA} ", meta ? meta.name : toolId);
+          
+  // WCAG 2.1.2 + 2.4.3: Escape closes modals + restore focus
+  useEffect(function() {
+    function _alloEscHandler(e) {
+      if (e.key === 'Escape' && (showBatchConfig || showConfetti || showEndConfirm || showLocalStats || showDiagnostics || showClearConfirm || showBatchConfig || showConfetti || showEndConfirm || showLocalStats || showDiagnostics || showClearConfirm)) {
+        setShowBatchConfig(false); setShowConfetti(false); setShowEndConfirm(false); setShowLocalStats(false); setShowDiagnostics(false); setShowClearConfirm(false); setShowBatchConfig(false); setShowConfetti(false); setShowEndConfirm(false); setShowLocalStats(false); setShowDiagnostics(false); setShowClearConfirm(false);
+        alloRestoreFocus();
+      }
+    }
+    document.addEventListener('keydown', _alloEscHandler);
+    return function() { document.removeEventListener('keydown', _alloEscHandler); };
+  });
+
+  return /* @__PURE__ */ React.createElement("span", { key: toolId, className: "bg-white text-slate-600 text-[10px] font-medium px-2 py-1 rounded-lg border border-slate-200" }, "\u{1F9EA} ", meta ? meta.name : toolId);
         })), st.teacherNote && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic mt-2" }, '"', st.teacherNote, '"'));
       }));
     })()))))),

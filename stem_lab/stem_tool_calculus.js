@@ -472,7 +472,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p', { className: 'text-sm font-bold text-red-800' }, exact.toFixed(4))
                   ),
                   h('div', { className: 'p-1.5 bg-white rounded-lg border' },
-                    h('p', { className: 'text-[11px] font-bold text-red-400' }, 'Error'),
+                    h('p', { id: 'err-stem_tool_calculus-474', role: 'alert', className: 'text-[11px] font-bold text-red-400' }, 'Error'),
                     h('p', { className: 'text-sm font-bold '+(err<0.01?'text-emerald-600':err<0.1?'text-yellow-600':'text-red-600') }, err.toFixed(6))
                   )
                 ),
@@ -722,8 +722,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               return h('div',{style:{animation:'calcFade 0.3s ease'}},
                 h('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'bg-red-50 rounded-xl border border-red-200 p-4 mb-3'},
-                  h('p',{className:'text-xs font-bold text-red-600 uppercase tracking-wider mb-1'},'\uD83D\uDD0D Mission 1: The Error Halving Law'),
-                  h('p',{className:'text-xs text-red-800'},'Goal: Discover what happens to the error when you double the number of rectangles.'),
+                  h('p',{ id: 'err-stem_tool_calculus-724', role: 'alert',className:'text-xs font-bold text-red-600 uppercase tracking-wider mb-1'},'\uD83D\uDD0D Mission 1: The Error Halving Law'),
+                  h('p',{ id: 'err-stem_tool_calculus-725', role: 'alert',className:'text-xs text-red-800'},'Goal: Discover what happens to the error when you double the number of rectangles.'),
                   h('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'flex gap-1 mt-2'},
                     [0,1,2,3,4].map(function(i){
                       return h('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },key:i,className:'flex-1 h-1.5 rounded-full '+(step>i?'bg-red-500':step===i?'bg-red-300':'bg-slate-200')});

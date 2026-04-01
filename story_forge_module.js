@@ -22,6 +22,12 @@
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useRef = React.useRef;
+
+  // WCAG 2.4.3: Focus management — save/restore focus on modal open/close
+  var _alloFocusTrigger = null;
+  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
   var useReducer = React.useReducer;
@@ -655,7 +661,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
         const data = JSON.parse(saved);
         if (data.paragraphs && data.paragraphs.some((p) => p.text.trim().length > 0)) {
           savedDraftRef.current = data;
-          setShowRestorePrompt(true);
+          alloSaveFocus(); setShowRestorePrompt(true);
         }
       }
     } catch (e) {
@@ -676,13 +682,13 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     if (d.draftCount) setDraftCount(d.draftCount);
     if (d.phase) setPhase(d.phase);
     if (d.language) setLanguage(d.language);
-    setShowRestorePrompt(false);
+    setShowRestorePrompt(false); alloRestoreFocus();
     if (addToast) addToast("Draft restored!", "success");
   };
   const discardDraft = () => {
     localStorage.removeItem(SAVE_KEY);
     savedDraftRef.current = null;
-    setShowRestorePrompt(false);
+    setShowRestorePrompt(false); alloRestoreFocus();
   };
   useEffect(() => {
     if (initialConfig && initialConfig.vocabTerms) {

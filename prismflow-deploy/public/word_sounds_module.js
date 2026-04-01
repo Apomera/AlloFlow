@@ -2,6 +2,11 @@
   if (window.AlloModules && window.AlloModules.WordSoundsModal) {
     console.log("[CDN] WordSoundsModal already loaded, skipping duplicate");
   } else {
+  // WCAG 2.4.3: Focus management for modal dialogs
+  var _alloFocusTrigger = null;
+  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
     // word_sounds_module.js
     // Auto-extracted from AlloFlowANTI.txt
     // Word Sounds Studio module for AlloFlow - loaded from GitHub CDN

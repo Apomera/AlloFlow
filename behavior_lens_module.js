@@ -614,6 +614,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 if (dateRange === 'today') {
                     cutoff.setHours(0, 0, 0, 0);
                 } else {
+  // WCAG 2.4.3: Focus management for modal dialogs
+  var _alloFocusTrigger = null;
+  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
                     cutoff.setDate(cutoff.getDate() - days);
                 }
                 filtered = filtered.filter(e => new Date(e.timestamp) >= cutoff);
@@ -5829,7 +5834,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             activeTab === 'mistakes' && h('div', { className: 'space-y-3' },
                 h('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 p-4' },
                     h('h3', { className: 'text-sm font-black text-red-800 mb-1' }, '⚠️ Common ABA Implementation Mistakes'),
-                    h('p', { className: 'text-xs text-red-600' }, t('behavior_lens.ui.avoid_these_frequently_seen_errors_to_improve_beha') || 'Avoid these frequently seen errors to improve behavioral outcomes.')
+                    h('p', { id: 'err-behavior_lens_module-5831', role: 'alert', className: 'text-xs text-red-600' }, t('behavior_lens.ui.avoid_these_frequently_seen_errors_to_improve_beha') || 'Avoid these frequently seen errors to improve behavioral outcomes.')
                 ),
                 commonMistakes.map((m, i) =>
                     h('div', { key: i, className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
@@ -21824,7 +21829,7 @@ Keep the language professional but accessible.`;
             // Errors
             errors.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-red-50 border border-red-200 rounded-xl p-3' },
                 h('p', { className: 'text-xs font-bold text-red-700 mb-1' }, '⚠️ Validation Issues:'),
-                errors.map((e, i) => h('p', { key: i, className: 'text-[10px] text-red-600' }, e))
+                errors.map((e, i) => h('p', { id: 'err-behavior_lens_module-21826', role: 'alert', key: i, className: 'text-[10px] text-red-600' }, e))
             ),
             // Preview table
             parsedRows.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
@@ -27315,7 +27320,20 @@ Analyze this data and return ONLY valid JSON:
                     const chainIds = interventionChain.map(c => c.id);
                     const isInChain = chainIds.includes(activePanel);
                     const chainIdx = chainIds.indexOf(activePanel);
-                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-6 space-y-4' },
+                    
+  // WCAG 2.1.2 + 2.4.3: Escape closes modals + restore focus
+  useEffect(function() {
+    function _alloEscHandler(e) {
+      if (e.key === 'Escape' && (showModal || showConfetti || showHistory || showThinning || showTranslate || showForm || showFeedback || showPrint || showBadges || showSummary || showResults || showDiagram || showAdd || showTrend || showLevel || showAim || showCeleration || showCsvImport || showWizard || showExplanation || showComparison || showManual || showSlope || showPhaseEditor || showImport || showLiveObs || showFreqCounter || showIntervalGrid || showChoiceBoard || showWelcome || showRosterDropdown || showExportMenu)) {
+        setShowModal(false); setShowConfetti(false); setShowHistory(false); setShowThinning(false); setShowTranslate(false); setShowForm(false); setShowFeedback(false); setShowPrint(false); setShowBadges(false); setShowSummary(false); setShowResults(false); setShowDiagram(false); setShowAdd(false); setShowTrend(false); setShowLevel(false); setShowAim(false); setShowCeleration(false); setShowCsvImport(false); setShowWizard(false); setShowExplanation(false); setShowComparison(false); setShowManual(false); setShowSlope(false); setShowPhaseEditor(false); setShowImport(false); setShowLiveObs(false); setShowFreqCounter(false); setShowIntervalGrid(false); setShowChoiceBoard(false); setShowWelcome(false); setShowRosterDropdown(false); setShowExportMenu(false);
+        alloRestoreFocus();
+      }
+    }
+    document.addEventListener('keydown', _alloEscHandler);
+    return function() { document.removeEventListener('keydown', _alloEscHandler); };
+  });
+
+  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-6 space-y-4' },
                         // Workflow chain breadcrumb (intervention tools only)
                         isInChain && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'pt-4 border-t border-purple-200' },
                             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1 mb-2' },
