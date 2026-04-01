@@ -45,7 +45,7 @@
   ];
 
   var CAT_COLORS = { noun: '#fef9c3', verb: '#dcfce7', adjective: '#dbeafe', other: '#f3f4f6' };
-  var CAT_BORDER = { noun: '#ca8a04', verb: '#16a34a', adjective: '#1d4ed8', other: '#9ca3af' };
+  var CAT_BORDER = { noun: '#ca8a04', verb: '#16a34a', adjective: '#1d4ed8', other: '#6b7280' };
 
   var TABS = [
     { id: 'symbols', icon: '🎨', label: 'Symbols' },
@@ -2047,7 +2047,7 @@
       lbl: { fontSize: '11px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '3px' },
       input: { width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '13px', boxSizing: 'border-box', fontFamily: 'inherit' },
       textarea: { width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '7px 9px', fontSize: '12px', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' },
-      btn: function (bg, color, disabled) { return { padding: '8px 14px', background: disabled ? '#d1d5db' : (bg || PURPLE), color: disabled ? '#9ca3af' : (color || '#fff'), border: 'none', borderRadius: '7px', fontWeight: 600, fontSize: '12px', cursor: disabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }; },
+      btn: function (bg, color, disabled) { return { padding: '8px 14px', background: disabled ? '#d1d5db' : (bg || PURPLE), color: disabled ? '#6b7280' : (color || '#fff'), border: 'none', borderRadius: '7px', fontWeight: 600, fontSize: '12px', cursor: disabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }; },
       chip: function (bg, color) { return { padding: '3px 8px', background: bg, color: color, border: '1px solid ' + color, borderRadius: '20px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }; },
       card: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' },
     };
@@ -2210,33 +2210,33 @@
                   setQuestRound(0); setQuestStreak(0);
                   questPickRound(gm.id, pool);
                 },
-                style: { padding: '16px 12px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', cursor: 'pointer', textAlign: 'center', transition: 'border-color 0.15s, box-shadow 0.15s' },
+                'aria-label': gm.label + ' game mode', style: { padding: '16px 12px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', cursor: 'pointer', textAlign: 'center', transition: 'border-color 0.15s, box-shadow 0.15s' },
                 onMouseOver: function (ev) { ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.boxShadow = '0 4px 12px rgba(124,58,237,0.15)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; ev.currentTarget.style.boxShadow = 'none'; }
               },
                 e('div', { style: { fontSize: '28px', marginBottom: '6px' } }, gm.icon),
                 e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151' } }, gm.label),
-                e('div', { style: { fontSize: '10px', color: '#9ca3af', marginTop: '3px' } }, gm.desc)
+                e('div', { style: { fontSize: '10px', color: '#6b7280', marginTop: '3px' } }, gm.desc)
               );
             })
           ),
           // Reset progress
           questTotal > 0 && e('button', {
             onClick: function () { setQuestScore(0); setQuestBoardPos(0); setQuestTotal(0); setQuestCorrectCount(0); setQuestBest(0); },
-            style: { fontSize: '10px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+            'aria-label': 'Reset progress', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
           }, '↻ Reset progress')
         );
       }
 
       // Active game screen
-      var backBtn = e('button', { onClick: function () { setQuestMode('menu'); }, style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
-      var scoreBar = e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
+      var backBtn = e('button', { onClick: function () { setQuestMode('menu'); }, 'aria-label': 'Back', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
+      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Score: ' + questScore + ', Round: ' + questRound + ', Progress: ' + questBoardPos + ' of ' + pathLen, style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
         e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + questScore),
         e('span', null, '🎯 Round ' + questRound),
         questStreak >= 2 && e('span', { style: { color: '#f97316', fontWeight: 700, animation: 'pulse 1s infinite' } }, '🔥 x' + questStreak),
         e('span', null, '🏁 ' + questBoardPos + '/' + pathLen)
       );
-      var feedbackBar = questFeedback && e('div', { style: { padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, textAlign: 'center', background: questFeedback.ok ? '#dcfce7' : '#fee2e2', color: questFeedback.ok ? '#166534' : '#991b1b', border: '1px solid ' + (questFeedback.ok ? '#86efac' : '#fca5a5') } }, questFeedback.msg);
+      var feedbackBar = questFeedback && e('div', { role: 'status', 'aria-live': 'assertive', style: { padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, textAlign: 'center', background: questFeedback.ok ? '#dcfce7' : '#fee2e2', color: questFeedback.ok ? '#166534' : '#991b1b', border: '1px solid ' + (questFeedback.ok ? '#86efac' : '#fca5a5') } }, questFeedback.msg);
 
       // ── Image → Label mode ──
       if (questMode === 'imgToLabel') {
@@ -2251,6 +2251,7 @@
             questOptions.map(function (opt) {
               return e('button', {
                 key: opt.id, onClick: function () { if (!questFeedback) questCheckAnswer(opt); },
+                'aria-label': 'Answer: ' + opt.label,
                 style: { padding: '12px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', fontWeight: 700, color: '#374151', cursor: questFeedback ? 'default' : 'pointer', opacity: questFeedback ? 0.6 : 1, transition: 'all 0.15s' },
                 onMouseOver: function (ev) { if (!questFeedback) ev.currentTarget.style.borderColor = PURPLE; },
                 onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; }
@@ -2273,6 +2274,7 @@
             questOptions.map(function (opt) {
               return e('button', {
                 key: opt.id, onClick: function () { if (!questFeedback) questCheckAnswer(opt); },
+                'aria-label': 'Select symbol: ' + opt.label,
                 style: { padding: '8px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', cursor: questFeedback ? 'default' : 'pointer', opacity: questFeedback ? 0.6 : 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'all 0.15s' },
                 onMouseOver: function (ev) { if (!questFeedback) ev.currentTarget.style.borderColor = PURPLE; },
                 onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; }
@@ -2311,7 +2313,7 @@
           questTarget && e('div', { style: { width: '120px', height: '120px', borderRadius: '14px', overflow: 'hidden', border: '3px solid ' + PURPLE } },
             e('img', { src: questTarget.image, alt: 'symbol', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
           ),
-          questTarget && e('div', { style: { fontSize: '11px', color: '#9ca3af' } }, questTarget.label.length + ' letters'),
+          questTarget && e('div', { style: { fontSize: '11px', color: '#6b7280' } }, questTarget.label.length + ' letters'),
           feedbackBar,
           e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '300px' } },
             e('input', {
@@ -2323,7 +2325,7 @@
               disabled: !!questFeedback,
               style: Object.assign({}, S.input, { flex: 1, textAlign: 'center', fontSize: '16px', fontWeight: 700, textTransform: 'lowercase' })
             }),
-            e('button', { onClick: checkSpelling, disabled: !!questFeedback || !questInput.trim(), style: S.btn(PURPLE, '#fff', !!questFeedback || !questInput.trim()) }, 'Check')
+            e('button', { onClick: checkSpelling, disabled: !!questFeedback || !questInput.trim(), 'aria-label': 'Check', style: S.btn(PURPLE, '#fff', !!questFeedback || !questInput.trim()) }, 'Check')
           )
         );
       }
@@ -2376,13 +2378,14 @@
             ? e('div', { style: { textAlign: 'center', padding: '20px' } },
                 e('div', { style: { fontSize: '48px', marginBottom: '10px' } }, '🏆'),
                 e('div', { style: { fontSize: '16px', fontWeight: 700, color: '#059669' } }, 'All matched in ' + memMoves + ' moves!'),
-                e('button', { onClick: function () { initMemory(); }, style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
+                e('button', { onClick: function () { initMemory(); }, 'aria-label': 'Play Again', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
               )
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%', maxWidth: '400px' } },
                 memCards.map(function (card, idx) {
                   var isUp = memFlipped.includes(idx) || memMatched.includes(card.pairId);
                   return e('button', {
                     key: card.id, onClick: function () { flipCard(idx); },
+                    'aria-label': 'Memory card ' + (idx + 1),
                     style: { aspectRatio: '1', border: '2px solid ' + (isUp ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: isUp ? '#fff' : LIGHT_PURPLE, cursor: isUp ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', transition: 'all 0.2s', opacity: memMatched.includes(card.pairId) ? 0.5 : 1 }
                   },
                     isUp
@@ -2418,7 +2421,7 @@
       function qbUploadBtn(target) {
         return e('button', {
           onClick: function () { setQbUploadTarget(target); qbUploadRef.current && qbUploadRef.current.click(); },
-          style: S.btn('#f3f4f6', '#374151', false)
+          'aria-label': 'Reset progress', style: S.btn('#f3f4f6', '#374151', false)
         }, '📷');
       }
 
@@ -2447,7 +2450,7 @@
               e('div', { style: { textAlign: 'center', fontWeight: 700, fontSize: '16px', color: '#1f2937', minHeight: '22px' } }, label || '\u00a0'),
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', marginTop: '6px' } },
                 e('input', { type: 'text', value: label, onChange: function (ev) { setLabel(ev.target.value); }, placeholder: which === 'first' ? 'e.g. homework' : 'e.g. iPad time', 'aria-label': which === 'first' ? 'First activity' : 'Reward activity', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
-                e('button', { onClick: function () { genFtCell(which); }, disabled: loading || !label.trim() || !onCallImagen, style: S.btn(PURPLE, '#fff', loading || !label.trim() || !onCallImagen) }, '✨'),
+                e('button', { onClick: function () { genFtCell(which); }, disabled: loading || !label.trim() || !onCallImagen, 'aria-label': '✨', style: S.btn(PURPLE, '#fff', loading || !label.trim() || !onCallImagen) }, '✨'),
                 qbUploadBtn({ type: 'ft', which: which })
               )
             )
@@ -2455,7 +2458,7 @@
         }
         return e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', padding: '24px', flex: 1 } },
           ftSide('first'),
-          e('div', { style: { fontSize: '52px', color: '#9ca3af', flexShrink: 0, userSelect: 'none' } }, '→'),
+          e('div', { style: { fontSize: '52px', color: '#6b7280', flexShrink: 0, userSelect: 'none' } }, '→'),
           ftSide('then')
         );
       }
@@ -2467,9 +2470,9 @@
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '6px', alignItems: 'center' } },
             e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#374151' } }, 'Choices:'),
             [2, 3, 4].map(function (n) {
-              return e('button', { key: n, onClick: function () { setCbCount(n); setCbSelected(null); }, style: { padding: '4px 12px', borderRadius: '6px', border: '2px solid ' + (cbCount === n ? PURPLE : '#d1d5db'), background: cbCount === n ? LIGHT_PURPLE : '#fff', color: cbCount === n ? PURPLE : '#374151', fontWeight: cbCount === n ? 700 : 400, fontSize: '12px', cursor: 'pointer' } }, n);
+              return e('button', { key: n, onClick: function () { setCbCount(n); setCbSelected(null); }, 'aria-label': 'Reset progress', style: { padding: '4px 12px', borderRadius: '6px', border: '2px solid ' + (cbCount === n ? PURPLE : '#d1d5db'), background: cbCount === n ? LIGHT_PURPLE : '#fff', color: cbCount === n ? PURPLE : '#374151', fontWeight: cbCount === n ? 700 : 400, fontSize: '12px', cursor: 'pointer' } }, n);
             }),
-            cbSelected && e('button', { onClick: function () { setCbSelected(null); }, className: 'ss-no-print', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { marginLeft: 'auto' }) }, '↺ Reset')
+            cbSelected && e('button', { onClick: function () { setCbSelected(null); }, className: 'ss-no-print', 'aria-label': 'Reset', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { marginLeft: 'auto' }) }, '↺ Reset')
           ),
           e('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', flex: 1, alignItems: 'center' } },
             visibleItems.map(function (item, idx) {
@@ -2484,7 +2487,7 @@
                 e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#1f2937', padding: '6px 4px 2px', textAlign: 'center', minHeight: '20px' } }, item.label || '\u00a0'),
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px', padding: '4px', width: '100%' } },
                   e('input', { type: 'text', value: item.label, onChange: function (ev) { var v = ev.target.value; setCbItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, placeholder: 'Option ' + (idx + 1), 'aria-label': 'Choice board option ' + (idx + 1), style: Object.assign({}, S.input, { fontSize: '11px' }), onClick: function (ev) { ev.stopPropagation(); } }),
-                  e('button', { onClick: function (ev) { ev.stopPropagation(); genChoiceItem(item.id); }, disabled: isLoading || !item.label.trim() || !onCallImagen, style: S.btn(PURPLE, '#fff', isLoading || !item.label.trim() || !onCallImagen) }, '✨'),
+                  e('button', { onClick: function (ev) { ev.stopPropagation(); genChoiceItem(item.id); }, disabled: isLoading || !item.label.trim() || !onCallImagen, 'aria-label': '✨', style: S.btn(PURPLE, '#fff', isLoading || !item.label.trim() || !onCallImagen) }, '✨'),
                   qbUploadBtn({ type: 'cb', id: item.id })
                 )
               );
@@ -2510,7 +2513,7 @@
                 [2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return e('option', { key: n, value: n }, n); })
               )
             ),
-            e('button', { onClick: function () { setTokenEarned(0); }, style: S.btn('#f3f4f6', '#374151', false) }, '↺ Reset')
+            e('button', { onClick: function () { setTokenEarned(0); }, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '↺ Reset')
           ),
           // Board content
           e('div', { style: { display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap', flex: 1 } },
@@ -2544,7 +2547,7 @@
               e('div', { className: 'ss-no-print', style: { display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' } },
                 e('input', { type: 'text', value: tokenRewardLabel, onChange: function (ev) { setTokenRewardLabel(ev.target.value); }, placeholder: 'e.g. iPad time', 'aria-label': 'Token board reward', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
                 e('div', { style: { display: 'flex', gap: '4px' } },
-                  e('button', { onClick: genTokenReward, disabled: tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen, style: S.btn(PURPLE, '#fff', tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen) }, '✨'),
+                  e('button', { onClick: genTokenReward, disabled: tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen, 'aria-label': '✨', style: S.btn(PURPLE, '#fff', tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen) }, '✨'),
                   qbUploadBtn({ type: 'token' })
                 )
               )
@@ -2564,6 +2567,7 @@
             e('button', {
               onClick: genAllCmItems,
               disabled: !onCallImagen || cmLoadingAny,
+              'aria-label': 'Generate all calming strategy images',
               style: Object.assign({}, S.btn(TEAL, '#fff', !onCallImagen || cmLoadingAny), { marginLeft: 'auto' })
             }, cmLoadingAny ? '⏳ Generating...' : '✨ Generate All Images')
           ),
@@ -2593,8 +2597,8 @@
                 }),
                 // Action buttons
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
-                  e('button', { title: 'Generate image', onClick: function (ev) { ev.stopPropagation(); genCmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
-                  e('button', { title: 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'cm', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
+                  e('button', { title: 'Generate image', 'aria-label': 'Generate image', onClick: function (ev) { ev.stopPropagation(); genCmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
+                  e('button', { title: 'Upload image', 'aria-label': 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'cm', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
                 )
               );
             })
@@ -2614,6 +2618,7 @@
             e('button', {
               onClick: genAllSnItems,
               disabled: !onCallImagen || snLoadingAny,
+              'aria-label': 'Generate all sensory strategy images',
               style: Object.assign({}, S.btn(AMBER, '#fff', !onCallImagen || snLoadingAny), { marginLeft: 'auto' })
             }, snLoadingAny ? '⏳ Generating...' : '✨ Generate All Images')
           ),
@@ -2643,8 +2648,8 @@
                 }),
                 // Action buttons
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
-                  e('button', { title: 'Generate image', onClick: function (ev) { ev.stopPropagation(); genSnItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
-                  e('button', { title: 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'sn', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
+                  e('button', { title: 'Generate image', 'aria-label': 'Generate image', onClick: function (ev) { ev.stopPropagation(); genSnItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
+                  e('button', { title: 'Upload image', 'aria-label': 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'sn', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
                 )
               );
             })
@@ -2661,7 +2666,7 @@
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
             e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Questions a student can initiate \u2014 tap any card to speak it aloud'),
-            e('button', { onClick: genAllAmItems, disabled: !onCallImagen || amLoadingAny, style: Object.assign({}, S.btn(BLUE, '#fff', !onCallImagen || amLoadingAny), { marginLeft: 'auto' }) }, amLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
+            e('button', { onClick: genAllAmItems, disabled: !onCallImagen || amLoadingAny, 'aria-label': 'Generate all ask me item images', style: Object.assign({}, S.btn(BLUE, '#fff', !onCallImagen || amLoadingAny), { marginLeft: 'auto' }) }, amLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
           ),
           e('div', { id: 'ss-pq-askme', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: '12px', overflowY: 'auto', flex: 1 } },
             amItems.map(function (item) {
@@ -2678,8 +2683,8 @@
                 ),
                 e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setAmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': 'Activity label', style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#1e3a8a', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 } }),
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
-                  e('button', { title: 'Generate image', onClick: function (ev) { ev.stopPropagation(); genAmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
-                  e('button', { title: 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'am', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                  e('button', { title: 'Generate image', 'aria-label': 'Generate image', onClick: function (ev) { ev.stopPropagation(); genAmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
+                  e('button', { title: 'Upload image', 'aria-label': 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'am', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                 )
               );
             })
@@ -2697,7 +2702,7 @@
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
             e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Help students communicate pain level and location without words'),
-            e('button', { onClick: genAllBcItems, disabled: !onCallImagen || bcLoadingAny, style: Object.assign({}, S.btn(ROSE, '#fff', !onCallImagen || bcLoadingAny), { marginLeft: 'auto' }) }, bcLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate Body Parts')
+            e('button', { onClick: genAllBcItems, disabled: !onCallImagen || bcLoadingAny, 'aria-label': 'Pain Scale u2014 tap to select', style: Object.assign({}, S.btn(ROSE, '#fff', !onCallImagen || bcLoadingAny), { marginLeft: 'auto' }) }, bcLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate Body Parts')
           ),
           // Pain scale
           e('div', { id: 'ss-pq-bodycheck', style: { overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' } },
@@ -2737,8 +2742,8 @@
                     ),
                     e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setBcItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': 'Behavior chart item label', style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '11px', color: '#9f1239', textAlign: 'center', width: '100%', cursor: 'text' } }),
                     e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
-                      e('button', { onClick: function (ev) { ev.stopPropagation(); genBcItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
-                      e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'bc', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); genBcItem(item.id); }, disabled: isLoading || !onCallImagen, 'aria-label': 'u2728', style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'bc', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'uD83DuDCF7', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                     )
                   );
                 })
@@ -2756,7 +2761,7 @@
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
             e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Show one step at a time \u2014 use arrows to advance through the transition sequence'),
-            e('button', { onClick: genAllTwItems, disabled: !onCallImagen || twLoadingAny, style: Object.assign({}, S.btn(INDIGO, '#fff', !onCallImagen || twLoadingAny), { marginLeft: 'auto' }) }, twLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
+            e('button', { onClick: genAllTwItems, disabled: !onCallImagen || twLoadingAny, 'aria-label': 'Generate all time and wait images', style: Object.assign({}, S.btn(INDIGO, '#fff', !onCallImagen || twLoadingAny), { marginLeft: 'auto' }) }, twLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
           ),
           // Live presentation step
           e('div', { id: 'ss-pq-transition', style: { overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' } },
@@ -2768,9 +2773,9 @@
               ),
               e('div', { style: { fontWeight: 800, fontSize: '20px', color: '#312e81', textAlign: 'center' } }, currentItem.label),
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '10px', marginTop: '4px' } },
-                e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
-                e('button', { onClick: function () { speakCell(currentItem.label); }, style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
-                e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
+                e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, 'aria-label': 'u2190 Prev', style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
+                e('button', { onClick: function () { speakCell(currentItem.label); }, 'aria-label': 'uD83DuDD0A Speak', style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
+                e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, 'aria-label': 'Next u2192', style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
               )
             ),
             // All steps grid
@@ -2783,14 +2788,14 @@
                   onClick: function () { setTwStep(idx); speakCell(item.label); },
                   style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 8px 8px', border: '2px solid ' + (isCurrent ? INDIGO : INDIGO_BORDER), borderRadius: '12px', background: isCurrent ? INDIGO_LIGHT : '#fff', cursor: 'pointer', outline: isCurrent ? '2px solid ' + INDIGO : '2px solid transparent', transition: 'all 0.1s' }
                 },
-                  e('div', { style: { fontSize: '9px', fontWeight: 700, color: isCurrent ? INDIGO : '#9ca3af', marginBottom: '2px' } }, 'STEP ' + (idx + 1)),
+                  e('div', { style: { fontSize: '9px', fontWeight: 700, color: isCurrent ? INDIGO : '#6b7280', marginBottom: '2px' } }, 'STEP ' + (idx + 1)),
                   e('div', { style: { width: 70, height: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', background: '#f9fafb', border: '1px solid #e5e7eb', overflow: 'hidden' } },
                     isLoading ? spinner(20) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '4px' } }) : e('div', { style: { fontSize: '24px' } }, '\u23F0')
                   ),
                   e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setTwItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 600, fontSize: '10px', color: isCurrent ? '#312e81' : '#374151', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Task walk step label' }),
                   e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
-                    e('button', { onClick: function (ev) { ev.stopPropagation(); genTwItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
-                    e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                    e('button', { onClick: function (ev) { ev.stopPropagation(); genTwItem(item.id); }, disabled: isLoading || !onCallImagen, 'aria-label': 'u2728', style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
+                    e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'uD83DuDCF7', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                   )
                 );
               })
@@ -2804,7 +2809,7 @@
         e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', padding: '10px 12px 0', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' } },
           subModes.map(function (sm) {
             var active = qbMode === sm.id;
-            return e('button', { key: sm.id, onClick: function () { setQbMode(sm.id); }, style: { padding: '7px 14px', borderRadius: '8px 8px 0 0', border: active ? '2px solid #e5e7eb' : '2px solid transparent', borderBottom: active ? '2px solid #fff' : '2px solid transparent', background: active ? '#fff' : 'transparent', color: active ? PURPLE : '#6b7280', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: active ? '-2px' : '0', position: 'relative', whiteSpace: 'nowrap', flexShrink: 0 } },
+            return e('button', { key: sm.id, onClick: function () { setQbMode(sm.id); }, 'aria-label': sm.label + ' Quick Board mode', style: { padding: '7px 14px', borderRadius: '8px 8px 0 0', border: active ? '2px solid #e5e7eb' : '2px solid transparent', borderBottom: active ? '2px solid #fff' : '2px solid transparent', background: active ? '#fff' : 'transparent', color: active ? PURPLE : '#6b7280', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: active ? '-2px' : '0', position: 'relative', whiteSpace: 'nowrap', flexShrink: 0 } },
               e('span', null, sm.icon), sm.label);
           })
         ),
@@ -2821,7 +2826,7 @@
         ),
         // Print bar
         e('div', { className: 'ss-no-print', style: { padding: '10px 14px', borderTop: '1px solid #e5e7eb', background: '#f9fafb', display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
-          e('button', { onClick: function () { window.print(); }, style: S.btn('#f3f4f6', '#374151', false) }, '🖨️ Print Board')
+          e('button', { onClick: function () { window.print(); }, 'aria-label': '️ Print Board', style: S.btn('#f3f4f6', '#374151', false) }, '🖨️ Print Board')
         ),
         e('input', { type: 'file', accept: 'image/*', ref: qbUploadRef, style: { display: 'none' }, onChange: handleQbUpload })
       );
@@ -2836,7 +2841,7 @@
             sectionLabel('Student Profiles'),
             profiles.length < MAX_PROFILES && e('button', {
               onClick: addProfile,
-              style: { padding: '2px 8px', border: '1px dashed #9ca3af', borderRadius: '12px', background: 'transparent', color: '#9ca3af', fontSize: '11px', cursor: 'pointer', lineHeight: 1.4 }
+              'aria-label': 'Add new student profile', style: { padding: '2px 8px', border: '1px dashed #6b7280', borderRadius: '12px', background: 'transparent', color: '#6b7280', fontSize: '11px', cursor: 'pointer', lineHeight: 1.4 }
             }, '+ Add')
           ),
           // Profile chips row
@@ -2846,6 +2851,7 @@
               return e('button', {
                 key: prof.id,
                 onClick: function () { if (isActive) { setShowAvatar(!showAvatar); } else { switchProfile(prof.id); setShowAvatar(true); } },
+                'aria-label': 'Profile: ' + (prof.name || 'Student'),
                 style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '20px', border: '2px solid ' + (isActive ? PURPLE : '#d1d5db'), background: isActive ? LIGHT_PURPLE : '#f9fafb', color: isActive ? PURPLE : '#374151', fontWeight: isActive ? 700 : 500, fontSize: '11px', cursor: 'pointer' }
               },
                 prof.image
@@ -2871,10 +2877,10 @@
               setProfiles(upd); store(STORAGE_PROFILES, upd);
             }, placeholder: 'e.g. 8-year-old boy with curly hair', 'aria-label': 'Avatar appearance description', style: Object.assign({}, S.input, { marginBottom: '8px' }) }),
             e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } },
-              e('button', { onClick: generateAvatar, disabled: avatarGenerating || !avatarDesc.trim(), style: S.btn(PURPLE, '#fff', avatarGenerating || !avatarDesc.trim()) }, avatarGenerating ? '⏳' : '✨ Generate'),
-              e('button', { onClick: function () { fileInputRef.current && fileInputRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷 Upload'),
-              activeProfile.image && e('button', { onClick: clearAvatar, title: 'Clear avatar image', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️'),
-              profiles.length > 1 && e('button', { onClick: function () { deleteProfile(activeProfileId); }, title: 'Delete this profile', style: S.btn('#fee2e2', '#dc2626', false) }, '✕')
+              e('button', { onClick: generateAvatar, disabled: avatarGenerating || !avatarDesc.trim(), 'aria-label': 'Generate student avatar', style: S.btn(PURPLE, '#fff', avatarGenerating || !avatarDesc.trim()) }, avatarGenerating ? '⏳' : '✨ Generate'),
+              e('button', { onClick: function () { fileInputRef.current && fileInputRef.current.click(); }, 'aria-label': 'Upload', style: S.btn('#f3f4f6', '#374151', false) }, '📷 Upload'),
+              activeProfile.image && e('button', { onClick: clearAvatar, title: 'Clear avatar image', 'aria-label': 'Clear avatar image', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️'),
+              profiles.length > 1 && e('button', { onClick: function () { deleteProfile(activeProfileId); }, title: 'Delete this profile', 'aria-label': '✕', style: S.btn('#fee2e2', '#dc2626', false) }, '✕')
             ),
             e('input', { type: 'file', accept: 'image/*', ref: fileInputRef, style: { display: 'none' }, onChange: uploadAvatarFile })
           )
@@ -2897,7 +2903,7 @@
             e('input', { type: 'checkbox', checked: autoClean, onChange: function (ev) { setAutoClean(ev.target.checked); }, 'aria-label': 'Auto-clean text from images' }),
             e('span', null, 'Auto-clean text from images')
           ),
-          e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels'),
+          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels'),
           e('label', { style: Object.assign({}, S.lbl, { marginTop: '10px' }) }, 'Category Colors (AAC)'),
           e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '4px' } },
             [['noun', 'Noun'], ['verb', 'Verb'], ['adjective', 'Adj'], ['other', 'Other']].map(function (pair) {
@@ -2912,7 +2918,7 @@
             }),
             e('button', {
               onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
-              style: { fontSize: '10px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+              'aria-label': 'Reset progress', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
             }, 'Reset')
           ),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0' } }, 'Colors apply to boards and symbol cards'),
@@ -2961,8 +2967,8 @@
             savedSchedules.length + ' schedule' + (savedSchedules.length !== 1 ? 's' : '')
           ),
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
-            e('button', { onClick: exportData, style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '⬇️ Export Backup'),
-            e('button', { onClick: function () { importFileRef.current && importFileRef.current.click(); }, style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '📂 Import Backup')
+            e('button', { onClick: exportData, 'aria-label': 'Export all data as backup file', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '⬇️ Export Backup'),
+            e('button', { onClick: function () { importFileRef.current && importFileRef.current.click(); }, 'aria-label': 'Import Backup', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '📂 Import Backup')
           ),
           e('input', { type: 'file', accept: '.json', ref: importFileRef, style: { display: 'none' }, onChange: importData }),
           // ── Analytics card (inside Backup panel) ──
@@ -2988,9 +2994,10 @@
             return e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
               e('button', {
                 onClick: function () { setShowAnalytics(function (v) { return !v; }); },
+                'aria-label': 'Toggle AAC usage analytics',
                 style: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', width: '100%', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#374151', marginBottom: showAnalytics ? '8px' : 0 }
-              }, '📊 AAC Usage Analytics ', e('span', { style: { color: '#9ca3af', fontWeight: 400, marginLeft: 'auto', fontSize: '10px' } }, showAnalytics ? '▲ hide' : '▼ show')),
-              showAnalytics && allSessions.length === 0 && e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: 0 } }, 'No sessions recorded yet. Use a board in Use mode to start tracking.'),
+              }, '📊 AAC Usage Analytics ', e('span', { style: { color: '#6b7280', fontWeight: 400, marginLeft: 'auto', fontSize: '10px' } }, showAnalytics ? '▲ hide' : '▼ show')),
+              showAnalytics && allSessions.length === 0 && e('p', { style: { fontSize: '10px', color: '#6b7280', margin: 0 } }, 'No sessions recorded yet. Use a board in Use mode to start tracking.'),
               showAnalytics && allSessions.length > 0 && e('div', null,
                 // Summary row
                 e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
@@ -3045,7 +3052,7 @@
                       })
                     ),
                     e('div', { style: { display: 'flex', gap: '3px', marginTop: '2px' } },
-                      dayLabels.map(function (l, i) { return e('div', { key: i, style: { flex: 1, textAlign: 'center', fontSize: '8px', color: '#9ca3af' } }, l); })
+                      dayLabels.map(function (l, i) { return e('div', { key: i, style: { flex: 1, textAlign: 'center', fontSize: '8px', color: '#6b7280' } }, l); })
                     )
                   );
                 })(),
@@ -3080,21 +3087,21 @@
                     store(STORAGE_USAGE, updated);
                     setUsageLog(updated);
                   },
-                  style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { fontSize: '10px', padding: '3px 8px', marginTop: '6px' })
+                  'aria-label': 'Clear AAC usage analytics data', style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { fontSize: '10px', padding: '3px 8px', marginTop: '6px' })
                 }, '🗑️ Clear Analytics')
               )
             );
           })(),
           cloudSync && e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' } },
-              e('span', { style: { fontSize: '10px', color: syncStatus === 'synced' ? '#16a34a' : syncStatus === 'error' ? '#dc2626' : '#9ca3af' } },
+              e('span', { style: { fontSize: '10px', color: syncStatus === 'synced' ? '#16a34a' : syncStatus === 'error' ? '#dc2626' : '#6b7280' } },
                 syncStatus === 'syncing' ? '⏳ Syncing...' : syncStatus === 'synced' ? '✓ Cloud synced' : syncStatus === 'error' ? '✗ Sync error' : '☁️ Cloud backup'
               ),
-              lastSynced && e('span', { style: { fontSize: '9px', color: '#9ca3af', marginLeft: 'auto' } }, new Date(lastSynced).toLocaleDateString())
+              lastSynced && e('span', { style: { fontSize: '9px', color: '#6b7280', marginLeft: 'auto' } }, new Date(lastSynced).toLocaleDateString())
             ),
             e('div', { style: { display: 'flex', gap: '4px' } },
-              e('button', { onClick: syncToCloud, disabled: syncStatus === 'syncing', style: Object.assign({}, S.btn(PURPLE, '#fff', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '☁️ Sync Now'),
-              e('button', { onClick: loadFromCloud, disabled: syncStatus === 'syncing', style: Object.assign({}, S.btn('#f3f4f6', '#374151', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '📥 Load')
+              e('button', { onClick: syncToCloud, disabled: syncStatus === 'syncing', 'aria-label': 'Save data to cloud', style: Object.assign({}, S.btn(PURPLE, '#fff', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '☁️ Sync Now'),
+              e('button', { onClick: loadFromCloud, disabled: syncStatus === 'syncing', 'aria-label': 'Load data from cloud', style: Object.assign({}, S.btn('#f3f4f6', '#374151', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '📥 Load')
             )
           )
         ),
@@ -3114,7 +3121,7 @@
                 e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' } },
                   e('span', { style: { fontSize: '9px', background: typeColor, color: '#fff', borderRadius: '4px', padding: '1px 6px', fontWeight: 700, textTransform: 'uppercase' } }, g.type),
                   e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', flex: 1 } }, g.text),
-                  e('button', { onClick: function () { removeIepGoal(g.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#dc2626', padding: '0 3px' } }, '✕')
+                  e('button', { onClick: function () { removeIepGoal(g.id); }, 'aria-label': '✕', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#dc2626', padding: '0 3px' } }, '✕')
                 ),
                 // Progress bar
                 e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
@@ -3125,7 +3132,7 @@
                 ),
                 // Recent accuracy
                 recentTrials.length > 0 && e('div', { style: { display: 'flex', gap: '4px', marginTop: '4px', alignItems: 'center' } },
-                  e('span', { style: { fontSize: '9px', color: '#9ca3af' } }, 'Last 10:'),
+                  e('span', { style: { fontSize: '9px', color: '#6b7280' } }, 'Last 10:'),
                   recentTrials.map(function (t, ti) {
                     return e('span', { key: ti, style: { width: '8px', height: '8px', borderRadius: '50%', background: t.success ? '#16a34a' : '#dc2626', display: 'inline-block' } });
                   }),
@@ -3135,17 +3142,17 @@
                 e('div', { style: { display: 'flex', gap: '4px', marginTop: '6px' } },
                   e('button', {
                     onClick: function () { recordIepTrial(g.id, true, 'manual'); },
-                    style: { fontSize: '10px', background: '#dcfce7', color: '#16a34a', border: '1px solid #86efac', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
+                    'aria-label': 'Record successful IEP trial', style: { fontSize: '10px', background: '#dcfce7', color: '#16a34a', border: '1px solid #86efac', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
                   }, '✓ Success'),
                   e('button', {
                     onClick: function () { recordIepTrial(g.id, false, 'manual'); },
-                    style: { fontSize: '10px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
+                    'aria-label': 'Record unsuccessful IEP trial', style: { fontSize: '10px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
                   }, '✗ No response')
                 )
               );
             })
           ),
-          activeGoals.length === 0 && e('p', { style: { fontSize: '11px', color: '#9ca3af', fontStyle: 'italic', margin: '0 0 8px' } }, 'No goals set for this profile yet.'),
+          activeGoals.length === 0 && e('p', { style: { fontSize: '11px', color: '#6b7280', fontStyle: 'italic', margin: '0 0 8px' } }, 'No goals set for this profile yet.'),
           // Add goal form
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
             e('div', { style: { display: 'flex', gap: '6px' } },
@@ -3183,6 +3190,7 @@
                 text.value = '';
                 if (target) target.value = '';
               },
+              'aria-label': 'Add new IEP goal',
               style: S.btn(PURPLE, '#fff', false)
             }, '+ Add Goal')
           )
@@ -3206,7 +3214,7 @@
           // Mode toggle
           e('div', { style: { display: 'flex', gap: '3px', background: '#f3f4f6', borderRadius: '8px', padding: '3px' } },
             ['single', 'batch'].map(function (m) {
-              return e('button', { key: m, onClick: function () { setSymMode(m); }, style: { flex: 1, padding: '5px', borderRadius: '6px', border: 'none', background: symMode === m ? '#fff' : 'transparent', fontWeight: symMode === m ? 700 : 400, fontSize: '11px', cursor: 'pointer', color: symMode === m ? PURPLE : '#6b7280', boxShadow: symMode === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' } }, m === 'single' ? '✏️ Single' : '📋 Batch');
+              return e('button', { key: m, onClick: function () { setSymMode(m); }, 'aria-label': m + ' generation mode', style: { flex: 1, padding: '5px', borderRadius: '6px', border: 'none', background: symMode === m ? '#fff' : 'transparent', fontWeight: symMode === m ? 700 : 400, fontSize: '11px', cursor: 'pointer', color: symMode === m ? PURPLE : '#6b7280', boxShadow: symMode === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' } }, m === 'single' ? '✏️ Single' : '📋 Batch');
             })
           ),
           // Context-aware suggestions
@@ -3221,10 +3229,10 @@
             var filtered = timeSuggestions.filter(function (s) { return existing.indexOf(s) === -1; });
             if (filtered.length === 0) return null;
             return e('div', { style: { marginBottom: '4px' } },
-              e('div', { style: { fontSize: '9px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '💡 Suggested (' + (hour < 9 ? 'Morning' : hour < 12 ? 'School' : hour < 14 ? 'Lunch' : hour < 16 ? 'Afternoon' : 'Evening') + ')'),
+              e('div', { style: { fontSize: '9px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '💡 Suggested (' + (hour < 9 ? 'Morning' : hour < 12 ? 'School' : hour < 14 ? 'Lunch' : hour < 16 ? 'Afternoon' : 'Evening') + ')'),
               e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                 filtered.map(function (s) {
-                  return e('button', { key: s, onClick: function () { setSymLabel(s); }, style: { padding: '2px 7px', background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '10px', fontSize: '9px', cursor: 'pointer', color: '#92400e', fontWeight: 500 } }, s);
+                  return e('button', { key: s, onClick: function () { setSymLabel(s); }, 'aria-label': 'Quick set label: ' + s, style: { padding: '2px 7px', background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '10px', fontSize: '9px', cursor: 'pointer', color: '#92400e', fontWeight: 500 } }, s);
                 })
               )
             );
@@ -3244,12 +3252,12 @@
             : e('div', null,
                 e('label', { style: S.lbl }, 'One label per line'),
                 e('textarea', { value: symBatch, onChange: function (ev) { setSymBatch(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast', 'aria-label': 'Batch symbol labels, one per line', style: Object.assign({}, S.textarea, { height: '70px' }) }),
-                e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '2px 0 0' } }, symBatch.split('\n').filter(function (l) { return l.trim(); }).length + ' queued'),
+                e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '2px 0 0' } }, symBatch.split('\n').filter(function (l) { return l.trim(); }).length + ' queued'),
                 e('div', { style: { marginTop: '6px' } },
-                  e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, 'Quick Sets'),
+                  e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, 'Quick Sets'),
                   e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                     QUICK_SETS.map(function (qs) {
-                      return e('button', { key: qs.label, onClick: function () { setSymBatch(qs.items.join('\n')); }, style: { padding: '3px 7px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', gap: '3px' } },
+                      return e('button', { key: qs.label, onClick: function () { setSymBatch(qs.items.join('\n')); }, 'aria-label': 'Quick batch: ' + qs.label, style: { padding: '3px 7px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', gap: '3px' } },
                         e('span', null, qs.icon), qs.label
                       );
                     })
@@ -3297,7 +3305,7 @@
                   var cat = pair[0]; var lbl = pair[1];
                   var active = symCatFilter === cat;
                   return e('button', {
-                    key: cat,
+                    key: cat, 'aria-label': 'Filter by ' + (lbl || 'all categories'),
                     onClick: function () { setSymCatFilter(cat); },
                     style: { padding: '2px 8px', border: '1px solid ' + (active ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: active ? LIGHT_PURPLE : '#f9fafb', color: active ? PURPLE : '#6b7280', fontSize: '10px', cursor: 'pointer', fontWeight: active ? 700 : 400 }
                   }, lbl);
@@ -3337,12 +3345,13 @@
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '12px' } },
         // Template picker row
         e('div', { style: { flexShrink: 0 } },
-          e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Quick Templates'),
+          e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Quick Templates'),
           e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
             BOARD_TEMPLATES.map(function (t) {
               return e('button', {
                 key: t.id,
                 onClick: function () { applyBoardTemplate(t); },
+                'aria-label': 'Apply template: ' + t.label,
                 style: { padding: '5px 10px', border: '1px solid #e5e7eb', borderRadius: '20px', background: '#fff', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#374151', fontWeight: 500, whiteSpace: 'nowrap', transition: 'background 0.1s' },
                 onMouseOver: function (ev) { ev.currentTarget.style.background = LIGHT_PURPLE; ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.color = PURPLE; },
                 onMouseOut: function (ev) { ev.currentTarget.style.background = '#fff'; ev.currentTarget.style.borderColor = '#e5e7eb'; ev.currentTarget.style.color = '#374151'; }
@@ -3356,8 +3365,8 @@
             e('label', { style: S.lbl }, 'Topic'),
             e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: 'e.g. morning routine, feelings, playground', 'aria-label': 'Board topic', style: S.input, autoFocus: true })
           ),
-          e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
-          boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, style: S.btn('#059669', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
+          e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, 'aria-label': 'Generate board from topic', style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
+          boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, 'aria-label': 'Cols', style: S.btn('#059669', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
           boardWords.length > 0 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Cols:'),
             e('input', { type: 'number', min: 2, max: 8, value: boardCols, onChange: function (ev) { setBoardCols(Number(ev.target.value)); }, 'aria-label': 'Board columns', style: { width: '52px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 8px', fontSize: '13px' } })
@@ -3368,19 +3377,20 @@
           ),
           // Theme selector
           e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
-            e('span', { style: { fontSize: '10px', color: '#9ca3af', fontWeight: 600 } }, 'Theme:'),
+            e('span', { style: { fontSize: '10px', color: '#6b7280', fontWeight: 600 } }, 'Theme:'),
             Object.values(BOARD_THEMES).map(function (t) {
               var active = boardTheme === t.id;
               return e('button', {
                 key: t.id,
                 onClick: function () { setBoardTheme(t.id); store(STORAGE_BOARD_THEME, t.id); },
+                'aria-label': 'Theme: ' + t.label,
                 style: { fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: active ? '2px solid ' + PURPLE : '1px solid #d1d5db', background: active ? LIGHT_PURPLE : '#f9fafb', color: active ? PURPLE : '#374151', fontWeight: active ? 700 : 400, cursor: 'pointer' }
               }, t.label);
             })
           ),
           // Language selector for multilingual boards
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px' } },
-            e('span', { style: { fontSize: '10px', color: '#9ca3af', fontWeight: 600 } }, '🌐'),
+            e('span', { style: { fontSize: '10px', color: '#6b7280', fontWeight: 600 } }, '🌐'),
             e('select', {
               value: boardLang,
               onChange: function (ev) {
@@ -3399,11 +3409,11 @@
             ),
             translating && e('span', { style: { fontSize: '10px', color: PURPLE } }, '⏳')
           ),
-          e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
-          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
+          e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, 'aria-label': 'From Sentence', style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
+          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, 'aria-label': '️ From Gallery', style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
           boardWords.length > 0 && !boardPages && e('button', {
             onClick: enablePages,
-            title: 'Enable multi-page mode — add linked pages to this board',
+            title: 'Enable multi-page mode — add linked pages to this board', 'aria-label': 'Enable multi-page mode — add linked pages to this board',
             style: S.btn('#fef9c3', '#92400e', false)
           }, '📄 + Pages'),
           boardPages && e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', background: '#fef9c3', border: '1px solid #fde68a', borderRadius: '8px', padding: '3px 8px' } },
@@ -3433,19 +3443,20 @@
                   });
                 },
                 onClick: function () { if (!active) switchPage(pi); },
+                'aria-label': (pg.title || ('Page ' + (pi + 1))) + ' board page',
                 style: { padding: '2px 8px', border: '2px solid ' + (active ? '#92400e' : '#fde68a'), borderRadius: '6px', background: active ? '#92400e' : 'transparent', color: active ? '#fff' : '#92400e', fontSize: '10px', fontWeight: active ? 700 : 400, cursor: 'grab', transition: 'border-color 0.15s' },
                 title: 'Drag to reorder pages'
               }, pg.title || ('Page ' + (pi + 1)));
             }),
-            e('button', { onClick: addPage, title: 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', padding: '2px 7px', color: '#92400e', fontSize: '11px', cursor: 'pointer' } }, '+'),
-            boardPages.length > 1 && e('button', { onClick: function () { deletePage(activePageIdx); }, title: 'Delete current page', style: { background: 'none', border: 'none', color: '#dc2626', fontSize: '12px', cursor: 'pointer', padding: '0 2px' } }, '✕')
+            e('button', { onClick: addPage, title: 'Add a new page', 'aria-label': 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', padding: '2px 7px', color: '#92400e', fontSize: '11px', cursor: 'pointer' } }, '+'),
+            boardPages.length > 1 && e('button', { onClick: function () { deletePage(activePageIdx); }, title: 'Delete current page', 'aria-label': '✕', style: { background: 'none', border: 'none', color: '#dc2626', fontSize: '12px', cursor: 'pointer', padding: '0 2px' } }, '✕')
           ),
           hasImages && e('div', { style: { display: 'flex', gap: '6px' } },
-            e('button', { onClick: saveBoard, style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
-            e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
+            e('button', { onClick: saveBoard, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
+            e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, 'aria-label': '️ Printu2026', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
           ),
-          savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
-          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json file' }, '📥 Import Board'),
+          savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, 'aria-label': 'Toggle saved boards gallery', style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
+          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': 'Import Board', style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json file' }, '📥 Import Board'),
           e('input', { type: 'file', accept: '.json', ref: importBoardRef, style: { display: 'none' }, onChange: importSingleBoard })
         ),
         // Saved boards panel
@@ -3454,13 +3465,14 @@
           profiles.length > 1 && e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', padding: '0 0 8px', borderBottom: '1px solid #f3f4f6', marginBottom: '8px' } },
             e('button', {
               onClick: function () { setBoardProfileFilter(''); },
-              style: Object.assign({}, S.chip(boardProfileFilter === '' ? PURPLE : '#f3f4f6', boardProfileFilter === '' ? '#fff' : '#6b7280'), { border: 'none' })
+              'aria-label': 'All students', style: Object.assign({}, S.chip(boardProfileFilter === '' ? PURPLE : '#f3f4f6', boardProfileFilter === '' ? '#fff' : '#6b7280'), { border: 'none' })
             }, 'All students'),
             profiles.map(function (prof) {
               var active = boardProfileFilter === prof.id;
               return e('button', {
                 key: prof.id,
                 onClick: function () { setBoardProfileFilter(active ? '' : prof.id); },
+                'aria-label': 'Filter by ' + (prof.name || 'student'),
                 style: Object.assign({}, S.chip(active ? PURPLE : '#ede9fe', active ? '#fff' : PURPLE), { border: 'none', display: 'flex', alignItems: 'center', gap: '3px' })
               },
                 prof.image ? e('img', { src: prof.image, style: { width: 12, height: 12, borderRadius: '50%', objectFit: 'cover' } }) : '👤',
@@ -3477,35 +3489,35 @@
                   // Title + word count
                   e('div', null,
                     e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937', marginBottom: '2px' } }, b.title || 'Untitled Board'),
-                    e('div', { style: { fontSize: '10px', color: '#9ca3af' } }, b.words.length + ' words')
+                    e('div', { style: { fontSize: '10px', color: '#6b7280' } }, b.words.length + ' words')
                   ),
                   // Profile tag selector
                   e('select', {
                     value: b.profileId || '',
                     onChange: function (ev) { tagBoardProfile(b.id, ev.target.value || null); },
-                    style: { fontSize: '10px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 4px', color: b.profileId ? PURPLE : '#9ca3af', background: b.profileId ? LIGHT_PURPLE : '#f9fafb', cursor: 'pointer', width: '100%' },
-                    title: 'Assign board to a student'
+                    style: { fontSize: '10px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 4px', color: b.profileId ? PURPLE : '#6b7280', background: b.profileId ? LIGHT_PURPLE : '#f9fafb', cursor: 'pointer', width: '100%' },
+                    title: 'Assign board to a student', 'aria-label': 'Assign board to student'
                   },
                     e('option', { value: '' }, '— No student —'),
                     profiles.map(function (p) { return e('option', { key: p.id, value: p.id }, (p.name || 'Student')); })
                   ),
                   // Action buttons row
                   e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
-                    e('button', { onClick: function () { loadBoard(b); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
+                    e('button', { onClick: function () { loadBoard(b); }, 'aria-label': 'Load', style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
                     b.words && b.words.some(function (w) { return w.image; }) && e('button', {
                       onClick: function () { setUseBoardId(b.id); setStrip([]); setShowCommLog(false); setUsePageIdx(0); setPredictions([]); },
-                      title: 'Use this board — tap symbols to speak and build messages',
+                      title: 'Use this board — tap symbols to speak and build messages', 'aria-label': 'Use board in AAC mode',
                       style: S.btn('#eff6ff', '#1d4ed8', false)
                     }, '\u25b6 Use'),
                     b.words && b.words.some(function (w) { return w.image; }) && e('button', {
                       onClick: function () { setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
-                      title: 'Partner-assisted single-switch scanning mode',
+                      title: 'Partner-assisted single-switch scanning mode', 'aria-label': 'Start scanning mode',
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '\u267f Scan'),
-                    e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
-                    b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
+                    e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', 'aria-label': '⬇️', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
+                    b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', 'aria-label': '🌐', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
                     liveSession && liveSession.active && e('button', {
-                      title: 'Push to student screens',
+                      title: 'Push board to student screens', 'aria-label': 'Push board to student screens',
                       onClick: function () {
                         var stripped = b.words.map(function (w) { return { word: w.word, wordType: w.wordType }; });
                         liveSession.push({ type: 'board', title: b.title, words: stripped, cols: b.cols || 4 })
@@ -3514,7 +3526,7 @@
                       },
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '📡'),
-                    e('button', { onClick: function () { deleteSavedBoard(b.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+                    e('button', { onClick: function () { deleteSavedBoard(b.id); }, 'aria-label': '🗑️', style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
                   )
                 );
               })
@@ -3557,7 +3569,7 @@
               'aria-label': 'Sentence to map to symbols',
               style: Object.assign({}, S.input, { flex: 1, borderColor: '#86efac' })
             }),
-            e('button', { onClick: parseTextToSymbols, disabled: !sentenceInput.trim() || sentenceParsing || !onCallGemini, style: S.btn('#059669', '#fff', !sentenceInput.trim() || sentenceParsing || !onCallGemini) },
+            e('button', { onClick: parseTextToSymbols, disabled: !sentenceInput.trim() || sentenceParsing || !onCallGemini, 'aria-label': 'Parse sentence into symbols', style: S.btn('#059669', '#fff', !sentenceInput.trim() || sentenceParsing || !onCallGemini) },
               sentenceParsing ? '⏳ Mapping…' : '🤖 Map Symbols'
             )
           ),
@@ -3596,9 +3608,9 @@
               e('button', {
                 onClick: applySentenceMapping,
                 disabled: !sentenceMapping.some(function (m) { return m.selected && !m.skip; }),
-                style: S.btn('#059669', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
+                'aria-label': 'Reset progress', style: S.btn('#059669', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
               }, '✅ Add to Board (' + sentenceMapping.filter(function (m) { return m.selected && !m.skip; }).length + ')'),
-              e('button', { onClick: function () { setSentenceMapping([]); setSentenceInput(''); }, style: S.btn('#f3f4f6', '#374151', false) }, '↩ Reset')
+              e('button', { onClick: function () { setSentenceMapping([]); setSentenceInput(''); }, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '↩ Reset')
             )
           )
         ),
@@ -3625,7 +3637,7 @@
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Text size:'),
             e('input', { type: 'number', min: 8, max: 18, value: boardTextSize, onChange: function (ev) { setBoardTextSize(Number(ev.target.value)); }, 'aria-label': 'Text size', style: { width: '50px', border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 7px', fontSize: '12px' } })
           ),
-          e('button', { onClick: printBoardSized, style: S.btn('#1e40af', '#fff', false) }, '\uD83D\uDDB6 Print Now')
+          e('button', { onClick: printBoardSized, 'aria-label': 'uD83DuDDB6 Print Now', style: S.btn('#1e40af', '#fff', false) }, '\uD83D\uDDB6 Print Now')
         ),
         // Board title
         boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: 'Board title (optional)', 'aria-label': 'Board title', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
@@ -3665,38 +3677,38 @@
                     // Label above image
                     boardTextPos === 'above' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } },
                       word.translatedLabel || word.label,
-                      word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#9ca3af' } }, word.originalLabel)
+                      word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#6b7280' } }, word.originalLabel)
                     ),
                     // Image
                     boardLoading[word.id]
                       ? e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, spinner(24))
                       : word.image
                         ? e('img', { src: word.image, alt: word.label, style: { width: imgSz, height: imgSz, objectFit: 'contain', borderRadius: '6px', background: '#fff' } })
-                        : e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '6px', fontSize: '11px', color: '#9ca3af', textAlign: 'center', padding: '4px' } }, 'Click \u2728'),
+                        : e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '6px', fontSize: '11px', color: '#6b7280', textAlign: 'center', padding: '4px' } }, 'Click \u2728'),
                     // Label below image (default)
                     boardTextPos === 'below' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } },
                       word.translatedLabel || word.label,
-                      word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#9ca3af' } }, word.originalLabel)
+                      word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#6b7280' } }, word.originalLabel)
                     ),
                     // Regen button
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, 'aria-label': 'uD83DuDD04', style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
                     // Record audio button
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); recordCellAudio(word.id); }, style: { position: 'absolute', top: 4, left: 4, background: cellRecording === word.id ? 'rgba(220,38,38,0.8)' : (word.audioData ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.1)'), border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: cellRecording === word.id ? '#fff' : undefined } }, cellRecording === word.id ? '⏹' : (word.audioData ? '🎙️' : '🎤')),
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); recordCellAudio(word.id); }, 'aria-label': 'Reset progress', style: { position: 'absolute', top: 4, left: 4, background: cellRecording === word.id ? 'rgba(220,38,38,0.8)' : (word.audioData ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.1)'), border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: cellRecording === word.id ? '#fff' : undefined } }, cellRecording === word.id ? '⏹' : (word.audioData ? '🎙️' : '🎤')),
                     // Play custom audio button
-                    word.audioData && e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); playCellAudio(word.audioData); }, style: { position: 'absolute', bottom: 4, left: 4, background: 'rgba(37,99,235,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '🔊'),
+                    word.audioData && e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); playCellAudio(word.audioData); }, 'aria-label': '🔊', style: { position: 'absolute', bottom: 4, left: 4, background: 'rgba(37,99,235,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '🔊'),
                     // Remove button
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: '#dc2626' } }, '\u00d7')
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, 'aria-label': 'u00d7', style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: '#dc2626' } }, '\u00d7')
                   );
                 })
               ),
               boardColor && e('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap', alignItems: 'center' } },
-                e('span', { style: { fontSize: '10px', color: '#9ca3af', fontWeight: 600 } }, 'Colors:'),
+                e('span', { style: { fontSize: '10px', color: '#6b7280', fontWeight: 600 } }, 'Colors:'),
                 [['noun', 'Noun'], ['verb', 'Verb'], ['adjective', 'Adj'], ['other', 'Other']].map(function (pair) {
                   return e('label', { key: pair[0], style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#374151', cursor: 'pointer', userSelect: 'none' } },
                     e('input', {
                       type: 'color', value: catFill[pair[0]] || '#f9fafb',
                       onChange: function (ev) { var v = ev.target.value; setCatFill(function (prev) { var n = Object.assign({}, prev); n[pair[0]] = v; store(STORAGE_CAT_COLORS + '_fill', n); return n; }); },
-                      title: 'Click to change ' + pair[1] + ' fill color',
+                      title: 'Click to change ' + pair[1] + ' fill color', 'aria-label': pair[1] + ' category fill color',
                       style: { width: 18, height: 18, padding: 0, border: '1px solid #d1d5db', borderRadius: '3px', cursor: 'pointer' }
                     }),
                     pair[1]
@@ -3704,11 +3716,11 @@
                 }),
                 e('button', {
                   onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
-                  style: { fontSize: '10px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
+                  'aria-label': 'Reset progress', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
                 }, 'Reset')
               )
             )
-          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', flexDirection: 'column', gap: '10px' } },
+          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
               e('div', { style: { fontSize: '48px' } }, '📋'),
               e('p', { style: { fontWeight: 600 } }, 'Enter a topic and generate a complete communication board'),
               e('p', { style: { fontSize: '12px', maxWidth: '380px', textAlign: 'center' } }, 'AI writes the word list, you generate symbols, and export a print-ready board. Drag cells to reorder. Color coding follows AAC conventions.')
@@ -3733,14 +3745,14 @@
                 e('option', { value: 'vertical' }, 'Vertical List')
               )
             ),
-            e('button', { onClick: generateSchedule, disabled: !schedInput.trim() || schedGenerating, style: S.btn(PURPLE, '#fff', !schedInput.trim() || schedGenerating) }, schedGenerating ? '⏳ Generating...' : '✨ Generate Schedule')
+            e('button', { onClick: generateSchedule, disabled: !schedInput.trim() || schedGenerating, 'aria-label': 'Generate visual schedule', style: S.btn(PURPLE, '#fff', !schedInput.trim() || schedGenerating) }, schedGenerating ? '⏳ Generating...' : '✨ Generate Schedule')
           ),
           schedItems.length > 0 && e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-            e('button', { onClick: resetSchedule, style: S.btn('#f3f4f6', '#374151', false) }, '🔄 Reset'),
-            e('button', { onClick: saveSchedule, style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
-            e('button', { onClick: function () { window.print(); }, style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
+            e('button', { onClick: resetSchedule, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '🔄 Reset'),
+            e('button', { onClick: saveSchedule, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
+            e('button', { onClick: function () { window.print(); }, 'aria-label': '️ Print', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
           ),
-          savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
+          savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, 'aria-label': 'Toggle saved schedules gallery', style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
         ),
         // Saved schedules panel
         showSchedGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px' } },
@@ -3749,11 +3761,11 @@
               return e('div', { key: s.id, style: { flexShrink: 0, border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '10px' } },
                 e('div', null,
                   e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937' } }, s.title || 'Untitled Schedule'),
-                  e('div', { style: { fontSize: '10px', color: '#9ca3af' } }, s.items.length + ' activities')
+                  e('div', { style: { fontSize: '10px', color: '#6b7280' } }, s.items.length + ' activities')
                 ),
-                e('button', { onClick: function () { loadSchedule(s); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
+                e('button', { onClick: function () { loadSchedule(s); }, 'aria-label': 'Load', style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
                 liveSession && liveSession.active && e('button', {
-                  title: 'Push to student screens (images excluded)',
+                  title: 'Push to student screens (images excluded)', 'aria-label': 'Push schedule to student screens',
                   onClick: function () {
                     var stripped = s.items.map(function (item) { return { label: item.label }; });
                     liveSession.push({ type: 'schedule', title: s.title, items: stripped, nowIndex: 0 })
@@ -3762,7 +3774,7 @@
                   },
                   style: S.btn('#ecfdf5', '#065f46', false)
                 }, '📡'),
-                e('button', { onClick: function () { deleteSavedSchedule(s.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+                e('button', { onClick: function () { deleteSavedSchedule(s.id); }, 'aria-label': '🗑️', style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
               );
             })
           )
@@ -3808,15 +3820,15 @@
                     item.image
                       ? e('img', { src: item.image, alt: item.label, style: { width: 70, height: 70, objectFit: 'contain', borderRadius: '8px', background: '#fff', border: '1px solid #f3f4f6', flexShrink: 0, filter: isDone ? 'grayscale(100%)' : 'none' } })
                       : e('div', { style: { width: 70, height: 70, background: '#f9fafb', borderRadius: '8px', border: '1px dashed #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, schedGenerating ? spinner(24) : '⏳'),
-                    e('span', { style: { fontSize: '12px', fontWeight: isDone ? 400 : 600, color: isDone ? '#9ca3af' : '#1f2937', textAlign: 'center', textDecoration: isDone ? 'line-through' : 'none', lineHeight: 1.3 } }, item.label),
+                    e('span', { style: { fontSize: '12px', fontWeight: isDone ? 400 : 600, color: isDone ? '#6b7280' : '#1f2937', textAlign: 'center', textDecoration: isDone ? 'line-through' : 'none', lineHeight: 1.3 } }, item.label),
                     isDone && e('div', { style: { fontSize: '22px', flexShrink: 0 } }, '✅'),
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setSchedNowId(item.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: isNow ? 1 : 0.4, flexShrink: 0, padding: '2px' } }, '▶')
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setSchedNowId(item.id); }, 'aria-label': '▶', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: isNow ? 1 : 0.4, flexShrink: 0, padding: '2px' } }, '▶')
                   );
                 })
               ),
-              e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#9ca3af', marginTop: '10px' } }, 'Tap any activity to mark complete • ▶ to set current activity')
+              e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', marginTop: '10px' } }, 'Tap any activity to mark complete • ▶ to set current activity')
             )
-          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', flexDirection: 'column', gap: '10px' } },
+          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
               e('div', { style: { fontSize: '48px' } }, '📅'),
               e('p', { style: { fontWeight: 600 } }, 'Build a personalized visual schedule'),
               e('p', { style: { fontSize: '12px', maxWidth: '360px', textAlign: 'center' } }, 'Enter activities, generate AI symbols, then tap to mark each as complete. Print as a laminated strip for the classroom or home.')
@@ -3839,7 +3851,7 @@
           e('div', null,
             e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' } },
               e('label', { style: S.lbl }, 'Situation / Goal'),
-              e('span', { style: { fontSize: '10px', color: '#9ca3af' } }, 'or pick a template ↓')
+              e('span', { style: { fontSize: '10px', color: '#6b7280' } }, 'or pick a template ↓')
             ),
             e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: 'e.g. Marcus is learning to wait his turn during group time', 'aria-label': 'Social story situation or goal', style: Object.assign({}, S.textarea, { height: '65px' }) }),
             e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '5px' } },
@@ -3848,6 +3860,7 @@
                 return e('button', {
                   key: t.label + i,
                   onClick: function () { setStorySituation(t.situation); setStoryDetails(t.details); },
+                  'aria-label': 'Use template: ' + t.label,
                   style: { padding: '3px 8px', background: isCustom ? '#fef3c7' : '#f3f4f6', border: '1px solid ' + (isCustom ? '#f59e0b' : '#e5e7eb'), borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap', transition: 'background 0.1s', position: 'relative' },
                   onMouseOver: function (ev) { ev.currentTarget.style.background = LIGHT_PURPLE; ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.color = PURPLE; },
                   onMouseOut: function (ev) { ev.currentTarget.style.background = isCustom ? '#fef3c7' : '#f3f4f6'; ev.currentTarget.style.borderColor = isCustom ? '#f59e0b' : '#e5e7eb'; ev.currentTarget.style.color = '#374151'; }
@@ -3862,7 +3875,7 @@
                   setCustomTemplates(updated); store(STORAGE_CUSTOM_TEMPLATES, updated);
                   if (addToast) addToast('⭐ Template "' + lbl + '" saved!', 'success');
                 },
-                style: { padding: '3px 8px', background: '#dcfce7', border: '1px solid #16a34a', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#166534', whiteSpace: 'nowrap', fontWeight: 700 }
+                'aria-label': 'Save current story as reusable template', style: { padding: '3px 8px', background: '#dcfce7', border: '1px solid #16a34a', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#166534', whiteSpace: 'nowrap', fontWeight: 700 }
               }, '💾 Save as Template')
             )
           ),
@@ -3870,10 +3883,10 @@
             e('label', { style: S.lbl }, 'Additional context (optional)'),
             e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. Marcus is 7, has autism, loves trains', 'aria-label': 'Additional context for social story', style: Object.assign({}, S.textarea, { height: '55px' }) })
           ),
-          e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
-          e('p', { style: { fontSize: '10px', color: '#9ca3af' } }, 'Uses Carol Gray format — descriptive, perspective, and directive sentences. Illustrations auto-generate for each page.'),
+          e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': 'Generate social story', style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
+          e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Uses Carol Gray format — descriptive, perspective, and directive sentences. Illustrations auto-generate for each page.'),
           hasStory && e('div', { style: { borderTop: '1px solid #e5e7eb', paddingTop: '10px' } },
-            e('button', { onClick: function () { window.print(); }, style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
+            e('button', { onClick: function () { window.print(); }, 'aria-label': '️ Print Story', style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
           )
         ),
         // Right: story viewer
@@ -3881,11 +3894,11 @@
           ? e('div', { id: 'ss-py', style: { flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column' } },
               // Page navigation
               e('div', { className: 'ss-no-print', style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' } },
-                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.max(0, p - 1); }); }, disabled: storyCurrent === 0, style: S.btn('#f3f4f6', '#374151', storyCurrent === 0) }, '← Prev'),
+                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.max(0, p - 1); }); }, 'aria-label': 'Previous story page', disabled: storyCurrent === 0, 'aria-label': 'Prev', style: S.btn('#f3f4f6', '#374151', storyCurrent === 0) }, '← Prev'),
                 e('span', { style: { fontWeight: 600, fontSize: '13px', color: '#374151' } }, 'Page ' + (storyCurrent + 1) + ' of ' + storyPages.length),
-                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.min(storyPages.length - 1, p + 1); }); }, disabled: storyCurrent === storyPages.length - 1, style: S.btn('#f3f4f6', '#374151', storyCurrent === storyPages.length - 1) }, 'Next →'),
-                currentPage && e('button', { onClick: function () { speakPage(currentPage.text); }, style: S.btn('#dcfce7', '#166534', false) }, storySpeaking ? '⏹ Stop' : '🔊 Read Aloud'),
-                currentPage && e('button', { onClick: function () { regenPageIllustration(currentPage.id); }, disabled: !!storyIllustrating[currentPage.id], style: S.btn(LIGHT_PURPLE, PURPLE, !!storyIllustrating[currentPage.id]) }, storyIllustrating[currentPage.id] ? '⏳' : '🔄 Regen Image'),
+                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.min(storyPages.length - 1, p + 1); }); }, disabled: storyCurrent === storyPages.length - 1, 'aria-label': 'Next', style: S.btn('#f3f4f6', '#374151', storyCurrent === storyPages.length - 1) }, 'Next →'),
+                currentPage && e('button', { onClick: function () { speakPage(currentPage.text); }, 'aria-label': storySpeaking ? 'Stop reading aloud' : 'Read this page aloud', style: S.btn('#dcfce7', '#166534', false) }, storySpeaking ? '⏹ Stop' : '🔊 Read Aloud'),
+                currentPage && e('button', { onClick: function () { regenPageIllustration(currentPage.id); }, disabled: !!storyIllustrating[currentPage.id], 'aria-label': 'Regenerate illustration for this page', style: S.btn(LIGHT_PURPLE, PURPLE, !!storyIllustrating[currentPage.id]) }, storyIllustrating[currentPage.id] ? '⏳' : '🔄 Regen Image'),
               ),
               // All pages for print, single page for screen
               e('div', { className: 'ss-no-print' },
@@ -3923,7 +3936,7 @@
                 })
               )
             )
-          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', flexDirection: 'column', gap: '10px', padding: '20px' } },
+          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px', padding: '20px' } },
               e('div', { style: { fontSize: '52px' } }, '📖'),
               e('p', { style: { fontWeight: 600 } }, 'Create an AI-illustrated Social Story'),
               e('div', { style: { maxWidth: '420px', fontSize: '13px', lineHeight: 1.7, textAlign: 'center' } },
@@ -3944,14 +3957,14 @@
             e('label', { style: S.lbl }, 'New Activity Set Name'),
             e('input', { type: 'text', value: newBookTitle, onChange: function (ev) { setNewBookTitle(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') createBook(); }, placeholder: 'e.g. Marcus \u2014 School Day Boards', 'aria-label': 'New activity set name', style: S.input })
           ),
-          e('button', { onClick: createBook, disabled: !newBookTitle.trim(), style: S.btn(PURPLE, '#fff', !newBookTitle.trim()) }, '+ Create Set')
+          e('button', { onClick: createBook, disabled: !newBookTitle.trim(), 'aria-label': 'Create new activity book', style: S.btn(PURPLE, '#fff', !newBookTitle.trim()) }, '+ Create Set')
         ),
         // Body: left = set list, right = set contents
         e('div', { style: { display: 'flex', gap: '14px', flex: 1, overflow: 'hidden' } },
           // Left: list of books
           e('div', { style: { width: '220px', flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' } },
             books.length === 0
-              ? e('div', { style: { color: '#9ca3af', fontSize: '13px', padding: '20px 0', textAlign: 'center' } }, 'No activity sets yet.\nCreate one above and add your saved boards.')
+              ? e('div', { style: { color: '#6b7280', fontSize: '13px', padding: '20px 0', textAlign: 'center' } }, 'No activity sets yet.\nCreate one above and add your saved boards.')
               : books.map(function (book) {
                   var isActive = book.id === activeBookId;
                   var taggedProf = profiles.find(function (p) { return p.id === book.profileId; }) || null;
@@ -3978,7 +3991,7 @@
                         value: activeBook.profileId || '',
                         onChange: function (ev) { tagBookProfile(activeBook.id, ev.target.value || null); },
                         'aria-label': 'Assign student profile to activity set',
-                        style: { fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 5px', color: activeBook.profileId ? PURPLE : '#9ca3af', background: activeBook.profileId ? LIGHT_PURPLE : '#f9fafb' }
+                        style: { fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 5px', color: activeBook.profileId ? PURPLE : '#6b7280', background: activeBook.profileId ? LIGHT_PURPLE : '#f9fafb' }
                       },
                         e('option', { value: '' }, '— None —'),
                         profiles.map(function (p) { return e('option', { key: p.id, value: p.id }, p.name || 'Student'); })
@@ -3986,15 +3999,15 @@
                     )
                   ),
                   e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-                    e('button', { onClick: function () { printBook(activeBook); }, disabled: activeBook.boardIds.length === 0, style: S.btn('#dbeafe', '#1e40af', activeBook.boardIds.length === 0) }, '\uD83D\uDDB6 Print All (' + activeBook.boardIds.length + ')'),
-                    e('button', { onClick: function () { deleteBook(activeBook.id); }, style: S.btn('#fee2e2', '#dc2626', false) }, '\uD83D\uDDD1\uFE0F Delete Set')
+                    e('button', { onClick: function () { printBook(activeBook); }, disabled: activeBook.boardIds.length === 0, 'aria-label': 'Reset progress', style: S.btn('#dbeafe', '#1e40af', activeBook.boardIds.length === 0) }, '\uD83D\uDDB6 Print All (' + activeBook.boardIds.length + ')'),
+                    e('button', { onClick: function () { deleteBook(activeBook.id); }, 'aria-label': 'uD83DuDDD1uFE0F Delete Set', style: S.btn('#fee2e2', '#dc2626', false) }, '\uD83D\uDDD1\uFE0F Delete Set')
                   )
                 ),
                 // Board list within this set
                 e('div', { style: { flexShrink: 0 } },
                   e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Boards in this set \u2014 drag to reorder, click + to add'),
                   activeBook.boardIds.length === 0
-                    ? e('div', { style: { color: '#9ca3af', fontSize: '12px', padding: '12px 0' } }, 'No boards added yet. Pick boards from your saved library below.')
+                    ? e('div', { style: { color: '#6b7280', fontSize: '12px', padding: '12px 0' } }, 'No boards added yet. Pick boards from your saved library below.')
                     : e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                         activeBook.boardIds.map(function (boardId, idx) {
                           var board = savedBoards.find(function (b) { return b.id === boardId; });
@@ -4005,14 +4018,14 @@
                             e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', marginBottom: '7px' } },
                               preview.map(function (w) {
                                 return e('div', { key: w.id, style: { width: '100%', aspectRatio: '1', background: '#f9fafb', borderRadius: '4px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
-                                  w.image ? e('img', { src: w.image, alt: w.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '2px' } }) : e('span', { style: { fontSize: '8px', color: '#9ca3af' } }, w.label)
+                                  w.image ? e('img', { src: w.image, alt: w.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '2px' } }) : e('span', { style: { fontSize: '8px', color: '#6b7280' } }, w.label)
                                 );
                               })
                             ),
                             e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#1f2937', marginBottom: '5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, board.title || 'Untitled'),
                             e('div', { style: { display: 'flex', gap: '4px' } },
-                              e('button', { onClick: function () { loadBoard(board); setTab('board'); }, style: Object.assign({}, S.btn(LIGHT_PURPLE, PURPLE, false), { flex: 1, fontSize: '10px', padding: '4px' }) }, 'Open'),
-                              e('button', { onClick: function () { toggleBoardInBook(activeBook.id, boardId); }, style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { padding: '4px 8px', fontSize: '10px' }) }, '\u00d7')
+                              e('button', { onClick: function () { loadBoard(board); setTab('board'); }, 'aria-label': 'Open', style: Object.assign({}, S.btn(LIGHT_PURPLE, PURPLE, false), { flex: 1, fontSize: '10px', padding: '4px' }) }, 'Open'),
+                              e('button', { onClick: function () { toggleBoardInBook(activeBook.id, boardId); }, 'aria-label': 'u00d7', style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { padding: '4px 8px', fontSize: '10px' }) }, '\u00d7')
                             )
                           );
                         })
@@ -4028,6 +4041,7 @@
                         return e('button', {
                           key: b.id,
                           onClick: function () { toggleBoardInBook(activeBook.id, b.id); },
+                          'aria-label': 'Add board: ' + (b.title || 'Untitled') + ' to activity set',
                           style: { padding: '5px 10px', border: '1px dashed #d1d5db', borderRadius: '20px', background: '#f9fafb', fontSize: '11px', cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', gap: '4px' },
                           onMouseOver: function (ev) { ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.color = PURPLE; ev.currentTarget.style.background = LIGHT_PURPLE; },
                           onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#d1d5db'; ev.currentTarget.style.color = '#374151'; ev.currentTarget.style.background = '#f9fafb'; }
@@ -4036,7 +4050,7 @@
                   )
                 )
               )
-            : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', flexDirection: 'column', gap: '10px' } },
+            : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
                 e('div', { style: { fontSize: '52px' } }, '📚'),
                 e('p', { style: { fontWeight: 600 } }, 'Activity Sets bundle your boards into student-specific sets'),
                 e('div', { style: { maxWidth: '400px', fontSize: '13px', lineHeight: 1.7, textAlign: 'center' } },
@@ -4146,9 +4160,9 @@
           e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px', marginRight: 'auto' } }, useBoard ? (useBoard.title || 'Communication Board') : 'Communication Board'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
-            style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            'aria-label': 'Toggle communication log', style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, '📋 Log (' + commLog.length + ')'),
-          e('button', { onClick: exitUse, style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
+          e('button', { onClick: exitUse, 'aria-label': 'Exit AAC mode', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
         ),
         // ── Page tabs (multi-page boards) ──
         usePages && e('div', { style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', gap: '6px', flexShrink: 0, overflowX: 'auto' } },
@@ -4157,12 +4171,13 @@
             return e('button', {
               key: pg.id,
               onClick: function () { setUsePageIdx(pi); setPredictions([]); },
+              'aria-label': (pg.title || ('Page ' + (pi + 1))) + ' tab',
               style: { padding: '5px 14px', border: 'none', borderRadius: '7px', background: active ? '#4f46e5' : '#1e293b', color: active ? '#fff' : '#94a3b8', fontWeight: active ? 700 : 400, fontSize: '12px', cursor: active ? 'default' : 'pointer', flexShrink: 0 }
             }, pg.title || ('Page ' + (pi + 1)));
           })
         ),
         // ── Sentence strip ──
-        e('div', { style: { background: '#1a1a2e', borderBottom: '2px solid #312e81', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, minHeight: '58px', flexWrap: 'wrap' } },
+        e('div', { 'aria-live': 'polite', 'aria-label': 'Sentence strip - ' + (strip.length === 0 ? 'empty' : strip.map(function (w) { return w.label; }).join(' ')), style: { background: '#1a1a2e', borderBottom: '2px solid #312e81', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, minHeight: '58px', flexWrap: 'wrap' } },
           strip.length === 0
             ? e('span', { style: { color: '#475569', fontSize: '14px', fontStyle: 'italic' } }, 'Tap symbols below to build a message\u2026')
             : strip.map(function (w, i) {
@@ -4175,26 +4190,29 @@
             strip.length > 0 && e('button', {
               onClick: function () { speakPhraseFn(strip); },
               disabled: stripSpeaking,
+              'aria-label': 'Speak constructed sentence',
               style: { background: stripSpeaking ? '#6b7280' : '#4f46e5', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
             }, stripSpeaking ? '\u2026' : '\uD83D\uDD0A Speak'),
             strip.length > 0 && e('button', {
               onClick: function () { setStrip(function (s) { return s.slice(0, -1); }); },
+              'aria-label': 'Delete last word from sentence strip',
               style: { background: '#374151', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
             }, '\u2190 Del'),
             strip.length > 0 && e('button', {
               onClick: function () { setStrip([]); },
-              style: { background: '#374151', color: '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
+              'aria-label': 'Clear sentence strip', style: { background: '#374151', color: '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
             }, '\uD83D\uDDD1')
           )
         ),
         // ── Word prediction chips ──
-        (predictions.length > 0 || predLoading) && e('div', { style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
+        (predictions.length > 0 || predLoading) && e('div', { 'aria-live': 'polite', 'aria-label': 'Word predictions', style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
           e('span', { style: { color: '#64748b', fontSize: '11px', fontWeight: 600, flexShrink: 0 } }, predLoading ? '🤖 Predicting…' : '💡 Next:'),
           predictions.map(function (pred, pi) {
             var matchCell = useCells.find(function (c) { return c.label.toLowerCase() === pred.toLowerCase(); });
             return e('button', {
               key: pi,
               onClick: function () { if (matchCell) tapCell(matchCell); else tapCell({ label: pred, image: null }); },
+              'aria-label': 'Predicted word: ' + pred,
               style: { display: 'flex', alignItems: 'center', gap: '5px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', padding: '4px 10px', cursor: 'pointer', color: '#e2e8f0', fontSize: '12px', fontWeight: 600, transition: 'background 0.1s' },
               onMouseOver: function (ev) { ev.currentTarget.style.background = '#312e81'; ev.currentTarget.style.borderColor = '#4f46e5'; },
               onMouseOut: function (ev) { ev.currentTarget.style.background = '#1e293b'; ev.currentTarget.style.borderColor = '#334155'; }
@@ -4234,8 +4252,8 @@
             e('div', { style: { padding: '12px 16px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
               e('span', { style: { color: '#a78bfa', fontWeight: 800, fontSize: '13px' } }, '\uD83D\uDCCB Session Log'),
               e('div', { style: { display: 'flex', gap: '6px' } },
-                commLog.length > 0 && e('button', { onClick: exportLog, style: { background: '#1e293b', color: '#94a3b8', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
-                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, style: { background: '#1e293b', color: '#ef4444', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
+                commLog.length > 0 && e('button', { onClick: exportLog, 'aria-label': 'Export communication log', style: { background: '#1e293b', color: '#94a3b8', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
+                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, 'aria-label': 'Clear communication log', 'aria-label': 'uD83DuDDD1 Clear', style: { background: '#1e293b', color: '#ef4444', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
               )
             ),
             e('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
@@ -4310,12 +4328,12 @@
             )
           ),
           e('button', {
-            onClick: function () { setScanPaused(function (p) { return !p; }); },
+            onClick: function () { setScanPaused(function (p) { return !p; }); }, 'aria-label': scanPaused ? 'Resume scanning' : 'Pause scanning',
             style: { background: scanPaused ? '#22c55e' : '#f59e0b', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, scanPaused ? '▶ Resume' : '⏸ Pause'),
           e('button', {
             onClick: exitScan,
-            style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            'aria-label': 'Reset progress', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, '✕ Exit')
         ),
         // Cell grid
