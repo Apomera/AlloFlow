@@ -25,7 +25,7 @@ if (cssMatch) {
     const cssPath = path.join(buildDir, cssMatch[1]);
     if (fs.existsSync(cssPath)) {
         const cssContent = fs.readFileSync(cssPath, 'utf8');
-        html = html.replace(cssMatch[0], '<style>' + cssContent + '</style>');
+        html = html.replace(cssMatch[0], () => '<style>' + cssContent + '</style>');
         console.log('✓ Inlined CSS (' + (cssContent.length / 1024).toFixed(1) + ' KB)');
     }
 }
@@ -38,9 +38,9 @@ if (jsMatch) {
         const jsContent = fs.readFileSync(jsPath, 'utf8');
         // Use a deferred inline approach: put JS at the end of body
         // Remove the script tag from head
-        html = html.replace(jsMatch[0], '');
+        html = html.replace(jsMatch[0], () => '');
         // Add inline script at the end of body, before </body>
-        html = html.replace('</body>', '<script>' + jsContent + '</script></body>');
+        html = html.replace('</body>', () => '<script>' + jsContent + '</script></body>');
         console.log('✓ Inlined JS (' + (jsContent.length / 1024).toFixed(1) + ' KB)');
     }
 } else {
@@ -53,8 +53,8 @@ if (jsMatch) {
         if (jsFiles.length > 0) {
             const jsContent = fs.readFileSync(path.join(jsDir, jsFiles[0]), 'utf8');
             // Remove any existing dynamic loader script
-            html = html.replace(/<script>\s*\(function\(\)\s*\{[\s\S]*?loadScript[\s\S]*?\}\)\(\);\s*<\/script>/, '');
-            html = html.replace('</body>', '<script>' + jsContent + '</script></body>');
+            html = html.replace(/<script>\s*\(function\(\)\s*\{[\s\S]*?loadScript[\s\S]*?\}\)\(\);\s*<\/script>/, () => '');
+            html = html.replace('</body>', () => '<script>' + jsContent + '</script></body>');
             console.log('✓ Inlined JS from', jsFiles[0], '(' + (jsContent.length / 1024).toFixed(1) + ' KB)');
         }
     }
