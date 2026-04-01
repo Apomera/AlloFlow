@@ -434,7 +434,7 @@
               }
             }),
             h('div', { style: { display: 'flex', gap: '12px', marginTop: '1.5rem', justifyContent: 'center' } },
-              h('button', {
+              h('button', { "aria-label": "Enter",
                 type: 'submit',
                 style: {
                   padding: '12px 32px', background: 'linear-gradient(to right, #10b981, #22c55e)',
@@ -442,7 +442,7 @@
                   border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16,185,129,0.3)'
                 }
               }, 'Enter \u21b5'),
-              h('button', {
+              h('button', { "aria-label": "Skip",
                 type: 'button', onClick: function () { submitAnswer(true); },
                 style: {
                   padding: '12px 24px', background: '#e2e8f0', color: '#64748b',
@@ -456,7 +456,7 @@
             'Tab = Skip \u2022 Esc = End Early' + (autoAdvance ? ' \u2022 Auto-advance ON' : ''))
         ),
         // End early button
-        h('button', {
+        h('button', { "aria-label": "End probe early",
           onClick: function () { if (timerRef.current) clearInterval(timerRef.current); finishProbe(); },
           style: { marginTop: '1.5rem', fontSize: '14px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }
         }, 'End probe early')
@@ -480,7 +480,7 @@
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
           h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#92400e', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 } },
             '\ud83d\udcca Fluency Probe Results'),
-          h('button', {
+          h('button', { "aria-label": "math_fluency action",
             onClick: function () { setResults(null); },
             style: { color: '#64748b', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }
           }, h(X, { size: 18 }))
@@ -555,7 +555,7 @@
 
         // Actions
         h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
-          h('button', {
+          h('button', { "aria-label": "Clear History",
             onClick: startProbe,
             style: {
               flex: 1, padding: '10px', background: 'linear-gradient(to right, #f59e0b, #f97316)',
@@ -564,7 +564,7 @@
               boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
             }
           }, h(RefreshCw, { size: 14 }), ' Run Again'),
-          history.length > 0 ? h('button', {
+          history.length > 0 ? h('button', { "aria-label": "Clear History",
             onClick: function () { setHistory([]); if (storageDB) storageDB.set('allo_fluency_history', []); addToast('Probe history cleared', 'info'); },
             style: {
               padding: '10px 16px', background: '#f1f5f9', color: '#64748b',
@@ -686,7 +686,7 @@
       })(),
 
       // Start button
-      h('button', {
+      h('button', { "aria-label": "Start Probe",
         onClick: startProbe,
         style: {
           width: '100%', padding: '10px', background: 'linear-gradient(to right, #f59e0b, #f97316)',

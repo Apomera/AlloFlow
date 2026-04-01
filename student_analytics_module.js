@@ -199,7 +199,7 @@
                 (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'),
               'aria-live': 'polite'
             }, '\u23F1 ' + timerMin + ':' + timerSec),
-            h('button', {
+            h('button', { "aria-label": "End Early",
               onClick: onEndEarly,
               className: 'px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors'
             }, '\u23F9 End Early')
@@ -231,15 +231,15 @@
         showScoreButtons && h('div', {
           className: 'flex items-center justify-center gap-6 px-6 py-5 bg-slate-50 border-t border-slate-200 shrink-0'
         },
-          h('button', {
+          h('button', { "aria-label": "Correct",
             onClick: onCorrect,
             className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black text-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-xl shadow-green-200 active:scale-95'
           }, '\u2705 Correct', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/20 px-2 py-0.5 rounded' }, '1')),
-          h('button', {
+          h('button', { "aria-label": "Incorrect",
             onClick: onIncorrect,
             className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-2xl font-black text-xl hover:from-red-600 hover:to-rose-600 transition-all shadow-xl shadow-red-200 active:scale-95'
           }, '\u274C Incorrect', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/20 px-2 py-0.5 rounded' }, '2')),
-          onSkip && h('button', {
+          onSkip && h('button', { "aria-label": "Skip",
             onClick: onSkip,
             className: 'flex items-center gap-2 px-8 py-5 bg-slate-200 text-slate-600 rounded-2xl font-bold text-lg hover:bg-slate-300 transition-all active:scale-95'
           }, 'Skip \u2192', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/30 px-2 py-0.5 rounded' }, 'Space'))
