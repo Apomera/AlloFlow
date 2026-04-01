@@ -159,7 +159,7 @@
     // Countdown overlay
     if (countdown > 0) {
       return ReactDOM.createPortal(
-        h('div', {
+        h('div', { role: 'dialog', 'aria-modal': 'true',
           className: 'fixed inset-0 z-[250] bg-slate-900/95 flex items-center justify-center',
           style: { backdropFilter: 'blur(8px)' }
         },
@@ -177,7 +177,7 @@
 
     // Active probe overlay
     return ReactDOM.createPortal(
-      h('div', {
+      h('div', { role: 'dialog', 'aria-modal': 'true',
         className: 'fixed inset-0 z-[250] bg-white flex flex-col',
         style: { minHeight: '100vh' }
       },
@@ -212,14 +212,14 @@
         ),
         // Timer progress bar
         timer !== undefined && h('div', { className: 'w-full bg-slate-100 h-1.5 shrink-0' },
-          h('div', {
+          h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
             className: 'h-full transition-all duration-1000 rounded-r ' + (isTimeLow ? 'bg-red-500' : 'bg-indigo-500'),
             style: { width: timerPct + '%' }
           })
         ),
         // Progress bar
         h('div', { className: 'w-full bg-slate-100 h-1 shrink-0' },
-          h('div', {
+          h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
             className: 'h-full bg-emerald-400 transition-all',
             style: { width: progressPct + '%' }
           })
@@ -4044,7 +4044,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-6"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-emerald-500 h-2 rounded-full transition-all",
       style: {
         width: `${nwfProbeIndex / nwfProbeWords.length * 100}%`
@@ -4226,7 +4226,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-blue-500 h-2 rounded-full transition-all",
       style: {
         width: `${lnfProbeIndex / lnfProbeLetters.length * 100}%`
@@ -4401,7 +4401,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-amber-500 h-2 rounded-full transition-all",
       style: {
         width: `${ranProbeIndex / ranProbeItems.length * 100}%`
@@ -4591,7 +4591,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-rose-500 h-2 rounded-full transition-all",
       style: {
         width: `${orfProbeTimer > 0 ? (60 - orfProbeTimer) / 60 * 100 : 100}%`
@@ -4841,7 +4841,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-purple-500 h-2 rounded-full transition-all",
       style: {
         width: `${mnProbeIndex / mnProbeProblems.length * 100}%`
@@ -5080,7 +5080,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-cyan-500 h-2 rounded-full transition-all",
       style: {
         width: `${qdProbeIndex / qdProbeProblems.length * 100}%`

@@ -48,7 +48,20 @@
       return (function() {
 var d = labToolData.brainAtlas || {};
 
-          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () { var o = {}; o[k] = v; return o; })()) }); }); };
+          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-brainatlas')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-brainatlas';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+ var o = {}; o[k] = v; return o; })()) }); }); };
 
 
 

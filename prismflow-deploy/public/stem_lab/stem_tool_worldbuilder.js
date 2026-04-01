@@ -16,6 +16,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-worldbuilder')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-worldbuilder';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ── World Templates ──
   var WORLDS = [
@@ -1015,7 +1028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               harmonyScore > 0 && h('div', { className: 'absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1' },
                 h('div', { className: 'text-[8px] font-bold text-indigo-300 uppercase tracking-wider' }, '✨ Harmony'),
                 h('div', { className: 'w-20 h-1.5 bg-slate-600 rounded-full overflow-hidden mt-0.5' },
-                  h('div', { className: 'h-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-500 transition-all duration-500', style: { width: harmonyScore + '%' } })
+                  h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-500 transition-all duration-500', style: { width: harmonyScore + '%' } })
                 ),
                 h('div', { className: 'text-[8px] text-white font-bold text-center mt-0.5' }, harmonyScore + '%')
               )
@@ -1094,7 +1107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   h('span', { className: rapport >= 70 ? 'text-green-600' : 'text-slate-600' }, rapport + '%')
                 ),
                 h('div', { className: 'w-full h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300' },
-                  h('div', { className: 'h-full transition-all duration-500 rounded-full ' +
+                  h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full transition-all duration-500 rounded-full ' +
                     (rapport >= 70 ? 'bg-gradient-to-r from-green-400 to-emerald-500' :
                      rapport >= 40 ? 'bg-gradient-to-r from-amber-400 to-yellow-500' :
                      rapport >= 20 ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :

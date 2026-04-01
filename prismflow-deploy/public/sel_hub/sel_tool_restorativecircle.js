@@ -2266,7 +2266,7 @@ window.SelHub = window.SelHub || {
                   )
                 ),
                 h('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-1' },
-                  h('div', {
+                  h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
                     className: 'h-2 rounded-full transition-all ' + (isEarned ? 'bg-amber-500' : 'bg-slate-400'),
                     style: { width: pct + '%' }
                   })

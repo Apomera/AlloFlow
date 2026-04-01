@@ -16,6 +16,19 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-decisions')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-decisions';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
@@ -1586,7 +1599,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 12, fontWeight: 700, color: fw.color } }, pct + '%')
                   ),
                   h('div', { style: { height: 10, borderRadius: 5, background: '#334155', overflow: 'hidden' } },
-                    h('div', { style: { height: '100%', borderRadius: 5, background: fw.color, width: pct + '%', transition: 'width 0.5s' } })
+                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: { height: '100%', borderRadius: 5, background: fw.color, width: pct + '%', transition: 'width 0.5s' } })
                   )
                 );
               })

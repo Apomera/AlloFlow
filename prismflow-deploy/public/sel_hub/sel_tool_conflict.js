@@ -16,6 +16,19 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-conflict')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-conflict';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
@@ -1470,7 +1483,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 12, color: info.color, fontWeight: 700 } }, pct + '%')
                   ),
                   h('div', { style: { height: 8, borderRadius: 4, background: '#1e293b' } },
-                    h('div', { style: { height: '100%', borderRadius: 4, background: info.color, width: pct + '%', transition: 'width 0.5s' } })
+                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: { height: '100%', borderRadius: 4, background: info.color, width: pct + '%', transition: 'width 0.5s' } })
                   )
                 );
               })
@@ -1873,7 +1886,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, pct + '/100')
             ),
             h('div', { style: { height: 8, borderRadius: 4, background: '#1e293b' } },
-              h('div', { style: { height: '100%', borderRadius: 4, background: color, width: pct + '%', transition: 'width 0.4s' } })
+              h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: { height: '100%', borderRadius: 4, background: color, width: pct + '%', transition: 'width 0.4s' } })
             )
           );
         }

@@ -519,6 +519,19 @@
             var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
             updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: true });
             setTimeout(function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-coding')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-coding';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
               executeRobotBlocks(robotBlocks, ch.start, ch.startDir, grid, function (finalPos, trail, finalGrid, goalReached) {
                 updMulti({ robotPos: finalPos, robotTrail: trail, robotGrid: finalGrid, robotRunning: false });
                 if (ch.check(finalPos, trail, finalGrid)) {

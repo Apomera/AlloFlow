@@ -1,6 +1,19 @@
 window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-unitconvert')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-unitconvert';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ── Sound effects (badge fanfare only — quiz uses ctx.beep) ──
   var _audioCtx = null;
@@ -524,13 +537,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('div', null,
                     h('p', { className: 'text-[10px] font-bold text-cyan-600 mb-1' }, d.value + ' ' + d.fromUnit),
                     h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
-                      h('div', { className: 'h-full bg-gradient-to-r from-cyan-400 to-cyan-600 rounded-full transition-all duration-500', style: { width: normF + '%' } })
+                      h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-cyan-400 to-cyan-600 rounded-full transition-all duration-500', style: { width: normF + '%' } })
                     )
                   ),
                   h('div', null,
                     h('p', { className: 'text-[10px] font-bold text-indigo-600 mb-1' }, fmtResult + ' ' + d.toUnit),
                     h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
-                      h('div', { className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-500', style: { width: normT + '%' } })
+                      h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-500', style: { width: normT + '%' } })
                     )
                   )
                 );
