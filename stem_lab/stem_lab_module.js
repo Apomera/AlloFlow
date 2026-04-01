@@ -1964,7 +1964,7 @@
             );
           })()
         ),
-          toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", {
+          toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
             className: "mt-4 pt-4 border-t border-slate-200"
           }, /*#__PURE__*/React.createElement("div", {
             className: "flex items-center gap-2 mb-3"
@@ -2616,7 +2616,7 @@
           ) : null,
 
           // Tool grid
-          /*#__PURE__*/React.createElement("div", {
+          /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
               className: "grid grid-cols-2 gap-4"
             }, _filteredTools.map(function (tool) {
               if (tool.category) {
@@ -7042,7 +7042,7 @@
 
             // ═══════════ COMPOSE — redirect to Production Studio ═══════════
             synthTab === 'play' && React.createElement("div", { className: "mt-3" },
-              React.createElement("div", {
+              React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                 onClick: function () { upd('synthTab', 'beatpad'); },
                 className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-4 cursor-pointer hover:shadow-md hover:from-purple-100 hover:to-pink-100 transition-all group"
               },
@@ -7091,7 +7091,7 @@
                   React.createElement("div", { className: "flex gap-1" },
                     SCALES[selectedScale].intervals.map(function (intv, i) {
                       var nIdx = (rootIdx + intv) % 12;
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         key: i,
                         onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'scale_note_' + i, 500); },
                         className: "flex-1 py-2 rounded-lg text-center cursor-pointer transition-all bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100"
@@ -7116,7 +7116,7 @@
                   Object.keys(WAVE_INFO).map(function (wType) {
                     var wi = WAVE_INFO[wType];
                     var isActive = (d.waveType || 'sine') === wType;
-                    return React.createElement("div", {
+                    return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                       key: wType,
                       onClick: function () { upd('waveType', wType); playNoteFor(noteFreq(selectedRoot, d.octave || 4), 'demo_' + wType, 800); },
                       className: "p-3 rounded-xl border-2 cursor-pointer transition-all " + (isActive ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-slate-50 hover:border-purple-200')
@@ -7180,7 +7180,7 @@
                   React.createElement("div", { className: "flex gap-1 mb-2" },
                     CHORDS[selectedChord].intervals.map(function (intv, i) {
                       var nIdx = (NOTE_NAMES.indexOf(selectedRoot) + intv) % 12;
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         key: i,
                         onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'chord_note_' + i, 500); },
                         className: "flex-1 py-2 rounded-lg text-center cursor-pointer bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-all"
@@ -7489,7 +7489,7 @@
                       var ni = melodySeqBP[i] || 0;
                       var isCur = d.seqPlaying && d.seqCurrentStep === i;
                       var isRec = d.bpStepRec && (d.bpStepRecPos || 0) === i;
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         key: 'mel_' + i,
                         onClick: function () { pushBpUndo(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = (nm[i] + 1) % (scNotes.notes.length + 1); upd('beatMelody', nm); },
                         onContextMenu: function (e) { e.preventDefault(); pushBpUndo(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = nm[i] <= 0 ? scNotes.notes.length : nm[i] - 1; upd('beatMelody', nm); },
@@ -7510,7 +7510,7 @@
                       var gKey = row + '_' + col; var grid = d.seqGrid || {}; var isOn = grid[gKey];
                       var isCur = d.seqPlaying && d.seqCurrentStep === col;
                       var isRec = d.bpStepRec && (d.bpStepRecPos || 0) === col;
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         key: gKey,
                         onClick: function () { pushBpUndo(); var g = Object.assign({}, d.seqGrid || {}); g[gKey] = g[gKey] ? 0 : 1; upd('seqGrid', g); },
                         className: "flex-1 h-5 rounded-sm cursor-pointer transition-all " +
@@ -7642,7 +7642,7 @@
                         },
                           React.createElement("span", null, "\uD83C\uDFB5"),
                           React.createElement("span", { className: "truncate max-w-[80px]" }, smp.name),
-                          React.createElement("span", { onClick: function (e) { e.stopPropagation(); window._alloUserSamples.splice(si, 1); upd('userSampleCount', window._alloUserSamples.length); }, className: "ml-1 text-red-400 hover:text-red-600 cursor-pointer" }, "\u2715")
+                          React.createElement("span", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function (e) { e.stopPropagation(); window._alloUserSamples.splice(si, 1); upd('userSampleCount', window._alloUserSamples.length); }, className: "ml-1 text-red-400 hover:text-red-600 cursor-pointer" }, "\u2715")
                         );
                       })
                     )

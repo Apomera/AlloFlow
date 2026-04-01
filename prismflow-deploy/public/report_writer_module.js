@@ -1513,7 +1513,7 @@ Return ONLY valid JSON:
                             h('p', { className: 'text-xs text-violet-600' }, 'Fact-verified clinical report generation')
                         )
                     ),
-                    h('div', { className: 'flex items-center gap-2' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
                         h('label', { className: 'text-[10px] text-slate-500' }, 'Age:'),
                         h('input', { type: 'number', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: 'yrs', 'aria-label': 'Student age', value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 }),
                         h('label', { className: 'text-[10px] text-slate-500 ml-2' }, 'Grade:'),
@@ -1521,7 +1521,7 @@ Return ONLY valid JSON:
                     )
                 ),
                 // Step indicator
-                h('div', { className: 'flex items-center gap-1 overflow-x-auto pb-1' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1 overflow-x-auto pb-1' },
                     STEPS.map((s, i) =>
                         h('button', { 'aria-label': 'Navigate to wizard step', key: s.num,
                             className: `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-500 border border-slate-200'}`,
@@ -1579,32 +1579,32 @@ Return ONLY valid JSON:
                 // Demo data
                 h('details', { className: 'mt-3 bg-amber-50 rounded-lg border border-amber-200' },
                     h('summary', { className: 'text-xs font-medium text-amber-700 px-3 py-2 cursor-pointer hover:bg-amber-100 rounded-t-lg' }, '🧪 Load Demo Case (for testing)'),
-                    h('div', { className: 'px-3 pb-3 space-y-2' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 pb-3 space-y-2' },
                         h('p', { className: 'text-[9px] text-amber-600' }, 'Load fictional clinical data to test the full report pipeline. All data is clearly marked as demo.'),
                         Object.entries(DEMO_CASES).map(([key, demo]) =>
                             h('button', { 'aria-label': 'Load demo case', key, className: 'w-full text-left px-3 py-2 bg-white rounded-lg border border-amber-200 hover:bg-amber-50 text-[10px] transition-colors',
                                 onClick: () => loadDemoCase(key)
-                            }, h('span', { className: 'font-medium text-slate-800' }, demo.label))
+                            }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium text-slate-800' }, demo.label))
                         ),
-                        h('div', { className: 'border-t border-amber-200 pt-2 mt-1' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'border-t border-amber-200 pt-2 mt-1' },
                             h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-left px-3 py-2 rounded-lg border text-[10px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-300 cursor-wait' : 'bg-violet-50 border-violet-200 hover:bg-violet-100'}`,
                                 onClick: generateAIDemoCase,
                                 disabled: generatingDemo
                             },
-                                generatingDemo ? h('span', { className: 'inline-block animate-spin w-3 h-3 border border-violet-400 border-t-violet-700 rounded-full' }) : h('span', null, '🤖'),
-                                h('span', { className: 'font-medium text-violet-800' }, generatingDemo ? 'Generating random case...' : '🎲 Generate Random AI Case'),
-                                !generatingDemo && h('span', { className: 'text-[8px] text-violet-500 ml-auto' }, 'Unique each time')
+                                generatingDemo ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'inline-block animate-spin w-3 h-3 border border-violet-400 border-t-violet-700 rounded-full' }) : h('span', null, '🤖'),
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium text-violet-800' }, generatingDemo ? 'Generating random case...' : '🎲 Generate Random AI Case'),
+                                !generatingDemo && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] text-violet-500 ml-auto' }, 'Unique each time')
                             )
                         )
                     )
                 ),
-                h('div', { className: 'flex justify-end pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-end pt-2' },
                     h('button', { 'aria-label': 'Next: Background', className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700 transition-colors', onClick: () => setCurrentStep(2) }, 'Next: Background →')
                 )
             ),
 
             // ═══ STEP 3: Clinical Observations ═══
-            currentStep === 3 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 3 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F50D} Clinical Observations'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Enter clinical observations, interview notes, and collateral information. Each source is tracked for fact attribution.'),
                 // BehaviorLens import
@@ -1628,7 +1628,7 @@ Return ONLY valid JSON:
                     }
                 }, '\u{1F4E5} Import from BehaviorLens (' + (abcEntries?.length || 0) + ' ABC + ' + (observationSessions?.length || 0) + ' observations)'),
                 // Sub-section tabs
-                h('div', { className: 'flex flex-wrap gap-1 border-b border-slate-200 pb-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1 border-b border-slate-200 pb-2' },
                     OBS_TAB_META.map(tab =>
                         h('button', { 'aria-label': 'Select observation tab', key: tab.key,
                             className: 'px-2.5 py-1.5 rounded-t-lg text-[10px] font-medium transition-all ' + (activeObsTab === tab.key ? 'bg-violet-600 text-white' : (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100')),
@@ -1653,20 +1653,20 @@ Return ONLY valid JSON:
                     }),
                     h('div', { className: 'flex items-center gap-2 text-[9px] text-slate-500' },
                         h('span', null, '\u{1F4CE} Source attribution: '),
-                        h('span', { className: 'font-medium text-slate-600' }, clinicalObs[activeObsTab]?.source || 'Unknown'),
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium text-slate-600' }, clinicalObs[activeObsTab]?.source || 'Unknown'),
                         h('span', null, ' \u2014 will be tracked through fact extraction')
                     )
                 ),
                 // Summary of filled sections
-                h('div', { className: 'bg-slate-50 rounded-lg p-2 flex flex-wrap gap-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-lg p-2 flex flex-wrap gap-2' },
                     OBS_TAB_META.map(tab =>
-                        h('span', {
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                             key: tab.key,
                             className: 'text-[9px] px-2 py-0.5 rounded-full ' + (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-500')
                         }, tab.icon + ' ' + tab.label + (clinicalObs[tab.key]?.text?.trim() ? ' (' + clinicalObs[tab.key].text.length + ' chars)' : ' \u2014'))
                     )
                 ),
-                h('div', { className: 'flex justify-between pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between pt-2' },
                     h('button', { 'aria-label': 'Background', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(2) }, '\u2190 Background'),
                     h('button', { 'aria-label': 'Next: Assessment Scores', className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(4) }, 'Next: Assessment Scores \u2192')
                 )
@@ -1707,12 +1707,12 @@ Return ONLY valid JSON:
                     )
                 ),
                 // Custom subtest entry
-                h('div', { className: 'flex items-end gap-2 pt-2 border-t border-slate-100' },
-                    h('div', { className: 'flex-1' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-end gap-2 pt-2 border-t border-slate-100' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Custom Subtest'),
                         h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-2 py-1.5', placeholder: 'Subtest name...', 'aria-label': 'Custom subtest name', value: customSubtest, onChange: e => setCustomSubtest(e.target.value) })
                     ),
-                    h('div', { className: 'w-20' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-20' },
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Score'),
                         h('input', { type: 'number', className: 'w-full text-xs border rounded-lg px-2 py-1.5 text-center', placeholder: '0', 'aria-label': 'Custom subtest score', value: customScore, onChange: e => setCustomScore(e.target.value) })
                     ),
@@ -1720,33 +1720,33 @@ Return ONLY valid JSON:
                     }, '+ Add')
                 ),
                 // Score entries table
-                scoreEntries.length > 0 && h('div', { className: 'mt-3 space-y-1' },
-                    h('div', { className: 'flex items-center justify-between' },
+                scoreEntries.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 space-y-1' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
                         h('p', { className: 'text-[10px] font-bold text-slate-700' }, `${scoreEntries.length} Scores Entered`),
                         h('button', { 'aria-label': 'Clear All', className: 'text-[10px] text-red-500 hover:text-red-700', onClick: () => setScoreEntries([]) }, 'Clear All')
                     ),
-                    h('div', { className: 'max-h-48 overflow-y-auto space-y-1' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'max-h-48 overflow-y-auto space-y-1' },
                         scoreEntries.map(s =>
-                            h('div', { key: s.id, className: `flex items-center justify-between px-3 py-1.5 rounded-lg text-[10px] ${cBg(s.classColor)} border ${cBorder(s.classColor)}` },
-                                h('span', { className: 'font-medium text-slate-800 flex-1' }, `${s.assessment} — ${s.subtest}`),
-                                h('span', { className: `font-bold ${cText(s.classColor)}` }, `${s.score}`),
-                                h('span', { className: `px-2 py-0.5 rounded-full text-[9px] ${cBadge(s.classColor)}` }, s.classification),
-                                s.percentile !== null && h('span', { className: 'text-slate-500' }, `${s.percentile}%ile`),
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: s.id, className: `flex items-center justify-between px-3 py-1.5 rounded-lg text-[10px] ${cBg(s.classColor)} border ${cBorder(s.classColor)}` },
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium text-slate-800 flex-1' }, `${s.assessment} — ${s.subtest}`),
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `font-bold ${cText(s.classColor)}` }, `${s.score}`),
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `px-2 py-0.5 rounded-full text-[9px] ${cBadge(s.classColor)}` }, s.classification),
+                                s.percentile !== null && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500' }, `${s.percentile}%ile`),
                                 h('button', { 'aria-label': 'Remove score entry', className: 'ml-2 text-red-400 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
                             )
                         )
                     )
                 ),
-                h('div', { className: 'flex justify-between pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between pt-2' },
                     h('button', { 'aria-label': 'Observations', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(3) }, '← Observations'),
                     h('button', { 'aria-label': 'Next: Fact Review', className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700 transition-colors', onClick: () => { setCurrentStep(5); if (factChunks.length === 0) extractFactChunks(); } }, 'Next: Fact Review →')
                 )
             ),
             // ═══ STEP 2: Background & History ═══
-            currentStep === 2 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 2 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📋 Background & History'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Enter background information. PII is auto-scrubbed before any AI processing.'),
-                h('div', { className: 'flex flex-wrap gap-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
                     (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { 'aria-label': 'Import from BehaviorLens', className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-medium rounded-lg border border-indigo-200 hover:bg-indigo-100 transition-colors',
                         onClick: importFromBehaviorLens
                     }, `📥 Import from BehaviorLens (${(abcEntries?.length || 0)} ABC + ${(observationSessions?.length || 0)} observations)`),
@@ -1776,22 +1776,22 @@ Return ONLY valid JSON:
                 // ── Reference Library ──
                 h('details', { className: 'mt-3 bg-indigo-50 rounded-lg border border-indigo-200' },
                     h('summary', { className: 'text-xs font-medium text-indigo-700 px-3 py-2 cursor-pointer hover:bg-indigo-100 rounded-t-lg' }, '\u{1F4DA} Reference Library (DSM-5-TR + Custom Documents)'),
-                    h('div', { className: 'px-3 pb-3 space-y-2' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 pb-3 space-y-2' },
                         h('p', { className: 'text-[9px] text-indigo-500' }, 'Add clinical references (e.g., MUSER, district protocols) for cross-referencing in analysis and report generation.'),
-                        h('div', { className: 'px-2 py-1.5 bg-white rounded border border-indigo-100 flex items-center justify-between text-[10px]' },
-                            h('span', { className: 'font-medium text-indigo-800' }, '\u{1F4D6} DSM-5-TR (Paraphrased Criteria) — Built-in'),
-                            h('span', { className: 'text-[8px] px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-full' }, 'Default')
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-1.5 bg-white rounded border border-indigo-100 flex items-center justify-between text-[10px]' },
+                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium text-indigo-800' }, '\u{1F4D6} DSM-5-TR (Paraphrased Criteria) — Built-in'),
+                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-full' }, 'Default')
                         ),
                         referenceLibrary.map(ref =>
-                            h('div', { key: ref.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-200 flex items-center justify-between text-[10px]' },
-                                h('div', { className: 'flex-1 min-w-0' },
-                                    h('span', { className: 'font-medium text-slate-800 block truncate' }, ref.name),
-                                    h('span', { className: 'text-slate-500 text-[8px]' }, ref.text.substring(0, 80) + '...')
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ref.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-200 flex items-center justify-between text-[10px]' },
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 min-w-0' },
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium text-slate-800 block truncate' }, ref.name),
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 text-[8px]' }, ref.text.substring(0, 80) + '...')
                                 ),
                                 h('button', { 'aria-label': 'Remove reference', className: 'ml-2 text-red-400 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
                             )
                         ),
-                        h('div', { className: 'space-y-1 mt-2 bg-white rounded-lg p-2 border border-indigo-100' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1 mt-2 bg-white rounded-lg p-2 border border-indigo-100' },
                             h('input', { type: 'text', className: 'w-full text-[10px] border rounded px-2 py-1', placeholder: 'Reference name (e.g., "MUSER Ch. 101")...', 'aria-label': 'Reference name', value: newRefName, onChange: e => setNewRefName(e.target.value) }),
                             h('textarea', { className: 'w-full text-[10px] border rounded px-2 py-1 h-20 resize-none font-mono', placeholder: 'Paste reference text here...', 'aria-label': 'Reference text', value: newRefText, onChange: e => setNewRefText(e.target.value) }),
                             newRefName.trim() && newRefText.trim() && h('button', { 'aria-label': 'Add reference', className: 'px-3 py-1 bg-indigo-600 text-white text-[10px] rounded hover:bg-indigo-700',
@@ -1800,48 +1800,48 @@ Return ONLY valid JSON:
                         )
                     )
                 ),
-                h('div', { className: 'flex justify-between pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between pt-2' },
                     h('button', { 'aria-label': 'Student', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(1) }, '← Student'),
                     h('button', { 'aria-label': 'Next: Clinical Observations', className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(3) }, 'Next: Clinical Observations →')
                 )
             ),
             // ═══ STEP 5: Fact Chunk Review ═══
-            currentStep === 5 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 5 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '🔒 Fact Chunk Review'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Verify each fact. Verified chunks become immutable and serve as ground truth for the report.'),
                 // Stats bar
-                h('div', { className: 'flex items-center gap-3 bg-slate-50 rounded-lg p-2' },
-                    h('span', { className: 'text-[10px] font-medium text-slate-600' }, `${totalChunks} total`),
-                    h('span', { className: 'text-[10px] font-medium text-green-600' }, `✅ ${verifiedCount} verified`),
-                    h('span', { className: 'text-[10px] font-medium text-slate-500' }, `⏳ ${totalChunks - verifiedCount} pending`),
-                    deficitCount > 0 && h('span', { className: 'text-[10px] font-medium text-red-600' }, `⚠️ ${deficitCount} deficits`),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 bg-slate-50 rounded-lg p-2' },
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-slate-600' }, `${totalChunks} total`),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-green-600' }, `✅ ${verifiedCount} verified`),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-slate-500' }, `⏳ ${totalChunks - verifiedCount} pending`),
+                    deficitCount > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-red-600' }, `⚠️ ${deficitCount} deficits`),
                     totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': 'Verify all fact chunks', className: 'ml-auto text-[10px] px-2 py-0.5 bg-green-700 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
                     }, '✅ Verify All')
                 ),
-                extracting && h('div', { className: 'text-center py-6' },
-                    h('div', { className: 'inline-block animate-spin w-6 h-6 border-2 border-violet-300 border-t-violet-600 rounded-full' }),
+                extracting && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-6' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'inline-block animate-spin w-6 h-6 border-2 border-violet-300 border-t-violet-600 rounded-full' }),
                     h('p', { className: 'text-xs text-slate-500 mt-2' }, 'Extracting fact chunks...')
                 ),
                 // Chunk cards
-                !extracting && h('div', { className: 'space-y-2 max-h-[400px] overflow-y-auto' },
-                    factChunks.length === 0 && h('div', { className: 'text-center py-8 text-slate-500' },
+                !extracting && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2 max-h-[400px] overflow-y-auto' },
+                    factChunks.length === 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-8 text-slate-500' },
                         h('p', { className: 'text-sm' }, 'No fact chunks yet'),
                         h('button', { 'aria-label': '🔍 Extract Facts', className: 'mt-2 px-3 py-1.5 bg-violet-600 text-white text-xs rounded-lg', onClick: extractFactChunks }, '🔍 Extract Facts')
                     ),
                     factChunks.map(chunk =>
-                        h('div', { key: chunk.id, className: `rounded-lg p-3 border transition-all ${chunk.verified ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}` },
-                            h('div', { className: 'flex items-start justify-between gap-2' },
-                                h('div', { className: 'flex-1' },
-                                    h('div', { className: 'flex items-center gap-2 mb-1' },
-                                        h('span', { className: `text-[9px] px-1.5 py-0.5 rounded-full font-medium ${chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}` }, chunk.type),
-                                        h('span', { className: 'text-[9px] text-slate-500' }, chunk.source),
-                                        chunk.verified && h('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-bold' }, '🔒 Immutable'),
-                                        chunk.devNormResult && h('span', { className: `text-[9px] px-1.5 py-0.5 rounded-full font-medium ${cBadge(chunk.devNormResult.color)}` }, chunk.devNormResult.label)
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: chunk.id, className: `rounded-lg p-3 border transition-all ${chunk.verified ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}` },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start justify-between gap-2' },
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+                                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' },
+                                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[9px] px-1.5 py-0.5 rounded-full font-medium ${chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}` }, chunk.type),
+                                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] text-slate-500' }, chunk.source),
+                                        chunk.verified && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[9px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-bold' }, '🔒 Immutable'),
+                                        chunk.devNormResult && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `text-[9px] px-1.5 py-0.5 rounded-full font-medium ${cBadge(chunk.devNormResult.color)}` }, chunk.devNormResult.label)
                                     ),
                                     h('p', { className: 'text-xs font-medium text-slate-800' }, `${chunk.field}: ${chunk.type === 'score' ? chunk.value + ' (' + chunk.classification + ')' : chunk.value}`),
                                     chunk.devNormResult?.explanation && h('p', { className: `text-[9px] mt-0.5 ${cText(chunk.devNormResult.color)}` }, chunk.devNormResult.explanation)
                                 ),
-                                !chunk.verified && h('div', { className: 'flex items-center gap-1' },
+                                !chunk.verified && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1' },
                                     h('button', { 'aria-label': 'Verify fact chunk', className: 'px-2 py-1 bg-green-700 text-white text-[10px] rounded hover:bg-green-700', onClick: () => verifyChunk(chunk.id), title: 'Verify & Lock' }, '✅'),
                                     h('button', { 'aria-label': 'Reject fact chunk', className: 'px-2 py-1 bg-red-100 text-red-600 text-[10px] rounded hover:bg-red-200', onClick: () => rejectChunk(chunk.id), title: 'Reject' }, '✕')
                                 )
@@ -1849,7 +1849,7 @@ Return ONLY valid JSON:
                         )
                     )
                 ),
-                h('div', { className: 'flex justify-between pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between pt-2' },
                     h('button', { 'aria-label': 'Scores', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(4) }, '← Scores'),
                     h('button', { 'aria-label': 'Go to hypotheses', className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${verifiedCount > 0 ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`,
                         disabled: verifiedCount === 0, onClick: () => setCurrentStep(6)
@@ -1858,7 +1858,7 @@ Return ONLY valid JSON:
             ),
 
             // ═══ STEP 6: Diagnostic Hypotheses ═══
-            currentStep === 6 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 6 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F52C} Diagnostic Hypotheses'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Enter diagnostic hypotheses to evaluate. The AI will organize your verified evidence for and against each hypothesis.'),
                 // Hypothesis presets
@@ -1879,14 +1879,14 @@ Return ONLY valid JSON:
                     )
                 ),
                 // Current hypotheses
-                hypotheses.length > 0 && h('div', { className: 'bg-slate-50 rounded-lg p-3 space-y-1' },
+                hypotheses.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-lg p-3 space-y-1' },
                     h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Active Hypotheses:'),
                     hypotheses.map((hyp, i) =>
-                        h('div', { key: i, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border text-[10px] ' + (selectedHypotheses.includes(hyp) ? 'border-violet-300 bg-violet-50' : 'border-slate-200') },
-                            h('div', { className: 'flex items-center gap-2 flex-1' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border text-[10px] ' + (selectedHypotheses.includes(hyp) ? 'border-violet-300 bg-violet-50' : 'border-slate-200') },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 flex-1' },
                                 h('input', { type: 'checkbox', 'aria-label': 'Include hypothesis: ' + hyp, checked: selectedHypotheses.includes(hyp), onChange: e => { if (e.target.checked) setSelectedHypotheses(prev => [...prev, hyp]); else setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }),
-                                h('span', { className: 'font-medium text-slate-800' }, hyp),
-                                differentialResults[hyp] && h('span', {
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium text-slate-800' }, hyp),
+                                differentialResults[hyp] && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                                     className: 'px-1.5 py-0.5 rounded-full text-[8px] font-bold ' + (differentialResults[hyp].strengthScore >= 7 ? 'bg-green-100 text-green-700' : differentialResults[hyp].strengthScore >= 4 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')
                                 }, differentialResults[hyp].strengthScore + '/10')
                             ),
@@ -1896,7 +1896,7 @@ Return ONLY valid JSON:
                     h('p', { className: 'text-[8px] text-slate-500 mt-1' }, '\u2611\uFE0F Check hypotheses to include in report generation. "No Diagnosis" is always evaluated as baseline.')
                 ),
                 // Run analysis button
-                factChunks.filter(c => c.verified).length > 0 && h('div', { className: 'pt-2' },
+                factChunks.filter(c => c.verified).length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'pt-2' },
                     h('button', { 'aria-label': 'Run differential analysis', className: 'w-full px-4 py-2.5 text-xs font-medium rounded-lg transition-colors ' + (runningDifferential ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700'),
                         disabled: runningDifferential || hypotheses.length < 2,
                         onClick: runDifferentialAnalysis
@@ -1931,7 +1931,7 @@ Return ONLY valid JSON:
                         )
                     )
                 ),
-                h('div', { className: 'flex justify-between pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between pt-2' },
                     h('button', { 'aria-label': 'Fact Chunks', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(5) }, '\u2190 Fact Chunks'),
                     h('button', { 'aria-label': 'Next: Blueprint', className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(7) }, 'Next: Blueprint \u2192')
                 )
@@ -1958,11 +1958,11 @@ Return ONLY valid JSON:
                     )
                 ),
                 // Section list
-                h('div', { className: 'space-y-1' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1' },
                     blueprint.map((section, idx) =>
-                        h('div', { key: section.id, className: 'bg-slate-50 rounded-lg border border-slate-200 p-2 ' + (!section.enabled ? 'opacity-50' : '') },
-                            h('div', { className: 'flex items-center gap-2' },
-                                h('div', { className: 'flex flex-col gap-0.5' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: section.id, className: 'bg-slate-50 rounded-lg border border-slate-200 p-2 ' + (!section.enabled ? 'opacity-50' : '') },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col gap-0.5' },
                                     h('button', { 'aria-label': 'Move section up', className: 'text-[9px] text-slate-500 hover:text-slate-700 leading-none', disabled: idx === 0,
                                         onClick: () => { const nw = [...blueprint]; const tmp = nw[idx]; nw[idx] = nw[idx - 1]; nw[idx - 1] = tmp; setBlueprint(nw); }
                                     }, '\u25B2'),
@@ -1971,7 +1971,7 @@ Return ONLY valid JSON:
                                     }, '\u25BC')
                                 ),
                                 h('input', { type: 'checkbox', 'aria-label': 'Enable section: ' + section.name, checked: section.enabled, onChange: e => { const nw = [...blueprint]; nw[idx] = { ...nw[idx], enabled: e.target.checked }; setBlueprint(nw); } }),
-                                h('span', { className: 'text-[10px] font-medium text-slate-800 flex-1' }, (idx + 1) + '. ' + section.name),
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-slate-800 flex-1' }, (idx + 1) + '. ' + section.name),
                                 h('button', { 'aria-label': 'Remove report section', className: 'text-red-400 hover:text-red-600 text-xs', onClick: () => setBlueprint(prev => prev.filter(s => s.id !== section.id)) }, '\u2715')
                             ),
                             h('input', {
@@ -1991,7 +1991,7 @@ Return ONLY valid JSON:
                 // Style profile
                 h('details', { className: 'mt-2 bg-amber-50 rounded-lg border border-amber-200' },
                     h('summary', { className: 'text-xs font-medium text-amber-700 px-3 py-2 cursor-pointer hover:bg-amber-100 rounded-t-lg' }, '\u{1F3A8} Writing Style (paste sample report)'),
-                    h('div', { className: 'px-3 pb-3' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 pb-3' },
                         h('p', { className: 'text-[9px] text-amber-600 mb-1' }, 'Paste a redacted sample report to match your professional writing style.'),
                         h('textarea', {
                             className: 'w-full text-[10px] border rounded-lg px-2 py-1 h-32 resize-none font-mono',
@@ -2003,7 +2003,7 @@ Return ONLY valid JSON:
                         styleProfile && h('p', { className: 'text-[8px] text-amber-500 mt-1' }, '\u2705 Style profile loaded (' + styleProfile.length + ' chars) — will guide AI writing tone and structure.')
                     )
                 ),
-                h('div', { className: 'flex justify-between pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between pt-2' },
                     h('button', { 'aria-label': 'Hypotheses', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(6) }, '\u2190 Hypotheses'),
                     h('button', { 'aria-label': 'Next: Generate', className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(8) }, 'Next: Generate \u2192')
                 )
@@ -2011,36 +2011,36 @@ Return ONLY valid JSON:
             // ═══ STEP 8: Generate Report ═══
             currentStep === 8 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '✍️ Generate Report'),
-                h('div', { className: 'flex items-center gap-3 mb-2' },
-                    h('div', { className: 'flex-1' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Report Title'),
                         h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-1.5', 'aria-label': 'Report title', value: reportTitle, onChange: e => setReportTitle(e.target.value) })
                     ),
-                    h('div', { className: 'shrink-0 text-center' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'shrink-0 text-center' },
                         h('label', { className: 'text-[9px] font-bold text-slate-500 uppercase block mb-0.5' }, `Quality: ${reportGenPasses}x`),
                         h('input', { type: 'range', min: 1, max: 5, value: reportGenPasses, onChange: e => setReportGenPasses(parseInt(e.target.value)),
                             className: 'w-16', 'aria-label': 'Generation passes per section',
                             title: reportGenPasses === 1 ? 'Fast (1 pass)' : reportGenPasses <= 3 ? 'Balanced (' + reportGenPasses + ' passes)' : 'Research-grade (' + reportGenPasses + ' passes)' }),
-                        h('div', { className: 'text-[8px] text-slate-400' }, reportGenPasses === 1 ? 'Fast' : reportGenPasses <= 3 ? 'Balanced' : 'Research')
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] text-slate-400' }, reportGenPasses === 1 ? 'Fast' : reportGenPasses <= 3 ? 'Balanced' : 'Research')
                     ),
                     h('button', { 'aria-label': 'Generate report', className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${generating ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-700'}`,
                         disabled: generating, onClick: generateReport
                     }, generating ? `⏳ ${genProgress || 'Generating...'}` : `✨ Generate${reportGenPasses > 1 ? ' (' + reportGenPasses + 'x)' : ''}`)
                 ),
                 generating && h('div', { className: 'space-y-2' },
-                    h('div', { className: 'w-full bg-slate-100 rounded-full h-2 overflow-hidden' },
-                        h('div', { className: 'h-full bg-violet-500 rounded-full transition-all animate-pulse', style: { width: '60%' } })
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-full bg-slate-100 rounded-full h-2 overflow-hidden' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full bg-violet-500 rounded-full transition-all animate-pulse', style: { width: '60%' } })
                     ),
                     h('p', { className: 'text-[10px] text-center text-violet-600' }, genProgress)
                 ),
                 // Generated sections with evidence mapping & per-section controls
-                Object.keys(reportSections).length > 0 && h('div', { className: 'space-y-3 mt-3' },
+                Object.keys(reportSections).length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3 mt-3' },
                     Object.entries(reportSections).map(([section, text]) =>
-                        h('div', { key: section, className: 'bg-slate-50 rounded-lg p-3 border border-slate-200' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: section, className: 'bg-slate-50 rounded-lg p-3 border border-slate-200' },
                             // Section header with controls
-                            h('div', { className: 'flex items-center justify-between mb-2 border-b border-slate-200 pb-1' },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2 border-b border-slate-200 pb-1' },
                                 h('h4', { className: 'text-xs font-bold text-indigo-700' }, section),
-                                h('div', { className: 'flex items-center gap-1' },
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1' },
                                     // Edit button
                                     editingSection !== section && h('button', { 'aria-label': 'Edit section', className: 'text-[9px] px-2 py-0.5 rounded bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors', onClick: () => { setEditingSection(section); setEditSectionText(text); }
                                     }, '\u270F\uFE0F Edit'),
@@ -2066,7 +2066,7 @@ Return ONLY valid JSON:
                                 )
                             ),
                             // Regeneration input panel
-                            showRegenInput === section && h('div', { className: 'mb-2 p-2 bg-amber-50 rounded-lg border border-amber-200 space-y-1' },
+                            showRegenInput === section && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-2 p-2 bg-amber-50 rounded-lg border border-amber-200 space-y-1' },
                                 h('p', { className: 'text-[9px] text-amber-700 font-medium' }, 'Custom instructions for regeneration (optional):'),
                                 h('textarea', {
                                     className: 'w-full text-[10px] border rounded px-2 py-1 h-16 resize-none',
@@ -2075,7 +2075,7 @@ Return ONLY valid JSON:
                                     value: regenInstructions,
                                     onChange: e => setRegenInstructions(e.target.value)
                                 }),
-                                h('div', { className: 'flex gap-1' },
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1' },
                                     h('button', { 'aria-label': 'Regenerate section', className: 'text-[9px] px-3 py-1 rounded bg-amber-700 text-white hover:bg-amber-600 font-medium', onClick: () => regenerateSection(section, regenInstructions)
                                     }, '\u2728 Regenerate'),
                                     h('button', { 'aria-label': 'Cancel regeneration', className: 'text-[9px] px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => { setShowRegenInput(null); setRegenInstructions(''); }
@@ -2084,14 +2084,14 @@ Return ONLY valid JSON:
                             ),
                             // Inline editing or display
                             editingSection === section
-                                ? h('div', { className: 'space-y-1' },
+                                ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1' },
                                     h('textarea', {
                                         className: 'w-full text-[11px] text-slate-700 leading-relaxed border rounded-lg px-2 py-1.5 h-48 resize-y font-mono',
                                         'aria-label': 'Edit section text',
                                         value: editSectionText,
                                         onChange: e => setEditSectionText(e.target.value)
                                     }),
-                                    h('div', { className: 'flex gap-1' },
+                                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1' },
                                         h('button', { 'aria-label': 'Save section edit', className: 'text-[9px] px-3 py-1 rounded bg-emerald-700 text-white hover:bg-emerald-600 font-medium',
                                             onClick: () => { setReportSections(prev => ({ ...prev, [section]: editSectionText })); setEditingSection(null); setAccuracyResults([]); if (addToast) addToast(`"${section}" updated`, 'success'); }
                                         }, '\u2705 Save'),
@@ -2099,17 +2099,17 @@ Return ONLY valid JSON:
                                         }, 'Cancel')
                                     )
                                 )
-                                : h('div', { className: 'text-[11px] text-slate-700 leading-relaxed whitespace-pre-wrap' },
+                                : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-700 leading-relaxed whitespace-pre-wrap' },
                                     text.replace(/\[Student\]/g, studentName || '[Student]')
                                 ),
                             // Evidence chips
-                            (sectionEvidenceMap[section] || []).length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-2 pt-1 border-t border-slate-100' },
-                                h('span', { className: 'text-[8px] text-slate-500 mr-1 self-center' }, 'Evidence:'),
+                            (sectionEvidenceMap[section] || []).length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1 mt-2 pt-1 border-t border-slate-100' },
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] text-slate-500 mr-1 self-center' }, 'Evidence:'),
                                 (sectionEvidenceMap[section] || []).map(chunkId => {
                                     const chunk = factChunks.find(c => c.id === chunkId);
                                     const chipColor = chunk ? (chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') : 'bg-slate-100 text-slate-500';
                                     const chipLabel = chunk ? `${chunk.source}:${(chunk.field || '').substring(0, 15)}` : chunkId.substring(0, 8);
-                                    return h('span', {
+                                    return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                                         key: chunkId,
                                         className: `text-[7px] px-1.5 py-0.5 rounded-full font-medium cursor-pointer hover:ring-1 hover:ring-offset-1 ${chipColor}`,
                                         title: chunk ? `${chunk.source} - ${chunk.field}: ${chunk.value}` : chunkId,
@@ -2120,7 +2120,7 @@ Return ONLY valid JSON:
                         )
                     )
                 ),
-                h('div', { className: 'flex justify-between pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between pt-2' },
                     h('button', { 'aria-label': 'Blueprint', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(7) }, '← Blueprint'),
                     h('button', { 'aria-label': 'Go to export', className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${Object.keys(reportSections).length > 0 ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`,
                         disabled: Object.keys(reportSections).length === 0, onClick: () => { setCurrentStep(9); if (accuracyResults.length === 0) runAccuracyCheck(); }
@@ -2145,15 +2145,15 @@ Return ONLY valid JSON:
                             h('p', { className: 'text-lg font-bold text-amber-500' }, accuracyResults.filter(r => r.status === 'unsourced').length),
                             h('p', { className: 'text-[9px] text-slate-500' }, '🟡 Unsourced')
                         ),
-                        h('div', { className: 'text-center' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center' },
                             h('p', { className: 'text-lg font-bold text-red-600' }, accuracyResults.filter(r => r.status === 'contradicts').length),
                             h('p', { className: 'text-[9px] text-slate-500' }, '🔴 Contradicts')
                         ),
-                        h('div', { className: 'text-center' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center' },
                             h('p', { className: 'text-lg font-bold text-purple-600' }, accuracyResults.filter(r => r.status === 'discrepancy').length),
                             h('p', { className: 'text-[9px] text-slate-500' }, '\u26A0\uFE0F Discrepancy')
                         ),
-                        h('div', { className: 'ml-auto text-center' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto text-center' },
                             h('p', { className: 'text-lg font-bold text-violet-700' }, `${accuracyResults.length > 0 ? Math.round((accuracyResults.filter(r => r.status === 'verified').length / accuracyResults.length) * 100) : 0}%`),
                             h('p', { className: 'text-[9px] text-slate-500' }, 'Accuracy')
                         ),
@@ -2162,23 +2162,23 @@ Return ONLY valid JSON:
                     // Claim-by-claim results
                     accuracyResults.length > 0 && h('div', { className: 'space-y-1 max-h-[350px] overflow-y-auto' },
                         accuracyResults.map((r, i) =>
-                            h('div', { key: i, className: `flex items-start gap-2 px-3 py-2 rounded-lg text-[10px] border ${r.status === 'verified' ? 'bg-green-50 border-green-200' : r.status === 'unsourced' ? 'bg-amber-50 border-amber-200' : r.status === 'discrepancy' ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}` },
-                                h('span', { className: 'text-sm flex-shrink-0 mt-0.5' }, r.status === 'verified' ? '🟢' : r.status === 'unsourced' ? '🟡' : r.status === 'discrepancy' ? '\u26A0\uFE0F' : '🔴'),
-                                h('div', { className: 'flex-1 min-w-0' },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: `flex items-start gap-2 px-3 py-2 rounded-lg text-[10px] border ${r.status === 'verified' ? 'bg-green-50 border-green-200' : r.status === 'unsourced' ? 'bg-amber-50 border-amber-200' : r.status === 'discrepancy' ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}` },
+                                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm flex-shrink-0 mt-0.5' }, r.status === 'verified' ? '🟢' : r.status === 'unsourced' ? '🟡' : r.status === 'discrepancy' ? '\u26A0\uFE0F' : '🔴'),
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 min-w-0' },
                                     h('p', { className: 'font-medium text-slate-800 break-words' }, r.claim),
                                     h('p', { className: 'text-slate-500 mt-0.5' }, r.explanation || ''),
-                                    r.confidence && h('span', { className: 'inline-block mt-0.5 text-[8px] px-1.5 py-0.5 rounded-full ' + (r.confidence === 'high' ? 'bg-green-100 text-green-700' : r.confidence === 'needs-review' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500') }, r.confidence === 'high' ? 'High Confidence' : r.confidence === 'needs-review' ? 'Needs Review' : 'Medium'),
-                                    r.auditSource && r.auditSource.startsWith('dual') && h('span', { className: 'inline-block mt-0.5 ml-1 text-[8px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, 'Dual-Pass')
+                                    r.confidence && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'inline-block mt-0.5 text-[8px] px-1.5 py-0.5 rounded-full ' + (r.confidence === 'high' ? 'bg-green-100 text-green-700' : r.confidence === 'needs-review' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500') }, r.confidence === 'high' ? 'High Confidence' : r.confidence === 'needs-review' ? 'Needs Review' : 'Medium'),
+                                    r.auditSource && r.auditSource.startsWith('dual') && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'inline-block mt-0.5 ml-1 text-[8px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-600' }, 'Dual-Pass')
                                 )
                             )
                         )
                     ),
-                    accuracyResults.length === 0 && h('div', { className: 'text-center py-8' },
+                    accuracyResults.length === 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-8' },
                         h('p', { className: 'text-slate-500 text-xs' }, 'No accuracy results yet'),
                         h('button', { 'aria-label': '🎯 Run Accuracy Check', className: 'mt-2 px-4 py-2 bg-violet-600 text-white text-xs rounded-lg', onClick: runAccuracyCheck }, '🎯 Run Accuracy Check')
                     )
                 ),
-                h('div', { className: 'flex justify-between pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between pt-2' },
                     h('button', { 'aria-label': 'Report', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(8) }, '← Report'),
                     h('button', { 'aria-label': 'Next: Export', className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(10) }, 'Next: Export →')
                 )
@@ -2195,40 +2195,40 @@ Return ONLY valid JSON:
                     )
                 ),
                 // Clinician attestation
-                Object.keys(reportSections).length > 0 && h('div', { className: `rounded-lg p-3 border ${clinicianAttested ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}` },
+                Object.keys(reportSections).length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: `rounded-lg p-3 border ${clinicianAttested ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}` },
                     h('label', { className: 'flex items-start gap-2 cursor-pointer' },
                         h('input', { type: 'checkbox', checked: clinicianAttested, onChange: (e) => setClinicianAttested(e.target.checked), className: 'mt-0.5 rounded border-slate-300 text-green-600 focus:ring-green-400' }),
-                        h('span', { className: 'text-[10px] text-slate-700 leading-relaxed' },
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-700 leading-relaxed' },
                             h('strong', null, 'Clinician Attestation: '),
                             'I have independently reviewed the assessment data, verified all score entries match protocols, reviewed AI-generated interpretations for clinical accuracy, and I am the licensed professional responsible for this evaluation.'
                         )
                     )
                 ),
                 // Export buttons
-                h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
                     h('button', { 'aria-label': 'Export as JSON', className: 'flex flex-col items-center gap-1 px-3 py-3 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100 transition-colors', onClick: exportJSON },
-                        h('span', { className: 'text-lg' }, '💾'),
-                        h('span', { className: 'text-[10px] font-medium text-violet-700' }, 'Save JSON')
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '💾'),
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-violet-700' }, 'Save JSON')
                     ),
                     h('button', { 'aria-label': 'Copy report to clipboard', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-200 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-200 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before copying — run accuracy audit and fix flagged claims', 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
-                        h('span', { className: 'text-lg' }, '📋'),
-                        h('span', { className: 'text-[10px] font-medium text-indigo-700' }, 'Copy Report')
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '📋'),
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-indigo-700' }, 'Copy Report')
                     ),
                     h('button', { 'aria-label': 'Copy formal report', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-200 opacity-50 cursor-not-allowed' : 'bg-blue-50 border border-blue-200 hover:bg-blue-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before printing — run accuracy audit and fix flagged claims', 'error'); return; } printReport(); }, disabled: Object.keys(reportSections).length === 0 },
-                        h('span', { className: 'text-lg' }, '🖨️'),
-                        h('span', { className: 'text-[10px] font-medium text-blue-700' }, 'Print / PDF')
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '🖨️'),
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-blue-700' }, 'Print / PDF')
                     ),
                     h('button', { 'aria-label': 'Print report', className: 'flex flex-col items-center gap-1 px-3 py-3 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors', onClick: () => document.getElementById('rw-import-area')?.focus() },
                         h('span', { className: 'text-lg' }, '📂'),
-                        h('span', { className: 'text-[10px] font-medium text-emerald-700' }, 'Load JSON')
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-medium text-emerald-700' }, 'Load JSON')
                     )
                 ),
                 // ── Report Translation ──
                 Object.keys(reportSections).length > 0 && h('details', { className: 'mt-3 bg-sky-50 rounded-lg border border-sky-200' },
                     h('summary', { className: 'text-xs font-medium text-sky-700 px-3 py-2 cursor-pointer hover:bg-sky-100 rounded-t-lg' }, '🌏 Translate Report'),
-                    h('div', { className: 'px-3 pb-3 space-y-2' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 pb-3 space-y-2' },
                         h('p', { className: 'text-[9px] text-sky-600' }, 'Translate the full report for multilingual families. Clinical terms use accepted equivalents.'),
-                        h('div', { className: 'flex items-center gap-2' },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
                             h('select', { className: 'text-xs border rounded-lg px-2 py-1.5 bg-white flex-1', 'aria-label': 'Translation language', value: translationLang, onChange: e => setTranslationLang(e.target.value) },
                                 ['Spanish', 'French', 'Portuguese', 'Chinese (Simplified)', 'Chinese (Traditional)', 'Arabic', 'Vietnamese', 'Korean', 'Haitian Creole', 'Somali', 'Russian', 'German', 'Japanese', 'Tagalog', 'Hindi', 'Urdu'].map(lang => h('option', { key: lang, value: lang }, lang))
                             ),
@@ -2237,19 +2237,19 @@ Return ONLY valid JSON:
                                 onClick: translateReport
                             }, translating ? '⏳ Translating...' : '🌏 Translate')
                         ),
-                        translatedReport && h('div', { className: 'mt-2 space-y-2' },
-                            h('div', { className: 'flex items-center justify-between' },
+                        translatedReport && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 space-y-2' },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
                                 h('p', { className: 'text-[10px] font-medium text-sky-700' }, `Translated Report (${translationLang})`),
                                 h('button', { 'aria-label': '📋 Copy', className: 'text-[9px] px-2 py-0.5 bg-sky-600 text-white rounded hover:bg-sky-700', onClick: copyTranslatedReport }, '📋 Copy')
                             ),
-                            h('div', { className: 'bg-white rounded-lg border border-sky-200 p-3 max-h-[300px] overflow-y-auto' },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-lg border border-sky-200 p-3 max-h-[300px] overflow-y-auto' },
                                 h('pre', { className: 'text-[10px] text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, translatedReport)
                             )
                         )
                     )
                 ),
                 // Import area
-                h('div', { className: 'mt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2' },
                     h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Import JSON (paste previously exported data):'),
                     h('textarea', {
                         id: 'rw-import-area', className: 'w-full text-[10px] border rounded-lg px-3 py-2 font-mono resize-none h-20',
@@ -2259,21 +2259,21 @@ Return ONLY valid JSON:
                     importText.trim() && h('button', { 'aria-label': '📂 Import Data', className: 'mt-1 px-3 py-1 bg-emerald-700 text-white text-[10px] rounded-lg hover:bg-emerald-700', onClick: importJSON }, '📂 Import Data')
                 ),
                 // ── Saved Reports Gallery ──
-                h('div', { className: 'mt-3 bg-violet-50 rounded-lg border border-violet-200 p-3 space-y-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-violet-50 rounded-lg border border-violet-200 p-3 space-y-2' },
                     h('h4', { className: 'text-xs font-bold text-violet-800 flex items-center gap-1' }, '📚 Saved Reports'),
-                    h('div', { className: 'flex items-center gap-2' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
                         h('input', { type: 'text', className: 'flex-1 text-[10px] border rounded-lg px-2 py-1', placeholder: 'Report name (optional)...', 'aria-label': 'Report name', value: saveReportName, onChange: e => setSaveReportName(e.target.value) }),
                         h('button', { 'aria-label': '💾 Save Report', className: 'px-3 py-1 bg-violet-600 text-white text-[10px] font-medium rounded-lg hover:bg-violet-700 transition-colors whitespace-nowrap', onClick: saveReportToGallery }, '💾 Save Report'),
                         h('button', { 'aria-label': '🗑️ New Report', className: 'px-3 py-1 bg-red-100 text-red-600 text-[10px] font-medium rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap', onClick: clearDraft }, '🗑️ New Report')
                     ),
-                    savedReports.length > 0 && h('div', { className: 'space-y-1 max-h-40 overflow-y-auto mt-1' },
+                    savedReports.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1 max-h-40 overflow-y-auto mt-1' },
                         savedReports.map(r =>
-                            h('div', { key: r.id, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border border-violet-100 text-[10px]' },
-                                h('div', { className: 'flex-1 min-w-0' },
-                                    h('span', { className: 'font-medium text-slate-800 truncate block' }, r.name),
-                                    h('span', { className: 'text-slate-500' }, new Date(r.savedAt).toLocaleDateString() + ' • ' + (r.scoreEntries?.length || 0) + ' scores')
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: r.id, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border border-violet-100 text-[10px]' },
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 min-w-0' },
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-medium text-slate-800 truncate block' }, r.name),
+                                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500' }, new Date(r.savedAt).toLocaleDateString() + ' • ' + (r.scoreEntries?.length || 0) + ' scores')
                                 ),
-                                h('div', { className: 'flex gap-1 ml-2' },
+                                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 ml-2' },
                                     h('button', { 'aria-label': 'Load', className: 'px-2 py-0.5 bg-violet-100 text-violet-700 rounded hover:bg-violet-200', onClick: () => loadSavedReport(r) }, 'Load'),
                                     h('button', { 'aria-label': 'Delete saved report', className: 'px-2 py-0.5 bg-red-50 text-red-500 rounded hover:bg-red-100', onClick: () => deleteSavedReport(r.id) }, '✕')
                                 )
@@ -2285,19 +2285,19 @@ Return ONLY valid JSON:
                 // Quick report preview
                 Object.keys(reportSections).length > 0 && h('details', { className: 'mt-2 bg-slate-50 rounded-lg border border-slate-200' },
                     h('summary', { className: 'text-xs font-medium text-slate-700 px-3 py-2 cursor-pointer hover:bg-slate-100 rounded-lg' }, '📄 Preview Full Report'),
-                    h('div', { className: 'px-4 py-3 space-y-3 max-h-[400px] overflow-y-auto' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 py-3 space-y-3 max-h-[400px] overflow-y-auto' },
                         h('h2', { className: 'text-sm font-bold text-center text-slate-800' }, reportTitle),
                         h('p', { className: 'text-[10px] text-center text-slate-500' }, `Student: ${studentName || '[Student]'} | Age: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'} | Date: ${new Date().toLocaleDateString()}`),
                         h('hr', { className: 'border-slate-200' }),
                         Object.entries(reportSections).map(([section, text]) =>
-                            h('div', { key: section },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: section },
                                 h('h3', { className: 'text-xs font-bold text-indigo-700 mb-1' }, section),
                                 h('p', { className: 'text-[10px] text-slate-700 leading-relaxed whitespace-pre-wrap' }, text.replace(/\[Student\]/g, studentName || '[Student]'))
                             )
                         )
                     )
                 ),
-                h('div', { className: 'flex justify-start pt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-start pt-2' },
                     h('button', { 'aria-label': 'Accuracy', className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(9) }, '← Accuracy')
                 )
             )
@@ -2322,11 +2322,11 @@ Return ONLY valid JSON:
         const blAiAnalysis = behaviorLensData?.aiAnalysis || null;
         const blStudentProfile = behaviorLensData?.studentProfile || null;
 
-        return h('div', {
+        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
             className: 'fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4',
             onClick: (e) => { if (e.target === e.currentTarget) onClose(); }
         },
-            h('div', {
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                 className: 'bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative'
             },
                 h('button', { 'aria-label': 'Close report writer', className: 'absolute top-4 right-4 text-slate-500 hover:text-slate-600 text-xl', onClick: onClose

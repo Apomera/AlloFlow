@@ -2074,7 +2074,7 @@ var d = labToolData || {};
             React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-1'},'🧩 Drag each theorem to its description:'),
             // Theorem chips (left)
             React.createElement('div',{className:'flex flex-wrap gap-2 mb-3'},
-              MATCH_PAIRS.filter(p=>!matchedIds.has(p.id)).map(p=>React.createElement('div',{
+              MATCH_PAIRS.filter(p=>!matchedIds.has(p.id)).map(p=>React.createElement('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                 key:p.id, draggable:true,
                 onDragStart:e=>{ _gpDrag.matchId=p.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',p.theorem);}catch(ex){} },
                 onDragEnd:()=>{ _gpDrag.matchId=null; },
@@ -2337,7 +2337,7 @@ var d = labToolData || {};
             React.createElement('div',{className:'mb-3'},
               React.createElement('p',{className:'text-[10px] font-bold text-emerald-700 uppercase mb-1.5'},'🧩 Drag a reason to the correct row (or click to select, then click the row):'),
               React.createElement('div',{className:'flex flex-wrap gap-1.5'},
-                availableReasons.map(reason => React.createElement('div',{
+                availableReasons.map(reason => React.createElement('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                   key:reason,
                   draggable:true,
                   onDragStart:e=>{ _gpDrag.reason=reason; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',reason);}catch(ex){} },

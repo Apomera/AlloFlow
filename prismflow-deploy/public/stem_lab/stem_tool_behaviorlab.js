@@ -3961,7 +3961,7 @@ var d = labToolData || {};
                   var badge = LEVEL_BADGES[l.id];
                   var earned = blCompletedLevels.indexOf(l.id) >= 0;
                   var isCurrent = blLevel === l.id;
-                  return React.createElement("div", { key: l.id,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: l.id,
                     className: "text-center cursor-pointer transition-all " + (isCurrent ? 'scale-110' : '') + (earned ? '' : ' opacity-30 grayscale'),
                     title: badge.name + ': ' + badge.desc + (earned ? ' (EARNED!)' : ' (locked)'),
                     onClick: function() { if (earned || isCurrent) { upd('blLevel', l.id); upd('blPhase', 'intro'); upd('blLevelScore', 0); upd('blTick', 0); } }
@@ -3993,7 +3993,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                   FOUR_FUNCTIONS.map(function(ff, ffi) {
                     var isActive = d.blFuncIdx === ffi;
-                    return React.createElement("div", { key: ffi,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: ffi,
                       onClick: function() { upd('blFuncIdx', isActive ? null : ffi); },
                       className: "cursor-pointer rounded-xl p-3 border-2 transition-all " + (isActive ? 'border-opacity-100' : 'border-opacity-30 hover:border-opacity-60'),
                       style: { borderColor: ff.color, background: isActive ? ff.color + '15' : 'rgba(30,41,59,0.4)' }
@@ -4087,7 +4087,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "space-y-1.5" },
                   MEASUREMENT_METHODS.map(function(mm, mmi) {
                     var isActive = d.blMeasureIdx === mmi;
-                    return React.createElement("div", { key: mmi,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: mmi,
                       onClick: function() { upd('blMeasureIdx', isActive ? null : mmi); },
                       className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive ? 'bg-cyan-900/30 border-cyan-600' : 'bg-slate-700/30 border-slate-600 hover:border-slate-500')
                     },
@@ -4287,7 +4287,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "flex items-center text-[11px] font-bold text-green-400 uppercase pr-1" }, "\u2B06 Increase Behavior"),
                 REINFORCE_MATRIX.filter(function(m) { return m.row === 0; }).map(function(m, mi) {
                   var isActive = blMatrixIdx === m.id;
-                  return React.createElement("div", { key: m.id,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
                     onClick: function() { upd('blMatrixIdx', isActive ? null : m.id); },
                     className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'),
                     style: { borderColor: isActive ? m.color : m.color + '40', background: isActive ? m.color + '20' : 'rgba(30,41,59,0.6)' }
@@ -4303,7 +4303,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "flex items-center text-[11px] font-bold text-red-400 uppercase pr-1" }, "\u2B07 Decrease Behavior"),
                 REINFORCE_MATRIX.filter(function(m) { return m.row === 1; }).map(function(m, mi) {
                   var isActive = blMatrixIdx === m.id;
-                  return React.createElement("div", { key: m.id,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
                     onClick: function() { upd('blMatrixIdx', isActive ? null : m.id); },
                     className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'),
                     style: { borderColor: isActive ? m.color : m.color + '40', background: isActive ? m.color + '20' : 'rgba(30,41,59,0.6)' }
@@ -4476,7 +4476,7 @@ var d = labToolData || {};
                   ['Target', 'Antecedent', 'Function', 'Replace', 'Strategy', 'Summary'].map(function(step, si) {
                     var isComplete = si < blBipStep;
                     var isCurrent = si === blBipStep;
-                    return React.createElement("div", { key: si,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: si,
                       className: "flex flex-col items-center cursor-pointer",
                       onClick: function() { if (isComplete) upd('blBipStep', si); }
                     },
@@ -4739,7 +4739,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "space-y-0.5 max-h-64 overflow-y-auto" },
                   ABA_GLOSSARY.map(function(gl, gli) {
                     var isActive = d.blGlossaryIdx === gli;
-                    return React.createElement("div", { key: gli,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: gli,
                       onClick: function() { upd('blGlossaryIdx', isActive ? null : gli); },
                       className: "cursor-pointer rounded-lg p-1.5 border transition-all " + (isActive ? 'bg-slate-700 border-amber-500/50' : 'bg-slate-700/20 border-slate-700 hover:border-slate-500')
                     },

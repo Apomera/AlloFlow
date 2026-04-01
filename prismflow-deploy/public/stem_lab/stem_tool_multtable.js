@@ -463,10 +463,10 @@ window.StemLab = window.StemLab || {
       // ═══ RENDER ═══
       // ═══════════════════════════════
 
-      return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
-        h('div', { className: 'flex items-center gap-3 mb-2' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
           h('button', {
             onClick: function() {
               setStemLabTool(null);
@@ -476,16 +476,16 @@ window.StemLab = window.StemLab || {
             'aria-label': 'Back to tools'
           }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
           h('h3', { className: 'text-lg font-bold text-pink-800' }, '\uD83D\uDD22 Multiplication Table'),
-          h('div', { className: 'flex items-center gap-2 ml-2' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 ml-2' },
             h('button', { 'aria-label': 'Toggle hidden mode (H)',
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
                 (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: 'Toggle hidden mode (H)'
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
-            h('div', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
             // Streak badge
-            (_mt.streak || 0) >= 2 && h('div', {
+            (_mt.streak || 0) >= 2 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + _mt.streak + ' streak!'),
             // Badge count
@@ -504,8 +504,8 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Badge panel ──
-        _ext.showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
-          h('div', { className: 'flex items-center justify-between mb-2' },
+        _ext.showBadges && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
             h('button', { 'aria-label': 'Ext Upd',
               onClick: function() { extUpd({ showBadges: false }); },
@@ -521,16 +521,16 @@ window.StemLab = window.StemLab || {
                   (earned ? 'bg-white border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50'),
                 title: badge.desc
               },
-                h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.label)
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.label)
               );
             })
           )
         ),
 
         // ── AI Tutor panel ──
-        _ext.showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
-          h('div', { className: 'flex items-center justify-between mb-2' },
+        _ext.showAI && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
             h('button', { 'aria-label': 'Ext Upd',
               onClick: function() { extUpd({ showAI: false }); },
@@ -538,9 +538,9 @@ window.StemLab = window.StemLab || {
             }, '\u2715')
           ),
           _ext.aiLoading
-            ? h('div', { className: 'flex items-center gap-2' },
-                h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
-                h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
+            ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-purple-600' }, 'Thinking...')
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, _ext.aiResponse),
           !_ext.aiLoading && h('button', { 'aria-label': 'Ask Again',
@@ -550,7 +550,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Difficulty selector ──
-        h('div', { className: 'flex gap-1 flex-wrap' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 flex-wrap' },
           diffModes.map(function(dm) {
             var active = exploreDifficulty === dm.id;
             return h('button', { 'aria-label': 'Set Explore Difficulty',
@@ -571,14 +571,14 @@ window.StemLab = window.StemLab || {
         _mt.active && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border-2 border-amber-300 flex items-center gap-3 animate-pulse' },
           h('span', { className: 'text-2xl' }, '\u23F1\uFE0F'),
           h('div', { className: 'flex-1' },
-            h('div', { className: 'flex items-center justify-between' },
-              h('span', { className: 'text-sm font-bold text-amber-800' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-amber-800' },
                 'Speed Run \u2014 ' + Math.floor(_mt.timeLeft / 60) + ':' + String(_mt.timeLeft % 60).padStart(2, '0')),
-              h('span', { className: 'text-xs font-bold text-emerald-600' },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600' },
                 '\u2705 ' + _mt.score + '/' + _mt.total)
             ),
-            h('div', { className: 'w-full h-2 bg-amber-200 rounded-full mt-1 overflow-hidden' },
-              h('div', { className: 'h-full rounded-full transition-all duration-500', style: {
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-full h-2 bg-amber-200 rounded-full mt-1 overflow-hidden' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full transition-all duration-500', style: {
                 width: Math.round((_mt.timeLeft / 120) * 100) + '%',
                 background: _mt.timeLeft > 30 ? 'linear-gradient(90deg, #f59e0b, #fb923c)' : 'linear-gradient(90deg, #ef4444, #f87171)'
               }})
@@ -604,11 +604,11 @@ window.StemLab = window.StemLab || {
               _mt.total > 0 ? Math.round((_mt.score / _mt.total) * 100) + '% accuracy' : '')
           ),
           // Wrong-answer review
-          _mt.missed && _mt.missed.length > 0 && h('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-red-200' },
+          _mt.missed && _mt.missed.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-white rounded-lg p-3 border border-red-200' },
             h('p', { className: 'text-xs font-bold text-red-700 mb-2' }, '\uD83D\uDCDD Review Mistakes (' + getUniqueMissed(_mt.missed).length + ')'),
-            h('div', { className: 'flex flex-wrap gap-1.5' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
               getUniqueMissed(_mt.missed).map(function(m, i) {
-                return h('span', { key: i, className: 'inline-flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-xs font-bold text-red-700' },
+                return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'inline-flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-xs font-bold text-red-700' },
                   m.a + ' \u00D7 ' + m.b + ' = ' + m.answer
                 );
               })
@@ -687,7 +687,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Action buttons ──
-        h('div', { className: 'flex gap-2 flex-wrap' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
           h('button', { 'aria-label': 'Quick Quiz',
             onClick: function() { nextProblem(); },
             className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md',
@@ -756,7 +756,7 @@ window.StemLab = window.StemLab || {
             className: 'text-sm font-bold mt-2 text-center ' + (multTableFeedback.correct ? 'text-green-600' : 'text-red-600')
           }, multTableFeedback.msg),
           // Auto-advance indicator + Skip button
-          multTableFeedback && inputDisabled && h('div', { className: 'flex items-center justify-center gap-2 mt-1' },
+          multTableFeedback && inputDisabled && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-center gap-2 mt-1' },
             h('p', { className: 'text-[10px] text-slate-500 animate-pulse' }, 'Next question coming...'),
             h('button', { 'aria-label': 'Skip Next',
               onClick: function() {

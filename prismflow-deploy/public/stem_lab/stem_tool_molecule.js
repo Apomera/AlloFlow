@@ -2165,7 +2165,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               )
             ),
 // ═══ Tutorial Overlay ═══
-            !tutorialDismissed && React.createElement("div", {
+            !tutorialDismissed && React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
               className: "fixed inset-0 z-50 flex items-center justify-center bg-black/40",
               onClick: (e) => { if (e.target === e.currentTarget) dismissTutorial(); }
             },

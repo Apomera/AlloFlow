@@ -433,7 +433,7 @@
                 padding: '8px 0', margin: '0 auto', display: 'block', borderTop: 'none', borderLeft: 'none', borderRight: 'none'
               }
             }),
-            h('div', { style: { display: 'flex', gap: '12px', marginTop: '1.5rem', justifyContent: 'center' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '12px', marginTop: '1.5rem', justifyContent: 'center' } },
               h('button', { "aria-label": "Enter",
                 type: 'submit',
                 style: {
@@ -452,7 +452,7 @@
               }, 'Skip \u2192')
             )
           ),
-          h('div', { style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
             'Tab = Skip \u2022 Esc = End Early' + (autoAdvance ? ' \u2022 Auto-advance ON' : ''))
         ),
         // End early button
@@ -469,7 +469,7 @@
       var ea = results.errorAnalysis;
       var maxDcpm = Math.max.apply(null, history.map(function (x) { return x.dcpm; }).concat([1]));
 
-      return h('div', {
+      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         style: {
           background: 'linear-gradient(135deg, #fffbeb, #fff7ed)', borderRadius: '16px',
           border: '2px solid #fde68a', padding: '24px', marginBottom: '24px',
@@ -477,7 +477,7 @@
         }
       },
         // Header
-        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
           h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#92400e', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 } },
             '\ud83d\udcca Fluency Probe Results'),
           h('button', { "aria-label": "math_fluency action",
@@ -542,9 +542,9 @@
           h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '64px' } },
             history.map(function (hItem, i) {
               var pct = (hItem.dcpm / maxDcpm) * 100;
-              return h('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
-                h('span', { style: { fontSize: '9px', fontWeight: 700, color: '#d97706' } }, hItem.dcpm),
-                h('div', { style: {
+              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '9px', fontWeight: 700, color: '#d97706' } }, hItem.dcpm),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: {
                   width: '100%', background: 'linear-gradient(to top, #f59e0b, #fdba74)',
                   borderRadius: '4px 4px 0 0', height: Math.max(4, pct) + '%', minHeight: '4px'
                 } })
@@ -554,7 +554,7 @@
         ) : null,
 
         // Actions
-        h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '8px', marginTop: '16px' } },
           h('button', { "aria-label": "Clear History",
             onClick: startProbe,
             style: {
@@ -577,19 +577,19 @@
     }
 
     // ── Config UI (default state) ──
-    return h('div', {
+    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
       style: {
         padding: '16px', background: 'linear-gradient(135deg, #fffbeb, #fff7ed)',
         borderRadius: '12px', border: '1px solid #fde68a'
       }
     },
       // Header
-      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: '8px' } },
           h(Zap, { size: 16 }),
-          h('span', { style: { fontWeight: 800, fontSize: '14px', color: '#92400e' } }, '\u26a1 Math Fluency Probe')
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 800, fontSize: '14px', color: '#92400e' } }, '\u26a1 Math Fluency Probe')
         ),
-        h('div', { style: { display: 'flex', gap: '6px' } },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '6px' } },
           h('button', {
             onClick: function () { setSoundEnabled(!soundEnabled); },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
@@ -674,13 +674,13 @@
       // Grade benchmark preview
       (function () {
         var bm = getBenchmark(gradeLevel, operation);
-        return h('div', {
+        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
           style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px',
             border: '1px solid #fef3c7', fontSize: '12px', color: '#64748b' }
         },
-          h('span', { style: { fontWeight: 700 } }, '\ud83c\udfaf Grade ' + bm.grade + ' ' + bm.season + ' target: '),
-          h('span', { style: { fontWeight: 800, color: '#d97706' } }, bm.target + ' DCPM'),
-          h('span', { style: { marginLeft: '8px', fontSize: '11px' } },
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700 } }, '\ud83c\udfaf Grade ' + bm.grade + ' ' + bm.season + ' target: '),
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 800, color: '#d97706' } }, bm.target + ' DCPM'),
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginLeft: '8px', fontSize: '11px' } },
             '(\ud83d\udfe2\u2265' + bm.target + ' \ud83d\udfe1\u2265' + bm.strategic + ' \ud83d\udd34<' + bm.strategic + ')')
         );
       })(),

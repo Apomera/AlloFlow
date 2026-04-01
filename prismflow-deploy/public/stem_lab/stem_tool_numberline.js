@@ -452,8 +452,8 @@ window.StemLab = window.StemLab || {
                 )
               ),
               // Quick range presets
-              h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: pr.join('-'),
@@ -467,7 +467,7 @@ window.StemLab = window.StemLab || {
                 renderNumberLine(range, null, null)
               ),
               // Add marker
-              h('div', { className: 'flex gap-2 items-center' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
                 h('input', {
                   type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max,
                   placeholder: 'Value',
@@ -505,17 +505,17 @@ window.StemLab = window.StemLab || {
 
           // ═══ TAB: CHALLENGES ═══
           var renderChallenges = function() {
-            return h('div', { className: 'space-y-4' },
+            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
               // Number line (with challenge arrow)
-              h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
                 renderNumberLine(range, challenge ? challenge._arrowValue : null, null)
               ),
               // Challenge section
-              h('div', { className: 'bg-blue-50 rounded-xl p-4 border border-blue-200 space-y-3' },
-                h('div', { className: 'flex items-center justify-between' },
-                  h('div', { className: 'flex items-center gap-2' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-blue-50 rounded-xl p-4 border border-blue-200 space-y-3' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
                     h('h4', { className: 'text-sm font-bold text-blue-800' }, '\uD83C\uDFAF Number Line Challenge'),
-                    h('div', { className: 'flex gap-0.5 ml-2' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-0.5 ml-2' },
                       ['easy', 'medium', 'hard'].map(function(d) {
                         return h('button', { 'aria-label': 'Sfx Click',
                           key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
@@ -525,7 +525,7 @@ window.StemLab = window.StemLab || {
                       })
                     )
                   ),
-                  h('span', { className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/6 types')
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/6 types')
                 ),
 
                 !challenge
@@ -547,7 +547,7 @@ window.StemLab = window.StemLab || {
                           placeholder: 'Your answer',
                           'aria-label': 'Challenge answer',
                           className: 'flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm font-mono'
-                        }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
+                        }) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
                         h('button', { 'aria-label': 'Check Answer',
                           onClick: checkAnswer,
                           disabled: challenge.type === 'place' && !answer,
@@ -604,8 +604,8 @@ window.StemLab = window.StemLab || {
                 )
               ),
               // Quick skip presets
-              h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Count by:'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Count by:'),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: s,
@@ -629,8 +629,8 @@ window.StemLab = window.StemLab || {
                       className: 'px-3 py-2 rounded-lg border text-center transition-all ' +
                         (i === 0 ? 'bg-violet-200 border-violet-400 shadow-sm' : 'bg-white border-violet-200 hover:bg-violet-50')
                     },
-                      h('span', { className: 'text-sm font-bold ' + (i === 0 ? 'text-violet-800' : 'text-violet-700') }, val),
-                      h('span', { className: 'text-[10px] text-violet-400 block' }, i === 0 ? 'start' : '+' + skipBy)
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold ' + (i === 0 ? 'text-violet-800' : 'text-violet-700') }, val),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-violet-400 block' }, i === 0 ? 'start' : '+' + skipBy)
                     );
                   })
                 ),
@@ -693,7 +693,7 @@ window.StemLab = window.StemLab || {
                   className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
                 }, aiLoading ? '\u23F3' : 'Ask')
               ),
-              h('div', { className: 'flex flex-wrap gap-1.5' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
                 ['What is a number line?', 'How do I round numbers?', 'What is skip counting?', 'How do negative numbers work?'].map(function(q) {
                   return h('button', { 'aria-label': 'Ask question',
                     key: q,
@@ -702,7 +702,7 @@ window.StemLab = window.StemLab || {
                   }, q);
                 })
               ),
-              aiResponse && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
+              aiResponse && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
             );
           };
 
@@ -713,21 +713,21 @@ window.StemLab = window.StemLab || {
             { id: 'skipcount', icon: '\uD83D\uDD22', label: 'Skip Count' }
           ];
 
-          return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+          return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
             // Header
-            h('div', { className: 'flex items-center gap-3 mb-2' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
               h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
                 h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
               h('h3', { className: 'text-lg font-bold text-blue-800' }, '\uD83D\uDCCF Number Line'),
-              h('div', { className: 'ml-auto flex items-center gap-3' },
-                streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-                bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
-                h('span', { className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex items-center gap-3' },
+                streak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
+                bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
               )
             ),
 
             // Tab bar
-            h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': 'Number Line sections' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': 'Number Line sections' },
               tabs.map(function(t2) {
                 return h('button', { 'aria-label': 'Sfx Click',
                   key: t2.id,
@@ -748,7 +748,7 @@ window.StemLab = window.StemLab || {
             renderBadges(),
 
             // AI Tutor toggle + panel
-            h('div', { className: 'flex gap-2' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
               !showAITutor && h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { sfxClick(); upd({ showAITutor: true }); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'

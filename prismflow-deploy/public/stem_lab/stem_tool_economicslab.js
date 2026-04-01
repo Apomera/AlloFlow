@@ -1352,7 +1352,7 @@ var d = labToolData || {};
 
               React.createElement('span', { className: 'text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
 
-              econAchievements.length > 0 && React.createElement('span', {
+              econAchievements.length > 0 && React.createElement('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                 className: 'text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
 
@@ -1360,7 +1360,7 @@ var d = labToolData || {};
 
               }, '\uD83C\uDFC6 ' + econAchievements.length + ' achievements'),
 
-              React.createElement('span', {
+              React.createElement('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                 className: 'text-[11px] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
 
@@ -2112,7 +2112,7 @@ var d = labToolData || {};
                   ECON_SCHOOLS.map(function(school, si) {
                     var isActive = d.econSchoolIdx === si;
                     return React.createElement('div', { key: si },
-                      React.createElement('div', {
+                      React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         className: 'grid grid-cols-4 cursor-pointer transition-all ' + (isActive ? '' : 'hover:bg-purple-50') + (si % 2 === 0 ? ' bg-white' : ' bg-slate-50'),
                         onClick: function() { upd('econSchoolIdx', isActive ? null : si); },
                         style: isActive ? { background: school.color + '10', borderLeft: '3px solid ' + school.color } : {}

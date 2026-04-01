@@ -289,7 +289,7 @@ window.StemLab = window.StemLab || {
           var c = i % cols;
           var isHigh = r < highlight.rows && c < highlight.cols;
           (function(ri, ci) {
-            cells.push(h('div', {
+            cells.push(h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
               key: i,
               onClick: function() { sfxClick(); upd({ highlight: { rows: ri + 1, cols: ci + 1 } }); },
               className: 'aspect-square rounded-sm border cursor-pointer transition-all hover:scale-110 ' +
@@ -506,7 +506,7 @@ window.StemLab = window.StemLab || {
               className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
             }, aiLoading ? '\u23F3' : 'Ask')
           ),
-          h('div', { className: 'flex flex-wrap gap-1.5' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
             ['What is an area model?', 'How does distributive property work?', 'How to multiply 2-digit numbers?'].map(function(q) {
               return h('button', { 'aria-label': 'Ask question',
                 key: q, onClick: function() { upd({ aiQuestion: q }); },
@@ -514,26 +514,26 @@ window.StemLab = window.StemLab || {
               }, q);
             })
           ),
-          aiResponse && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
+          aiResponse && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
         );
       };
 
       // ══════════ RENDER ══════════
-      return h('div', { className: 'space-y-4 w-full px-2 sm:px-4 max-w-7xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4 w-full px-2 sm:px-4 max-w-7xl mx-auto animate-in fade-in duration-200' },
         // Header
-        h('div', { className: 'flex items-center gap-3 mb-2' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
             h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
           h('h3', { className: 'text-lg font-bold text-amber-800' }, '\uD83D\uDFE7 Area Model'),
           h('div', { className: 'ml-auto flex items-center gap-3' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
-            h('span', { className: 'text-xs font-bold text-amber-600' }, score.correct + '/' + score.total)
+            bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-600' }, score.correct + '/' + score.total)
           )
         ),
 
         // Mode tabs
-        h('div', { className: 'flex gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
           [
             { id: 'basic', icon: '\uD83D\uDFE7', label: 'Basic Grid' },
             { id: 'distributive', icon: '\u2702\uFE0F', label: 'Distributive' },
@@ -578,17 +578,17 @@ window.StemLab = window.StemLab || {
         viewMode === 'multidigit' && renderMultiDigit(),
 
         // Product display (basic mode, no active challenge)
-        viewMode === 'basic' && !(challenge && !feedback) && h('div', { className: 'bg-white rounded-xl p-4 border border-amber-100 text-center' },
-          h('div', { className: 'text-xl font-bold text-amber-800' },
+        viewMode === 'basic' && !(challenge && !feedback) && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-amber-100 text-center' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl font-bold text-amber-800' },
             rows + ' \u00d7 ' + cols + ' = ',
-            h('span', { className: 'text-3xl text-amber-600' }, rows * cols)
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl text-amber-600' }, rows * cols)
           ),
-          highlight.rows > 0 && highlight.cols > 0 && h('div', { className: 'text-sm text-amber-600 mt-1' },
+          highlight.rows > 0 && highlight.cols > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-amber-600 mt-1' },
             'Selected: ' + highlight.rows + ' \u00d7 ' + highlight.cols + ' = ' + (highlight.rows * highlight.cols) + ' (click squares to highlight)')
         ),
 
         // Commutative toggle (basic mode)
-        viewMode === 'basic' && h('div', { className: 'flex items-center gap-3' },
+        viewMode === 'basic' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
           h('button', { 'aria-label': 'Clear highlight',
             onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); },
             className: 'text-xs text-slate-500 hover:text-amber-600'
@@ -604,15 +604,15 @@ window.StemLab = window.StemLab || {
           },
             '\u21C4 Commutative: ' + rows + ' \u00d7 ' + cols + (swapped ? ' (swapped!)' : '')
           ),
-          swapped && h('span', { className: 'text-xs text-violet-500 italic' }, '\uD83D\uDCA1 Same product! a\u00d7b = b\u00d7a')
+          swapped && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-violet-500 italic' }, '\uD83D\uDCA1 Same product! a\u00d7b = b\u00d7a')
         ),
 
         // Challenge section
-        h('div', { className: 'bg-amber-50 rounded-xl p-4 border border-amber-200 space-y-3' },
-          h('div', { className: 'flex items-center justify-between' },
-            h('div', { className: 'flex items-center gap-2' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-xl p-4 border border-amber-200 space-y-3' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
               h('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFAF Multiplication Challenge'),
-              h('div', { className: 'flex gap-0.5 ml-2' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-0.5 ml-2' },
                 ['easy', 'medium', 'hard'].map(function(d) {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
@@ -622,11 +622,11 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('span', { className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/3 modes')
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/3 modes')
           ),
 
           !challenge
-            ? h('div', { className: 'flex gap-2' },
+            ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                 h('button', { 'aria-label': 'Grid Challenge',
                   onClick: function() { genChallenge('basic'); },
                   className: 'flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
@@ -672,7 +672,7 @@ window.StemLab = window.StemLab || {
         renderBadges(),
 
         // AI Tutor toggle + panel
-        h('div', { className: 'flex gap-2' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
           !showAITutor && h('button', { 'aria-label': 'AI Tutor',
             onClick: function() { sfxClick(); upd({ showAITutor: true }); },
             className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'

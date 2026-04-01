@@ -232,19 +232,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
 
         // Header
-        h('div', { className: 'flex items-center gap-3' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
           h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-teal-100 text-teal-600 transition-colors' }, a11yClick(function() { ctx.setStemLabTool(null); })),
             h(ArrowLeft, { size: 20 })
           ),
-          h('div', { className: 'flex-1' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
             h('h2', { className: 'text-xl font-black text-slate-800' }, '♿ Digital Accessibility Lab'),
             h('p', { className: 'text-xs text-slate-500' }, 'Audit websites and documents for WCAG 2.1 AA compliance')
           ),
-          auditsCompleted > 0 && h('span', { className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
+          auditsCompleted > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
         ),
 
         // Student-friendly intro (collapsible)
-        !d.introHidden && h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-2xl p-5 relative' },
+        !d.introHidden && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-2xl p-5 relative' },
           h('button', { onClick: function() { upd('introHidden', true); }, className: 'absolute top-3 right-3 text-teal-400 hover:text-teal-600 text-xs font-bold', 'aria-label': 'Hide intro' }, '\u2716'),
           h('h3', { className: 'text-base font-black text-teal-800 mb-2' }, '\u267F What is Digital Accessibility?'),
           h('p', { className: 'text-sm text-teal-700 leading-relaxed mb-3' },
@@ -264,8 +264,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               return h('div', { key: d2.label, className: 'flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 border border-teal-100 text-xs' },
                 h('span', null, d2.icon),
                 h('div', null,
-                  h('span', { className: 'font-bold text-teal-800' }, d2.label),
-                  h('span', { className: 'text-teal-600 ml-1' }, '\u2014 ' + d2.desc)
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-teal-800' }, d2.label),
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-teal-600 ml-1' }, '\u2014 ' + d2.desc)
                 )
               );
             })
@@ -273,7 +273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         ),
 
         // Tabs
-        h('div', { role: 'tablist', 'aria-label': 'Accessibility Lab sections', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, role: 'tablist', 'aria-label': 'Accessibility Lab sections', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200' },
           [{ id: 'audit', label: '🔍 Audit' }, { id: 'learn', label: '📖 Learn WCAG' }, { id: 'history', label: '📊 History' }, { id: 'badges', label: '🏅 Badges' }].map(function(t) {
             return h('button', { 'aria-label': 'Change tab',
               key: t.id, role: 'tab', 'aria-selected': tab === t.id,
@@ -287,11 +287,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         tab === 'audit' && h('div', { className: 'space-y-4' },
 
           // Input area
-          h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
             h('h3', { className: 'text-sm font-bold text-teal-700 mb-2' }, 'What would you like to audit?'),
 
             // Input mode tabs
-            h('div', { className: 'flex gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
               [
                 { id: 'url', icon: '\uD83C\uDF10', label: 'Website URL' },
                 { id: 'html', icon: '\uD83D\uDCBB', label: 'HTML Code' },
@@ -326,8 +326,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               ),
               h('p', { className: 'text-[10px] text-slate-400 mt-1' }, 'The AI will analyze the website\u2019s accessibility based on its known structure and common patterns.'),
               // Quick suggestions
-              h('div', { className: 'flex flex-wrap gap-2 pt-2' },
-                h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Try:'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2 pt-2' },
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 font-bold' }, 'Try:'),
                 ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com', 'https://www.amazon.com'].map(function(url) {
                   return h('button', { 'aria-label': 'Change audit url',
                     key: url,
@@ -439,20 +439,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
 
             // Strengths
-            auditResult.strengths && auditResult.strengths.length > 0 && h('div', { className: 'bg-green-50 border border-green-200 rounded-xl p-4' },
+            auditResult.strengths && auditResult.strengths.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-green-50 border border-green-200 rounded-xl p-4' },
               h('h4', { className: 'text-xs font-bold text-green-600 uppercase tracking-widest mb-2' }, '✅ What\'s Good'),
               auditResult.strengths.map(function(s, i) {
-                return h('div', { key: i, className: 'text-xs text-green-700 mb-1 flex items-start gap-2' }, h('span', null, '✓'), ' ', s);
+                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'text-xs text-green-700 mb-1 flex items-start gap-2' }, h('span', null, '✓'), ' ', s);
               })
             ),
 
             // Recommendation
-            auditResult.recommendation && h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center' },
+            auditResult.recommendation && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center' },
               h('p', { className: 'text-sm text-indigo-800 font-medium' }, '💡 ', auditResult.recommendation)
             ),
 
             // Action buttons
-            h('div', { className: 'flex gap-2 justify-center' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center' },
               h('button', { 'aria-label': 'Download Report', onClick: downloadReport, className: 'px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors' }, '📥 Download Report'),
               h('button', { 'aria-label': 'New Audit', onClick: function() { updMulti({ auditResult: null, auditUrl: '', auditHtml: '' }); }, className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors' }, '🔄 New Audit')
             )
@@ -460,12 +460,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         ),
 
         // ═══ LEARN WCAG TAB ═══
-        tab === 'learn' && h('div', { className: 'space-y-3' },
+        tab === 'learn' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
           h('p', { className: 'text-sm text-slate-600 text-center mb-2' }, 'WCAG 2.1 AA has ', WCAG_CRITERIA.length, ' core criteria. Click any to learn more.'),
 
           WCAG_CRITERIA.map(function(criterion) {
             var isExpanded = selectedCriterion === criterion.id;
-            return h('div', { key: criterion.id,
+            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: criterion.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isExpanded ? 'border-teal-400 bg-teal-50' : 'border-slate-200 bg-white hover:border-teal-300')
             },
               h('button', Object.assign({
@@ -479,15 +479,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 },
                 className: 'w-full p-4 text-left flex items-center gap-3'
               }, a11yClick ? {} : {}),
-                h('span', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-xs font-bold shrink-0' }, criterion.id),
-                h('div', { className: 'flex-1' },
-                  h('div', { className: 'font-bold text-sm text-slate-800' }, criterion.name),
-                  h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Level ', criterion.level)
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-xs font-bold shrink-0' }, criterion.id),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, criterion.name),
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 font-bold' }, 'Level ', criterion.level)
                 )
               ),
-              isExpanded && h('div', { className: 'px-4 pb-4 space-y-2' },
+              isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 space-y-2' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, criterion.desc),
-                h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-3 border border-teal-200' },
                   h('p', { className: 'text-xs text-teal-800 font-medium' }, '👤 Impact: ', criterion.impact)
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',

@@ -792,7 +792,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, "Variables"),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['P','Q','R','S'].map(function(v) {
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
                         onClick: function() { upd({ expression: expr + v }); },
@@ -804,7 +804,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, "Connectives"),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['\u2227','\u2228','\u00AC','\u2192','\u2194','\u2295'].map(function(sym) {
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         key: sym, draggable: true,
                         onDragStart: function(e) { _drag.sym = ' '+sym+' '; e.dataTransfer.effectAllowed='copy'; },
                         onClick: function() { upd({ expression: expr+' '+sym+' ' }); },
@@ -814,7 +814,7 @@ window.StemLab = window.StemLab || {
                       }, sym + ' ' + (CONN[sym] ? CONN[sym].eng : ''));
                     }),
                     ['(',')'].map(function(v) {
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
                         onClick: function() { upd({ expression: expr+v }); },
@@ -2154,7 +2154,7 @@ window.StemLab = window.StemLab || {
                       ["Distributive","P\u2227(Q\u2228R) \u2261 (P\u2227Q)\u2228(P\u2227R)"],
                       ["Commutative","P\u2227Q \u2261 Q\u2227P"]
                     ].map(function(law) {
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                         key: law[0],
                         className: "flex items-center gap-2 p-2 bg-white rounded-lg border border-violet-100 cursor-pointer hover:border-violet-300 hover:shadow-sm transition-all",
                         onClick: function() { upd({ expression: law[1].split(' \u2261 ')[0].trim(), mode: 'truth' }); if(addToast) addToast('Loaded in Truth Tables!','info'); }

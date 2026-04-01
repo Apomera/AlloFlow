@@ -3375,7 +3375,7 @@ var d = (labToolData.companionPlanting) || {};
               d.showPermaculture && React.createElement("div", { className: "grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto" },
                 PERMACULTURE_PRINCIPLES.map(function(p, pi) {
                   var isActive = d.permIdx === pi;
-                  return React.createElement("div", { key: pi,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: pi,
                     onClick: function() { upd('permIdx', isActive ? null : pi); },
                     className: "cursor-pointer rounded-xl p-2 border transition-all text-center " + (isActive ? 'bg-violet-100 border-violet-400 col-span-3' : 'bg-white border-violet-100 hover:border-violet-300')
                   },
@@ -3405,7 +3405,7 @@ var d = (labToolData.companionPlanting) || {};
                 REGEN_PRACTICES.map(function(practice, pi) {
                   var isActive = d.regenIdx === pi;
                   var diffColor = practice.difficulty === 'Easy' ? 'bg-green-100 text-green-700' : practice.difficulty === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700';
-                  return React.createElement("div", { key: pi,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: pi,
                     onClick: function() { upd('regenIdx', isActive ? null : pi); },
                     className: "cursor-pointer rounded-xl p-2 border transition-all " + (isActive ? 'bg-emerald-50 border-emerald-300 shadow-sm' : 'bg-white border-emerald-100 hover:border-emerald-300')
                   },
@@ -3630,7 +3630,7 @@ var d = (labToolData.companionPlanting) || {};
               d.showCalendar && React.createElement("div", { className: "space-y-1.5" },
                 SEASONAL_CALENDAR.map(function(season, si) {
                   var isActive = d.calendarIdx === si;
-                  return React.createElement("div", { key: si,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: si,
                     onClick: function() { upd('calendarIdx', isActive ? null : si); },
                     className: "cursor-pointer rounded-xl p-2 border transition-all " + (isActive ? 'bg-emerald-50 border-emerald-300 shadow-sm' : 'bg-white border-emerald-100 hover:border-emerald-300')
                   },
@@ -3726,7 +3726,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "grid grid-cols-2 gap-1.5 max-h-60 overflow-y-auto" },
                   COMPANION_PAIRS.filter(function(p) { return (d.pairFilter || 'all') === 'all' || p.type === d.pairFilter; }).map(function(pair, pi) {
                     var isActive = d.pairIdx === pi;
-                    return React.createElement("div", { key: pi,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: pi,
                       onClick: function() { upd('pairIdx', isActive ? null : pi); },
                       className: "cursor-pointer rounded-xl p-2 border-2 transition-all " + (pair.type === 'enemy' ? 'border-red-200 bg-red-50 hover:border-red-400' : 'border-green-200 bg-white hover:border-green-400') + (isActive ? ' ring-2 ring-green-400' : '')
                     },
@@ -3761,7 +3761,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-1" }, "Never plant the same family in the same spot two years in a row! Rotate to prevent disease buildup and nutrient depletion."),
                 PLANT_FAMILIES.map(function(fam, fi) {
                   var isActive = d.familyIdx === fi;
-                  return React.createElement("div", { key: fi,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: fi,
                     onClick: function() { upd('familyIdx', isActive ? null : fi); },
                     className: "cursor-pointer rounded-xl p-2 border transition-all " + (isActive ? 'bg-white shadow-sm' : 'bg-violet-50/50 hover:bg-white'),
                     style: { borderColor: isActive ? fam.color : fam.color + '30' }
@@ -3794,7 +3794,7 @@ var d = (labToolData.companionPlanting) || {};
               d.showSoilTypes && React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
                 SOIL_TYPES.map(function(soil, si) {
                   var isActive = d.soilTypeIdx === si;
-                  return React.createElement("div", { key: si,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: si,
                     onClick: function() { upd('soilTypeIdx', isActive ? null : si); },
                     className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all " + (isActive ? 'scale-[1.03] shadow-md' : 'hover:scale-[1.01]'),
                     style: { borderColor: isActive ? soil.color : soil.color + '30', background: isActive ? soil.color + '10' : '#fff' }
@@ -3839,7 +3839,7 @@ var d = (labToolData.companionPlanting) || {};
                   React.createElement("div", { className: "space-y-1 max-h-48 overflow-y-auto" },
                     GARDEN_PESTS.map(function(pest, pi) {
                       var isActive = d.pestIdx === pi;
-                      return React.createElement("div", { key: pi,
+                      return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: pi,
                         onClick: function() { upd('pestIdx', isActive ? null : pi); },
                         className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive ? 'bg-red-50 border-red-300' : 'bg-white border-red-100 hover:border-red-300')
                       },

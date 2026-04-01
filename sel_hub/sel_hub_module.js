@@ -223,7 +223,7 @@
       if (!showSelHub) return null;
 
       // ── Screen reader live region ──
-      var srLive = h('div', {
+      var srLive = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         id: 'sel-sr-announce',
         'aria-live': 'polite',
         'aria-atomic': 'true',
@@ -232,10 +232,10 @@
       });
 
       // ── Header bar ──
-      var header = h('div', {
+      var header = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
       },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 12 } },
           selHubTool && h('button', {
             onClick: function() { setSelHubTool(null); announceToSR('Returned to tool grid'); },
             'aria-label': 'Back to tools',
@@ -244,20 +244,20 @@
           h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: _t.headerText } },
             '\u2764\uFE0F\u200D\uD83D\uDD25 SEL Hub'
           ),
-          h('span', {
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
             style: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
           }, gradeBand(gradeLevel) === 'elementary' ? 'Elementary' : gradeBand(gradeLevel) === 'middle' ? 'Middle School' : 'High School')
         ),
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8 } },
           // Theme toggle button
           h('button', {
             onClick: function() { if (typeof window.AlloToggleTheme === 'function') { window.AlloToggleTheme(); setTimeout(function() { setSelToolData(function(p) { return Object.assign({}, p); }); }, 50); } },
             'aria-label': 'Toggle theme (light / dark / high contrast)',
             title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode',
             style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }
-          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
+          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
           // XP badge
-          h('div', {
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
             style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }
           }, '\u2728 ' + selXp + ' XP'),
           // Close button
@@ -490,7 +490,7 @@
           toolContent = React.createElement(window.__selPluginComponents[selHubTool], { key: 'sel-plugin-' + selHubTool, _toolId: selHubTool, _ctx: _ctx });
         } catch(e) {
           console.error('[SelHub] Plugin render error for ' + selHubTool, e);
-          toolContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
+          toolContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
             h('p', { style: { fontSize: 32, marginBottom: 12 } }, '\u26A0\uFE0F'),
             h('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + selHubTool),
             h('p', { style: { fontSize: 12, color: _t.textMuted, marginBottom: 16 } }, e.message || 'Unknown error'),
@@ -504,8 +504,8 @@
 
       // ── Loading state (tool selected but plugin not yet loaded) ──
       if (selHubTool && !toolContent) {
-        toolContent = h('div', { style: { padding: 60, textAlign: 'center', color: _t.textMuted } },
-          h('div', {
+        toolContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 60, textAlign: 'center', color: _t.textMuted } },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
             style: {
               fontSize: 40, marginBottom: 16,
               animation: _reduceMotion ? 'none' : 'pulse 2s ease-in-out infinite'

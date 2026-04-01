@@ -419,7 +419,7 @@
           { id: 'tutor', label: '\uD83E\uDD16 Tutor' }
         ];
 
-        var tabBar = h('div', { style: { display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }, role: 'tablist', 'aria-label': 'Algebra CAS sections' },
+        var tabBar = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }, role: 'tablist', 'aria-label': 'Algebra CAS sections' },
           TABS.map(function(t) {
             return h('button', { 'aria-label': 'Change tab',
               key: t.id, onClick: function() { upd('tab', t.id); },
@@ -448,20 +448,20 @@
                 style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', opacity: (isLoading || !expression.trim()) ? 0.5 : 1, border: 'none' }
               }, isLoading ? '\u23F3 ...' : '\u25B6 ' + (mode.charAt(0).toUpperCase() + mode.slice(1)))
             ),
-            h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' } },
-              h('span', { style: { fontSize: '10px', fontWeight: '700', color: MUTED } }, 'TRY:'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' } },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', fontWeight: '700', color: MUTED } }, 'TRY:'),
               (EXAMPLES[mode] || []).map(function(ex, i) {
                 return h('button', { 'aria-label': 'Step-by-Step Solution', key: i, onClick: function() { upd('expression', ex); },
                   style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace', background: CARD, border: '1px solid ' + BORDER, color: ACCENT, cursor: 'pointer' } }, ex);
               })
             ),
-            result ? h('div', { style: Object.assign({}, cardStyle, { marginBottom: '10px' }) },
-              h('div', { style: { fontSize: '11px', fontWeight: '700', color: ACCENT, marginBottom: '8px' } }, '\uD83D\uDCCB Step-by-Step Solution'),
-              h('div', { style: { fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.6' } }, renderSteps(typeof result === 'string' ? result : ''))
+            result ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: Object.assign({}, cardStyle, { marginBottom: '10px' }) },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', fontWeight: '700', color: ACCENT, marginBottom: '8px' } }, '\uD83D\uDCCB Step-by-Step Solution'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.6' } }, renderSteps(typeof result === 'string' ? result : ''))
             ) : null,
             history.length > 0 ? h('div', null,
-              h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, marginBottom: '6px' } }, '\uD83D\uDCDC Recent (' + history.length + ')'),
-              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', fontWeight: '700', color: MUTED, marginBottom: '6px' } }, '\uD83D\uDCDC Recent (' + history.length + ')'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 history.slice().reverse().slice(0, 5).map(function(hi, i) {
                   return h('button', { 'aria-label': 'Change _tried advanced', key: i, onClick: function() { updMulti({ expression: hi.expr, mode: hi.mode, result: hi.result }); },
                     style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace', background: CARD, border: '1px solid ' + BORDER, color: TEXT, cursor: 'pointer' } },
@@ -475,21 +475,21 @@
         /* ============ TAB: PRACTICE ============ */
         var renderPractice = function() {
           return h('div', null,
-            (practiceScore > 0 || practiceStreak > 0) ? h('div', { style: { display: 'flex', gap: '10px', marginBottom: '8px' } },
-              practiceScore > 0 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: 'rgba(34,197,94,0.9)' } }, '\u2B50 ' + practiceScore + ' correct') : null,
-              practiceStreak > 1 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: '#f97316' } }, '\uD83D\uDD25 ' + practiceStreak + ' streak') : null
+            (practiceScore > 0 || practiceStreak > 0) ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '10px', marginBottom: '8px' } },
+              practiceScore > 0 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', fontWeight: '700', color: 'rgba(34,197,94,0.9)' } }, '\u2B50 ' + practiceScore + ' correct') : null,
+              practiceStreak > 1 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', fontWeight: '700', color: '#f97316' } }, '\uD83D\uDD25 ' + practiceStreak + ' streak') : null
             ) : null,
-            h('div', { style: { marginBottom: '8px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Difficulty'),
-              h('div', { style: { display: 'flex', gap: '4px' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: '8px' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Difficulty'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '4px' } },
                 DIFFICULTIES.map(function(df) {
                   return h('button', { 'aria-label': 'Problem Type', key: df.id, onClick: function() { updMulti({ difficulty: df.id, practiceQ: null, practiceFeedback: null }); if (df.id === 'advanced') upd('_triedAdvanced', true); }, style: btnStyle(difficulty === df.id) }, df.label);
                 })
               )
             ),
-            h('div', { style: { marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Problem Type'),
-              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: '10px' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Problem Type'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 PROBLEM_TYPES.map(function(pt) {
                   return h('button', { 'aria-label': 'Handle Practice Gen', key: pt.id, onClick: function() { updMulti({ practiceType: pt.id, practiceQ: null, practiceFeedback: null }); }, style: btnStyle(practiceType === pt.id) }, pt.label);
                 })
@@ -518,14 +518,14 @@
                   style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', cursor: 'pointer', opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1, border: 'none' }
                 }, isLoading ? '\u23F3' : '\u2705 Check')
               ) : null,
-              practiceFeedback ? h('div', { style: { padding: '10px', borderRadius: '12px', background: practiceFeedback.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (practiceFeedback.correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'), marginBottom: '8px' } },
-                h('div', { style: { fontSize: '13px', fontWeight: '700', marginBottom: '6px' } }, practiceFeedback.correct ? '\uD83C\uDF89 Correct!' : '\u274C Not quite...'),
-                h('div', { style: { fontSize: '11px', marginBottom: '6px' } }, (function() { var fb = practiceFeedback.text.match(/FEEDBACK:\s*(.+)/i); return fb ? fb[1].trim() : ''; })()),
+              practiceFeedback ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px', borderRadius: '12px', background: practiceFeedback.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (practiceFeedback.correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'), marginBottom: '8px' } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '13px', fontWeight: '700', marginBottom: '6px' } }, practiceFeedback.correct ? '\uD83C\uDF89 Correct!' : '\u274C Not quite...'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', marginBottom: '6px' } }, (function() { var fb = practiceFeedback.text.match(/FEEDBACK:\s*(.+)/i); return fb ? fb[1].trim() : ''; })()),
                 h('button', { 'aria-label': 'No solution available.', onClick: function() { upd('showSolution', !showSolution); },
                   style: { fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '8px', background: showSolution ? 'rgba(99,102,241,0.15)' : CARD, color: showSolution ? '#a5b4fc' : MUTED, border: '1px solid ' + BORDER, cursor: 'pointer', marginBottom: '6px' }
                 }, (showSolution ? '\u25BC' : '\u25B6') + ' Step-by-Step Solution'),
-                showSolution ? h('div', { style: { marginTop: '6px', padding: '8px', borderRadius: '10px', fontSize: '11px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.5', background: 'rgba(15,23,42,0.5)', border: '1px solid ' + BORDER } },
-                  (function() { var sol = practiceFeedback.text.match(/SOLUTION:[\s\S]*/i); return sol ? renderSteps(sol[0]) : h('span', { style: { color: MUTED } }, 'No solution available.'); })()
+                showSolution ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: '6px', padding: '8px', borderRadius: '10px', fontSize: '11px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: '1.5', background: 'rgba(15,23,42,0.5)', border: '1px solid ' + BORDER } },
+                  (function() { var sol = practiceFeedback.text.match(/SOLUTION:[\s\S]*/i); return sol ? renderSteps(sol[0]) : h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: MUTED } }, 'No solution available.'); })()
                 ) : null
               ) : null,
               h('button', { 'aria-label': 'New Problem', onClick: function() { updMulti({ practiceQ: null, practiceFeedback: null, practiceAnswer: '', showSolution: false }); handlePracticeGen(); },
@@ -543,22 +543,22 @@
               border: '2px solid rgba(255,255,255,0.2)', minWidth: '36px', textAlign: 'center' };
           };
           return h('div', null,
-            h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '6px' } }, 'Tile Palette'),
-            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '12px' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '6px' } }, 'Tile Palette'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '12px' } },
               BUILDER_PALETTE.map(function(tile, i) {
                 return h('button', { 'aria-label': 'Your Equation (click tile to remove)', key: i, onClick: function() { addTile(tile); }, style: tileBtnStyle(tile.cat) }, tile.v);
               })
             ),
-            h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '6px' } }, 'Your Equation (click tile to remove)'),
-            h('div', { style: { minHeight: '48px', padding: '10px', borderRadius: '12px', background: CARD, border: '2px dashed ' + BORDER, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', marginBottom: '10px' } },
-              builderTiles.length === 0 ? h('span', { style: { color: MUTED, fontSize: '12px' } }, 'Click tiles above to build an equation...') :
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '6px' } }, 'Your Equation (click tile to remove)'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { minHeight: '48px', padding: '10px', borderRadius: '12px', background: CARD, border: '2px dashed ' + BORDER, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', marginBottom: '10px' } },
+              builderTiles.length === 0 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: MUTED, fontSize: '12px' } }, 'Click tiles above to build an equation...') :
               builderTiles.map(function(tile, i) {
                 return h('button', { 'aria-label': 'Solve It', key: i, onClick: function() { removeTile(i); },
                   style: { padding: '6px 10px', borderRadius: '6px', fontSize: '14px', fontWeight: '700', background: TILE_COLORS[tile.cat] || '#6366f1', color: '#fff', cursor: 'pointer', border: 'none' } }, tile.v);
               })
             ),
-            builderTiles.length > 0 ? h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
-              h('div', { style: { flex: '1', padding: '8px', borderRadius: '10px', background: 'rgba(99,102,241,0.05)', border: '1px solid ' + BORDER, fontFamily: 'monospace', fontSize: '14px', fontWeight: '700', textAlign: 'center' } }, builderToString()),
+            builderTiles.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: '1', padding: '8px', borderRadius: '10px', background: 'rgba(99,102,241,0.05)', border: '1px solid ' + BORDER, fontFamily: 'monospace', fontSize: '14px', fontWeight: '700', textAlign: 'center' } }, builderToString()),
               h('button', { 'aria-label': 'Solve It', onClick: sendBuilderToSolver,
                 style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, '\uD83D\uDD0D Solve It'),
               h('button', { 'aria-label': 'Clear', onClick: function() { upd('builderTiles', []); },
@@ -663,12 +663,12 @@
                   style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, 'Load')
               )
             ),
-            h('div', { style: { borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: 'rgba(15,23,42,0.5)' } },
+            h('div', { role: 'button', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: 'rgba(15,23,42,0.5)' } },
               h('canvas', { ref: function(canvas) { if (canvas) setTimeout(function() { drawScale(canvas); }, 0); }, 'aria-label': 'Interactive algebra balance scale visualization', tabIndex: 0, style: { width: '100%', display: 'block' } })
             ),
             scaleEq && !scaleSolved ? h('div', null,
-              h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Apply to Both Sides'),
-              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Apply to Both Sides'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px' } },
                 [['Add', '+'], ['Subtract', '-'], ['Multiply', '\u00D7'], ['Divide', '\u00F7']].map(function(pair) {
                   return h('button', { 'aria-label': 'Steps Applied:', key: pair[0], onClick: function() {
                     var val = prompt(pair[0] + ' what value to both sides?');
@@ -676,9 +676,9 @@
                   }, style: opBtnStyle }, pair[1] + ' ' + pair[0]);
                 })
               ),
-              scaleSteps.length > 0 ? h('div', { style: Object.assign({}, cardStyle, { fontSize: '11px' }) },
-                h('div', { style: { fontWeight: '700', color: ACCENT, marginBottom: '4px' } }, 'Steps Applied:'),
-                scaleSteps.map(function(s, i) { return h('div', { key: i, style: { color: MUTED } }, (i + 1) + '. ' + s); })
+              scaleSteps.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: Object.assign({}, cardStyle, { fontSize: '11px' }) },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: '700', color: ACCENT, marginBottom: '4px' } }, 'Steps Applied:'),
+                scaleSteps.map(function(s, i) { return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { color: MUTED } }, (i + 1) + '. ' + s); })
               ) : null
             ) : null,
             scaleSolved ? h('button', { 'aria-label': 'New Equation', onClick: function() { updMulti({ scaleEq: '', scaleSteps: [], scaleSolved: false }); },
@@ -690,12 +690,12 @@
         var renderTutor = function() {
           var SUGGESTED = ['What is a variable?', 'How do I solve for x?', 'Explain factoring', 'What is PEMDAS?'];
           return h('div', null,
-            h('div', { style: { maxHeight: '260px', overflowY: 'auto', marginBottom: '8px', padding: '8px', borderRadius: '12px', background: CARD, border: '1px solid ' + BORDER } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { maxHeight: '260px', overflowY: 'auto', marginBottom: '8px', padding: '8px', borderRadius: '12px', background: CARD, border: '1px solid ' + BORDER } },
               tutorChat.length === 0 ? h('p', { style: { fontSize: '12px', color: MUTED, textAlign: 'center', padding: '20px 0' } }, 'Ask the AI tutor anything about algebra!') :
               tutorChat.map(function(msg, i) {
                 var isUser = msg.role === 'user';
-                return h('div', { key: i, style: { marginBottom: '6px', textAlign: isUser ? 'right' : 'left' } },
-                  h('div', { style: { display: 'inline-block', padding: '6px 10px', borderRadius: '10px', maxWidth: '80%', fontSize: '12px', lineHeight: '1.5',
+                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { marginBottom: '6px', textAlign: isUser ? 'right' : 'left' } },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'inline-block', padding: '6px 10px', borderRadius: '10px', maxWidth: '80%', fontSize: '12px', lineHeight: '1.5',
                     background: isUser ? 'rgba(99,102,241,0.2)' : 'rgba(168,85,247,0.1)',
                     border: '1px solid ' + (isUser ? 'rgba(99,102,241,0.3)' : 'rgba(168,85,247,0.2)') } },
                     isUser ? msg.text : h('div', null,
@@ -719,8 +719,8 @@
                 style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', cursor: 'pointer', opacity: (isLoading || !tutorInput.trim()) ? 0.5 : 1, border: 'none' }
               }, isLoading ? '\u23F3' : 'Send')
             ),
-            h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
-              h('span', { style: { fontSize: '10px', fontWeight: '700', color: MUTED } }, 'Try:'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', fontWeight: '700', color: MUTED } }, 'Try:'),
               SUGGESTED.map(function(q, i) {
                 return h('button', { 'aria-label': 'Ask question', key: i, onClick: function() { upd('tutorInput', q); },
                   style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', background: CARD, border: '1px solid ' + BORDER, color: ACCENT, cursor: 'pointer' } }, q);
@@ -734,14 +734,14 @@
         var badgeBar = h('div', { style: { display: 'flex', gap: '3px', flexWrap: 'wrap', padding: '6px 0' } },
           BADGES.map(function(b) {
             var has = earned.indexOf(b.id) !== -1;
-            return h('span', { key: b.id, title: b.label + ': ' + b.desc,
+            return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: b.id, title: b.label + ': ' + b.desc,
               style: { fontSize: '14px', opacity: has ? 1 : 0.25, cursor: 'default', filter: has ? 'none' : 'grayscale(1)' } }, b.icon);
           })
         );
 
         /* ============ MAIN RENDER ============ */
-        return h('div', { style: { padding: '14px', color: TEXT, background: BG, borderRadius: '16px', minHeight: '400px' } },
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '14px', color: TEXT, background: BG, borderRadius: '16px', minHeight: '400px' } },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
             h('div', null,
               h('h3', { style: { fontSize: '16px', fontWeight: '700', margin: 0 } }, '\uD83E\uDDEE Algebra CAS'),
               h('p', { style: { fontSize: '10px', color: MUTED, margin: '2px 0 0 0' } }, GRADE_INTROS[band] || 'Step-by-step symbolic math powered by AI')

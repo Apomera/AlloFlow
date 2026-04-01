@@ -1791,7 +1791,7 @@ var d = labToolData.universe || {};
                 ),
                 STAR_STAGES.map(function(stage, si) {
                   var isActive = d.starStage === si;
-                  return React.createElement("div", {
+                  return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                     key: si,
                     onClick: function() { upd('starStage', isActive ? null : si); playBeep(); },
                     className: "cursor-pointer rounded-lg p-2.5 border transition-all " + (isActive
@@ -3105,7 +3105,7 @@ var d = labToolData.universe || {};
                 React.createElement("div", { className: "space-y-1.5" },
                   EM_SPECTRUM.map(function(em, emi) {
                     var isActive = d.spectrumIdx === emi;
-                    return React.createElement("div", {
+                    return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                       key: emi,
                       onClick: function() { upd('spectrumIdx', isActive ? null : emi); playBeep(); },
                       className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive ? 'bg-slate-700 border-indigo-500' : 'bg-slate-800 border-slate-700 hover:border-slate-500')
@@ -3168,7 +3168,7 @@ var d = labToolData.universe || {};
                   React.createElement("div", { className: "space-y-1 max-h-52 overflow-y-auto" },
                     COSMIC_SCALES.map(function(cs2, csi) {
                       var isActive = (d.scaleIdx || 0) === csi;
-                      return React.createElement("div", { key: csi,
+                      return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: csi,
                         onClick: function() { upd('scaleIdx', csi); playBeep(); },
                         className: "relative pl-8 py-0.5 cursor-pointer rounded-r transition-all " + (isActive ? (isDark ? 'bg-slate-700' : 'bg-violet-50') : 'hover:bg-slate-50')
                       },
@@ -3200,7 +3200,7 @@ var d = labToolData.universe || {};
                 // Color bar
                 React.createElement("div", { className: "flex rounded-lg overflow-hidden mb-2 h-2" },
                   SPECTRAL_CLASSES.map(function(sc, sci) {
-                    return React.createElement("div", { key: sci, className: "flex-1 cursor-pointer hover:h-3 transition-all", style: { background: sc.color }, title: sc.class + ' (' + sc.colorName + ')',
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: sci, className: "flex-1 cursor-pointer hover:h-3 transition-all", style: { background: sc.color }, title: sc.class + ' (' + sc.colorName + ')',
                       onClick: function() { upd('spectralIdx', sci); playBeep(); }
                     });
                   })
@@ -3307,7 +3307,7 @@ var d = labToolData.universe || {};
                 React.createElement("div", { className: "space-y-2" },
                   FAMOUS_IMAGES.map(function(fi, fii) {
                     var isActive = d.imageIdx === fii;
-                    return React.createElement("div", { key: fii,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: fii,
                       onClick: function() { upd('imageIdx', isActive ? null : fii); playBeep(); },
                       className: "cursor-pointer rounded-lg p-2.5 border transition-all " + (isActive
                         ? (isDark ? 'bg-slate-700 border-sky-500' : 'bg-white border-sky-400 shadow-md')
@@ -3409,7 +3409,7 @@ var d = labToolData.universe || {};
                 React.createElement("div", { className: "space-y-1 max-h-72 overflow-y-auto" },
                   COSMO_GLOSSARY.map(function(gl, gli) {
                     var isActive = d.glossaryIdx === gli;
-                    return React.createElement("div", { key: gli,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: gli,
                       onClick: function() { upd('glossaryIdx', isActive ? null : gli); },
                       className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive
                         ? (isDark ? 'bg-slate-700 border-stone-500' : 'bg-white border-stone-300 shadow-sm')
@@ -3437,7 +3437,7 @@ var d = labToolData.universe || {};
             ),
 
             // === TUTORIAL OVERLAY ===
-            !d.tutorialDismissed && React.createElement("div", {
+            !d.tutorialDismissed && React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
               className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
               onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
             },

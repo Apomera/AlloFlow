@@ -5569,7 +5569,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       var isHighlighted = anatomyHighlight === i;
 
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                         key: i,
 
@@ -5979,7 +5979,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       var isActive = chemTooltip === p.key;
 
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                         key: p.key,
 
@@ -6803,7 +6803,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var isSick = fishSickness[fId] ? true : false;
 
-                    return React.createElement("div", {
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } }, 
 
                       key: idx,
 
@@ -7035,7 +7035,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       var sp = species.find(function (s) { return s.id === fId; });
 
-                      return React.createElement("span", {
+                      return React.createElement("span", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                         key: idx,
 
@@ -7875,7 +7875,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   var zoneSpecies = MARINE_SPECIES.filter(function (s) { return s.zone === zone.id; });
 
-                  return React.createElement("div", {
+                  return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                     key: zone.id,
 

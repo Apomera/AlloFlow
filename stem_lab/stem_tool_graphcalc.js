@@ -583,16 +583,16 @@
         /* ═══════════════════════════════════════════════════
            UI RENDER
            ═══════════════════════════════════════════════════ */
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
           // Header
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' } },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' } },
             h('button', { 'aria-label': 'Back', onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' } }, '\u2190 Back'),
-            h('div', { style: { fontWeight: 'bold', fontSize: '16px', color: '#c7d2fe' } }, '\uD83D\uDCC8 Graphing Calculator'),
-            h('span', { style: { fontSize: '10px', color: '#818cf8', maxWidth: '300px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, gradeIntros[band] || ''),
-            h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
-              h('span', { style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 'bold', fontSize: '16px', color: '#c7d2fe' } }, '\uD83D\uDCC8 Graphing Calculator'),
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', color: '#818cf8', maxWidth: '300px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, gradeIntros[band] || ''),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
               h('select', { value: tier, onChange: function(e) { SOUNDS.tierChange(); upd('tier', e.target.value); }, 'aria-label': 'Difficulty tier', style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' } },
                 h('option', { value: 'explorer' }, '\uD83D\uDFE2 Explorer'), h('option', { value: 'analyst' }, '\uD83D\uDFE1 Analyst'),
                 h('option', { value: 'engineer' }, '\uD83D\uDD35 Engineer'), h('option', { value: 'researcher' }, '\uD83D\uDFE3 Researcher')
@@ -612,8 +612,8 @@
                 funcs.map(function(fn, i) {
                   return h('div', { key: 'f' + i, style: { marginBottom: '8px' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' } },
-                      h('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: fn.color } }),
-                      h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'y' + (i + 1) + ' =')
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { width: '10px', height: '10px', borderRadius: '50%', background: fn.color } }),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', color: '#94a3b8' } }, 'y' + (i + 1) + ' =')
                     ),
                     h('input', { type: 'text', value: fn.expr || '', placeholder: i === 0 ? '2x + 3' : i === 1 ? 'x^2 - 4' : 'sin(x)',
                       onChange: function(e) { var nf = funcs.slice(); nf[i] = Object.assign({}, nf[i], { expr: e.target.value }); upd('funcs', nf); },
@@ -625,16 +625,16 @@
                 })
               ),
               // Math Pad toggle
-              h('div', { style: { padding: '4px 12px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '4px 12px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
                 h('button', { 'aria-label': 'Math Pad', onClick: function() { upd('showMathPad', !showMathPad); }, style: { width: '100%', padding: '4px', borderRadius: '6px', background: showMathPad ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showMathPad ? '#a5b4fc' : '#64748b', border: showMathPad ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2328 Math Pad'),
-                showMathPad ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', paddingBottom: '4px', paddingTop: '4px' } },
+                showMathPad ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: '3px', paddingBottom: '4px', paddingTop: '4px' } },
                   visibleSymbols.map(function(sym) {
                     return h('button', { 'aria-label': 'Table', key: sym.label, onClick: function() { insertSymbol(sym.insert); }, style: { padding: '3px 7px', borderRadius: '5px', background: 'rgba(99,102,241,0.12)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, sym.label);
                   })
                 ) : null
               ),
               // Tool buttons
-              h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                 h('button', { 'aria-label': 'Table', onClick: function() { upd('showTable', !showTable); if (!showTable) upd('_usedTable', true); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCA Table'),
                 h('button', { 'aria-label': 'Window', onClick: function() { upd('showWindow', !showWindow); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2699\uFE0F Window'),
                 h('button', { 'aria-label': 'Challenge', onClick: function() { SOUNDS.challengeOpen(); upd('showChallenge', !showChallenge); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Challenge'),
@@ -645,9 +645,9 @@
                 h('button', { 'aria-label': 'Sliders', onClick: function() { upd('showSliders', !showSliders); if (!showSliders) { upd('_usedSliders', true); if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showSliders ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showSliders ? '#a78bfa' : '#94a3b8', border: showSliders ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFA8 Sliders')
               ),
               // Zoom presets
-              h('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                   ZOOM_PRESETS.map(function(z) {
                     return h('button', { 'aria-label': 'SLIDERS Use a, b, c', key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', cursor: 'pointer' } }, z.name);
                   })
@@ -715,32 +715,32 @@
             ),
 
             // Right sidebar
-            h('div', { style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' } },
-              h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
                 [{ id: 'coach', label: '\uD83D\uDCA1 Coach' }, { id: 'challenge', label: '\uD83C\uDFAF Tasks' }, { id: 'ai', label: '\uD83E\uDD16 AI' }, { id: 'badges', label: '\uD83C\uDFC5' }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
                   return h('button', { 'aria-label': 'Read aloud', key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#64748b', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
                 })
               ),
               // Coach
-              (d._sideTab || 'coach') === 'coach' ? h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+              (d._sideTab || 'coach') === 'coach' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 currentTips.map(function(tip, i) {
-                  return h('div', { key: i, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' } },
-                    h('div', { style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: '#a5b4fc' } }, tip.icon + ' ' + tip.title),
-                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#cbd5e1' } }, tip.text),
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' } },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: '#a5b4fc' } }, tip.icon + ' ' + tip.title),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', lineHeight: '1.5', color: '#cbd5e1' } }, tip.text),
                     h('button', { 'aria-label': 'Read aloud', onClick: function() { speakText(tip.text, callTTS); }, style: { marginTop: '4px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer', fontWeight: 'bold' } }, '\uD83D\uDD0A Read aloud')
                   );
                 })
               ) : null,
               // Challenges
-              (d._sideTab || 'coach') === 'challenge' ? h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+              (d._sideTab || 'coach') === 'challenge' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 availableChallenges.map(function(ch, ci) {
                   var isActive = d.activeChallenge === ci;
-                  return h('div', { key: ci, onClick: function() { upd('activeChallenge', isActive ? -1 : ci); }, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' } },
-                    h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
-                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ci, onClick: function() { upd('activeChallenge', isActive ? -1 : ci); }, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' } },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
-                      h('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px' } }, '\uD83D\uDCA1 ' + ch.hint),
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px' } }, '\uD83D\uDCA1 ' + ch.hint),
                       h('button', { 'aria-label': 'Complete', onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP(5); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Complete')
                     ) : null
                   );

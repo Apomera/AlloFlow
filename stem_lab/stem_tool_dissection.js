@@ -6039,7 +6039,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "text-center" },
 
-                  React.createElement("div", {
+                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                     onClick: function () { upd('flashcardFlipped', !d.flashcardFlipped); },
 
@@ -6847,7 +6847,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3 mb-2" },
 
-                  React.createElement("div", {
+                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                     className: "text-[10px] font-bold text-emerald-700 mb-1 cursor-pointer",
 
@@ -6877,7 +6877,7 @@ var d = labToolData.dissection || {};
 
                       var isComplete = (d.completedObjectives || {})[oi];
 
-                      return React.createElement("div", {
+                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                         key: oi,
 
@@ -6911,7 +6911,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-3" },
 
-                  React.createElement("div", {
+                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
 
                     className: "text-[10px] font-bold text-violet-700 mb-1 cursor-pointer",
 

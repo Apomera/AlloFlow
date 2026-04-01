@@ -5495,7 +5495,7 @@ const d = labToolData.solarSystem;
               ),
 
               // === TUTORIAL OVERLAY (first visit) ===
-              !d.tutorialDismissed && React.createElement("div", {
+              !d.tutorialDismissed && React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                 className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
                 onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
               },

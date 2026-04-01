@@ -780,7 +780,7 @@ window.SelHub = window.SelHub || {
           return true;
         });
 
-        var tabBar = h('div', {
+        var tabBar = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
           role: 'tablist', 'aria-label': 'Community Building tabs',
           style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
         },
@@ -803,7 +803,7 @@ window.SelHub = window.SelHub || {
           h('button', { 'aria-label': 'Toggle panel', onClick: function() { upd({ soundEnabled: !soundEnabled }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           h('button', { 'aria-label': 'Toggle panel', onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b', position: 'relative' } },
             '\uD83C\uDFC5',
-            Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#fff', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+            Object.keys(earnedBadges).length > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#fff', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
           )
         );
 
@@ -812,18 +812,18 @@ window.SelHub = window.SelHub || {
         if (showBadgePopup) {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
           if (popBadge) {
-            badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd({ showBadgePopup: null }); } },
-              h('div', { style: { background: '#1e293b', border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
-                h('div', { style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
-                h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
-                h('div', { style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
+            badgePopup = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd({ showBadgePopup: null }); } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: '#1e293b', border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
               )
             );
           }
         }
         if (showBadgesPanel) {
-          badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function() { upd({ showBadgesPanel: false }); } },
-            h('div', { onClick: function(e) { e.stopPropagation(); }, style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
+          badgePopup = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function() { upd({ showBadgesPanel: false }); } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, onClick: function(e) { e.stopPropagation(); }, style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
               h('h3', { style: { textAlign: 'center', color: '#f1f5f9', marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                 BADGES.map(function(b) {
@@ -859,11 +859,11 @@ window.SelHub = window.SelHub || {
               band === 'middle' ? 'Explore how culture shapes identity, relationships, and society.' :
               'Examine the systems, structures, and intersections that shape cultural experience.'
             ),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               items.map(function(item) {
                 var isExpanded = expandedItem === item.id;
                 var isExplored = !!exploredItems[item.id];
-                return h('div', { key: item.id, style: { borderRadius: 14, background: isExpanded ? '#1e293b' : '#0f172a', border: '1px solid ' + (isExplored ? ACCENT_MED : '#334155'), overflow: 'hidden', transition: 'all 0.2s' } },
+                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: item.id, style: { borderRadius: 14, background: isExpanded ? '#1e293b' : '#0f172a', border: '1px solid ' + (isExplored ? ACCENT_MED : '#334155'), overflow: 'hidden', transition: 'all 0.2s' } },
                   h('button', { 'aria-label': 'Explore topic',
                     onClick: function() {
                       if (soundEnabled) sfxClick();
@@ -880,17 +880,17 @@ window.SelHub = window.SelHub || {
                     },
                     style: { width: '100%', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }
                   },
-                    h('span', { style: { fontSize: 26 } }, item.emoji),
-                    h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontSize: 14, fontWeight: 600, color: '#f1f5f9' } }, item.name),
-                      !isExpanded && h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, item.desc.slice(0, 60) + '...')
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 26 } }, item.emoji),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 600, color: '#f1f5f9' } }, item.name),
+                      !isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, item.desc.slice(0, 60) + '...')
                     ),
-                    isExplored && h('span', { style: { fontSize: 12, color: ACCENT } }, '\u2713'),
-                    h('span', { style: { fontSize: 12, color: '#64748b', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' } }, '\u25BC')
+                    isExplored && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: ACCENT } }, '\u2713'),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#64748b', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' } }, '\u25BC')
                   ),
-                  isExpanded && h('div', { style: { padding: '0 16px 16px 16px' } },
+                  isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '0 16px 16px 16px' } },
                     h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12 } }, item.desc),
-                    h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                       h('button', { 'aria-label': 'I didn’t know that!',
                         onClick: function() {
                           var newCount = learnCount + 1;
@@ -1015,17 +1015,17 @@ window.SelHub = window.SelHub || {
                 band === 'middle' ? 'Move from awareness to action. Complete these allyship challenges and reflect on what you learn.' :
                 'Practice tangible allyship. Each action pushes you beyond comfort into genuine solidarity.'
               ),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 (ALLYSHIP_ACTIONS[band] || ALLYSHIP_ACTIONS.elementary).map(function(card) {
                   var isDone = !!allyActions[card.id];
-                  return h('div', { key: card.id, style: { padding: 14, borderRadius: 12, background: isDone ? '#1e293b' : '#0f172a', border: '1px solid ' + (isDone ? '#22c55e44' : '#334155'), transition: 'all 0.2s' } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
-                      h('span', { style: { fontSize: 22 } }, card.icon),
-                      h('div', { style: { flex: 1 } },
-                        h('div', { style: { fontSize: 13, fontWeight: 600, color: isDone ? '#22c55e' : '#f1f5f9' } }, card.action),
-                        h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, card.detail)
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: card.id, style: { padding: 14, borderRadius: 12, background: isDone ? '#1e293b' : '#0f172a', border: '1px solid ' + (isDone ? '#22c55e44' : '#334155'), transition: 'all 0.2s' } },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 22 } }, card.icon),
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: isDone ? '#22c55e' : '#f1f5f9' } }, card.action),
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, card.detail)
                       ),
-                      isDone && h('span', { style: { fontSize: 16, color: '#22c55e' } }, '\u2713')
+                      isDone && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16, color: '#22c55e' } }, '\u2713')
                     ),
                     !isDone && h('button', { 'aria-label': 'Mark action complete',
                       onClick: function() {
@@ -1059,24 +1059,24 @@ window.SelHub = window.SelHub || {
           var scenarios = SCENARIOS[band] || SCENARIOS.elementary;
           var scenario = scenarios[scIdx % scenarios.length];
 
-          scenariosContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+          scenariosContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFAD Cultural Scenarios'),
             h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20 } },
               'Scenario ' + ((scIdx % scenarios.length) + 1) + ' of ' + scenarios.length
             ),
             // Scenario card
-            h('div', { style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
               h('h4', { style: { fontSize: 16, fontWeight: 700, color: ACCENT, marginBottom: 10 } }, scenario.title),
               h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 16 } }, scenario.setup),
               callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(scenario.setup); }, style: { marginBottom: 12, background: 'none', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null,
               // Choices
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 scenario.branches.map(function(branch, bi) {
                   var isChosen = scChoice === bi;
                   var isRevealed = scChoice != null;
                   var starStr = '';
                   for (var si = 0; si < 3; si++) { starStr += si < branch.rating ? '\u2B50' : '\u2606'; }
-                  return h('div', { key: bi },
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: bi },
                     h('button', { 'aria-label': branch.label,
                       onClick: function() {
                         if (scChoice != null) return;
@@ -1100,8 +1100,8 @@ window.SelHub = window.SelHub || {
                         opacity: isRevealed && !isChosen ? 0.5 : 1
                       }
                     }, branch.label),
-                    isChosen && h('div', { style: { padding: '10px 14px', marginTop: 4, borderRadius: 8, background: '#0f172a', border: '1px solid #334155' } },
-                      h('div', { style: { fontSize: 12, marginBottom: 4 } }, starStr),
+                    isChosen && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px 14px', marginTop: 4, borderRadius: 8, background: '#0f172a', border: '1px solid #334155' } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, marginBottom: 4 } }, starStr),
                       h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, branch.feedback)
                     )
                   );
@@ -1109,7 +1109,7 @@ window.SelHub = window.SelHub || {
               )
             ),
             // Navigation
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
               h('button', { 'aria-label': 'Previous',
                 onClick: function() {
                   var newIdx = scIdx > 0 ? scIdx - 1 : scenarios.length - 1;
@@ -1118,7 +1118,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
               }, '\u2190 Previous'),
-              h('span', { style: { fontSize: 12, color: '#64748b' } }, scCompleted + ' completed'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#64748b' } }, scCompleted + ' completed'),
               h('button', { 'aria-label': 'Next',
                 onClick: function() {
                   var newIdx = (scIdx + 1) % scenarios.length;
@@ -1150,14 +1150,14 @@ window.SelHub = window.SelHub || {
               'Challenge your understanding of culture, power, and identity.'
             ),
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16, fontSize: 12 } },
-              h('span', { style: { color: ACCENT, fontWeight: 600 } }, 'Score: ' + quizScore + '/' + quizItems.length),
-              h('span', { style: { color: '#f59e0b', fontWeight: 600 } }, '\u2B50 Best: ' + quizBest + '/' + quizItems.length)
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: ACCENT, fontWeight: 600 } }, 'Score: ' + quizScore + '/' + quizItems.length),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#f59e0b', fontWeight: 600 } }, '\u2B50 Best: ' + quizBest + '/' + quizItems.length)
             ),
             !quizFinished ? h('div', null,
-              h('div', { style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
-                h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Question ' + ((quizIdx % quizItems.length) + 1) + ' of ' + quizItems.length),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Question ' + ((quizIdx % quizItems.length) + 1) + ' of ' + quizItems.length),
                 h('p', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, lineHeight: 1.5, marginBottom: 16 } }, currentQ.q),
-                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                   currentQ.options.map(function(opt) {
                     var isCorrect = opt === currentQ.a;
                     var wasChosen = quizAnswered[qKey] === opt;
@@ -1200,7 +1200,7 @@ window.SelHub = window.SelHub || {
                   })
                 )
               ),
-              isQAnswered && h('div', { style: { display: 'flex', justifyContent: 'center' } },
+              isQAnswered && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'center' } },
                 h('button', { 'aria-label': 'Next',
                   onClick: function() {
                     var nextIdx = quizIdx + 1;
@@ -1210,12 +1210,12 @@ window.SelHub = window.SelHub || {
                   style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, (quizIdx % quizItems.length) + 1 >= quizItems.length ? 'See Results' : 'Next Question \u2192')
               )
-            ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: '#1e293b', border: '1px solid ' + ACCENT_MED } },
-              h('div', { style: { fontSize: 48, marginBottom: 12 } }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\uD83C\uDF1F' : '\uD83D\uDCA1'),
-              h('div', { style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, 'Quiz Complete!'),
-              h('div', { style: { fontSize: 16, color: ACCENT, fontWeight: 600, marginBottom: 4 } }, 'Score: ' + quizScore + ' / ' + quizItems.length),
-              h('div', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } }, quizScore >= 8 ? 'Outstanding cultural knowledge!' : quizScore >= 5 ? 'Great job! Keep exploring to learn more.' : 'Keep learning! Every question you missed is a chance to grow.'),
-              h('div', { style: { fontSize: 12, color: '#f59e0b', marginBottom: 16 } }, '\u2B50 Personal Best: ' + quizBest + '/' + quizItems.length),
+            ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 30, borderRadius: 16, background: '#1e293b', border: '1px solid ' + ACCENT_MED } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\uD83C\uDF1F' : '\uD83D\uDCA1'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, 'Quiz Complete!'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16, color: ACCENT, fontWeight: 600, marginBottom: 4 } }, 'Score: ' + quizScore + ' / ' + quizItems.length),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } }, quizScore >= 8 ? 'Outstanding cultural knowledge!' : quizScore >= 5 ? 'Great job! Keep exploring to learn more.' : 'Keep learning! Every question you missed is a chance to grow.'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#f59e0b', marginBottom: 16 } }, '\u2B50 Personal Best: ' + quizBest + '/' + quizItems.length),
               h('button', { 'aria-label': 'Try Again',
                 onClick: function() {
                   upd({ quizIdx: 0, quizScore: 0, quizAnswered: {}, quizFinished: false });
@@ -1257,17 +1257,17 @@ window.SelHub = window.SelHub || {
                 )
               ),
               // Visual position bar
-              h('div', { style: { position: 'relative', height: 8, borderRadius: 4, background: '#334155', marginBottom: 20, overflow: 'visible' } },
-                h('div', { style: {
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'relative', height: 8, borderRadius: 4, background: '#334155', marginBottom: 20, overflow: 'visible' } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: {
                   position: 'absolute', top: -4, width: 16, height: 16, borderRadius: '50%', background: ACCENT, border: '2px solid #fff',
                   left: 'calc(50% + ' + (pwPosition * 3) + '% - 8px)', transition: 'left 0.4s ease'
                 } })
               ),
               // Statement card
-              h('div', { style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
-                h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Statement ' + (pwIdx + 1) + ' of ' + totalPW),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Statement ' + (pwIdx + 1) + ' of ' + totalPW),
                 h('p', { style: { fontSize: 15, color: '#f1f5f9', fontWeight: 600, lineHeight: 1.6, marginBottom: 16, textAlign: 'center', minHeight: 50 } }, currentPW ? currentPW.text : ''),
-                !pwAnswers[currentPW ? currentPW.id : ''] ? h('div', { style: { display: 'flex', gap: 12, justifyContent: 'center' } },
+                !pwAnswers[currentPW ? currentPW.id : ''] ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 12, justifyContent: 'center' } },
                   h('button', { 'aria-label': 'Answer statement',
                     onClick: function() {
                       if (!currentPW) return;
@@ -1302,21 +1302,21 @@ window.SelHub = window.SelHub || {
                     },
                     style: { padding: '10px 24px', borderRadius: 10, border: '1px solid #f59e0b44', background: '#f59e0b11', color: '#f59e0b', fontSize: 13, fontWeight: 600, cursor: 'pointer', minWidth: 140 }
                   }, '\u2193 Step Back')
-                ) : h('div', { style: { textAlign: 'center', fontSize: 12, color: pwAnswers[currentPW ? currentPW.id : ''] === 'forward' ? '#22c55e' : '#f59e0b', fontWeight: 600 } },
+                ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', fontSize: 12, color: pwAnswers[currentPW ? currentPW.id : ''] === 'forward' ? '#22c55e' : '#f59e0b', fontWeight: 600 } },
                   pwAnswers[currentPW ? currentPW.id : ''] === 'forward' ? '\u2191 Stepped Forward' : '\u2193 Stepped Back'
                 ),
-                h('div', { style: { textAlign: 'center', marginTop: 10, fontSize: 10, color: '#64748b', fontStyle: 'italic' } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', marginTop: 10, fontSize: 10, color: '#64748b', fontStyle: 'italic' } },
                   'Category: ' + (currentPW ? currentPW.category : '')
                 )
               ),
               // Navigation
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                 h('button', { 'aria-label': 'Previous',
                   onClick: function() { if (pwIdx > 0) { upd({ pwIdx: pwIdx - 1 }); if (soundEnabled) sfxClick(); } },
                   disabled: pwIdx === 0,
                   style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: pwIdx === 0 ? '#334155' : '#94a3b8', fontSize: 12, cursor: pwIdx === 0 ? 'default' : 'pointer' }
                 }, '\u2190 Previous'),
-                h('span', { style: { fontSize: 12, color: '#64748b' } }, answeredPWCount + '/' + totalPW + ' answered'),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#64748b' } }, answeredPWCount + '/' + totalPW + ' answered'),
                 h('button', { 'aria-label': 'Next',
                   onClick: function() { if (pwIdx < totalPW - 1) { upd({ pwIdx: pwIdx + 1 }); if (soundEnabled) sfxClick(); } },
                   disabled: pwIdx >= totalPW - 1,
@@ -1338,7 +1338,7 @@ window.SelHub = window.SelHub || {
                 h('h4', { style: { fontSize: 14, color: ACCENT, marginBottom: 12 } }, 'What did you notice?'),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
                   PRIVILEGE_REFLECTIONS.map(function(q, qi) {
-                    return h('div', { key: qi, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
+                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: qi, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
                       '\u2022 ' + q
                     );
                   })
@@ -1365,7 +1365,7 @@ window.SelHub = window.SelHub || {
                 }, pwReflectionSaved ? '\u2713 Reflection Saved' : 'Save Reflection')
               ),
               // Reset button
-              h('div', { style: { textAlign: 'center' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center' } },
                 h('button', { 'aria-label': 'Walk Again',
                   onClick: function() {
                     upd({ pwIdx: 0, pwAnswers: {}, pwPosition: 0, pwFinished: false, pwReflection: '', pwReflectionSaved: false });
@@ -1417,7 +1417,7 @@ window.SelHub = window.SelHub || {
                 ),
                 // Bystander response practice
                 h('div', { style: { marginBottom: 16 } },
-                  h('div', { style: { fontSize: 12, fontWeight: 700, color: ACCENT, marginBottom: 6 } }, '\uD83D\uDDE3\uFE0F Bystander response \u2014 what could you say if you witnessed this?'),
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 700, color: ACCENT, marginBottom: 6 } }, '\uD83D\uDDE3\uFE0F Bystander response \u2014 what could you say if you witnessed this?'),
                   !maBystanderDone[currentMA.id] ? h('div', null,
                     h('textarea', {
                       value: maResponses[currentMA.id] || '',
@@ -1442,12 +1442,12 @@ window.SelHub = window.SelHub || {
                       style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
                     }, 'Submit My Response')
                   ) : h('div', null,
-                    h('div', { style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 12, color: '#cbd5e1', marginBottom: 8, lineHeight: 1.5 } },
-                      h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, 'Your response:'),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 12, color: '#cbd5e1', marginBottom: 8, lineHeight: 1.5 } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, 'Your response:'),
                       maResponses[currentMA.id] || ''
                     ),
-                    h('div', { style: { padding: '8px 12px', borderRadius: 8, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, fontSize: 12, color: ACCENT, lineHeight: 1.5 } },
-                      h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, 'Example bystander response:'),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '8px 12px', borderRadius: 8, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, fontSize: 12, color: ACCENT, lineHeight: 1.5 } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, 'Example bystander response:'),
                       currentMA.bystanderResponse
                     )
                   )
@@ -1466,17 +1466,17 @@ window.SelHub = window.SelHub || {
                   },
                   style: { width: '100%', padding: '10px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, '\uD83D\uDCA1 I understand this \u2014 mark as reviewed'),
-                maReviewed[currentMA.id] && h('div', { style: { textAlign: 'center', fontSize: 12, color: '#22c55e', fontWeight: 600, padding: '8px 0' } }, '\u2713 Reviewed')
+                maReviewed[currentMA.id] && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', fontSize: 12, color: '#22c55e', fontWeight: 600, padding: '8px 0' } }, '\u2713 Reviewed')
               )
             ),
             // Navigation
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
               h('button', { 'aria-label': 'Previous',
                 onClick: function() { if (maIdx > 0) { upd({ maIdx: maIdx - 1 }); if (soundEnabled) sfxClick(); } },
                 disabled: maIdx === 0,
                 style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: maIdx === 0 ? '#334155' : '#94a3b8', fontSize: 12, cursor: maIdx === 0 ? 'default' : 'pointer' }
               }, '\u2190 Previous'),
-              h('span', { style: { fontSize: 12, color: '#64748b' } }, maReviewedCount + '/' + MICROAGGRESSIONS.length + ' reviewed'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#64748b' } }, maReviewedCount + '/' + MICROAGGRESSIONS.length + ' reviewed'),
               h('button', { 'aria-label': 'Next',
                 onClick: function() { if (maIdx < MICROAGGRESSIONS.length - 1) { upd({ maIdx: maIdx + 1 }); if (soundEnabled) sfxClick(); } },
                 disabled: maIdx >= MICROAGGRESSIONS.length - 1,
@@ -1549,16 +1549,16 @@ window.SelHub = window.SelHub || {
                 HERITAGE_SECTIONS.map(function(sec) {
                   var val = heritageData[sec.id] || '';
                   var filled = val.trim().length > 0;
-                  return h('div', { key: sec.id, style: { padding: 12, borderRadius: 10, background: filled ? '#0f172a' : '#0f172a55', border: '1px solid ' + (filled ? ACCENT_MED : '#33415555'), textAlign: 'center', opacity: filled ? 1 : 0.4 } },
-                    h('div', { style: { fontSize: 24 } }, sec.icon),
-                    h('div', { style: { fontSize: 10, fontWeight: 600, color: filled ? '#f1f5f9' : '#64748b', marginTop: 4 } }, sec.label),
-                    filled && h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, lineHeight: 1.4, maxHeight: 42, overflow: 'hidden', textOverflow: 'ellipsis' } }, val.slice(0, 80) + (val.length > 80 ? '...' : ''))
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: sec.id, style: { padding: 12, borderRadius: 10, background: filled ? '#0f172a' : '#0f172a55', border: '1px solid ' + (filled ? ACCENT_MED : '#33415555'), textAlign: 'center', opacity: filled ? 1 : 0.4 } },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 24 } }, sec.icon),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, fontWeight: 600, color: filled ? '#f1f5f9' : '#64748b', marginTop: 4 } }, sec.label),
+                    filled && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', marginTop: 4, lineHeight: 1.4, maxHeight: 42, overflow: 'hidden', textOverflow: 'ellipsis' } }, val.slice(0, 80) + (val.length > 80 ? '...' : ''))
                   );
                 })
               )
             ),
             // Export button
-            hFilled >= 2 && h('div', { style: { textAlign: 'center' } },
+            hFilled >= 2 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'Export button',
                 onClick: function() {
                   var lines = ['=== MY CULTURAL HERITAGE PROJECT ===', ''];
@@ -1605,20 +1605,20 @@ window.SelHub = window.SelHub || {
           var tipsReadCount = 0;
           tipItems.forEach(function(t) { if (icRead[t.id]) tipsReadCount++; });
 
-          commtipsContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+          commtipsContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDF10 Intercultural Communication'),
             h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20, lineHeight: 1.5 } },
               band === 'elementary' ? 'Tips for being a great communicator with people from all backgrounds!' :
               band === 'middle' ? 'Build skills for respectful, thoughtful communication across cultural differences.' :
               'Develop advanced intercultural communication skills grounded in humility and critical self-awareness.'
             ),
-            h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: '#64748b' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: '#64748b' } },
               tipsReadCount + ' of ' + tipItems.length + ' tips explored'
             ),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 12 } },
               tipItems.map(function(tip) {
                 var isRead = !!icRead[tip.id];
-                return h('div', { key: tip.id,
+                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: tip.id,
                   onClick: function() {
                     if (!isRead) {
                       var newRead = Object.assign({}, icRead);
@@ -1668,14 +1668,14 @@ window.SelHub = window.SelHub || {
               'Quick-fire questions! Answer fast and earn XP.'
             ),
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16, fontSize: 12 } },
-              h('span', { style: { color: '#ec4899', fontWeight: 600 } }, '\u2694\uFE0F Score: ' + battleScore + '/' + battleItems.length),
-              h('span', { style: { color: '#f59e0b', fontWeight: 600 } }, '\u2B50 Best: ' + battleBest + '/' + battleItems.length)
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#ec4899', fontWeight: 600 } }, '\u2694\uFE0F Score: ' + battleScore + '/' + battleItems.length),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#f59e0b', fontWeight: 600 } }, '\u2B50 Best: ' + battleBest + '/' + battleItems.length)
             ),
             !battleFinished ? h('div', null,
-              h('div', { style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #ec489944', marginBottom: 16 } },
-                h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Question ' + ((battleIdx % battleItems.length) + 1) + ' of ' + battleItems.length),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #ec489944', marginBottom: 16 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Question ' + ((battleIdx % battleItems.length) + 1) + ' of ' + battleItems.length),
                 h('p', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, lineHeight: 1.5, marginBottom: 16 } }, currentB.q),
-                h('div', { style: { display: 'flex', flexDirection: currentB.options.length <= 2 ? 'row' : 'column', gap: 8 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: currentB.options.length <= 2 ? 'row' : 'column', gap: 8 } },
                   currentB.options.map(function(opt) {
                     var isCorrect = opt === currentB.a;
                     var wasChosen = battleAnswered[bKey] === opt;
@@ -1717,7 +1717,7 @@ window.SelHub = window.SelHub || {
                   })
                 )
               ),
-              isBAnswered && h('div', { style: { display: 'flex', justifyContent: 'center' } },
+              isBAnswered && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'center' } },
                 h('button', { 'aria-label': 'Next',
                   onClick: function() {
                     var nextBIdx = battleIdx + 1;
@@ -1727,12 +1727,12 @@ window.SelHub = window.SelHub || {
                   style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: '#ec4899', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, (battleIdx % battleItems.length) + 1 >= battleItems.length ? 'See Results' : 'Next \u2192')
               )
-            ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: '#1e293b', border: '1px solid #ec489944' } },
-              h('div', { style: { fontSize: 48, marginBottom: 12 } }, battleScore >= 4 ? '\u2694\uFE0F' : '\uD83D\uDCA1'),
-              h('div', { style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, 'Battle Complete!'),
-              h('div', { style: { fontSize: 16, color: '#ec4899', fontWeight: 600, marginBottom: 4 } }, 'Score: ' + battleScore + ' / ' + battleItems.length),
-              h('div', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } }, battleScore >= 4 ? 'Battle Victor! Impressive quick thinking!' : 'Keep training! Try again to improve your score.'),
-              h('div', { style: { fontSize: 12, color: '#f59e0b', marginBottom: 16 } }, '\u2B50 Personal Best: ' + battleBest + '/' + battleItems.length),
+            ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 30, borderRadius: 16, background: '#1e293b', border: '1px solid #ec489944' } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, battleScore >= 4 ? '\u2694\uFE0F' : '\uD83D\uDCA1'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, 'Battle Complete!'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16, color: '#ec4899', fontWeight: 600, marginBottom: 4 } }, 'Score: ' + battleScore + ' / ' + battleItems.length),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } }, battleScore >= 4 ? 'Battle Victor! Impressive quick thinking!' : 'Keep training! Try again to improve your score.'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#f59e0b', marginBottom: 16 } }, '\u2B50 Personal Best: ' + battleBest + '/' + battleItems.length),
               h('button', { 'aria-label': 'Battle Again',
                 onClick: function() {
                   upd({ battleIdx: 0, battleScore: 0, battleAnswered: {}, battleFinished: false });
@@ -1795,7 +1795,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             // AI Cultural Coach
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 20 } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 20 } },
               h('h4', { style: { fontSize: 14, color: ACCENT, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', null, '\u2728'),
                 'AI Cultural Coach'
@@ -1860,7 +1860,7 @@ window.SelHub = window.SelHub || {
                   style: { padding: '10px 16px', borderRadius: 8, background: ACCENT, color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' }
                 }, aiLoading ? '\u23F3' : '\u2191')
               ),
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
                 (band === 'elementary' ? ['What is Diwali?', 'Why do people speak different languages?', 'How can I be a good friend to everyone?', 'Why is my name important?'] :
                  band === 'middle' ? ['What is a microaggression?', 'How do I be a better ally?', 'What is code-switching?', 'How do stereotypes form?'] :
                  ['What is intersectionality?', 'How does systemic bias work?', 'What is cultural humility?', 'How can I take action for equity?']).map(function(q) {

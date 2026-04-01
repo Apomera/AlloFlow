@@ -770,12 +770,12 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200 space-y-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1', tabIndex: 0, onKeyDown: handleKey },
 
         // ── Header ──
-        h('div', { className: 'flex items-center gap-3 flex-wrap' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 flex-wrap' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
           h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDCCA Data Plotter'),
-          h('span', { className: 'text-xs text-slate-500' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
-          n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
-          h('div', { className: 'ml-auto flex gap-1.5' },
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-500' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
+          n >= 2 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex gap-1.5' },
             h('button', { 'aria-label': 'Select option', onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { 'aria-label': 'Select option', onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\u2328\uFE0F'),
             h('button', { 'aria-label': 'Select option', onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
@@ -807,11 +807,11 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
             badgeDefs.map(function(badge) {
               var earned = !!earnedBadges[badge.id];
-              return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-200 opacity-40') },
-                h('span', { className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
+              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-200 opacity-40') },
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
-                  h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
-                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
                 )
               );
             })
@@ -819,8 +819,8 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Step-through banner ──
-        stepMode && h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200 flex items-center gap-3' },
-          h('span', { className: 'text-xs font-bold text-violet-700' }, '\uD83D\uDC63 Step-Through Mode: ' + stepIdx + '/' + points.length),
+        stepMode && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-violet-50 rounded-xl p-3 border border-violet-200 flex items-center gap-3' },
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-violet-700' }, '\uD83D\uDC63 Step-Through Mode: ' + stepIdx + '/' + points.length),
           h('button', { 'aria-label': 'Stop', onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs hover:bg-violet-700' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next Point'),
           h('button', { 'aria-label': 'Stop', onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-200' }, '\u2716 Stop'),
           n >= 2 && h('span', { className: 'text-[10px] text-violet-500 ml-auto' }, 'R\u00B2=' + regR2.toFixed(3) + ' | Mean=' + meanY.toFixed(1)),
@@ -838,10 +838,10 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Chart ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'chart' && h('div', { className: 'space-y-2' },
+        activeTab === 'chart' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
 
           // Chart type selector (7 types now)
-          h('div', { className: 'flex gap-1.5 flex-wrap' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 flex-wrap' },
             [
               { id: 'scatter', icon: '\u2022', label: 'Scatter' },
               { id: 'line', icon: '\uD83D\uDCC8', label: 'Line' },
@@ -861,15 +861,15 @@ window.StemLab = window.StemLab || {
           ),
 
           // Datasets
-          h('div', { className: 'flex gap-1.5 flex-wrap' },
-            h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Datasets:'),
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 flex-wrap' },
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Datasets:'),
             datasetLibrary.map(function(ds) {
               return h('button', { 'aria-label': 'Load Dataset', key: ds.label, onClick: function() { loadDataset(ds); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-all' }, ds.label);
             })
           ),
 
           // Axis labels
-          h('div', { className: 'flex gap-2' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
             h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value); }, placeholder: 'X-axis label', 'aria-label': 'X-axis label', className: 'flex-1 px-2 py-1 text-xs border border-teal-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' }),
             h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value); }, placeholder: 'Y-axis label', 'aria-label': 'Y-axis label', className: 'flex-1 px-2 py-1 text-xs border border-teal-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' })
           ),
@@ -1080,7 +1080,7 @@ window.StemLab = window.StemLab || {
           })(),
 
           // ── Controls row ──
-          h('div', { className: 'flex gap-2 flex-wrap items-center' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap items-center' },
             h('button', { 'aria-label': 'Undo', onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\u21A9 Undo'),
             h('button', { 'aria-label': 'Clear', onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\uD83D\uDDD1\uFE0F Clear'),
             h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-violet-600 cursor-pointer' },
@@ -1099,7 +1099,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: showNormalOverlay, onChange: function() { upd('showNormalOverlay', !showNormalOverlay); }, className: 'accent-purple-500' }), 'Normal Curve'),
             h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-slate-500 cursor-pointer' },
               h('input', { type: 'checkbox', checked: tableMode, onChange: function() { upd('tableMode', !tableMode); }, className: 'accent-teal-600' }), 'Table'),
-            h('div', { className: 'ml-auto flex gap-1.5' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex gap-1.5' },
               h('button', { 'aria-label': 'CSV', onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCE5 CSV'),
               h('button', { 'aria-label': 'SVG', onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCD0 SVG'),
               h('button', { 'aria-label': 'Save', onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCBE Save')
@@ -1107,32 +1107,32 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Table input ──
-          tableMode && h('div', { className: 'bg-slate-50 rounded-lg p-3' },
-            h('div', { className: 'flex gap-2 items-end mb-2' },
+          tableMode && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-lg p-3' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-end mb-2' },
               h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-500 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
               h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-500 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
               h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
             ),
-            n > 0 && h('div', { className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-500' },
-              visiblePoints.map(function(p, i) { return h('span', { key: i, className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); } }, '(' + p.x + ',' + p.y + ')'); })
+            n > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-500' },
+              visiblePoints.map(function(p, i) { return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); } }, '(' + p.x + ',' + p.y + ')'); })
             )
           ),
 
           // ── Regression info (with Spearman + Pearson) ──
-          n >= 2 && h('div', { className: 'bg-white rounded-lg border p-2' },
-            h('div', { className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
-              h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Regression:'),
+          n >= 2 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-lg border p-2' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500' }, 'Regression:'),
               ['linear', 'quadratic', 'exponential', 'logarithmic'].map(function(rt) {
                 return h('button', { 'aria-label': 'Pearson r / Spearman \u03C1', key: rt, onClick: function() { upd('regressionType', rt); },
                   className: 'px-2 py-0.5 rounded text-[10px] font-bold transition-all ' + (regressionType === rt ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                 }, rt.charAt(0).toUpperCase() + rt.slice(1));
               })
             ),
-            h('div', { className: 'flex items-center gap-3 flex-wrap' },
-              h('span', { className: 'text-xs font-mono text-slate-700' }, regEq),
-              h('span', { className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
-              h('span', { className: 'text-[10px] text-slate-500' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
-              n >= 3 && h('span', { className: 'text-[10px] font-bold text-indigo-500', title: 'Pearson r / Spearman \u03C1', onClick: function() { checkBadges({ spearmanViewed: true }); } }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 flex-wrap' },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-mono text-slate-700' }, regEq),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
+              n >= 3 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-indigo-500', title: 'Pearson r / Spearman \u03C1', onClick: function() { checkBadges({ spearmanViewed: true }); } }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
             ),
             // Correlation strength bar
             h('div', { className: 'flex items-center gap-2 mt-1.5' },
@@ -1146,15 +1146,15 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Gallery ──
-          showGallery && h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200' },
-            h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDCBE Saved Charts'),
+          showGallery && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl p-3 border border-slate-200' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDCBE Saved Charts'),
             galleryItems.length === 0
-              ? h('div', { className: 'text-xs text-slate-500 text-center py-2' }, 'No saved charts yet')
-              : h('div', { className: 'space-y-1.5' }, galleryItems.map(function(item) {
-                  return h('div', { key: item.id, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200' },
-                    h('span', { className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
-                    h('span', { className: 'text-[10px] text-slate-500' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
-                    h('span', { className: 'text-[10px] text-slate-500 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
+              ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-500 text-center py-2' }, 'No saved charts yet')
+              : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1.5' }, galleryItems.map(function(item) {
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: item.id, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200' },
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
                     h('button', { 'aria-label': 'Load', onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, 'Load'),
                     h('button', { 'aria-label': 'Remove item', onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[10px] font-bold text-red-400 hover:text-red-600' }, '\u2715')
                   );
@@ -1191,7 +1191,7 @@ window.StemLab = window.StemLab || {
                   { label: 'Pearson r', value: pearsonR.toFixed(4), icon: '\uD83D\uDD17' },
                   { label: 'Spearman \u03C1', value: spearmanR.toFixed(4), icon: '\uD83C\uDFC5' }
                 ].map(function(stat) {
-                  return h('div', { key: stat.label, className: 'p-2 bg-white rounded-lg border border-teal-100 text-center', onClick: stat.label === 'Spearman \u03C1' ? function() { checkBadges({ spearmanViewed: true }); } : undefined },
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: stat.label, className: 'p-2 bg-white rounded-lg border border-teal-100 text-center', onClick: stat.label === 'Spearman \u03C1' ? function() { checkBadges({ spearmanViewed: true }); } : undefined },
                     h('div', { className: 'text-[11px] font-bold text-teal-600 uppercase' }, stat.icon + ' ' + stat.label),
                     h('div', { className: 'text-sm font-bold text-teal-900' }, stat.value)
                   );
@@ -1275,14 +1275,14 @@ window.StemLab = window.StemLab || {
                         h('div', { style: { position: 'absolute', left: '15.8%', width: '34.2%', height: '100%', backgroundColor: '#dcfce7' } }),
                         h('div', { style: { position: 'absolute', left: '50%', width: '34.2%', height: '100%', backgroundColor: '#dcfce7' } }),
                         h('div', { style: { position: 'absolute', left: '84.2%', width: '13.5%', height: '100%', backgroundColor: '#fee2e2' } }),
-                        h('div', { style: { position: 'absolute', left: '50%', top: 0, width: '2px', height: '100%', backgroundColor: '#64748b' } }),
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'absolute', left: '50%', top: 0, width: '2px', height: '100%', backgroundColor: '#64748b' } }),
                         zScoreInput !== '' && !isNaN(parseFloat(zScoreInput)) && (function() {
                           var zv2 = (parseFloat(zScoreInput) - meanY) / stdDev;
                           var pct2 = Math.max(0, Math.min(100, (zv2 + 3) / 6 * 100));
-                          return h('div', { style: { position: 'absolute', left: pct2 + '%', top: 0, width: '3px', height: '100%', backgroundColor: '#0d9488', borderRadius: '2px' } });
+                          return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'absolute', left: pct2 + '%', top: 0, width: '3px', height: '100%', backgroundColor: '#0d9488', borderRadius: '2px' } });
                         })()
                       ),
-                      h('span', { className: 'text-[11px] text-slate-500' }, '+3\u03C3')
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, '+3\u03C3')
                     )
                   )
               ),
@@ -1312,10 +1312,10 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Quiz (4 types) ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'quiz' && h('div', { className: 'space-y-3' },
+        activeTab === 'quiz' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
           // Quiz type selector
-          h('div', { className: 'flex gap-2 flex-wrap items-center' },
-            h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Type:'),
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap items-center' },
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500' }, 'Type:'),
             [
               { id: 'correlation', icon: '\uD83D\uDCC8', label: 'Correlation' },
               { id: 'guessR2', icon: '\uD83C\uDFAF', label: 'Guess R\u00B2' },
@@ -1328,8 +1328,8 @@ window.StemLab = window.StemLab || {
                 className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50') + (used ? '' : '')
               }, qt.icon + ' ' + qt.label + (used ? ' \u2713' : ''));
             }),
-            dpScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-600 ml-auto' }, '\u2B50 ' + dpScore),
-            dpStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + dpStreak)
+            dpScore > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600 ml-auto' }, '\u2B50 ' + dpScore),
+            dpStreak > 1 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + dpStreak)
           ),
 
           h('button', { 'aria-label': 'Make Quiz', onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-700 text-white') + ' hover:opacity-90 transition-all' },
@@ -1337,7 +1337,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Quiz question display ──
-          dpQuiz && !dpQuiz.answered && h('div', { className: 'bg-teal-50 rounded-xl p-4 border border-teal-200' },
+          dpQuiz && !dpQuiz.answered && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-50 rounded-xl p-4 border border-teal-200' },
             h('p', { className: 'text-sm font-bold text-teal-800 mb-3' },
               dpQuiz.type === 'correlation' ? '\u201C' + dpQuiz.text + '\u201D \u2014 What correlation do you predict?'
               : dpQuiz.type === 'guessR2' ? dpQuiz.text
@@ -1345,7 +1345,7 @@ window.StemLab = window.StemLab || {
               : dpQuiz.text
             ),
             // Options for correlation / guessR2 / matchChart
-            dpQuiz.type !== 'outlier' && h('div', { className: 'flex gap-3 flex-wrap' },
+            dpQuiz.type !== 'outlier' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 flex-wrap' },
               dpQuiz.opts.map(function(opt) {
                 return h('button', { 'aria-label': 'Select option', key: opt, onClick: function() { answerQuiz(opt); },
                   className: 'flex-1 min-w-[80px] px-4 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-teal-400 hover:bg-teal-50 transition-all cursor-pointer'
@@ -1353,7 +1353,7 @@ window.StemLab = window.StemLab || {
               })
             ),
             // Outlier quiz: clickable points
-            dpQuiz.type === 'outlier' && h('div', { className: 'grid grid-cols-5 gap-2' },
+            dpQuiz.type === 'outlier' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-5 gap-2' },
               dpQuiz.pts.map(function(p, i) {
                 return h('button', { 'aria-label': '#', key: i, onClick: function() { answerQuiz(i.toString()); },
                   className: 'px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-slate-200 hover:border-red-400 hover:bg-red-50 transition-all'
@@ -1363,7 +1363,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Quiz answer feedback ──
-          dpQuiz && dpQuiz.answered && h('div', { className: 'p-3 rounded-xl text-sm font-bold ' + (dpQuiz.chosen === (dpQuiz.type === 'outlier' ? dpQuiz.answer.toString() : dpQuiz.answer) ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+          dpQuiz && dpQuiz.answered && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-3 rounded-xl text-sm font-bold ' + (dpQuiz.chosen === (dpQuiz.type === 'outlier' ? dpQuiz.answer.toString() : dpQuiz.answer) ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
             (function() {
               var isRight = dpQuiz.type === 'outlier' ? parseInt(dpQuiz.chosen) === dpQuiz.answer : dpQuiz.chosen === dpQuiz.answer;
               var ansText = dpQuiz.type === 'outlier' ? 'Point #' + (dpQuiz.answer + 1) : dpQuiz.answer;
@@ -1388,20 +1388,20 @@ window.StemLab = window.StemLab || {
               : h('div', null,
                   h('div', { className: 'text-[10px] text-slate-500 mb-2' }, 'Using ' + regressionType + ': ' + regEq),
                   h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    h('span', { className: 'text-xs font-bold text-indigo-600' }, 'If X ='),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-indigo-600' }, 'If X ='),
                     h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': 'X value for prediction', className: 'w-24 px-2 py-1.5 border-2 border-indigo-200 rounded-lg text-sm font-bold text-indigo-800 text-center outline-none focus:border-indigo-400', placeholder: '?' }),
-                    h('span', { className: 'text-xs font-bold text-indigo-600' }, 'then Y \u2248'),
-                    h('div', { className: 'px-3 py-1.5 border rounded-lg text-sm font-bold text-center min-w-[60px] ' + (predIsExtrapolation ? 'bg-red-50 border-red-200 text-red-700' : 'bg-indigo-50 border-indigo-200 text-indigo-800') }, predResult || '?'),
-                    predX !== '' && predResult && h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600') },
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-indigo-600' }, 'then Y \u2248'),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 py-1.5 border rounded-lg text-sm font-bold text-center min-w-[60px] ' + (predIsExtrapolation ? 'bg-red-50 border-red-200 text-red-700' : 'bg-indigo-50 border-indigo-200 text-indigo-800') }, predResult || '?'),
+                    predX !== '' && predResult && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600') },
                       predIsExtrapolation ? '\u26A0\uFE0F Extrapolation (outside data range!)' : '\u2705 Interpolation (within data range)')
                   )
                 )
           ),
 
           // ── AI Data Analyst ──
-          callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-4 border border-pink-200' },
-            h('div', { className: 'flex items-center gap-2 mb-2' },
-              h('span', { className: 'text-xs font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Data Analyst'),
+          callGemini && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-pink-50 rounded-xl p-4 border border-pink-200' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Data Analyst'),
               h('button', { 'aria-label': 'Ask A I', onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[10px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600') },
                 aiLoading ? '\u23F3 Analyzing...' : '\u2728 Analyze Data')
             ),
@@ -1411,12 +1411,12 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Data Transformations ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-amber-200' },
-            h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, '\uD83D\uDD04 Data Transformations'),
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-amber-200' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, '\uD83D\uDD04 Data Transformations'),
             points.length === 0
-              ? h('div', { className: 'text-xs text-slate-500' }, 'Add data points first')
-              : h('div', { className: 'space-y-2' },
-                h('div', { className: 'flex gap-1.5 flex-wrap' },
+              ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-500' }, 'Add data points first')
+              : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 flex-wrap' },
                   [
                     { id: 'normalize', icon: '\uD83D\uDCCF', label: 'Normalize (0\u2013100)', desc: 'Scale Y to 0\u2013100' },
                     { id: 'standardize', icon: '\uD83D\uDCC0', label: 'Standardize (Z)', desc: 'Z-score transform Y' },
@@ -1435,10 +1435,10 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Random Data Generator ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
-            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, '\uD83C\uDFB2 Random Data Generator'),
-            h('div', { className: 'text-[10px] text-violet-500 mb-2' }, 'Generate 20 points with a target correlation strength:'),
-            h('div', { className: 'flex gap-1.5 flex-wrap' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-violet-200' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, '\uD83C\uDFB2 Random Data Generator'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-violet-500 mb-2' }, 'Generate 20 points with a target correlation strength:'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 flex-wrap' },
               [
                 { r: 0.95, label: 'r\u22480.95', color: 'emerald' },
                 { r: 0.70, label: 'r\u22480.70', color: 'emerald' },
@@ -1455,21 +1455,21 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Step-Through Mode ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
-            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, '\uD83D\uDC63 Step-Through Mode'),
-            h('div', { className: 'text-[10px] text-violet-500 mb-2' }, 'Watch how statistics change as each point is revealed one-by-one.'),
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-violet-200' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, '\uD83D\uDC63 Step-Through Mode'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-violet-500 mb-2' }, 'Watch how statistics change as each point is revealed one-by-one.'),
             !stepMode
               ? h('button', { 'aria-label': 'Stop', onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 disabled:opacity-40' }, '\u25B6 Start Step-Through (' + points.length + ' points)')
-              : h('div', { className: 'flex items-center gap-3' },
-                h('span', { className: 'text-sm font-bold text-violet-700' }, stepIdx + ' / ' + points.length + ' revealed'),
+              : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-violet-700' }, stepIdx + ' / ' + points.length + ' revealed'),
                 h('button', { 'aria-label': 'Stop', onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next'),
                 h('button', { 'aria-label': 'Stop', onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-200' }, 'Stop')
               )
           ),
 
           // ── CSV Import ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200' },
-            h('div', { className: 'text-xs font-bold text-slate-700 uppercase mb-2' }, '\uD83D\uDCCB Import Data (CSV)'),
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-slate-200' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700 uppercase mb-2' }, '\uD83D\uDCCB Import Data (CSV)'),
             h('textarea', { id: 'dp-import-csv', placeholder: 'Paste CSV data:\nx,y\n1,5\n2,8\n3,12', className: 'w-full h-20 px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400 resize-none', rows: 4 }),
             h('button', { 'aria-label': 'Import', onClick: function() {
               var el = document.getElementById('dp-import-csv');

@@ -1155,24 +1155,24 @@ window.SelHub = window.SelHub || {
         // ═══════════════════════════════════════════════════════════
         // ── UI ──
         // ═══════════════════════════════════════════════════════════
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
           // Header
-          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: 'linear-gradient(135deg, #312e81, #4338ca)', borderBottom: '1px solid rgba(99,102,241,0.3)' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: 'linear-gradient(135deg, #312e81, #4338ca)', borderBottom: '1px solid rgba(99,102,241,0.3)' } },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 10 } },
               h('button', { 'aria-label': 'Back', onClick: function() { ctx.setSelHubTool && ctx.setSelHubTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: 12, fontWeight: 'bold' } }, '\u2190 Back'),
-              h('div', { style: { fontWeight: 'bold', fontSize: 16, color: '#c7d2fe' } }, '\uD83D\uDCCB Goal Setter'),
-              streak > 0 ? h('span', { style: { background: 'rgba(245,158,11,0.2)', color: '#fbbf24', padding: '2px 10px', borderRadius: 12, fontSize: 10, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\uD83D\uDD25 ' + streak + '-day streak') : null
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 'bold', fontSize: 16, color: '#c7d2fe' } }, '\uD83D\uDCCB Goal Setter'),
+              streak > 0 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: 'rgba(245,158,11,0.2)', color: '#fbbf24', padding: '2px 10px', borderRadius: 12, fontSize: 10, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\uD83D\uDD25 ' + streak + '-day streak') : null
             ),
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('span', { style: { background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold' } }, '\uD83C\uDFAF ' + activeGoals.length + ' active'),
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold' } }, '\uD83C\uDFAF ' + activeGoals.length + ' active'),
               h('button', { 'aria-label': 'Toggle badges', onClick: function() { upd({ showBadges: !showBadges }); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8, padding: '3px 8px', color: '#c4b5fd', fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + badgeCount)
             )
           ),
 
           // Tabs
-          h('div', { role: 'tablist', 'aria-label': 'Goal Setting tabs', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, role: 'tablist', 'aria-label': 'Goal Setting tabs', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
             [{ id: 'goals', label: '\uD83C\uDFAF Goals' }, { id: 'habits', label: '\uD83D\uDD01 Habits' }, { id: 'vision', label: '\uD83C\uDF1F Vision' }, { id: 'smart', label: '\uD83E\uDDE0 SMART' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'checkin', label: '\uD83D\uDCDD Check-In' }, { id: 'progress', label: '\uD83D\uDCCA Progress' }].map(function(tb) {
               var active = tab === tb.id;
               return h('button', { 'aria-label': 'nowrap', key: tb.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? '#a5b4fc' : '#64748b', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
@@ -1205,18 +1205,18 @@ window.SelHub = window.SelHub || {
               // Daily Nudge — shows if no steps completed today
               dailyNudge ? h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.10), rgba(168,85,247,0.06))', border: '1px solid rgba(99,102,241,0.20)', display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 18 } }, '\uD83D\uDC4B'),
-                h('span', { style: { fontSize: 12, color: '#c7d2fe', lineHeight: 1.5 } }, dailyNudge)
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#c7d2fe', lineHeight: 1.5 } }, dailyNudge)
               ) : null,
               // Goal of the Week spotlight
-              goalOfTheWeek ? h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(52,211,153,0.06))', border: '1px solid rgba(34,197,94,0.20)', display: 'flex', alignItems: 'center', gap: 10 } },
-                h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2B50 Goal of the Week'),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 'bold' } }, goalOfTheWeek.text || '(unnamed)'),
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
-                    h('div', { style: { flex: 1, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', maxWidth: 120 } },
-                      h('div', { style: { width: (goalOfTheWeek.progress || 0) + '%', height: '100%', background: '#22c55e', borderRadius: 3 } })
+              goalOfTheWeek ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(52,211,153,0.06))', border: '1px solid rgba(34,197,94,0.20)', display: 'flex', alignItems: 'center', gap: 10 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', flex: 1 } },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 'bold', color: '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2B50 Goal of the Week'),
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#e2e8f0', fontWeight: 'bold' } }, goalOfTheWeek.text || '(unnamed)'),
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', maxWidth: 120 } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { width: (goalOfTheWeek.progress || 0) + '%', height: '100%', background: '#22c55e', borderRadius: 3 } })
                     ),
-                    h('span', { style: { fontSize: 10, color: '#34d399', fontWeight: 'bold' } }, (goalOfTheWeek.progress || 0) + '%')
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#34d399', fontWeight: 'bold' } }, (goalOfTheWeek.progress || 0) + '%')
                   )
                 ),
                 h('button', { 'aria-label': 'Focus', onClick: function() { upd({ editingGoal: goalOfTheWeek.id, tab: 'goals' }); }, style: { padding: '6px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#34d399', fontSize: 10, fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' } }, '\uD83C\uDFAF Focus')
@@ -1226,22 +1226,22 @@ window.SelHub = window.SelHub || {
                 var today = new Date().toISOString().slice(0, 10);
                 if (accountabilityLog[today] !== undefined) return null;
                 if (goals.length === 0) return null;
-                return h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', gap: 10 } },
-                  h('span', { style: { fontSize: 12, color: '#a5b4fc', flex: 1 } }, band === 'elementary' ? 'Did you work on your goal today?' : 'Accountability check: did you work toward a goal today?'),
+                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', gap: 10 } },
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#a5b4fc', flex: 1 } }, band === 'elementary' ? 'Did you work on your goal today?' : 'Accountability check: did you work toward a goal today?'),
                   h('button', { 'aria-label': 'Yes', onClick: function() { logAccountability(true); }, style: { padding: '5px 14px', borderRadius: 8, background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Yes'),
                   h('button', { 'aria-label': 'Not yet', onClick: function() { logAccountability(false); }, style: { padding: '5px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\u274C Not yet')
                 );
               })(),
-              accountabilityStreak > 0 ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 8, textAlign: 'center' } }, '\uD83D\uDCAA Accountability streak: ' + accountabilityStreak + ' day' + (accountabilityStreak !== 1 ? 's' : '')) : null,
+              accountabilityStreak > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', marginBottom: 8, textAlign: 'center' } }, '\uD83D\uDCAA Accountability streak: ' + accountabilityStreak + ' day' + (accountabilityStreak !== 1 ? 's' : '')) : null,
               // Add goal button + templates toggle
-              h('div', { style: { display: 'flex', gap: 8, marginBottom: 16 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginBottom: 16 } },
                 h('button', { 'aria-label': '+ New Goal', onClick: function() { addGoal('', 'personal'); }, style: { flex: 1, padding: '10px 16px', borderRadius: 10, background: '#6366f1', color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 13, cursor: 'pointer' } }, '+ New Goal'),
                 h('button', { 'aria-label': 'Templates', onClick: function() { upd({ showTemplates: !showTemplates }); }, style: { padding: '10px 16px', borderRadius: 10, background: showTemplates ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: showTemplates ? '#a5b4fc' : '#94a3b8', border: '1px solid rgba(99,102,241,0.2)', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDCA1 Templates')
               ),
               // Templates
-              showTemplates ? h('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
-                h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#818cf8', marginBottom: 8 } }, 'Goal Templates \u2014 tap to add'),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              showTemplates ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 'bold', color: '#818cf8', marginBottom: 8 } }, 'Goal Templates \u2014 tap to add'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   templates.map(function(tmpl, ti) {
                     var cat = GOAL_CATEGORIES.find(function(c) { return c.id === tmpl.cat; }) || GOAL_CATEGORIES[0];
                     return h('button', { 'aria-label': 'left', key: ti, onClick: function() { addGoal(tmpl.text, tmpl.cat); upd({ showTemplates: false }); }, title: tmpl.hint, style: { padding: '6px 12px', borderRadius: 8, background: cat.color + '15', border: '1px solid ' + cat.color + '33', color: cat.color, fontSize: 11, cursor: 'pointer', textAlign: 'left' } },
@@ -1253,7 +1253,7 @@ window.SelHub = window.SelHub || {
               // Active goals
               activeGoals.length === 0 && completedGoals.length === 0 ?
                 h('div', { style: { textAlign: 'center', padding: 40 } },
-                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDFAF'),
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDFAF'),
                   h('p', { style: { fontSize: 14, color: '#94a3b8' } }, band === 'elementary' ? 'No goals yet! Tap the button above to set your first goal.' : 'Ready to set meaningful goals? Start above or use a template.'),
                   h('p', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, 'Goals with steps are easier to achieve!')
                 ) : null,
@@ -1261,15 +1261,15 @@ window.SelHub = window.SelHub || {
                 var cat = GOAL_CATEGORIES.find(function(c) { return c.id === goal.category; }) || GOAL_CATEGORIES[2];
                 var isEditing = editingGoal === goal.id;
                 var goalDiff = goal.difficulty || 1;
-                return h('div', { key: goal.id, style: { padding: 14, marginBottom: 10, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid ' + cat.color + '33', transition: 'all 0.15s' } },
+                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: goal.id, style: { padding: 14, marginBottom: 10, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid ' + cat.color + '33', transition: 'all 0.15s' } },
                   // Goal header
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                    h('span', { style: { fontSize: 18 } }, cat.emoji),
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 18 } }, cat.emoji),
                     isEditing ?
                       h('input', { type: 'text', 'aria-label': 'Goal name', value: goal.text, onChange: function(e) { updateGoal(goal.id, { text: e.target.value }); }, autoFocus: true, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + cat.color + '44', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13 } }) :
-                      h('span', { style: { flex: 1, fontSize: 13, fontWeight: 'bold', color: '#e2e8f0', cursor: 'pointer' }, onClick: function() { upd({ editingGoal: goal.id }); } }, goal.text || 'Tap to name your goal...'),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, fontSize: 13, fontWeight: 'bold', color: '#e2e8f0', cursor: 'pointer' }, onClick: function() { upd({ editingGoal: goal.id }); } }, goal.text || 'Tap to name your goal...'),
                     // Difficulty indicator (flames)
-                    h('span', { title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
                     h('select', { value: goal.category, 'aria-label': 'Goal category', onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#94a3b8', fontSize: 10, cursor: 'pointer' } },
                       GOAL_CATEGORIES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.emoji + ' ' + c.label); })
                     ),
@@ -1277,8 +1277,8 @@ window.SelHub = window.SelHub || {
                     h('button', { 'aria-label': 'Difficulty:', onClick: function() { deleteGoal(goal.id); }, style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12, padding: 4 } }, '\u2715')
                   ),
                   // Difficulty selector (shown when editing)
-                  isEditing ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, paddingLeft: 26 } },
-                    h('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 'bold' } }, 'Difficulty:'),
+                  isEditing ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, paddingLeft: 26 } },
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8', fontWeight: 'bold' } }, 'Difficulty:'),
                     [1, 2, 3, 4, 5].map(function(lvl) {
                       var info = DIFFICULTY_LABELS[lvl - 1];
                       var active = goalDiff === lvl;
@@ -1294,13 +1294,13 @@ window.SelHub = window.SelHub || {
                         h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', position: 'relative' } },
                           h('div', { style: { width: goal.progress + '%', height: '100%', background: 'linear-gradient(90deg, ' + cat.color + ', ' + cat.color + 'cc)', borderRadius: 4, transition: 'width 0.3s' } })
                         ),
-                        h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cat.color, minWidth: 32, textAlign: 'right' } }, goal.progress + '%')
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 'bold', color: cat.color, minWidth: 32, textAlign: 'right' } }, goal.progress + '%')
                       ),
-                      hasMilestones ? h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 3, paddingRight: 40 } },
+                      hasMilestones ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', marginTop: 3, paddingRight: 40 } },
                         milestones.map(function(ms) {
-                          return h('div', { key: ms.threshold, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 24 } },
-                            h('div', { style: { width: 14, height: 14, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: ms.isCurrent ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.04)', border: ms.isCurrent ? '2px solid #34d399' : '1px solid rgba(99,102,241,0.2)', fontSize: 7, color: ms.isCurrent ? '#34d399' : '#475569' } }, ms.isCurrent ? '\u2713' : ms.threshold === 100 ? '\u2605' : '\u25CB'),
-                            h('span', { style: { fontSize: 7, color: ms.isCurrent ? '#34d399' : '#475569', marginTop: 1 } }, ms.threshold + '%')
+                          return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ms.threshold, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 24 } },
+                            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { width: 14, height: 14, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: ms.isCurrent ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.04)', border: ms.isCurrent ? '2px solid #34d399' : '1px solid rgba(99,102,241,0.2)', fontSize: 7, color: ms.isCurrent ? '#34d399' : '#475569' } }, ms.isCurrent ? '\u2713' : ms.threshold === 100 ? '\u2605' : '\u25CB'),
+                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 7, color: ms.isCurrent ? '#34d399' : '#475569', marginTop: 1 } }, ms.threshold + '%')
                           );
                         })
                       ) : null
@@ -1308,7 +1308,7 @@ window.SelHub = window.SelHub || {
                   })(),
                   // Steps
                   (goal.steps || []).map(function(step, si) {
-                    return h('div', { key: si, onClick: function() { toggleStep(goal.id, si); }, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: step.done ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.02)', cursor: 'pointer', transition: 'all 0.15s' } },
+                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },  key: si, onClick: function() { toggleStep(goal.id, si); }, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: step.done ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.02)', cursor: 'pointer', transition: 'all 0.15s' } },
                       h('span', { style: { fontSize: 14 } }, step.done ? '\u2705' : '\u2B1C'),
                       h('span', { style: { fontSize: 12, color: step.done ? '#6ee7b7' : '#cbd5e1', textDecoration: step.done ? 'line-through' : 'none' } }, step.text)
                     );
@@ -1341,20 +1341,20 @@ window.SelHub = window.SelHub || {
                     ),
                     h('div', { style: { textAlign: 'center' } },
                       h('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#a855f7' } }, String(stepsCount)),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Steps Done')
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8' } }, 'Steps Done')
                     ),
-                    h('div', { style: { textAlign: 'center' } },
-                      h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24' } }, getDifficultyFlames(celebGoal.difficulty || 1)),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, diffInfo.label)
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center' } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24' } }, getDifficultyFlames(celebGoal.difficulty || 1)),
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8' } }, diffInfo.label)
                     )
                   ),
                   // "What I Learned" textarea
-                  h('div', { style: { textAlign: 'left', marginBottom: 12 } },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'left', marginBottom: 12 } },
                     h('label', { style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83D\uDCA1 What I Learned'),
                     h('textarea', { id: 'celebration-journal', 'aria-label': 'Celebration journal', placeholder: band === 'elementary' ? 'What did you learn from reaching this goal?' : 'Reflect on what you learned during this journey...', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
                   ),
                   // Action buttons
-                  h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
                     h('button', { 'aria-label': 'Save Journal', onClick: function() {
                       var ta = document.getElementById('celebration-journal');
                       var text = ta ? ta.value : '';
@@ -1367,19 +1367,19 @@ window.SelHub = window.SelHub || {
                 );
               })() : null,
               // Completed goals with reflection journal
-              completedGoals.length > 0 ? h('div', { style: { marginTop: 20 } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#34d399', marginBottom: 8 } }, '\u2705 Completed (' + completedGoals.length + ')'),
+              completedGoals.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 20 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 'bold', color: '#34d399', marginBottom: 8 } }, '\u2705 Completed (' + completedGoals.length + ')'),
                 completedGoals.map(function(goal) {
                   var cat = GOAL_CATEGORIES.find(function(c) { return c.id === goal.category; }) || GOAL_CATEGORIES[2];
                   var isReflecting = reflectingGoalId === goal.id;
                   var hasReflections = goal.reflections && goal.reflections.length > 0;
                   var goalDiffLvl = goal.difficulty || 1;
-                  return h('div', { key: goal.id, style: { padding: 10, marginBottom: 8, borderRadius: 10, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: goal.id, style: { padding: 10, marginBottom: 8, borderRadius: 10, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' } },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       h('span', null, cat.emoji),
-                      h('span', { style: { flex: 1, fontSize: 12, color: '#6ee7b7', textDecoration: 'line-through' } }, goal.text),
-                      h('span', { style: { fontSize: 10, letterSpacing: -2 } }, getDifficultyFlames(goalDiffLvl)),
-                      h('span', { style: { fontSize: 10, color: '#34d399' } }, '\uD83C\uDF89 Done!'),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, fontSize: 12, color: '#6ee7b7', textDecoration: 'line-through' } }, goal.text),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, letterSpacing: -2 } }, getDifficultyFlames(goalDiffLvl)),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#34d399' } }, '\uD83C\uDF89 Done!'),
                       // Show celebration button if no journal yet
                       !goal.completionJournal ? h('button', { 'aria-label': 'Celebrate', onClick: function() { upd({ celebratingGoalId: goal.id }); }, style: { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, padding: '3px 8px', color: '#34d399', fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginLeft: 2 } }, '\uD83C\uDF89 Celebrate') : null,
                       !hasReflections ? h('button', { 'aria-label': 'Reflect', onClick: function() { upd({ reflectingGoalId: isReflecting ? null : goal.id }); }, style: { background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 6, padding: '3px 8px', color: '#c4b5fd', fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginLeft: 4 } }, '\uD83D\uDCDD Reflect') : null,
@@ -1392,16 +1392,16 @@ window.SelHub = window.SelHub || {
                       goal.completionJournal ? h('span', { style: { color: '#a5b4fc' } }, '\uD83D\uDCA1 Journal saved') : null
                     ) : null,
                     // Show completion journal if saved
-                    goal.completionJournal && goal.completionJournal.whatLearned ? h('div', { style: { marginTop: 6, padding: 8, borderRadius: 6, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
-                      h('div', { style: { fontSize: 10, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 3 } }, '\uD83D\uDCA1 What I Learned'),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, goal.completionJournal.whatLearned)
+                    goal.completionJournal && goal.completionJournal.whatLearned ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 6, padding: 8, borderRadius: 6, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 3 } }, '\uD83D\uDCA1 What I Learned'),
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, goal.completionJournal.whatLearned)
                     ) : null,
                     // Reflection form
-                    isReflecting ? h('div', { style: { marginTop: 10, padding: 12, borderRadius: 8, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' } },
-                      h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 8 } }, '\uD83D\uDCDD Goal Reflection Journal'),
+                    isReflecting ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 10, padding: 12, borderRadius: 8, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 8 } }, '\uD83D\uDCDD Goal Reflection Journal'),
                       h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, band === 'elementary' ? 'Think about how you reached your goal!' : 'Reflect on your journey to completing this goal.'),
                       ['What worked well?', 'What was the hardest part?', 'What would I do differently?', 'What\'s my next goal?'].map(function(prompt, pi) {
-                        return h('div', { key: pi, style: { marginBottom: 8 } },
+                        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: pi, style: { marginBottom: 8 } },
                           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 3 } }, prompt),
                           h('textarea', { id: 'reflect-' + pi, 'aria-label': 'Goal reflection', placeholder: band === 'elementary' ? 'Write your thoughts...' : 'Share your reflection...', style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 11, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } })
                         );
@@ -1481,7 +1481,7 @@ window.SelHub = window.SelHub || {
                 }, style: { padding: '8px 14px', borderRadius: 8, background: '#6366f1', color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '+ Add')
               ) : h('p', { style: { fontSize: 10, color: '#64748b', marginBottom: 10 } }, 'Maximum 7 habits reached. Remove one to add a new one.'),
               // Habit category filter
-              habits.length > 0 ? h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+              habits.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
                 h('button', { 'aria-label': 'All', onClick: function() { upd({ habitCategoryFilter: 'all' }); }, style: { padding: '3px 10px', borderRadius: 12, background: habitCategoryFilter === 'all' ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (habitCategoryFilter === 'all' ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.08)'), color: habitCategoryFilter === 'all' ? '#a5b4fc' : '#64748b', fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, 'All'),
                 HABIT_CATEGORIES.map(function(hc) {
                   var isActive = habitCategoryFilter === hc.id;
@@ -1489,9 +1489,9 @@ window.SelHub = window.SelHub || {
                 })
               ) : null,
               // Habit suggestion chips (with categories)
-              habits.length === 0 ? h('div', { style: { marginBottom: 14 } },
-                h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 6 } }, 'Suggested habits \u2014 tap to add:'),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              habits.length === 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 14 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginBottom: 6 } }, 'Suggested habits \u2014 tap to add:'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   (band === 'elementary' ?
                     [{ n: 'Drink water \uD83D\uDCA7', c: 'health' }, { n: 'Read 15 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise \uD83C\uDFC3', c: 'health' }, { n: 'Be kind \uD83D\uDC9B', c: 'social' }, { n: 'Draw or color \uD83C\uDFA8', c: 'creative' }] :
                     band === 'middle' ?
@@ -1529,8 +1529,8 @@ window.SelHub = window.SelHub || {
                       var habCatObj = HABIT_CATEGORIES.find(function(c) { return c.id === habCat; }) || HABIT_CATEGORIES[0];
                       return h('tr', { key: hi },
                         h('td', { style: { padding: '8px', color: '#e2e8f0', fontSize: 11, borderBottom: '1px solid rgba(99,102,241,0.05)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
-                          h('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
-                            h('span', { title: habCatObj.label, style: { fontSize: 10 } }, habCatObj.emoji),
+                          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 4 } },
+                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, title: habCatObj.label, style: { fontSize: 10 } }, habCatObj.emoji),
                             h('span', null, getHabitName(hab)),
                             habitEditMode ? h('button', { 'aria-label': 'Remove habit', onClick: function() { removeHabit(hi); }, style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 10, cursor: 'pointer', padding: 0, marginLeft: 4 } }, '\u2715') : null
                           )
@@ -1542,14 +1542,14 @@ window.SelHub = window.SelHub || {
                           );
                         }),
                         h('td', { style: { textAlign: 'center', padding: '4px 6px', borderBottom: '1px solid rgba(99,102,241,0.05)' } },
-                          h('span', { style: { fontSize: 11, fontWeight: 'bold', color: pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#64748b', padding: '2px 6px', borderRadius: 4, background: pct >= 80 ? 'rgba(52,211,153,0.1)' : pct >= 50 ? 'rgba(245,158,11,0.1)' : 'transparent' } }, pct + '%')
+                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 'bold', color: pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#64748b', padding: '2px 6px', borderRadius: 4, background: pct >= 80 ? 'rgba(52,211,153,0.1)' : pct >= 50 ? 'rgba(245,158,11,0.1)' : 'transparent' } }, pct + '%')
                         )
                       );
                     })
                   )
                 ),
                 // Edit/manage habits button
-                h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 8 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'flex-end', marginTop: 8 } },
                   h('button', { 'aria-label': 'Edit habits', onClick: function() { upd({ habitEditMode: !habitEditMode }); }, style: { padding: '4px 10px', borderRadius: 6, background: habitEditMode ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (habitEditMode ? 'rgba(239,68,68,0.2)' : 'rgba(99,102,241,0.1)'), color: habitEditMode ? '#f87171' : '#64748b', fontSize: 10, cursor: 'pointer' } }, habitEditMode ? 'Done editing' : '\u270F\uFE0F Edit habits')
                 ),
                 // Habit streak info
@@ -1608,16 +1608,16 @@ window.SelHub = window.SelHub || {
 
             // ── VISION BOARD TAB ──
             tab === 'vision' ? h('div', null,
-              h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83C\uDF1F Vision Board'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83C\uDF1F Vision Board'),
               h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 } },
                 band === 'elementary' ? 'Write down your dreams and wishes! What do you want to do or become?' :
                 band === 'middle' ? 'Map out your aspirations across different timeframes. Dream big, then plan small.' :
                 'Clarify your vision across timeframes. Vision without action is a daydream \u2014 action without vision is a nightmare.'
               ),
               // Motivational quote
-              h('div', { style: { padding: '12px 16px', marginBottom: 16, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.08))', border: '1px solid rgba(99,102,241,0.2)', textAlign: 'center' } },
-                h('div', { style: { fontSize: 10, color: '#818cf8', fontWeight: 'bold', marginBottom: 4 } }, '\u2728 Motivational Quote'),
-                h('div', { style: { fontSize: 13, color: '#c7d2fe', fontStyle: 'italic', lineHeight: 1.6 } }, d.currentQuote || getRandomQuote()),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '12px 16px', marginBottom: 16, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.08))', border: '1px solid rgba(99,102,241,0.2)', textAlign: 'center' } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#818cf8', fontWeight: 'bold', marginBottom: 4 } }, '\u2728 Motivational Quote'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#c7d2fe', fontStyle: 'italic', lineHeight: 1.6 } }, d.currentQuote || getRandomQuote()),
                 h('button', { 'aria-label': 'New quote', onClick: function() { upd({ currentQuote: getRandomQuote() }); }, style: { marginTop: 6, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 16, padding: '3px 12px', color: '#a5b4fc', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD04 New quote')
               ),
               // Vision sections
@@ -1646,8 +1646,8 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, visionBoard.thisMonth)
                 ) : null,
                 visionBoard.thisYear ? h('div', { style: { marginBottom: 6 } },
-                  h('span', { style: { fontSize: 10, fontWeight: 'bold', color: '#a855f7' } }, '\uD83C\uDF1F This Year: '),
-                  h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, visionBoard.thisYear)
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, fontWeight: 'bold', color: '#a855f7' } }, '\uD83C\uDF1F This Year: '),
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1' } }, visionBoard.thisYear)
                 ) : null
               ) : null
             ) : null,
@@ -1659,19 +1659,19 @@ window.SelHub = window.SelHub || {
                 'SMART goals are Specific, Measurable, Achievable, Relevant, and Time-bound. Select a goal and build it out.'
               ),
               // ── SMART Examples Library ──
-              h('div', { style: { marginBottom: 16 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16 } },
                 h('button', { 'aria-label': 'SMART Goal Examples Library', onClick: function() { upd({ showSmartExamples: !showSmartExamples }); sfxClick(); }, style: { width: '100%', padding: '10px 16px', borderRadius: 10, background: showSmartExamples ? 'rgba(168,85,247,0.15)' : 'rgba(99,102,241,0.08)', border: '1px solid ' + (showSmartExamples ? 'rgba(168,85,247,0.3)' : 'rgba(99,102,241,0.15)'), color: showSmartExamples ? '#c4b5fd' : '#a5b4fc', fontSize: 12, fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 } },
                   h('span', null, '\uD83D\uDCD6'),
-                  h('span', { style: { flex: 1 } }, 'SMART Goal Examples Library'),
-                  h('span', { style: { fontSize: 10, opacity: 0.7 } }, showSmartExamples ? '\u25B2' : '\u25BC')
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } }, 'SMART Goal Examples Library'),
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, opacity: 0.7 } }, showSmartExamples ? '\u25B2' : '\u25BC')
                 ),
-                showSmartExamples ? h('div', { style: { marginTop: 10, padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.12)' } },
+                showSmartExamples ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 10, padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.12)' } },
                   h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.5 } },
                     band === 'elementary' ? 'Pick an example to start with! You can change the words later.' :
                     'Browse fully-filled SMART examples by category. Tap "Use as Template" to pre-fill and customize.'
                   ),
                   // Category selector
-                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                     GOAL_CATEGORIES.map(function(cat) {
                       var isActive = smartExampleCat === cat.id;
                       var hasExamples = !!SMART_EXAMPLES[cat.id];
@@ -1681,18 +1681,18 @@ window.SelHub = window.SelHub || {
                   ),
                   // Examples for selected category
                   (SMART_EXAMPLES[smartExampleCat] || []).map(function(ex, ei) {
-                    return h('div', { key: ei, style: { padding: 12, marginBottom: 10, borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.10)' } },
-                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                        h('span', { style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc' } }, ex.title),
+                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ei, style: { padding: 12, marginBottom: 10, borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.10)' } },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc' } }, ex.title),
                         h('button', { 'aria-label': 'Use as Template', onClick: function() { loadSmartExample(smartExampleCat, ei); }, style: { marginLeft: 'auto', padding: '4px 12px', borderRadius: 6, background: '#6366f1', color: '#fff', border: 'none', fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\u2192 Use as Template')
                       ),
                       // Preview SMART fields
                       ['S', 'M', 'A', 'R', 'T'].map(function(key) {
                         var info = SMART_LABELS[key];
                         var val = ex.smart[key][band] || ex.smart[key].elementary;
-                        return h('div', { key: key, style: { display: 'flex', gap: 6, marginBottom: 3, fontSize: 10, lineHeight: 1.5 } },
-                          h('span', { style: { fontWeight: 'bold', color: '#818cf8', minWidth: 14 } }, key + ':'),
-                          h('span', { style: { color: '#94a3b8' } }, val)
+                        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: key, style: { display: 'flex', gap: 6, marginBottom: 3, fontSize: 10, lineHeight: 1.5 } },
+                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 'bold', color: '#818cf8', minWidth: 14 } }, key + ':'),
+                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#94a3b8' } }, val)
                         );
                       })
                     );
@@ -1700,7 +1700,7 @@ window.SelHub = window.SelHub || {
                 ) : null
               ),
               goals.length === 0 && !showSmartExamples ?
-                h('div', { style: { textAlign: 'center', padding: 30 } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center', padding: 30 } },
                   h('p', { style: { color: '#64748b' } }, 'Create a goal first, then come here to make it SMART!'),
                   h('button', { 'aria-label': '+ Create Goal', onClick: function() { upd({ tab: 'goals' }); addGoal('', 'personal'); }, style: { marginTop: 8, padding: '8px 20px', borderRadius: 8, background: '#6366f1', color: '#fff', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '+ Create Goal')
                 ) :
@@ -1764,7 +1764,7 @@ window.SelHub = window.SelHub || {
                 h('input', { type: 'text', value: aiInput, 'aria-label': 'Ask the goal coach', onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(); }, placeholder: 'Ask about your goals...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
                 h('button', { 'aria-label': 'div', onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#6366f1', color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
                 (band === 'elementary' ? ['How do I start?', 'I\'m stuck on my goal', 'Make my goal easier', 'Give me a fun challenge'] :
                  ['Break my goal into smaller steps', 'I keep procrastinating', 'Is my goal realistic?', 'How do I stay motivated?', 'Help me reframe my goal as SMART']).map(function(q) {
                   return h('button', { 'aria-label': '5px 10px', key: q, onClick: function() { upd({ aiInput: q }); }, style: { padding: '5px 10px', borderRadius: 20, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, cursor: 'pointer' } }, q);
@@ -1809,15 +1809,15 @@ window.SelHub = window.SelHub || {
               ),
 
               // Section 3: Next week focus
-              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#818cf8', marginBottom: 8 } }, '\uD83C\uDFAF What Will I Focus On Next Week?'),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 'bold', color: '#818cf8', marginBottom: 8 } }, '\uD83C\uDFAF What Will I Focus On Next Week?'),
                 h('textarea', { value: weeklyDraft.focus || '', 'aria-label': 'Next week focus', onChange: function(e) { updateWeeklyDraft('focus', e.target.value); }, placeholder: band === 'elementary' ? 'What do you want to work on next week?' : 'Set your intention: what specific goal or step will you prioritize?', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
               ),
 
               // Section 4: Star rating
-              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)', textAlign: 'center' } },
-                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#fbbf24', marginBottom: 10 } }, '\u2B50 Rate Your Week'),
-                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 6 } },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)', textAlign: 'center' } },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 'bold', color: '#fbbf24', marginBottom: 10 } }, '\u2B50 Rate Your Week'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 6 } },
                   [1, 2, 3, 4, 5].map(function(star) {
                     var filled = (weeklyDraft.rating || 0) >= star;
                     return h('button', { 'aria-label': 'Rate this week', key: star, onClick: function() { updateWeeklyDraft('rating', star); sfxClick(); }, style: { background: 'none', border: 'none', fontSize: 28, cursor: 'pointer', color: filled ? '#fbbf24' : '#334155', transition: 'transform 0.15s', padding: 2 } }, filled ? '\u2B50' : '\u2606');
@@ -1836,7 +1836,7 @@ window.SelHub = window.SelHub || {
               weeklyCheckins.length > 0 ? h('div', { style: { padding: '10px 14px', marginBottom: 14, borderRadius: 10, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' } },
                 h('span', { style: { fontSize: 14 } }, '\uD83D\uDCCA'),
                 h('span', { style: { fontSize: 11, color: '#c4b5fd' } }, 'You\u2019ve completed ' + weeklyCheckins.length + ' weekly check-in' + (weeklyCheckins.length !== 1 ? 's' : '') + '!'),
-                weeklyCheckins.length >= 4 ? h('span', { style: { fontSize: 10, color: '#a855f7', fontWeight: 'bold', marginLeft: 4 } }, '\uD83C\uDFC6 Consistent Reviewer!') : null
+                weeklyCheckins.length >= 4 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#a855f7', fontWeight: 'bold', marginLeft: 4 } }, '\uD83C\uDFC6 Consistent Reviewer!') : null
               ) : null,
 
               // Average weekly rating
@@ -1844,8 +1844,8 @@ window.SelHub = window.SelHub || {
                 var totalRating = 0;
                 weeklyCheckins.forEach(function(ci) { totalRating += (ci.rating || 0); });
                 var avgRating = (totalRating / weeklyCheckins.length).toFixed(1);
-                return h('div', { style: { padding: '8px 14px', marginBottom: 14, borderRadius: 8, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)', textAlign: 'center' } },
-                  h('span', { style: { fontSize: 10, color: '#fbbf24' } }, '\u2B50 Average weekly rating: ' + avgRating + '/5 across ' + weeklyCheckins.length + ' weeks')
+                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '8px 14px', marginBottom: 14, borderRadius: 8, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)', textAlign: 'center' } },
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#fbbf24' } }, '\u2B50 Average weekly rating: ' + avgRating + '/5 across ' + weeklyCheckins.length + ' weeks')
                 );
               })() : null,
 
