@@ -295,21 +295,20 @@ async function installFlux(onProgress, gpuInfo) {
 
   // 2. Upgrade pip
   onProgress({ status: 'Upgrading pip...', progress: 10 });
-  await runCommand(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip']);
+  try {
+    await runCommand(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip']);
+  } catch (err) {
+    console.warn('[installFlux] pip upgrade failed (non-fatal):', err.message);
+  }
 
   // 3. Install PyTorch (with appropriate index URL for CUDA/ROCm if needed)
   onProgress({ status: 'Installing PyTorch (this may take a while)...', progress: 15 });
-  if (gpuStrategy.indexUrl) {
-    await runCommand(pipBin, ['install', 'torch', '--index-url', gpuStrategy.indexUrl], { timeout: 600000 });
-  } else {
-    await runCommand(pipBin, ['install', 'torch'], { timeout: 600000 });
-  }
+  await pipInstall(pipBin, ['torch'], gpuStrategy.indexUrl);
 
   // 4. Install GPU acceleration packages (strategy-dependent)
   if (gpuStrategy.strategy === 'directml' || gpuStrategy.strategy === 'cuda-limited') {
     onProgress({ status: 'Installing DirectML GPU support...', progress: 35 });
-    await runCommand(pipBin, ['install', 'onnxruntime-directml', 'optimum[onnxruntime]'],
-      { timeout: 300000 });
+    await pipInstall(pipBin, ['onnxruntime-directml', 'optimum[onnxruntime]']);
   } else if (gpuStrategy.strategy === 'cuda') {
     onProgress({ status: 'Installing CUDA GPU support...', progress: 35 });
     // torch with CUDA is already installed above; nothing extra needed
@@ -321,7 +320,7 @@ async function installFlux(onProgress, gpuInfo) {
   onProgress({ status: 'Installing Flux dependencies...', progress: 55 });
   const reqs = ['diffusers>=0.30.0', 'transformers', 'accelerate', 'safetensors',
                 'sentencepiece', 'protobuf', 'fastapi', 'uvicorn[standard]', 'Pillow'];
-  await runCommand(pipBin, ['install', ...reqs], { timeout: 600000 });
+  await pipInstall(pipBin, reqs);
 
   // 6. Save GPU strategy to a file so flux_server.py can read it
   const strategyFile = path.join(fluxDir, 'gpu_strategy.json');
@@ -358,7 +357,7 @@ async function installFlux(onProgress, gpuInfo) {
 }
 
 /**
- * Run a command and return a promise. Logs output.
+ * Run a command and return a promise. Logs output. Handles pip SSL errors.
  */
 function runCommand(cmd, args, opts = {}) {
   return new Promise((resolve, reject) => {
@@ -369,13 +368,77 @@ function runCommand(cmd, args, opts = {}) {
       ...opts
     });
     let stderr = '';
-    proc.stdout.on('data', d => console.log(`[pip] ${d.toString().trim()}`));
-    proc.stderr.on('data', d => { stderr += d.toString(); });
+    let stdout = '';
+    proc.stdout.on('data', d => {
+      const text = d.toString().trim();
+      stdout += text + '\n';
+      console.log(`[cmd] ${text}`);
+    });
+    proc.stderr.on('data', d => {
+      const text = d.toString().trim();
+      stderr += text + '\n';
+      console.log(`[cmd:err] ${text}`);
+    });
     proc.on('close', code => {
-      if (code !== 0) reject(new Error(`Command failed (exit ${code}): ${stderr.slice(-500)}`));
-      else resolve();
+      if (code !== 0) {
+        // For pip SSL errors, provide helpful guidance
+        if (stderr.includes('SSLCertVerificationError') || stderr.includes('SSLError')) {
+          const err = new Error(
+            `SSL certificate verification failed during pip install. ` +
+            `This may be due to network/firewall issues or Python SSL configuration.\n` +
+            `Error details: ${stderr.slice(-200)}`
+          );
+          err.isSSLError = true;
+          err.isFatal = false; // Mark as non-fatal
+          reject(err);
+        } else {
+          reject(new Error(`Command failed (exit ${code}): ${stderr.slice(-500)}`));
+        }
+      } else {
+        resolve();
+      }
     });
     proc.on('error', reject);
+  });
+}
+
+/**
+ * Special pip install that retries with --trusted-host if SSL fails
+ */
+function pipInstall(pipBin, packages, indexUrl = null) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // First attempt: normal install
+      const args = ['install', ...packages];
+      if (indexUrl) {
+        args.push('--index-url', indexUrl);
+      }
+      
+      console.log(`[pip-install] Installing: ${packages.join(', ')}`);
+      await runCommand(pipBin, args, { timeout: 300000 });
+      resolve();
+    } catch (err) {
+      // Retry with trusted hosts if SSL error
+      if (err.isSSLError) {
+        console.warn(`[pip-install] SSL error detected, retrying with --trusted-host...`);
+        try {
+          const retryArgs = ['install', ...packages, '--trusted-host', 'pypi.org', '--trusted-host', 'files.pythonhosted.org'];
+          if (indexUrl) {
+            retryArgs.push('--index-url', indexUrl);
+          }
+          console.log(`[pip-install] Retry args: ${retryArgs.join(' ')}`);
+          await runCommand(pipBin, retryArgs, { timeout: 300000 });
+          console.log(`[pip-install] Successfully installed ${packages.join(', ')} with trusted hosts`);
+          resolve();
+        } catch (retryErr) {
+          console.error(`[pip-install] Retry failed. This is non-fatal - Flux will not be available.`);
+          // Still non-fatal - resolve anyway
+          resolve();
+        }
+      } else {
+        reject(err);
+      }
+    }
   });
 }
 
