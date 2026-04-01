@@ -1,0 +1,106 @@
+========================================================================================================================
+TRANSLATION KEY COVERAGE ANALYSIS
+========================================================================================================================
+
+SECTIONS WITH GOOD COVERAGE (sample of keys found in ui_strings.js)
+------------------------------------------------------------------------------------------------------------------------
+
+[ADVENTURE] - 39 instance(s) found in ui_strings.js
+  Line  8650: adventure.start_sequel                                  OK
+  Line  8656: adventure.new_game                                      OK
+  ... and 37 more
+
+[ANALYSIS] - 4 instance(s) found in ui_strings.js
+  Line 50311: analysis.fix_grammar_button                             OK
+  Line 50325: analysis.grammar_dismissed                              OK
+  ... and 2 more
+
+[BOT_EVENTS] - 1 instance(s) found in ui_strings.js
+  Line 39970: bot_events.brainstorming_start                          OK
+
+[BRAINSTORM] - 1 instance(s) found in ui_strings.js
+  Line 49864: brainstorm.title                                        OK
+
+[CODENAMES] - 8 instance(s) found in ui_strings.js
+  Line  5778: codenames.adjectives                                    OK
+  Line  5779: codenames.animals                                       OK
+  ... and 6 more
+
+[COMMON] - 23 instance(s) found in ui_strings.js
+  Line 11609: common.randomize                                        OK
+  Line 16752: common.auto_play                                        OK
+  ... and 21 more
+
+[CONCEPT_MAP] - 4 instance(s) found in ui_strings.js
+  Line 21523: concept_map.confirm_delete_node                         OK
+  Line 21551: concept_map.confirm_clear_edges                         OK
+  ... and 2 more
+
+[EDUCATOR_HUB] - 6 instance(s) found in ui_strings.js
+  Line 62490: educator_hub.title                                      OK
+  Line 62491: educator_hub.subtitle                                   OK
+  ... and 4 more
+
+[ERRORS] - 3 instance(s) found in ui_strings.js
+  Line 38637: errors.storage_full                                     OK
+  Line 38722: errors.load_failed                                      OK
+  ... and 1 more
+
+[ESCAPE_ROOM] - 73 instance(s) found in ui_strings.js
+  Line 12188: escape_room.select_word                                 OK
+  Line 12254: escape_room.sequence_list                               OK
+  ... and 71 more
+
+[EXPORT] - 2 instance(s) found in ui_strings.js
+  Line 31533: export.answer_key_title                                 OK
+  Line 31533: export.answer_key_title                                 OK
+
+[FAQ] - 1 instance(s) found in ui_strings.js
+  Line 49863: faq.title                                               OK
+
+[FLUENCY] - 5 instance(s) found in ui_strings.js
+  Line 58800: fluency.custom_norms                                    OK
+  Line 58811: fluency.custom_wcpm                                     OK
+  ... and 3 more
+
+[FULLPACK] - 3 instance(s) found in ui_strings.js
+  Line 49050: fullpack.group_tooltip                                  OK
+  Line 49052: fullpack.group_current                                  OK
+  ... and 1 more
+
+[GLOSSARY] - 1 instance(s) found in ui_strings.js
+  Line 49858: glossary.title                                          OK
+
+
+========================================================================================================================
+MISSING KEYS SUMMARY TABLE
+========================================================================================================================
+
+Line     Section              Key                                                Fallback Value                          
+------------------------------------------------------------------------------------------------------------------------
+14529    behavior_lens        behavior_lens.hub.title                            'Behavior'                              
+15116    behavior_lens        behavior_lens.hub.title                            'BehaviorLens'                          
+15117    behavior_lens        behavior_lens.hub.subtitle                         'Functional Behavior Assessment, ABC da...'
+15122    behavior_lens        behavior_lens.hub.open_btn                         'Open BehaviorLens'                     
+16586    adventure            adventure.upload_portrait                          'Upload your own portrait image'        
+16620    adventure            adventure.upload_portrait                          'Upload your own portrait image'        
+20541    [data-help-ignore]   [data-help-ignore]                                 ''                                      
+28576    status_steps         status_steps.retrying_citations                    'Retrying for better citations...'      
+39337    status               status.text_condensing                             'Condensing text...'                    
+49866    adventure_title      adventure_title                                    'Adventure'                             
+62730    behavior_lens        behavior_lens.hub.title                            'Loading BehaviorLens...'               
+62731    behavior_lens        behavior_lens.loading_hint                         'Module loading from CDN. If this persi...'
+
+
+========================================================================================================================
+STATISTICS
+========================================================================================================================
+Total unique keys using fallbacks: 331
+  - Defined in ui_strings.js: 322
+  - Missing from ui_strings.js: 9
+
+Total fallback instances: 408
+  - Using existing keys: 396
+  - Using missing keys: 12
+
+Health Score: 97.3%

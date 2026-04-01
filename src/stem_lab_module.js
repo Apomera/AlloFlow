@@ -6,6 +6,34 @@
     // STEM Lab module for AlloFlow - loaded from GitHub CDN
     // Version: 1.0.0 (Feb 2026)
 
+    // ── StemLab Plugin Registry (Phase 2) ──
+    // Initialize before the hub component so plugins can register tools.
+    // Plugins (stem_tool_*.js) call window.StemLab.registerTool(id, config)
+    // and the hub's fallback renderer (at the end of the explore chain) delegates to them.
+    if (!window.StemLab) {
+      window.StemLab = {
+        _registry: {},
+        _order: [],
+        registerTool: function(id, config) {
+          config.id = id;
+          config.ready = config.ready !== false;
+          this._registry[id] = config;
+          if (this._order.indexOf(id) === -1) this._order.push(id);
+          console.log('[StemLab] Registered tool: ' + id);
+        },
+        getRegisteredTools: function() {
+          var self = this;
+          return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+        },
+        isRegistered: function(id) { return !!this._registry[id]; },
+        renderTool: function(id, ctx) {
+          var tool = this._registry[id];
+          if (!tool || !tool.render) return null;
+          try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+        }
+      };
+    }
+
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.StemLab = function StemLabModal(props) {
       const {
@@ -2089,7 +2117,8 @@
               { id: 'companion_planting_squash', label: 'Squash', icon: '\uD83C\uDF83' },
               { id: 'companion_planting_grow', label: 'Growing', icon: '\uD83C\uDF31' },
               { id: 'companion_planting_harvest', label: 'Harvest', icon: '\uD83C\uDF3E' },
-              { id: 'companion_planting_quiz', label: 'Garden Quiz', icon: '\uD83D\uDCDD' }
+              { id: 'companion_planting_quiz', label: 'Garden Quiz', icon: '\uD83D\uDCDD' },
+              { id: 'cyberDefense', label: 'Cyber Defense', icon: '\uD83D\uDEE1\uFE0F' }
             ];
             var _maxXP = _xpActivities.length * 100;
             var _totalPct = _maxXP > 0 ? Math.min(100, (totalStemXP / _maxXP) * 100) : 0;
@@ -2428,6 +2457,11 @@
                 desc: 'Visual block coding with turtle graphics. Learn sequencing, loops, and conditionals. Toggle between blocks and text code.',
                 color: 'indigo', ready: true
               },
+              {
+                id: 'cyberDefense', icon: '\uD83D\uDEE1\uFE0F', label: 'Cyber Defense Lab',
+                desc: 'Spot phishing emails, forge strong passwords, and crack ciphers. Gamified cybersecurity training aligned with Digital Citizenship standards.',
+                color: 'rose', ready: true
+              },
 
               { id: '_cat_Arts&Music', icon: '', label: t('stem.tools_menu.arts_music'), desc: '', color: 'slate', category: true },
 
@@ -2473,7 +2507,19 @@
               },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
-              { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true }
+              { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
+              { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
+
+              { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
+              { id: 'dnaLab', icon: '🧬', label: 'DNA Lab', desc: 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
+
+              { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', category: true },
+              { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
+              { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
+
+              { id: '_cat_AdvancedMath', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
+              { id: 'geometryProver', icon: '📐', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
+              { id: 'logicLab', icon: '🧩', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true }
             ];
             // ── Tool search filter ──
             var _searchLower = _stemToolSearch.toLowerCase().trim();
@@ -3009,7 +3055,7 @@
               className: "text-xs font-bold text-emerald-600"
             }, exploreScore.correct, "/", exploreScore.total), exploreScore.total > 0 && /*#__PURE__*/React.createElement("button", {
               onClick: submitExploreScore,
-              className: "text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded-full hover:bg-emerald-700"
+              className: "text-[10px] font-bold bg-emerald-700 text-white px-2 py-0.5 rounded-full hover:bg-emerald-700"
             }, "\uD83D\uDCBE Save"), /*#__PURE__*/React.createElement("button", {
               onClick: () => {
                 const snap = {
@@ -3356,7 +3402,7 @@
                 if (ok && typeof awardStemXP === 'function') awardStemXP('volume', 5, 'cube volume');
               },
               disabled: !cubeAnswer,
-              className: "px-4 py-2 bg-amber-500 text-white font-bold rounded-lg text-sm disabled:opacity-40"
+              className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm disabled:opacity-40"
             }, "Check")), cubeFeedback && /*#__PURE__*/React.createElement("p", {
               className: "text-sm font-bold mt-2 " + (cubeFeedback.correct ? "text-green-600" : "text-red-600")
             }, cubeFeedback.msg, !cubeFeedback.correct && StemAIHintButton('Volume Builder', cubeFeedback._question || 'Volume challenge', cubeFeedback._wrongAnswer || '', cubeFeedback._correctAnswer || ''))), !isSlider && cubeBuilderChallenge && /*#__PURE__*/React.createElement("div", {
@@ -3408,7 +3454,7 @@
             }, exploreScore.correct, "/", exploreScore.total),
               exploreScore.total > 0 && /*#__PURE__*/React.createElement("button", {
                 onClick: submitExploreScore,
-                className: "text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded-full hover:bg-emerald-700"
+                className: "text-[10px] font-bold bg-emerald-700 text-white px-2 py-0.5 rounded-full hover:bg-emerald-700"
               }, "\uD83D\uDCBE Save"))),
               // Mode tabs
               /*#__PURE__*/React.createElement("div", {
@@ -3633,7 +3679,7 @@
                   /*#__PURE__*/React.createElement("p", { className: "text-sm font-bold text-orange-800 mb-2" }, "\uD83C\uDFAF Show ", base10Challenge.target.toLocaleString(), " using base-10 blocks"),
                   /*#__PURE__*/React.createElement("div", { className: "flex gap-2 items-center" },
                     /*#__PURE__*/React.createElement("span", { className: "text-xs text-orange-600" }, "Your value: ", /*#__PURE__*/React.createElement("span", { className: "font-bold text-orange-900" }, totalValue.toLocaleString())),
-                    /*#__PURE__*/React.createElement("button", { onClick: checkBase10, className: "ml-auto px-4 py-1.5 bg-orange-500 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all" }, "\u2714 Check")
+                    /*#__PURE__*/React.createElement("button", { onClick: checkBase10, className: "ml-auto px-4 py-1.5 bg-orange-700 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all" }, "\u2714 Check")
                 ),
                   base10Feedback && /*#__PURE__*/React.createElement("p", { className: 'text-sm font-bold mt-2 ' + (base10Feedback.correct ? 'text-green-600' : 'text-red-600') }, base10Feedback.msg)
                 ));
@@ -3762,7 +3808,7 @@
                   /*#__PURE__*/React.createElement("p", { className: "text-sm font-bold text-amber-800 mb-2" }, "\uD83C\uDFAF Show ", abacusChallenge.target.toLocaleString(), " on the abacus"),
                   /*#__PURE__*/React.createElement("div", { className: "flex gap-2 items-center" },
                     /*#__PURE__*/React.createElement("span", { className: "text-xs text-amber-600" }, "Your value: ", /*#__PURE__*/React.createElement("span", { className: "font-bold text-amber-900" }, abacusTotal.toLocaleString())),
-                    /*#__PURE__*/React.createElement("button", { onClick: checkAbacus, className: "ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all" }, "\u2714 Check")
+                    /*#__PURE__*/React.createElement("button", { onClick: checkAbacus, className: "ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all" }, "\u2714 Check")
                 ),
                   abacusFeedback && /*#__PURE__*/React.createElement("p", { className: 'text-sm font-bold mt-2 ' + (abacusFeedback.correct ? 'text-green-600' : 'text-red-600') }, abacusFeedback.msg)
                 ),
@@ -4767,7 +4813,7 @@
                         var isRight = typeof guess === 'number' && Math.abs(guess - actual) < (isJPY ? 0.5 : 0.005);
                         upd('coinGuessFb', isRight ? { ok: true, msg: '\u2705 Correct! Total is ' + fmt(actual) + '!' } : { ok: false, msg: '\u274C Not quite. The total is ' + fmt(actual) + '. You guessed ' + fmt(guess || 0) + '.' });
                         if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 10, 'coin counting challenge');
-                      }, disabled: d.coinGuess == null, className: "px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-all text-xs disabled:opacity-40" }, '\u2714 Check')
+                      }, disabled: d.coinGuess == null, className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg hover:bg-amber-600 transition-all text-xs disabled:opacity-40" }, '\u2714 Check')
                     ),
                     d.coinGuessFb && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.coinGuessFb.ok ? 'text-green-600' : 'text-red-500') }, d.coinGuessFb.msg)
                   ),
@@ -4823,7 +4869,7 @@
                             if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Making change');
                             if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 5, 'making change');
                           },
-                          className: "px-5 py-2 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm"
+                          className: "px-5 py-2 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm"
                         }, "\u2714 Check")
                       ),
                       changeFeedback && React.createElement("p", { className: "text-sm font-bold " + (changeFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, changeFeedback.msg),
@@ -4972,7 +5018,7 @@
                         })
                       ),
                       React.createElement("button", { onClick: submitCashierAnswer, disabled: !crAnswer,
-                        className: "px-6 bg-emerald-500 text-white font-black rounded-xl hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md text-lg active:scale-95"
+                        className: "px-6 bg-emerald-700 text-white font-black rounded-xl hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md text-lg active:scale-95"
                       }, "ENTER")
                     )
                   ) : null,
@@ -4998,7 +5044,7 @@
                   // ── Header row: Recipe Mode toggle (middle+) ──
                 grade !== 'elementary' && React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
                   React.createElement("button", { onClick: function () { upd('recipeMode', !recipeMode); upd('activeRecipe', null); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (recipeMode ? 'bg-purple-500 text-white ring-2 ring-purple-300 shadow-lg' : 'bg-white text-purple-600 border border-purple-300 hover:bg-purple-50')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (recipeMode ? 'bg-purple-700 text-white ring-2 ring-purple-300 shadow-lg' : 'bg-white text-purple-600 border border-purple-300 hover:bg-purple-50')
                   }, recipeMode ? '\uD83D\uDCCB Recipe Mode ON' : '\uD83D\uDCCB Recipe Mode')
                 ),
 
@@ -5047,7 +5093,7 @@
                         } else {
                           upd('recipeFb', { ok: false, msg: '\u274C Missing ' + result.missing.length + ' item(s): ' + result.missing.join(', ') });
                         }
-                      }, className: "flex-1 px-4 py-2 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all text-sm shadow-md" }, "\u2714 Check Recipe Cart"),
+                      }, className: "flex-1 px-4 py-2 bg-purple-700 text-white font-bold rounded-xl hover:bg-purple-600 transition-all text-sm shadow-md" }, "\u2714 Check Recipe Cart"),
                       React.createElement("button", { onClick: function () { upd('cart', []); upd('recipeFb', null); }, className: "px-3 py-2 text-xs text-red-400 hover:text-red-600 font-bold" }, "Clear")
                     ),
                     d.recipeFb && React.createElement("p", { className: "text-xs font-bold " + (d.recipeFb.ok ? 'text-green-600' : 'text-red-500') }, d.recipeFb.msg)
@@ -5059,7 +5105,7 @@
                   storeCats.map(function (cat) {
                     var catIcons = { All: '\uD83C\uDFEA', Produce: '\uD83E\uDD6C', Meat: '\uD83E\uDD69', Dairy: '\uD83E\uDDC0', Bakery: '\uD83C\uDF5E', Pantry: '\uD83E\uDD6B', Frozen: '\uD83E\uDDCA', Drinks: '\uD83E\uDD64', Snacks: '\uD83C\uDF6B' };
                     return React.createElement("button", { key: cat, onClick: function () { upd('storeCat', cat); },
-                      className: "px-2 py-1 rounded-full text-[10px] font-bold transition-all " + (storeCat === cat ? 'bg-orange-500 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50')
+                      className: "px-2 py-1 rounded-full text-[10px] font-bold transition-all " + (storeCat === cat ? 'bg-orange-700 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50')
                     }, (catIcons[cat] || '\uD83C\uDFEA') + ' ' + cat);
                   })
                 ),
@@ -5116,7 +5162,7 @@
                               upd('cart', [].concat(cart, [{ name: item.name, price: item.price, weight: w, pricePer: item.pricePer, qty: 1 }]));
                               upd('weightItemIdx', null);
                               if (typeof addToast === 'function') addToast('Added ' + w + ' ' + item.pricePer + ' ' + item.name + '!', 'success');
-                            }, className: "w-full px-3 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all" }, "\uD83D\uDED2 Add to Cart")
+                            }, className: "w-full px-3 py-1.5 bg-orange-700 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all" }, "\uD83D\uDED2 Add to Cart")
                           )
                         );
                       })
@@ -5184,7 +5230,7 @@
                           if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'grocery mental math');
                           if (typeof addXP === 'function') addXP(25, 'Money Math: Mental math grocery checkout');
                         }
-                      }, disabled: d.cartGuessTotal == null, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md disabled:opacity-40" }, '\uD83E\uDDE0 Check My Math'),
+                      }, disabled: d.cartGuessTotal == null, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md disabled:opacity-40" }, '\uD83E\uDDE0 Check My Math'),
                       d.cartCheckoutFb && React.createElement("p", { className: "text-xs font-bold " + (d.cartCheckoutFb.ok ? 'text-green-600' : 'text-red-500') }, d.cartCheckoutFb.msg),
                       React.createElement("button", { onClick: function () { upd('cart', []); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); }, className: "w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, "Clear Cart")
                     ),
@@ -5236,7 +5282,7 @@
                         d.wpProblem.hint && React.createElement("button", { onClick: function () { upd('wpShowHint', !d.wpShowHint); },
                           className: "text-xs font-bold text-amber-500 hover:text-amber-700"
                         }, d.wpShowHint ? '\uD83D\uDCA1 Hide Hint' : '\uD83D\uDCA1 Show Hint'),
-                        d.wpShowHint && React.createElement("p", { className: "text-xs text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200" }, d.wpProblem.hint),
+                        d.wpShowHint && React.createElement("p", { className: "text-xs text-amber-800 bg-amber-50 p-3 rounded-lg border border-amber-200" }, d.wpProblem.hint),
                         React.createElement("div", { className: "flex items-center gap-3" },
                           React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: "Your answer...",
                             value: d.wpAnswer !== null && d.wpAnswer !== undefined ? d.wpAnswer : '',
@@ -5250,7 +5296,7 @@
                               upd('wpFeedback', isRight ? { ok: true, msg: '\u2705 ' + t('stem.dissection.correct') } : { ok: false, msg: '\u274C The answer is ' + (typeof correct === 'number' ? fmt(correct) : correct) });
                               if (isRight && typeof addXP === 'function') addXP(25, 'Money Math: Word problem solved');
                             },
-                            className: "px-5 py-2 bg-violet-500 text-white font-bold rounded-xl hover:bg-violet-600 transition-all text-sm"
+                            className: "px-5 py-2 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-600 transition-all text-sm"
                           }, "\u2714 Check")
                         ),
                         d.wpFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.wpFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.wpFeedback.msg),
@@ -5368,7 +5414,7 @@
                                 : { ok: false, msg: '\u274C Tip: ' + fmt(tipAmt) + ' \u2192 Total: ' + fmt(totalWithTip) + ' \u00F7 ' + d.tipDiners + ' = ' + fmt(perPerson) + '/person' }
                               );
                               if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Tip calculation');
-                            }, className: "px-5 py-2 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
+                            }, className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
                           }, "\u2714 Check")
                         ),
                         d.tipFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.tipFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.tipFeedback.msg),
@@ -5388,7 +5434,7 @@
                             React.createElement("p", { className: "text-2xl font-black text-slate-400 line-through" }, fmt(d.discOriginal)),
                             React.createElement("div", { className: "flex items-center justify-center gap-2 mt-2" },
                               React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-600 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
-                              d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-600 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
+                              d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-800 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
                             ),
                             React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, "What is the final price" + (d.discCoupon > 0 ? ' after discount AND coupon' : '') + '?')
                           )
@@ -5408,7 +5454,7 @@
                                 : { ok: false, msg: '\u274C The sale price is ' + fmt(final_) + '. (' + fmt(d.discOriginal) + ' \u00D7 ' + (100 - d.discPercent) + '%)' + (d.discCoupon > 0 ? ' \u2212 ' + fmt(d.discCoupon) : '') }
                               );
                               if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Discount calculation');
-                            }, className: "px-5 py-2 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
+                            }, className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
                           }, "\u2714 Check")
                         ),
                         d.discFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.discFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.discFeedback.msg),
@@ -5481,7 +5527,7 @@
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDE99 Fewest Coins & Bills Challenge"),
-                    React.createElement("button", { onClick: genFewestCoinsChallenge, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all" }, !d.fcTarget ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genFewestCoinsChallenge, className: "px-3 py-1.5 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all" }, !d.fcTarget ? '\u2728 Start' : '\u21BB New')
                   ),
                   d.fcTarget && React.createElement("div", { className: "space-y-3" },
                     React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border border-amber-100" },
@@ -5524,7 +5570,7 @@
                             upd('fcFeedback', { ok: false, msg: '\u2705 Right amount, but ' + pieces + ' pieces. Can you do it in ' + d.fcOptimal + '?' });
                             if (typeof addXP === 'function') addXP(10, 'Money Math: Fewest coins challenge');
                           }
-                        }, className: "flex-1 px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-xs" }, "\u2714 Check"),
+                        }, className: "flex-1 px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-xs" }, "\u2714 Check"),
                         React.createElement("button", { onClick: function () { upd('fcPlaced', []); }, className: "px-4 py-2 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, "\u21BA Reset")
                       ),
                       d.fcFeedback && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.fcFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.fcFeedback.msg)
@@ -5536,7 +5582,7 @@
                 React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-emerald-50 rounded-xl p-4 border border-teal-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDED2 Best Deal: Unit Pricing"),
-                    React.createElement("button", { onClick: genUnitPriceProblem, className: "px-3 py-1.5 bg-teal-500 text-white text-xs font-bold rounded-lg hover:bg-teal-600 transition-all" }, !d.upItem ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genUnitPriceProblem, className: "px-3 py-1.5 bg-teal-700 text-white text-xs font-bold rounded-lg hover:bg-teal-600 transition-all" }, !d.upItem ? '\u2728 Start' : '\u21BB New')
                   ),
                   d.upItem && d.upA && d.upB && React.createElement("div", { className: "space-y-3" },
                     React.createElement("p", { className: "text-xs text-slate-500 text-center" }, "Which is the better deal for " + d.upItem.name + "?"),
@@ -5568,7 +5614,7 @@
                         : { ok: false, msg: '\u274C Option ' + correct + ' is cheaper. A: ' + fmt(unitA) + '/' + d.upItem.unit + ' vs B: ' + fmt(unitB) + '/' + d.upItem.unit }
                       );
                       if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Unit pricing');
-                    }, className: "w-full px-4 py-2 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600 transition-all text-sm" }, "\u2714 Check My Answer"),
+                    }, className: "w-full px-4 py-2 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-600 transition-all text-sm" }, "\u2714 Check My Answer"),
                     d.upFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.upFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.upFeedback.msg)
                   )
                 ),
@@ -5612,7 +5658,7 @@
                 React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, "\uD83E\uDDD0 Check the Change"),
-                    React.createElement("button", { onClick: genChangeCheck, className: "px-3 py-1.5 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition-all" }, d.ccPrice == null ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genChangeCheck, className: "px-3 py-1.5 bg-rose-700 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition-all" }, d.ccPrice == null ? '\u2728 Start' : '\u21BB New')
                   ),
                   d.ccPrice != null && React.createElement("div", { className: "space-y-3" },
                     React.createElement("div", { className: "bg-white rounded-lg border border-rose-100 p-4 text-center space-y-1" },
@@ -5626,8 +5672,8 @@
                       React.createElement("p", { className: "text-xs font-bold text-rose-600 mt-2" }, "Is this the right change? \uD83E\uDD14")
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                      React.createElement("button", { onClick: function () { upd('ccAnswer', true); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === true ? 'bg-green-500 text-white shadow-md' : 'bg-white border border-green-300 text-green-600 hover:bg-green-50') }, "\u2705 Correct!"),
-                      React.createElement("button", { onClick: function () { upd('ccAnswer', false); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === false ? 'bg-red-500 text-white shadow-md' : 'bg-white border border-red-300 text-red-600 hover:bg-red-50') }, "\u274C Wrong!")
+                      React.createElement("button", { onClick: function () { upd('ccAnswer', true); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === true ? 'bg-green-700 text-white shadow-md' : 'bg-white border border-green-300 text-green-600 hover:bg-green-50') }, "\u2705 Correct!"),
+                      React.createElement("button", { onClick: function () { upd('ccAnswer', false); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === false ? 'bg-red-700 text-white shadow-md' : 'bg-white border border-red-300 text-red-600 hover:bg-red-50') }, "\u274C Wrong!")
                     ),
                     d.ccAnswer != null && React.createElement("button", { onClick: function () {
                       var userSaysCorrect = d.ccAnswer;
@@ -5641,7 +5687,7 @@
                         if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 12, 'change check');
                         if (typeof addXP === 'function') addXP(12, 'Money Math: Change verification');
                       }
-                    }, className: "w-full px-4 py-2 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-all text-sm" }, "\u2714 Submit"),
+                    }, className: "w-full px-4 py-2 bg-rose-700 text-white font-bold rounded-xl hover:bg-rose-600 transition-all text-sm" }, "\u2714 Submit"),
                     d.ccFb && React.createElement("p", { className: "text-xs font-bold " + (d.ccFb.ok ? 'text-green-600' : 'text-red-500') }, d.ccFb.msg)
                   )
                 ),
@@ -5650,7 +5696,7 @@
                 React.createElement("div", { className: "bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-xl p-4 border border-fuchsia-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h4", { className: "text-sm font-bold text-fuchsia-800" }, "\uD83C\uDFF7 Coupon Stack"),
-                    React.createElement("button", { onClick: genCouponStack, className: "px-3 py-1.5 bg-fuchsia-500 text-white text-xs font-bold rounded-lg hover:bg-fuchsia-600 transition-all" }, d.csOriginal == null ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genCouponStack, className: "px-3 py-1.5 bg-fuchsia-700 text-white text-xs font-bold rounded-lg hover:bg-fuchsia-600 transition-all" }, d.csOriginal == null ? '\u2728 Start' : '\u21BB New')
                   ),
                   d.csOriginal != null && React.createElement("div", { className: "space-y-3" },
                     React.createElement("div", { className: "bg-white rounded-lg border border-fuchsia-100 p-4 space-y-2" },
@@ -5676,7 +5722,7 @@
                           if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'coupon stack');
                           if (typeof addXP === 'function') addXP(15, 'Money Math: Coupon stacking');
                         }
-                      }, className: "px-4 py-2 bg-fuchsia-500 text-white font-bold rounded-lg hover:bg-fuchsia-600 transition-all text-sm" }, "\u2714")
+                      }, className: "px-4 py-2 bg-fuchsia-700 text-white font-bold rounded-lg hover:bg-fuchsia-600 transition-all text-sm" }, "\u2714")
                     ),
                     d.csFb && React.createElement("p", { className: "text-xs font-bold " + (d.csFb.ok ? 'text-green-600' : 'text-red-500') }, d.csFb.msg)
                   )
@@ -5686,7 +5732,7 @@
                 React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-sky-50 rounded-xl p-4 border border-cyan-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCDD Word Problems"),
-                    React.createElement("button", { onClick: genStructuredProblem, className: "px-3 py-1.5 bg-cyan-500 text-white text-xs font-bold rounded-lg hover:bg-cyan-600 transition-all" }, !d.spText ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genStructuredProblem, className: "px-3 py-1.5 bg-cyan-700 text-white text-xs font-bold rounded-lg hover:bg-cyan-600 transition-all" }, !d.spText ? '\u2728 Start' : '\u21BB New')
                   ),
                   d.spText && d.spAnswers && React.createElement("div", { className: "space-y-3" },
                     React.createElement("div", { className: "bg-white rounded-lg border border-cyan-100 p-4" },
@@ -5719,7 +5765,7 @@
                         if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'word problem');
                         if (typeof addXP === 'function') addXP(15, 'Money Math: Word problem');
                       }
-                    }, className: "w-full px-4 py-2 bg-cyan-500 text-white font-bold rounded-xl hover:bg-cyan-600 transition-all text-sm" }, "\u2714 Check My Answers"),
+                    }, className: "w-full px-4 py-2 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-600 transition-all text-sm" }, "\u2714 Check My Answers"),
                     d.spFb && React.createElement("p", { className: "text-xs font-bold " + (d.spFb.ok ? 'text-green-600' : 'text-red-500') }, d.spFb.msg)
                   )
                 ),
@@ -5730,7 +5776,7 @@
                     React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDE99 Coin Drop"),
                     React.createElement("div", { className: "flex items-center gap-2" },
                       cdStreak > 0 && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 rounded-full text-[10px] font-black text-amber-700" }, '\uD83D\uDD25 ' + cdStreak + ' streak'),
-                      React.createElement("button", { onClick: genCoinDrop, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all shadow-sm" }, cdTarget === 0 ? '\u2728 Start' : '\u21BB New')
+                      React.createElement("button", { onClick: genCoinDrop, className: "px-3 py-1.5 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all shadow-sm" }, cdTarget === 0 ? '\u2728 Start' : '\u21BB New')
                     )
                   ),
                   cdTarget > 0 && React.createElement("div", { className: "space-y-3" },
@@ -5809,7 +5855,7 @@
                     // Feedback
                     cdFb && React.createElement("div", { className: "space-y-2" },
                       React.createElement("p", { className: "text-xs font-bold text-center " + (cdFb.ok ? 'text-green-600' : 'text-red-500') }, cdFb.msg),
-                      React.createElement("button", { onClick: genCoinDrop, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md" }, '\u27A1 Next Round')
+                      React.createElement("button", { onClick: genCoinDrop, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md" }, '\u27A1 Next Round')
                     )
                   )
                 ),
@@ -5980,7 +6026,7 @@
                     Object.keys(loanPresets).map(function (k) {
                       return React.createElement("button", { key: k, onClick: function () {
                         upd('loanType', k); upd('loanAmt', loanPresets[k].amt); upd('loanRate', loanPresets[k].rate); upd('loanTerm', loanPresets[k].term);
-                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (loanType === k ? 'bg-rose-500 text-white shadow-md' : 'bg-white text-rose-600 border border-rose-200 hover:bg-rose-50') }, loanPresets[k].label);
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (loanType === k ? 'bg-rose-700 text-white shadow-md' : 'bg-white text-rose-600 border border-rose-200 hover:bg-rose-50') }, loanPresets[k].label);
                     })
                   ),
                   // Controls
@@ -6061,7 +6107,7 @@
                     Object.keys(sgGoals).map(function (k) {
                       return React.createElement("button", { key: k, onClick: function () {
                         upd('sgGoal', k); upd('sgTarget', sgGoals[k].target); upd('sgHave', 0);
-                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (sgGoal === k ? 'bg-emerald-500 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50') }, sgGoals[k].label);
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (sgGoal === k ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50') }, sgGoals[k].label);
                     })
                   ),
                   // Controls
@@ -6128,7 +6174,7 @@
                 finSub === 'quiz' && React.createElement("div", { className: "bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-5 border border-yellow-200 space-y-4" },
                   React.createElement("div", { className: "flex items-center justify-between" },
                     React.createElement("h3", { className: "text-base font-bold text-amber-800" }, "\uD83E\uDDE0 Financial Literacy Quiz"),
-                    React.createElement("button", { onClick: genFinQuiz, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all" }, d.fqIdx == null ? '\u2728 Start Quiz' : '\u21BB Next Question')
+                    React.createElement("button", { onClick: genFinQuiz, className: "px-3 py-1.5 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all" }, d.fqIdx == null ? '\u2728 Start Quiz' : '\u21BB Next Question')
                   ),
                   d.fqIdx != null && (function () {
                     var fq = FIN_QUIZZES[d.fqIdx];
@@ -6156,9 +6202,9 @@
                           if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 20, 'finance quiz');
                           if (typeof addXP === 'function') addXP(20, 'Money Math: Financial literacy quiz');
                         }
-                      }, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm" }, "\u2714 Submit Answer"),
+                      }, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm" }, "\u2714 Submit Answer"),
                       d.fqFb && React.createElement("div", { className: "rounded-lg p-3 text-xs font-medium leading-relaxed " + (d.fqFb.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, d.fqFb.msg),
-                      d.fqFb && React.createElement("button", { onClick: genFinQuiz, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm" }, "\u27A1\uFE0F Next Question")
+                      d.fqFb && React.createElement("button", { onClick: genFinQuiz, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm" }, "\u27A1\uFE0F Next Question")
                     );
                   })()
                 )
@@ -7011,7 +7057,7 @@
                       }, className: "px-3 py-1.5 border border-amber-200 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" });
                     }),
                     dmOptions.length < 5 && React.createElement("button", { onClick: function () { upd('dmOptions', dmOptions.concat(['Option ' + String.fromCharCode(65 + dmOptions.length)])); },
-                      className: "px-3 py-1.5 border-2 border-dashed border-amber-300 rounded-lg text-xs font-bold text-amber-500 hover:bg-amber-50" }, "+")
+                      className: "px-3 py-1.5 border-2 border-dashed border-amber-300 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-50" }, "+")
                   )
                 ),
                 // Criteria input
@@ -7124,7 +7170,7 @@
                   }, className: "px-3 py-2 bg-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-300" }, "Reveal All"),
                   React.createElement("button", { onClick: function () {
                     upd('crLevel', crLevel + 1); upd('crFound', []); upd('crRevealed', false);
-                  }, className: "px-4 py-2 bg-orange-500 text-white rounded-xl text-xs font-bold hover:bg-orange-600 transition-colors" },
+                  }, className: "px-4 py-2 bg-orange-700 text-white rounded-xl text-xs font-bold hover:bg-orange-600 transition-colors" },
                     crLevel < crContracts.length - 1 ? 'Next Contract \u2192' : '\uD83D\uDD04 Start Over')
                 )
               ),
@@ -7189,7 +7235,7 @@
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   [{ id: 'tire', label: '\uD83D\uDE97 Gas Laws & Tires' }, { id: 'insulation', label: '\uD83C\uDFE0 Heat & Insulation' }, { id: 'cook', label: '\uD83C\uDF73 Cooking Chemistry' }, { id: 'circuit', label: '\u26A1 Circuits & Wattage' }, { id: 'car', label: '\uD83D\uDD27 Car Care' }, { id: 'plumbing', label: '\uD83E\uDEA0 Plumbing' }, { id: 'home', label: '\uD83C\uDFE0 Home Systems' }].map(function (s) {
                     return React.createElement("button", { key: s.id, onClick: function () { upd('asTab', s.id); },
-                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (asTab === s.id ? 'bg-teal-500 text-white shadow-md' : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50')
+                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (asTab === s.id ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50')
                     }, s.label);
                   })
                 ),
@@ -7506,10 +7552,10 @@
                       var ok = ccCurrentDash.choices[ccDashAnswer] === ccCurrentDash.name;
                       upd('ccDashFb', ok ? '\u2705 Correct! ' + ccCurrentDash.desc : '\u274C Not quite. ' + ccCurrentDash.desc);
                       if (ok && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 15, 'dashboard quiz');
-                    }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all" }, "Submit"),
+                    }, className: "w-full px-3 py-2 bg-orange-700 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all" }, "Submit"),
                     ccDashFb && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium " + (ccDashFb.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, ccDashFb),
                     ccDashFb && React.createElement("button", { onClick: function () { upd('ccDashQ', (ccDashQ + 1) % dashLights.length); upd('ccDashAnswer', null); upd('ccDashFb', null); },
-                      className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all mt-2" }, "\u27A1\uFE0F Next Light")
+                      className: "w-full px-3 py-2 bg-orange-700 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all mt-2" }, "\u27A1\uFE0F Next Light")
                   )
                 ),
 
@@ -7776,7 +7822,7 @@
                     // Low-flow toggle
                     React.createElement("div", { className: "flex items-center gap-3 mb-2" },
                       React.createElement("button", { onClick: function () { upd('wuLowFlow', !wuLowFlow); },
-                        className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (wuLowFlow ? 'bg-emerald-500 text-white' : 'bg-white text-slate-600 border border-slate-200') },
+                        className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (wuLowFlow ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200') },
                         wuLowFlow ? '\u2705 Low-Flow Fixtures ON' : '\uD83D\uDCA7 Standard Fixtures'),
                       React.createElement("span", { className: "text-[9px] text-slate-400" }, wuLowFlow ? "Using WaterSense\u00AE rates (saves ~40%)" : "Using standard fixture rates")
                     ),
@@ -7876,7 +7922,7 @@
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                     [{ id: 'hvac', label: '\uD83C\uDF2C\uFE0F HVAC' }, { id: 'water', label: '\uD83D\uDCA7 Pressure' }, { id: 'panel', label: '\u26A1 Panel' }, { id: 'energy', label: '\uD83D\uDD0C Energy Audit' }, { id: 'fire', label: '\uD83D\uDD25 Fire Safety' }, { id: 'insulation', label: '\uD83C\uDFE0 Insulation' }, { id: 'heating', label: '\uD83D\uDD25 Heating' }, { id: 'heatpump', label: '\u2668\uFE0F Heat Pump' }, { id: 'solar', label: '\u2600\uFE0F Solar vs Gas' }].map(function (s) {
                       return React.createElement("button", { key: s.id, onClick: function () { upd('homeTab', s.id); },
-                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50')
+                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-700 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50')
                       }, s.label);
                     })
                   ),
@@ -8036,10 +8082,10 @@
                         var ok = hsPanelAnswer === panelCurrentQ.answer;
                         upd('hsPanelFb', ok ? '\u2705 Correct! ' + panelCurrentQ.explain : '\u274C Not quite. ' + panelCurrentQ.explain);
                         if (ok && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 15, 'panel breaker quiz');
-                      }, className: "w-full px-3 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-xs hover:bg-purple-600 transition-all" }, "Submit"),
+                      }, className: "w-full px-3 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-xs hover:bg-purple-600 transition-all" }, "Submit"),
                       hsPanelFb && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium mt-2 " + (hsPanelFb.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, hsPanelFb),
                       hsPanelFb && React.createElement("button", { onClick: function () { upd('hsPanelQ', (hsPanelQ + 1) % panelQuizzes.length); upd('hsPanelAnswer', null); upd('hsPanelFb', null); },
-                        className: "w-full px-3 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-xs mt-2 hover:bg-purple-600 transition-all" }, "\u27A1\uFE0F Next Scenario")
+                        className: "w-full px-3 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-xs mt-2 hover:bg-purple-600 transition-all" }, "\u27A1\uFE0F Next Scenario")
                     ),
                     React.createElement("div", { className: "bg-red-50 rounded-lg p-3 border border-red-200" },
                       React.createElement("p", { className: "text-[10px] font-bold text-red-700" }, "\u26A0\uFE0F When to Call an Electrician:"),
@@ -8182,12 +8228,12 @@
                         upd('fsScore', newScore);
                         upd('fsFeedback', correct ? '\u2705 Correct! ' + fsQuizData[fsIdx].explain : '\u274C Incorrect. ' + fsQuizData[fsIdx].explain);
                         if (correct && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 12, 'fire safety quiz');
-                      }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "Check Answer"),
+                      }, className: "w-full px-3 py-2 bg-orange-700 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "Check Answer"),
                       fsFeedback !== '' && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium mt-2 " + (fsFeedback.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, fsFeedback),
                       fsFeedback !== '' && React.createElement("button", { onClick: function () {
                         if (fsIdx + 1 >= fsQuizData.length) { upd('fsComplete', true); } else { upd('fsIdx', fsIdx + 1); }
                         upd('fsCurrentPick', null); upd('fsFeedback', '');
-                      }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-2 hover:bg-orange-600 transition-all" },
+                      }, className: "w-full px-3 py-2 bg-orange-700 text-white font-bold rounded-lg text-xs mt-2 hover:bg-orange-600 transition-all" },
                         fsIdx + 1 >= fsQuizData.length ? "\uD83C\uDFC1 See Results" : "\u27A1\uFE0F Next Question")
                     ),
                     // Results
@@ -8196,7 +8242,7 @@
                       React.createElement("p", { className: "text-2xl font-black " + (fsGrade === 'A' ? 'text-emerald-600' : fsGrade === 'B' ? 'text-sky-600' : fsGrade === 'C' ? 'text-amber-600' : 'text-red-600') }, fsScore + "/" + fsQuizData.length),
                       React.createElement("p", { className: "text-xs font-bold text-slate-500 mt-1" }, fsGrade === 'A' ? 'Fire Safety Expert! You know your stuff.' : fsGrade === 'B' ? 'Good Knowledge! Review a few areas.' : fsGrade === 'C' ? 'Needs Improvement. Study fire safety basics.' : 'Critical! Please review home fire safety immediately.'),
                       React.createElement("button", { onClick: function () { upd('fsIdx', 0); upd('fsScore', 0); upd('fsCurrentPick', null); upd('fsFeedback', ''); upd('fsComplete', false); },
-                        className: "px-4 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "\uD83D\uDD04 Retake Quiz")
+                        className: "px-4 py-2 bg-orange-700 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "\uD83D\uDD04 Retake Quiz")
                     ),
                     // Quick tips
                     React.createElement("div", { className: "bg-red-50 rounded-lg p-3 border border-red-200" },
@@ -8219,7 +8265,7 @@
                       React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-1" },
                         insZoneData.map(function (z) {
                           return React.createElement("button", { key: z.zone, onClick: function () { upd('insZone', z.zone); },
-                            className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (insZone === z.zone ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50') },
+                            className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (insZone === z.zone ? 'bg-purple-700 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50') },
                             "Zone " + z.zone + " " + z.label);
                         })
                       )
@@ -8309,7 +8355,7 @@
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                   htSrcSystems.map(function (s) {
                     return React.createElement("button", { key: s.id, onClick: function () { upd('htSrcFuel', s.id); },
-                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (htSrcFuel === s.id ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50')
+                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (htSrcFuel === s.id ? 'bg-orange-700 text-white shadow-md' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50')
                     }, s.icon + " " + s.name);
                   })
                 ),
@@ -8842,7 +8888,7 @@
                 React.createElement("div", { className: "flex gap-2 items-center" },
                   !(gridFeedback && gridFeedback.hinted) && React.createElement("button", { onClick: () => { setGridFeedback(prev => Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) })); }, className: "px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-300" }, "\uD83D\uDCA1 Hint (\u00BD credit)"),
                   (gridFeedback && gridFeedback.hinted) && React.createElement("span", { className: "text-[10px] text-amber-500 italic" }, "\uD83D\uDCA1 Hint used \u2014 rise & run filled in"),
-                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600" }, "\u2714 Check")
+                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600" }, "\u2714 Check")
                 ),
                 gridFeedback && gridFeedback.msg && React.createElement("p", { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
               ),
@@ -8851,7 +8897,7 @@
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800 mb-2" }, "\uD83D\uDCCD Plot (", gridChallenge.target.x, ", ", gridChallenge.target.y, ")"),
                 React.createElement("div", { className: "flex gap-2 items-center" },
                   React.createElement("span", { className: "text-xs text-cyan-600" }, "Points: ", React.createElement("span", { className: "font-bold" }, gridPoints.length)),
-                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-cyan-500 text-white font-bold rounded-lg text-sm hover:bg-cyan-600" }, "\u2714 Check")
+                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-600" }, "\u2714 Check")
                 ),
                 gridFeedback && gridFeedback.msg && React.createElement("p", { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
               ),
@@ -9110,7 +9156,7 @@
               className: "font-bold text-purple-900"
             }, angleFeedback ? (angleValue + "\xB0") : "\u2753")), /*#__PURE__*/React.createElement("button", {
               onClick: checkAngle,
-              className: "ml-auto px-4 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all"
+              className: "ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all"
             }, "\u2714 Check")), angleFeedback && /*#__PURE__*/React.createElement("p", {
               className: 'text-sm font-bold mt-2 ' + (angleFeedback.correct ? 'text-green-600' : 'text-red-600')
             }, angleFeedback.msg)));
@@ -9188,7 +9234,7 @@
                 setMultTableHidden(!multTableHidden);
                 setMultTableRevealed(new Set());
               },
-              className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' + (multTableHidden ? 'bg-pink-500 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200')
+              className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' + (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200')
             }, multTableHidden ? '🙈 Hidden' : '👁 Visible'), /*#__PURE__*/React.createElement("div", {
               className: "text-xs font-bold text-emerald-600"
             }, exploreScore.correct, "/", exploreScore.total))),
@@ -9204,14 +9250,14 @@
                     React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: { width: Math.round((_mt.timeLeft / 120) * 100) + '%', background: _mt.timeLeft > 30 ? 'linear-gradient(90deg, #f59e0b, #fb923c)' : 'linear-gradient(90deg, #ef4444, #f87171)' } })
                   )
                 ),
-                React.createElement("button", { onClick: function () { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); addToast('⏱️ Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info'); }, className: "px-3 py-1.5 bg-red-500 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all" }, "Stop")
+                React.createElement("button", { onClick: function () { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); addToast('⏱️ Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info'); }, className: "px-3 py-1.5 bg-red-700 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all" }, "Stop")
               ),
               // Speed Run results banner (when just ended)
               !_mt.active && _mt.total > 0 && _mt.timeLeft === 0 && React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border-2 border-emerald-300 text-center" },
                 React.createElement("p", { className: "text-lg font-bold text-emerald-800" }, "🏆 Speed Run Complete!"),
                 React.createElement("p", { className: "text-2xl font-bold text-emerald-600 mt-1" }, _mt.score + " / " + _mt.total),
                 React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, _mt.total > 0 ? Math.round((_mt.score / _mt.total) * 100) + "% accuracy" : ""),
-                React.createElement("button", { onClick: function () { _mtUpd({ score: 0, total: 0, timeLeft: 120 }); }, className: "mt-2 px-4 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all" }, "🔄 Try Again")
+                React.createElement("button", { onClick: function () { _mtUpd({ score: 0, total: 0, timeLeft: 120 }); }, className: "mt-2 px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all" }, "🔄 Try Again")
               ),
             /*#__PURE__*/React.createElement("div", {
                 className: "bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto"
@@ -9252,7 +9298,7 @@
                     setMultTableAnswer('');
                     setMultTableFeedback(null);
                   },
-                  className: 'w-8 h-8 text-[11px] font-mono cursor-pointer transition-all border border-slate-100 ' + (isExact ? 'bg-pink-500 text-white font-bold scale-110 shadow-lg rounded' : isHovered ? 'bg-pink-50 text-pink-800 font-semibold' : isPerfectSquare ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50')
+                  className: 'w-8 h-8 text-[11px] font-mono cursor-pointer transition-all border border-slate-100 ' + (isExact ? 'bg-pink-700 text-white font-bold scale-110 shadow-lg rounded' : isHovered ? 'bg-pink-50 text-pink-800 font-semibold' : isPerfectSquare ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50')
                 }, multTableHidden && !isExact && !multTableRevealed.has(r + '-' + c) ? '?' : val);
               })))))), /*#__PURE__*/React.createElement("div", {
                 className: "flex gap-2 flex-wrap"
@@ -9314,7 +9360,7 @@
                 }), /*#__PURE__*/React.createElement("button", {
                   onClick: checkMult,
                   disabled: !multTableAnswer,
-                  className: "px-4 py-2 bg-pink-500 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40"
+                  className: "px-4 py-2 bg-pink-700 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40"
                 }, "\u2714 Check")), multTableFeedback && /*#__PURE__*/React.createElement("p", {
                   className: 'text-sm font-bold mt-2 text-center ' + (multTableFeedback.correct ? 'text-green-600' : 'text-red-600')
                 }, multTableFeedback.msg)), /*#__PURE__*/React.createElement("div", {
@@ -9468,7 +9514,7 @@
                 if (lblEl) lblEl.value = '';
               }
             },
-            className: "px-4 py-2 bg-blue-500 text-white font-bold text-sm rounded-lg hover:bg-blue-600"
+            className: "px-4 py-2 bg-blue-700 text-white font-bold text-sm rounded-lg hover:bg-blue-600"
           }, "+ Add")), /*#__PURE__*/React.createElement("div", {
             className: "flex flex-wrap gap-2"
           }, numberLineMarkers.map((m, i) => /*#__PURE__*/React.createElement("span", {
@@ -9524,7 +9570,7 @@
           }, ['easy', 'medium', 'hard'].map(d => /*#__PURE__*/React.createElement("button", {
             key: d,
             onClick: () => setExploreDifficulty(d),
-            className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+            className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
           }, d)))), /*#__PURE__*/React.createElement("div", {
             className: "flex items-center gap-2"
           }, /*#__PURE__*/React.createElement("div", {
@@ -9780,14 +9826,14 @@
           }, ['easy', 'medium', 'hard'].map(d => /*#__PURE__*/React.createElement("button", {
             key: d,
             onClick: () => setExploreDifficulty(d),
-            className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+            className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
           }, d)))), /*#__PURE__*/React.createElement("div", {
             className: "flex items-center gap-2"
           }, /*#__PURE__*/React.createElement("div", {
             className: "text-xs font-bold text-amber-600"
           }, exploreScore.correct, "/", exploreScore.total), exploreScore.total > 0 && /*#__PURE__*/React.createElement("button", {
             onClick: submitExploreScore,
-            className: "text-[10px] font-bold bg-amber-600 text-white px-2 py-0.5 rounded-full hover:bg-amber-700"
+            className: "text-[10px] font-bold bg-amber-700 text-white px-2 py-0.5 rounded-full hover:bg-amber-700"
           }, "\uD83D\uDCBE Save"))), !areaChallenge ? /*#__PURE__*/React.createElement("button", {
             onClick: () => {
               const adiff = getAdaptiveDifficulty();
@@ -9859,7 +9905,7 @@
               }));
               if (ans === areaChallenge.answer && typeof awardStemXP === 'function') awardStemXP('multtable', 5, 'area model');
             },
-            className: "px-4 py-2 bg-amber-600 text-white font-bold rounded-lg text-sm hover:bg-amber-700"
+            className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-700"
           }, "Check")), areaFeedback && /*#__PURE__*/React.createElement("p", {
             className: "text-sm font-bold " + (areaFeedback.correct ? "text-green-600" : "text-red-600")
           }, areaFeedback.msg), areaFeedback && /*#__PURE__*/React.createElement("button", {
@@ -10241,7 +10287,7 @@
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { style: { fontSize: '18px' } }, "\uD83C\uDFAF"),
                   React.createElement("h4", { className: "text-sm font-black text-red-800" }, "Calculus Challenges"),
-                  cScore > 0 && React.createElement("span", { className: "ml-auto text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200" }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
+                  cScore > 0 && React.createElement("span", { className: "ml-auto text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200" }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
                 ),
                 // Mode selector
                 React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
@@ -10295,7 +10341,7 @@
                     }),
                     React.createElement("button", {
                       onClick: function () { if (d._calcExactInput) checkCalcAnswer(d._calcExactInput); },
-                      className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-md",
+                      className: "px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-md",
                       'aria-label': 'Submit answer'
                     }, "Check \u2192")
                   )
@@ -10859,11 +10905,11 @@
             // Mode tabs
             React.createElement("div", { className: "flex gap-2 mb-3" },
               [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing Wave']].map(function (m) {
-                return React.createElement("button", { key: m[0], onClick: function () { upd('waveMode', m[0]); }, className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
+                return React.createElement("button", { key: m[0], onClick: function () { upd('waveMode', m[0]); }, className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
               }),
               React.createElement("button", {
                 onClick: toggleSound,
-                className: "ml-auto px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-500 text-white animate-pulse' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                className: "ml-auto px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-700 text-white animate-pulse' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
               }, d.soundPlaying ? '\uD83D\uDD0A Stop Sound' : '\uD83D\uDD08 Play Sound (' + (d.frequency * 100) + 'Hz)')
             ),
             // Canvas
@@ -10896,7 +10942,7 @@
               ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
                 React.createElement("button", {
                   key: wt, onClick: () => upd('waveType', wt),
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-600 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
                 }, wt.charAt(0).toUpperCase() + wt.slice(1))
               )
             ),
@@ -10904,7 +10950,7 @@
             waveMode === 'standing' && React.createElement("div", { className: "flex gap-2 mb-3 items-center" },
               React.createElement("span", { className: "text-xs font-bold text-cyan-600" }, "Harmonic:"),
               [1, 2, 3, 4, 5, 6].map(function (h) {
-                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-600 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
+                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
               }),
               React.createElement("span", { className: "text-xs text-slate-500 ml-2" }, (d.harmonic || 1) + " node" + ((d.harmonic || 1) > 1 ? 's' : '') + ", " + ((d.harmonic || 1) + 1) + " antinode" + ((d.harmonic || 1) > 0 ? 's' : ''))
             ),
@@ -11012,7 +11058,7 @@
                 onClick: function () {
                   var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
                   upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " transition-all"
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " transition-all"
               }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
               React.createElement("button", {
                 onClick: function () {
@@ -11023,7 +11069,7 @@
                   upd('matchTarget', { amp: ta, freq: tf, isEquation: false });
                   upd('matchXpClaimed', false);
                   addToast(t('stem.wave.ud83cudfaf_match_the_yellow_dashed'), 'info');
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && !d.matchTarget.isEquation ? 'bg-amber-100 text-amber-700' : 'bg-amber-500 text-white') + " transition-all"
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && !d.matchTarget.isEquation ? 'bg-amber-100 text-amber-700' : 'bg-amber-700 text-white') + " transition-all"
               }, d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
               React.createElement("button", {
                 onClick: function () {
@@ -11034,7 +11080,7 @@
                   upd('matchTarget', { amp: ta, freq: tf, isEquation: true });
                   upd('matchXpClaimed', false);
                   addToast("Match the mathematical equation!", 'info');
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && d.matchTarget.isEquation ? 'bg-purple-100 text-purple-700' : 'bg-purple-500 text-white') + " transition-all"
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && d.matchTarget.isEquation ? 'bg-purple-100 text-purple-700' : 'bg-purple-700 text-white') + " transition-all"
               }, (d.matchTarget && d.matchTarget.isEquation) ? "\uD83D\uDD04 New Equation" : "\uD83D\uDCDD Match Equation"),
               d.matchTarget && React.createElement("button", {
                 onClick: function () { upd('matchTarget', null); upd('matchXpClaimed', false); },
@@ -12593,7 +12639,7 @@
               React.createElement("span", { className: "text-xs text-slate-400 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
               React.createElement("div", { className: "flex gap-1 ml-auto" },
                 ["observe", "play", "quiz"].map(function (m) {
-                  return React.createElement("button", { key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
+                  return React.createElement("button", { key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
                 })
               )
             ),
@@ -12625,7 +12671,7 @@
                   className: "w-16 accent-green-600"
                 }),
                 (d.simSpeed || 1) + "x",
-                React.createElement("button", { onClick: function () { var p = !d.paused; upd("paused", p); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-600 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
+                React.createElement("button", { onClick: function () { var p = !d.paused; upd("paused", p); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
               ),
               // ── Play mode instructions overlay ──
               d.playAsOrganism && d.showPlayInstructions !== false && (() => {
@@ -12997,7 +13043,7 @@
             ),
             // Toggles
             React.createElement("div", { className: "flex gap-2 mt-3 mb-2" },
-              React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-600 border border-amber-200') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
+              React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-200') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
               React.createElement("button", { onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-200') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
               roots.length > 0 && React.createElement("span", { className: "px-2 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold border border-red-200" }, "\uD83D\uDCCD " + roots.length + " root" + (roots.length > 1 ? 's' : '') + ": x = " + roots.map(r => r.toFixed(2)).join(', ')),
               yIntercept >= yR.yMin && yIntercept <= yR.yMax && React.createElement("span", { className: "px-2 py-1.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold border border-green-200" }, "\uD83D\uDFE2 y-int: " + yIntercept.toFixed(2))
@@ -13785,7 +13831,7 @@
               }, "\uD83D\uDE80 Launch!"),
               React.createElement("button", {
                 onClick: function () { upd('airResist', !d.airResist); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-500 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
               }, "\uD83C\uDF2C\uFE0F Air Drag " + (d.airResist ? 'ON' : 'OFF')),
               PRESETS.map(function (p) {
                 return React.createElement("button", {
@@ -13862,7 +13908,7 @@
                     opts.sort(function () { return Math.random() - 0.5; });
                     upd('quizActive', true); upd('quizAngle', qa); upd('quizVel', qv); upd('quizGrav', qg);
                     upd('quizAnswer', qRange); upd('quizOptions', opts); upd('quizPicked', null); upd('quizFeedback', null);
-                  }, className: "px-3 py-1 bg-amber-600 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-all"
+                  }, className: "px-3 py-1 bg-amber-700 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-all"
                 }, d.quizActive ? "\uD83D\uDD04 New Question" : "\u25B6 Start Quiz")
               ),
               d.quizActive && React.createElement("div", { className: "space-y-2" },
@@ -14919,7 +14965,7 @@
                   React.createElement("label", { className: "text-[10px] font-bold text-slate-400 block" }, "Y"),
                   React.createElement("input", { type: "number", step: "0.1", id: "dp-y-input", className: "w-20 px-2 py-1 text-sm border rounded text-center font-mono", placeholder: "0" })
                 ),
-                React.createElement("button", { onClick: () => { const xi = document.getElementById('dp-x-input'); const yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { upd('points', [...d.points, { x: parseFloat(xi.value), y: parseFloat(yi.value) }]); xi.value = ''; yi.value = ''; } }, className: "px-3 py-1 bg-teal-600 text-white font-bold rounded text-sm hover:bg-teal-700" }, "+ Add")
+                React.createElement("button", { onClick: () => { const xi = document.getElementById('dp-x-input'); const yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { upd('points', [...d.points, { x: parseFloat(xi.value), y: parseFloat(yi.value) }]); xi.value = ''; yi.value = ''; } }, className: "px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-700" }, "+ Add")
               ),
               d.points.length > 0 && React.createElement("div", { className: "max-h-24 overflow-y-auto text-xs font-mono text-slate-500" },
                 d.points.map((p, i) => React.createElement("span", { key: i, className: "inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1" }, "(" + p.x + "," + p.y + ")"))
@@ -14973,7 +15019,7 @@
               }
               return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3 mb-2" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("button", { onClick: function () { var q = makeDpQuiz(); upd('dpQuiz', q); upd('points', q.pts); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-600 text-white') + " hover:opacity-90 transition-all" }, dpQuiz ? '🔄 Next Scenario' : '📊 Predict Correlation'),
+                  React.createElement("button", { onClick: function () { var q = makeDpQuiz(); upd('dpQuiz', q); upd('points', q.pts); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-700 text-white') + " hover:opacity-90 transition-all" }, dpQuiz ? '🔄 Next Scenario' : '📊 Predict Correlation'),
                   dpScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + dpScore + ' correct')
                 ),
                 dpQuiz && !dpQuiz.answered && React.createElement("div", { className: "bg-teal-50 rounded-xl p-3 border border-teal-200" },
@@ -16007,7 +16053,7 @@
                 }
                 return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3" },
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                    React.createElement("button", { onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? '🔄 Next Question' : '🔬 Element Quiz'),
+                    React.createElement("button", { onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? '🔄 Next Question' : '🔬 Element Quiz'),
                     elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + elScore + ' | 🔥 ' + elStreak)
                   ),
                   elQuiz && !elQuiz.answered && React.createElement("div", { className: "bg-cyan-50 rounded-xl p-3 border border-cyan-200" },
@@ -16253,11 +16299,11 @@
                     React.createElement("span", { className: "text-sm font-bold text-emerald-800" }, scene.name),
                     React.createElement("button", {
                       onClick: () => { upd('ispyScene', null); upd('ispyTarget', null); upd('ispyFound', []); upd('ispyWrong', []); upd('ispyRoundComplete', false); },
-                      className: "text-xs text-slate-400 hover:text-slate-600 px-2 py-1 rounded-lg hover:bg-white/60 transition-all"
+                      className: "text-xs text-slate-600 hover:text-slate-600 px-2 py-1 rounded-lg hover:bg-white/60 transition-all"
                     }, "✕ Exit Scene")
                   ),
                   React.createElement("p", { className: "text-sm font-bold text-emerald-700" },
-                    "🔍 Find all objects containing ", React.createElement("span", { className: "px-2 py-0.5 bg-emerald-600 text-white rounded-lg text-sm" }, targetEl), "!"
+                    "🔍 Find all objects containing ", React.createElement("span", { className: "px-2 py-0.5 bg-emerald-700 text-white rounded-lg text-sm" }, targetEl), "!"
                   ),
                   React.createElement("div", { className: "flex items-center gap-2 mt-2" },
                     React.createElement("div", { className: "flex-1 h-2 bg-emerald-100 rounded-full overflow-hidden" },
@@ -16291,7 +16337,7 @@
                         React.createElement("div", { className: "flex flex-wrap gap-0.5 justify-center mt-1" },
                           obj.elements.map((el, ei) => React.createElement("span", {
                             key: ei,
-                            className: "px-1.5 py-0.5 rounded text-[8px] font-bold " + (el === targetEl ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600')
+                            className: "px-1.5 py-0.5 rounded text-[8px] font-bold " + (el === targetEl ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600')
                           }, el))
                         ),
                         isFound && React.createElement("p", { className: "text-[8px] text-emerald-600 italic mt-1 leading-tight" }, obj.fact)
@@ -16308,7 +16354,7 @@
                   React.createElement("div", { className: "flex gap-2 justify-center" },
                     React.createElement("button", {
                       onClick: () => startISpyRound(scene.id),
-                      className: "px-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all text-sm"
+                      className: "px-4 py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all text-sm"
                     }, "🔄 New Element"),
                     React.createElement("button", {
                       onClick: () => { upd('ispyScene', null); upd('ispyTarget', null); upd('ispyFound', []); upd('ispyWrong', []); upd('ispyRoundComplete', false); },
@@ -16697,7 +16743,7 @@
               React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto" },
                 React.createElement("button", {
                   onClick: () => upd('paused', !paused),
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-700 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
                 }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
                 React.createElement("div", { className: "flex items-center gap-1.5 flex-1 max-w-[180px] bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10" },
                   React.createElement("span", { className: "text-[9px] text-white/60 font-bold whitespace-nowrap" }, "Speed"),
@@ -18153,7 +18199,12 @@
             { q: 'What stage comes after a Red Giant for a massive star?', a: 'Supernova', options: ['White dwarf', 'Planetary nebula', 'Supernova', 'Protostar'] },
             { q: 'How long does a star with 1 solar mass live?', a: '~10 billion years', options: ['~1 million years', '~100 million years', '~10 billion years', '~1 trillion years'] },
             { q: 'What is a protostar?', a: 'A star forming from a collapsing gas cloud', options: ['A dying star', 'A star forming from a collapsing gas cloud', 'A type of neutron star', 'A binary star system'] },
-            { q: 'What determines a star\'s final fate?', a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] }
+            { q: 'What determines a star\'s final fate?', a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] },
+            { q: 'What shape are planetary orbits?', a: 'Ellipses', options: ['Circles', 'Ellipses', 'Parabolas', 'Spirals'] },
+            { q: 'What does Kepler\'s 2nd Law describe?', a: 'Equal areas in equal times', options: ['Orbital speed is constant', 'Equal areas in equal times', 'Orbits are circular', 'Gravity weakens with distance'] },
+            { q: 'What happens if a planet exceeds escape velocity?', a: 'It leaves the star system', options: ['It speeds up forever', 'It leaves the star system', 'It crashes into the star', 'Its orbit becomes circular'] },
+            { q: 'Kepler\'s 3rd Law relates orbital period to what?', a: 'Semi-major axis', options: ['Planet mass', 'Semi-major axis', 'Eccentricity', 'Star brightness'] },
+            { q: 'Where is a planet fastest in an elliptical orbit?', a: 'At perihelion (closest to star)', options: ['At aphelion (farthest)', 'At perihelion (closest to star)', 'Speed is constant', 'At the semi-minor axis'] }
           ];
 
           // ── Scale data ──
@@ -18669,7 +18720,7 @@
               React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
               React.createElement("div", { className: "flex gap-1 ml-auto bg-slate-100 rounded-lg p-0.5" },
-                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }].map(function (m) {
+                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'orbital', icon: '\uD83E\uDE90', label: 'Orbits' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }].map(function (m) {
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
                   return React.createElement("button", {
                     key: m.key, onClick: function () {
@@ -18796,14 +18847,14 @@
                         if (Math.random() < 0.15 && cv && cv._triggerSupernova) cv._triggerSupernova();
                       }, 150);
                     },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.isPlaying ? "bg-red-700 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
                   }, d.isPlaying ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
                   React.createElement("button", {
                     onClick: function () {
                       var cv = document.querySelector('[data-galaxy-canvas]');
                       if (cv && cv._triggerSupernova) cv._triggerSupernova();
                     },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all"
                   }, "\uD83D\uDCA5 Supernova!"),
                   React.createElement("button", {
                     onClick: function () { upd("quizMode", false); upd("simMode", "star"); },
@@ -18933,13 +18984,13 @@
             // ══════════════════════════════════════════════
             // ── Star Lifespan Simulation Mode ──
             // ══════════════════════════════════════════════
-            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "flex-start" } },
+            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "stretch" } },
 
               // ── RIGHT COLUMN: Star Visualization (sticky) ──
-              React.createElement("div", { style: { flex: "1 1 58%", position: "sticky", top: "16px", display: "flex", flexDirection: "column", gap: "16px", order: 2 } },
+              React.createElement("div", { style: { flex: "1 1 58%", position: "sticky", top: "16px", alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: "16px", order: 2, minHeight: "450px" } },
 
               // ── Animated Star Canvas ──
-              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: '450px', minHeight: '450px' } },
+              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { flex: '1 1 auto', minHeight: '450px' } },
                 React.createElement("canvas", {
                   "data-star-life-canvas": "true",
                   ref: function (cvEl) {
@@ -19268,6 +19319,418 @@
                 React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
               )
             ),
+
+            // ══════════════════════════════════════════════
+            // ── Orbital Mechanics Simulation Mode ──
+            // ══════════════════════════════════════════════
+            !d.quizMode && simMode === 'orbital' && React.createElement("div", { className: "animate-in fade-in duration-300" },
+
+              // ── Preset bar ──
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+                [
+                  { key: 'earth', label: '\uD83C\uDF0D Earth', au: 1.0, vFrac: 1.0, starM: 1.0, desc: 'Nearly circular orbit at 1 AU' },
+                  { key: 'mercury', label: '\u263F Mercury', au: 0.387, vFrac: 1.0, starM: 1.0, desc: 'Close-in orbit with high eccentricity' },
+                  { key: 'mars', label: '\uD83D\uDD34 Mars', au: 1.524, vFrac: 1.0, starM: 1.0, desc: 'Wider orbit at 1.52 AU' },
+                  { key: 'halley', label: '\u2604\uFE0F Halley', au: 0.586, vFrac: 1.82, starM: 1.0, desc: 'Highly eccentric comet orbit (e\u22480.97)' },
+                  { key: 'hotJupiter', label: '\uD83E\uDE90 Hot Jupiter', au: 0.05, vFrac: 1.0, starM: 1.2, desc: 'Gas giant orbiting extremely close to its star' },
+                  { key: 'escape', label: '\uD83D\uDE80 Escape!', au: 1.0, vFrac: 1.42, starM: 1.0, desc: 'Exceeds escape velocity \u2014 hyperbolic trajectory' }
+                ].map(function (p) {
+                  return React.createElement("button", {
+                    key: p.key,
+                    onClick: function () {
+                      upd("orbitalAU", p.au); upd("orbitalVFrac", p.vFrac); upd("orbitalStarMass", p.starM);
+                      upd("orbitalPreset", p.key); upd("orbitalInfo", p.desc);
+                      var cv = document.querySelector('[data-orbital-canvas]');
+                      if (cv && cv._resetSim) cv._resetSim(p.starM, p.au, p.vFrac);
+                    },
+                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " +
+                      ((d.orbitalPreset || 'earth') === p.key ? 'border-cyan-400 bg-cyan-100 text-cyan-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-200')
+                  }, p.label);
+                })
+              ),
+
+              // ── Info card ──
+              d.orbitalInfo && React.createElement("div", { className: "mb-3 px-3 py-2 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg border border-cyan-100 text-[11px]" },
+                React.createElement("span", { className: "font-bold text-cyan-700" }, "\uD83D\uDCCD "),
+                React.createElement("span", { className: "text-slate-600" }, d.orbitalInfo)
+              ),
+
+              // ── 2D Canvas ──
+              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-200 bg-[#020210]", style: { height: '520px' } },
+                React.createElement("canvas", {
+                  "data-orbital-canvas": "true",
+                  ref: function (cvEl) {
+                    if (!cvEl || cvEl._orbitalInit) return;
+                    cvEl._orbitalInit = true;
+                    var dpr = window.devicePixelRatio || 1;
+                    var ow = cvEl.offsetWidth, oh = cvEl.offsetHeight;
+                    if (!ow || !oh) { cvEl._orbitalInit = false; requestAnimationFrame(function () { cvEl._orbitalInit = false; }); return; }
+                    var W = cvEl.width = ow * dpr, H = cvEl.height = oh * dpr;
+                    var ctx = cvEl.getContext('2d');
+                    var cx = W / 2, cy = H / 2;
+                    var SCALE = Math.min(W, H) * 0.35;
+                    var G_SCALED = 4 * Math.PI * Math.PI;
+                    var dt = 0.0002;
+                    var timeScale = 1;
+                    var starMass = 1.0;
+                    var px, py, vx, vy;
+                    var trail = [];
+                    var maxTrail = 2000;
+                    var tick = 0;
+                    var totalTime = 0;
+                    var xpAwarded = {};
+                    var showKepler1 = false, showKepler2 = false, showKepler3 = false;
+                    var sweepPoints = [];
+                    var sweepInterval = 60;
+                    var sweepAreas = [];
+                    var paused = false;
+
+                    function initOrbit(sM, au, vFrac) {
+                      starMass = sM || 1.0;
+                      var r0 = au || 1.0;
+                      var vCirc = Math.sqrt(G_SCALED * starMass / r0);
+                      px = r0; py = 0;
+                      vx = 0; vy = vCirc * (vFrac || 1.0);
+                      trail = []; sweepPoints = []; sweepAreas = [];
+                      totalTime = 0; tick = 0;
+                    }
+                    initOrbit(d.orbitalStarMass || 1.0, d.orbitalAU || 1.0, d.orbitalVFrac || 1.0);
+                    cvEl._resetSim = function (sM, au, vFrac) { initOrbit(sM, au, vFrac); };
+
+                    function computeElements() {
+                      var r = Math.sqrt(px * px + py * py);
+                      var v2 = vx * vx + vy * vy;
+                      var mu = G_SCALED * starMass;
+                      var energy = 0.5 * v2 - mu / r;
+                      var h = px * vy - py * vx;
+                      var a = -mu / (2 * energy);
+                      var ecc = Math.sqrt(Math.max(0, 1 + 2 * energy * h * h / (mu * mu)));
+                      var period = a > 0 ? 2 * Math.PI * Math.sqrt(a * a * a / mu) : Infinity;
+                      var vEsc = Math.sqrt(2 * mu / r);
+                      var isEscaping = energy >= 0;
+                      return { a: a, ecc: ecc, period: period, energy: energy, h: h, r: r, v: Math.sqrt(v2), vEsc: vEsc, isEscaping: isEscaping, KE: 0.5 * v2, PE: -mu / r };
+                    }
+
+                    cvEl._setKepler = function (k, val) {
+                      if (k === 1) showKepler1 = val;
+                      if (k === 2) { showKepler2 = val; sweepPoints = []; sweepAreas = []; }
+                      if (k === 3) showKepler3 = val;
+                    };
+                    cvEl._setPaused = function (v) { paused = v; };
+                    cvEl._setTimeScale = function (v) { timeScale = v; };
+
+                    function toScreen(x, y) { return { x: cx + x * SCALE, y: cy - y * SCALE }; }
+
+                    var bgStars = [];
+                    for (var bsi = 0; bsi < 200; bsi++) {
+                      bgStars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + 0.5, b: Math.random() });
+                    }
+
+                    function draw() {
+                      cvEl._orbitalAnim = requestAnimationFrame(draw);
+                      tick++;
+                      if (!paused) {
+                        var steps = Math.max(1, Math.round(timeScale));
+                        for (var si = 0; si < steps; si++) {
+                          var r2 = px * px + py * py;
+                          var r = Math.sqrt(r2);
+                          if (r < 0.005) { initOrbit(starMass, 1.0, 1.0); break; }
+                          var r3 = r2 * r;
+                          var mu = G_SCALED * starMass;
+                          var ax = -mu * px / r3, ay = -mu * py / r3;
+                          vx += 0.5 * ax * dt; vy += 0.5 * ay * dt;
+                          px += vx * dt; py += vy * dt;
+                          r2 = px * px + py * py; r = Math.sqrt(r2); r3 = r2 * r;
+                          var ax2 = -mu * px / r3, ay2 = -mu * py / r3;
+                          vx += 0.5 * ax2 * dt; vy += 0.5 * ay2 * dt;
+                          totalTime += dt;
+                        }
+                        if (tick % 2 === 0 && Math.sqrt(px * px + py * py) < 12) {
+                          trail.push({ x: px, y: py });
+                          if (trail.length > maxTrail) trail.shift();
+                        }
+                        if (showKepler2 && tick % sweepInterval === 0) {
+                          sweepPoints.push({ x: px, y: py, angle: Math.atan2(py, px), t: totalTime });
+                          if (sweepPoints.length > 1) {
+                            var p1 = sweepPoints[sweepPoints.length - 2], p2 = sweepPoints[sweepPoints.length - 1];
+                            sweepAreas.push({ p1: p1, p2: p2, area: Math.abs(0.5 * (p1.x * p2.y - p2.x * p1.y)) });
+                          }
+                          if (sweepPoints.length > 12) { sweepPoints.shift(); sweepAreas.shift(); }
+                        }
+                      }
+                      var elems = computeElements();
+                      if (!xpAwarded.launch) { xpAwarded.launch = true; if (typeof awardStemXP === 'function') awardStemXP('galaxy_orbital', 5, 'Launched orbital simulation'); }
+                      if (!xpAwarded.circular && elems.ecc < 0.05 && !elems.isEscaping && totalTime > 0.5) {
+                        xpAwarded.circular = true;
+                        if (typeof awardStemXP === 'function') awardStemXP('galaxy_orbital', 10, 'Created stable circular orbit');
+                        if (typeof addToast === 'function') addToast('\uD83C\uDFC6 Stable Circular Orbit! +10 XP', 'success');
+                      }
+                      if (!xpAwarded.escape && elems.isEscaping && totalTime > 0.1) {
+                        xpAwarded.escape = true;
+                        if (typeof awardStemXP === 'function') awardStemXP('galaxy_orbital', 15, 'Discovered escape trajectory');
+                        if (typeof addToast === 'function') addToast('\uD83D\uDE80 Escape Trajectory! +15 XP', 'success');
+                      }
+
+                      ctx.clearRect(0, 0, W, H);
+                      ctx.fillStyle = '#020210'; ctx.fillRect(0, 0, W, H);
+                      for (var bi = 0; bi < bgStars.length; bi++) {
+                        var bs = bgStars[bi];
+                        ctx.globalAlpha = 0.2 + 0.3 * Math.sin(tick * 0.015 + bs.b * 10);
+                        ctx.fillStyle = '#fff'; ctx.fillRect(bs.x, bs.y, bs.s, bs.s);
+                      }
+                      ctx.globalAlpha = 1;
+
+                      // Scale ring
+                      ctx.strokeStyle = 'rgba(100,150,255,0.08)'; ctx.lineWidth = 1;
+                      ctx.setLineDash([4, 8]);
+                      ctx.beginPath(); ctx.arc(cx, cy, SCALE, 0, Math.PI * 2); ctx.stroke();
+                      ctx.setLineDash([]);
+                      ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(100,150,255,0.3)'; ctx.textAlign = 'center';
+                      ctx.fillText('1 AU', cx + SCALE + 20 * dpr, cy + 4 * dpr);
+
+                      // Kepler 1st Law
+                      if (showKepler1 && !elems.isEscaping && elems.a > 0) {
+                        var a = elems.a, ecc = elems.ecc, b = a * Math.sqrt(1 - ecc * ecc), c = a * ecc;
+                        ctx.strokeStyle = 'rgba(59,130,246,0.3)'; ctx.lineWidth = 1.5 * dpr;
+                        ctx.setLineDash([6, 4]);
+                        ctx.beginPath(); ctx.ellipse(cx - c * SCALE, cy, a * SCALE, b * SCALE, 0, 0, Math.PI * 2); ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.fillStyle = '#3b82f6';
+                        ctx.beginPath(); ctx.arc(cx, cy, 5 * dpr, 0, Math.PI * 2); ctx.fill();
+                        var f2x = cx - 2 * c * SCALE;
+                        ctx.beginPath(); ctx.arc(f2x, cy, 4 * dpr, 0, Math.PI * 2); ctx.fill();
+                        ctx.font = 'bold ' + (10 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillStyle = 'rgba(59,130,246,0.7)'; ctx.textAlign = 'center';
+                        ctx.fillText('F\u2081 (Star)', cx, cy + 18 * dpr);
+                        ctx.fillText('F\u2082', f2x, cy + 18 * dpr);
+                        ctx.strokeStyle = 'rgba(59,130,246,0.4)'; ctx.lineWidth = 1;
+                        ctx.beginPath(); ctx.moveTo(cx - (a + c) * SCALE, cy); ctx.lineTo(cx + (a - c) * SCALE, cy); ctx.stroke();
+                        ctx.fillStyle = 'rgba(59,130,246,0.7)';
+                        ctx.fillText('a = ' + a.toFixed(2) + ' AU', cx, cy - 12 * dpr);
+                      }
+
+                      // Kepler 2nd Law
+                      if (showKepler2 && sweepAreas.length > 1) {
+                        var colors = ['rgba(239,68,68,0.2)', 'rgba(59,130,246,0.2)', 'rgba(34,197,94,0.2)', 'rgba(168,85,247,0.2)', 'rgba(245,158,11,0.2)'];
+                        for (var swi = Math.max(0, sweepAreas.length - 5); swi < sweepAreas.length; swi++) {
+                          var sw = sweepAreas[swi];
+                          var sp1 = toScreen(sw.p1.x, sw.p1.y), sp2 = toScreen(sw.p2.x, sw.p2.y);
+                          ctx.fillStyle = colors[swi % colors.length];
+                          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sp1.x, sp1.y); ctx.lineTo(sp2.x, sp2.y); ctx.closePath(); ctx.fill();
+                          ctx.strokeStyle = colors[swi % colors.length].replace('0.2', '0.5'); ctx.lineWidth = 1; ctx.stroke();
+                        }
+                        ctx.font = (10 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'left';
+                        ctx.fillText('\u25B3 Equal areas in equal time intervals', 12 * dpr, H - 12 * dpr);
+                      }
+
+                      // Orbit trail
+                      if (trail.length > 2) {
+                        ctx.lineWidth = 1.5 * dpr;
+                        for (var ti = 1; ti < trail.length; ti++) {
+                          var alpha = ti / trail.length;
+                          var s1 = toScreen(trail[ti - 1].x, trail[ti - 1].y), s2 = toScreen(trail[ti].x, trail[ti].y);
+                          ctx.strokeStyle = elems.isEscaping ? 'rgba(239,68,68,' + (alpha * 0.6) + ')' : 'rgba(56,189,248,' + (alpha * 0.6) + ')';
+                          ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y); ctx.stroke();
+                        }
+                      }
+
+                      // Star
+                      var starR = Math.max(6, Math.min(25, starMass * 12)) * dpr;
+                      var sGlow = ctx.createRadialGradient(cx, cy, starR * 0.3, cx, cy, starR * 3);
+                      sGlow.addColorStop(0, 'rgba(255,220,100,0.4)'); sGlow.addColorStop(0.5, 'rgba(255,180,60,0.1)'); sGlow.addColorStop(1, 'rgba(255,180,60,0)');
+                      ctx.fillStyle = sGlow; ctx.beginPath(); ctx.arc(cx, cy, starR * 3, 0, Math.PI * 2); ctx.fill();
+                      var sBody = ctx.createRadialGradient(cx - starR * 0.2, cy - starR * 0.2, starR * 0.1, cx, cy, starR);
+                      sBody.addColorStop(0, '#ffffff'); sBody.addColorStop(0.4, '#fff4d6'); sBody.addColorStop(1, '#ffaa33');
+                      ctx.fillStyle = sBody; ctx.beginPath(); ctx.arc(cx, cy, starR, 0, Math.PI * 2); ctx.fill();
+
+                      // Planet
+                      var pScreen = toScreen(px, py);
+                      var planetR = 5 * dpr;
+                      var pGlow = ctx.createRadialGradient(pScreen.x, pScreen.y, planetR * 0.5, pScreen.x, pScreen.y, planetR * 2.5);
+                      pGlow.addColorStop(0, elems.isEscaping ? 'rgba(239,68,68,0.4)' : 'rgba(56,189,248,0.4)'); pGlow.addColorStop(1, 'transparent');
+                      ctx.fillStyle = pGlow; ctx.beginPath(); ctx.arc(pScreen.x, pScreen.y, planetR * 2.5, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = elems.isEscaping ? '#ef4444' : '#38bdf8';
+                      ctx.beginPath(); ctx.arc(pScreen.x, pScreen.y, planetR, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                      ctx.beginPath(); ctx.arc(pScreen.x - planetR * 0.25, pScreen.y - planetR * 0.25, planetR * 0.35, 0, Math.PI * 2); ctx.fill();
+
+                      // Velocity vector
+                      var vLen = Math.min(60 * dpr, Math.sqrt(vx * vx + vy * vy) * SCALE * 0.03);
+                      var vAngle = Math.atan2(-vy, vx);
+                      ctx.strokeStyle = elems.isEscaping ? 'rgba(239,68,68,0.6)' : 'rgba(52,211,153,0.6)';
+                      ctx.lineWidth = 2 * dpr;
+                      ctx.beginPath(); ctx.moveTo(pScreen.x, pScreen.y);
+                      ctx.lineTo(pScreen.x + Math.cos(vAngle) * vLen, pScreen.y + Math.sin(vAngle) * vLen); ctx.stroke();
+                      var aSize = 5 * dpr; ctx.fillStyle = ctx.strokeStyle;
+                      ctx.beginPath();
+                      ctx.moveTo(pScreen.x + Math.cos(vAngle) * vLen, pScreen.y + Math.sin(vAngle) * vLen);
+                      ctx.lineTo(pScreen.x + Math.cos(vAngle - 0.4) * (vLen - aSize), pScreen.y + Math.sin(vAngle - 0.4) * (vLen - aSize));
+                      ctx.lineTo(pScreen.x + Math.cos(vAngle + 0.4) * (vLen - aSize), pScreen.y + Math.sin(vAngle + 0.4) * (vLen - aSize));
+                      ctx.closePath(); ctx.fill();
+
+                      // HUD
+                      ctx.font = 'bold ' + (11 * dpr) + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'right';
+                      var hudX = W - 14 * dpr, hudY = 20 * dpr;
+                      var hudLines = [
+                        { label: 'Semi-major axis', val: elems.isEscaping ? 'Hyperbolic' : elems.a.toFixed(3) + ' AU', color: '#38bdf8' },
+                        { label: 'Eccentricity', val: elems.ecc.toFixed(4), color: elems.ecc < 0.05 ? '#34d399' : elems.ecc > 1 ? '#ef4444' : '#fbbf24' },
+                        { label: 'Period', val: elems.isEscaping ? '\u221E' : (elems.period * 365.25).toFixed(1) + ' days', color: '#a78bfa' },
+                        { label: 'Speed', val: (elems.v * 29.78).toFixed(1) + ' km/s', color: '#f472b6' },
+                        { label: 'Distance', val: elems.r.toFixed(3) + ' AU', color: '#fbbf24' },
+                        { label: 'v/v_esc', val: (elems.v / elems.vEsc).toFixed(3), color: elems.v >= elems.vEsc ? '#ef4444' : '#34d399' }
+                      ];
+                      hudLines.forEach(function (hl, hi) {
+                        var ly = hudY + hi * 16 * dpr;
+                        ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillText(hl.label, hudX - 60 * dpr, ly);
+                        ctx.fillStyle = hl.color; ctx.font = 'bold ' + (11 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillText(hl.val, hudX, ly);
+                      });
+                      ctx.font = 'bold ' + (12 * dpr) + 'px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = elems.isEscaping ? '#ef4444' : elems.ecc < 0.05 ? '#34d399' : '#fbbf24';
+                      ctx.textAlign = 'right';
+                      ctx.fillText(elems.isEscaping ? '\uD83D\uDE80 ESCAPE TRAJECTORY' : elems.ecc < 0.05 ? '\u2705 CIRCULAR ORBIT' : elems.ecc < 0.5 ? '\uD83D\uDFE1 ELLIPTICAL ORBIT' : '\uD83D\uDD34 HIGHLY ECCENTRIC', hudX, hudY + hudLines.length * 16 * dpr + 8 * dpr);
+
+                      // Energy bars
+                      var barW = 140 * dpr, barH = 8 * dpr, barX = 12 * dpr, barY = H - 60 * dpr;
+                      ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.textAlign = 'left';
+                      ctx.fillText('KE', barX, barY - 2 * dpr);
+                      ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(barX + 18 * dpr, barY - 10 * dpr, barW, barH);
+                      var keNorm = Math.min(1, elems.KE / (G_SCALED * starMass));
+                      ctx.fillStyle = '#34d399'; ctx.fillRect(barX + 18 * dpr, barY - 10 * dpr, barW * keNorm, barH);
+                      var barY2 = barY + 10 * dpr;
+                      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('PE', barX, barY2 - 2 * dpr);
+                      ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(barX + 18 * dpr, barY2 - 10 * dpr, barW, barH);
+                      var peNorm = Math.min(1, Math.abs(elems.PE) / (G_SCALED * starMass));
+                      ctx.fillStyle = '#f87171'; ctx.fillRect(barX + 18 * dpr, barY2 - 10 * dpr, barW * peNorm, barH);
+                      ctx.fillStyle = elems.energy < 0 ? 'rgba(52,211,153,0.6)' : 'rgba(239,68,68,0.6)';
+                      ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif';
+                      ctx.fillText('E = ' + (elems.energy < 0 ? '' : '+') + elems.energy.toFixed(3) + (elems.energy < 0 ? ' (bound)' : ' (unbound)'), barX, barY2 + 12 * dpr);
+
+                      // Kepler 3rd Law
+                      if (showKepler3 && !elems.isEscaping && elems.a > 0) {
+                        ctx.font = 'bold ' + (11 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillStyle = 'rgba(168,85,247,0.8)'; ctx.textAlign = 'left';
+                        var k3y = 20 * dpr;
+                        ctx.fillText("Kepler's 3rd Law: T\u00B2 \u221D a\u00B3", 12 * dpr, k3y);
+                        ctx.font = (10 * dpr) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(168,85,247,0.6)';
+                        ctx.fillText('T = ' + elems.period.toFixed(4) + ' yr  |  a = ' + elems.a.toFixed(4) + ' AU', 12 * dpr, k3y + 16 * dpr);
+                        ctx.fillText('T\u00B2 = ' + (elems.period * elems.period).toFixed(4) + '  |  a\u00B3 = ' + (elems.a * elems.a * elems.a).toFixed(4), 12 * dpr, k3y + 32 * dpr);
+                        var ratio = (elems.period * elems.period) / (elems.a * elems.a * elems.a);
+                        ctx.fillStyle = Math.abs(ratio - 1.0 / starMass) < 0.01 ? 'rgba(52,211,153,0.8)' : 'rgba(251,191,36,0.8)';
+                        ctx.fillText('T\u00B2/a\u00B3 = ' + ratio.toFixed(4) + ' (expect ' + (1.0 / starMass).toFixed(2) + ' for ' + starMass.toFixed(1) + ' M\u2609)', 12 * dpr, k3y + 48 * dpr);
+                      }
+
+                      // Time
+                      ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.textAlign = 'center';
+                      ctx.fillText('t = ' + (totalTime * 365.25).toFixed(0) + ' days (' + totalTime.toFixed(2) + ' yr)', cx, H - 8 * dpr);
+                    }
+
+                    cvEl._orbitalAnim = requestAnimationFrame(draw);
+                    var ro = new ResizeObserver(function () {
+                      var ow2 = cvEl.offsetWidth, oh2 = cvEl.offsetHeight;
+                      if (ow2 && oh2) { W = cvEl.width = ow2 * dpr; H = cvEl.height = oh2 * dpr; cx = W / 2; cy = H / 2; SCALE = Math.min(W, H) * 0.35; }
+                    });
+                    ro.observe(cvEl);
+                    cvEl._orbitalCleanup = function () { if (cvEl._orbitalAnim) cancelAnimationFrame(cvEl._orbitalAnim); ro.disconnect(); };
+                  },
+                  style: { width: '100%', height: '100%', cursor: 'crosshair' }
+                })
+              ),
+
+              // ── Controls ──
+              React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-3" },
+                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, "\u2600\uFE0F"),
+                    React.createElement("span", { className: "text-xs font-bold text-amber-700" }, "Star Mass"),
+                    React.createElement("span", { className: "ml-auto text-xs font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full" }, (d.orbitalStarMass || 1.0) + " M\u2609")
+                  ),
+                  React.createElement("input", { type: "range", min: 0.3, max: 10, step: 0.1, value: d.orbitalStarMass || 1.0,
+                    onChange: function (e) { var val = parseFloat(e.target.value); upd("orbitalStarMass", val); upd("orbitalPreset", null); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._resetSim) cv._resetSim(val, d.orbitalAU || 1.0, d.orbitalVFrac || 1.0); },
+                    className: "w-full h-1.5 accent-amber-500" })
+                ),
+                React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, "\uD83D\uDE80"),
+                    React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "Velocity"),
+                    React.createElement("span", { className: "ml-auto text-xs font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full" }, (d.orbitalVFrac || 1.0).toFixed(2) + "\u00D7 v\u2080")
+                  ),
+                  React.createElement("input", { type: "range", min: 0.3, max: 2.0, step: 0.01, value: d.orbitalVFrac || 1.0,
+                    onChange: function (e) { var val = parseFloat(e.target.value); upd("orbitalVFrac", val); upd("orbitalPreset", null); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._resetSim) cv._resetSim(d.orbitalStarMass || 1.0, d.orbitalAU || 1.0, val); },
+                    className: "w-full h-1.5 accent-emerald-500" }),
+                  React.createElement("div", { className: "flex justify-between text-[8px] text-emerald-400 mt-1" },
+                    React.createElement("span", null, "Slow (\u2192 crash)"), React.createElement("span", null, "1.0\u00D7 = circular"), React.createElement("span", null, "\u22651.41\u00D7 = escape"))
+                ),
+                React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, "\uD83D\uDCCF"),
+                    React.createElement("span", { className: "text-xs font-bold text-blue-700" }, "Orbital Radius"),
+                    React.createElement("span", { className: "ml-auto text-xs font-black text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full" }, (d.orbitalAU || 1.0).toFixed(2) + " AU")
+                  ),
+                  React.createElement("input", { type: "range", min: 0.05, max: 5.0, step: 0.05, value: d.orbitalAU || 1.0,
+                    onChange: function (e) { var val = parseFloat(e.target.value); upd("orbitalAU", val); upd("orbitalPreset", null); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._resetSim) cv._resetSim(d.orbitalStarMass || 1.0, val, d.orbitalVFrac || 1.0); },
+                    className: "w-full h-1.5 accent-blue-500" })
+                ),
+                React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, "\u23F1\uFE0F"),
+                    React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "Time Speed"),
+                    React.createElement("span", { className: "ml-auto text-xs font-black text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, (d.orbitalTimeScale || 1) + "\u00D7")
+                  ),
+                  React.createElement("input", { type: "range", min: 1, max: 10, step: 1, value: d.orbitalTimeScale || 1,
+                    onChange: function (e) { var val = parseInt(e.target.value); upd("orbitalTimeScale", val); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._setTimeScale) cv._setTimeScale(val); },
+                    className: "w-full h-1.5 accent-violet-500" })
+                )
+              ),
+
+              // ── Kepler toggles + pause ──
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+                React.createElement("button", {
+                  onClick: function () { var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._setPaused) cv._setPaused(!(d.orbitalPaused)); upd("orbitalPaused", !(d.orbitalPaused)); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.orbitalPaused ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-600 hover:bg-slate-300")
+                }, d.orbitalPaused ? "\u25B6 Resume" : "\u23F8 Pause"),
+                React.createElement("button", {
+                  onClick: function () { var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._resetSim) cv._resetSim(d.orbitalStarMass || 1.0, d.orbitalAU || 1.0, d.orbitalVFrac || 1.0); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all"
+                }, "\uD83D\uDD04 Reset"),
+                [
+                  { k: 1, label: "1st Law (Ellipse)", icon: "\u2B2D\uFE0F", stateKey: "showK1" },
+                  { k: 2, label: "2nd Law (Areas)", icon: "\u25B3", stateKey: "showK2" },
+                  { k: 3, label: "3rd Law (T\u00B2\u221Da\u00B3)", icon: "\uD83D\uDCCA", stateKey: "showK3" }
+                ].map(function (kl) {
+                  var isOn = d[kl.stateKey];
+                  return React.createElement("button", { key: kl.k,
+                    onClick: function () { upd(kl.stateKey, !isOn); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._setKepler) cv._setKepler(kl.k, !isOn); },
+                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isOn ? "border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm" : "border-slate-200 bg-white text-slate-500 hover:border-indigo-200")
+                  }, kl.icon + " Kepler " + kl.label);
+                })
+              ),
+
+              // ── Educational callout ──
+              React.createElement("div", { className: "mt-3 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-4" },
+                React.createElement("h4", { className: "text-sm font-bold text-cyan-700 mb-2 flex items-center gap-2" },
+                  React.createElement("span", null, "\uD83D\uDCA1"), "Orbital Mechanics Guide"
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 gap-2 text-[11px] text-cyan-800" },
+                  React.createElement("p", null, "\u2022 Set velocity to exactly 1.0\u00D7 v\u2080 for a perfect circular orbit (eccentricity \u2248 0)"),
+                  React.createElement("p", null, "\u2022 Increase velocity to make the orbit more elliptical. At \u22651.414\u00D7, the planet escapes!"),
+                  React.createElement("p", null, "\u2022 Enable Kepler's 2nd Law to see how planets sweep equal areas in equal time intervals"),
+                  React.createElement("p", null, "\u2022 The green velocity arrow shows the planet's instantaneous direction and speed"),
+                  React.createElement("p", null, "\u2022 Watch the energy bars: KE + PE = constant (energy conservation!)")
+                )
+              ),
+
+              // ── Snapshot ──
+              React.createElement("div", { className: "flex justify-end mt-3" },
+                React.createElement("button", {
+                  onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'orb-' + Date.now(), tool: 'galaxy', label: 'Orbital: ' + (d.orbitalAU || 1.0) + ' AU', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Orbital snapshot saved!', 'success'); },
+                  className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full hover:from-cyan-600 hover:to-blue-600 shadow-md hover:shadow-lg transition-all"
+                }, "\uD83D\uDCF8 Snapshot")
+              )
+            ), // end Orbital Mechanics mode
           );
         })(),
 
@@ -19783,7 +20246,7 @@
                       var cv = document.querySelector('[data-universe-canvas]');
                       if (cv) cv.dataset.time = String(t);
                     }, 50);
-                  }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                  }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (isPlaying ? "bg-red-700 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
                 }, isPlaying ? "\u23F9 Stop" : "\u25B6 Play"),
                 React.createElement("div", { className: "flex items-center gap-1.5 bg-white/60 rounded-lg px-2 py-1 border border-violet-200" },
                   React.createElement("span", { className: "text-[9px] text-violet-500 font-bold" }, "Speed"),
@@ -20399,7 +20862,7 @@
                       upd("mode", m);
                       if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizFeedback", null); }
                       else { upd("quizMode", false); }
-                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                   },
                     m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : '🧠 Quiz');
                 })
@@ -20866,7 +21329,7 @@
                   onClick: function () {
                     const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
                     upd("quizIdx", nextIdx); upd("quizFeedback", null);
-                  }, className: "ml-3 px-2 py-0.5 bg-amber-600 text-white rounded text-xs"
+                  }, className: "ml-3 px-2 py-0.5 bg-amber-700 text-white rounded text-xs"
                 }, "Next \u2192")
               )
             ),
@@ -21944,7 +22407,7 @@
                   ];
                   var q = RC_QS[Math.floor(Math.random() * RC_QS.length)];
                   upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0 });
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + " transition-all"
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
               }, d.rcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
               d.rcQuiz && d.rcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.rcQuiz.score + " correct"),
               d.rcQuiz && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-3 border border-orange-200" },
@@ -22773,11 +23236,11 @@
                   React.createElement("div", { className: "flex gap-2 mb-2" },
                     React.createElement("button", {
                       onClick: function() { upd('ecoGraphView', 'population'); },
-                      className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (graphView === 'population' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                      className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (graphView === 'population' ? 'bg-emerald-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
                     }, "\uD83D\uDC3E Populations"),
                     React.createElement("button", {
                       onClick: function() { upd('ecoGraphView', 'environment'); },
-                      className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (graphView === 'environment' ? 'bg-teal-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-teal-50')
+                      className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (graphView === 'environment' ? 'bg-teal-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-teal-50')
                     }, "\uD83C\uDF3F Environment")
                   ),
                   // SVG Graph
@@ -23057,14 +23520,14 @@
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF55 Fraction Lab"),
               React.createElement("div", { className: "flex gap-1" },
-                React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-orange-600 text-white" }, "\uD83D\uDD0D Compare"),
+                React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-orange-700 text-white" }, "\uD83D\uDD0D Compare"),
                 React.createElement("button", { onClick: () => setStemLabTool('fractions'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all" }, "\uD83C\uDF55 Pie Mode")
               )
             ),
             // Tab bar
             React.createElement("div", { className: "flex gap-2 mb-3" },
               [['compare', '\uD83D\uDD0D Compare'], ['operate', '\u2795 Operations'], ['equivalents', '\uD83D\uDD17 Equivalents']].map(function (t) {
-                return React.createElement("button", { key: t[0], onClick: function () { upd('vizTab', t[0]); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (vizTab === t[0] ? 'bg-orange-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, t[1]);
+                return React.createElement("button", { key: t[0], onClick: function () { upd('vizTab', t[0]); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (vizTab === t[0] ? 'bg-orange-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, t[1]);
               })
             ),
             // Quick presets
@@ -23101,7 +23564,7 @@
             ),
             // View mode toggle
             React.createElement("div", { className: "flex justify-end gap-1 mb-3" },
-              ['bar', 'pie'].map(m => React.createElement("button", { key: m, onClick: () => upd('mode', m), className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600') }, m === 'bar' ? '\u2588 Bar' : '\u25CF Pie'))
+              ['bar', 'pie'].map(m => React.createElement("button", { key: m, onClick: () => upd('mode', m), className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600') }, m === 'bar' ? '\u2588 Bar' : '\u25CF Pie'))
             ),
             // Number line
             React.createElement("div", { className: "bg-white rounded-xl border p-3 mb-3" },
@@ -23136,7 +23599,7 @@
               React.createElement("p", { className: "text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-2" }, "\u2795 Fraction Operations"),
               React.createElement("div", { className: "flex gap-2 mb-3 justify-center" },
                 [['add', '+'], ['sub', '\u2212'], ['mul', '\u00D7'], ['div', '\u00F7']].map(function (op) {
-                  return React.createElement("button", { key: op[0], onClick: function () { upd('opMode', op[0]); }, className: "w-10 h-10 rounded-lg text-lg font-black transition-all " + (opMode === op[0] ? 'bg-orange-600 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, op[1]);
+                  return React.createElement("button", { key: op[0], onClick: function () { upd('opMode', op[0]); }, className: "w-10 h-10 rounded-lg text-lg font-black transition-all " + (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, op[1]);
                 })
               ),
               React.createElement("div", { className: "text-center text-2xl font-bold text-slate-800 mb-3" },
@@ -23207,7 +23670,7 @@
               }
               return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3 mb-2" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("button", { onClick: function () { var q = makeFqQuiz(); upd('fqQuiz', q); upd('num1', q.n1); upd('den1', q.d1); upd('num2', q.n2); upd('den2', q.d2); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (fqQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + " hover:opacity-90 transition-all" }, fqQuiz ? '🔄 Next Round' : '⚡ Which is Larger?'),
+                  React.createElement("button", { onClick: function () { var q = makeFqQuiz(); upd('fqQuiz', q); upd('num1', q.n1); upd('den1', q.d1); upd('num2', q.n2); upd('den2', q.d2); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (fqQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " hover:opacity-90 transition-all" }, fqQuiz ? '🔄 Next Round' : '⚡ Which is Larger?'),
                   fqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + fqScore + ' | 🔥 ' + fqStreak)
                 ),
                 fqQuiz && !fqQuiz.answered && React.createElement("div", { className: "bg-orange-50 rounded-xl p-3 border border-orange-200" },
@@ -23307,7 +23770,7 @@
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, "\uD83C\uDFAF Fraction Practice"),
                   React.createElement("div", { className: "flex gap-0.5 ml-2" },
-                    ['easy', 'medium', 'hard'].map(function (d) { return React.createElement("button", { key: d, onClick: function () { setExploreDifficulty(d); }, className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-rose-500 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200') }, d); })
+                    ['easy', 'medium', 'hard'].map(function (d) { return React.createElement("button", { key: d, onClick: function () { setExploreDifficulty(d); }, className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-rose-700 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200') }, d); })
                   )
                 ),
                 React.createElement("div", { className: "flex items-center gap-2" },
@@ -23453,7 +23916,7 @@
                 )
               ),
               // Decompose button
-              React.createElement("button", { onClick: function () { upd('decomposed', !decomposed); }, className: "w-full py-2.5 rounded-xl text-sm font-bold transition-all " + (decomposed ? 'bg-amber-600 text-white shadow-lg' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md') }, decomposed ? "🔄 Reassemble" : "⚗️ Decompose into Elements"),
+              React.createElement("button", { onClick: function () { upd('decomposed', !decomposed); }, className: "w-full py-2.5 rounded-xl text-sm font-bold transition-all " + (decomposed ? 'bg-amber-700 text-white shadow-lg' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md') }, decomposed ? "🔄 Reassemble" : "⚗️ Decompose into Elements"),
               // Animated decomposition visual
               React.createElement("div", { className: "mt-4 flex items-center justify-center gap-2 min-h-[80px] transition-all duration-500" },
                 decomposed ? sel.elements.map(function (el, i) {
@@ -23637,7 +24100,7 @@
             React.createElement("div", { className: "flex gap-2 mb-4" },
               Object.entries(CATEGORIES).map(function (entry) {
                 var k = entry[0], v = entry[1];
-                return React.createElement("button", { key: k, onClick: function () { upd('category', k); var units = Object.keys(v.units); upd('fromUnit', units[0]); upd('toUnit', units[1] || units[0]); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.category === k ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, v.label);
+                return React.createElement("button", { key: k, onClick: function () { upd('category', k); var units = Object.keys(v.units); upd('fromUnit', units[0]); upd('toUnit', units[1] || units[0]); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.category === k ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, v.label);
               })
             ),
             // Main converter card
@@ -23715,7 +24178,7 @@
                 onClick: function () {
                   var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
                   upd('quiz', { q: q.q, a: q.a, unit: q.unit, answered: false, score: (d.quiz && d.quiz.score) || 0 });
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white')
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white')
               }, d.quiz ? "\uD83D\uDD04 New Question" : "\uD83E\uDDE0 Quiz Mode"),
               d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct"),
               d.quiz && React.createElement("div", { className: "mt-2 bg-cyan-50 rounded-lg p-3 border border-cyan-200" },
@@ -25854,7 +26317,7 @@
                 }),
                 React.createElement("button", {
                   onClick: function () { upd('showFFT', !showFFT); },
-                  className: "w-6 h-6 rounded text-[10px] font-bold flex items-center justify-center transition-all " + (showFFT ? 'bg-green-500 text-white' : 'bg-white/10 text-white/50 hover:bg-white/20')
+                  className: "w-6 h-6 rounded text-[10px] font-bold flex items-center justify-center transition-all " + (showFFT ? 'bg-green-700 text-white' : 'bg-white/10 text-white/50 hover:bg-white/20')
                 }, "FFT")
               )
             ),
@@ -25897,7 +26360,7 @@
                 ),
                 React.createElement("button", {
                   onClick: function () { upd('scaleLock', !scaleLock); },
-                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (scaleLock ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-500')
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (scaleLock ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-500')
                 }, (scaleLock ? '\uD83D\uDD12' : '\uD83D\uDD13') + ' Scale Lock'),
                 React.createElement("select", {
                   'aria-label': 'Musical scale',
@@ -25996,7 +26459,7 @@
                   ),
                   React.createElement("button", {
                     onClick: function () { upd('jazzMode', !jazzMode); },
-                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500')
+                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500')
                   }, "\uD83C\uDFB7 Jazz Mode")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
@@ -26205,7 +26668,7 @@
                   React.createElement("span", { className: "text-[9px] text-indigo-400 cursor-help", title: EFFECT_TIPS.arpeggiator.text }, "\u2753"),
                   React.createElement("button", {
                     onClick: function () { if (arpOn) stopArpeggiator(); else startArpeggiator(); },
-                    className: "ml-auto px-3 py-1 rounded-lg text-xs font-bold " + (arpOn ? 'bg-red-500 text-white' : 'bg-indigo-600 text-white')
+                    className: "ml-auto px-3 py-1 rounded-lg text-xs font-bold " + (arpOn ? 'bg-red-700 text-white' : 'bg-indigo-600 text-white')
                   }, arpOn ? '\u23F9 Stop' : '\u25B6 Start')
                 ),
                 React.createElement("div", { className: "flex gap-2 items-center" },
@@ -26273,7 +26736,7 @@
                     }, "\u25B6 Play Ascending"),
                     React.createElement("button", {
                       onClick: function () { playScale(selectedRoot, selectedScale, true); },
-                      className: "px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500 text-white"
+                      className: "px-2 py-0.5 rounded text-[10px] font-bold bg-purple-700 text-white"
                     }, "\u25BC Descending")
                   ),
                   React.createElement("p", { className: "text-[10px] text-purple-600 mb-1.5" }, SCALES[selectedScale].desc),
@@ -26332,7 +26795,7 @@
                   React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.chords.text }, "\u2753"),
                   React.createElement("button", {
                     onClick: function () { upd('jazzMode', !jazzMode); },
-                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500')
+                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500')
                   }, "\uD83C\uDFB7 Jazz Mode")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1 mb-3" },
@@ -26522,7 +26985,7 @@
               React.createElement("div", { className: "flex items-center gap-2 mb-3 bg-gradient-to-r from-slate-50 to-purple-50 rounded-xl border border-purple-200/50 p-2 flex-wrap" },
                 React.createElement("button", {
                   onClick: function () { if (d.seqPlaying) stopSequencer(); else startSequencer(); },
-                  className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-500 text-white shadow-inner' : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-md')
+                  className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-700 text-white shadow-inner' : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-md')
                 }, d.seqPlaying ? '\u23F9 Stop' : '\u25B6 Play'),
                 // BPM
                 React.createElement("div", { className: "flex items-center gap-1" },
@@ -26545,7 +27008,7 @@
                   React.createElement("button", { onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
                 ),
                 // Step Rec toggle
-                React.createElement("button", { onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-500 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
+                React.createElement("button", { onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
                 // Clear
                 React.createElement("button", { onClick: function () { pushBpUndo(); upd('seqGrid', {}); upd('beatMelody', null); }, className: "ml-auto px-2 py-1 rounded text-[10px] font-bold bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all" }, "\uD83D\uDDD1 Clear")
               ),
@@ -26577,7 +27040,7 @@
                 React.createElement("div", { className: "border-l border-slate-200 h-6 mx-1" }),
                 React.createElement("button", {
                   onClick: function () { upd('bpChainMode', !d.bpChainMode); },
-                  className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (d.bpChainMode ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100')
+                  className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (d.bpChainMode ? 'bg-orange-700 text-white' : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100')
                 }, "\uD83D\uDD17 Chain " + (d.bpChainMode ? 'ON' : 'OFF')),
                 d.bpChainMode && React.createElement("span", { className: "text-[9px] text-orange-500" }, "A\u2192B\u2192C\u2192D loop")
               ),
@@ -26611,10 +27074,10 @@
                       }),
                       React.createElement("span", { className: "text-[8px] text-slate-400 w-7 text-right" }, Math.round(vol * 100) + '%'),
                       React.createElement("button", { onClick: function () { var m = Object.assign({}, d.chMutes || {}); m[row] = !m[row]; upd('chMutes', m); },
-                        className: "w-5 h-5 rounded text-[8px] font-black " + (muted ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                        className: "w-5 h-5 rounded text-[8px] font-black " + (muted ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                       }, "M"),
                       React.createElement("button", { onClick: function () { upd('chSolo', soloed ? -1 : row); },
-                        className: "w-5 h-5 rounded text-[8px] font-black " + (soloed ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                        className: "w-5 h-5 rounded text-[8px] font-black " + (soloed ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                       }, "S")
                     );
                   })
@@ -26792,7 +27255,7 @@
                       upd('seqGrid', g);
                       addToast('\uD83E\uDD4A Rhythm loaded to Kick!', 'success');
                     },
-                    className: "px-3 py-1 rounded-lg text-[9px] font-bold bg-rose-500 text-white hover:bg-rose-600 transition-all"
+                    className: "px-3 py-1 rounded-lg text-[9px] font-bold bg-rose-700 text-white hover:bg-rose-600 transition-all"
                   }, "\u25B6 Load to Grid")
                 ) : React.createElement("p", { className: "text-[10px] text-rose-400 italic" }, "Click \"Challenge me!\" to practice rhythm patterns")
               ),
@@ -26852,11 +27315,11 @@
                       upd('beatSaveRefresh', Date.now());
                       addToast('\uD83D\uDCBE Beat saved!', 'success');
                     },
-                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-sm"
+                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all shadow-sm"
                   }, "\uD83D\uDCBE Save"),
-                  React.createElement("button", { onClick: sharePattern, className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all shadow-sm" }, "\uD83D\uDD17 Share URL"),
+                  React.createElement("button", { onClick: sharePattern, className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-blue-700 text-white hover:bg-blue-600 transition-all shadow-sm" }, "\uD83D\uDD17 Share URL"),
                   React.createElement("button", { onClick: exportBeat, disabled: d.bpExporting,
-                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-sm " + (d.bpExporting ? 'bg-gray-300 text-gray-500' : 'bg-orange-500 text-white hover:bg-orange-600')
+                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-sm " + (d.bpExporting ? 'bg-gray-300 text-gray-500' : 'bg-orange-700 text-white hover:bg-orange-600')
                   }, d.bpExporting ? '\u23F3 Recording...' : '\uD83D\uDCE5 Export'),
                   React.createElement("button", {
                     onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'bp-' + Date.now(), tool: 'synth', label: 'Beat Pad', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); },
@@ -26888,7 +27351,7 @@
                             s.splice(ci, 1); localStorage.setItem('alloflow_beats', JSON.stringify(s));
                             upd('beatSaveRefresh', Date.now());
                           },
-                          className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50"
+                          className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-red-700 hover:text-red-600 hover:bg-red-50"
                         }, "\u2715")
                       );
                     })
@@ -26915,7 +27378,7 @@
                     return React.createElement("button", {
                       key: v.id,
                       onClick: function () { upd('omniVoice', v.id); },
-                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-600 text-white shadow-md' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100')
+                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-700 text-white shadow-md' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100')
                     },
                       React.createElement("div", { className: "text-xs font-bold" }, v.label),
                       React.createElement("div", { className: "text-[9px] " + ((d.omniVoice || 'harp') === v.id ? 'text-amber-200' : 'text-amber-500') }, v.desc)
@@ -27040,7 +27503,7 @@
                     React.createElement("span", { className: "text-lg" }, "\uD83E\uDD41"),
                     React.createElement("span", { className: "text-sm font-bold text-white" }, "Beat Pad"),
                     React.createElement("span", { className: "text-[10px] text-indigo-400" }, "MPC-Lite"),
-                    d.midiConnected && React.createElement("span", { className: "px-2 py-0.5 bg-green-500/20 text-green-400 text-[9px] font-bold rounded-full border border-green-500/30" }, "\uD83C\uDFB9 MIDI")
+                    d.midiConnected && React.createElement("span", { className: "px-2 py-0.5 bg-green-500/20 text-green-900 text-[9px] font-bold rounded-full border border-green-500/30" }, "\uD83C\uDFB9 MIDI")
                   ),
                   React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold" }, "BPM"),
@@ -27067,7 +27530,7 @@
                 React.createElement("div", { className: "flex gap-2 mb-4" },
                   React.createElement("button", {
                     onClick: function () { if (d.seqPlaying) stopSequencer(); else startSequencer(); },
-                    className: "flex-1 py-2.5 rounded-xl text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' : 'bg-emerald-500 text-white hover:bg-emerald-600')
+                    className: "flex-1 py-2.5 rounded-xl text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-700 text-white hover:bg-red-600 animate-pulse' : 'bg-emerald-700 text-white hover:bg-emerald-600')
                   }, d.seqPlaying ? "\u23F9 Stop" : "\u25B6 Play"),
                   React.createElement("button", {
                     onClick: function () { upd('seqGrid', {}); },
@@ -27096,7 +27559,7 @@
                         var isCurrent = d.seqCurrentStep === i;
                         return React.createElement("div", {
                           key: i,
-                          className: "text-center text-[9px] font-bold rounded py-0.5 " + (isCurrent ? 'bg-amber-500 text-white' : isBeat ? 'text-indigo-300' : 'text-indigo-600')
+                          className: "text-center text-[9px] font-bold rounded py-0.5 " + (isCurrent ? 'bg-amber-700 text-white' : isBeat ? 'text-indigo-300' : 'text-indigo-600')
                         }, isBeat ? String(Math.floor(i / 4) + 1) : '·');
                       })
                     ),
@@ -27202,7 +27665,7 @@
                   React.createElement("span", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDC42 Ear Training"),
                   React.createElement("button", {
                     onClick: startIntervalGame,
-                    className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+                    className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-700"
                   }, intervalGame ? '\uD83D\uDD04 New Interval' : '\u25B6 Start'),
                   intervalGame && React.createElement("button", {
                     onClick: replayInterval,
@@ -27274,7 +27737,7 @@
                     return React.createElement("button", {
                       key: ft,
                       onClick: function () { upd('filterType', ft); },
-                      className: "py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.filterType || 'lowpass') === ft ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-600')
+                      className: "py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.filterType || 'lowpass') === ft ? 'bg-cyan-700 text-white' : 'bg-slate-100 text-slate-600')
                     }, ft);
                   })
                 )
@@ -27311,7 +27774,7 @@
                 }),
                 React.createElement("button", {
                   onClick: function () { playPlucked(noteFreq(selectedRoot, d.octave || 4), 'ks_test', d.ksBrightness || 0.8, d.ksDamping || 0.996); },
-                  className: "mt-2 px-4 py-2 rounded-lg text-sm font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all w-full"
+                  className: "mt-2 px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-700 transition-all w-full"
                 }, "\uD83C\uDFB8 Pluck " + selectedRoot + (d.octave || 4))
               ),
 
@@ -28345,7 +28808,7 @@
               }),
               React.createElement("button", {
                 onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
                 [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
@@ -28408,7 +28871,7 @@
                     ),
                     d.quizFeedback && React.createElement("button", {
                       onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-                      className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition-all"
+                      className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-700 transition-all"
                     }, "Next Question \u2192")
                   ) : React.createElement("p", { className: "text-sm text-slate-500 italic" }, "No quiz questions available.")
                 ) : (
@@ -30835,7 +31298,7 @@
                 }, guidedMode ? '\u23F9 ' + t('stem.dissection.end_tour') : '\uD83D\uDCCD ' + t('stem.dissection.tour')),
                 React.createElement("button", {
                   onClick: function () { upd('compareMode', !d.compareMode); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.compareMode ? 'bg-cyan-600 text-white' : 'bg-cyan-100 text-cyan-700')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.compareMode ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-700')
                 }, d.compareMode ? '\u23F9 ' + t('stem.dissection.end_compare') : '\uD83D\uDD0D ' + t('stem.dissection.compare')),
                 React.createElement("button", {
                   onClick: function () { upd('labelMode', d.labelMode === 'hidden' ? 'show' : 'hidden'); },
@@ -30865,19 +31328,19 @@
                 }, d.printMode ? '\u23F9 ' + t('stem.dissection.normal') : '\uD83D\uDDA8 ' + t('stem.dissection.clean')),
                 spec.bodyShape !== 'eye' && spec.bodyShape !== 'heart' && React.createElement("button", {
                   onClick: function () { upd('viewAngle', d.viewAngle === 'dorsal' ? 'ventral' : 'dorsal'); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.viewAngle === 'dorsal' ? 'bg-teal-600 text-white' : 'bg-teal-100 text-teal-700')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.viewAngle === 'dorsal' ? 'bg-teal-700 text-white' : 'bg-teal-100 text-teal-700')
                 }, d.viewAngle === 'dorsal' ? '\uD83D\uDD04 ' + t('stem.dissection.dorsal') : '\uD83D\uDD04 ' + t('stem.dissection.ventral')),
                 React.createElement("button", {
                   onClick: function () { upd('quizMode', !d.quizMode); if (!d.quizMode) { upd('quizIdx', 0); upd('quizScore', 0); upd('quizTotal', 0); upd('quizFeedback', null); } },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quizMode ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-700')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quizMode ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-700')
                 }, d.quizMode ? '\u23F9 ' + t('stem.dissection.end_quiz') : '\uD83E\uDDE0 ' + t('stem.dissection.quiz')),
                 React.createElement("button", {
                   onClick: function () { upd('rulerMode', !d.rulerMode); upd('annotateMode', false); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rulerMode ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rulerMode ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-700')
                 }, d.rulerMode ? '\uD83D\uDCCF ' + t('stem.dissection.ruler_on') : '\uD83D\uDCCF ' + t('stem.dissection.ruler')),
                 React.createElement("button", {
                   onClick: function () { upd('annotateMode', !d.annotateMode); upd('rulerMode', false); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.annotateMode ? 'bg-pink-500 text-white' : 'bg-pink-100 text-pink-700')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.annotateMode ? 'bg-pink-700 text-white' : 'bg-pink-100 text-pink-700')
                 }, d.annotateMode ? '\u270F\uFE0F ' + t('stem.dissection.drawing') : '\u270F\uFE0F ' + t('stem.dissection.draw')),
                 React.createElement("button", {
                   onClick: function () {
@@ -31082,7 +31545,7 @@
                 }, '\u2702\uFE0F ' + t('stem.dissection.peel') + ' ' + spec.layers[currentLayerIdx].name + ' \u2192 ' + spec.layers[Math.min(currentLayerIdx + 1, spec.layers.length - 1)].name),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceDigestion', !d.traceDigestion); upd('traceRespiration', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceDigestion ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 border border-amber-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceDigestion ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-700 border border-amber-200')
                 }, d.traceDigestion ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83E\uDD62 ' + t('stem.dissection.trace_digestive')),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceRespiration', !d.traceRespiration); upd('traceDigestion', false); upd('traceCirculation', false); },
@@ -31090,7 +31553,7 @@
                 }, d.traceRespiration ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83C\uDF2C\uFE0F ' + t('stem.dissection.trace_respiratory')),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceCirculation', !d.traceCirculation); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceExcretory', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceCirculation ? 'bg-red-500 text-white' : 'bg-red-50 text-red-700 border border-red-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceCirculation ? 'bg-red-700 text-white' : 'bg-red-50 text-red-700 border border-red-200')
                 }, d.traceCirculation ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\u2764\uFE0F ' + t('stem.dissection.trace_circulatory')),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceExcretory', !d.traceExcretory); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceNervous', false); },
@@ -31098,11 +31561,11 @@
                 }, d.traceExcretory ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83D\uDCA7 ' + t('stem.dissection.trace_excretory')),
                 React.createElement("button", {
                   onClick: function () { upd('traceNervous', !d.traceNervous); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); upd('showEndocrine', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceNervous ? 'bg-purple-500 text-white' : 'bg-purple-50 text-purple-700 border border-purple-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceNervous ? 'bg-purple-700 text-white' : 'bg-purple-50 text-purple-700 border border-purple-200')
                 }, d.traceNervous ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\u26A1 ' + t('stem.dissection.trace_nervous')),
                 React.createElement("button", {
                   onClick: function () { upd('showEndocrine', !d.showEndocrine); upd('traceNervous', false); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.showEndocrine ? 'bg-pink-500 text-white' : 'bg-pink-50 text-pink-700 border border-pink-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.showEndocrine ? 'bg-pink-700 text-white' : 'bg-pink-50 text-pink-700 border border-pink-200')
                 }, d.showEndocrine ? '\u23F9 ' + t('stem.dissection.endocrine_hide') : '\uD83E\uDDE0 ' + t('stem.dissection.endocrine_show'))
               ),
 
@@ -31398,7 +31861,7 @@
                   ),
                   d.quizFeedback && React.createElement("button", {
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-                    className: "w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700"
+                    className: "w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700"
                   }, t('stem.dissection.next_question') + ' \u2192')
                 ),
 
@@ -32655,7 +33118,7 @@
               }),
               React.createElement("button", {
                 onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' regions')
             ),
@@ -32738,7 +33201,7 @@
                   ),
                   d.quizFeedback && React.createElement("button", {
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-                    className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                    className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-700"
                   }, "Next Question \u2192")
                 ) : null
               ) : (
@@ -33524,7 +33987,7 @@
                 React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, (d.spinRPM || 120) + ' rpm'),
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
                 React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
-                React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
+                React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
                 React.createElement("button", { onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
                 React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
                 React.createElement("button", { onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
@@ -33533,7 +33996,7 @@
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
                   React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
                   [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
-                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50') }, pal.label);
                   })
                 ),
                 React.createElement("div", { className: "flex gap-1 flex-wrap" },
@@ -33940,7 +34403,7 @@
                       React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-1" }, "Base Shape"),
                       React.createElement("div", { className: "flex gap-1" },
                         [{ id: 'triangle', label: '\u25B3 Triangle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'hexagon', label: '\u2B21 Hexagon' }].map(function (s) {
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
                         })
                       )
                     ),
@@ -33957,7 +34420,7 @@
                       React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-1" }, "Color Scheme"),
                       React.createElement("div", { className: "flex gap-1 flex-wrap" },
                         [{ id: 'rainbow', label: '\uD83C\uDF08 Rainbow' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'mono', label: '\u25AB Mono' }, { id: 'custom', label: '\uD83C\uDFA8 Custom' }].map(function (s) {
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
                         })
                       )
                     ),
@@ -34621,7 +35084,7 @@
                       React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-1" }, "Depth Brush"),
                       React.createElement("div", { className: "flex gap-1" },
                         [{ id: 'near', label: '\u2B1C Near' }, { id: 'mid', label: '\uD83D\uDD18 Mid' }, { id: 'far', label: '\u2B1B Far' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
                         })
                       )
                     ),
@@ -34633,7 +35096,7 @@
                       React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-1" }, "Pattern Type"),
                       React.createElement("div", { className: "flex gap-1" },
                         [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }, { id: 'ai', label: '\u2728 AI' }].map(function (s) {
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
                         })
                       )
                     ),
@@ -34905,7 +35368,7 @@
                     ),
                     // Simulation controls
                     React.createElement("div", { className: "flex gap-1 mb-3" },
-                      React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
+                      React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
                       React.createElement("button", { onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, '\u23ED Step'),
                       React.createElement("button", { onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); upd('lifeChallengeStatus', null); upd('lifeChallengeMsg', null); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, '\uD83D\uDDD1 Clear')
                     ),
@@ -34925,7 +35388,7 @@
                       React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Grid Size'),
                       React.createElement("div", { className: "flex gap-1" },
                         [{ id: 40, label: '40\u00D740' }, { id: 60, label: '60\u00D760' }, { id: 80, label: '80\u00D780' }, { id: 120, label: '120\u00D7120' }].map(function (s) {
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeSize', s.id); upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeSize || 60) === s.id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeSize', s.id); upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeSize || 60) === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
                         })
                       )
                     ),
@@ -34934,13 +35397,13 @@
                       React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Draw Tool'),
                       React.createElement("div", { className: "flex gap-1" },
                         [{ id: 'draw', label: '\u270F Draw' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
                         })
                       )
                     ),
                     // Wrap toggle + Random
                     React.createElement("div", { className: "flex items-center gap-2 mb-3" },
-                      React.createElement("button", { onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
+                      React.createElement("button", { onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
                       React.createElement("button", { onClick: function () {
                         var sz = d.lifeSize || 60;
                         var newGrid = {};
@@ -34953,7 +35416,7 @@
                       React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, '\uD83D\uDD0D Visualization'),
                       React.createElement("div", { className: "flex gap-1" },
                         [{ id: 'normal', label: '\uD83D\uDFE2 Normal' }, { id: 'heatmap', label: '\uD83C\uDF21 Age Map' }, { id: 'xray', label: '\uD83D\uDD2C X-Ray' }].map(function (v) {
-                          return React.createElement("button", { key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, v.label);
+                          return React.createElement("button", { key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, v.label);
                         })
                       ),
                       React.createElement("p", { className: "text-[9px] text-slate-400 mt-1 italic" }, (d.lifeVizMode || 'normal') === 'heatmap' ? '\uD83C\uDF21 Bright = newborn, dark = old survivors' : (d.lifeVizMode || 'normal') === 'xray' ? '\uD83D\uDD2C Numbers show neighbor count \u2014 see WHY cells live/die' : 'Standard cell coloring')
@@ -35058,7 +35521,7 @@
                           upd('lifeChallengeMsg', isActive ? null : ch.desc);
                           upd('lifeMaxPop', 0);
                           if (!isActive) { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); }
-                        }, className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (isActive ? 'bg-amber-500 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'), title: ch.desc }, ch.label);
+                        }, className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (isActive ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'), title: ch.desc }, ch.label);
                       })
                     ),
                     d.lifeChallenge && d.lifeChallengeStatus === 'active' && React.createElement("div", { className: "space-y-1" },
@@ -36563,7 +37026,7 @@
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-3 space-y-2.5" },
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
                     React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, "🧪 Needs & Meters"),
-                    phase === 'grow' && React.createElement("span", { className: "text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full" },
+                    phase === 'grow' && React.createElement("span", { className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full" },
                       seasonName + ' • Day ' + dayInSeason + '/30'
                     )
                   ),
@@ -36590,7 +37053,7 @@
                   React.createElement("div", { className: "border-t border-red-200 pt-2" },
                     React.createElement("span", { className: "text-[10px] font-bold text-red-700" }, "Soil Health: " + monoHealth + "%")
                   ),
-                  growthTime > 30 && React.createElement("div", { className: "text-[10px] text-red-600 bg-red-100 rounded-lg p-2 mt-1" },
+                  growthTime > 30 && React.createElement("div", { className: "text-[10px] text-red-800 bg-red-100 rounded-lg p-2 mt-1" },
                     "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over."
                   )
                 ),
@@ -36677,7 +37140,7 @@
                       return React.createElement("button", {
                         key: s,
                         onClick: function () { upd('growSpeed', s); },
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
                       }, s + '×');
                     })
                   ),
@@ -36791,7 +37254,7 @@
                   React.createElement("div", { className: "flex items-center justify-between pt-1.5 border-t border-amber-100 mt-1" },
                     React.createElement("span", { className: "text-[10px] font-bold text-amber-800" }, "Total Harvest"),
                     React.createElement("span", { className: "text-sm font-bold text-amber-700" }, _totalYield + ' units'),
-                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" }, '✨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
+                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[9px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full" }, '✨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
                   )
                 ),
                 React.createElement("div", { className: "grid grid-cols-3 gap-3 text-center" },
@@ -36848,7 +37311,7 @@
               }, "🧠 Quiz"),
               React.createElement("button", {
                 onClick: function () { upd('showSciencePanel', !showSciencePanel); },
-                className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+                className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-700 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
               }, "\uD83D\uDCDA Science")
             ),
 
@@ -37227,11 +37690,11 @@
               React.createElement('div', { className: 'flex gap-2' },
                 React.createElement('button', {
                   onClick: generateChallenge,
-                  className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700' : 'text-amber-300 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
+                  className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700' : 'text-amber-900 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
                 }, '\uD83C\uDFAF Challenge'),
                 gd.challengeMode && React.createElement('button', {
                   onClick: () => setLabToolData(prev => ({ ...prev, geoSandbox: { ...(prev.geoSandbox||{}), challengeMode:false, challenge:null, challengeAnswer:'', challengeResult:null } })),
-                  className: 'px-3 py-1.5 text-xs font-bold text-slate-400 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
+                  className: 'px-3 py-1.5 text-xs font-bold text-slate-200 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
                 }, '\u2716 Exit Challenge'),
                 React.createElement('button', {
                   onClick: exportSTL,
@@ -37367,7 +37830,7 @@
                   style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
                 }),
                 // Controls hint overlay
-                React.createElement('div', { className: 'absolute bottom-2 right-2 text-[10px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded-md' },
+                React.createElement('div', { className: 'absolute bottom-2 right-2 text-[10px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md' },
                   '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'
                 ),
                 // Shape name overlay
@@ -41784,7 +42247,7 @@
                   // Habitat info from marine species
                   sp.habitat && React.createElement("div", { className: "flex gap-2 flex-wrap" },
                     React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-bold border border-blue-400/20" }, "\uD83C\uDF0A " + sp.habitat),
-                    sp.diet && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-bold border border-amber-400/20" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
+                    sp.diet && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-900 font-bold border border-amber-400/20" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
                     sp.status && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold " + (sp.status === 'CR' ? 'bg-red-500/20 text-red-300 border border-red-400/20' : sp.status === 'EN' ? 'bg-red-500/15 text-red-300 border border-red-400/20' : sp.status === 'VU' ? 'bg-amber-500/15 text-amber-300 border border-amber-400/20' : 'bg-green-500/15 text-green-300 border border-green-400/20') },
                       "\uD83D\uDEE1\uFE0F " + ({ LC: 'Least Concern', VU: 'Vulnerable', EN: 'Endangered', CR: 'Critically Endangered' }[sp.status] || sp.status))
                   ),
@@ -41876,7 +42339,7 @@
                           }
                         },
                         title: s.tip,
-                        className: "px-2 py-1 text-xs font-bold rounded-lg transition-all " + (simSpeed === s.spd ? "bg-cyan-500 text-white shadow-md shadow-cyan-500/25" : "bg-white text-slate-500 hover:bg-cyan-100 border border-slate-200")
+                        className: "px-2 py-1 text-xs font-bold rounded-lg transition-all " + (simSpeed === s.spd ? "bg-cyan-700 text-white shadow-md shadow-cyan-500/25" : "bg-white text-slate-500 hover:bg-cyan-100 border border-slate-200")
                       }, s.label);
                     }),
                     React.createElement("span", { className: "ml-auto text-[10px] text-slate-400 font-mono" }, "T:" + simTick)
@@ -42060,7 +42523,7 @@
                   return React.createElement("div", { className: "bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 rounded-2xl p-4 border border-pink-200/60 shadow-sm" },
                     React.createElement("div", { className: "flex items-center justify-between mb-2" },
                       React.createElement("h4", { className: "text-xs font-bold text-pink-700" }, "\uD83D\uDC9E Breeding Status"),
-                      React.createElement("span", { className: "text-[9px] text-pink-500 bg-pink-100/60 rounded-full px-2 py-0.5" }, "\uD83D\uDC23 " + totalFryBorn + " fry born")
+                      React.createElement("span", { className: "text-[9px] text-pink-700 bg-pink-100/60 rounded-full px-2 py-0.5" }, "\uD83D\uDC23 " + totalFryBorn + " fry born")
                     ),
                     React.createElement("div", { className: "space-y-2" },
                       breedableSpecies.map(function (sId) {
@@ -42086,7 +42549,7 @@
                               React.createElement("div", { className: "text-[11px] font-bold text-pink-800 truncate" }, sp.name),
                               React.createElement("div", { className: "text-[9px] text-pink-400" }, stratLabels[bData.type] + " \u2022 Pop: " + pop + "/" + bData.minPop + " min")
                             ),
-                            isGestating && React.createElement("span", { className: "text-[9px] font-mono text-pink-600 bg-pink-100 rounded-full px-1.5 py-0.5 animate-pulse" }, gestPct + "%")
+                            isGestating && React.createElement("span", { className: "text-[9px] font-mono text-pink-700 bg-pink-100 rounded-full px-1.5 py-0.5 animate-pulse" }, gestPct + "%")
                           ),
                           isGestating && React.createElement("div", { className: "mt-1" },
                             React.createElement("div", { className: "h-2 bg-pink-100 rounded-full overflow-hidden" },
@@ -42456,7 +42919,7 @@
                           window._aquaSimInterval = setInterval(function () { simStep(); }, interval);
                         }
                       },
-                      className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-500 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/25")
+                      className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-700 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/25")
                     }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
                     React.createElement("button", {
                       onClick: doWaterChange,
@@ -42646,7 +43109,7 @@
                         ),
                         React.createElement("p", { className: "text-[9px] text-slate-500 truncate" }, entry.choice + ' → ' + (entry.outcome || '').substring(0, 60) + '...')
                       ),
-                      entry.xp > 0 ? React.createElement("span", { className: "text-[8px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-600 flex-shrink-0" }, '+' + entry.xp) : null
+                      entry.xp > 0 ? React.createElement("span", { className: "text-[8px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-800 flex-shrink-0" }, '+' + entry.xp) : null
                     );
                   })
                 ),
@@ -42682,7 +43145,7 @@
                         upd('oceanScenario', sc.id);
                       }
                     },
-                    className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (oceanScenario === sc.id ? "bg-blue-500 text-white border-blue-600 shadow-md" : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100")
+                    className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (oceanScenario === sc.id ? "bg-blue-700 text-white border-blue-600 shadow-md" : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100")
                   }, sc.label);
                 })
               ),
@@ -42795,7 +43258,7 @@
                     return React.createElement("button", {
                       key: m,
                       onClick: function () { upd('meshSize', m); },
-                      className: "px-3 py-1 text-xs font-bold rounded-full transition-all " + (meshSize === m ? "bg-blue-500 text-white" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50")
+                      className: "px-3 py-1 text-xs font-bold rounded-full transition-all " + (meshSize === m ? "bg-blue-700 text-white" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50")
                     }, m.charAt(0).toUpperCase() + m.slice(1));
                   }),
                   React.createElement("span", { className: "text-[10px] text-slate-400 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
@@ -42806,7 +43269,7 @@
                   React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDCC5 Season"),
                   React.createElement("button", {
                     onClick: function () { upd('isOpenSeason', !isOpenSeason); },
-                    className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-500 text-white" : "bg-red-100 text-red-700 border border-red-200")
+                    className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-700 text-white" : "bg-red-100 text-red-700 border border-red-200")
                   }, isOpenSeason ? "\uD83D\uDFE2 Open Season" : "\uD83D\uDD34 Closed Season")
                 )
               ),
@@ -44582,8 +45045,8 @@
                     d.turnSummary.events.map(function (ev, ei) { return React.createElement('span', { key: ei, className: 'text-amber-300' }, ev); })
                   )
                 ),
-                React.createElement('button', { onClick: function () { upd('showBuild', !d.showBuild); }, className: 'py-3 rounded-xl text-xs font-bold bg-amber-600 text-white' }, '\uD83C\uDFD7 Build (' + buildings.length + '/' + buildingDefs.length + ')'),
-                React.createElement('button', { onClick: function () { upd('showSettlers', !d.showSettlers); }, className: 'py-3 rounded-xl text-xs font-bold bg-teal-600 text-white' }, '\uD83D\uDC65 ' + settlers.length),
+                React.createElement('button', { onClick: function () { upd('showBuild', !d.showBuild); }, className: 'py-3 rounded-xl text-xs font-bold bg-amber-700 text-white' }, '\uD83C\uDFD7 Build (' + buildings.length + '/' + buildingDefs.length + ')'),
+                React.createElement('button', { onClick: function () { upd('showSettlers', !d.showSettlers); }, className: 'py-3 rounded-xl text-xs font-bold bg-teal-700 text-white' }, '\uD83D\uDC65 ' + settlers.length),
                 (buildings.length >= 2 || activePolicy) && React.createElement('button', { onClick: function () { upd('showPolicy', !d.showPolicy); }, className: 'py-3 rounded-xl text-xs font-bold ' + (activePolicy ? 'bg-emerald-700' : 'bg-slate-700') + ' text-white' }, '\uD83C\uDFDB\uFE0F Gov'),
                 (buildings.length >= 3 || researchQueue.length > 0) && React.createElement('button', { onClick: function () { upd('showResearch', !d.showResearch); }, className: 'py-3 rounded-xl text-xs font-bold bg-violet-700 text-white' }, '\uD83E\uDDEC ' + researchQueue.length),
                 (greatScientists.length > 0 || buildings.length >= 5) && React.createElement('button', { onClick: function () { upd('showGreatSci', !d.showGreatSci); }, className: 'py-3 rounded-xl text-xs font-bold bg-yellow-700 text-white' }, '\uD83E\uDD16 ' + greatScientists.length + '/' + greatSciDefs.length)
@@ -44769,10 +45232,10 @@
                 d.dilemmaResult.lesson && React.createElement('div', { className: 'mt-1 text-[9px] text-indigo-300 bg-indigo-900/50 rounded-lg px-2 py-1' }, '\uD83D\uDCDA ' + d.dilemmaResult.lesson),
                 d.dilemmaResult.values && React.createElement('div', { className: 'mt-1 flex gap-1 flex-wrap text-[8px]' },
                   Object.keys(d.dilemmaResult.values).filter(function (vk5) { return d.dilemmaResult.values[vk5] !== 0; }).map(function (vk5) {
-                    return React.createElement('span', { key: vk5, className: d.dilemmaResult.values[vk5] > 0 ? 'text-green-400 bg-green-900/30 px-1 rounded' : 'text-red-400 bg-red-900/30 px-1 rounded' },
+                    return React.createElement('span', { key: vk5, className: d.dilemmaResult.values[vk5] > 0 ? 'text-green-400 bg-green-900/30 px-1 rounded' : 'text-red-200 bg-red-900/30 px-1 rounded' },
                       vk5 + (d.dilemmaResult.values[vk5] > 0 ? '\u2191' : '\u2193'));
                   }),
-                  d.dilemmaResult.equity !== 0 && React.createElement('span', { className: d.dilemmaResult.equity > 0 ? 'text-cyan-400 bg-cyan-900/30 px-1 rounded' : 'text-red-400 bg-red-900/30 px-1 rounded' },
+                  d.dilemmaResult.equity !== 0 && React.createElement('span', { className: d.dilemmaResult.equity > 0 ? 'text-cyan-400 bg-cyan-900/30 px-1 rounded' : 'text-red-200 bg-red-900/30 px-1 rounded' },
                     '\u2696\uFE0F' + (d.dilemmaResult.equity > 0 ? '\u2191' : '\u2193'))
                 )
               ),
@@ -45064,7 +45527,7 @@
                         if (typeof addXP === 'function') addXP(30, 'Built ' + bdef2.name);
                       } else { if (addToast) addToast('\u274C Incorrect! Study and try again.', 'error'); upd('scienceGateInput', ''); }
                       upd('scienceGate', null);
-                    }, className: 'px-4 py-2 bg-purple-500 text-white rounded-xl text-xs font-bold'
+                    }, className: 'px-4 py-2 bg-purple-700 text-white rounded-xl text-xs font-bold'
                   }, '\u2705 Submit'),
                   React.createElement('button', { onClick: function () { upd('scienceGate', null); }, className: 'px-3 py-2 bg-slate-700 text-slate-300 rounded-xl text-xs' }, '\u2715')
                 ),
@@ -45190,7 +45653,7 @@
                           }
                         },
                         disabled: !canAdopt,
-                        className: 'px-2 py-1 rounded-lg text-[9px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-500')
+                        className: 'px-2 py-1 rounded-lg text-[9px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-500')
                       }, '\uD83D\uDD2C 10 sci')
                     );
                   })
@@ -45269,7 +45732,7 @@
                           }
                         },
                         disabled: !canResearch,
-                        className: 'px-2 py-1 rounded-lg text-[9px] font-bold ' + (canResearch ? 'bg-violet-500 text-white' : 'bg-slate-700 text-slate-500')
+                        className: 'px-2 py-1 rounded-lg text-[9px] font-bold ' + (canResearch ? 'bg-violet-700 text-white' : 'bg-slate-700 text-slate-500')
                       }, '\uD83D\uDD2C ' + rd2.cost + ' sci')
                     );
                   })
@@ -45355,7 +45818,7 @@
               ),
               React.createElement('button', {
                 onClick: function () { upd('colonyPhase', 'setup'); upd('colony', null); upd('colonyMap', null); upd('colonyTurn', 0); upd('colonyEvent', null); upd('scienceGate', null); upd('colonyLog', []); if (addToast) addToast('Colony reset', 'info'); },
-                className: 'mt-2 w-full py-2 rounded-xl text-[9px] text-slate-500 bg-slate-800 border border-slate-700'
+                className: 'mt-2 w-full py-2 rounded-xl text-[9px] text-slate-300 bg-slate-800 border border-slate-700'
               }, '\u267B Abandon & Start New')
             )
           );
@@ -45880,7 +46343,7 @@
                 className: 'text-slate-400 hover:text-white transition-colors text-lg'
               }, '\u2190'),
               React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, '\uD83D\uDCB0 Economics Lab'),
-              React.createElement('span', { className: 'text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' }, '5 simulators'),
+              React.createElement('span', { className: 'text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full' }, '5 simulators'),
               React.createElement('span', {
                 className: 'text-[9px] font-bold px-2 py-0.5 rounded-full border ' +
                   (econLiteracyScore >= 80 ? 'text-green-700 bg-green-50 border-green-200' :
@@ -45888,9 +46351,9 @@
                       econLiteracyScore >= 25 ? 'text-amber-700 bg-amber-50 border-amber-200' :
                         'text-slate-500 bg-slate-50 border-slate-200')
               }, '\uD83C\uDF93 Literacy: ' + econLiteracyScore + '%'),
-              React.createElement('span', { className: 'text-[9px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
+              React.createElement('span', { className: 'text-[9px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
               econAchievements.length > 0 && React.createElement('span', {
-                className: 'text-[9px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
+                className: 'text-[9px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
                 onClick: function () { upd('showAchievements', !(d.showAchievements)); }
               }, '\uD83C\uDFC6 ' + econAchievements.length + ' achievements'),
               React.createElement('span', {
@@ -45899,7 +46362,7 @@
               }, '\uD83D\uDCD6 Glossary (' + (d.econGlossary || []).length + ')'),
               React.createElement('button', {
                 onClick: function () { upd('showQuiz', !(d.showQuiz)); },
-                className: 'text-[9px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
+                className: 'text-[9px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
               }, '\u270D\uFE0F Quiz Me'),
               React.createElement('button', {
                 onClick: function () { upd('showAdvisor', !(d.showAdvisor)); },
@@ -46230,7 +46693,7 @@
                         if (!exists5) { gl5.push({ tab: 'S&D', concept: d.sdScenario.title, explanation: d.sdScenario.lesson }); upd('econGlossary', gl5); }
                       }
                     },
-                    className: 'w-full py-2 rounded-lg text-xs font-bold bg-violet-500 text-white mb-1'
+                    className: 'w-full py-2 rounded-lg text-xs font-bold bg-violet-700 text-white mb-1'
                   }, '\u2705 Apply Scenario to Graph'),
                   React.createElement('button', {
                     onClick: function () { upd('sdScenario', null); },
@@ -46416,7 +46879,7 @@
                       key: type,
                       onClick: function () { upd('pfInvestType', short); },
                       className: 'flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-all ' +
-                        ((d.pfInvestType || '') === short ? 'bg-green-500 text-white shadow-sm' : 'bg-white text-slate-500 border border-green-200 hover:border-green-400')
+                        ((d.pfInvestType || '') === short ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-slate-500 border border-green-200 hover:border-green-400')
                     }, type);
                   })
                 ),
@@ -46447,7 +46910,7 @@
 
             econTab === 'stockMarket' && React.createElement('div', { className: 'mt-4' },
               // AI Market Setup (if no companies yet)
-              !smCompanies ? React.createElement('div', { className: 'text-center py-8' },
+              (!smCompanies || smCompanies.length === 0) ? React.createElement('div', { className: 'text-center py-8' },
                 React.createElement('div', { className: 'text-5xl mb-4' }, '\uD83D\uDCC8'),
                 React.createElement('h3', { className: 'text-lg font-bold text-slate-800 mb-2' }, 'Create Your Market'),
                 React.createElement('p', { className: 'text-xs text-slate-500 mb-4 max-w-sm mx-auto' }, 'Describe what kind of market you want to trade in. AI will generate 5 fictional companies with realistic financials.'),
@@ -46487,7 +46950,7 @@
                 }, d.smLoading ? '\u23F3 AI generating companies...' : '\uD83D\uDE80 Open Market')
               ) :
                 // Company selector (only when companies exist)
-                smCompanies && React.createElement('div', null,
+                smCompanies && smCompanies.length > 0 && React.createElement('div', null,
                   React.createElement('div', { className: 'flex gap-2 mb-3' },
                     smCompanies.map(function (c, ci) {
                       return React.createElement('button', {
@@ -47855,7 +48318,7 @@
               React.createElement("button", {
                 onClick: function () { upd('showTemplates', !showTemplates); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (showTemplates ? 'bg-amber-500 text-white' : 'bg-white/15 text-white hover:bg-white/25')
+                  (showTemplates ? 'bg-amber-700 text-white' : 'bg-white/15 text-white hover:bg-white/25')
               }, "📂 Templates"),
               // Tutorial help button
               tutorialDismissed && React.createElement("button", {
@@ -47998,7 +48461,7 @@
                         onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-500 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
                     )
                   ),
@@ -48092,7 +48555,7 @@
                         ),
                         React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full border " +
                           (ch.concept === 'Sequencing' ? "border-blue-500/40 text-blue-400 bg-blue-500/10" :
-                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-400 bg-purple-500/10" :
+                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-700 bg-purple-500/10" :
                            ch.concept.indexOf('Conditional') >= 0 ? "border-red-500/40 text-red-400 bg-red-500/10" :
                            "border-amber-500/40 text-amber-400 bg-amber-500/10")
                         }, ch.concept)
@@ -49200,7 +49663,8 @@
             ctx.translate(mx, my);
             // Spin rotation: rotate entire mouse during spin action
             if (blMouseAction === 'spin') {
-              var spinProgress = ((Date.now() % (tickDelay || 1500)) / (tickDelay || 1500));
+              var _spinDelay = (d.blSpeed || 1) === 3 ? 1200 : (d.blSpeed || 1) === 2 ? 2200 : 3200;
+              var spinProgress = ((Date.now() % _spinDelay) / _spinDelay);
               ctx.rotate(spinProgress * Math.PI * 2);
             }
             ctx.scale(breathScale, breathScale);
@@ -49541,7 +50005,7 @@
                       upd('blLightColor', 'green');
                     },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
-                      (isCurrent ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' :
+                      (isCurrent ? 'bg-amber-700 text-white shadow-lg shadow-amber-500/30' :
                         isComplete ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50' :
                           unlocked ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' :
                             'bg-slate-800 text-slate-600 cursor-not-allowed')
@@ -49628,7 +50092,7 @@
                     key: sp,
                     onClick: function () { upd('blSpeed', sp); },
                     className: "px-2.5 py-1 font-bold transition-all " +
-                      (blSpeed === sp ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700')
+                      (blSpeed === sp ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700')
                   }, sp + '\u00D7');
                 })
               ),
@@ -49642,7 +50106,7 @@
               // ── Pause button ──
               React.createElement("button", {
                 onClick: function () { upd('blPaused', !blPaused); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
               }, blPaused ? '\u25B6 Resume' : '\u23F8 Pause')
             ),
 
@@ -50233,7 +50697,801 @@
           );
         })(),
 
+        // ════════════════════════════════════════════════════════════════════
+        // 🛡️  CYBER DEFENSE LAB
+        // ════════════════════════════════════════════════════════════════════
+        (function _cyberDefenseLab() {
+          var _isCyber = stemLabTab === 'explore' && stemLabTool === 'cyberDefense';
+          if (!_isCyber) { return null; }
 
+          // ── State ──
+          var _s = React.useState('phish');     var cyberTab = _s[0];     var setCyberTab = _s[1];
+          var _s2 = React.useState(0);          var phishIdx = _s2[0];    var setPhishIdx = _s2[1];
+          var _s3 = React.useState(null);       var phishAnswer = _s3[0]; var setPhishAnswer = _s3[1];
+          var _s4 = React.useState(0);          var phishScore = _s4[0];  var setPhishScore = _s4[1];
+          var _s5 = React.useState(0);          var phishStreak = _s5[0]; var setPhishStreak = _s5[1];
+          var _s6 = React.useState('');         var pwInput = _s6[0];     var setPwInput = _s6[1];
+          var _s7 = React.useState('caesar');   var cipherMode = _s7[0];  var setCipherMode = _s7[1];
+          var _s8 = React.useState('');         var cipherInput = _s8[0]; var setCipherInput = _s8[1];
+          var _s9 = React.useState(3);          var caesarShift = _s9[0]; var setCaesarShift = _s9[1];
+          var _s10 = React.useState(true);      var cipherEncode = _s10[0]; var setCipherEncode = _s10[1];
+          var _s11 = React.useState('');        var cipherChallenge = _s11[0]; var setCipherChallenge = _s11[1];
+          var _s12 = React.useState(false);     var challengeSolved = _s12[0]; var setChallengeSolved = _s12[1];
+          var _s13 = React.useState('medium');  var difficulty = _s13[0]; var setDifficulty = _s13[1];
+          var _s14 = React.useState(false);     var pwChallengeDone = _s14[0]; var setPwChallengeDone = _s14[1];
+          var _s15 = React.useState('investigate'); var phishMode = _s15[0]; var setPhishMode = _s15[1];
+          var _s16 = React.useState([]);           var cluesFound = _s16[0]; var setCluesFound = _s16[1];
+          var _s17 = React.useState(0);            var casesClosed = _s17[0]; var setCasesClosed = _s17[1];
+          var _s18 = React.useState(15);           var triageTimeLeft = _s18[0]; var setTriageTimeLeft = _s18[1];
+          var _s19 = React.useState(false);        var triageActive = _s19[0]; var setTriageActive = _s19[1];
+          var _s20 = React.useState(false);        var evidenceExpanded = _s20[0]; var setEvidenceExpanded = _s20[1];
+          var _s21 = React.useState(false);        var aiEmailLoading = _s21[0]; var setAiEmailLoading = _s21[1];
+          var _s22 = React.useState(null);         var aiGeneratedEmail = _s22[0]; var setAiGeneratedEmail = _s22[1];
+          var _s23 = React.useState([]);           var aiEmailHistory = _s23[0]; var setAiEmailHistory = _s23[1];
+
+          // ── Phishing Email Data (with investigation clues) ──
+          var phishEmails = [
+            // Easy
+            { from: 'security@g00gle-support.com', fromDisplay: 'Google Security Team', subject: '\u26A0\uFE0F URGENT: Your account will be suspended!', body: 'Dear user, we detected unusual activity on your account. Click below IMMEDIATELY or your account will be permanently deleted within 24 hours.', link: 'http://g00gle-support.com/verify-now', isPhish: true, difficulty: 'easy',
+              flags: ['Misspelled domain (g00gle with zeros)', 'Urgency/fear tactics ("IMMEDIATELY", "permanently deleted")', 'Generic greeting ("Dear user")', 'Suspicious link domain'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'g00gle-support.com uses zeros instead of o\'s \u2014 a classic spoofing trick', suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"URGENT" and threats of suspension create panic to bypass your judgment', suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Generic Greeting', desc: '"Dear user" \u2014 real companies use your actual name', suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTP (not HTTPS) link to a fake domain \u2014 never click these!', suspicious: true }
+              ] },
+            { from: 'noreply@school.edu', fromDisplay: 'School Library', subject: 'Library Book Due Reminder', body: 'Hi! This is a reminder that "Charlotte\'s Web" is due back to the library by Friday. Please return it to the front desk. Thanks!', link: null, isPhish: false, difficulty: 'easy',
+              flags: ['Legitimate school domain', 'Specific book title', 'No urgent threats', 'No suspicious links'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'school.edu is a legitimate educational domain', suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Specific Details', desc: 'Mentions a specific book title \u2014 real messages have real details', suspicious: false },
+                { zone: 'subject', icon: '\u26A1', label: 'Tone Check', desc: 'Friendly reminder with no threats or urgency', suspicious: false }
+              ] },
+            { from: 'prizes@win-big-now.net', fromDisplay: 'Prize Award Center', subject: '\uD83C\uDF89 YOU WON $1,000,000!!!', body: 'Congratulations! You have been randomly selected to receive ONE MILLION DOLLARS! Send us your full name, address, and parent\'s credit card number to claim your prize NOW!', link: 'http://win-big-now.net/claim', isPhish: true, difficulty: 'easy',
+              flags: ['Too good to be true', 'Asks for personal/financial info', 'Random prize from unknown sender', 'Suspicious domain'],
+              clues: [
+                { zone: 'subject', icon: '\u26A1', label: 'Too Good To Be True', desc: 'Winning $1M from a random email? That\'s never real', suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Asks for Personal Info', desc: 'Requests credit card number \u2014 legitimate prizes NEVER ask for payment info', suspicious: true },
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'win-big-now.net is a sketchy, unfamiliar domain', suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Links to the same suspicious domain \u2014 designed to steal your info', suspicious: true }
+              ] },
+            // Medium
+            { from: 'support@amaz0n-orders.com', fromDisplay: 'Amazon Order Support', subject: 'Problem with your recent order #38291', body: 'We were unable to process payment for your recent order. Please update your payment information within 48 hours to avoid cancellation. Click here to update.', link: 'http://amaz0n-orders.com/update-payment', isPhish: true, difficulty: 'medium',
+              flags: ['Misspelled domain (amaz0n with zero)', 'Creates urgency (48 hours)', 'Vague order reference', 'Link to suspicious domain'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'amaz0n-orders.com \u2014 note the zero! Real Amazon uses amazon.com', suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: 'Vague Reference', desc: 'Generic order number \u2014 phishers use random numbers hoping you recently ordered something', suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Urgency Pressure', desc: '"48 hours" deadline creates pressure to act without thinking', suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Links to amaz0n-orders.com, not amazon.com', suspicious: true }
+              ] },
+            { from: 'teacher@myschool.edu', fromDisplay: 'Mrs. Johnson', subject: 'Science Fair Project Update', body: 'Hi! Just a reminder that science fair projects are due next Tuesday. Please bring your display board and any materials. Let me know if you need extra time. - Mrs. Johnson', link: null, isPhish: false, difficulty: 'medium',
+              flags: ['Legitimate school domain', 'Specific teacher name', 'Normal classroom request', 'No links or downloads'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'myschool.edu \u2014 legitimate school domain', suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Personal Tone', desc: 'Signed by a specific teacher, offers extra time \u2014 normal teacher behavior', suspicious: false },
+                { zone: 'subject', icon: '\u26A1', label: 'Normal Request', desc: 'A reminder about a real assignment with a reasonable deadline', suspicious: false }
+              ] },
+            { from: 'help@paypa1-secure.com', fromDisplay: 'PayPal Security', subject: 'Unusual login from new device', body: 'We noticed a login to your account from a new device in Russia. If this wasn\'t you, secure your account immediately by verifying your identity below.', link: 'http://paypa1-secure.com/verify', isPhish: true, difficulty: 'medium',
+              flags: ['Misspelled domain (paypa1 with number 1)', 'Fear of unauthorized access', 'Link to fake domain', 'Real PayPal would say paypal.com'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'paypa1-secure.com uses the number 1 instead of lowercase L \u2014 very sneaky!', suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Fear Tactic', desc: '"login from Russia" creates fear of being hacked', suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Real PayPal links go to paypal.com, not paypa1-secure.com', suspicious: true }
+              ] },
+            { from: 'newsletter@nationalgeographic.com', fromDisplay: 'National Geographic Kids', subject: 'This Week: Amazing Ocean Creatures!', body: 'Dive into this week\'s feature about bioluminescent sea creatures! Watch videos, play games, and learn about the deep ocean. New content every Wednesday.', link: 'https://kids.nationalgeographic.com/ocean', isPhish: false, difficulty: 'medium',
+              flags: ['Legitimate domain', 'Educational content', 'No personal info requested', 'HTTPS link to real site'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'nationalgeographic.com \u2014 a well-known, legitimate organization', suspicious: false },
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTPS link to kids.nationalgeographic.com \u2014 real subdomain of real site', suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Content Check', desc: 'Educational content, no personal info requested, no urgency', suspicious: false }
+              ] },
+            // Hard
+            { from: 'it-dept@yourschool.edu.support-portal.com', fromDisplay: 'School IT Department', subject: 'Password Reset Required - Network Maintenance', body: 'Due to scheduled network maintenance this weekend, all students must reset their passwords. Please use the secure portal below to create a new password. This must be completed before Friday.', link: 'https://yourschool.edu.support-portal.com/reset', isPhish: true, difficulty: 'hard',
+              flags: ['Subdomain trick (school name in a different domain)', 'Actual domain is support-portal.com, not yourschool.edu', 'Mass password reset is unusual', 'Real IT would use the actual school domain'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'yourschool.edu.support-portal.com \u2014 the REAL domain is support-portal.com! The school name is just a subdomain trick', suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Mass Action Request', desc: '"All students must reset" \u2014 real IT departments don\'t require mass password resets via email', suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Link domain also uses the subdomain trick \u2014 it\'s NOT a school website', suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"Must be completed before Friday" \u2014 creates a false deadline', suspicious: true }
+              ] },
+            { from: 'admin@clever.com', fromDisplay: 'Clever Portal', subject: 'New app added to your Clever dashboard', body: 'Your teacher has added "Khan Academy" to your Clever dashboard. Log in to Clever to access it. If you have questions, ask your teacher.', link: 'https://clever.com/login', isPhish: false, difficulty: 'hard',
+              flags: ['Legitimate Clever domain', 'Specific app mentioned', 'Directs to official login', 'References teacher'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'clever.com \u2014 the real Clever platform used by many schools', suspicious: false },
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTPS link to clever.com/login \u2014 the official Clever login page', suspicious: false },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Specific Details', desc: 'Names a specific app (Khan Academy) and references your teacher', suspicious: false }
+              ] },
+            { from: 'friend.sarah@gmail.com', fromDisplay: 'Sarah M.', subject: 'Check out this funny video of you!!', body: 'OMG I found this hilarious video of you from the school assembly!! You HAVE to see it lol. Click here before they take it down!', link: 'http://bit.ly/3xFk2z9', isPhish: true, difficulty: 'hard',
+              flags: ['Shortened/obscured URL (bit.ly)', 'Emotional manipulation ("funny video of you")', 'Urgency ("before they take it down")', 'Even real friends\' accounts can be hacked'],
+              clues: [
+                { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Identity', desc: 'Even gmail.com accounts can be hacked \u2014 the sender could be compromised', suspicious: true },
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Emotional Bait', desc: '"Funny video of you" targets curiosity and social anxiety', suspicious: true },
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Shortened URL', desc: 'bit.ly hides the real destination \u2014 never click shortened links from unexpected messages', suspicious: true },
+                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"Before they take it down" creates FOMO to make you click without thinking', suspicious: true }
+              ] }
+          ];
+
+          var difficultyFilter = difficulty === 'easy' ? 'easy' : difficulty === 'medium' ? 'medium' : 'hard';
+          var filteredEmails = phishEmails.filter(function(e) {
+            if (difficulty === 'easy') return e.difficulty === 'easy';
+            if (difficulty === 'medium') return e.difficulty === 'easy' || e.difficulty === 'medium';
+            return true; // hard = all
+          });
+          var currentEmail = filteredEmails[phishIdx % filteredEmails.length];
+
+          // ── Detective Rank System ──
+          var detectiveRanks = [
+            { min: 0, rank: 'Rookie Analyst', icon: '\uD83D\uDD30', color: '#64748b' },
+            { min: 3, rank: 'Junior Detective', icon: '\uD83D\uDD0D', color: '#22c55e' },
+            { min: 6, rank: 'Cyber Detective', icon: '\uD83D\uDD75\uFE0F', color: '#3b82f6' },
+            { min: 10, rank: 'Senior Agent', icon: '\u2B50', color: '#f59e0b' },
+            { min: 15, rank: 'Chief Investigator', icon: '\uD83D\uDEE1\uFE0F', color: '#a855f7' }
+          ];
+          var currentRank = detectiveRanks[0];
+          for (var ri = detectiveRanks.length - 1; ri >= 0; ri--) {
+            if (casesClosed >= detectiveRanks[ri].min) { currentRank = detectiveRanks[ri]; break; }
+          }
+          var nextRank = null;
+          for (var ni = 0; ni < detectiveRanks.length; ni++) {
+            if (detectiveRanks[ni].min > casesClosed) { nextRank = detectiveRanks[ni]; break; }
+          }
+
+          // ── Triage Timer Effect ──
+          React.useEffect(function() {
+            if (phishMode !== 'triage' || !triageActive || phishAnswer) return;
+            if (triageTimeLeft <= 0) {
+              setPhishAnswer('timeout');
+              setPhishStreak(0);
+              return;
+            }
+            var timer = setTimeout(function() {
+              setTriageTimeLeft(function(t) { return t - 1; });
+            }, 1000);
+            return function() { clearTimeout(timer); };
+          }, [phishMode, triageActive, triageTimeLeft, phishAnswer]);
+
+          // ── Clue discovery helper ──
+          function handleClueClick(clueIdx) {
+            if (cluesFound.indexOf(clueIdx) === -1) {
+              setCluesFound(function(prev) { return prev.concat([clueIdx]); });
+            }
+          }
+
+          // ── Handle Verdict ──
+          function handleVerdict(isSafe) {
+            var isCorrect = isSafe ? !activeEmail.isPhish : activeEmail.isPhish;
+            var baseXP = 2;
+            var evidenceBonus = cluesFound.length >= (activeEmail.clues || []).length ? 2 : (cluesFound.length >= 2 ? 1 : 0);
+            var streakBonus = phishStreak >= 2 ? 1 : 0;
+            var speedBonus = (phishMode === 'triage' && triageTimeLeft >= 10) ? 2 : 0;
+            setPhishAnswer(isCorrect ? 'correct' : 'wrong');
+            if (isCorrect) {
+              setPhishScore(function(p) { return p + 1; });
+              setPhishStreak(function(p) { return p + 1; });
+              addStemXP('cyberDefense', baseXP + evidenceBonus + streakBonus + speedBonus);
+            } else {
+              setPhishStreak(0);
+            }
+            setCasesClosed(function(c) { return c + 1; });
+          }
+
+          // ── Advance to Next Case ──
+          function advanceCase() {
+            setPhishIdx(function(p) { return p + 1; });
+            setPhishAnswer(null);
+            setCluesFound([]);
+            setTriageTimeLeft(15);
+            setAiGeneratedEmail(null); // clear AI email so next defaults to static pool
+            if (phishMode === 'triage') setTriageActive(true);
+          }
+
+          // ── AI Email Generator (Gemini-powered with static fallback) ──
+          function generateAIEmail() {
+            if (aiEmailLoading) return;
+            if (!callGemini) {
+              // No Gemini available — silently use next static email
+              if (addToast) addToast('AI unavailable — using practice email', 'info');
+              setAiGeneratedEmail(null);
+              setPhishIdx(function(p) { return p + 1; });
+              setPhishAnswer(null);
+              setCluesFound([]);
+              return;
+            }
+            setAiEmailLoading(true);
+            var diffLabel = difficulty === 'easy' ? 'Easy (obvious red flags)' : difficulty === 'medium' ? 'Medium (subtle cues)' : 'Hard (very realistic, tricky)';
+            var avoidList = aiEmailHistory.length > 0 ? '\nAvoid repeating these scenarios: ' + aiEmailHistory.slice(-8).join(', ') + '.' : '';
+            var prompt = 'You are a cybersecurity educator generating a realistic email scenario for students to analyze. ' +
+              'Difficulty: ' + diffLabel + '.\n' +
+              'Randomly decide whether this email is phishing or safe (aim for roughly 50/50 over time).' + avoidList + '\n\n' +
+              'Return ONLY valid JSON with this exact structure:\n' +
+              '{"from":"<sender email address>","fromDisplay":"<sender display name>","subject":"<email subject line>",' +
+              '"body":"<email body text, 2-4 sentences>","link":"<suspicious or legitimate URL, or null if no link>",' +
+              '"isPhish":<true or false>,"difficulty":"' + difficulty + '",' +
+              '"flags":["<explanation 1>","<explanation 2>","<explanation 3>"],' +
+              '"clues":[' +
+              '{"zone":"sender","icon":"<emoji>","label":"<short label>","desc":"<what the student discovers>","suspicious":<true/false>},' +
+              '{"zone":"subject","icon":"<emoji>","label":"<short label>","desc":"<observation>","suspicious":<true/false>},' +
+              '{"zone":"body","icon":"<emoji>","label":"<short label>","desc":"<observation>","suspicious":<true/false>},' +
+              '{"zone":"link","icon":"<emoji>","label":"<short label>","desc":"<observation about the URL>","suspicious":<true/false>}' +
+              ']}\n\n' +
+              'Rules:\n' +
+              '- For phishing: use realistic but flawed sender domains, urgency tactics, suspicious links, etc.\n' +
+              '- For safe emails: use legitimate-looking domains, professional tone, real company patterns.\n' +
+              '- flags: 3-4 educational explanations of why it is phishing or safe.\n' +
+              '- clues: exactly 4 clues, one per zone (sender/subject/body/link). If no link, make the link clue about the absence of suspicious URLs.\n' +
+              '- suspicious field in clues should be true for red flags, false for legitimate signs.\n' +
+              '- Make scenarios diverse: banks, schools, social media, delivery, tech companies, government, healthcare, etc.';
+
+            callGemini(prompt, true, false, 0.9).then(function(response) {
+              try {
+                var parsed = typeof response === 'string' ? JSON.parse(response) : response;
+                if (parsed && parsed.from && parsed.subject && parsed.body && parsed.flags && parsed.clues && parsed.clues.length >= 3) {
+                  // Ensure isPhish is boolean
+                  parsed.isPhish = !!parsed.isPhish;
+                  parsed.difficulty = parsed.difficulty || difficulty;
+                  parsed._aiGenerated = true;
+                  setAiGeneratedEmail(parsed);
+                  setPhishAnswer(null);
+                  setCluesFound([]);
+                  setTriageTimeLeft(15);
+                  if (phishMode === 'triage') setTriageActive(true);
+                  setAiEmailHistory(function(prev) { return prev.concat([parsed.subject.substring(0, 40)]); });
+                  setAiEmailLoading(false);
+                  return;
+                }
+              } catch (e) { /* fall through to fallback */ }
+              // Fallback: use next static email
+              setAiGeneratedEmail(null);
+              setPhishIdx(function(p) { return p + 1; });
+              setPhishAnswer(null);
+              setCluesFound([]);
+              setAiEmailLoading(false);
+              if (addToast) addToast('AI generation failed — here\'s a practice email instead', 'info');
+            }).catch(function() {
+              setAiGeneratedEmail(null);
+              setPhishIdx(function(p) { return p + 1; });
+              setPhishAnswer(null);
+              setCluesFound([]);
+              setAiEmailLoading(false);
+              if (addToast) addToast('AI generation failed — here\'s a practice email instead', 'info');
+            });
+          }
+
+          // ── Active Email (AI-generated overrides static pool) ──
+          var activeEmail = aiGeneratedEmail || currentEmail;
+
+          // ── Password Strength Calculator ──
+          function calcPasswordStrength(pw) {
+            if (!pw) return { score: 0, label: 'Empty', color: '#475569', entropy: 0, crackTime: 'N/A', checks: {} };
+            var len = pw.length;
+            var hasLower = /[a-z]/.test(pw);
+            var hasUpper = /[A-Z]/.test(pw);
+            var hasDigit = /\d/.test(pw);
+            var hasSymbol = /[^a-zA-Z0-9]/.test(pw);
+            var poolSize = 0;
+            if (hasLower) poolSize += 26;
+            if (hasUpper) poolSize += 26;
+            if (hasDigit) poolSize += 10;
+            if (hasSymbol) poolSize += 33;
+            var entropy = poolSize > 0 ? len * Math.log2(poolSize) : 0;
+            var commonPasswords = ['password','123456','12345678','qwerty','abc123','monkey','letmein','dragon','111111','baseball','iloveyou','trustno1','sunshine','master','welcome','shadow','ashley','football','jesus','michael','ninja','mustang','password1','password123','admin','login','hello','charlie','donald','batman'];
+            var isCommon = commonPasswords.indexOf(pw.toLowerCase()) !== -1;
+            var crackSeconds = Math.pow(2, entropy) / 1e10;
+            var crackTime;
+            if (isCommon) { crackTime = 'Instantly (common password!)'; }
+            else if (crackSeconds < 1) crackTime = 'Less than 1 second';
+            else if (crackSeconds < 60) crackTime = Math.round(crackSeconds) + ' seconds';
+            else if (crackSeconds < 3600) crackTime = Math.round(crackSeconds / 60) + ' minutes';
+            else if (crackSeconds < 86400) crackTime = Math.round(crackSeconds / 3600) + ' hours';
+            else if (crackSeconds < 86400 * 365) crackTime = Math.round(crackSeconds / 86400) + ' days';
+            else if (crackSeconds < 86400 * 365 * 1000) crackTime = Math.round(crackSeconds / (86400 * 365)) + ' years';
+            else if (crackSeconds < 86400 * 365 * 1e6) crackTime = Math.round(crackSeconds / (86400 * 365 * 1000)) + ' thousand years';
+            else if (crackSeconds < 86400 * 365 * 1e9) crackTime = Math.round(crackSeconds / (86400 * 365 * 1e6)) + ' million years';
+            else crackTime = Math.round(crackSeconds / (86400 * 365 * 1e9)) + ' billion years';
+            var score = 0;
+            if (len >= 8) score += 1;
+            if (len >= 12) score += 1;
+            if (len >= 16) score += 1;
+            if (hasLower && hasUpper) score += 1;
+            if (hasDigit) score += 1;
+            if (hasSymbol) score += 1;
+            if (!isCommon) score += 1;
+            if (entropy > 60) score += 1;
+            score = Math.min(score, 5);
+            if (isCommon) score = 0;
+            var labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
+            var colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#8b5cf6'];
+            return { score: score, label: labels[score], color: colors[score], entropy: Math.round(entropy), crackTime: crackTime, checks: { length: len, hasLower: hasLower, hasUpper: hasUpper, hasDigit: hasDigit, hasSymbol: hasSymbol, isCommon: isCommon, poolSize: poolSize } };
+          }
+
+          // ── Cipher Functions ──
+          function caesarCipher(text, shift, encode) {
+            var s = encode ? shift : (26 - shift) % 26;
+            return text.split('').map(function(ch) {
+              var c = ch.charCodeAt(0);
+              if (c >= 65 && c <= 90) return String.fromCharCode(((c - 65 + s) % 26) + 65);
+              if (c >= 97 && c <= 122) return String.fromCharCode(((c - 97 + s) % 26) + 97);
+              return ch;
+            }).join('');
+          }
+          function atbashCipher(text) {
+            return text.split('').map(function(ch) {
+              var c = ch.charCodeAt(0);
+              if (c >= 65 && c <= 90) return String.fromCharCode(90 - (c - 65));
+              if (c >= 97 && c <= 122) return String.fromCharCode(122 - (c - 97));
+              return ch;
+            }).join('');
+          }
+          function xorCipher(text, key) {
+            var k = key || 42;
+            return text.split('').map(function(ch) {
+              return String.fromCharCode(ch.charCodeAt(0) ^ k);
+            }).join('');
+          }
+
+          // Cipher challenges
+          var cipherChallenges = [
+            { type: 'caesar', shift: 3, encoded: 'FRPSXWHU VFLHQFH LV IXQ', answer: 'COMPUTER SCIENCE IS FUN', hint: 'Shift of 3 (classic Caesar)' },
+            { type: 'caesar', shift: 7, encoded: 'JVILY KLMLUZL', answer: 'CYBER DEFENSE', hint: 'Shift of 7' },
+            { type: 'atbash', shift: 0, encoded: 'KZHHDLIW HZUVGB', answer: 'PASSWORD SAFETY', hint: 'A=Z, B=Y, C=X...' },
+            { type: 'caesar', shift: 13, encoded: 'QRIRE FGNGR LBHE CNFFJBEQ', answer: 'NEVER STATE YOUR PASSWORD', hint: 'ROT13 - shift of 13' },
+            { type: 'atbash', shift: 0, encoded: 'GSRMP YVULIV BLF XORXP', answer: 'THINK BEFORE YOU CLICK', hint: 'Reverse the alphabet' }
+          ];
+
+          var activeChallengeData = cipherChallenges[Math.abs(phishScore + caesarShift) % cipherChallenges.length];
+
+          var pwStrength = calcPasswordStrength(pwInput);
+
+          // ── Cipher output ──
+          var cipherOutput = '';
+          if (cipherInput) {
+            if (cipherMode === 'caesar') cipherOutput = caesarCipher(cipherInput, caesarShift, cipherEncode);
+            else if (cipherMode === 'atbash') cipherOutput = atbashCipher(cipherInput);
+            else cipherOutput = cipherEncode ? btoa(xorCipher(cipherInput, 42)) : (function() { try { return xorCipher(atob(cipherInput), 42); } catch(e) { return '[Invalid XOR input]'; } })();
+          }
+
+          // ── Main Render ──
+          var el = React.createElement;
+          return el('div', { className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
+            // Header
+            el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
+              el('button', { onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '\u2190'),
+              el('div', { style: { fontSize: 28, filter: 'drop-shadow(0 0 8px rgba(244,63,94,0.6))' } }, '\uD83D\uDEE1\uFE0F'),
+              el('div', null,
+                el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Cyber Defense Lab'),
+                el('p', { style: { margin: 0, fontSize: 11, color: '#64748b', fontWeight: 600 } }, 'Digital Citizenship \u2022 Cybersecurity Fundamentals')
+              ),
+              el('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 } },
+                el('span', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Level:'),
+                ['easy', 'medium', 'hard'].map(function(d) {
+                  return el('button', { key: d, onClick: function() { setDifficulty(d); setPhishIdx(0); setPhishAnswer(null); },
+                    style: { padding: '4px 10px', borderRadius: 6, border: difficulty === d ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === d ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === d ? '#a5b4fc' : '#64748b', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, d);
+                }),
+                el('div', { style: { marginLeft: 12, padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b' } }, '\u2B50 ' + getStemXP('cyberDefense') + ' XP')
+              )
+            ),
+
+            // Tab Bar
+            el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', padding: '0 24px' } },
+              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Playground' }].map(function(tab) {
+                var isActive = cyberTab === tab.id;
+                return el('button', { key: tab.id, onClick: function() { setCyberTab(tab.id); },
+                  style: { padding: '12px 20px', border: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#64748b', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
+                  el('span', null, tab.icon), tab.label);
+              })
+            ),
+
+            // Content Area
+            el('div', { style: { padding: 24 } },
+
+              // ═══════ CYBER DETECTIVE ═══════
+              cyberTab === 'phish' && el('div', { style: { maxWidth: 680, margin: '0 auto' } },
+
+                // Detective Header Bar
+                el('div', { style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.12))', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
+                  // Rank badge
+                  el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    el('span', { style: { fontSize: 22, filter: 'drop-shadow(0 0 6px ' + currentRank.color + ')' } }, currentRank.icon),
+                    el('div', null,
+                      el('div', { style: { color: currentRank.color, fontSize: 13, fontWeight: 900 } }, currentRank.rank),
+                      el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 600 } }, casesClosed + ' case' + (casesClosed !== 1 ? 's' : '') + ' closed' + (nextRank ? ' \u2022 ' + (nextRank.min - casesClosed) + ' to ' + nextRank.rank : ' \u2022 MAX RANK!'))
+                    )
+                  ),
+                  // Stats
+                  el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+                    el('span', { style: { padding: '3px 10px', borderRadius: 12, background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2714 ' + phishScore + ' correct'),
+                    phishStreak >= 3 && el('span', { style: { padding: '3px 10px', borderRadius: 12, background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: 11, fontWeight: 700, animation: 'pulse 1s ease-in-out infinite' } }, '\uD83D\uDD25 ' + phishStreak + ' streak!')
+                  )
+                ),
+
+                // Mode Toggle
+                el('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
+                  el('button', { onClick: function() { setPhishMode('investigate'); setTriageActive(false); setCluesFound([]); setPhishAnswer(null); },
+                    style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'investigate' ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'investigate' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'investigate' ? '#a5b4fc' : '#64748b', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
+                    el('span', null, '\uD83D\uDD0D'), 'Investigation Mode'),
+                  el('button', { onClick: function() { setPhishMode('triage'); setCluesFound([]); setPhishAnswer(null); setTriageTimeLeft(15); setTriageActive(true); },
+                    style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#64748b', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
+                    el('span', null, '\u23F1\uFE0F'), 'Inbox Triage'),
+                  // AI Case Generator Button
+                  el('button', { onClick: generateAIEmail, disabled: aiEmailLoading,
+                    style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: aiGeneratedEmail ? '2px solid #a855f7' : '2px solid rgba(168,85,247,0.3)', background: aiGeneratedEmail ? 'rgba(168,85,247,0.2)' : 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.08))', color: aiGeneratedEmail ? '#c084fc' : '#a78bfa', fontSize: 12, fontWeight: 800, cursor: aiEmailLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s', opacity: aiEmailLoading ? 0.6 : 1, animation: aiEmailLoading ? 'pulse 1.5s ease-in-out infinite' : 'none' } },
+                    el('span', null, aiEmailLoading ? '\u23F3' : '\uD83E\uDD16'), aiEmailLoading ? 'Generating...' : (aiGeneratedEmail ? '\uD83E\uDD16 New AI Case' : '\uD83E\uDD16 AI Case'))
+                ),
+
+                // Case Counter
+                el('div', { style: { marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                  el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 } },
+                    '\uD83D\uDCC1 Case #' + (casesClosed + 1) + (aiGeneratedEmail ? '' : ' \u2022 Email ' + ((phishIdx % filteredEmails.length) + 1) + '/' + filteredEmails.length),
+                    aiGeneratedEmail && el('span', { style: { padding: '2px 6px', borderRadius: 6, background: 'rgba(168,85,247,0.2)', color: '#c084fc', fontSize: 9, fontWeight: 800, border: '1px solid rgba(168,85,247,0.3)' } }, '\uD83E\uDD16 AI')
+                  ),
+                  phishMode === 'triage' && !phishAnswer && triageActive && el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                    el('div', { style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
+                      el('div', { style: { width: (triageTimeLeft / 15 * 100) + '%', height: '100%', borderRadius: 3, background: triageTimeLeft > 10 ? '#22c55e' : triageTimeLeft > 5 ? '#f59e0b' : '#ef4444', transition: 'width 1s linear, background 0.5s' } })
+                    ),
+                    el('span', { style: { color: triageTimeLeft > 5 ? '#94a3b8' : '#ef4444', fontSize: 12, fontWeight: 900, fontFamily: 'monospace', minWidth: 24, textAlign: 'right' } }, triageTimeLeft + 's')
+                  )
+                ),
+
+                // Email Card (with investigation clue icons)
+                el('div', { style: { background: 'rgba(255,255,255,0.06)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', position: 'relative' } },
+                  // Email header with clue buttons
+                  el('div', { style: { padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 6 } },
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                      el('div', { style: { width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #475569, #334155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: 'white' } }, activeEmail.fromDisplay[0]),
+                      el('div', { style: { flex: 1 } },
+                        el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
+                          activeEmail.fromDisplay,
+                          // Sender clue button (investigation mode)
+                          phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
+                            if (clue.zone !== 'sender') return null;
+                            var found = cluesFound.indexOf(ci) !== -1;
+                            return el('button', { key: 'clue-s-' + ci, onClick: function() { handleClueClick(ci); },
+                              title: 'Investigate sender',
+                              style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#64748b', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                              '\uD83D\uDD0D');
+                          })
+                        ),
+                        el('div', { style: { color: '#64748b', fontSize: 11, fontFamily: 'monospace' } }, '<' + activeEmail.from + '>')
+                      )
+                    ),
+                    el('div', { style: { color: '#cbd5e1', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
+                      activeEmail.subject,
+                      // Subject clue button
+                      phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
+                        if (clue.zone !== 'subject') return null;
+                        var found = cluesFound.indexOf(ci) !== -1;
+                        return el('button', { key: 'clue-sub-' + ci, onClick: function() { handleClueClick(ci); },
+                          title: 'Investigate subject',
+                          style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#64748b', flexShrink: 0, transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                          '\uD83D\uDD0D');
+                      })
+                    )
+                  ),
+                  // Email body with clue buttons
+                  el('div', { style: { padding: '16px 18px', color: '#94a3b8', fontSize: 13, lineHeight: 1.6, position: 'relative' } },
+                    el('span', null, activeEmail.body),
+                    // Body clue button
+                    phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
+                      if (clue.zone !== 'body') return null;
+                      var found = cluesFound.indexOf(ci) !== -1;
+                      return el('button', { key: 'clue-b-' + ci, onClick: function() { handleClueClick(ci); },
+                        title: 'Investigate this',
+                        style: { marginLeft: 6, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#64748b', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite', verticalAlign: 'middle' } },
+                        '\uD83D\uDD0D');
+                    }),
+                    activeEmail.link && el('div', { style: { marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', fontFamily: 'monospace', fontSize: 11, color: '#818cf8', wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: 6 } },
+                      '\uD83D\uDD17 ' + activeEmail.link,
+                      // Link clue button
+                      phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
+                        if (clue.zone !== 'link') return null;
+                        var found = cluesFound.indexOf(ci) !== -1;
+                        return el('button', { key: 'clue-l-' + ci, onClick: function() { handleClueClick(ci); },
+                          title: 'Investigate link',
+                          style: { marginLeft: 'auto', flexShrink: 0, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#64748b', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                          '\uD83D\uDD0D');
+                      })
+                    )
+                  )
+                ),
+
+                // Evidence Board (investigation mode only, shows when clues found)
+                phishMode === 'investigate' && cluesFound.length > 0 && !phishAnswer && el('div', { style: { margin: '12px 0', padding: '12px 16px', borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 } },
+                      '\uD83D\uDCCB Evidence Board',
+                      el('span', { style: { padding: '1px 6px', borderRadius: 8, background: 'rgba(99,102,241,0.3)', fontSize: 10, fontWeight: 700 } }, cluesFound.length + '/' + (activeEmail.clues || []).length)
+                    ),
+                    cluesFound.length >= (activeEmail.clues || []).length && el('span', { style: { padding: '2px 8px', borderRadius: 8, background: 'rgba(245,158,11,0.2)', color: '#fbbf24', fontSize: 10, fontWeight: 800, animation: 'pulse 1.5s ease-in-out infinite' } }, '\u2B50 Perfect Investigation!')
+                  ),
+                  // Clue cards
+                  el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                    cluesFound.map(function(ci) {
+                      var clue = (activeEmail.clues || [])[ci];
+                      if (!clue) return null;
+                      return el('div', { key: 'ev-' + ci, style: { padding: '6px 10px', borderRadius: 8, background: clue.suspicious ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)', border: '1px solid ' + (clue.suspicious ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'), maxWidth: 220, animation: 'animate-in fade-in duration-200' } },
+                        el('div', { style: { fontSize: 11, fontWeight: 800, color: clue.suspicious ? '#fb7185' : '#4ade80', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 } }, clue.icon + ' ' + clue.label),
+                        el('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.4 } }, clue.desc)
+                      );
+                    })
+                  )
+                ),
+
+                // Verdict Buttons
+                !phishAnswer && (phishMode === 'triage' || cluesFound.length >= 2) && el('div', { style: { display: 'flex', gap: 12, marginTop: 12 } },
+                  el('button', { onClick: function() { handleVerdict(true); },
+                    style: { flex: 1, padding: '14px', borderRadius: 10, border: '2px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.1)', color: '#4ade80', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
+                    '\u2705', ' Safe Email'),
+                  el('button', { onClick: function() { handleVerdict(false); },
+                    style: { flex: 1, padding: '14px', borderRadius: 10, border: '2px solid rgba(244,63,94,0.3)', background: 'rgba(244,63,94,0.1)', color: '#fb7185', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
+                    '\uD83D\uDEA8', ' Phishing!')
+                ),
+
+                // Investigation hint (need more clues)
+                !phishAnswer && phishMode === 'investigate' && cluesFound.length < 2 && el('div', { style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(99,102,241,0.3)', textAlign: 'center' } },
+                  el('span', { style: { color: '#64748b', fontSize: 12, fontWeight: 600 } },
+                    '\uD83D\uDD0D Click the magnifying glasses to investigate \u2022 Find at least 2 clues to unlock your verdict')
+                ),
+
+                // Case File Recap (replaces old result reveal)
+                phishAnswer && el('div', { style: { marginTop: 16, borderRadius: 12, overflow: 'hidden', border: '1px solid ' + (phishAnswer === 'correct' ? 'rgba(34,197,94,0.3)' : phishAnswer === 'timeout' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)'), boxShadow: '0 4px 20px rgba(0,0,0,0.2)' } },
+                  // Case File Header
+                  el('div', { style: { padding: '14px 18px', background: phishAnswer === 'correct' ? 'rgba(34,197,94,0.12)' : phishAnswer === 'timeout' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)' } },
+                    el('div', null,
+                      el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\uD83D\uDCC1 Case File #' + casesClosed),
+                      el('div', { style: { fontSize: 16, fontWeight: 900, color: phishAnswer === 'correct' ? '#4ade80' : phishAnswer === 'timeout' ? '#fbbf24' : '#f87171' } },
+                        phishAnswer === 'correct' ? '\u2705 Verdict: CORRECT' : phishAnswer === 'timeout' ? '\u23F0 Time Expired' : '\u274C Verdict: INCORRECT')
+                    ),
+                    el('div', { style: { padding: '6px 12px', borderRadius: 8, background: activeEmail.isPhish ? 'rgba(244,63,94,0.2)' : 'rgba(34,197,94,0.2)', color: activeEmail.isPhish ? '#fb7185' : '#4ade80', fontSize: 11, fontWeight: 800, border: '1px solid ' + (activeEmail.isPhish ? 'rgba(244,63,94,0.3)' : 'rgba(34,197,94,0.3)') } },
+                      activeEmail.isPhish ? '\uD83D\uDEA8 PHISHING' : '\u2705 SAFE')
+                  ),
+                  // Agent Notes
+                  el('div', { style: { padding: '14px 18px' } },
+                    el('div', { style: { color: '#64748b', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, '\uD83D\uDD75\uFE0F Agent Notes:'),
+                    activeEmail.flags.map(function(flag, fi) {
+                      return el('div', { key: fi, style: { color: '#94a3b8', fontSize: 12, padding: '3px 0', display: 'flex', alignItems: 'flex-start', gap: 6 } },
+                        el('span', { style: { color: activeEmail.isPhish ? '#f87171' : '#4ade80', fontSize: 10, marginTop: 2 } }, activeEmail.isPhish ? '\u26A0' : '\u2714'),
+                        flag);
+                    }),
+                    // XP Breakdown
+                    phishAnswer === 'correct' && el('div', { style: { marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' } },
+                      el('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '\u2B50 XP Earned:'),
+                      el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                        el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, '+2 Base'),
+                        cluesFound.length >= (activeEmail.clues || []).length && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(168,85,247,0.15)', color: '#c084fc', fontSize: 10, fontWeight: 700 } }, '+2 Perfect Investigation'),
+                        cluesFound.length >= 2 && cluesFound.length < (activeEmail.clues || []).length && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, fontWeight: 700 } }, '+1 Evidence Bonus'),
+                        phishStreak >= 3 && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: 10, fontWeight: 700 } }, '+1 Streak Bonus'),
+                        phishMode === 'triage' && triageTimeLeft >= 10 && el('span', { style: { padding: '2px 8px', borderRadius: 6, background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 10, fontWeight: 700 } }, '+2 Speed Bonus')
+                      )
+                    ),
+                    // Evidence collected
+                    phishMode === 'investigate' && el('div', { style: { marginTop: 8, color: '#64748b', fontSize: 11 } },
+                      '\uD83D\uDCCB Evidence collected: ' + cluesFound.length + '/' + (activeEmail.clues || []).length + ' clues'),
+                    // Next case button
+                    el('button', { onClick: advanceCase,
+                      style: { marginTop: 14, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
+                      '\uD83D\uDD75\uFE0F Next Case \u2192')
+                  )
+                )
+              ),
+
+              // ═══════ PASSWORD FORGE ═══════
+              cyberTab === 'password' && el('div', { style: { maxWidth: 560, margin: '0 auto' } },
+                el('div', { style: { textAlign: 'center', marginBottom: 20 } },
+                  el('div', { style: { fontSize: 36, marginBottom: 4, filter: 'drop-shadow(0 0 12px rgba(6,182,212,0.5))' } }, '\uD83D\uDD10'),
+                  el('h3', { style: { color: '#e2e8f0', fontSize: 18, fontWeight: 900, margin: 0 } }, 'Password Forge'),
+                  el('p', { style: { color: '#64748b', fontSize: 12, marginTop: 4 } }, 'Build the strongest password you can!')
+                ),
+                // Input
+                el('div', { style: { position: 'relative', marginBottom: 20 } },
+                  el('input', { type: 'text', value: pwInput, onChange: function(e) { setPwInput(e.target.value); setPwChallengeDone(false); }, placeholder: 'Type a password to test...', autoComplete: 'off',
+                    style: { width: '100%', padding: '14px 18px', borderRadius: 10, border: '2px solid ' + (pwStrength.score > 0 ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 16, fontFamily: 'monospace', fontWeight: 600, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.3s' } })
+                ),
+                // Strength meter
+                pwInput && el('div', { style: { marginBottom: 20 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
+                    el('span', { style: { color: pwStrength.color, fontSize: 14, fontWeight: 900 } }, pwStrength.label),
+                    el('span', { style: { color: '#64748b', fontSize: 11, fontWeight: 600 } }, 'Entropy: ' + pwStrength.entropy + ' bits')
+                  ),
+                  // Strength bar
+                  el('div', { style: { width: '100%', height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                    el('div', { style: { width: (pwStrength.score / 5 * 100) + '%', height: '100%', borderRadius: 4, background: pwStrength.color, transition: 'all 0.5s ease-out', boxShadow: '0 0 10px ' + pwStrength.color + '60' } })
+                  ),
+                  // Crack time
+                  el('div', { style: { marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
+                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Time to crack (10 billion guesses/sec):'),
+                    el('div', { style: { color: pwStrength.color, fontSize: 18, fontWeight: 900 } }, pwStrength.crackTime)
+                  ),
+                  // Checklist
+                  el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 14 } },
+                    [
+                      { label: '8+ characters', ok: pwStrength.checks.length >= 8 },
+                      { label: '12+ characters', ok: pwStrength.checks.length >= 12 },
+                      { label: 'Uppercase letters', ok: pwStrength.checks.hasUpper },
+                      { label: 'Lowercase letters', ok: pwStrength.checks.hasLower },
+                      { label: 'Numbers', ok: pwStrength.checks.hasDigit },
+                      { label: 'Symbols (!@#$)', ok: pwStrength.checks.hasSymbol },
+                      { label: 'Not a common password', ok: !pwStrength.checks.isCommon && pwInput.length > 0 }
+                    ].map(function(check, ci) {
+                      return el('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, background: check.ok ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (check.ok ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') } },
+                        el('span', { style: { fontSize: 12, color: check.ok ? '#4ade80' : '#475569' } }, check.ok ? '\u2714' : '\u25CB'),
+                        el('span', { style: { fontSize: 11, fontWeight: 600, color: check.ok ? '#86efac' : '#64748b' } }, check.label));
+                    })
+                  ),
+                  // Challenge
+                  !pwChallengeDone && pwStrength.entropy > 60 && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
+                    el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
+                    el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your password would take ' + pwStrength.crackTime + ' to crack!'),
+                    el('button', { onClick: function() { addStemXP('cyberDefense', 5); setPwChallengeDone(true); if (addToast) addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); },
+                      style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
+                  )
+                ),
+                // Tips panel
+                el('div', { style: { marginTop: 16, padding: 16, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
+                  el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Password Tips'),
+                  ['Use a passphrase: combine 4+ random words (e.g., "correct-horse-battery-staple")',
+                   'Never reuse passwords across different sites',
+                   'Add symbols and numbers between words, not just at the end',
+                   'Longer is always stronger \u2014 aim for 16+ characters',
+                   'Consider using a password manager to generate and store strong passwords'
+                  ].map(function(tip, ti) {
+                    return el('div', { key: ti, style: { color: '#94a3b8', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'flex-start' } },
+                      el('span', { style: { color: '#6366f1', fontSize: 8, marginTop: 4 } }, '\u25C6'), tip);
+                  })
+                )
+              ),
+
+              // ═══════ CIPHER PLAYGROUND ═══════
+              cyberTab === 'cipher' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
+                // Cipher type selector
+                el('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } },
+                  [{ id: 'caesar', label: 'Caesar Cipher', icon: '\uD83D\uDD04' }, { id: 'atbash', label: 'Atbash Cipher', icon: '\uD83D\uDD00' }, { id: 'xor', label: 'XOR Cipher', icon: '\u2295' }].map(function(c) {
+                    return el('button', { key: c.id, onClick: function() { setCipherMode(c.id); },
+                      style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: cipherMode === c.id ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: cipherMode === c.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: cipherMode === c.id ? '#a5b4fc' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
+                      el('span', null, c.icon), c.label);
+                  })
+                ),
+                // Encode/Decode toggle
+                el('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 16 } },
+                  el('div', { style: { display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' } },
+                    el('button', { onClick: function() { setCipherEncode(true); }, style: { padding: '6px 18px', border: 'none', background: cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
+                    el('button', { onClick: function() { setCipherEncode(false); }, style: { padding: '6px 18px', border: 'none', background: !cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
+                  )
+                ),
+                // Caesar shift control
+                cipherMode === 'caesar' && el('div', { style: { marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
+                  el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600 } }, 'Shift:'),
+                  el('input', { type: 'range', min: 1, max: 25, value: caesarShift, onChange: function(e) { setCaesarShift(parseInt(e.target.value)); },
+                    style: { width: 180, accentColor: '#6366f1' } }),
+                  el('span', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, fontFamily: 'monospace', minWidth: 28, textAlign: 'center' } }, caesarShift)
+                ),
+                // Letter mapping visualization
+                cipherMode !== 'xor' && el('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' } },
+                  el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Letter Mapping'),
+                  el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' } },
+                    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter, li) {
+                      var mapped;
+                      if (cipherMode === 'caesar') mapped = String.fromCharCode(((li + caesarShift) % 26) + 65);
+                      else mapped = String.fromCharCode(90 - li);
+                      return el('div', { key: li, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 22 } },
+                        el('span', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', fontFamily: 'monospace' } }, letter),
+                        el('span', { style: { fontSize: 8, color: '#475569' } }, '\u2193'),
+                        el('span', { style: { fontSize: 10, fontWeight: 900, color: '#818cf8', fontFamily: 'monospace' } }, mapped)
+                      );
+                    })
+                  )
+                ),
+                // Input/Output
+                el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 } },
+                  el('div', null,
+                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Plain Text' : 'Encoded Text'),
+                    el('textarea', { value: cipherInput, onChange: function(e) { setCipherInput(e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...',
+                      style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, outline: 'none', resize: 'none', boxSizing: 'border-box' } })
+                  ),
+                  el('div', null,
+                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Encoded Output' : 'Decoded Output'),
+                    el('div', { style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.08)', color: '#a5b4fc', fontSize: 13, fontFamily: 'monospace', fontWeight: 700, overflowY: 'auto', boxSizing: 'border-box', wordBreak: 'break-all' } },
+                      cipherOutput || el('span', { style: { color: '#475569', fontStyle: 'italic', fontWeight: 400 } }, 'Output will appear here...'))
+                  )
+                ),
+                // Explanation
+                el('div', { style: { marginBottom: 20, padding: 14, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
+                  el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 6 } },
+                    cipherMode === 'caesar' ? '\uD83D\uDD04 How Caesar Cipher Works' : cipherMode === 'atbash' ? '\uD83D\uDD00 How Atbash Cipher Works' : '\u2295 How XOR Cipher Works'),
+                  el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.6 } },
+                    cipherMode === 'caesar' ? 'Each letter is shifted forward in the alphabet by the shift amount. Julius Caesar used a shift of 3 to encrypt military messages. With 26 possible shifts, this is one of the simplest ciphers to break \u2014 but a great introduction to cryptography!' :
+                    cipherMode === 'atbash' ? 'The alphabet is simply reversed: A\u2192Z, B\u2192Y, C\u2192X, and so on. Originally used for Hebrew text, Atbash is a "mirror cipher." It\'s its own inverse \u2014 encoding and decoding use the same operation!' :
+                    'XOR (exclusive or) compares the binary digits of each character with a key number. If the bits match, the result is 0; if they differ, the result is 1. XOR is used in real-world encryption because it\'s fast, reversible, and forms the basis of modern stream ciphers.')
+                ),
+                // Challenge Mode
+                el('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.2)' } },
+                  el('div', { style: { color: '#fbbf24', fontSize: 14, fontWeight: 900, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 } }, '\uD83C\uDFC6 Decode Challenge'),
+                  el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 6 } }, 'Cipher: ' + (activeChallengeData.type === 'caesar' ? 'Caesar (shift ' + activeChallengeData.shift + ')' : 'Atbash') + ' \u2022 Hint: ' + activeChallengeData.hint),
+                  el('div', { style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.3)', fontFamily: 'monospace', fontSize: 14, fontWeight: 700, color: '#fbbf24', letterSpacing: 2, marginBottom: 10 } }, activeChallengeData.encoded),
+                  el('input', { value: cipherChallenge, onChange: function(e) {
+                    var val = e.target.value.toUpperCase();
+                    setCipherChallenge(val);
+                    if (val.trim() === activeChallengeData.answer) { setChallengeSolved(true); addStemXP('cyberDefense', 5); if (addToast) addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); }
+                    else { setChallengeSolved(false); }
+                  }, placeholder: 'Type the decoded message...', disabled: challengeSolved,
+                    style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, outline: 'none', boxSizing: 'border-box' } }),
+                  challengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
+                )
+              )
+            )
+          );
+        })(),
+
+        // ════════════════════════════════════════════════════════════════════
+        // ── Plugin Registry Fallback Renderer (Phase 2) ──
+        // For tools registered via window.StemLab.registerTool() that do NOT
+        // have inline render code above. Bridges hub-scope variables into
+        // the plugin's ctx object format.
+        // ════════════════════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool && window.StemLab && window.StemLab.isRegistered(stemLabTool) && (function _pluginFallback() {
+          // Only render if no inline IIFE already handled this tool.
+          // We detect this by checking a known marker: inline tools set state
+          // immediately via their IIFE returns. If the tool is in the registry
+          // AND has inline code, the inline code already rendered it — we skip.
+          // For now, use an explicit set of tools WITHOUT inline code.
+          var _pluginOnlyTools = {
+            dnaLab: true, gameStudio: true, geoQuiz: true,
+            geometryProver: true, logicLab: true, plateTectonics: true
+          };
+          if (!_pluginOnlyTools[stemLabTool]) return null;
+
+          // Build context bridge: map hub-local variables to plugin ctx format
+          var _ctx = {
+            React: React,
+            toolData: labToolData,
+            update: function(toolId, key, val) {
+              setLabToolData(function(prev) {
+                var toolState = Object.assign({}, (prev && prev[toolId]) || {});
+                toolState[key] = val;
+                var patch = {}; patch[toolId] = toolState;
+                return Object.assign({}, prev, patch);
+              });
+            },
+            updateMulti: function(toolId, obj) {
+              setLabToolData(function(prev) {
+                var toolState = Object.assign({}, (prev && prev[toolId]) || {}, obj);
+                var patch = {}; patch[toolId] = toolState;
+                return Object.assign({}, prev, patch);
+              });
+            },
+            setStemLabTool: setStemLabTool,
+            setStemLabTab: setStemLabTab,
+            setToolSnapshots: setToolSnapshots,
+            addToast: addToast,
+            awardXP: typeof awardStemXP === 'function' ? awardStemXP : function() {},
+            getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },
+            announceToSR: typeof announceToSR === 'function' ? announceToSR : function() {},
+            celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
+            t: typeof t === 'function' ? t : function(k) { return k; },
+            icons: { ArrowLeft: ArrowLeft },
+            saveSnapshot: function(toolId, label, data) {
+              if (typeof setToolSnapshots === 'function') {
+                setToolSnapshots(function(prev) {
+                  return (prev || []).concat([{ id: toolId + '-' + Date.now(), tool: toolId, label: label, data: data, ts: Date.now() }]);
+                });
+              }
+            }
+          };
+
+          try {
+            return window.StemLab.renderTool(stemLabTool, _ctx);
+          } catch(e) {
+            console.error('[StemLab] Plugin fallback error for ' + stemLabTool, e);
+            return React.createElement('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
+              React.createElement('p', { style: { fontSize: 32, marginBottom: 12 } }, '⚠️'),
+              React.createElement('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + stemLabTool),
+              React.createElement('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 16 } }, e.message || 'Unknown error'),
+              React.createElement('button', {
+                onClick: function() { setStemLabTool(null); },
+                style: { padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+              }, '← Back to Tools')
+            );
+          }
+        })(),
 
 
       ));

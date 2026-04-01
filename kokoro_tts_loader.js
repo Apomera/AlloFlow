@@ -44,40 +44,42 @@
     const DTYPE_SIZES = { 'q4': '~43MB', 'q4f16': '~54MB', 'q8': '~86MB', 'fp16': '~164MB', 'fp32': '~326MB' };
 
     // Available Kokoro voices (id → label mapping for UI)
+    // Must match voices actually supported by the Kokoro CDN worker.
     const KOKORO_VOICE_LIST = [
-        // ── American English ──
+        // ── American English — Female ──
         { id: 'af_heart',     label: '❤️ Heart — Warm female (English US)',    lang: 'en' },
         { id: 'af_nova',      label: '⭐ Nova — Clear female (English US)',     lang: 'en' },
         { id: 'af_sky',       label: '🌤️ Sky — Bright female (English US)',    lang: 'en' },
         { id: 'af_bella',     label: '🔔 Bella — Elegant female (English US)', lang: 'en' },
         { id: 'af_sarah',     label: '🌸 Sarah — Gentle female (English US)',  lang: 'en' },
         { id: 'af_nicole',    label: '🎵 Nicole — Musical female (English US)', lang: 'en' },
+        { id: 'af_alloy',     label: '🔩 Alloy — Versatile female (English US)', lang: 'en' },
+        { id: 'af_aoede',     label: '🎶 Aoede — Melodic female (English US)', lang: 'en' },
+        { id: 'af_jessica',   label: '💐 Jessica — Friendly female (English US)', lang: 'en' },
+        { id: 'af_kore',      label: '🌿 Kore — Calm female (English US)',     lang: 'en' },
+        { id: 'af_river',     label: '🌊 River — Smooth female (English US)',  lang: 'en' },
+        // ── American English — Male ──
         { id: 'am_adam',      label: '🧑 Adam — Natural male (English US)',     lang: 'en' },
         { id: 'am_michael',   label: '🎙️ Michael — Deep male (English US)',   lang: 'en' },
+        { id: 'am_echo',      label: '📡 Echo — Resonant male (English US)',   lang: 'en' },
+        { id: 'am_eric',      label: '🎤 Eric — Confident male (English US)',  lang: 'en' },
+        { id: 'am_fenrir',    label: '🐺 Fenrir — Bold male (English US)',     lang: 'en' },
+        { id: 'am_liam',      label: '📘 Liam — Steady male (English US)',     lang: 'en' },
+        { id: 'am_onyx',      label: '🖤 Onyx — Rich male (English US)',       lang: 'en' },
+        { id: 'am_puck',      label: '🃏 Puck — Playful male (English US)',    lang: 'en' },
         // ── British English ──
         { id: 'bf_emma',      label: '🇬🇧 Emma — British female',              lang: 'en' },
         { id: 'bf_isabella',  label: '🇬🇧 Isabella — British female',          lang: 'en' },
+        { id: 'bf_alice',     label: '🇬🇧 Alice — British female',             lang: 'en' },
+        { id: 'bf_lily',      label: '🇬🇧 Lily — British female',              lang: 'en' },
         { id: 'bm_george',    label: '🇬🇧 George — British male',              lang: 'en' },
         { id: 'bm_lewis',     label: '🇬🇧 Lewis — British male',               lang: 'en' },
-        // ── Other Languages ──
-        { id: 'ff_siwis',     label: '🇫🇷 Siwis — French female',              lang: 'fr' },
-        { id: 'hf_alpha',     label: '🇮🇳 Alpha — Hindi female',               lang: 'hi' },
-        { id: 'hm_omega',     label: '🇮🇳 Omega — Hindi male',                 lang: 'hi' },
-        { id: 'jf_alpha',     label: '🇯🇵 Alpha — Japanese female',            lang: 'ja' },
-        { id: 'jf_gongitsune',label: '🇯🇵 Gongitsune — Japanese female',       lang: 'ja' },
-        { id: 'zf_xiaobei',   label: '🇨🇳 Xiaobei — Chinese female',           lang: 'zh' },
-        { id: 'zf_xiaoni',    label: '🇨🇳 Xiaoni — Chinese female',            lang: 'zh' },
-        { id: 'zm_yunjian',   label: '🇨🇳 Yunjian — Chinese male',             lang: 'zh' },
-        { id: 'ef_dora',      label: '🇪🇸 Dora — Spanish female',              lang: 'es' },
-        { id: 'em_alex',      label: '🇪🇸 Alex — Spanish male',                lang: 'es' },
-        { id: 'if_sara',      label: '🇮🇹 Sara — Italian female',              lang: 'it' },
-        { id: 'im_nicola',    label: '🇮🇹 Nicola — Italian male',              lang: 'it' },
-        { id: 'pf_dora',      label: '🇧🇷 Dora — Portuguese female',           lang: 'pt' },
-        { id: 'pm_alex',      label: '🇧🇷 Alex — Portuguese male',             lang: 'pt' },
+        { id: 'bm_daniel',    label: '🇬🇧 Daniel — British male',              lang: 'en' },
+        { id: 'bm_fable',     label: '🇬🇧 Fable — British male',               lang: 'en' },
     ];
 
     // Languages Kokoro supports (for cascade decision)
-    const KOKORO_LANGS = new Set(['en', 'fr', 'hi', 'ja', 'zh', 'es', 'it', 'pt', 'ko']);
+    const KOKORO_LANGS = new Set(['en']);
 
     // ─── Gemini → Kokoro voice mapping ──────────────────────────────
     const GEMINI_TO_KOKORO = {

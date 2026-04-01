@@ -1,0 +1,14 @@
+{
+  "name": "alloflow-a11y-audit",
+  "version": "1.0.0",
+  "description": "WCAG 2.1 AA compliance auditor for AlloFlow",
+  "scripts": {
+    "audit": "node static-audit.js",
+    "audit:runtime": "node runtime-audit.js",
+    "audit:all": "node static-audit.js && node runtime-audit.js"
+  },
+  "dependencies": {
+    "@axe-core/puppeteer": "^4.9.0",
+    "puppeteer": "^22.0.0"
+  }
+}

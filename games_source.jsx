@@ -1,0 +1,3478 @@
+const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+
+// ── TTS utility for read-aloud accessibility ──
+// Prefers Kokoro WASM TTS (high quality, offline) → browser TTS fallback
+let _speakAudio = null;
+const speakText = (text) => {
+  if (!text) return;
+  const str = String(text);
+  try {
+    // Stop any current playback
+    if (_speakAudio) { try { _speakAudio.pause(); _speakAudio = null; } catch(e) {} }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+    // ── Try Kokoro first ──
+    if (window._kokoroTTS && typeof window._kokoroTTS.speak === 'function') {
+      window._kokoroTTS.speak(str, 'af_heart', 1).then((url) => {
+        if (url) {
+          _speakAudio = new Audio(url);
+          _speakAudio.playbackRate = 0.95;
+          _speakAudio.play().catch(() => {});
+        } else {
+          _browserTTSFallback(str);
+        }
+      }).catch(() => _browserTTSFallback(str));
+      return;
+    }
+    // ── Browser TTS fallback ──
+    _browserTTSFallback(str);
+  } catch (e) { console.warn('TTS failed', e); }
+};
+const _browserTTSFallback = (text) => {
+  if (window.speechSynthesis) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
+// ── Theme toggle for game headers ──
+const GameThemeToggle = () => {
+  let isDark = false, isContrast = false;
+  try { isDark = !!document.querySelector('.theme-dark'); isContrast = !!document.querySelector('.theme-contrast'); } catch(e) {}
+  return (
+    <button
+      onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
+      className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1 text-white"
+      aria-label="Toggle theme (light / dark / high contrast)"
+      title={isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'}
+      type="button"
+    >
+      <span>{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
+      <span className="text-[10px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
+    </button>
+  );
+};
+
+const SpeakButton = ({ text, size = 13, className = "" }) => (
+  <button
+    onClick={(e) => { e.stopPropagation(); e.preventDefault(); speakText(text); }}
+    className={`inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${className}`}
+    aria-label={`Read aloud: ${text || ""}`}
+    title="Read aloud"
+    type="button"
+  >
+    <Volume2 size={size} />
+  </button>
+);
+
+// ── Post-game review screen ──
+const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
+  const correct = items.filter(i => i.status === 'correct').length;
+  const total = items.length;
+  return (
+    <div className="mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white text-center">
+        <h3 className="text-xl font-black">{title || "Review"}</h3>
+        <div className="flex items-center justify-center gap-4 mt-2">
+          <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">{score} pts</span>
+          <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">{correct}/{total} correct</span>
+        </div>
+      </div>
+      <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-3">
+        <div className="space-y-2">
+          {items.map((item, idx) => (
+            <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
+              item.status === 'correct' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+            }`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${
+                item.status === 'correct' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+              }`}>
+                {item.status === 'correct' ? '\u2713' : '\u2717'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm text-slate-800 truncate">{item.label}</div>
+                {item.detail && <div className="text-xs text-slate-500 truncate">{item.detail}</div>}
+              </div>
+              <SpeakButton text={item.label} size={12} />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="p-3 border-t border-slate-200 flex gap-2 justify-center">
+        <button onClick={onPlayAgain} className="px-5 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-2">
+          <RefreshCw size={14} /> Play Again
+        </button>
+        <button onClick={onClose} className="px-5 py-2 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) => {
+  const { t } = useContext(LanguageContext);
+  const [cards, setCards] = useState([]);
+  const [flippedIndices, setFlippedIndices] = useState([]);
+  const [matchedPairs, setMatchedPairs] = useState(new Set());
+  const [moves, setMoves] = useState(0);
+  const [score, setScore] = useState(0);
+  const [isWon, setIsWon] = useState(false);
+  const [gameMode, setGameMode] = useState('smart');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const cardRefs = useRef([]);
+  useEffect(() => {
+    initializeGame();
+  }, [data, gameMode]);
+  const initializeGame = () => {
+    const gameItems = data.slice(0, 10);
+    const deck = gameItems.flatMap((item, index) => {
+      const pairId = index;
+      let strategy = gameMode;
+      if (strategy === 'smart') {
+          strategy = item.image ? 'term-image' : 'term-def';
+      }
+      else if (strategy === 'mixed') {
+          const options = ['term-def', 'term-image', 'image-def'];
+          strategy = options[Math.floor(Math.random() * options.length)];
+      }
+      if ((strategy === 'term-image' || strategy === 'image-def') && !item.image) {
+          strategy = 'term-def';
+      }
+      let content1, type1, isTerm1;
+      let content2, type2, isTerm2;
+      switch (strategy) {
+          case 'term-def':
+              content1 = item.term; type1 = 'text'; isTerm1 = true;
+              content2 = item.def; type2 = 'text'; isTerm2 = false;
+              break;
+          case 'image-def':
+              content1 = item.image; type1 = 'image'; isTerm1 = false;
+              content2 = item.def; type2 = 'text'; isTerm2 = false;
+              break;
+          case 'term-image':
+          default:
+              content1 = item.term; type1 = 'text'; isTerm1 = true;
+              content2 = item.image; type2 = 'image'; isTerm2 = false;
+              break;
+      }
+      const card1 = {
+        id: `p${index}-1`,
+        pairId,
+        content: content1,
+        type: type1,
+        isTerm: isTerm1
+      };
+      const card2 = {
+        id: `p${index}-2`,
+        pairId,
+        content: content2,
+        type: type2,
+        isTerm: isTerm2
+      };
+      return [card1, card2];
+    });
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    setCards(deck);
+    setFlippedIndices([]);
+    setMatchedPairs(new Set());
+    setMoves(0);
+    setScore(0);
+    setIsWon(false);
+    setAnnouncement(`Game started. ${deck.length} cards. Use arrow keys or tab to navigate. Press Enter or Space to flip.`);
+    cardRefs.current = cardRefs.current.slice(0, deck.length);
+  };
+  const handleCardClick = (index) => {
+    if (
+      flippedIndices.includes(index) ||
+      matchedPairs.has(cards[index].pairId) ||
+      flippedIndices.length >= 2
+    ) return;
+    const newFlipped = [...flippedIndices, index];
+    setFlippedIndices(newFlipped);
+    const cardContent = cards[index].type === 'image' ? "Image card" : cards[index].content;
+    setAnnouncement(`Flipped ${cardContent}`);
+    if (newFlipped.length === 2) {
+      setMoves(m => m + 1);
+      const card1 = cards[newFlipped[0]];
+      const card2 = cards[newFlipped[1]];
+      if (card1.pairId === card2.pairId) {
+        setScore(s => s + 30);
+        setTimeout(() => {
+          setMatchedPairs(prev => {
+            const newSet = new Set(prev);
+            newSet.add(card1.pairId);
+            return newSet;
+          });
+          setFlippedIndices([]);
+          setAnnouncement(t('memory.announcement_match'));
+        }, 500);
+      } else {
+        setScore(s => Math.max(0, s - 5));
+        setTimeout(() => {
+          setFlippedIndices([]);
+          setAnnouncement(t('memory.announcement_mismatch'));
+        }, 2500);
+      }
+    }
+  };
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleCardClick(index);
+        return;
+    }
+    const getCols = () => {
+        const width = window.innerWidth;
+        if (isFullscreen) {
+            if (width >= 1024) return 6;
+            if (width >= 768) return 5;
+            if (width >= 640) return 4;
+            return 3;
+        } else {
+            if (width >= 768) return 4;
+            if (width >= 640) return 3;
+            return 2;
+        }
+    };
+    const cols = getCols();
+    const total = cards.length;
+    let nextIndex = null;
+    if (e.key === 'ArrowRight') {
+        nextIndex = index + 1;
+    } else if (e.key === 'ArrowLeft') {
+        nextIndex = index - 1;
+    } else if (e.key === 'ArrowDown') {
+        nextIndex = index + cols;
+    } else if (e.key === 'ArrowUp') {
+        nextIndex = index - cols;
+    }
+    if (nextIndex !== null && nextIndex >= 0 && nextIndex < total) {
+        e.preventDefault();
+        if (cardRefs.current[nextIndex]) {
+            cardRefs.current[nextIndex].focus();
+        }
+    }
+  };
+  useEffect(() => {
+    if (!isWon && cards.length > 0 && matchedPairs.size === cards.length / 2) {
+      setIsWon(true);
+      if (onScoreUpdate) onScoreUpdate(score, "Memory Match Complete");
+      if (onGameComplete) {
+        onGameComplete('memory', {
+          score: score,
+          pairsMatched: matchedPairs.size,
+          totalPairs: cards.length / 2,
+          attempts: moves
+        });
+      }
+    }
+  }, [matchedPairs, cards.length, isWon, onScoreUpdate, score]);
+  return (
+    <div className={`bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative'}`}>
+      <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+      <div className={`flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 ${isFullscreen ? 'sticky top-0 z-30 bg-slate-100/90 backdrop-blur-sm py-2 border-b border-slate-200' : ''}`}>
+        <div>
+          <h3 className="font-bold text-indigo-900 text-lg flex items-center gap-2">
+            <Brain size={20} /> {t('memory.title')}
+          </h3>
+          <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+              <span>{t('memory.moves')}: {moves}</span>
+              <span className="w-px h-3 bg-slate-300"></span>
+              <span className="text-indigo-600 font-bold">{t('memory.score')}: {score}</span>
+              <span className="w-px h-3 bg-slate-300"></span>
+              <span>{t('memory.pairs')}: {matchedPairs.size}/{cards.length / 2}</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <select aria-label={t('common.selection')}
+            value={gameMode}
+            onChange={(e) => setGameMode(e.target.value)}
+            className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+            data-help-key="memory_mode_select"
+          >
+            <option value="smart">{t('memory.modes.smart')}</option>
+            <option value="term-def">{t('memory.modes.term_def')}</option>
+            <option value="term-image">{t('memory.modes.term_image')}</option>
+            <option value="image-def">{t('memory.modes.image_def')}</option>
+            <option value="mixed">{t('memory.modes.mixed')}</option>
+          </select>
+          <button
+            onClick={initializeGame}
+            className="text-xs flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full font-bold hover:bg-indigo-50 transition-colors"
+            aria-label={t('memory.reset')}
+            data-help-key="memory_reset_btn"
+          >
+            <RefreshCw size={14}/> {t('memory.reset')}
+          </button>
+          <button
+            onClick={() => setIsFullscreen(prev => !prev)}
+            className="text-slate-500 hover:text-indigo-600 p-1.5 rounded-full hover:bg-indigo-50 transition-colors"
+            title={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
+            aria-label={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
+            data-help-key="memory_fullscreen_btn"
+          >
+            {isFullscreen ? <Minimize size={18}/> : <Maximize size={18}/>}
+          </button>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-600 p-1" aria-label={t('memory.close_aria')}><X size={18}/></button>
+        </div>
+      </div>
+      {isWon ? (
+        <div className={`flex flex-col items-center justify-center py-12 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
+          {!useReducedMotion() && <ConfettiExplosion />}
+          <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-4 shadow-lg">
+            <Trophy size={40} className="fill-current" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-800 mb-2">{t('memory.victory')}</h2>
+          <div className="text-lg font-bold text-indigo-600 mb-4 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100">
+              {t('memory.final_score')}: {score}
+          </div>
+          <p className="text-slate-600 mb-6">{t('memory.cleared_message', { moves })}</p>
+          <button
+              aria-label={t('common.start_game')}
+            onClick={initializeGame}
+            className="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-transform"
+          >
+            {t('memory.play_again')}
+          </button>
+        </div>
+      ) : (
+        <div className={`grid gap-4 ${isFullscreen ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'}`} role="grid" aria-label={t('memory.board_aria')}>
+          {cards.map((card, index) => {
+            const isFlipped = flippedIndices.includes(index) || matchedPairs.has(card.pairId);
+            const isMatched = matchedPairs.has(card.pairId);
+            let ariaLabel = `${t('memory.card_prefix')} ${index + 1}`;
+            if (isMatched) {
+                ariaLabel += `, ${t('memory.matched_suffix')}: ${card.type === 'image' ? t('memory.modes.term_image') : card.content}`;
+            } else if (isFlipped) {
+                ariaLabel += `, ${t('memory.face_up_suffix')}: ${card.type === 'image' ? t('memory.modes.term_image') : card.content}`;
+            } else {
+                ariaLabel += `, ${t('memory.face_down_suffix')}`;
+            }
+            return (
+              <div
+                key={index}
+                ref={el => cardRefs.current[index] = el}
+                onClick={() => handleCardClick(index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                tabIndex={0}
+                role="button"
+                aria-label={ariaLabel}
+                aria-disabled={isFlipped || isMatched}
+                className={`aspect-[3/4] cursor-pointer perspective-1000 group relative ${isMatched ? 'opacity-100 cursor-default' : ''} focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl`}
+                data-help-key="memory_card_item"
+              >
+                <div className={`w-full h-full transition-all duration-500 transform-style-3d rounded-xl shadow-sm border-2 ${isFlipped ? 'rotate-y-180 border-indigo-300' : 'rotate-y-0 border-slate-300 bg-white'}`}>
+                  <div className="absolute inset-0 backface-hidden bg-indigo-100 flex items-center justify-center rounded-xl group-hover:bg-indigo-200 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-600">
+                      <HelpCircle size={16} />
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center p-3 text-center overflow-hidden">
+                    {card.type === 'image' ? (
+                      <img loading="lazy"
+                        src={card.content}
+                        alt="memory card"
+                        className="w-full h-full object-contain rounded"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center overflow-y-auto custom-scrollbar">
+                          <p className={`font-bold text-slate-800 w-full ${card.isTerm ? 'text-sm sm:text-lg' : 'text-[10px] sm:text-xs font-normal text-slate-600 leading-snug'}`}>
+                            {card.content}
+                          </p>
+                      </div>
+                    )}
+                    {isMatched && <MatchVisuals />}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+});
+const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+  const { t } = useContext(LanguageContext);
+  const [items, setItems] = useState([]);
+  const [rightCol, setRightCol] = useState([]);
+  const [connections, setConnections] = useState([]);
+  const [tempLine, setTempLine] = useState(null);
+  const [isChecked, setIsChecked] = useState(false);
+  const [snapTarget, setSnapTarget] = useState(null);
+  const [score, setScore] = useState(0);
+  const [keyboardSelectedTerm, setKeyboardSelectedTerm] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
+  const scrollRef = useRef(null);
+  const canvasRef = useRef(null);
+  const termRefs = useRef({});
+  const defRefs = useRef({});
+  useEffect(() => {
+    const validItems = data.filter(d => d.term && d.def).slice(0, 8).map((item, i) => ({
+        id: item.term,
+        term: item.term,
+        def: item.def
+    }));
+    const defs = validItems.map(item => ({ id: item.term, text: item.def }));
+    for (let i = defs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [defs[i], defs[j]] = [defs[j], defs[i]];
+    }
+    setItems(validItems);
+    setRightCol(defs);
+    setConnections([]);
+    setIsChecked(false);
+    setSnapTarget(null);
+    setScore(0);
+    setKeyboardSelectedTerm(null);
+    setAnnouncement('');
+  }, [data]);
+  const getDotPos = (element) => {
+      if (!element || !canvasRef.current) return { x: 0, y: 0 };
+      const rect = element.getBoundingClientRect();
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      return {
+          x: rect.left - canvasRect.left + rect.width / 2,
+          y: rect.top - canvasRect.top + rect.height / 2
+      };
+  };
+  const handleTermKeyDown = (e, termId) => {
+      if (isChecked) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (keyboardSelectedTerm === termId) {
+              setKeyboardSelectedTerm(null);
+              setAnnouncement(t('matching.aria_selection_cancelled'));
+          } else {
+              setKeyboardSelectedTerm(termId);
+              setAnnouncement(t('matching.aria_term_selected'));
+              if(playSound) playSound('click');
+          }
+      }
+  };
+  const handleDefKeyDown = (e, defId) => {
+      if (isChecked) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (keyboardSelectedTerm) {
+              setConnections(prev => {
+                  const filtered = prev.filter(c => c.termId !== keyboardSelectedTerm && c.defId !== defId);
+                  return [...filtered, { termId: keyboardSelectedTerm, defId, status: 'pending' }];
+              });
+              setKeyboardSelectedTerm(null);
+              setAnnouncement(t('matching.aria_connected'));
+              if(playSound) playSound('click');
+          } else {
+              setAnnouncement(t('matching.aria_select_first'));
+          }
+      }
+  };
+  const handleMouseDown = (e, termId) => {
+      if (isChecked) return;
+      e.preventDefault();
+      const startPos = getDotPos(termRefs.current[termId]);
+      setConnections(prev => prev.filter(c => c.termId !== termId));
+      setTempLine({
+          termId,
+          start: startPos,
+          end: startPos
+      });
+      const onMove = (ev) => {
+          if (!canvasRef.current) return;
+          const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+          const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+          const canvasRect = canvasRef.current.getBoundingClientRect();
+          const rawX = clientX - canvasRect.left;
+          const rawY = clientY - canvasRect.top;
+          let foundSnap = null;
+          let minDist = 50;
+          Object.entries(defRefs.current).forEach(([defId, element]) => {
+              if (!element) return;
+              const dotPos = getDotPos(element);
+              const dist = Math.hypot(rawX - dotPos.x, rawY - dotPos.y);
+              if (dist < minDist) {
+                  minDist = dist;
+                  foundSnap = { id: defId, x: dotPos.x, y: dotPos.y };
+              }
+          });
+          if (foundSnap) {
+              setSnapTarget(foundSnap.id);
+              setTempLine(prev => ({
+                  ...prev,
+                  end: { x: foundSnap.x, y: foundSnap.y }
+              }));
+          } else {
+              setSnapTarget(null);
+              setTempLine(prev => ({
+                  ...prev,
+                  end: { x: rawX, y: rawY }
+              }));
+          }
+      };
+      const onUp = (ev) => {
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+          window.removeEventListener('touchmove', onMove);
+          window.removeEventListener('touchend', onUp);
+          const clientX = ev.changedTouches ? ev.changedTouches[0].clientX : ev.clientX;
+          const clientY = ev.changedTouches ? ev.changedTouches[0].clientY : ev.clientY;
+          let hitDefId = null;
+          Object.entries(defRefs.current).forEach(([defId, element]) => {
+              if (!element) return;
+              const rect = element.getBoundingClientRect();
+              const dist = Math.hypot(clientX - (rect.left + rect.width/2), clientY - (rect.top + rect.height/2));
+              if (dist < 50) {
+                  hitDefId = defId;
+              }
+          });
+          if (hitDefId) {
+              setConnections(prev => {
+                  const filtered = prev.filter(c => c.defId !== hitDefId);
+                  return [...filtered, { termId, defId: hitDefId, status: 'pending' }];
+              });
+              playSound('click');
+          }
+          setTempLine(null);
+          setSnapTarget(null);
+          setKeyboardSelectedTerm(null);
+      };
+      window.addEventListener('mousemove', onMove, { passive: false });
+      window.addEventListener('mouseup', onUp);
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onUp);
+  };
+  const checkAnswers = () => {
+      setIsChecked(true);
+      const correctCount = connections.filter(c => c.termId === c.defId).length;
+      const isPerfect = correctCount === items.length && connections.length === items.length;
+      const earnedPoints = correctCount * 25;
+      setScore(earnedPoints);
+      if (onScoreUpdate && isPerfect) onScoreUpdate(earnedPoints, "Matching Worksheet Complete");
+      if (isPerfect) playSound('correct');
+      else playSound('incorrect');
+      if (onGameComplete) {
+        onGameComplete('matching', {
+          score: earnedPoints,
+          correctMatches: correctCount,
+          totalPairs: items.length,
+          isPerfect: isPerfect
+        });
+      }
+  };
+  const reset = () => {
+      setConnections([]);
+      setIsChecked(false);
+      setScore(0);
+      setKeyboardSelectedTerm(null);
+  };
+  return (
+    <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+        <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+        <div className="bg-white border-b border-slate-200 p-4 flex justify-between items-center shadow-sm no-print z-20 relative">
+            <div>
+                 <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-900">
+                     <GitMerge size={20} className="text-orange-500"/> {t('matching.title')}
+                 </h3>
+                 <p className="text-xs text-slate-500">{t('matching.instructions')}</p>
+            </div>
+            <div className="flex items-center gap-4">
+                {isChecked && (
+                    <div className={`bg-indigo-900 text-yellow-400 px-4 py-1.5 rounded-full font-bold text-sm shadow-sm border border-indigo-700${useReducedMotion() ? '' : ' animate-in zoom-in'}`}>
+                        {t('matching.score_display')}: {score} pts
+                    </div>
+                )}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={reset}
+                        className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+                        title={t('matching.reset_aria')}
+                        aria-label={t('matching.reset_aria')}
+                        data-help-key="matching_reset_btn"
+                    >
+                        <RefreshCw size={18}/>
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-red-50 rounded-full text-slate-500 hover:text-red-500 transition-colors"
+                        title={t('common.close')}
+                        aria-label={t('matching.close_aria')}
+                    >
+                        <X size={20}/>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div
+            ref={scrollRef}
+            className="flex-grow overflow-y-auto relative touch-none bg-white"
+        >
+            <div
+                className="relative min-h-full p-8"
+            >
+                <div className="hidden print:block mb-8 text-center">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('matching.print_title')}</h2>
+                    <div className="flex justify-between text-sm border-b-2 border-slate-800 pb-2 mb-4">
+                        <span>{t('matching.print_name')}: _______________________</span>
+                        <span>{t('matching.print_date')}: _______________________</span>
+                        <span>{t('matching.print_score')}: _______ / {items.length * 100}</span>
+                    </div>
+                    <p className="text-sm text-slate-600 italic">{t('matching.print_instructions')}</p>
+                </div>
+                <div
+                    ref={canvasRef}
+                    className="max-w-4xl mx-auto relative min-h-[600px]"
+                >
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 print:hidden">
+                        {connections.map((conn, i) => {
+                            const start = getDotPos(termRefs.current[conn.termId]);
+                            const end = getDotPos(defRefs.current[conn.defId]);
+                            let color = "#6366f1";
+                            if (isChecked) {
+                                color = conn.termId === conn.defId ? "#22c55e" : "#ef4444";
+                            }
+                            const isCorrect = isChecked && conn.termId === conn.defId;
+                            const isIncorrect = isChecked && conn.termId !== conn.defId;
+                            const midX = (start.x + end.x) / 2;
+                            const midY = (start.y + end.y) / 2;
+                            return (
+                                <g key={i}>
+                                    <line
+                                        x1={start.x} y1={start.y}
+                                        x2={end.x} y2={end.y}
+                                        stroke={color}
+                                        strokeWidth="3"
+                                        strokeLinecap="round"
+                                        strokeDasharray={isIncorrect ? "8,4" : "none"}
+                                    />
+                                    {isCorrect && (
+                                        <text x={midX} y={midY - 6} textAnchor="middle" fill="#22c55e" fontSize="18" fontWeight="bold" aria-hidden="true">✓</text>
+                                    )}
+                                    {isIncorrect && (
+                                        <text x={midX} y={midY - 6} textAnchor="middle" fill="#ef4444" fontSize="18" fontWeight="bold" aria-hidden="true">✗</text>
+                                    )}
+                                </g>
+                            );
+                        })}
+                        {(tempLine) && (
+                            <line
+                                x1={tempLine.start.x} y1={tempLine.start.y}
+                                x2={tempLine.end.x} y2={tempLine.end.y}
+                                stroke="#6366f1"
+                                strokeWidth="3"
+                                strokeDasharray="5,5"
+                                strokeLinecap="round"
+                            />
+                        )}
+                    </svg>
+                    <div className="flex justify-between gap-12 h-full">
+                        <div className="w-1/3 space-y-8">
+                            {items.map((item) => (
+                                <div key={item.id} className="flex items-center justify-between h-16 group relative z-20">
+                                    <div
+                                        onClick={() => {
+                                            if (isChecked) return;
+                                            if (keyboardSelectedTerm === item.id) {
+                                                setKeyboardSelectedTerm(null);
+                                                setAnnouncement(t('matching.aria_selection_cancelled'));
+                                            } else {
+                                                setKeyboardSelectedTerm(item.id);
+                                                setAnnouncement(t('matching.aria_term_selected'));
+                                                if (playSound) playSound('click');
+                                            }
+                                        }}
+                                        onKeyDown={(e) => handleTermKeyDown(e, item.id)}
+                                        tabIndex={0}
+                                        role="button"
+                                        aria-label={`${t('matching.select_term_aria')}: ${item.term}`}
+                                        aria-pressed={keyboardSelectedTerm === item.id}
+                                        className={`bg-indigo-50 border-2 border-indigo-100 p-3 rounded-lg w-full shadow-sm text-sm font-bold text-indigo-900 flex items-center justify-center text-center h-full print:border-slate-300 print:bg-white select-none cursor-pointer hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all ${keyboardSelectedTerm === item.id ? 'ring-4 ring-yellow-200 border-yellow-400 bg-yellow-50' : ''}`}
+                                        data-help-key="matching_term_item"
+                                    >
+                                        {item.term}
+                                        <SpeakButton text={item.term} size={11} className="ml-1" />
+                                    </div>
+                                    <div
+                                        ref={el => termRefs.current[item.id] = el}
+                                        onMouseDown={(e) => handleMouseDown(e, item.id)}
+                                        onTouchStart={(e) => handleMouseDown(e, item.id)}
+                                        onKeyDown={(e) => handleTermKeyDown(e, item.id)}
+                                        tabIndex={0}
+                                        role="button"
+                                        aria-label={`${t('matching.select_term_aria')}: ${item.term}`}
+                                        aria-pressed={keyboardSelectedTerm === item.id}
+                                        className={`w-6 h-6 bg-white border-4 rounded-full cursor-pointer hover:scale-110 transition-transform ml-4 print:bg-black print:border-black print:w-4 print:h-4 print:scale-100 focus:outline-none focus:ring-4 focus:ring-indigo-300 ${
+                                            (tempLine && tempLine.termId === item.id) || keyboardSelectedTerm === item.id
+                                            ? 'border-yellow-500 ring-4 ring-yellow-200 scale-110 animate-pulse'
+                                            : 'border-indigo-300'
+                                        }`}
+                                    ></div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="w-2/3 space-y-8">
+                            {rightCol.map((def) => (
+                                <div key={def.id} className="flex items-center justify-between h-16 relative z-20">
+                                    <div
+                                        data-id={def.id}
+                                        ref={el => defRefs.current[def.id] = el}
+                                        onKeyDown={(e) => handleDefKeyDown(e, def.id)}
+                                        tabIndex={0}
+                                        role="button"
+                                        aria-label={`${t('matching.connect_def_aria')}: ${def.text}`}
+                                        className={`def-dot w-6 h-6 bg-white border-4 rounded-full cursor-pointer transition-all mr-4 print:bg-black print:border-black print:w-4 print:h-4 focus:outline-none focus:ring-4 focus:ring-indigo-300 ${snapTarget === def.id ? 'border-green-500 scale-125 bg-green-50' : 'border-slate-300 hover:border-slate-500'}`}
+                                    ></div>
+                                    <div
+                                        onClick={() => {
+                                            if (isChecked) return;
+                                            if (keyboardSelectedTerm) {
+                                                setConnections(prev => {
+                                                    const filtered = prev.filter(c => c.termId !== keyboardSelectedTerm && c.defId !== def.id);
+                                                    return [...filtered, { termId: keyboardSelectedTerm, defId: def.id, status: 'pending' }];
+                                                });
+                                                setKeyboardSelectedTerm(null);
+                                                setAnnouncement(t('matching.aria_connected'));
+                                                if (playSound) playSound('click');
+                                            } else {
+                                                setAnnouncement(t('matching.aria_select_first'));
+                                            }
+                                        }}
+                                        onKeyDown={(e) => handleDefKeyDown(e, def.id)}
+                                        tabIndex={0}
+                                        role="button"
+                                        aria-label={`${t('matching.connect_def_aria')}: ${def.text}`}
+                                        className={`bg-white border border-slate-200 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 select-none cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? 'hover:border-indigo-300 hover:shadow-md' : ''}`}
+                                        data-help-key="matching_def_item"
+                                    >
+                                        {def.text}
+                                        <SpeakButton text={def.text} size={11} className="ml-1 shrink-0" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {isChecked && (
+          <div className="px-6 pb-2">
+            <GameReviewScreen
+              score={score}
+              title={t('matching.title') || "Matching"}
+              items={items.map(item => {
+                const conn = connections.find(c => c.termId === item.id);
+                const matched = conn ? conn.defId === item.id : false;
+                return {
+                  label: item.term,
+                  detail: item.def,
+                  status: matched ? 'correct' : 'incorrect'
+                };
+              })}
+              onPlayAgain={reset}
+              onClose={onClose}
+              t={t}
+            />
+          </div>
+        )}
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end no-print z-30">
+             <button
+                 aria-label={t('common.check_answers')}
+                onClick={checkAnswers}
+                disabled={isChecked || connections.length === 0}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                data-help-key="matching_check_btn"
+             >
+                 <CheckCircle2 size={18}/> {t('matching.check_answers')}
+             </button>
+        </div>
+    </div>
+  );
+});
+const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+  const { t } = useContext(LanguageContext);
+  const [items, setItems] = useState([]);
+  const [isWon, setIsWon] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [draggingIdx, setDraggingIdx] = useState(null);
+  const [score, setScore] = useState(0);
+  const [announcement, setAnnouncement] = useState('');
+  const [keyboardLiftedIdx, setKeyboardLiftedIdx] = useState(null);
+  const [progressionLabel, setProgressionLabel] = useState('');
+  const itemRefs = useRef([]);
+  const pastelColors = [
+    'bg-blue-50 border-blue-200 hover:border-blue-300 text-blue-900',
+    'bg-emerald-50 border-emerald-200 hover:border-emerald-300 text-emerald-900',
+    'bg-amber-50 border-amber-200 hover:border-amber-300 text-amber-900',
+    'bg-purple-50 border-purple-200 hover:border-purple-300 text-purple-900',
+    'bg-pink-50 border-pink-200 hover:border-pink-300 text-pink-900',
+    'bg-cyan-50 border-cyan-200 hover:border-cyan-300 text-cyan-900',
+    'bg-rose-50 border-rose-200 hover:border-rose-300 text-rose-900',
+    'bg-indigo-50 border-indigo-200 hover:border-indigo-300 text-indigo-900',
+    'bg-teal-50 border-teal-200 hover:border-teal-300 text-teal-900',
+    'bg-lime-50 border-lime-200 hover:border-lime-300 text-lime-900',
+    'bg-fuchsia-50 border-fuchsia-200 hover:border-fuchsia-300 text-fuchsia-900',
+    'bg-violet-50 border-violet-200 hover:border-violet-300 text-violet-900',
+    'bg-sky-50 border-sky-200 hover:border-sky-300 text-sky-900',
+    'bg-orange-50 border-orange-200 hover:border-orange-300 text-orange-900',
+    'bg-green-50 border-green-200 hover:border-green-300 text-green-900',
+    'bg-red-50 border-red-200 hover:border-red-300 text-red-900'
+  ];
+  useEffect(() => {
+    if (!data) return;
+    let itemsArray = [];
+    let label = t('timeline.progression_label_default') || 'Sequential Order';
+    if (Array.isArray(data)) {
+      itemsArray = data;
+    } else if (data.items && Array.isArray(data.items)) {
+      itemsArray = data.items;
+      if (data.progressionLabel) label = data.progressionLabel;
+    }
+    setProgressionLabel(label);
+    const indexed = itemsArray.map((item, i) => ({
+        ...item,
+        originalIndex: i,
+        id: `evt-${i}`,
+        colorIdx: Math.floor(Math.random() * pastelColors.length)
+    }));
+    const createDerangement = (arr) => {
+      const n = arr.length;
+      if (n <= 1) return arr;
+      const result = [...arr];
+      let isDerangement = false;
+      let attempts = 0;
+      const maxAttempts = 100;
+      while (!isDerangement && attempts < maxAttempts) {
+        for (let i = n - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [result[i], result[j]] = [result[j], result[i]];
+        }
+        isDerangement = result.every((item, idx) => item.originalIndex !== idx);
+        attempts++;
+      }
+      if (!isDerangement && n > 1) {
+        const rotated = [...arr];
+        const first = rotated.shift();
+        rotated.push(first);
+        return rotated;
+      }
+      return result;
+    };
+    const shuffled = createDerangement(indexed);
+    setItems(shuffled);
+    setIsWon(false);
+    setAttempts(0);
+    setScore(0);
+    setAnnouncement(t('timeline.game.start_announcement'));
+    setKeyboardLiftedIdx(null);
+  }, [data]);
+  const handleDragStart = (e, index) => {
+    setDraggingIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggingIdx === null || draggingIdx === index) return;
+    const newItems = [...items];
+    const draggedItem = newItems[draggingIdx];
+    newItems.splice(draggingIdx, 1);
+    newItems.splice(index, 0, draggedItem);
+    setItems(newItems);
+    setDraggingIdx(index);
+  };
+  const handleDragEnd = () => {
+    setDraggingIdx(null);
+  };
+  // ── Touch support for mobile/tablet ──
+  const touchDragIdx = useRef(null);
+  const handleTouchStart = (e, index) => {
+    if (isWon) return;
+    touchDragIdx.current = index;
+    setDraggingIdx(index);
+  };
+  const handleTouchMove = useCallback((e) => {
+    if (touchDragIdx.current === null) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const currentIdx = touchDragIdx.current;
+    const elements = itemRefs.current.filter(Boolean);
+    for (let i = 0; i < elements.length; i++) {
+      if (i === currentIdx) continue;
+      const rect = elements[i].getBoundingClientRect();
+      if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        setItems((prev) => {
+          const next = [...prev];
+          const dragged = next[currentIdx];
+          next.splice(currentIdx, 1);
+          next.splice(i, 0, dragged);
+          return next;
+        });
+        touchDragIdx.current = i;
+        setDraggingIdx(i);
+        break;
+      }
+    }
+  }, []);
+  const handleTouchEnd = useCallback(() => {
+    touchDragIdx.current = null;
+    setDraggingIdx(null);
+  }, []);
+  const moveItem = (index, direction) => {
+    const newItems = [...items];
+    const itemToMove = newItems[index];
+    if (direction === 'up' && index > 0) {
+        [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
+        setItems(newItems);
+        setAnnouncement(t('timeline.game.moved_up', { item: itemToMove.event, pos: index, total: items.length }));
+        if (playSound) playSound('click');
+    } else if (direction === 'down' && index < items.length - 1) {
+        [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+        setItems(newItems);
+        setAnnouncement(t('timeline.game.moved_down', { item: itemToMove.event, pos: index + 2, total: items.length }));
+        if (playSound) playSound('click');
+    }
+  };
+  const handleKeyDown = (e, index) => {
+      if (isWon) return;
+      if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          if (keyboardLiftedIdx === index) {
+              setKeyboardLiftedIdx(null);
+              setAnnouncement(t('timeline.game.dropped', { item: items[index].event }));
+              if (playSound) playSound('click');
+          } else {
+              setKeyboardLiftedIdx(index);
+              setAnnouncement(t('timeline.game.lifted', { item: items[index].event }));
+              if (playSound) playSound('click');
+          }
+      }
+      if (keyboardLiftedIdx === index) {
+          if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              if (index > 0) {
+                  moveItem(index, 'up');
+                  setKeyboardLiftedIdx(index - 1);
+                  requestAnimationFrame(() => {
+                      if (itemRefs.current[index - 1]) itemRefs.current[index - 1].focus();
+                  });
+              }
+          } else if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              if (index < items.length - 1) {
+                  moveItem(index, 'down');
+                  setKeyboardLiftedIdx(index + 1);
+                  requestAnimationFrame(() => {
+                      if (itemRefs.current[index + 1]) itemRefs.current[index + 1].focus();
+                  });
+              }
+          }
+      }
+  };
+  const checkOrder = () => {
+    let correctCount = 0;
+    items.forEach((item, i) => {
+        if (item.originalIndex === i) correctCount++;
+    });
+    const isCorrect = correctCount === items.length;
+    let currentScore = correctCount * 20;
+    if (isCorrect) {
+        setIsWon(true);
+        const bonus = Math.max(20, 100 - (attempts * 10));
+        const totalPoints = currentScore + bonus;
+        setScore(totalPoints);
+        if (onScoreUpdate) onScoreUpdate(totalPoints, "Sequence Builder");
+        if (onGameComplete) {
+          onGameComplete('timeline', {
+            score: totalPoints,
+            eventsOrdered: items.length,
+            totalEvents: items.length,
+            attempts: attempts + 1
+          });
+        }
+        if (playSound) playSound('correct');
+    } else {
+        setAttempts(prev => prev + 1);
+        setScore(currentScore);
+        if (playSound) playSound('incorrect');
+    }
+  };
+  const reset = () => {
+     const indexed = data.map((item, i) => ({
+         ...item,
+         originalIndex: i,
+         id: `evt-${i}`,
+         colorIdx: Math.floor(Math.random() * pastelColors.length)
+     }));
+     setItems(fisherYatesShuffle(indexed));
+     setIsWon(false);
+     setAttempts(0);
+     setScore(0);
+     setAnnouncement(t('timeline.game.reset_announcement'));
+     setKeyboardLiftedIdx(null);
+  };
+  return (
+    <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
+           <div>
+               <h3 className="font-bold text-lg flex items-center gap-2">
+                   <ListOrdered size={20} className="text-yellow-400"/> {t('timeline.game.header')}
+               </h3>
+               <p className="text-xs text-indigo-200">{t('timeline.game.desc')}</p>
+           </div>
+           <div className="flex items-center gap-4">
+               <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
+                   <Trophy size={14} className="text-yellow-400"/>
+                   <span className="font-bold text-sm">{score} pts</span>
+               </div>
+               <GameThemeToggle />
+               <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={t('timeline.game.close_aria')}><X size={24}/></button>
+           </div>
+       </div>
+       <div className="flex-grow overflow-y-auto p-6 bg-slate-100 relative custom-scrollbar">
+           {isWon && !useReducedMotion() && <ConfettiExplosion />}
+           <div className="max-w-3xl mx-auto relative min-h-full pb-20">
+               {!isWon && (
+                   <div className="sticky top-0 z-30 flex flex-col items-center gap-2 mb-8">
+                       <div className={`bg-white/90 backdrop-blur-sm px-6 py-2 rounded-full border border-indigo-100 shadow-sm text-indigo-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2${useReducedMotion() ? '' : ' animate-in slide-in-from-top-2'}`}>
+                           <ArrowDown size={14} /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} />
+                       </div>
+                       {progressionLabel && (
+                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-md${useReducedMotion() ? '' : ' animate-in slide-in-from-top-3'}`}>
+                               <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
+                           </div>
+                       )}
+                   </div>
+               )}
+               <div className="relative pl-8 sm:pl-0">
+                   <div className="absolute left-3 sm:left-1/2 top-0 bottom-0 w-1.5 bg-indigo-100 rounded-full -translate-x-1/2 z-0"></div>
+                   <div className="space-y-6 sm:space-y-0" role="list">
+                       {items.map((item, idx) => {
+                           const colorClass = pastelColors[item.colorIdx % pastelColors.length];
+                           const isLeft = idx % 2 === 0;
+                           const isDragging = draggingIdx === idx;
+                           const isLifted = keyboardLiftedIdx === idx;
+                           return (
+                           <div
+                               key={item.id}
+                               ref={el => itemRefs.current[idx] = el}
+                               tabIndex={isWon ? -1 : 0}
+                               role="listitem"
+                               aria-grabbed={isLifted}
+                               aria-label={`${item.event}. ${t('timeline.game.position_aria', {pos: idx + 1, total: items.length})}. ${isLifted ? t('timeline.game.lifted_aria') : t('timeline.game.lift_aria')}`}
+                               onKeyDown={(e) => handleKeyDown(e, idx)}
+                               draggable={!isWon}
+                               onDragStart={(e) => handleDragStart(e, idx)}
+                               onDragOver={(e) => handleDragOver(e, idx)}
+                               onDragEnd={handleDragEnd}
+                               onTouchStart={(e) => handleTouchStart(e, idx)}
+                               onTouchMove={handleTouchMove}
+                               onTouchEnd={handleTouchEnd}
+                               className={`relative z-10 sm:flex sm:items-center sm:justify-between group transition-all duration-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 focus:ring-offset-4 ${isDragging ? 'opacity-20 scale-95' : 'opacity-100'} ${isLifted ? 'z-50 scale-105 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl' : ''}`}
+                               data-help-key="timeline_draggable_item"
+                           >
+                               <div className={`hidden sm:block sm:w-1/2 ${!isLeft ? 'order-1' : 'order-2'}`}></div>
+                               <div className={`absolute left-3 sm:left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-white shadow-sm z-20 transition-all duration-300 ${isWon && item.originalIndex === idx ? 'bg-green-500 scale-110' : 'bg-indigo-300 group-hover:bg-indigo-500'}`}>
+                                   {isWon && item.originalIndex === idx && (
+                                       <div className={`absolute -right-1 -top-1 text-green-500 opacity-75${useReducedMotion() ? '' : ' animate-ping'}`}><CheckCircle2 size={24}/></div>
+                                   )}
+                               </div>
+                               <div className={`sm:w-1/2 pl-10 sm:pl-0 ${isLeft ? 'sm:pr-12 sm:text-right order-1' : 'sm:pl-12 sm:text-left order-2'} transition-all duration-300`}>
+                                   <div className={`
+                                       relative p-5 rounded-2xl border-2 shadow-sm transition-all transform duration-200
+                                       ${isWon
+                                           ? 'bg-green-50 border-green-200 opacity-90'
+                                           : `${colorClass} hover:-translate-y-1 hover:shadow-md cursor-grab active:cursor-grabbing`
+                                       }
+                                   `}>
+                                       <div className={`absolute top-3 ${isLeft ? 'right-3 sm:left-3 sm:right-auto' : 'right-3'} w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${isWon ? 'bg-green-200 text-green-800' : 'bg-black/5 text-slate-600'}`}>
+                                           {idx + 1}
+                                       </div>
+                                       <div className="pr-6 sm:px-2">
+                                           {isWon && (item.date || item.date_en) && (
+                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 animate-in zoom-in`}>
+                                                   {item.date}
+                                               </div>
+                                           )}
+                                           <div className={`text-sm font-bold leading-snug flex items-center gap-1 ${isWon ? 'text-green-900' : ''}`}>
+                                               {item.event}
+                                               {!isWon && <SpeakButton text={item.event} size={11} />}
+                                           </div>
+                                           {item.event_en && (
+                                               <div className={`text-xs italic mt-1 ${isWon ? 'text-green-700/70' : 'text-slate-500'}`}>
+                                                   {item.event_en}
+                                               </div>
+                                           )}
+                                       </div>
+                                       {!isWon && (
+                                           <div className="absolute top-1/2 -translate-y-1/2 right-2 text-black/10 p-1 group-hover:text-black/20">
+                                               <GripVertical size={20} />
+                                           </div>
+                                       )}
+                                       {!isWon && (
+                                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 sm:hidden opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full p-1 shadow-sm">
+                                                <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-500 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14}/></button>
+                                                <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 text-slate-500 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14}/></button>
+                                            </div>
+                                       )}
+                                   </div>
+                               </div>
+                           </div>
+                       )})}
+                   </div>
+               </div>
+           </div>
+           {isWon && (
+             <div className="max-w-3xl mx-auto px-4 pb-6">
+               <GameReviewScreen
+                 score={score}
+                 title={t('timeline.game.header')}
+                 items={items.map((item, idx) => ({
+                   label: `${idx + 1}. ${item.event}`,
+                   detail: item.originalIndex === idx ? null : `Correct position: ${item.originalIndex + 1}`,
+                   status: item.originalIndex === idx ? 'correct' : 'incorrect'
+                 }))}
+                 onPlayAgain={reset}
+                 onClose={onClose}
+                 t={t}
+               />
+             </div>
+           )}
+       </div>
+       <div className="p-4 bg-white border-t border-slate-200 flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+           <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+               {isWon ? <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={16}/> {t('timeline.game.complete')}</span> : t('timeline.game.attempts', { attempts })}
+           </div>
+           <div className="flex gap-3">
+               <button
+                    onClick={reset}
+                    className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors flex items-center gap-2"
+                    aria-label={t('timeline.game.reset_aria')}
+                    data-help-key="timeline_reset_btn"
+               >
+                   <RefreshCw size={14}/> {t('timeline.game.reset')}
+               </button>
+               {!isWon && (
+                   <button
+                       aria-label={t('common.check_order')}
+                        onClick={checkOrder}
+                        className="px-6 py-2.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all active:scale-95 flex items-center gap-2"
+                        data-help-key="timeline_check_btn"
+                   >
+                       <CheckCircle2 size={16} /> {t('timeline.game.check_order')}
+                   </button>
+               )}
+           </div>
+       </div>
+    </div>
+  );
+});
+const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete }) => {
+  const { t } = useContext(LanguageContext);
+  const [items, setItems] = useState([]);
+  const [buckets, setBuckets] = useState([]);
+  const [isChecked, setIsChecked] = useState(false);
+  const [score, setScore] = useState(0);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [newItemText, setNewItemText] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
+  const menuRef = useRef(null);
+  const isWon = isChecked && items.length > 0 && items.every(i => i.currentContainer === i.categoryId);
+  const pastelColors = [
+    'bg-blue-50 border-blue-200 hover:border-blue-300',
+    'bg-green-50 border-green-200 hover:border-green-300',
+    'bg-yellow-50 border-yellow-200 hover:border-yellow-300',
+    'bg-purple-50 border-purple-200 hover:border-purple-300',
+    'bg-pink-50 border-pink-200 hover:border-pink-300',
+    'bg-orange-50 border-orange-200 hover:border-orange-300',
+    'bg-teal-50 border-teal-200 hover:border-teal-300',
+    'bg-rose-50 border-rose-200 hover:border-rose-300'
+  ];
+  const bucketColorMap = {
+      blue: { bg: 'bg-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
+      green: { bg: 'bg-green-100', text: 'text-green-900', border: 'border-green-200' },
+      red: { bg: 'bg-red-100', text: 'text-red-900', border: 'border-red-200' },
+      yellow: { bg: 'bg-yellow-100', text: 'text-yellow-900', border: 'border-yellow-200' },
+      purple: { bg: 'bg-purple-100', text: 'text-purple-900', border: 'border-purple-200' },
+      pink: { bg: 'bg-pink-100', text: 'text-pink-900', border: 'border-pink-200' },
+      indigo: { bg: 'bg-indigo-100', text: 'text-indigo-900', border: 'border-indigo-200' },
+      teal: { bg: 'bg-teal-100', text: 'text-teal-900', border: 'border-teal-200' },
+      orange: { bg: 'bg-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
+      gray: { bg: 'bg-slate-100', text: 'text-slate-900', border: 'border-slate-200' },
+      slate: { bg: 'bg-slate-100', text: 'text-slate-900', border: 'border-slate-200' },
+      default: { bg: 'bg-slate-100', text: 'text-slate-900', border: 'border-slate-200' }
+  };
+  useEffect(() => {
+    if (!data) return;
+    setBuckets(data.categories || []);
+    const initItems = (data.items || []).map((item, i) => ({
+        ...item,
+        currentContainer: 'deck',
+        colorIdx: Math.floor(Math.random() * pastelColors.length)
+    }));
+    for (let i = initItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [initItems[i], initItems[j]] = [initItems[j], initItems[i]];
+    }
+    setItems(initItems);
+    setIsChecked(false);
+    setScore(0);
+    setKeyboardSelectedItemId(null);
+  }, [data]);
+  const handleDragStart = (e, item) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+  const handleDrop = (e, targetContainerId) => {
+    e.preventDefault();
+    if (isChecked || !draggedItem) return;
+    setItems(prev => prev.map(item =>
+      item.id === draggedItem.id ? { ...item, currentContainer: targetContainerId } : item
+    ));
+    setDraggedItem(null);
+    if(playSound) playSound('click');
+  };
+  const handleCardKeyDown = (e, item) => {
+      if (isChecked) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (keyboardSelectedItemId === item.id) {
+              setKeyboardSelectedItemId(null);
+          } else {
+              setKeyboardSelectedItemId(item.id);
+              if (playSound) playSound('click');
+          }
+      }
+  };
+  const handleKeyboardMove = (targetContainerId) => {
+      if (!keyboardSelectedItemId) return;
+      setItems(prev => prev.map(item =>
+        item.id === keyboardSelectedItemId ? { ...item, currentContainer: targetContainerId } : item
+      ));
+      setKeyboardSelectedItemId(null);
+      if (playSound) playSound('click');
+  };
+  useEffect(() => {
+      if (keyboardSelectedItemId && menuRef.current) {
+          const firstButton = menuRef.current.querySelector('button');
+          if (firstButton) firstButton.focus();
+      }
+  }, [keyboardSelectedItemId]);
+  const handleAddItem = async () => {
+      if (!newItemText.trim()) return;
+      if (!onGenerateItem) {
+          alert(t('common.coming_soon'));
+          return;
+      }
+      setIsAdding(true);
+      try {
+          const newItem = await onGenerateItem(newItemText, buckets);
+          if (newItem) {
+              setItems(prev => [...prev, {
+                  ...newItem,
+                  currentContainer: 'deck',
+                  colorIdx: prev.length + Math.floor(Math.random() * 10)
+              }]);
+              setNewItemText('');
+              if (playSound) playSound('click');
+          }
+      } catch (e) {
+          warnLog("Add item failed", e);
+      } finally {
+          setIsAdding(false);
+      }
+  };
+  const checkAnswers = () => {
+    let correctCount = 0;
+    let incorrectCount = 0;
+    items.forEach(item => {
+      if (item.currentContainer !== 'deck') {
+          if (item.currentContainer === item.categoryId) {
+            correctCount++;
+          } else {
+            incorrectCount++;
+          }
+      }
+    });
+    const earnedPoints = Math.max(0, (correctCount * 20) - (incorrectCount * 5));
+    const total = items.length;
+    setScore(earnedPoints);
+    setIsChecked(true);
+    if (onScoreUpdate && correctCount === total) onScoreUpdate(earnedPoints, "Concept Sort Complete");
+    if (correctCount === total) {
+        if(playSound) playSound('correct');
+        if (onGameComplete) {
+          onGameComplete('conceptSort', {
+            score: earnedPoints,
+            correctPlacements: correctCount,
+            totalItems: total,
+            isPerfect: incorrectCount === 0
+          });
+        }
+    } else {
+        if(playSound) playSound('reveal');
+    }
+  };
+  const reset = () => {
+    const resetItems = items.map(i => ({ ...i, currentContainer: 'deck' }));
+    for (let i = resetItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [resetItems[i], resetItems[j]] = [resetItems[j], resetItems[i]];
+    }
+    setItems(resetItems);
+    setIsChecked(false);
+    setScore(0);
+  };
+  const renderCard = (item) => {
+    let statusClass = `${pastelColors[item.colorIdx % pastelColors.length]} border-2`;
+    if (isChecked && item.currentContainer !== 'deck') {
+        if (item.currentContainer === item.categoryId) {
+            statusClass = "border-green-500 bg-green-50 ring-2 ring-green-200";
+        } else {
+            statusClass = "border-red-400 bg-red-50 opacity-75 border-dashed";
+        }
+    }
+    if (keyboardSelectedItemId === item.id) {
+        statusClass = "border-yellow-400 bg-yellow-50 ring-4 ring-yellow-200 z-30 scale-105";
+    }
+    return (
+      <div
+        key={item.id}
+        draggable={!isChecked}
+        onDragStart={(e) => handleDragStart(e, item)}
+        onKeyDown={(e) => handleCardKeyDown(e, item)}
+        onClick={() => { if (!isChecked) { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } } }}
+        tabIndex={isChecked ? -1 : 0}
+        role="button"
+        aria-pressed={keyboardSelectedItemId === item.id}
+        aria-label={`${item.content}. ${item.currentContainer === 'deck' ? t('concept_sort.unsorted_aria') : t('concept_sort.sorted_aria')}. ${t('concept_sort.move_aria')}`}
+        className={`
+            relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all transform hover:scale-105 mb-2
+            ${statusClass} ${isChecked ? 'cursor-default' : ''}
+        `}
+        data-help-key="concept_sort_card_item"
+      >
+        {item.image ? (
+            <div className="flex flex-col items-center gap-2">
+                <img loading="lazy"
+                    src={item.image}
+                    alt="visual"
+                    className="w-16 h-16 object-contain rounded bg-white/50"
+                    decoding="async"
+                />
+                <div className="flex items-center gap-1">
+                    <p className="text-xs font-bold text-center leading-tight text-slate-800">{item.content}</p>
+                    <SpeakButton text={item.content} size={11} />
+                </div>
+            </div>
+        ) : (
+            <div className="flex items-center justify-center gap-1.5">
+                <p className="text-sm font-bold text-slate-800 text-center leading-snug">{item.content}</p>
+                <SpeakButton text={item.content} size={11} />
+            </div>
+        )}
+        {isChecked && item.currentContainer !== 'deck' && item.currentContainer !== item.categoryId && (
+             <>
+               <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"><X size={12}/></div>
+               <div className="mt-1 text-[10px] font-bold text-red-600 text-center leading-tight">
+                 ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
+               </div>
+             </>
+        )}
+        {isChecked && item.currentContainer === item.categoryId && (
+             <>
+               <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-0.5"><CheckCircle2 size={12}/></div>
+               <div className="mt-1 text-[10px] font-bold text-green-600 text-center">✓</div>
+             </>
+        )}
+      </div>
+    );
+  };
+  const deckItems = useMemo(() => items.filter(i => i.currentContainer === 'deck'), [items]);
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300" data-help-key="concept_sort_game">
+      <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
+        <div>
+            <h3 className="font-bold text-lg flex items-center gap-2" data-help-key="concept_sort_header">
+                <Filter size={20} className="text-yellow-400"/> {t('concept_sort.title')}
+            </h3>
+            <p className="text-xs text-indigo-200">{t('concept_sort.subtitle')}</p>
+        </div>
+        <div className="flex items-center gap-4">
+            <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
+                <Trophy size={14} className="text-yellow-400"/>
+                <span className="font-bold text-sm">{score} pts</span>
+            </div>
+            <GameThemeToggle />
+            <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24}/></button>
+        </div>
+      </div>
+      <div className="flex-grow overflow-y-auto p-6 relative">
+           <div className="flex flex-wrap justify-center gap-6 mb-12 min-h-[300px]">
+               {buckets.map((bucket) => {
+                   const rawColor = bucket.color || 'blue';
+                   const colorKey = rawColor.replace('bg-', '').replace('-500', '').trim();
+                   const styles = bucketColorMap[colorKey] || bucketColorMap['default'];
+                   return (
+                       <div
+                            key={bucket.id}
+                            data-help-key="concept_sort_bucket"
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, bucket.id)}
+                            className={`flex-1 min-w-[250px] max-w-sm bg-slate-100 rounded-xl border-2 border-dashed transition-all p-4 flex flex-col ${isChecked ? 'border-slate-300' : 'border-slate-300 hover:border-indigo-400 hover:bg-slate-50'}`}
+                       >
+                           <div className={`text-center p-3 rounded-lg font-bold mb-4 shadow-sm border ${styles.bg} ${styles.text} ${styles.border}`}>
+                               {bucket.label}
+                           </div>
+                           <div className="flex-grow space-y-2 min-h-[100px]">
+                               {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment key={item.id}>{renderCard(item)}</React.Fragment>)}
+                               {items.filter(i => i.currentContainer === bucket.id).length === 0 && (
+                                   <div className="text-center text-slate-500 text-xs italic py-8 opacity-50">{t('concept_sort.drop_placeholder')}</div>
+                               )}
+                           </div>
+                           {keyboardSelectedItemId && (
+                               <button
+                                    onClick={() => handleKeyboardMove(bucket.id)}
+                                    className="w-full mt-2 py-2 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg border-2 border-indigo-200 hover:bg-indigo-200 hover:border-indigo-300 animate-pulse"
+                               >
+                                   {t('concept_sort.move_here')}
+                               </button>
+                           )}
+                       </div>
+                   );
+               })}
+           </div>
+           {isWon && (
+             <GameReviewScreen
+               score={score}
+               title={t('concept_sort.title')}
+               items={items.map(i => ({
+                 label: i.content,
+                 detail: buckets.find(b => b.id === i.categoryId)?.label || i.categoryId,
+                 status: i.currentContainer === i.categoryId ? 'correct' : 'incorrect'
+               }))}
+               onPlayAgain={reset}
+               onClose={onClose}
+               t={t}
+             />
+           )}
+           <div
+                data-help-key="concept_sort_deck"
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, 'deck')}
+                className={`bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-transform duration-300 ${isChecked ? '' : 'hover:bg-slate-50'}`}
+            >
+               <div className="max-w-6xl mx-auto">
+                   <div className="flex justify-between items-start mb-2">
+                       <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
+                       <div className="flex gap-2">
+                           <button
+                                data-help-key="concept_sort_reset"
+                                onClick={reset}
+                                className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors"
+                                aria-label={t('concept_sort.reset_board')}
+                           >
+                               {t('concept_sort.reset_board')}
+                           </button>
+                           <button
+                               aria-label={t('common.check_answers')}
+                                data-help-key="concept_sort_check_answers"
+                                onClick={checkAnswers}
+                                disabled={isChecked || items.some(i => i.currentContainer === 'deck')}
+                                className="px-6 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                           >
+                               {t('concept_sort.check_answers')}
+                           </button>
+                       </div>
+                   </div>
+                   <div className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px]">
+                       <div className="min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group">
+                           {isAdding ? (
+                               <div className="text-center text-indigo-500 text-xs font-bold animate-pulse">{t('concept_sort.generating_item')}</div>
+                           ) : (
+                               <>
+                                   <input
+                                       data-help-key="concept_sort_add_item"
+                                       type="text"
+                                       value={newItemText}
+                                       onChange={(e) => setNewItemText(e.target.value)}
+                                       onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
+                                       placeholder={t('concept_sort.add_item_placeholder')}
+                                       className="w-full text-xs text-center p-1 bg-transparent border-b border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2"
+                                       aria-label={t('concept_sort.add_item_placeholder')}
+                                   />
+                                    <button aria-label={t('common.add')}
+                                        onClick={handleAddItem}
+                                        disabled={!newItemText.trim()}
+                                        className="bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-full p-1.5 shadow-sm disabled:opacity-50"
+                                        data-help-key="concept_sort_add_btn"
+                                    >
+                                       <Plus size={16}/>
+                                   </button>
+                               </>
+                           )}
+                       </div>
+                       {deckItems.map(item => (
+                           <div key={item.id} className="shrink-0 w-[160px]">
+                               {renderCard(item)}
+                           </div>
+                       ))}
+                       {deckItems.length === 0 && !isWon && (
+                           <div className="text-slate-500 italic font-bold text-sm mt-4 text-center w-full">
+                               {t('concept_sort.word_bank_empty')}
+                           </div>
+                       )}
+                   </div>
+               </div>
+           </div>
+           <div ref={menuRef} className="sr-only">
+           </div>
+      </div>
+    </div>
+  );
+});
+const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { setA: { text: "Set A" }, setB: { text: "Set B" } }, primaryLanguage = "English" }) => {
+  const { t } = useContext(LanguageContext);
+  const [items, setItems] = useState([]);
+  const [score, setScore] = useState(0);
+  const [isWon, setIsWon] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [attempts, setAttempts] = useState(0);
+  const [activeDropZone, setActiveDropZone] = useState(null);
+  const [gameLang, setGameLang] = useState('primary');
+  const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
+  const [lastHint, setLastHint] = useState(null);
+  const moveMenuRef = useRef(null);
+  const hintTimerRef = useRef(null);
+  const showZoneHint = (correctZone) => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      setLastHint(correctZone);
+      hintTimerRef.current = setTimeout(() => setLastHint(null), 3000);
+  };
+  useEffect(() => {
+      if (keyboardSelectedItemId && moveMenuRef.current) {
+          const firstBtn = moveMenuRef.current.querySelector('button');
+          if (firstBtn) firstBtn.focus();
+      }
+  }, [keyboardSelectedItemId]);
+  useEffect(() => {
+    const normalize = (item, zone) => {
+        const text = typeof item === 'object' ? item.text : item;
+        const translation = typeof item === 'object' ? item.translation : null;
+        return {
+            id: `v-${Math.random().toString(36).substr(2,9)}`,
+            text,
+            translation,
+            correctZone: zone,
+            currentZone: 'bank',
+        };
+    };
+    const allItems = [
+        ...(data.setA || []).map(i => normalize(i, 'setA')),
+        ...(data.setB || []).map(i => normalize(i, 'setB')),
+        ...(data.shared || []).map(i => normalize(i, 'shared'))
+    ];
+    for (let i = allItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allItems[i], allItems[j]] = [allItems[j], allItems[i]];
+    }
+    setItems(allItems);
+    setScore(0);
+    setIsWon(false);
+  }, [data]);
+  const handleItemKeyDown = (e, item) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          if (keyboardSelectedItemId === item.id) {
+              setKeyboardSelectedItemId(null);
+              setAnnouncement(t('concept_map.venn.selection_cancelled'));
+          } else {
+              setKeyboardSelectedItemId(item.id);
+              setAnnouncement(t('concept_map.venn.item_selected', { item: getText(item) }));
+              if (playSound) playSound('click');
+          }
+      }
+  };
+  const handleKeyboardMove = (targetZone) => {
+      if (!keyboardSelectedItemId) return;
+      const itemIndex = items.findIndex(i => i.id === keyboardSelectedItemId);
+      if (itemIndex === -1) return;
+      const item = items[itemIndex];
+      const itemName = item ? getText(item) : "Item";
+      if (targetZone === 'bank') {
+           setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
+           setAnnouncement(t('concept_map.venn.move_neutral', { item: itemName }));
+           if (playSound) playSound('click');
+      } else {
+           if (item.correctZone === targetZone) {
+               setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: targetZone } : i));
+               setScore(s => s + 20);
+               if(playSound) playSound('correct');
+               setAnnouncement(t('concept_map.venn.move_correct', { item: itemName, zone: getTitle(targetZone) }));
+           } else {
+               setAttempts(a => a + 1);
+               setScore(s => Math.max(0, s - 5));
+               if(playSound) playSound('incorrect');
+               showZoneHint(item.correctZone);
+               setAnnouncement(t('concept_map.venn.move_incorrect', { item: itemName }));
+           }
+      }
+      setKeyboardSelectedItemId(null);
+  };
+  const handleDragStart = (e, item) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const handleDragOver = (e, zone) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (activeDropZone !== zone) setActiveDropZone(zone);
+  };
+  const handleDragLeave = () => {
+    setActiveDropZone(null);
+  };
+  const handleDrop = (e, targetZone) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setActiveDropZone(null);
+      if (!draggedItem) return;
+      if (draggedItem.correctZone === targetZone) {
+          if (playSound) playSound('correct');
+          setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
+          setScore(s => s + 20);
+      } else {
+          if (playSound) playSound('incorrect');
+          setAttempts(a => a + 1);
+          setScore(s => Math.max(0, s - 5));
+          showZoneHint(draggedItem.correctZone);
+      }
+      setDraggedItem(null);
+  };
+  useEffect(() => {
+      if (!isWon && items.length > 0 && items.every(i => i.currentZone !== 'bank')) {
+          setIsWon(true);
+          if(onScoreUpdate) onScoreUpdate(score, "Venn Diagram Sort");
+          playSound('correct');
+          if (onGameComplete) {
+            onGameComplete('vennDiagram', {
+              score: score,
+              itemsSorted: items.length,
+              totalItems: data?.length || items.length,
+              incorrectAttempts: attempts
+            });
+          }
+      }
+  }, [items, score, onScoreUpdate, playSound, isWon]);
+  const getText = (item) => {
+      if (gameLang === 'english' && item.translation) return item.translation;
+      return item.text;
+  };
+  const getTitle = (key) => {
+      const t = titles[key];
+      if (!t) return "";
+      if (typeof t === 'string') return t;
+      if (gameLang === 'english' && t.trans) return t.trans;
+      return t.text || "";
+  };
+  const hasTranslations = items.some(i => i.translation);
+  const vennSetA = useMemo(() => items.filter(i => i.currentZone === 'setA'), [items]);
+  const vennSetB = useMemo(() => items.filter(i => i.currentZone === 'setB'), [items]);
+  const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
+  const vennBank = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  return (
+      <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95" data-help-key="venn_game_container">
+          <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+          <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+              <h3 className="font-bold text-xl flex items-center gap-2" data-help-key="venn_header">
+                  <Layout size={24}/> {t('common.venn_sort_title')}
+              </h3>
+              <div className="flex items-center gap-4">
+                  {hasTranslations && (
+                      <select aria-label={t('common.selection')}
+                          value={gameLang}
+                          onChange={(e) => setGameLang(e.target.value)}
+                          className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer shadow-sm"
+                      >
+                          <option value="primary">{primaryLanguage}</option>
+                          <option value="english">{t('languages.english')}</option>
+                      </select>
+                  )}
+                  <div className="bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-400 border border-indigo-500">
+                      {t('common.score')}: {score}
+                  </div>
+                  <GameThemeToggle />
+                  <button
+                      aria-label={t('common.close')}
+                      onClick={onClose}
+                      data-help-key="venn_back_btn"
+                      className="flex items-center gap-1 text-xs font-bold bg-indigo-700 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition-colors border border-indigo-400"
+                  >
+                      <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor')}
+                  </button>
+              </div>
+          </div>
+          <div className="flex-grow relative bg-slate-100 overflow-hidden flex flex-col items-center justify-center">
+              <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
+              {isWon && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
+                        <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
+                        <p className="text-slate-500">{t('concept_map.venn.victory_desc')}</p>
+                    </div>
+                    <ConfettiExplosion />
+                </div>
+              )}
+              {lastHint && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
+                    <HelpCircle size={16} /> Try: {lastHint === 'shared' ? (getTitle('shared') || 'Both') : getTitle(lastHint)}
+                </div>
+              )}
+              {keyboardSelectedItemId && (
+                <div
+                    className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center"
+                    onClick={() => setKeyboardSelectedItemId(null)}
+                >
+                    <div
+                        ref={moveMenuRef}
+                        className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200"
+                        role="dialog"
+                        aria-label={t('concept_map.venn.choose_dest_aria')}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h4 className="text-sm font-bold text-slate-700 text-center mb-2">{t('concept_map.venn.move_menu_title')}</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button data-help-key="venn_move_a" onClick={() => handleKeyboardMove('setA')} className="px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl font-bold text-xs transition-colors border border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                {getTitle('setA')}
+                            </button>
+                            <button data-help-key="venn_move_b" onClick={() => handleKeyboardMove('setB')} className="px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl font-bold text-xs transition-colors border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                {getTitle('setB')}
+                            </button>
+                            <button data-help-key="venn_move_shared" onClick={() => handleKeyboardMove('shared')} className="col-span-2 px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl font-bold text-xs transition-colors border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                {getTitle('shared') || t('concept_map.venn.shared_fallback')}
+                            </button>
+                            <button data-help-key="venn_move_bank" onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-300 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                                {t('concept_map.venn.return_bank')}
+                            </button>
+                        </div>
+                        <button data-help-key="venn_move_cancel" onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-500 hover:text-slate-600 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection')}</button>
+                    </div>
+                </div>
+              )}
+              <div className="w-full max-w-[800px] flex justify-between px-4 md:px-12 mb-2 z-20 pointer-events-none">
+                  <div className="bg-rose-100/90 backdrop-blur-sm border-2 border-rose-300 text-rose-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform -rotate-2">
+                      {getTitle('setA')}
+                  </div>
+                  <div className="bg-blue-100/90 backdrop-blur-sm border-2 border-blue-300 text-blue-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform rotate-2">
+                      {getTitle('setB')}
+                  </div>
+              </div>
+              <div className="relative w-full max-w-[800px] h-[300px] md:h-[500px] flex items-center justify-center select-none scale-[0.6] md:scale-100 origin-center">
+                  <div
+                      onDrop={(e) => handleDrop(e, 'setA')}
+                      onDragOver={(e) => handleDragOver(e, 'setA')}
+                      onDragLeave={handleDragLeave}
+                      className={`absolute left-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-start justify-center pl-24 transition-all duration-300
+                        ${activeDropZone === 'setA' ? 'bg-rose-200/60 border-rose-500 scale-[1.02] z-10 shadow-[0_0_30px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-br from-rose-100/50 to-rose-200/30 border-rose-300'}
+                      `}
+                      data-help-key="venn_drop_zone_a"
+                  >
+                      <div className="flex flex-wrap gap-2 w-64 content-center justify-center pr-12 h-64 overflow-y-auto custom-scrollbar">
+                          {vennSetA.map(item => (
+                              <div
+                                key={item.id}
+                                tabIndex={0}
+                                role="button"
+                                aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setA') })}
+                                aria-pressed={keyboardSelectedItemId === item.id}
+                                onKeyDown={(e) => handleItemKeyDown(e, item)}
+                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                                data-help-key="venn_sorted_item" className={`bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 animate-in zoom-in cursor-pointer hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                              >
+                                {getText(item)}
+                              </div>
+                          ))}
+                      </div>
+                  </div>
+                  <div
+                      onDrop={(e) => handleDrop(e, 'setB')}
+                      onDragOver={(e) => handleDragOver(e, 'setB')}
+                      onDragLeave={handleDragLeave}
+                      className={`absolute right-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-end justify-center pr-24 transition-all duration-300
+                        ${activeDropZone === 'setB' ? 'bg-blue-200/60 border-blue-500 scale-[1.02] z-10 shadow-[0_0_30px_rgba(59,130,246,0.3)]' : 'bg-gradient-to-bl from-blue-100/50 to-blue-200/30 border-blue-300'}
+                      `}
+                      data-help-key="venn_drop_zone_b"
+                  >
+                      <div className="flex flex-wrap gap-2 w-64 content-center justify-center pl-12 h-64 overflow-y-auto custom-scrollbar">
+                          {vennSetB.map(item => (
+                              <div
+                                key={item.id}
+                                tabIndex={0}
+                                role="button"
+                                aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setB') })}
+                                aria-pressed={keyboardSelectedItemId === item.id}
+                                onKeyDown={(e) => handleItemKeyDown(e, item)}
+                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                                data-help-key="venn_sorted_item" className={`bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 animate-in zoom-in cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                              >
+                                {getText(item)}
+                              </div>
+                          ))}
+                      </div>
+                  </div>
+                  <div
+                      onDrop={(e) => handleDrop(e, 'shared')}
+                      onDragOver={(e) => handleDragOver(e, 'shared')}
+                      onDragLeave={handleDragLeave}
+                      className={`absolute w-[180px] h-[340px] z-20 flex flex-col items-center justify-center rounded-[50%] transition-all duration-300
+                        ${activeDropZone === 'shared' ? 'bg-purple-200/40 border-2 border-purple-500 scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)]' : 'hover:bg-purple-100/20'}
+                      `}
+                      data-help-key="venn_drop_zone_shared"
+                  >
+                      <h4 className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[10px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{t('concept_map.venn.shared_label')}</h4>
+                      <div className="flex flex-wrap gap-1.5 justify-center w-full overflow-y-auto max-h-[80%] p-2 custom-scrollbar">
+                          {vennShared.map(item => (
+                              <div
+                                key={item.id}
+                                tabIndex={0}
+                                role="button"
+                                aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_map.venn.shared_label') })}
+                                aria-pressed={keyboardSelectedItemId === item.id}
+                                onKeyDown={(e) => handleItemKeyDown(e, item)}
+                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                                data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[10px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                              >
+                                {getText(item)}
+                              </div>
+                          ))}
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div className="h-44 bg-slate-50 border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40" data-help-key="venn_item_bank">
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 text-center">{t('concept_sort.instructions')}</div>
+              <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-8">
+                  {vennBank.map(item => (
+                      <div
+                          key={item.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, item)}
+                          tabIndex={0}
+                          role="button"
+                          aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_sort.unsorted_aria') })}
+                          aria-pressed={keyboardSelectedItemId === item.id}
+                          onKeyDown={(e) => handleItemKeyDown(e, item)}
+                          onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                          data-help-key="venn_bank_item" className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
+                      >
+                          {getText(item)}
+                          <SpeakButton text={getText(item)} size={11} />
+                      </div>
+                  ))}
+                  {vennBank.length === 0 && !isWon && (
+                      <div className="text-slate-500 italic font-bold text-sm mt-4 text-center w-full">
+                          {t('concept_map.venn.bank_empty')}
+                      </div>
+                  )}
+              </div>
+          </div>
+      </div>
+  );
+});
+const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+  const { t } = useContext(LanguageContext);
+  const [grid, setGrid] = useState([]);
+  const [clues, setClues] = useState({ across: [], down: [] });
+  const [userState, setUserState] = useState({});
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [direction, setDirection] = useState('across');
+  const [isWon, setIsWon] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
+  const [score, setScore] = useState(0);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [announcement, setAnnouncement] = useState('');
+  const [crosswordLang, setCrosswordLang] = useState('English');
+  const availableLangs = React.useMemo(() => {
+    const langs = new Set();
+    if (data) {
+        data.forEach(item => {
+            if (item.translations) {
+                Object.keys(item.translations).forEach(k => langs.add(k));
+            }
+        });
+    }
+    return Array.from(langs);
+  }, [data]);
+  useEffect(() => {
+    if (!data || data.length === 0) return;
+    const words = data.reduce((acc, item) => {
+        let term = item.term;
+        let def = item.def;
+        if (crosswordLang !== 'English') {
+            const trans = item.translations?.[crosswordLang];
+            if (trans) {
+                if (trans.includes(':')) {
+                    const splitIdx = trans.indexOf(':');
+                    term = trans.substring(0, splitIdx).trim();
+                    def = trans.substring(splitIdx + 1).trim();
+                } else {
+                    if (trans.length < 20) term = trans;
+                    else return acc;
+                }
+            } else {
+                return acc;
+            }
+        }
+        const cleanWord = term
+            .toUpperCase()
+            .replace(/\s+/g, '')
+            .replace(/[^A-ZÀ-ÿ]/g, '');
+        if (cleanWord.length > 2 && cleanWord.length < 15) {
+            acc.push({
+                word: cleanWord,
+                clue: def,
+                original: term
+            });
+        }
+        return acc;
+    }, []).sort((a, b) => b.word.length - a.word.length);
+    if (words.length === 0) {
+        setGrid([]);
+        setClues({ across: [], down: [] });
+        return;
+    }
+    const gridSize = 20;
+    const tempGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
+    const placedWords = [];
+    const canPlace = (word, row, col, dir) => {
+      if (dir === 'across') {
+        if (col + word.length > gridSize) return false;
+        if (col > 0 && tempGrid[row][col-1] !== null) return false;
+        if (col + word.length < gridSize && tempGrid[row][col+word.length] !== null) return false;
+        for (let i = 0; i < word.length; i++) {
+          const cell = tempGrid[row][col+i];
+          if (cell !== null && cell.char !== word[i]) return false;
+          if (cell === null) {
+            if (row > 0 && tempGrid[row-1][col+i] !== null) return false;
+            if (row < gridSize-1 && tempGrid[row+1][col+i] !== null) return false;
+          }
+        }
+      } else {
+        if (row + word.length > gridSize) return false;
+        if (row > 0 && tempGrid[row-1][col] !== null) return false;
+        if (row + word.length < gridSize && tempGrid[row+word.length][col] !== null) return false;
+        for (let i = 0; i < word.length; i++) {
+          const cell = tempGrid[row+i][col];
+          if (cell !== null && cell.char !== word[i]) return false;
+          if (cell === null) {
+             if (col > 0 && tempGrid[row+i][col-1] !== null) return false;
+             if (col < gridSize-1 && tempGrid[row+i][col+1] !== null) return false;
+          }
+        }
+      }
+      return true;
+    };
+    const place = (wordObj, row, col, dir) => {
+      const { word } = wordObj;
+      for (let i = 0; i < word.length; i++) {
+        const r = dir === 'across' ? row : row + i;
+        const c = dir === 'across' ? col + i : col;
+        if (!tempGrid[r][c]) tempGrid[r][c] = { char: word[i], startOf: [] };
+      }
+      if (tempGrid[row][col]) {
+          tempGrid[row][col].startOf.push({ ...wordObj, dir, number: 0 });
+      }
+      placedWords.push({ ...wordObj, row, col, dir });
+    };
+    const center = Math.floor(gridSize / 2);
+    const firstWord = words[0];
+    const startCol = center - Math.floor(firstWord.word.length / 2);
+    place(firstWord, center, startCol, 'across');
+    for (let i = 1; i < words.length; i++) {
+      const current = words[i];
+      let placed = false;
+      const targets = fisherYatesShuffle(placedWords);
+      for (const target of targets) {
+        if (placed) break;
+        for (let j = 0; j < current.word.length; j++) {
+          if (placed) break;
+          const char = current.word[j];
+          for (let k = 0; k < target.word.length; k++) {
+             if (target.word[k] === char) {
+               const r = target.dir === 'across' ? target.row : target.row + k;
+               const c = target.dir === 'across' ? target.col + k : target.col;
+               const newDir = target.dir === 'across' ? 'down' : 'across';
+               const newRow = newDir === 'across' ? r : r - j;
+               const newCol = newDir === 'across' ? c - j : c;
+               if (newRow >= 0 && newCol >= 0 && canPlace(current.word, newRow, newCol, newDir)) {
+                 place(current, newRow, newCol, newDir);
+                 placed = true;
+                 break;
+               }
+             }
+          }
+        }
+      }
+    }
+    let clueCounter = 1;
+    const newClues = { across: [], down: [] };
+    for (let r = 0; r < gridSize; r++) {
+      for (let c = 0; c < gridSize; c++) {
+        const cell = tempGrid[r][c];
+        if (cell && cell.startOf && cell.startOf.length > 0) {
+           cell.number = clueCounter++;
+           cell.startOf.forEach(w => {
+              newClues[w.dir].push({ number: cell.number, clue: w.clue, word: w.word, row: r, col: c });
+           });
+        }
+      }
+    }
+    setGrid(tempGrid);
+    setClues(newClues);
+    setUserState({});
+    setIsWon(false);
+    setShowErrors(false);
+    setScore(0);
+    setAnnouncement(t('games.crossword.announce_started'));
+  }, [data, crosswordLang]);
+  const handleCellClick = (r, c) => {
+    if (!grid[r][c]) return;
+    if (selectedCell?.r === r && selectedCell?.c === c) {
+      const newDir = direction === 'across' ? 'down' : 'across';
+      setDirection(newDir);
+      setAnnouncement(t('games.crossword.direction_toggle', { dir: newDir }));
+    } else {
+      setSelectedCell({ r, c });
+      setAnnouncement(t('games.crossword.selected_cell', { r: r + 1, c: c + 1 }));
+    }
+  };
+  const handleKeyDown = (e) => {
+    if (!selectedCell) return;
+    const { r, c } = selectedCell;
+    if (e.key === 'Backspace') {
+       const newKey = `${r}-${c}`;
+       setUserState(prev => {
+         const next = { ...prev };
+         delete next[newKey];
+         return next;
+       });
+       setAnnouncement(t('games.crossword.announce_deleted'));
+       if (direction === 'across') {
+           let prevC = c - 1;
+           while (prevC >= 0 && !grid[r][prevC]) prevC--;
+           if (prevC >= 0 && grid[r][prevC]) setSelectedCell({ r, c: prevC });
+       } else {
+           let prevR = r - 1;
+           while (prevR >= 0 && !grid[prevR][c]) prevR--;
+           if (prevR >= 0 && grid[prevR][c]) setSelectedCell({ r: prevR, c });
+       }
+    } else if (e.key.length === 1 && /^[a-zA-ZÀ-ÿ]$/.test(e.key)) {
+       const char = e.key.toUpperCase();
+       setUserState(prev => ({ ...prev, [`${r}-${c}`]: char }));
+       setAnnouncement(t('games.crossword.announce_typed', { char }));
+       if (direction === 'across') {
+         let nextC = c + 1;
+         while (nextC < 20 && !grid[r][nextC]) nextC++;
+         if (grid[r][nextC]) setSelectedCell({ r, c: nextC });
+       } else {
+         let nextR = r + 1;
+         while (nextR < 20 && !grid[nextR][c]) nextR++;
+         if (grid[nextR][c]) setSelectedCell({ r: nextR, c });
+       }
+    } else if (e.key === 'ArrowRight') {
+       let nextC = c + 1;
+       while (nextC < 20 && !grid[r][nextC]) nextC++;
+       if (nextC < 20 && grid[r][nextC]) {
+           setSelectedCell({ r, c: nextC });
+           setAnnouncement(t('games.crossword.selected_cell', { r: r + 1, c: nextC + 1 }));
+       }
+    } else if (e.key === 'ArrowLeft') {
+       let prevC = c - 1;
+       while (prevC >= 0 && !grid[r][prevC]) prevC--;
+       if (prevC >= 0 && grid[r][prevC]) {
+           setSelectedCell({ r, c: prevC });
+           setAnnouncement(t('games.crossword.selected_cell', { r: r + 1, c: prevC + 1 }));
+       }
+    } else if (e.key === 'ArrowDown') {
+       let nextR = r + 1;
+       while (nextR < 20 && !grid[nextR][c]) nextR++;
+       if (nextR < 20 && grid[nextR][c]) {
+           setSelectedCell({ r: nextR, c });
+           setAnnouncement(t('games.crossword.selected_cell', { r: nextR + 1, c: c + 1 }));
+       }
+    } else if (e.key === 'ArrowUp') {
+       let prevR = r - 1;
+       while (prevR >= 0 && !grid[prevR][c]) prevR--;
+       if (prevR >= 0 && grid[prevR][c]) {
+           setSelectedCell({ r: prevR, c });
+           setAnnouncement(t('games.crossword.selected_cell', { r: prevR + 1, c: c + 1 }));
+       }
+    } else if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ') {
+       e.preventDefault();
+       const newDir = direction === 'across' ? 'down' : 'across';
+       setDirection(newDir);
+       setAnnouncement(t('games.crossword.announce_direction_toggle', { dir: newDir }));
+    }
+  };
+  const checkPuzzle = () => {
+    setShowErrors(true);
+    let correct = true;
+    let currentScore = 0;
+    for(let r=0; r<grid.length; r++) {
+      for(let c=0; c<grid[r].length; c++) {
+         if (grid[r][c]) {
+            if (userState[`${r}-${c}`] === grid[r][c].char) {
+               currentScore += 2;
+            } else {
+               correct = false;
+            }
+         }
+      }
+    }
+    if (correct) {
+        setIsWon(true);
+        currentScore += 100;
+        if (playSound) playSound('correct');
+        if (onScoreUpdate) onScoreUpdate(currentScore, "Crossword Challenge Complete");
+        if (onGameComplete) {
+            onGameComplete('crossword', {
+                score: currentScore,
+                wordsSolved: clues.across.length + clues.down.length,
+                totalWords: data?.length || 0
+            });
+        }
+    } else {
+        if (playSound) playSound('incorrect');
+    }
+    setScore(currentScore);
+  };
+  const revealPuzzle = () => {
+     const autoFill = {};
+     for(let r=0; r<grid.length; r++) {
+      for(let c=0; c<grid[r].length; c++) {
+         if (grid[r][c]) {
+            autoFill[`${r}-${c}`] = grid[r][c].char;
+         }
+      }
+    }
+    setUserState(autoFill);
+    setIsWon(true);
+    setScore(0);
+  };
+  const revealHint = () => {
+    const emptyCells = [];
+    for (let r = 0; r < grid.length; r++) {
+      for (let c = 0; c < grid[r].length; c++) {
+        if (grid[r][c] && userState[`${r}-${c}`] !== grid[r][c].char) {
+          emptyCells.push({ r, c, char: grid[r][c].char });
+        }
+      }
+    }
+    if (emptyCells.length === 0) return;
+    const pick = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    setUserState(prev => ({ ...prev, [`${pick.r}-${pick.c}`]: pick.char }));
+    setSelectedCell({ r: pick.r, c: pick.c });
+    setHintsUsed(h => h + 1);
+    setScore(s => Math.max(0, s - 1));
+    setAnnouncement(`Hint: revealed letter ${pick.char}`);
+    if (playSound) playSound('click');
+  };
+  return (
+    <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in duration-300" data-help-key="crossword_game_container">
+      <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+      <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md shrink-0">
+         <h2 className="text-xl font-bold flex items-center gap-2"><Gamepad2 /> {t('games.crossword_title')}</h2>
+         <div className="flex items-center gap-4">
+             {isWon && (
+                 <div className="bg-indigo-800 px-4 py-1 rounded-full text-yellow-400 text-sm font-bold border border-indigo-500 animate-in zoom-in">
+                     {t('common.score')}: {score}
+                 </div>
+             )}
+             {!isWon && score > 0 && (
+                 <div className="text-indigo-200 text-xs font-medium">
+                     {t('games.crossword.current_score', { score })}
+                 </div>
+             )}
+             {availableLangs.length > 0 && (
+                <select aria-label={t('common.selection')}
+                    value={crosswordLang}
+                    onChange={(e) => setCrosswordLang(e.target.value)}
+                    className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+                >
+                    <option value="English">{t('languages.english')}</option>
+                    {availableLangs.map(lang => (
+                        <option key={lang} value={lang}>{lang}</option>
+                    ))}
+                </select>
+             )}
+             <GameThemeToggle />
+             <button data-help-key="crossword_close_btn" onClick={onClose} className="hover:bg-indigo-500 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('games.crossword.close_puzzle_aria')}><X size={24}/></button>
+         </div>
+      </div>
+      <div className="flex-grow overflow-hidden flex flex-col md:flex-row">
+         <div className="flex-grow p-4 overflow-auto bg-slate-100 flex justify-center items-start relative">
+            {isWon && <ConfettiExplosion />}
+            <div
+              className="grid gap-px bg-slate-300 border-2 border-slate-400 p-1 shadow-xl"
+              style={{
+                 gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
+                 width: 'fit-content',
+              }}
+              data-help-key="crossword_grid"
+            >
+               {grid.map((row, r) => (
+                  row.map((cell, c) => {
+                     if (!cell) return <div key={`${r}-${c}`} className="w-8 h-8 sm:w-10 sm:h-10 bg-transparent"></div>;
+                     const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+                     const isActiveWord = selectedCell && (
+                        (direction === 'across' && selectedCell.r === r) ||
+                        (direction === 'down' && selectedCell.c === c)
+                     );
+                     const userChar = userState[`${r}-${c}`];
+                     const isError = showErrors && userChar && userChar !== cell.char;
+                     const isCorrect = isWon || (showErrors && userChar === cell.char);
+                     return (
+                        <div
+                          key={`${r}-${c}`}
+                          onClick={() => handleCellClick(r, c)}
+                          className={`
+                             w-8 h-8 sm:w-10 sm:h-10 bg-white relative flex items-center justify-center text-lg font-bold uppercase cursor-pointer select-none
+                             ring-1 ring-slate-300 ring-inset
+                             ${isSelected ? 'bg-yellow-200 ring-2 ring-yellow-400 z-10' : isActiveWord ? 'bg-yellow-50' : ''}
+                             ${isError ? 'text-red-500 bg-red-50' : 'text-slate-800'}
+                             ${isCorrect ? 'text-green-600' : ''}
+                          `}
+                          role="gridcell"
+                          aria-selected={isSelected}
+                          aria-label={`Row ${r+1} Column ${c+1} ${cell.number ? 'Clue ' + cell.number : ''} ${userChar ? 'Value ' + userChar : 'Empty'}`}
+                        >
+                           {cell.number && <span className="absolute top-0.5 left-0.5 text-[8px] sm:text-[10px] leading-none text-slate-500 font-normal">{cell.number}</span>}
+                           {userChar}
+                        </div>
+                     );
+                  })
+               ))}
+            </div>
+         </div>
+         <div className="w-full md:w-1/3 bg-white border-l border-slate-200 flex flex-col h-1/2 md:h-full" data-help-key="crossword_clues_list">
+             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                 <div className="text-sm font-bold text-slate-500">
+                    {clues.across.length + clues.down.length} {t('games.crossword.clues')}
+                 </div>
+                 <div className="flex gap-2" data-help-key="crossword_controls">
+                     {!isWon && <button onClick={revealHint} className="px-3 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 flex items-center gap-1" aria-label="Reveal one letter hint"><HelpCircle size={12}/> Hint{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
+                     <button onClick={checkPuzzle} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('games.crossword.check')}</button>
+                     <button onClick={revealPuzzle} className="px-3 py-1 bg-red-100 text-red-700 rounded text-xs font-bold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">{t('games.crossword.reveal')}</button>
+                 </div>
+             </div>
+             <div className="flex-grow overflow-y-auto p-4 space-y-6">
+                 <div>
+                     <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1">{t('games.crossword.across')}</h4>
+                     <ul className="space-y-2 text-sm">
+                         {clues.across.map(c => (
+                             <li
+                               key={`a-${c.number}`}
+                               className={`cursor-pointer hover:text-indigo-600 p-1 rounded ${selectedCell && selectedCell.r === c.row && selectedCell.c === c.col && direction === 'across' ? 'bg-yellow-100 font-bold' : ''}`}
+                               onClick={() => {
+                                   setSelectedCell({ r: c.row, c: c.col });
+                                   setDirection('across');
+                               }}
+                             >
+                                 <div className="flex items-center gap-1">
+                                     <span className="flex-1"><span className="font-bold mr-1">{c.number}.</span> {c.clue}</span>
+                                     <SpeakButton text={c.clue} size={11} />
+                                 </div>
+                             </li>
+                         ))}
+                     </ul>
+                 </div>
+                 <div>
+                     <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1">{t('games.crossword.down')}</h4>
+                     <ul className="space-y-2 text-sm">
+                         {clues.down.map(c => (
+                             <li
+                               key={`d-${c.number}`}
+                               className={`cursor-pointer hover:text-indigo-600 p-1 rounded ${selectedCell && selectedCell.r === c.row && selectedCell.c === c.col && direction === 'down' ? 'bg-yellow-100 font-bold' : ''}`}
+                               onClick={() => {
+                                   setSelectedCell({ r: c.row, c: c.col });
+                                   setDirection('down');
+                               }}
+                             >
+                                 <div className="flex items-center gap-1">
+                                     <span className="flex-1"><span className="font-bold mr-1">{c.number}.</span> {c.clue}</span>
+                                     <SpeakButton text={c.clue} size={11} />
+                                 </div>
+                             </li>
+                         ))}
+                     </ul>
+                 </div>
+             </div>
+             <input aria-label={t('common.hidden_input')}
+                type="text"
+                className="opacity-0 absolute h-0 w-0"
+                autoFocus
+                onKeyDown={handleKeyDown}
+                onBlur={(e) => e.target.focus()}
+                aria-hidden="true"
+             />
+             <div className="p-2 bg-slate-50 text-[10px] text-center text-slate-500 border-t">
+                 {t('games.crossword.footer_tip')}
+             </div>
+             {isWon && <div className="p-3"><GameReviewScreen score={score} title={t('games.crossword_title')} items={[...clues.across, ...clues.down].map(c => ({ label: c.word, detail: c.clue, status: 'correct' }))} onPlayAgain={() => { setIsWon(false); setScore(0); setUserState({}); }} onClose={onClose} t={t} /></div>}
+         </div>
+      </div>
+      <div
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        className="absolute inset-0 pointer-events-none focus:outline-none"
+        autoFocus
+        aria-label={t('games.crossword.grid_capture_aria')}
+      />
+    </div>
+  );
+});
+const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+  const { t } = useContext(LanguageContext);
+  const [sentences, setSentences] = useState([]);
+  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
+  const [shuffledWords, setShuffledWords] = useState([]);
+  const [userOrder, setUserOrder] = useState([]);
+  const [gameStatus, setGameStatus] = useState('playing');
+  const [score, setScore] = useState(0);
+  useEffect(() => {
+    if (!text) return;
+    let cleanText = text.replace(/[#*_~`]/g, '');
+    cleanText = cleanText.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}\u{238C}-\u{2454}]/gu, '');
+    const rawSentences = cleanText.match(/[^.!?\n]+[.!?]+["']?/g) || [cleanText];
+    const validSentences = rawSentences
+      .map(s => s.trim().replace(/\s+/g, ' '))
+      .filter(s => {
+          const wordCount = s.split(' ').length;
+          const startsWithCapital = /^[A-Z"“]/.test(s);
+          return wordCount > 3 && s.length < 150 && startsWithCapital;
+      });
+    const selectedSentences = fisherYatesShuffle(validSentences).slice(0, 10);
+    setSentences(selectedSentences);
+  }, [text]);
+  useEffect(() => {
+    if (sentences.length > 0 && currentSentenceIndex < sentences.length) {
+      const target = sentences[currentSentenceIndex];
+      const words = target.split(' ').map((w, i) => ({
+        id: i,
+        text: w,
+        status: 'pool',
+      }));
+      const shuffled = fisherYatesShuffle(words);
+      setShuffledWords(shuffled);
+      setUserOrder([]);
+      setGameStatus('playing');
+    } else if (sentences.length > 0 && currentSentenceIndex >= sentences.length) {
+      setGameStatus('complete');
+      playSound('correct');
+      if (onGameComplete) {
+        onGameComplete('syntaxScramble', {
+          score: score,
+          sentencesCompleted: sentences.length,
+          totalSentences: sentences.length
+        });
+      }
+    }
+  }, [sentences, currentSentenceIndex, playSound]);
+  const handleWordClick = (word, fromPool) => {
+    if (gameStatus === 'correct') return;
+    playSound('click');
+    if (fromPool) {
+      setUserOrder([...userOrder, word]);
+      setShuffledWords(prev => prev.filter(w => w.id !== word.id));
+    } else {
+      setShuffledWords([...shuffledWords, word]);
+      setUserOrder(prev => prev.filter(w => w.id !== word.id));
+    }
+  };
+    const checkAnswer = () => {
+    const currentTarget = sentences[currentSentenceIndex];
+    const userString = userOrder.map(w => w.text).join(' ');
+    if (userString.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") === currentTarget.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")) {
+      setGameStatus('correct');
+      playSound('correct');
+      const newScore = score + 40;
+      setScore(newScore);
+      if (onScoreUpdate) onScoreUpdate(newScore, "Syntax Scramble");
+    } else {
+      playSound('incorrect');
+      const btn = document.getElementById('check-btn');
+      if(btn) {
+          btn.classList.add('animate-pulse', 'bg-red-600');
+          setTimeout(() => btn.classList.remove('animate-pulse', 'bg-red-600'), 500);
+      }
+    }
+  };
+  const nextRound = () => {
+    setCurrentSentenceIndex(prev => prev + 1);
+  };
+  if (sentences.length === 0) return null;
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
+      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="bg-indigo-600 p-4 text-white flex justify-between items-center">
+           <h3 className="font-bold text-xl flex items-center gap-2"><Layout size={24}/> {t('games.syntax.title')}</h3>
+           <div className="flex items-center gap-4">
+               <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-400 border border-indigo-500">{t('memory.score')}: {score}</div>
+               <GameThemeToggle />
+               <button data-help-key="syntax_close" onClick={onClose} className="hover:bg-indigo-500 p-1 rounded-full" aria-label={t('common.close')}><X size={24}/></button>
+           </div>
+        </div>
+        <div className="p-8 flex-grow flex flex-col items-center justify-center bg-slate-50 gap-8 overflow-y-auto">
+           {gameStatus === 'complete' ? (
+               <div className="text-center animate-in zoom-in">
+                   <Trophy size={64} className="text-yellow-500 mx-auto mb-4"/>
+                   <h2 className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
+                   <p className="text-slate-600 mb-6">{t('games.syntax.summary', { count: sentences.length })}</p>
+                    <button data-help-key="syntax_finish" onClick={onClose} className="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-indigo-300">{t('games.syntax.finish')}</button>
+               </div>
+           ) : (
+               <>
+                <div className="w-full flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <span>{t('games.syntax.progress', { current: currentSentenceIndex + 1, total: sentences.length })}</span>
+                    <span>{t('games.syntax.subtitle')}</span>
+                </div>
+                <div className={`w-full min-h-[80px] p-4 rounded-xl border-2 border-dashed flex flex-wrap gap-2 items-center justify-center transition-colors ${gameStatus === 'correct' ? 'bg-green-50 border-green-400' : 'bg-white border-slate-300'}`}>
+                    {userOrder.length === 0 && <span className="text-slate-500 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}</span>}
+                    {userOrder.map((word) => (
+                        <button
+                            aria-label={t('common.continue')}
+                            key={`placed-${word.id}`}
+                            data-help-key="syntax_dropped_word" onClick={() => handleWordClick(word, false)}
+                            className="bg-indigo-100 text-indigo-800 border border-indigo-200 px-3 py-2 rounded-lg font-bold shadow-sm hover:bg-red-100 hover:text-red-800 hover:border-red-200 transition-all animate-in zoom-in duration-200"
+                        >
+                            {word.text}
+                        </button>
+                    ))}
+                </div>
+                <div className="h-12">
+                    {gameStatus === 'correct' ? (
+                        <button aria-label={t('common.next')}
+                            data-help-key="syntax_next" onClick={nextRound}
+                            autoFocus
+                            className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in bounce-in"
+                        >
+                            {t('games.syntax.next')} <ArrowRight size={18}/>
+                        </button>
+                    ) : (
+                        <button
+                            aria-label={t('common.check_answer')}
+                            id="check-btn" data-help-key="syntax_check"
+                            onClick={checkAnswer}
+                            disabled={userOrder.length === 0}
+                            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3 rounded-full font-bold shadow-lg transition-all"
+                        >
+                            {t('games.syntax.check')}
+                        </button>
+                    )}
+                </div>
+                <div className="flex flex-wrap gap-3 justify-center p-4 bg-slate-200/50 rounded-xl w-full border border-slate-200 min-h-[100px]">
+                    {shuffledWords.map((word) => (
+                        <button
+                            key={word.id}
+                            data-help-key="syntax_pool_word" onClick={() => handleWordClick(word, true)}
+                            className="bg-white text-slate-700 border-b-4 border-slate-300 px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-indigo-50 hover:border-indigo-300 hover:-translate-y-1 active:border-b-0 active:translate-y-0 transition-all"
+                        >
+                            {word.text}
+                        </button>
+                    ))}
+                </div>
+               </>
+           )}
+        </div>
+      </div>
+    </div>
+  );
+});
+const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBingoState, onGenerateAudio, selectedVoice, alloBotRef }) => {
+  const { t } = useContext(LanguageContext);
+  useEffect(() => {
+      if (onGenerate && (!bingoState.cards || bingoState.cards.length === 0)) {
+          onGenerate();
+      }
+  }, []);
+  const [isCallerMode, setIsCallerMode] = useState(false);
+  const [callerQueue, setCallerQueue] = useState([]);
+  const [currentCallIndex, setCurrentCallIndex] = useState(-1);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [callDelay, setCallDelay] = useState(8);
+  const [isHistoryVisible, setIsHistoryVisible] = useState(true);
+  const callerAudioRef = useRef(null);
+  const autoPlayTimerRef = useRef(null);
+  const startCaller = () => {
+      const queue = fisherYatesShuffle(data);
+      setCallerQueue(queue);
+      setCurrentCallIndex(-1);
+      setIsCallerMode(true);
+      setIsAutoPlaying(false);
+      setIsAudioPlaying(false);
+      setIsHistoryVisible(true);
+  };
+  const playCurrentClue = async (index) => {
+      if (index < 0 || index >= callerQueue.length) return;
+      const item = callerQueue[index];
+      let textToRead = item.def;
+      if (item.translations) {
+          Object.values(item.translations).forEach(trans => {
+              const defPart = trans.includes(':') ? trans.split(':')[1].trim() : trans;
+              textToRead += ". " + defPart;
+          });
+      }
+      if (callerAudioRef.current) {
+          callerAudioRef.current.pause();
+      }
+      setIsAudioPlaying(true);
+      try {
+          if (onGenerateAudio) {
+               const url = await onGenerateAudio(textToRead, selectedVoice);
+               if (!url) { setIsAudioPlaying(false); return; }
+               const audio = new Audio(url);
+               callerAudioRef.current = audio;
+               audio.onended = () => {
+                   setIsAudioPlaying(false);
+               };
+               audio.onerror = () => {
+                   setIsAudioPlaying(false);
+                   warnLog("Caller audio failed");
+               };
+               audio.play();
+          } else {
+              setIsAudioPlaying(false);
+          }
+      } catch (e) {
+          warnLog("Caller TTS Error", e);
+          setIsAudioPlaying(false);
+      }
+  };
+  const nextCall = () => {
+      if (currentCallIndex < callerQueue.length - 1) {
+          const nextIdx = currentCallIndex + 1;
+          setCurrentCallIndex(nextIdx);
+          playCurrentClue(nextIdx);
+      } else {
+          setIsAutoPlaying(false);
+      }
+  };
+  const prevCall = () => {
+      if (currentCallIndex > 0) {
+          const prevIdx = currentCallIndex - 1;
+          setCurrentCallIndex(prevIdx);
+          playCurrentClue(prevIdx);
+      }
+  };
+  const toggleAutoPlay = () => {
+      const newState = !isAutoPlaying;
+      setIsAutoPlaying(newState);
+      if (newState && !isAudioPlaying) {
+          if (currentCallIndex === -1) {
+              nextCall();
+          } else {
+              handleAutoStep();
+          }
+      }
+  };
+  const handleAutoStep = () => {
+      if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+      autoPlayTimerRef.current = setTimeout(() => {
+          if (isAutoPlaying) {
+              nextCall();
+          }
+      }, callDelay * 1000);
+  };
+  useEffect(() => {
+      if (!isAudioPlaying && isAutoPlaying && currentCallIndex < callerQueue.length - 1 && currentCallIndex !== -1) {
+          handleAutoStep();
+      }
+      return () => {
+          if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+      };
+  }, [isAudioPlaying, isAutoPlaying, currentCallIndex, callDelay]);
+  useEffect(() => {
+      return () => {
+          if (callerAudioRef.current) callerAudioRef.current.pause();
+          if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+      };
+  }, []);
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 text-slate-500 hover:text-slate-600 transition-colors no-print rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                autoFocus
+                data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
+            >
+                <X size={24} />
+            </button>
+            <div className="text-center mb-4 no-print">
+                <h2 className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
+                    <Gamepad2 className="text-rose-500" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
+                </h2>
+                <p className="text-slate-500 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
+            </div>
+            <div className="flex flex-wrap justify-center items-center gap-4 mb-4 no-print bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
+                {!isCallerMode ? (
+                    <>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-bold text-slate-600">{t('bingo.card_count')}</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="50"
+                                value={settings.cardCount}
+                                onChange={(e) => setSettings({...settings, cardCount: Math.max(1, Math.min(50, parseInt(e.target.value) || 20))})}
+                                className="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-bold text-slate-700 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+                                data-help-key="bingo_card_count_input" aria-label={t('bingo.card_count')}
+                            />
+                        </div>
+                        <label className="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer select-none bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hover:border-rose-300 transition-colors">
+                            <input
+                                type="checkbox"
+                                checked={settings.includeImages}
+                                onChange={(e) => setSettings({...settings, includeImages: e.target.checked})}
+                                className="rounded border-slate-300 text-rose-500 focus:ring-rose-200 h-4 w-4"
+                                data-help-key="bingo_images_chk" aria-label={t('bingo.include_pictures')}
+                            />
+                            <div className="flex items-center gap-1">
+                                <ImageIcon size={14} className="text-rose-400"/> {t('bingo.include_pictures')}
+                            </div>
+                        </label>
+                        <button
+                            onClick={onGenerate}
+                            className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm active:scale-95"
+                            data-help-key="bingo_regenerate_btn" aria-label={t('bingo.regenerate')}
+                        >
+                            <RefreshCw size={14}/> {t('bingo.regenerate')}
+                        </button>
+                        <div className="w-px h-6 bg-slate-300 mx-2"></div>
+                        <button
+                            onClick={() => {
+                                if (alloBotRef && alloBotRef.current) {
+                                    alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
+                                }
+                                window.print();
+                            }}
+                            className="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 active:scale-95"
+                            data-help-key="bingo_print_btn" aria-label={t('bingo.print_cards')}
+                        >
+                            <Printer size={16}/> {t('bingo.print_cards')}
+                        </button>
+                        <div className="w-px h-6 bg-slate-300 mx-2"></div>
+                        <button
+                            onClick={startCaller}
+                            className="bg-teal-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-700 transition-colors flex items-center gap-2 active:scale-95"
+                            data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria')}
+                        >
+                            <Mic size={16}/> {t('bingo.launch_caller')}
+                        </button>
+                    </>
+                ) : (
+                    <div className="flex items-center gap-4 w-full justify-between">
+                         <button
+                            onClick={() => setIsCallerMode(false)}
+                            className="flex items-center gap-2 text-slate-500 hover:text-slate-700 font-bold text-xs"
+                            data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
+                        >
+                            <ArrowDown className="rotate-90" size={14}/> {t('bingo.exit_caller')}
+                        </button>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                                <span className="text-xs font-bold text-slate-500 uppercase">{t('bingo.speed')}</span>
+                                <input
+                                    type="range"
+                                    min="3" max="15" step="1"
+                                    value={callDelay}
+                                    onChange={(e) => setCallDelay(Number(e.target.value))}
+                                    className="w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                                    title={t('bingo.pause_duration', { seconds: callDelay })}
+                                    data-help-key="bingo_speed_slider" aria-label={t('bingo.speed')}
+                                />
+                                <span className="text-xs font-mono w-8 text-right">{callDelay}s</span>
+                            </div>
+                            <button
+                                onClick={() => setIsHistoryVisible(prev => !prev)}
+                                className={`p-2 rounded-full transition-colors ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-500 hover:bg-slate-600'}`}
+                                title={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
+                                data-help-key="bingo_toggle_history" aria-label={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
+                            >
+                                {isHistoryVisible ? <Eye size={20}/> : <EyeOff size={20}/>}
+                            </button>
+                            <button
+                                onClick={prevCall}
+                                disabled={currentCallIndex <= 0}
+                                className="p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30"
+                                data-help-key="bingo_prev_clue" aria-label={t('bingo.prev_clue')}
+                                title={t('bingo.prev_clue')}
+                            >
+                                <ArrowDown className="rotate-90" size={20}/>
+                            </button>
+                            <button
+                                onClick={toggleAutoPlay}
+                                className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-teal-600 text-white hover:bg-teal-700'}`}
+                                data-help-key="bingo_toggle_autoplay" aria-label={isAutoPlaying ? t('bingo.stop_auto') : t('bingo.start_auto')}
+                            >
+                                {isAutoPlaying ? <span className="flex items-center gap-2"><StopCircle size={16}/> {t('bingo.stop_auto')}</span> : <span className="flex items-center gap-2"><MonitorPlay size={16}/> {t('bingo.start_auto')}</span>}
+                            </button>
+                            <button
+                                onClick={() => { setIsAutoPlaying(false); nextCall(); }} data-help-key="bingo_next_clue"
+                                disabled={currentCallIndex >= callerQueue.length - 1}
+                                className="p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30"
+                                aria-label={t('bingo.next_clue')}
+                                title={t('bingo.next_clue')}
+                            >
+                                <ArrowDown className="-rotate-90" size={20}/>
+                            </button>
+                        </div>
+                        <div className="text-xs font-bold text-slate-500">
+                            {currentCallIndex + 1} / {callerQueue.length}
+                        </div>
+                    </div>
+                )}
+            </div>
+            {isCallerMode ? (
+                <div className="flex-grow flex gap-6 overflow-hidden">
+                    <div className="flex-grow bg-slate-100 rounded-2xl border-4 border-teal-500 flex flex-col items-center justify-center p-8 text-center relative shadow-inner">
+                        {currentCallIndex >= 0 ? (
+                            <div className="animate-in zoom-in duration-300 max-w-3xl">
+                                <div className="mb-6">
+                                    <span className="bg-teal-100 text-teal-800 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border border-teal-200">{t('bingo.current_clue')}</span>
+                                </div>
+                                <h3 className="text-3xl md:text-4xl font-medium text-slate-800 leading-relaxed mb-6">
+                                    "{callerQueue[currentCallIndex].def}"
+                                </h3>
+                                {callerQueue[currentCallIndex].translations && (
+                                    <div className="pt-6 border-t border-slate-200">
+                                        {Object.entries(callerQueue[currentCallIndex].translations).map(([lang, trans], idx) => (
+                                            <p key={idx} className="text-xl md:text-2xl text-slate-600 italic mt-2">
+                                                "{trans.includes(':') ? trans.split(':')[1].trim() : trans}"
+                                            </p>
+                                        ))}
+                                    </div>
+                                )}
+                                {isAudioPlaying && (
+                                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-teal-600 animate-pulse font-bold">
+                                        <Volume2 size={24}/> {t('status.reading')}
+                                    </div>
+                                )}
+                                {isAutoPlaying && !isAudioPlaying && (
+                                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 h-1 bg-slate-200 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-teal-500 animate-indeterminate-slide"
+                                            style={{ animationDuration: `${callDelay}s` }}
+                                        ></div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-slate-500">
+                                <p className="text-xl font-bold">{t('bingo.ready')}</p>
+                                <p className="text-sm">{t('bingo.ready_sub')}</p>
+                            </div>
+                        )}
+                    </div>
+                    <div className="w-64 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden shrink-0">
+                        <div className="bg-slate-200 p-3 text-center font-bold text-slate-600 text-xs uppercase tracking-wider border-b border-slate-300 flex justify-between items-center px-4">
+                            <span>{t('bingo.called_terms')}</span>
+                            <span className="bg-white/50 px-2 py-0.5 rounded text-slate-500">{currentCallIndex + 1}</span>
+                        </div>
+                        <div className="flex-grow overflow-y-auto p-2 custom-scrollbar space-y-1 relative">
+                            {isHistoryVisible ? (
+                                <>
+                                    {callerQueue.slice(0, currentCallIndex + 1).reverse().map((item, i) => (
+                                        <div key={i} className="bg-white p-3 rounded border border-slate-200 shadow-sm flex items-center justify-between animate-in slide-in-from-left-2">
+                                            <span className="font-bold text-slate-800 text-sm">{item.term}</span>
+                                            <span className="text-[10px] text-slate-500 font-mono">#{currentCallIndex - i + 1}</span>
+                                        </div>
+                                    ))}
+                                    {currentCallIndex === -1 && <p className="text-center text-slate-500 text-xs py-4 italic">{t('bingo.history_empty')}</p>}
+                                </>
+                            ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500/50">
+                                    <EyeOff size={48} className="mb-2"/>
+                                    <p className="text-sm font-bold">{t('bingo.hide_list')}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                bingoState.cards && bingoState.cards.length > 0 ? (
+                    <div className="flex-grow overflow-y-auto custom-scrollbar bg-slate-100 p-4 rounded-xl border border-slate-200 relative bingo-scroll-container">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:grid-cols-2 print:gap-4 print:block" id="bingo-print-area">
+                            {bingoState.cards.map((card, cardIdx) => (
+                                <div key={cardIdx} className="bg-white p-6 rounded-xl border-4 border-slate-800 shadow-sm aspect-square flex flex-col page-break-inside-avoid break-inside-avoid mb-8 print:mb-4 print:inline-block print:w-[48%] print:align-top print:mx-[1%] print:border-2">
+                                    <div className="text-center mb-4 border-b-2 border-slate-800 pb-2">
+                                        <h3 className="text-3xl font-black tracking-[0.5em] text-slate-800 uppercase">{t('common.bingo')}</h3>
+                                    </div>
+                                    <div
+                                        className="grid gap-1 flex-grow"
+                                        style={{
+                                            gridTemplateColumns: `repeat(${Math.sqrt(card.length)}, 1fr)`,
+                                            gridTemplateRows: `repeat(${Math.sqrt(card.length)}, 1fr)`,
+                                            aspectRatio: '1/1',
+                                        }}
+                                    >
+                                        {card.map((cell, cellIdx) => (
+                                            <div
+                                                key={cellIdx}
+                                                className={`border border-slate-300 flex flex-col items-center justify-center text-center p-1 text-[10px] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
+                                            >
+                                                {cell.type === 'free' ? (
+                                                    <span className="text-black font-black print:text-white">★ {t('bingo.free_space')} ★</span>
+                                                ) : (
+                                                    <>
+                                                        {settings.includeImages && cell.image && (
+                                                            <img loading="lazy"
+                                                                src={cell.image}
+                                                                alt=""
+                                                                className="w-8 h-8 md:w-10 md:h-10 object-contain mb-1 mix-blend-multiply"
+                                                            />
+                                                        )}
+                                                        <span>{cell.term}</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 m-4 h-64">
+                         <div className="flex flex-col items-center gap-3 text-slate-500">
+                             <RefreshCw size={32} className="animate-spin text-rose-400"/>
+                             <span className="font-bold text-sm">{t('bingo.initializing_board')}</span>
+                         </div>
+                    </div>
+                )
+            )}
+        </div>
+        <style>{`
+            @media print {
+                body * { visibility: hidden; }
+                #bingo-print-area, #bingo-print-area * { visibility: visible; }
+                #bingo-print-area {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    margin: 0;
+                    padding: 0;
+                    background: white;
+                }
+                .bingo-modal-container {
+                    position: static !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    height: auto !important;
+                    max-height: none !important;
+                    overflow: visible !important;
+                    background: white !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                }
+                .bingo-scroll-container {
+                    overflow: visible !important;
+                    height: auto !important;
+                    max-height: none !important;
+                    background: white !important;
+                    border: none !important;
+                }
+                .no-print { display: none !important; }
+                .page-break-inside-avoid { break-inside: avoid; page-break-inside: avoid; }
+            }
+.bridge-send-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px);
+  animation: bridgeFadeIn 0.3s ease-out;
+}
+.bridge-send-panel {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  border-radius: 20px; padding: 28px; max-width: 520px; width: 90vw;
+  color: #e2e8f0; box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 60px rgba(20,184,166,0.1);
+  animation: bridgeSlideUp 0.4s ease-out;
+  border: 1px solid rgba(20,184,166,0.25);
+}
+.bridge-send-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 18px; padding-bottom: 12px;
+  border-bottom: 1px solid rgba(20,184,166,0.2);
+}
+.bridge-send-header h2 { font-size: 16px; font-weight: 700; margin: 0; color: #5eead4; }
+.bridge-send-input {
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 14px; color: #e2e8f0; font-size: 15px;
+  line-height: 1.6; resize: vertical; min-height: 100px;
+  transition: border-color 0.2s; outline: none; font-family: inherit;
+}
+.bridge-send-input:focus { border-color: rgba(20,184,166,0.5); box-shadow: 0 0 20px rgba(20,184,166,0.1); }
+.bridge-send-input::placeholder { color: rgba(148,163,184,0.6); }
+.bridge-send-modes {
+  display: flex; gap: 8px; margin: 14px 0;
+}
+.bridge-send-mode-btn {
+  flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: #94a3b8; padding: 10px 8px; border-radius: 12px; cursor: pointer;
+  font-size: 12px; font-weight: 600; text-align: center;
+  transition: all 0.2s;
+}
+.bridge-send-mode-btn:hover { background: rgba(255,255,255,0.1); color: #cbd5e1; }
+.bridge-send-mode-btn.active {
+  background: rgba(20,184,166,0.15); border-color: rgba(20,184,166,0.4);
+  color: #5eead4; box-shadow: 0 0 12px rgba(20,184,166,0.15);
+}
+.bridge-send-target-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.bridge-send-target-label { font-size: 12px; font-weight: 600; color: #64748b; }
+.bridge-send-target-select {
+  flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: #e2e8f0; padding: 8px 12px; border-radius: 10px; font-size: 13px;
+  outline: none; cursor: pointer;
+}
+.bridge-send-target-select option { background: #1e293b; color: #e2e8f0; }
+.bridge-send-btn {
+  width: 100%; background: linear-gradient(135deg, #0d9488, #14b8a6);
+  border: none; color: white; padding: 14px; border-radius: 14px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; box-shadow: 0 4px 15px rgba(20,184,166,0.3);
+}
+.bridge-send-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(20,184,166,0.4); }
+.bridge-send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.bridge-offline-notice {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; margin-bottom: 12px;
+  background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.25);
+  border-radius: 10px; font-size: 12px; color: #fbbf24;
+}
+.visual-panel-grid { display: grid; gap: 8px; margin: 8px 0; list-style: none; padding: 0; }
+.visual-panel-grid.layout-before-after,
+.visual-panel-grid.layout-comparison { grid-template-columns: 1fr 1fr; }
+.visual-panel-grid.layout-sequence { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px; }
+.visual-panel-grid.layout-labeled-diagram,
+.visual-panel-grid.layout-single { grid-template-columns: 1fr; }
+.visual-panel { position: relative; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white; transition: box-shadow 0.2s; margin: 0; padding: 0; list-style: none; }
+.visual-panel:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.visual-panel img { width: 100%; display: block; max-height: 320px; object-fit: contain; background: #f8fafc; }
+.visual-panel-role { display: block; text-align: center; background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; font-size: 12px; font-weight: 800; padding: 4px 0; text-transform: uppercase; letter-spacing: 0.8px; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+.visual-label { position: absolute !important; display: flex; align-items: center; gap: 4px; background: linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(139,92,246,0.15) 100%), rgba(255,255,255,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 800; color: #1e1b4b; border: 2px solid rgba(99,102,241,0.5); box-shadow: 0 4px 16px rgba(99,102,241,0.25), inset 0 1px 0 rgba(255,255,255,0.6); pointer-events: auto; cursor: pointer; transition: opacity 0.3s, transform 0.2s, box-shadow 0.2s; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; letter-spacing: 0.02em; z-index: 4; }
+.visual-label::before { content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%); width: 8px; height: 8px; background: #6366f1; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 6px rgba(99,102,241,0.5); }
+.visual-label:hover { transform: scale(1.08) translateY(-1px); border-color: #6366f1; box-shadow: 0 6px 20px rgba(99,102,241,0.3), inset 0 1px 0 rgba(255,255,255,0.5); }
+.visual-label.hidden-label { opacity: 0; pointer-events: none; }
+.visual-label input { border: none; background: transparent; font-size: 14px; font-weight: 800; color: #1e1b4b; outline: none; width: 100%; min-width: 60px; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+.visual-caption { padding: 4px 10px; font-size: 11px; color: #64748b; text-align: center; background: #f8fafc; border-top: 1px solid #f1f5f9; font-weight: 500; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; letter-spacing: 0.01em; line-height: 1.2; margin: 0; }
+.visual-panel-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0.6; transition: opacity 0.2s; }
+.visual-panel:hover .visual-panel-actions { opacity: 1; }
+.visual-panel-actions button { background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 11px; transition: background 0.2s; }
+.visual-panel-actions button:hover { background: #eef2ff; border-color: #6366f1; }
+.visual-leader-line { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.visual-leader-line line { stroke: #6366f1; stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0.7; }
+.leader-line-group:hover .anchor-dot { opacity: 0.85 !important; r: 2 !important; }
+.visual-panel.drag-over { outline: 3px dashed #6366f1; outline-offset: -3px; background: #eef2ff; }
+.visual-panel[draggable="true"] { cursor: grab; }
+.visual-panel[draggable="true"]:active { cursor: grabbing; opacity: 0.7; }
+.visual-label:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
+.visual-label[tabindex] { outline: none; }
+.visual-undo-redo { display: flex; gap: 4px; }
+.visual-undo-redo button { background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer; color: #64748b; transition: all 0.15s; }
+.visual-undo-redo button:hover:not(:disabled) { background: #f1f5f9; border-color: #6366f1; color: #4f46e5; }
+.visual-undo-redo button:disabled { opacity: 0.3; cursor: not-allowed; }
+.drawing-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; }
+.drawing-overlay.active { cursor: crosshair; }
+.drawing-overlay svg { width: 100%; height: 100%; }
+.drawing-toolbar { display: flex; gap: 4px; align-items: center; }
+.drawing-toolbar button { padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+.drawing-toolbar button:hover { background: #fef3c7; border-color: #f59e0b; }
+.drawing-toolbar button.active { background: #fbbf24; color: #78350f; border-color: #f59e0b; }
+.drawing-toolbar .color-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #e2e8f0; cursor: pointer; transition: transform 0.15s; }
+.drawing-toolbar .color-dot:hover { transform: scale(1.2); }
+.drawing-toolbar .color-dot.selected { border-color: #1e293b; transform: scale(1.15); box-shadow: 0 0 0 2px rgba(0,0,0,0.1); }
+.visual-panel.adding-label { cursor: crosshair !important; }
+.visual-panel.adding-label::after { content: '+ Click to place label'; position: absolute; bottom: 50%; left: 50%; transform: translate(-50%, 50%); background: rgba(99,102,241,0.9); color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; pointer-events: none; z-index: 10; animation: pulse 1.5s infinite; }
+.visual-grid-controls { display: flex; gap: 6px; align-items: center; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 6px; }
+.visual-grid-controls button { display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #475569; }
+.visual-grid-controls button:hover { background: #eef2ff; border-color: #6366f1; color: #4f46e5; }
+.visual-grid-controls button.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+.visual-label:hover .label-delete-btn { visibility: visible !important; }
+.visual-sequence-arrow { display: flex; align-items: center; justify-content: center; font-size: 10px; color: #e2e8f0; align-self: center; padding: 0; margin: 0; line-height: 1; height: 12px; letter-spacing: 2px; }
+@media (max-width: 640px) {
+  .visual-panel-grid.layout-before-after,
+  .visual-panel-grid.layout-comparison { grid-template-columns: 1fr; }
+}
+.bridge-term-chip-interactive { cursor: default; }
+.bridge-term-save-btn:hover {
+  background: rgba(99,102,241,0.3) !important;
+  border-color: rgba(165,180,252,0.6) !important;
+  color: #c7d2fe !important;
+  transform: scale(1.1);
+}
+.bridge-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
+  animation: bridgeFadeIn 0.3s ease-out;
+}
+@keyframes bridgeFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bridgeSlideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.bridge-panel {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+  border-radius: 24px; padding: 32px; max-width: 640px; width: 92vw;
+  max-height: 85vh; overflow-y: auto; color: #e2e8f0;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 80px rgba(99,102,241,0.15);
+  animation: bridgeSlideUp 0.4s ease-out;
+  border: 1px solid rgba(99,102,241,0.3);
+}
+.bridge-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; padding-bottom: 12px;
+  border-bottom: 1px solid rgba(99,102,241,0.2);
+}
+.bridge-header h2 { font-size: 18px; font-weight: 700; margin: 0; color: #c7d2fe; }
+.bridge-close-btn {
+  background: rgba(255,255,255,0.1); border: none; color: #94a3b8;
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.bridge-close-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.bridge-image-container {
+  border-radius: 16px; overflow: hidden; margin-bottom: 20px;
+  border: 2px solid rgba(99,102,241,0.3);
+}
+.bridge-image-container img { width: 100%; height: auto; display: block; }
+.bridge-text-block {
+  background: rgba(255,255,255,0.06); border-radius: 16px;
+  padding: 20px; margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.bridge-lang-label {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; color: #818cf8; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.bridge-text {
+  font-size: 20px; line-height: 1.7; font-weight: 400;
+  color: #e2e8f0; letter-spacing: 0.01em;
+}
+.bridge-word { display: inline; transition: all 0.15s ease; padding: 1px 2px; border-radius: 4px; }
+.bridge-word-active {
+  background: rgba(251,191,36,0.35); color: #fbbf24;
+  font-weight: 600; text-shadow: 0 0 10px rgba(251,191,36,0.3);
+}
+.bridge-audio-controls {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px;
+}
+.bridge-play-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;
+  color: white; padding: 8px 16px; border-radius: 12px; cursor: pointer;
+  font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+  transition: all 0.2s; box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+}
+.bridge-play-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.4); }
+.bridge-play-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.bridge-play-btn.playing { animation: bridgePulse 1.5s infinite; }
+@keyframes bridgePulse { 0%, 100% { box-shadow: 0 2px 8px rgba(99,102,241,0.3); } 50% { box-shadow: 0 2px 20px rgba(99,102,241,0.6); } }
+@keyframes bridgeSpinnerSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.bridge-progress {
+  flex: 1; height: 6px; background: rgba(255,255,255,0.1);
+  border-radius: 3px; overflow: hidden;
+}
+.bridge-progress-bar {
+  height: 100%; background: linear-gradient(90deg, #6366f1, #a78bfa);
+  border-radius: 3px; transition: width 0.3s linear;
+}
+.bridge-actions {
+  display: flex; gap: 10px; margin-top: 20px; padding-top: 16px;
+  border-top: 1px solid rgba(99,102,241,0.2);
+  flex-wrap: wrap;
+}
+.bridge-action-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  color: #c7d2fe; padding: 10px 18px; border-radius: 12px;
+  cursor: pointer; font-size: 13px; font-weight: 500;
+  transition: all 0.2s; flex: 1; text-align: center; min-width: 120px;
+}
+.bridge-action-btn:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateY(-1px); }
+        `}</style>
+    </div>
+  );
+});
+const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete }) => {
+  const { t } = useContext(LanguageContext);
+  const [grid, setGrid] = useState([]);
+  const [marks, setMarks] = useState(new Set());
+  const [isWon, setIsWon] = useState(false);
+  useEffect(() => {
+      if (grid.length > 0) return; // Lock: don't regenerate if card already exists this session
+      if (!data || !Array.isArray(data) || data.length === 0) return;
+      const terms = data
+          .map(d => d.term)
+          .filter(t => t && typeof t === 'string' && t.trim().length > 0);
+      if (terms.length === 0) return;
+      let pool = [...terms];
+      const itemsNeeded = 24;
+      if (pool.length < itemsNeeded) {
+          while (pool.length < itemsNeeded) {
+              pool = [...pool, ...terms];
+          }
+      }
+      const shuffled = fisherYatesShuffle(pool).slice(0, itemsNeeded);
+      const newGrid = [];
+      let termIdx = 0;
+      for(let r=0; r<5; r++) {
+          const row = [];
+          for(let c=0; c<5; c++) {
+              if (r===2 && c===2) {
+                  row.push({ type: 'free', text: t('bingo.free_space') });
+              } else {
+                  const matchingEntry = data.find(d => d.term === shuffled[termIdx]);
+                  row.push({ type: 'term', text: shuffled[termIdx], imageUrl: matchingEntry?.imageUrl || null });
+                  termIdx++;
+              }
+          }
+          newGrid.push(row);
+      }
+      setGrid(newGrid);
+      setMarks(new Set(['2-2']));
+      setIsWon(false);
+  }, [data]);
+  const toggleCell = (r, c) => {
+      const key = `${r}-${c}`;
+      if (key === "2-2") return;
+      const newMarks = new Set(marks);
+      if (newMarks.has(key)) {
+          newMarks.delete(key);
+          if (playSound) playSound('click');
+      } else {
+          newMarks.add(key);
+          if (playSound) {
+             const ctx = getGlobalAudioContext();
+             if (ctx) {
+                 if (ctx.state === 'suspended') {
+                     ctx.resume();
+                 }
+                 const osc = ctx.createOscillator();
+                 const gain = ctx.createGain();
+                 osc.connect(gain);
+                 gain.connect(ctx.destination);
+                 osc.type = 'triangle';
+                 osc.frequency.setValueAtTime(400, ctx.currentTime);
+                 gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                 gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                 osc.start();
+                 osc.stop(ctx.currentTime + 0.1);
+             }
+          }
+      }
+      setMarks(newMarks);
+      checkWin(newMarks);
+  };
+  const checkWin = (currentMarks) => {
+      const isMarked = (r, c) => currentMarks.has(`${r}-${c}`);
+      let win = false;
+      for(let r=0; r<5; r++) {
+          if ([0,1,2,3,4].every(c => isMarked(r, c))) win = true;
+      }
+      for(let c=0; c<5; c++) {
+          if ([0,1,2,3,4].every(r => isMarked(r, c))) win = true;
+      }
+      if ([0,1,2,3,4].every(i => isMarked(i, i))) win = true;
+      if ([0,1,2,3,4].every(i => isMarked(i, 4-i))) win = true;
+      if (win && !isWon) {
+          setIsWon(true);
+          if(playSound) playSound('correct');
+          if (onGameComplete) {
+            onGameComplete('bingo', {
+              cellsMarked: currentMarks.size,
+              totalCells: 25,
+              winPattern: 'line',
+            });
+          }
+      }
+  };
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-300">
+        {isWon && <ConfettiExplosion />}
+        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]">
+            <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shrink-0">
+                 <div className="flex items-center gap-3">
+                     <div className="bg-white/20 p-2 rounded-full"><Gamepad2 size={24} /></div>
+                     <div>
+                         <h2 className="font-black text-2xl uppercase tracking-widest">{t('bingo.student_title')}</h2>
+                         <p className="text-indigo-200 text-xs font-bold">{t('bingo.click_hint')}</p>
+                     </div>
+                 </div>
+                 <GameThemeToggle />
+                 <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('bingo.close_game_aria')}>
+                     <X size={24} />
+                 </button>
+            </div>
+            <div className="p-6 overflow-y-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center">
+                <div className="grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]">
+                    {grid.map((row, r) => (
+                        row.map((cell, c) => {
+                            const isMarked = marks.has(`${r}-${c}`);
+                            return (
+                                <div
+                                    key={`${r}-${c}`}
+                                    onClick={() => toggleCell(r, c)}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={`${cell.text}${isMarked ? ' (marked)' : ''}`}
+                                    aria-pressed={isMarked}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            toggleCell(r, c);
+                                        }
+                                    }}
+                                    className={`
+                                        relative border-2 rounded-lg flex items-center justify-center text-center p-1 cursor-pointer transition-all duration-200 select-none shadow-sm
+                                        ${cell.type === 'free'
+                                            ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-black'
+                                            : isMarked
+                                                ? 'bg-white border-indigo-500'
+                                                : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md'
+                                        }
+                                    `}
+                                >
+                                    {cell.imageUrl && (
+                                        <img src={cell.imageUrl} alt={cell.text} className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`} />
+                                    )}
+                                    <span className={`text-[10px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`}>
+                                        {cell.text}
+                                    </span>
+                                    {isMarked && (
+                                        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                            {cell.type === 'free' ? (
+                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm animate-in zoom-in duration-300" />
+                                            ) : (
+                                                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] animate-in zoom-in duration-200"></div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
+                    ))}
+                </div>
+            </div>
+            {isWon && (
+                <div className="p-4 bg-green-100 border-t border-green-200 text-center">
+                    <h3 className="text-2xl font-black text-green-700 animate-bounce">{t('bingo.win_header')}</h3>
+                    <p className="text-green-800 text-sm">{t('bingo.win_message')}</p>
+                </div>
+            )}
+        </div>
+    </div>
+  );
+});
+const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) => {
+  const { t } = useContext(LanguageContext);
+  const [gameItems, setGameItems] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [scrambled, setScrambled] = useState('');
+  const [guess, setGuess] = useState('');
+  const [feedback, setFeedback] = useState('idle');
+  const [score, setScore] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [hintLevel, setHintLevel] = useState(0);
+  const [results, setResults] = useState([]);
+  useEffect(() => {
+    if (!data) return;
+    const items = data.filter(item => item.term && item.term.length > 2);
+    for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+    }
+    setGameItems(items);
+    setCurrentIndex(0);
+    setScore(0);
+    setIsGameOver(false);
+    setResults([]);
+    setFeedback('idle');
+    setGuess('');
+    if (items.length > 0) {
+        setScrambled(scrambleWord(items[0].term));
+    }
+  }, [data]);
+  const nextRound = (currentScore) => {
+      if (currentIndex < gameItems.length - 1) {
+          const nextIdx = currentIndex + 1;
+          setCurrentIndex(nextIdx);
+          setScrambled(scrambleWord(gameItems[nextIdx].term));
+          setGuess('');
+          setFeedback('idle');
+          setHintLevel(0);
+      } else {
+          setIsGameOver(true);
+          if (onScoreUpdate) onScoreUpdate(currentScore, "Word Scramble Complete");
+          if (playSound) playSound('correct');
+      }
+  };
+  const handleCheck = () => {
+      const currentItem = gameItems[currentIndex];
+      if (!currentItem) return;
+      const target = currentItem.term.trim().toLowerCase();
+      const userGuess = guess.trim().toLowerCase();
+      if (userGuess === target) {
+          if (playSound) playSound('correct');
+          setFeedback('correct');
+          setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: true }]);
+          const newScore = score + 10;
+          setScore(newScore);
+          setTimeout(() => {
+              nextRound(newScore);
+          }, 1000);
+      } else {
+          if (playSound) playSound('incorrect');
+          setFeedback('incorrect');
+          setTimeout(() => setFeedback('idle'), 800);
+      }
+  };
+  const handleSkip = () => {
+      const currentItem = gameItems[currentIndex];
+      if (currentItem) setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: false }]);
+      nextRound(score);
+  };
+  const useHint = () => {
+      const currentItem = gameItems[currentIndex];
+      if (!currentItem) return;
+      const maxHints = Math.max(1, currentItem.term.length - 1);
+      if (hintLevel >= maxHints) return;
+      setHintLevel(h => h + 1);
+      setScore(s => Math.max(0, s - 3));
+      if (playSound) playSound('click');
+  };
+  const hintText = hintLevel > 0 && gameItems[currentIndex]
+      ? gameItems[currentIndex].term.slice(0, hintLevel).toUpperCase() + '_ '.repeat(gameItems[currentIndex].term.length - hintLevel).trim()
+      : null;
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
+        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative p-8 text-center border-4 border-indigo-500">
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                aria-label={t('common.close')}
+            >
+                <X size={24} />
+            </button>
+            <div className="mb-6">
+                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                    <Type size={32} />
+                </div>
+                <h2 className="text-3xl font-black text-indigo-900 mb-2">{t('games.scramble.title')}</h2>
+                <p className="text-slate-500 font-medium">{t('games.scramble.subtitle')}</p>
+            </div>
+            <div className="flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-6 gap-6">
+                {isGameOver ? (
+                    <div className="text-center animate-in zoom-in">
+                        <ConfettiExplosion />
+                        <Trophy size={64} className="text-yellow-500 mx-auto mb-4"/>
+                        <h2 className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
+                        <div className="text-lg font-bold text-indigo-600 mb-6 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 inline-block">
+                            {t('games.scramble.score')}: {score}
+                        </div>
+                        <GameReviewScreen
+                          score={score}
+                          title={t('games.scramble.title')}
+                          items={results.map(r => ({ label: r.term, detail: r.def, status: r.correct ? 'correct' : 'incorrect' }))}
+                          onPlayAgain={() => { setIsGameOver(false); setResults([]); setCurrentIndex(0); setScore(0); setGuess(''); setFeedback('idle'); if (gameItems.length > 0) setScrambled(scrambleWord(gameItems[0].term)); }}
+                          onClose={onClose}
+                          t={t}
+                        />
+                    </div>
+                ) : gameItems.length > 0 ? (
+                    <>
+                        <div className="flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2">
+                             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('games.scramble.progress', { current: currentIndex + 1, total: gameItems.length })}</span>
+                             <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm">{t('flashcards.score_label')} {score}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm max-w-lg w-full">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12}/> {t('games.scramble.hint_label')}</h4>
+                            <div className="flex items-center justify-center gap-2">
+                                <p className="text-lg font-medium text-slate-700 leading-relaxed">"{gameItems[currentIndex].def}"</p>
+                                <SpeakButton text={gameItems[currentIndex].def} />
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {scrambled.split('').map((char, idx) => (
+                                <div
+                                    key={idx}
+                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm animate-in zoom-in"
+                                    style={{ animationDelay: `${idx * 50}ms` }}
+                                >
+                                    {char.toUpperCase()}
+                                </div>
+                            ))}
+                        </div>
+                        {hintText && (
+                            <div className="bg-amber-50 border-2 border-amber-300 text-amber-800 px-4 py-2 rounded-xl font-mono text-xl tracking-[0.3em] font-bold animate-in fade-in">
+                                {hintText}
+                            </div>
+                        )}
+                        <div className="flex flex-col gap-3 w-full max-w-xs animate-in slide-in-from-bottom-4 fade-in">
+                            <input
+                                type="text"
+                                value={guess}
+                                onChange={(e) => setGuess(e.target.value.toUpperCase())}
+                                onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
+                                className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${
+                                    feedback === 'correct' ? 'border-green-500 bg-green-50 text-green-800' :
+                                    feedback === 'incorrect' ? 'border-red-400 bg-red-50 text-red-800' :
+                                    'border-indigo-200 focus:border-indigo-400 text-indigo-900 bg-white'
+                                }`}
+                                placeholder={t('games.scramble.input_placeholder')}
+                                disabled={feedback === 'correct'}
+                                autoFocus
+                                aria-label={t('games.scramble.input_placeholder')}
+                            />
+                            <div className="flex gap-2 w-full">
+                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1" aria-label="Get a hint">
+                                    <HelpCircle size={14}/> Hint
+                                </button>
+                                <button data-help-ignore="true"
+                                    aria-label={t('common.skip')}
+                                    data-help-key="wizard_skip_btn"
+                    onClick={handleSkip}
+                                    className="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                >
+                                    {t('games.scramble.skip')}
+                                </button>
+                                <button
+                                    aria-label={t('common.check')}
+                                    onClick={handleCheck}
+                                    className="flex-[2] py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all active:scale-95"
+                                >
+                                    {t('games.scramble.submit')}
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <p className="text-slate-500 italic">{t('games.scramble.loading')}</p>
+                )}
+            </div>
+        </div>
+    </div>
+  );
+});

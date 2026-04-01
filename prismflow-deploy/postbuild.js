@@ -19,13 +19,21 @@ const htmlPath = path.join(buildDir, 'index.html');
 
 let html = fs.readFileSync(htmlPath, 'utf8');
 
+// Safe insertion before </body> — avoids String.replace() which interprets
+// $&, $', $` etc. in the replacement string, corrupting JS that contains $.
+function insertBeforeBodyClose(htmlStr, content) {
+    const idx = htmlStr.lastIndexOf('</body>');
+    if (idx === -1) return htmlStr + content;
+    return htmlStr.slice(0, idx) + content + htmlStr.slice(idx);
+}
+
 // 1. Find and inline the CSS file
 const cssMatch = html.match(/<link href="(\/static\/css\/[^"]+\.css)" rel="stylesheet">/);
 if (cssMatch) {
     const cssPath = path.join(buildDir, cssMatch[1]);
     if (fs.existsSync(cssPath)) {
         const cssContent = fs.readFileSync(cssPath, 'utf8');
-        html = html.replace(cssMatch[0], () => '<style>' + cssContent + '</style>');
+        html = html.replace(cssMatch[0], '<style>' + cssContent + '</style>');
         console.log('✓ Inlined CSS (' + (cssContent.length / 1024).toFixed(1) + ' KB)');
     }
 }
@@ -38,9 +46,9 @@ if (jsMatch) {
         const jsContent = fs.readFileSync(jsPath, 'utf8');
         // Use a deferred inline approach: put JS at the end of body
         // Remove the script tag from head
-        html = html.replace(jsMatch[0], () => '');
+        html = html.replace(jsMatch[0], '');
         // Add inline script at the end of body, before </body>
-        html = html.replace('</body>', () => '<script>' + jsContent + '</script></body>');
+        html = insertBeforeBodyClose(html, '<script>' + jsContent + '</script>');
         console.log('✓ Inlined JS (' + (jsContent.length / 1024).toFixed(1) + ' KB)');
     }
 } else {
@@ -53,8 +61,8 @@ if (jsMatch) {
         if (jsFiles.length > 0) {
             const jsContent = fs.readFileSync(path.join(jsDir, jsFiles[0]), 'utf8');
             // Remove any existing dynamic loader script
-            html = html.replace(/<script>\s*\(function\(\)\s*\{[\s\S]*?loadScript[\s\S]*?\}\)\(\);\s*<\/script>/, () => '');
-            html = html.replace('</body>', () => '<script>' + jsContent + '</script></body>');
+            html = html.replace(/<script>\s*\(function\(\)\s*\{[\s\S]*?loadScript[\s\S]*?\}\)\(\);\s*<\/script>/, '');
+            html = insertBeforeBodyClose(html, '<script>' + jsContent + '</script>');
             console.log('✓ Inlined JS from', jsFiles[0], '(' + (jsContent.length / 1024).toFixed(1) + ' KB)');
         }
     }
@@ -63,4 +71,23 @@ if (jsMatch) {
 const finalSize = Buffer.byteLength(html, 'utf8');
 fs.writeFileSync(htmlPath, html, 'utf8');
 console.log('✓ Final HTML size:', (finalSize / 1024 / 1024).toFixed(2) + ' MB');
+
+// 3. Stamp service worker with build timestamp
+// MUST happen here (post-build), not in build.js, because CRA's `npm run build`
+// copies the unstamped public/sw.js to build/sw.js, overwriting any earlier stamp.
+const swPath = path.join(buildDir, 'sw.js');
+if (fs.existsSync(swPath)) {
+    const buildTs = Date.now();
+    let swContent = fs.readFileSync(swPath, 'utf8');
+    if (swContent.includes('__BUILD_TS__')) {
+        swContent = swContent.replace(/__BUILD_TS__/g, String(buildTs));
+        fs.writeFileSync(swPath, swContent, 'utf8');
+        console.log('✓ SW stamped: CACHE_NAME = alloflow-v' + buildTs);
+    } else {
+        console.log('⚠ sw.js already stamped or placeholder missing');
+    }
+} else {
+    console.log('⚠ No sw.js found in build directory');
+}
+
 console.log('✓ Post-build complete: zero external resource requests needed');

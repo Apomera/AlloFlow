@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students | AlloFlow</title>
+    <meta name="description"
+        content="Student guide for AlloFlow — how to join a live session, earn XP, use accessibility tools, and get the most out of Adventure Mode, Word Sounds, and STEM Lab.">
+    <link rel="stylesheet" href="shared.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="index.html" class="nav-logo">
+                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                AlloFlow
+                <span
+                    style="font-size:0.6rem;font-weight:400;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px">v1.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="library.html">Library</a>
+                <a href="students.html" style="color:var(--indigo)">Students</a>
+                <a href="calculator.html">Savings</a>
+                <a href="index.html#pricing">Pricing</a>
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn">
+                    <i data-lucide="github" style="width:16px;height:16px"></i> Get Code
+                </a>
+            </div>
+            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+                aria-label="Open menu">
+                <i data-lucide="menu" style="width:24px;height:24px"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav Overlay -->
+    <div id="mobileNav" class="mobile-nav">
+        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
+            aria-label="Close">&times;</button>
+        <a href="index.html" onclick="this.parentElement.classList.remove('open')">Home</a>
+        <a href="features.html">Features</a>
+        <a href="library.html">Library</a>
+        <a href="students.html">Students</a>
+        <a href="calculator.html">Savings</a>
+        <a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+    </div>
+
+    <!-- Page Header -->
+    <header class="section"
+        style="background:linear-gradient(135deg,#eef2ff,#fdf4ff);padding-top:100px;padding-bottom:48px;text-align:center;border-bottom:1px solid #e0e7ff;position:relative;overflow:hidden">
+        <div class="blob" style="width:350px;height:350px;background:#818cf8;top:-120px;left:-100px;opacity:0.3"></div>
+        <div class="blob" style="width:300px;height:300px;background:#c084fc;bottom:-80px;right:-80px;opacity:0.3"></div>
+        <div style="position:relative;z-index:1;max-width:680px;margin:0 auto">
+            <div
+                style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:999px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+                <span style="font-size:1.1rem">🎮</span>
+                <span
+                    style="font-size:0.7rem;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:0.1em">Student
+                    Guide</span>
+            </div>
+            <h1
+                style="font-size:clamp(2rem,5vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:16px;letter-spacing:-0.02em">
+                Welcome to <span class="gradient-text">AlloFlow</span>
+            </h1>
+            <p style="font-size:1.05rem;color:#64748b;max-width:540px;margin:0 auto;line-height:1.7">
+                Your guide to joining live sessions, earning XP, and getting the most out of every activity.
+            </p>
+        </div>
+    </header>
+
+    <!-- Jump Navigation -->
+    <div class="jump-nav">
+        <div class="jump-nav-inner">
+            <a href="#join" class="jump-pill">Join a Session</a>
+            <a href="#icons" class="jump-pill">Icon Guide</a>
+            <a href="#xp" class="jump-pill">XP & Levels</a>
+            <a href="#accessibility" class="jump-pill">Accessibility</a>
+            <a href="#adventure" class="jump-pill">Adventure Mode</a>
+            <a href="#games" class="jump-pill">Games</a>
+            <a href="#wordsounds" class="jump-pill">Word Sounds</a>
+            <a href="#stem" class="jump-pill">STEM Lab</a>
+            <a href="#help" class="jump-pill">Get Help</a>
+        </div>
+    </div>
+
+    <main>
+
+        <!-- Join a Session -->
+        <section id="join" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#4f46e5;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Joining a Live Session</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card" style="border-top:3px solid #4f46e5">
+                        <div
+                            style="width:40px;height:40px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:1.3rem">
+                            1️⃣
+                        </div>
+                        <div style="font-weight:700;margin-bottom:6px">Go to the URL</div>
+                        <p style="font-size:0.82rem;color:#475569;line-height:1.6">Open the link your teacher gives you.
+                            It might be on the board, in Google Classroom, or shared in a message.</p>
+                    </div>
+                    <div class="card" style="border-top:3px solid #7c3aed">
+                        <div
+                            style="width:40px;height:40px;background:#faf5ff;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:1.3rem">
+                            2️⃣
+                        </div>
+                        <div style="font-weight:700;margin-bottom:6px">Enter the Code</div>
+                        <p style="font-size:0.82rem;color:#475569;line-height:1.6">Type the <strong>4-letter code</strong>
+                            your teacher puts on the board — like <strong>ABCD</strong>. Letters only, no numbers.</p>
+                    </div>
+                    <div class="card" style="border-top:3px solid #9333ea">
+                        <div
+                            style="width:40px;height:40px;background:#fdf4ff;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:1.3rem">
+                            3️⃣
+                        </div>
+                        <div style="font-weight:700;margin-bottom:6px">Pick a Codename</div>
+                        <p style="font-size:0.82rem;color:#475569;line-height:1.6">Choose a fun codename (or your teacher
+                            assigns one). Your real name is never used. You're in — let's go! 🎮</p>
+                    </div>
+                </div>
+
+                <div
+                    style="margin-top:32px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:24px">
+                    <div style="font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+                        <i data-lucide="zap" style="width:16px;height:16px;color:#4f46e5"></i> Live Session Modes
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+                        <div
+                            style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:0.82rem">
+                            <div style="font-weight:700;margin-bottom:4px">⚔️ Boss Battle</div>
+                            <p style="color:#475569;margin:0">The whole class works together. Correct answers deal damage
+                                to the boss!</p>
+                        </div>
+                        <div
+                            style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:0.82rem">
+                            <div style="font-weight:700;margin-bottom:4px">🏆 Team Showdown</div>
+                            <p style="color:#475569;margin:0">Compete in teams on a live leaderboard. Speed and accuracy
+                                both count.</p>
+                        </div>
+                        <div
+                            style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:0.82rem">
+                            <div style="font-weight:700;margin-bottom:4px">🗳️ Democracy Mode</div>
+                            <p style="color:#475569;margin:0">Everyone votes. The majority answer gets submitted for the
+                                class.</p>
+                        </div>
+                        <div
+                            style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:0.82rem">
+                            <div style="font-weight:700;margin-bottom:4px">🔐 Escape Room</div>
+                            <p style="color:#475569;margin:0">Timed team challenges. Solve all the puzzles before the
+                                clock runs out!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Icon Guide -->
+        <section id="icons" class="section reveal" style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#0891b2;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">What the Icons Mean</h2>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+                    <div class="card" style="display:flex;align-items:flex-start;gap:14px">
+                        <span style="font-size:1.6rem;flex-shrink:0">📖</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem">Reading Materials</div>
+                            <p style="font-size:0.78rem;color:#475569;margin:4px 0 0">Your leveled text, glossary, and
+                                reading passages.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex;align-items:flex-start;gap:14px">
+                        <span style="font-size:1.6rem;flex-shrink:0">❓</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem">Quiz or Questions</div>
+                            <p style="font-size:0.78rem;color:#475569;margin:4px 0 0">Answer questions to earn XP and
+                                check your understanding.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex;align-items:flex-start;gap:14px">
+                        <span style="font-size:1.6rem;flex-shrink:0">🎮</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem">Games & Activities</div>
+                            <p style="font-size:0.78rem;color:#475569;margin:4px 0 0">Vocabulary games, phonics
+                                activities, and simulations.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex;align-items:flex-start;gap:14px">
+                        <span style="font-size:1.6rem;flex-shrink:0">⭐</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem">XP (Experience Points)</div>
+                            <p style="font-size:0.78rem;color:#475569;margin:4px 0 0">Earned by answering correctly.
+                                Fill the bar to level up!</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex;align-items:flex-start;gap:14px">
+                        <span style="font-size:1.6rem;flex-shrink:0">🪙</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem">Gold</div>
+                            <p style="font-size:0.78rem;color:#475569;margin:4px 0 0">Spend at the in-game store to
+                                upgrade your character or buy items.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex;align-items:flex-start;gap:14px">
+                        <span style="font-size:1.6rem;flex-shrink:0">🎒</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem">Your Inventory</div>
+                            <p style="font-size:0.78rem;color:#475569;margin:4px 0 0">Items you've collected on your
+                                adventure. Use them wisely!</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex;align-items:flex-start;gap:14px">
+                        <span style="font-size:1.6rem;flex-shrink:0">🔊</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem">Read Aloud</div>
+                            <p style="font-size:0.78rem;color:#475569;margin:4px 0 0">Click any sentence with this icon
+                                to hear it read out loud.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex;align-items:flex-start;gap:14px">
+                        <span style="font-size:1.6rem;flex-shrink:0">🤖</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem">AlloBot</div>
+                            <p style="font-size:0.78rem;color:#475569;margin:4px 0 0">Your AI helper. Ask it anything
+                                about the tool you're using.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- XP & Levels -->
+        <section id="xp" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#eab308;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Earning XP &amp; Leveling Up</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div style="font-size:1.8rem;margin-bottom:8px">✅</div>
+                        <div style="font-weight:700;margin-bottom:4px">Correct Answer</div>
+                        <div style="font-size:1.4rem;font-weight:900;color:#4f46e5">+10–50 XP</div>
+                        <p style="font-size:0.78rem;color:#64748b;margin-top:4px">More XP for harder questions</p>
+                    </div>
+                    <div class="card">
+                        <div style="font-size:1.8rem;margin-bottom:8px">🔥</div>
+                        <div style="font-weight:700;margin-bottom:4px">Answer Streak (3+ in a row)</div>
+                        <div style="font-size:1.4rem;font-weight:900;color:#ef4444">Bonus XP!</div>
+                        <p style="font-size:0.78rem;color:#64748b;margin-top:4px">Keep your streak alive to multiply
+                            your score</p>
+                    </div>
+                    <div class="card">
+                        <div style="font-size:1.8rem;margin-bottom:8px">🏁</div>
+                        <div style="font-weight:700;margin-bottom:4px">Complete an Activity</div>
+                        <div style="font-size:1.4rem;font-weight:900;color:#059669">+25–100 XP</div>
+                        <p style="font-size:0.78rem;color:#64748b;margin-top:4px">Finish the whole thing for a bonus</p>
+                    </div>
+                </div>
+
+                <div
+                    style="margin-top:32px;background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:16px;padding:28px;color:#fff">
+                    <div style="font-weight:700;font-size:1.1rem;margin-bottom:16px">🏆 Achievement Badges</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">
+                        <div
+                            style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px;text-align:center;font-size:0.8rem">
+                            <div style="font-size:1.5rem;margin-bottom:6px">🎯</div>
+                            <div style="font-weight:700">Sharp Shooter</div>
+                            <div style="opacity:0.7;margin-top:4px">5 correct in a row</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px;text-align:center;font-size:0.8rem">
+                            <div style="font-size:1.5rem;margin-bottom:6px">⚡</div>
+                            <div style="font-weight:700">Speed Reader</div>
+                            <div style="opacity:0.7;margin-top:4px">Complete ORF probe</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px;text-align:center;font-size:0.8rem">
+                            <div style="font-size:1.5rem;margin-bottom:6px">🧪</div>
+                            <div style="font-weight:700">Lab Rat</div>
+                            <div style="opacity:0.7;margin-top:4px">Try 5 STEM tools</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px;text-align:center;font-size:0.8rem">
+                            <div style="font-size:1.5rem;margin-bottom:6px">🗡️</div>
+                            <div style="font-weight:700">Adventurer</div>
+                            <div style="opacity:0.7;margin-top:4px">Finish Adventure Mode</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px;text-align:center;font-size:0.8rem">
+                            <div style="font-size:1.5rem;margin-bottom:6px">👂</div>
+                            <div style="font-weight:700">Sound Master</div>
+                            <div style="opacity:0.7;margin-top:4px">Complete all phonics types</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px;text-align:center;font-size:0.8rem">
+                            <div style="font-size:1.5rem;margin-bottom:6px">🌟</div>
+                            <div style="font-weight:700">All-Star</div>
+                            <div style="opacity:0.7;margin-top:4px">Earn all 5 other badges</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Accessibility Options -->
+        <section id="accessibility" class="section reveal" style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                    <div style="width:6px;height:32px;background:#059669;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Reading Helpers</h2>
+                </div>
+                <p style="color:#64748b;margin-bottom:28px;max-width:560px">If reading is hard, these options in the
+                    <strong>Settings ⚙️</strong> menu can make a big difference.
+                </p>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="type" style="width:16px;height:16px"></i> Bigger Text
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Makes all words larger so they're easier to read on any
+                            screen.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="volume-2" style="width:16px;height:16px"></i> Read Aloud
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Click any sentence and it reads it to you. Works in 40+
+                            languages, no internet needed.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="bold" style="width:16px;height:16px"></i> Bionic Mode
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Bolds the first part of each word to help your eyes
+                            track across the line faster.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="palette" style="width:16px;height:16px"></i> Color Overlay
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Changes the background to Peach, Blue, or Yellow — can
+                            help with visual stress (Irlen syndrome).</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="text" style="width:16px;height:16px"></i> Dyslexia Font
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Switches to OpenDyslexic, Lexend, or Atkinson
+                            Hyperlegible — typefaces designed to reduce letter confusion.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="minus" style="width:16px;height:16px"></i> Reading Ruler
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">A horizontal bar follows your mouse to keep your place
+                            on the line you're reading.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="moon" style="width:16px;height:16px"></i> Dark Mode
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Full dark theme — easier on the eyes in low-light
+                            classrooms or at night.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="mic" style="width:16px;height:16px"></i> Voice Dictation
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Speak your answer instead of typing. Works on all
+                            question and writing fields.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="align-center" style="width:16px;height:16px"></i> Line Focus
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Dims all text except the sentence you're on — helps
+                            with focus and attention.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Adventure Mode -->
+        <section id="adventure" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#7c3aed;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Adventure Mode 🗡️</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card" style="border-top:3px solid #7c3aed">
+                        <div style="font-size:1.5rem;margin-bottom:8px">🎲</div>
+                        <div style="font-weight:700;margin-bottom:6px">Your choices shape the story</div>
+                        <p style="font-size:0.8rem;color:#475569">Every decision branches the plot. Different choices
+                            lead to different endings — there's no one right path.</p>
+                    </div>
+                    <div class="card" style="border-top:3px solid #7c3aed">
+                        <div style="font-size:1.5rem;margin-bottom:8px">💰</div>
+                        <div style="font-weight:700;margin-bottom:6px">Spend gold wisely</div>
+                        <p style="font-size:0.8rem;color:#475569">Buy weapons, healing potions, or magic items from the
+                            in-game store. Save up for the big purchases.</p>
+                    </div>
+                    <div class="card" style="border-top:3px solid #7c3aed">
+                        <div style="font-size:1.5rem;margin-bottom:8px">🎲</div>
+                        <div style="font-weight:700;margin-bottom:6px">Dice rolls add luck</div>
+                        <p style="font-size:0.8rem;color:#475569">Some actions use 3D dice. Higher rolls = better
+                            outcomes. Level up your character to improve your odds.</p>
+                    </div>
+                    <div class="card" style="border-top:3px solid #7c3aed">
+                        <div style="font-size:1.5rem;margin-bottom:8px">🤝</div>
+                        <div style="font-weight:700;margin-bottom:6px">Democracy Mode</div>
+                        <p style="font-size:0.8rem;color:#475569">In live sessions, the whole class votes on which path
+                            to take. Majority wins — choose wisely!</p>
+                    </div>
+                    <div class="card" style="border-top:3px solid #7c3aed">
+                        <div style="font-size:1.5rem;margin-bottom:8px">📖</div>
+                        <div style="font-weight:700;margin-bottom:6px">Export your story</div>
+                        <p style="font-size:0.8rem;color:#475569">When you finish, your teacher can export your entire
+                            adventure as a storybook to keep!</p>
+                    </div>
+                    <div class="card" style="border-top:3px solid #7c3aed">
+                        <div style="font-size:1.5rem;margin-bottom:8px">🧠</div>
+                        <div style="font-weight:700;margin-bottom:6px">It's about the reading</div>
+                        <p style="font-size:0.8rem;color:#475569">The story is built from your actual lesson content. The
+                            more you read, the better your choices get.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vocabulary Games -->
+        <section id="games" class="section reveal" style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#0891b2;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Vocabulary Games</h2>
+                </div>
+                <p style="color:#64748b;margin-bottom:24px;max-width:560px">These games are generated from the vocabulary
+                    words in your lesson. Every game is different each time!</p>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            <i data-lucide="grid" style="width:16px;height:16px"></i> Memory Match
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Flip cards to match words with their definitions.
+                            Faster matches = more XP.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            <i data-lucide="hash" style="width:16px;height:16px"></i> Word Search
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Find vocabulary words hidden in a grid. Click the first
+                            and last letter to highlight.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            <i data-lucide="layout" style="width:16px;height:16px"></i> Crossword
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Fill in the boxes using the clues. Works with your
+                            keyboard — no mouse needed.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            <i data-lucide="circle" style="width:16px;height:16px"></i> Bingo
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Listen to definitions and mark your card. First to get
+                            five in a row wins!</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            <i data-lucide="shuffle" style="width:16px;height:16px"></i> Word Scramble
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Unscramble the letters to spell the vocabulary word.
+                            Hint button available if you're stuck.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            <i data-lucide="search" style="width:16px;height:16px"></i> Flashcards
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Flip through word + definition cards at your own pace.
+                            Click to flip, arrow keys to navigate.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Word Sounds -->
+        <section id="wordsounds" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#dc2626;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Word Sounds 👂</h2>
+                </div>
+                <p style="color:#64748b;margin-bottom:24px;max-width:560px">Phonemic awareness drills — practice hearing
+                    and working with the sounds in words. 8 different activity types.</p>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:32px">
+                    <div class="card" style="border-left:3px solid #dc2626">
+                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Counting</div>
+                        <p style="font-size:0.78rem;color:#475569;margin:0">How many sounds are in "cat"? → 3</p>
+                    </div>
+                    <div class="card" style="border-left:3px solid #dc2626">
+                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Find Sounds</div>
+                        <p style="font-size:0.78rem;color:#475569;margin:0">Identify the first, middle, or last sound in
+                            a word.</p>
+                    </div>
+                    <div class="card" style="border-left:3px solid #dc2626">
+                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Blend Sounds</div>
+                        <p style="font-size:0.78rem;color:#475569;margin:0">/k/ /æ/ /t/ → what word? → "cat"</p>
+                    </div>
+                    <div class="card" style="border-left:3px solid #dc2626">
+                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Break Apart</div>
+                        <p style="font-size:0.78rem;color:#475569;margin:0">"dog" → /d/ /ɒ/ /g/ — use the Elkonin boxes
+                            to segment each sound.</p>
+                    </div>
+                    <div class="card" style="border-left:3px solid #dc2626">
+                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Rhyme Time</div>
+                        <p style="font-size:0.78rem;color:#475569;margin:0">What rhymes with "hat"? — bat, cat, mat...</p>
+                    </div>
+                    <div class="card" style="border-left:3px solid #dc2626">
+                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Sound Mapping</div>
+                        <p style="font-size:0.78rem;color:#475569;margin:0">Match sounds to their written letters
+                            (grapheme-phoneme bridge).</p>
+                    </div>
+                    <div class="card" style="border-left:3px solid #dc2626">
+                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Sight & Spell</div>
+                        <p style="font-size:0.78rem;color:#475569;margin:0">Orthography and spelling practice with
+                            adaptive difficulty.</p>
+                    </div>
+                    <div class="card" style="border-left:3px solid #dc2626">
+                        <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Word Families</div>
+                        <p style="font-size:0.78rem;color:#475569;margin:0">Group words by their rime: -at, -ing, -ock...
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
+                    <span style="font-size:1.4rem;flex-shrink:0">💡</span>
+                    <div style="font-size:0.85rem;color:#475569">
+                        <strong>Tips:</strong> Listen to the whole word before answering. Use the Elkonin boxes — one box
+                        per sound. Get 3 correct in a row for a streak bonus!
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEM Lab -->
+        <section id="stem" class="section reveal" style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#0d9488;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">STEM Lab 🧪</h2>
+                </div>
+                <p style="color:#64748b;margin-bottom:24px;max-width:560px">55 interactive simulations across science,
+                    math, coding, biology, and more — all running right in your browser.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+                    <div
+                        style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.82rem">
+                        <div style="font-weight:700;color:#0d9488;margin-bottom:8px">🔢 Math</div>
+                        <ul style="list-style:none;padding:0;margin:0;color:#475569;line-height:1.8">
+                            <li>Fraction Lab</li>
+                            <li>Graphing Calculator</li>
+                            <li>Probability Explorer</li>
+                            <li>Algebra Solver</li>
+                            <li>Calculus Visualizer</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.82rem">
+                        <div style="font-weight:700;color:#0d9488;margin-bottom:8px">🧬 Life Science</div>
+                        <ul style="list-style:none;padding:0;margin:0;color:#475569;line-height:1.8">
+                            <li>DNA Lab</li>
+                            <li>Cell Simulator</li>
+                            <li>Human Anatomy</li>
+                            <li>Virtual Dissection</li>
+                            <li>Ecosystem Simulator</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.82rem">
+                        <div style="font-weight:700;color:#0d9488;margin-bottom:8px">⚗️ Physics & Chemistry</div>
+                        <ul style="list-style:none;padding:0;margin:0;color:#475569;line-height:1.8">
+                            <li>Circuit Builder</li>
+                            <li>Wave Simulator</li>
+                            <li>Molecule Builder</li>
+                            <li>Titration Lab</li>
+                            <li>Physics Simulator</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.82rem">
+                        <div style="font-weight:700;color:#0d9488;margin-bottom:8px">🌍 Earth & Space</div>
+                        <ul style="list-style:none;padding:0;margin:0;color:#475569;line-height:1.8">
+                            <li>Solar System</li>
+                            <li>Plate Tectonics</li>
+                            <li>Water Cycle</li>
+                            <li>Galaxy Explorer</li>
+                            <li>Rocks & Minerals</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.82rem">
+                        <div style="font-weight:700;color:#0d9488;margin-bottom:8px">💻 Tech & Creative</div>
+                        <ul style="list-style:none;padding:0;margin:0;color:#475569;line-height:1.8">
+                            <li>Coding Playground</li>
+                            <li>Cyber Defense Lab</li>
+                            <li>Music Synthesizer</li>
+                            <li>Art & Design Studio</li>
+                            <li>Architecture Studio</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:0.82rem">
+                        <div style="font-weight:700;color:#0d9488;margin-bottom:8px">🚀 Simulation</div>
+                        <ul style="list-style:none;padding:0;margin:0;color:#475569;line-height:1.8">
+                            <li>Kepler Colony</li>
+                            <li>Aquaculture & Ocean Lab</li>
+                            <li>Economics Lab</li>
+                            <li>Life Skills Lab</li>
+                            <li>Companion Planting</li>
+                        </ul>
+                    </div>
+                </div>
+                <div
+                    style="margin-top:20px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:16px;font-size:0.85rem;color:#475569;display:flex;gap:12px;align-items:flex-start">
+                    <span style="font-size:1.3rem;flex-shrink:0">💡</span>
+                    <span>Every STEM tool has a <strong>Generate Drill</strong> button that creates instant practice
+                        problems related to what you're exploring.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Get Help -->
+        <section id="help" class="section reveal" style="background:#fff">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#f59e0b;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Something Not Working?</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#f59e0b">
+                            <i data-lucide="refresh-cw" style="width:16px;height:16px"></i> Refresh the page
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Most issues are fixed by pressing <strong>F5</strong>
+                            or <strong>Ctrl+R</strong> to reload.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#f59e0b">
+                            <i data-lucide="wifi" style="width:16px;height:16px"></i> Check your internet
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">If the page loads but content doesn't appear, check
+                            that you're connected.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#f59e0b">
+                            <i data-lucide="volume-x" style="width:16px;height:16px"></i> Audio not playing
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Click anywhere on the page first — browsers require a
+                            user gesture before playing audio.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#f59e0b">
+                            <i data-lucide="x-circle" style="width:16px;height:16px"></i> Stuck in a game
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Press <strong>Esc</strong> to close the current
+                            activity and return to the main view.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#f59e0b">
+                            <i data-lucide="bot" style="width:16px;height:16px"></i> Ask AlloBot
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Click the 🤖 icon anywhere in the app — AlloBot knows
+                            what tool you're using and can help.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#f59e0b">
+                            <i data-lucide="users" style="width:16px;height:16px"></i> Ask your teacher
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">If refreshing and AlloBot don't fix it, your teacher
+                            can reset or resend your session.</p>
+                    </div>
+                </div>
+
+                <!-- Keyboard Shortcuts -->
+                <div
+                    style="margin-top:40px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:24px">
+                    <div style="font-weight:700;font-size:1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+                        <i data-lucide="keyboard" style="width:16px;height:16px;color:#4f46e5"></i> Keyboard Shortcuts
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem">
+                            <span style="color:#475569">Play / Pause audio</span>
+                            <kbd
+                                style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;font-size:0.75rem;font-family:monospace;box-shadow:0 1px 2px rgba(0,0,0,0.05)">Space</kbd>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem">
+                            <span style="color:#475569">Close modal or game</span>
+                            <kbd
+                                style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;font-size:0.75rem;font-family:monospace;box-shadow:0 1px 2px rgba(0,0,0,0.05)">Esc</kbd>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem">
+                            <span style="color:#475569">Open help panel</span>
+                            <kbd
+                                style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;font-size:0.75rem;font-family:monospace;box-shadow:0 1px 2px rgba(0,0,0,0.05)">?</kbd>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem">
+                            <span style="color:#475569">Navigate menus</span>
+                            <kbd
+                                style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;font-size:0.75rem;font-family:monospace;box-shadow:0 1px 2px rgba(0,0,0,0.05)">Tab</kbd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+                AlloFlow</div>
+            <p>An open-source project for educators. Not affiliated with Google.</p>
+            <p>Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span></p>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="library.html">Library</a>
+                <a href="https://github.com/Apomera/AlloFlow#readme">Docs</a>
+                <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
+                <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    </button>
+
+    <script>
+        lucide.createIcons();
+        document.getElementById('year').innerText = new Date().getFullYear();
+
+        // Scroll Reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Back to Top
+        const backBtn = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            backBtn.classList.toggle('visible', window.scrollY > 600);
+        }, { passive: true });
+    </script>
+
+</body>
+
+</html>

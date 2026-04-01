@@ -22,6 +22,7 @@
                 <a href="index.html">Home</a>
                 <a href="features.html" style="color:var(--indigo)">Features</a>
                 <a href="library.html">Library</a>
+                <a href="students.html">Students</a>
                 <a href="index.html#pricing">Pricing</a>
                 <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
                         style="width:16px;height:16px"></i> Get Code</a>
@@ -32,7 +33,7 @@
     </nav>
     <div id="mobileNav" class="mobile-nav">
         <button class="close-btn" onclick="this.parentElement.classList.remove('open')">&times;</button>
-        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
+        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="students.html">Students</a><a
             href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
     </div>
 
@@ -55,6 +56,8 @@
             <a href="#grading" class="jump-pill">Grading</a>
             <a href="#architecture" class="jump-pill">Architecture</a>
             <a href="#stem" class="jump-pill">STEM & Productivity</a>
+            <a href="#sel" class="jump-pill">SEL Hub</a>
+            <a href="#aac" class="jump-pill">AAC & Visual Communication</a>
             <a href="#accessibility" class="jump-pill">Accessibility</a>
         </div>
     </div>
@@ -517,8 +520,14 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#1e40af;font-size:0.85rem">
                             <i data-lucide="sigma" style="width:16px;height:16px"></i> Interactive STEM Lab
                         </div>
-                        <p style="font-size:0.75rem;color:#475569">30+ interactive physics, math, and chemistry
-                            modules (Drone HUD Explorer, Planetarium, Interactive Circuit Builder, etc.).</p>
+                        <p style="font-size:0.75rem;color:#475569">60+ interactive simulations across math, science, physics, chemistry, biology, coding, music, economics, and more (Logic Lab, Calculus Visualizer with 5 Riemann methods, Angle Explorer, Data Plotter, Unit Converter, Arch Studio with gravity sim, etc.).</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0369a1;font-size:0.85rem">
+                            <i data-lucide="shield" style="width:16px;height:16px"></i> Cyber Defense Lab
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Digital citizenship and cybersecurity fundamentals — phishing detective, password strength forge, and cipher playground.</p>
                     </div>
                     <div class="card">
                         <div
@@ -578,6 +587,127 @@
                         <p style="font-size:0.75rem;color:#475569">"Verify & Debunk" mechanism forces the AI to critique
                             its
                             own answers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEL Hub -->
+        <section id="sel" class="section reveal" style="background:#f0fdf4;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#059669;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">SEL Hub — Social-Emotional Learning</h2>
+                </div>
+                <p style="font-size:0.9rem;color:#374151;margin-bottom:24px;max-width:700px">Organized around the <strong>CASEL 5 competency framework</strong> — every tool maps to Self-Awareness, Self-Management, Social Awareness, Relationship Skills, or Responsible Decision-Making.</p>
+                <div class="grid-4">
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669;font-size:0.85rem">
+                            <i data-lucide="brain" style="width:16px;height:16px"></i> Zones of Regulation
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Interactive zone identification (Blue / Green / Yellow / Red) with a strategy explorer, daily check-in tracker, AI-powered scenario coach, and grade-adaptive vocabulary from K–12.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#16a34a;font-size:0.85rem">
+                            <i data-lucide="target" style="width:16px;height:16px"></i> CASEL 5 Framework
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">All SEL tools are tagged to their CASEL competency category. Teachers can filter the hub by competency to surface tools relevant to a specific IEP goal or school-wide SEL initiative.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#15803d;font-size:0.85rem">
+                            <i data-lucide="plug" style="width:16px;height:16px"></i> Plugin Architecture
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">SEL Hub uses the same plugin-first architecture as STEM Lab — new tools (Emotion Regulation Coach, Conflict Mediator, Growth Mindset Journal, etc.) load as lightweight CDN modules.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669;font-size:0.85rem">
+                            <i data-lucide="activity" style="width:16px;height:16px"></i> Grade-Adaptive
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">SEL tools read the active grade band from AlloFlow context and scale vocabulary, scenario complexity, and UI density accordingly — from simple emoji-based K–2 check-ins to nuanced high school coaching.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AAC & Visual Communication -->
+        <section id="aac" class="section reveal" style="background:#faf5ff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#7c3aed;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">AAC &amp; Visual Communication</h2>
+                </div>
+                <div class="grid-4">
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#6d28d9;font-size:0.85rem">
+                            <i data-lucide="image" style="width:16px;height:16px"></i> Symbol Studio
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">AI-powered AAC board builder: generate unlimited custom PCS-style symbols with Imagen in 6 styles (flat vector, line art, cartoon, watercolor, bold comic, high-contrast B&amp;W). Cloud sync across devices via Firebase.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed;font-size:0.85rem">
+                            <i data-lucide="play" style="width:16px;height:16px"></i> Direct-Use AAC Mode
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Full-screen communication board with tap-to-speak, a sentence strip for phrase building, and a session communication log exportable as CSV — ready for real AAC use in the classroom.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#9333ea;font-size:0.85rem">
+                            <i data-lucide="zap" style="width:16px;height:16px"></i> AI Word Prediction
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">After each symbol tap, Gemini predicts the 4 most likely next words and shows them as thumbnail chips above the grid — reducing the number of taps needed to build a message.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#6d28d9;font-size:0.85rem">
+                            <i data-lucide="type" style="width:16px;height:16px"></i> Text-to-Symbols
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Type any sentence and AI maps each word to an AAC symbol category, checks the gallery for existing matches, and lets you review the mapping before adding symbols to a board in one click.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed;font-size:0.85rem">
+                            <i data-lucide="globe" style="width:16px;height:16px"></i> Standalone HTML Export
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Export any board as a self-contained .html file with base64-embedded images, Web Speech API TTS, and a sentence strip. Opens on any device in any browser — no AlloFlow or internet required.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#9333ea;font-size:0.85rem">
+                            <i data-lucide="accessibility" style="width:16px;height:16px"></i> Partner-Assisted Scanning
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Single-switch scanning mode auto-highlights cells at 1–4 second intervals. Space bar or tap activates the highlighted symbol — designed for students who cannot independently point or tap.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#6d28d9;font-size:0.85rem">
+                            <i data-lucide="layout-grid" style="width:16px;height:16px"></i> Board Builder
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">AI-generates a complete word list from any topic, then generates images in batch. Customizable category color coding, 6 board themes (Pastel, Dark, High Contrast, Warm, Cool), and adjustable column count.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed;font-size:0.85rem">
+                            <i data-lucide="book-open" style="width:16px;height:16px"></i> Activity Sets &amp; Quick Boards
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Bundle boards into named Activity Sets tagged to student profiles. Quick Boards offers AI-generated templates for Core Vocab, Feelings, Calming Corner, Ask Me, Body Check/Pain Scale, and Transition Warning.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#9333ea;font-size:0.85rem">
+                            <i data-lucide="printer" style="width:16px;height:16px"></i> Print &amp; Visual Schedules
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Choose cell size (1.5″, 2″, or 2.5″) before printing. Dedicated tabs for step-by-step visual schedules and social narrative boards, each with independent print layouts.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#6d28d9;font-size:0.85rem">
+                            <i data-lucide="user-check" style="width:16px;height:16px"></i> Student Profiles &amp; Tagging
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Up to 8 student profiles with photo avatars. Assign boards, schedules, and activity sets to any profile — profile tags carry through JSON exports for IEP-ready AAC documentation.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed;font-size:0.85rem">
+                            <i data-lucide="gallery-thumbnails" style="width:16px;height:16px"></i> Symbol Gallery
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Every generated symbol is saved to a reusable gallery. Auto-match by label before calling the API eliminates duplicate generation. Symbols can be refined, regenerated, or downloaded as PNG.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#9333ea;font-size:0.85rem">
+                            <i data-lucide="calendar" style="width:16px;height:16px"></i> Symbol Refinement &amp; Styles
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Use Imagen's image-to-image pipeline to refine any symbol — remove text labels, change style, or apply a targeted edit prompt. All without leaving AlloFlow.</p>
                     </div>
                 </div>
             </div>

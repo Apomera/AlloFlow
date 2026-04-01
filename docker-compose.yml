@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  alloflow-web:
+    build: .
+    container_name: alloflow-frontend
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - VITE_AI_PROVIDER=ollama
+      - VITE_OLLAMA_URL=http://ollama-ai:11434
+    depends_on:
+      - ollama-ai
+
+  ollama-ai:
+    image: ollama/ollama:latest
+    container_name: alloflow-ollama
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu] # Exposes host hardware acceleration for inference speed
+
+  tts-proxy:
+    image: node:18-alpine
+    container_name: alloflow-tts
+    ports:
+      - "${TTS_PORT:-5002}:5002"
+    restart: always
+    volumes:
+      - tts_cache:/app/cache
+    command: npm run start:tts-proxy
+
+volumes:
+  ollama_data:
+  tts_cache:
