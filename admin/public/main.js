@@ -450,7 +450,10 @@ async function startDeployment(setupData, onProgress) {
       }
     }
     
-    // Only run install and startup phases if needed
+    // PHASE 2: Install services (download binaries) - only if needed
+    const totalToInstall = servicesToInstall.length;
+    let installed = 0;
+    
     if (needsInstallation) {
     
     for (const serviceId of servicesToInstall) {
