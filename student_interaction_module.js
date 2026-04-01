@@ -8,6 +8,19 @@
  */
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-student-interaction')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-student-interaction';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   if (window.__studentInteractionModuleLoaded) {
     console.warn('[StudentInteractionModule] Already loaded — skipping');
@@ -129,7 +142,7 @@ var StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], 
     onSubmit(fullName, stats);
     onClose();
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: onClose,

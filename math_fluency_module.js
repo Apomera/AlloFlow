@@ -4,6 +4,19 @@
 // ═══════════════════════════════════════════════════════════════
 (function () {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-math-fluency')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-math-fluency';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ── Grade-Normed DCPM Benchmarks (Research-Based) ──
   // Sources: AIMSweb, NWEA, Fuchs & Fuchs (2004)
@@ -406,7 +419,7 @@
               '#' + (currentIndex + 1) + ' \u2022 \u2705 ' + correctCount)
           ),
           h('div', { style: { height: '12px', background: '#e2e8f0', borderRadius: '9999px', overflow: 'hidden' } },
-            h('div', { style: {
+            h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: {
               height: '100%', borderRadius: '9999px', transition: 'width 1s linear',
               background: isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #f59e0b, #f97316)',
               width: timerPct + '%'
@@ -414,7 +427,7 @@
           )
         ),
         // Problem card
-        h('div', {
+        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
           style: {
             background: '#fff', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.1)', border: '2px solid #fde68a',
             padding: '2rem 3rem', width: '100%', maxWidth: '28rem', textAlign: 'center'

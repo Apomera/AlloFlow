@@ -3,6 +3,19 @@
 // Extracted from stem_tool_science.js for modular loading
 // =================================================================
 (function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-rocks')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-rocks';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   if (!window.StemLab) { console.warn("StemLab registry not found"); return; }
 
   // ═══ 🔬 rocks (rocks) ═══

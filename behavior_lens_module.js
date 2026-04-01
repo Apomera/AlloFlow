@@ -1934,7 +1934,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 // Progress bar
                 h('div', { className: 'mb-4 flex items-center gap-3' },
                     h('div', { className: 'flex-1 bg-slate-700 rounded-full h-3 overflow-hidden' },
-                        h('div', { className: 'h-full bg-indigo-500 transition-all', style: { width: `${(completedCount / totalIntervals) * 100}%` } })
+                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-indigo-500 transition-all', style: { width: `${(completedCount / totalIntervals) * 100}%` } })
                     ),
                     h('span', { className: 'text-sm font-bold text-white tabular-nums' }, `${completedCount}/${totalIntervals}`),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-black text-indigo-400 tabular-nums' }, `${pct}%`)
@@ -2363,7 +2363,7 @@ Return ONLY valid JSON:
                 ),
                 h('div', { className: 'flex items-center gap-3' },
                     h('div', { className: 'flex-1 bg-white rounded-full h-4 overflow-hidden border border-rose-200' },
-                        h('div', {
+                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
                             className: 'h-full rounded-full transition-all bg-gradient-to-r from-rose-400 to-amber-400',
                             style: { width: `${(earnedCount / slots) * 100}%` }
                         })
@@ -8525,7 +8525,7 @@ Rules:
                 }, t('behavior_lens.fba.open_tool') || '→ Open Tool'),
                 h('div', { className: 'flex-1' },
                     h('div', { className: 'w-full bg-white/20 rounded-full h-1.5 overflow-hidden' },
-                        h('div', { className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
+                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
                     ),
                     h('div', { className: 'text-[9px] text-white/50 mt-1 text-right' }, t('behavior_lens.fba.progress_pct') || `${progress}% through FBA workflow`)
                 )
@@ -8832,7 +8832,7 @@ Rules:
                         h('span', null, `${nextLevel.icon} ${nextLevel.name} (${nextLevel.minXP} XP)`)
                     ),
                     h('div', { className: 'w-full bg-white/20 rounded-full h-3 overflow-hidden' },
-                        h('div', { className: 'h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-500', style: { width: `${progressToNext}%` } })
+                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-500', style: { width: `${progressToNext}%` } })
                     )
                 ),
                 // Stats row
@@ -9714,7 +9714,7 @@ Keep it concise and encouraging. Use plain language.`;
                         return h('div', { key: i, className: 'flex items-center gap-3' },
                             h('div', { className: 'w-28 text-[10px] font-bold text-slate-600 text-right truncate shrink-0' }, s.label),
                             h('div', { className: 'flex-1 bg-slate-100 rounded-full h-6 overflow-hidden' },
-                                h('div', {
+                                h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
                                     className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full flex items-center justify-end pr-2 transition-all duration-500',
                                     style: { width: `${(s.count / maxC) * 100}%` }
                                 }, h('span', { className: 'text-[9px] font-bold text-white' }, s.count))
@@ -10369,7 +10369,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                     answeredCount === questions.length && h('span', { className: 'text-xs font-bold text-green-600' }, '✅ Complete')
                 ),
                 h('div', { className: 'w-full bg-slate-100 rounded-full h-2' },
-                    h('div', { className: 'bg-gradient-to-r from-teal-400 to-emerald-500 h-2 rounded-full transition-all duration-500', style: { width: `${(answeredCount / questions.length) * 100}%` } })
+                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-gradient-to-r from-teal-400 to-emerald-500 h-2 rounded-full transition-all duration-500', style: { width: `${(answeredCount / questions.length) * 100}%` } })
                 )
             ),
             // Questions
@@ -12268,7 +12268,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                     topPrefs.length > 0 && h('span', { className: 'text-xs font-bold text-green-600' }, `${topPrefs.length} favorites found`)
                 ),
                 h('div', { className: 'w-full bg-slate-100 rounded-full h-2' },
-                    h('div', { className: 'bg-gradient-to-r from-amber-400 to-green-500 h-2 rounded-full transition-all duration-500', style: { width: `${(totalRated / totalItems) * 100}%` } })
+                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-gradient-to-r from-amber-400 to-green-500 h-2 rounded-full transition-all duration-500', style: { width: `${(totalRated / totalItems) * 100}%` } })
                 )
             ),
             // Top preferences summary
@@ -12451,7 +12451,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                     h('span', { className: 'text-[9px] text-slate-500' }, `${p.count}× (${p.pct}%)`)
                                 ),
                                 h('div', { className: 'w-full bg-slate-100 rounded-full h-1.5' },
-                                    h('div', { className: 'bg-gradient-to-r from-amber-400 to-red-500 h-1.5 rounded-full', style: { width: `${p.pct}%` } })
+                                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-gradient-to-r from-amber-400 to-red-500 h-1.5 rounded-full', style: { width: `${p.pct}%` } })
                                 )
                             )
                         )
@@ -13840,7 +13840,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                             h('span', { className: 'text-xs text-slate-700' }, b),
                             h('div', { className: 'flex items-center gap-2' },
                                 h('div', { className: 'w-24 bg-slate-100 rounded-full h-2' },
-                                    h('div', { className: 'h-full bg-indigo-500 rounded-full', style: { width: `${Math.min(100, (c / Math.max(...dataStats.topBehaviors.map(x => x[1]))) * 100)}%` } })
+                                    h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-indigo-500 rounded-full', style: { width: `${Math.min(100, (c / Math.max(...dataStats.topBehaviors.map(x => x[1]))) * 100)}%` } })
                                 ),
                                 h('span', { className: 'text-[10px] font-bold text-slate-500 w-8 text-right' }, `${c}×`)
                             )
@@ -15218,9 +15218,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 return h('div', { key: d, className: 'flex items-center gap-2 text-[10px]' },
                                     h('span', { className: 'w-16 text-slate-500 font-mono' }, d.split('/').slice(0, 2).join('/')),
                                     h('div', { className: 'flex-1 flex h-4 rounded overflow-hidden' },
-                                        day.fp > 0 && h('div', { className: 'bg-red-400', style: { width: `${(day.fp / total) * 100}%` } }),
-                                        day.pp > 0 && h('div', { className: 'bg-amber-400', style: { width: `${(day.pp / total) * 100}%` } }),
-                                        day.ind > 0 && h('div', { className: 'bg-green-400', style: { width: `${(day.ind / total) * 100}%` } })
+                                        day.fp > 0 && h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-red-400', style: { width: `${(day.fp / total) * 100}%` } }),
+                                        day.pp > 0 && h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-amber-400', style: { width: `${(day.pp / total) * 100}%` } }),
+                                        day.ind > 0 && h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-green-400', style: { width: `${(day.ind / total) * 100}%` } })
                                     ),
                                     h('span', { className: 'w-6 text-right text-slate-500' }, total)
                                 );
@@ -19130,7 +19130,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                                         h('span', { className: 'text-xs font-bold text-indigo-600' }, `${r.pct}%`)
                                     ),
                                     h('div', { className: 'w-full h-2 bg-slate-100 rounded-full mt-1 overflow-hidden' },
-                                        h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500', style: { width: `${r.pct}%` } })
+                                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500', style: { width: `${r.pct}%` } })
                                     )
                                 )
                             )
@@ -19751,7 +19751,7 @@ Keep the language professional but accessible.`;
             !result ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-4' },
                 total > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between items-center' },
                     h('h3', { className: 'text-xs font-bold text-slate-600' }, `${answered}/${total} items`),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-32 h-2 bg-slate-200 rounded-full' }, h('div', { className: 'h-full bg-indigo-500 rounded-full', style: { width: `${total > 0 ? (answered / total) * 100 : 0}%` } }))
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-32 h-2 bg-slate-200 rounded-full' }, h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-indigo-500 rounded-full', style: { width: `${total > 0 ? (answered / total) * 100 : 0}%` } }))
                 ),
                 total === 0 && isCustom && h('p', { className: 'text-center text-sm text-slate-500 py-4' }, 'Add items above to build your survey.'),
                 current.items.map((item, i) =>
@@ -23173,7 +23173,7 @@ IMPORTANT rules for expert keys:
                 h('div', { className: 'flex items-center gap-3' },
                     h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider' }, `Interval ${currentInterval + 1}/${totalIntervals}`),
                     h('div', { className: 'flex-1 bg-slate-100 h-2 rounded-full overflow-hidden' },
-                        h('div', { className: 'h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500', style: { width: `${((currentInterval + 1) / totalIntervals) * 100}%` } })
+                        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500', style: { width: `${((currentInterval + 1) / totalIntervals) * 100}%` } })
                     ),
                     h('span', { className: 'text-[10px] font-bold text-indigo-600' }, `${methodInfo?.icon} ${methodInfo?.label}`)
                 ),

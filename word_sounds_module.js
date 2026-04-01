@@ -2,6 +2,19 @@
   if (window.AlloModules && window.AlloModules.WordSoundsModal) {
     console.log("[CDN] WordSoundsModal already loaded, skipping duplicate");
   } else {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-word-sounds')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-word-sounds';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   // WCAG 2.4.3: Focus management for modal dialogs
   var _alloFocusTrigger = null;
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
@@ -12953,7 +12966,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                 "div",
                 { className: "h-2 bg-white/20 rounded-full overflow-hidden" },
-                  /*#__PURE__*/ React.createElement("div", {
+                  /*#__PURE__*/ React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
                   className:
                     "h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-300",
                   style: {
@@ -13306,7 +13319,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                 "div",
                 { className: "h-2 bg-white/20 rounded-full overflow-hidden" },
-                  /*#__PURE__*/ React.createElement("div", {
+                  /*#__PURE__*/ React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
                   className:
                     "h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500",
                   style: {
@@ -20031,7 +20044,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "w-full bg-slate-100 rounded-full h-2 mb-4",
                     },
-                        /*#__PURE__*/ React.createElement("div", {
+                        /*#__PURE__*/ React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
                       className:
                         "bg-purple-500 h-2 rounded-full transition-all",
                       style: {
@@ -20503,7 +20516,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "w-full bg-slate-100 rounded-full h-2 mb-4",
                     },
-                        /*#__PURE__*/ React.createElement("div", {
+                        /*#__PURE__*/ React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
                       className:
                         "bg-cyan-500 h-2 rounded-full transition-all",
                       style: {

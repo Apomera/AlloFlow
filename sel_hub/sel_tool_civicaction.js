@@ -1406,7 +1406,7 @@ window.SelHub = window.SelHub || {
               var passed = legSupport >= 51;
               return h('div', { className: 'space-y-4' },
                 h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
-                  h('div', { className: 'bg-indigo-500 h-full rounded-full', style: { width: '100%' } })
+                  h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-indigo-500 h-full rounded-full', style: { width: '100%' } })
                 ),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-500 text-center' }, currentStep.title),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4 text-center' },
