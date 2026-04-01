@@ -60,6 +60,40 @@ stem_test*.js
 search_results.txt
 tour.txt
 
+# Outreach & personal correspondence (emails, drafts, pitches)
+outreach_*.md
+*_draft.md
+*_email_final.md
+
+# Pilot study / research documents (consent forms, surveys, protocols)
+pilot/
+
+# Monolith backup files (kept locally, source of truth is AlloFlowANTI.txt)
+AlloFlowANTI_backup*.txt
+prismflow-deploy/src/AlloFlowANTI_backup*.txt
+
+# Build/deploy logs
+prismflow-deploy/_build_log.txt
+prismflow-deploy/_deploy_log.txt
+prismflow-deploy/_npm_log.txt
+
+# One-off fix/extract scripts (not part of the build pipeline)
+_fix_*.ps1
+_fix_*.js
+extract_*.ps1
+prismflow-deploy/public/stem_lab/_fix_*.js
+prismflow-deploy/public/stem_lab/extract_*.ps1
+stem_lab/_build_p*.py
+
+# Marketing / non-code docs
+youtube_multilingual_description.md
+
+# Local infrastructure scripts
+setup-local-ai.bat
+
+# Misc test files
+nonshareabletest.txt
+
 # Agent-generated temp/debug files (one-off scripts, logs, diffs, backups)
 fix_*.py
 fix_*.js
