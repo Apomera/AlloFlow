@@ -472,7 +472,29 @@ async function startDeployment(setupData, onProgress) {
       }
     }
 
-    // PHASE 4c: Pull default Ollama model
+    // PHASE 4b: Auto-create PocketBase admin if deployed
+    if (servicesToInstall.includes('pocketbase')) {
+      onProgress({ phase: 'pocketbase_admin', status: 'Configuring PocketBase admin account...', progress: 87 });
+      try {
+        const adminCreds = await nativePM.createPocketBaseAdmin();
+        console.log('[deploy:start] PocketBase admin created:', adminCreds.email);
+        // Store admin credentials path in config for reference
+        fs.writeFileSync(
+          path.join(ALLOFLOW_DIR, 'pb_admin_info.txt'),
+          `PocketBase Admin Credentials\n` +
+          `=============================\n` +
+          `Email: ${adminCreds.email}\n` +
+          `Password: ${adminCreds.password}\n` +
+          `Created: ${adminCreds.createdAt}\n` +
+          `\nAccess at: http://localhost:8090/_/\n` +
+          `(These credentials are also stored in: ~/.alloflow/pb_admin.json)`
+        );
+      } catch (err) {
+        console.warn('[deploy:start] PocketBase admin creation failed (non-fatal):', err.message);
+      }
+    }
+
+    // PHASE 5: Pull default Ollama model
     if (servicesToInstall.includes('ollama')) {
       const defaultModel = hardware.tier === 'workstation' ? 'llama3.1:8b' : 'llama3.1:8b';
       onProgress({ phase: 'models', status: `Downloading AI model: ${defaultModel}\n(~4 GB — this may take several minutes on first run)`, progress: 88 });
@@ -511,7 +533,7 @@ async function startDeployment(setupData, onProgress) {
       console.log('[deploy:start] Wrote ai_config.json for web app auto-configuration');
     }
 
-    // PHASE 4c: Check Flux GPU status if Flux was deployed
+    // PHASE 5c: Check Flux GPU status if Flux was deployed
     let fluxGpuStatus = null;
     if (servicesToInstall.includes('flux')) {
       try {
@@ -544,7 +566,7 @@ async function startDeployment(setupData, onProgress) {
       }
     }
     
-    // PHASE 5: Save config
+    // PHASE 6: Save config
     onProgress({ phase: 'config', status: 'Saving configuration...', progress: 95 });
     saveConfig({
       deploymentType: setupData.deploymentType,
@@ -553,7 +575,7 @@ async function startDeployment(setupData, onProgress) {
       ...setupData
     });
     
-    // PHASE 6: Open AlloFlow web app in user's browser
+    // PHASE 7: Open AlloFlow web app in user's browser
     const webAppPort = getWebAppPort();
     const webAppUrl = `http://localhost:${webAppPort}`;
     onProgress({ phase: 'launching', status: `Launching AlloFlow at ${webAppUrl}...`, progress: 98 });

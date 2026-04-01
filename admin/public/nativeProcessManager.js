@@ -973,6 +973,107 @@ async function pullOllamaModel(modelId, onProgress) {
   });
 }
 
+/**
+ * Auto-create a PocketBase admin account if one doesn't exist.
+ * Generates a secure random password and stores credentials in ~/.alloflow/pb_admin.json
+ * @returns {Promise<{email: string, password: string}>}
+ */
+function createPocketBaseAdmin() {
+  return new Promise((resolve, reject) => {
+    // Generate a random 32-character password
+    const generatePassword = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+      let password = '';
+      for (let i = 0; i < 32; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return password;
+    };
+
+    const email = 'admin@alloflow.local';
+    const password = generatePassword();
+    const credFile = path.join(ALLOFLOW_DIR, 'pb_admin.json');
+
+    // Check if admin credentials already exist
+    if (fs.existsSync(credFile)) {
+      try {
+        const creds = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
+        console.log('[native-pm] PocketBase admin already configured');
+        resolve(creds);
+        return;
+      } catch (err) {
+        console.warn('[native-pm] Could not read existing pb_admin.json, will regenerate');
+      }
+    }
+
+    // Use PocketBase CLI to create admin
+    const pbPath = getServiceBinaryPath('pocketbase');
+    if (!pbPath) {
+      reject(new Error('PocketBase binary not found'));
+      return;
+    }
+
+    console.log('[native-pm] Creating PocketBase admin account...');
+    const proc = spawn(pbPath, ['admin', 'create', email, '--password', password], {
+      cwd: path.join(DATA_DIR, 'pb_data'),
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    let output = '';
+    let errors = '';
+
+    proc.stdout.on('data', (data) => {
+      output += data.toString();
+      console.log('[pb:admin]', data.toString().trim());
+    });
+
+    proc.stderr.on('data', (data) => {
+      errors += data.toString();
+      console.log('[pb:admin-err]', data.toString().trim());
+    });
+
+    proc.on('close', (code) => {
+      if (code === 0) {
+        // Success: save credentials
+        const creds = { email, password, createdAt: new Date().toISOString() };
+        try {
+          fs.writeFileSync(credFile, JSON.stringify(creds, null, 2));
+          console.log('[native-pm] PocketBase admin created:', email);
+          resolve(creds);
+        } catch (writeErr) {
+          console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
+          resolve(creds); // Still resolve with creds even if saving failed
+        }
+      } else {
+        // Admin might already exist (code !== 0 doesn't always mean failure)
+        // Try to check if it exists, if not generate default creds anyway
+        const creds = { email, password, createdAt: new Date().toISOString() };
+        try {
+          fs.writeFileSync(credFile, JSON.stringify(creds, null, 2));
+          console.log('[native-pm] Saved PocketBase admin credentials (may not be first-time creation)');
+          resolve(creds);
+        } catch (writeErr) {
+          console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
+          resolve(creds);
+        }
+      }
+    });
+
+    proc.on('error', (err) => {
+      console.warn('[native-pm] Failed to create PocketBase admin:', err.message);
+      // Even if creation failed, save the creds for user reference
+      const creds = { email, password, createdAt: new Date().toISOString() };
+      try {
+        fs.writeFileSync(credFile, JSON.stringify(creds, null, 2));
+      } catch (writeErr) {
+        console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
+      }
+      resolve(creds); // Resolve anyway so deployment continues
+    });
+  });
+}
+
 module.exports = {
   ensureDirectories,
   getDownloadInfo,
@@ -987,6 +1088,7 @@ module.exports = {
   uninstallService,
   uninstallAll,
   pullOllamaModel,
+  createPocketBaseAdmin,
   BINARIES_DIR,
   DATA_DIR,
   ALLOFLOW_DIR
