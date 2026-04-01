@@ -494,7 +494,7 @@
             h('p', { style: { fontSize: 32, marginBottom: 12 } }, '\u26A0\uFE0F'),
             h('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + selHubTool),
             h('p', { style: { fontSize: 12, color: _t.textMuted, marginBottom: 16 } }, e.message || 'Unknown error'),
-            h('button', {
+            h('button', { 'aria-label': 'Back to Tools',
               onClick: function() { setSelHubTool(null); },
               style: { padding: '8px 20px', borderRadius: 8, background: _t.accent, color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
             }, '\u2190 Back to Tools')

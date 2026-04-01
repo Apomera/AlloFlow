@@ -1254,7 +1254,7 @@ window.SelHub = window.SelHub || {
       },
         tabs.map(function(t) {
           var isActive = activeTab === t.id;
-          return h('button', {
+          return h('button', { 'aria-label': t.label,
             key: t.id,
             onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
             'aria-selected': isActive, role: 'tab',
@@ -1264,8 +1264,8 @@ window.SelHub = window.SelHub || {
             }
           }, t.label);
         }),
-        h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b', position: 'relative' } },
+        h('button', { 'aria-label': 'Toggle panel', onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+        h('button', { 'aria-label': 'Toggle panel', onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b', position: 'relative' } },
           '\uD83C\uDFC5',
           Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#fff', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
         )
@@ -1330,7 +1330,7 @@ window.SelHub = window.SelHub || {
             curSc.branches.map(function(br, i) {
               var isChosen = scChoice === i;
               return h('div', { key: i },
-                h('button', {
+                h('button', { 'aria-label': br.label,
                   onClick: function() {
                     upd('scChoice', i);
                     if (soundEnabled) { if (br.style === 'assertive') sfxCorrect(); else if (br.style === 'aggressive') sfxWrong(); else sfxClick(); }
@@ -1351,7 +1351,7 @@ window.SelHub = window.SelHub || {
             })
           ),
           scChoice != null && h('div', { style: { textAlign: 'center' } },
-            h('button', {
+            h('button', { 'aria-label': 'Next Scenario',
               onClick: function() {
                 var newDone = scCompleted + 1;
                 var branch = curSc.branches[scChoice];
@@ -1430,12 +1430,12 @@ window.SelHub = window.SelHub || {
           ),
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', {
+            h('button', { 'aria-label': 'Complete & Next',
               onClick: function() { upd('stRevealed', true); if (soundEnabled) sfxReveal(); },
               disabled: stRevealed,
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: stRevealed ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: stRevealed ? 'default' : 'pointer' }
             }, stRevealed ? 'Example shown \u2193' : '\uD83D\uDCA1 Show Example'),
-            h('button', {
+            h('button', { 'aria-label': 'Complete & Next',
               onClick: function() {
                 if (!allFilled) { addToast('Fill in all the blanks first!', 'info'); return; }
                 var newDone = stCompleted + 1;
@@ -1478,7 +1478,7 @@ window.SelHub = window.SelHub || {
             rtCards.map(function(card, ci) {
               var isViewed = !!rtViewedSet[card.id];
               var isCurrent = (rtIdx % rtCards.length) === ci;
-              return h('button', {
+              return h('button', { 'aria-label': card.icon,
                 key: card.id,
                 onClick: function() { upd({ rtIdx: ci, rtRevealed: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : isViewed ? '#334155' : '#33415566'), background: isCurrent ? ACCENT_DIM : '#1e293b', cursor: 'pointer', textAlign: 'center' }
@@ -1529,7 +1529,7 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { style: { fontSize: 10, color: '#64748b', fontStyle: 'italic' } }, '\uD83D\uDCCC Source: ' + curRt.source),
             h('div', { style: { textAlign: 'center', marginTop: 14 } },
-              h('button', {
+              h('button', { 'aria-label': 'Next Right',
                 onClick: function() { upd({ rtIdx: (rtIdx + 1) % rtCards.length, rtRevealed: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'Next Right \u2192')
@@ -1577,7 +1577,7 @@ window.SelHub = window.SelHub || {
             voCompleted > 0 && h('div', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 12 } }, voCompleted + ' sessions completed'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               voScenarios.map(function(sc, si) {
-                return h('button', {
+                return h('button', { 'aria-label': sc.authority.emoji,
                   key: sc.id,
                   onClick: function() {
                     upd({ voScenarioIdx: si, voMode: 'chat', voChatHistory: [{ role: 'authority', text: sc.authority.openingLine }], voConfidence: sc.initialConfidence, voTurnCount: 0, voInputText: '' });
@@ -1601,7 +1601,7 @@ window.SelHub = window.SelHub || {
         if (voMode === 'chat') {
           voiceContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100%' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
-              h('button', { onClick: function() { upd({ voMode: null, voChatHistory: [], voConfidence: 30, voTurnCount: 0, voInputText: '' }); }, style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2190'),
+              h('button', { 'aria-label': curVo.authority.emoji, onClick: function() { upd({ voMode: null, voChatHistory: [], voConfidence: 30, voTurnCount: 0, voInputText: '' }); }, style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2190'),
               h('span', { style: { fontSize: 20 } }, curVo.authority.emoji),
               h('div', null,
                 h('span', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, curVo.authority.name),
@@ -1618,7 +1618,7 @@ window.SelHub = window.SelHub || {
             ),
             voTurnCount >= 20 && h('div', { style: { textAlign: 'center', padding: 16, background: '#f59e0b15', borderRadius: 12, border: '1px solid #f59e0b33', marginBottom: 12 } },
               h('p', { style: { fontSize: 13, color: '#f59e0b', fontWeight: 600 } }, 'Conversation limit reached (20 turns).'),
-              h('button', {
+              h('button', { 'aria-label': 'Try Another',
                 onClick: function() {
                   var newDone = voCompleted + 1;
                   upd({ voMode: null, voChatHistory: [], voConfidence: 30, voTurnCount: 0, voCompleted: newDone, voInputText: '' });
@@ -1640,7 +1640,7 @@ window.SelHub = window.SelHub || {
                 disabled: voLoading,
                 style: { flex: 1, padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit' }
               }),
-              h('button', {
+              h('button', { 'aria-label': voLoading ? '...' : '\u2191',
                 onClick: function() { if (voInputText.trim() && !voLoading) sendVoMessage(); },
                 disabled: voLoading || !voInputText.trim(),
                 style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: voLoading ? '#334155' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: voLoading ? 'default' : 'pointer' }
@@ -1734,11 +1734,11 @@ window.SelHub = window.SelHub || {
               )
             ),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'Practice Another',
                 onClick: function() { upd({ voMode: null, voChatHistory: [], voConfidence: 30, voTurnCount: 0, voInputText: '' }); if (soundEnabled) sfxClick(); },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'Practice Another \u2192'),
-              h('button', {
+              h('button', { 'aria-label': 'See Progress',
                 onClick: function() { upd('activeTab', 'progress'); },
                 style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'See Progress')
@@ -1781,7 +1781,7 @@ window.SelHub = window.SelHub || {
                       h('p', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4, lineHeight: 1.5 } }, p.phrase),
                       h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '\u2192 ' + p.when)
                     ),
-                    h('button', {
+                    h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
                         if (!practiced) {
                           var newPP = Object.assign({}, ppPracticed);
@@ -1847,7 +1847,7 @@ window.SelHub = window.SelHub || {
             sasScripts.map(function(sc, si) {
               var isCurrent = (sasIdx % sasScripts.length) === si;
               var isDone = !!sasPracticedSet[sc.id];
-              return h('button', {
+              return h('button', { 'aria-label': 'Next',
                 key: sc.id,
                 onClick: function() { upd({ sasIdx: si, sasParts: {}, sasPracticeMode: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (isCurrent ? ACCENT : isDone ? '#22c55e33' : '#334155'), background: isCurrent ? ACCENT_DIM : 'transparent', color: isCurrent ? ACCENT : isDone ? '#22c55e' : '#94a3b8', fontSize: 11, fontWeight: isCurrent ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0 }
@@ -1887,11 +1887,11 @@ window.SelHub = window.SelHub || {
               '\u201C' + buildSasScript(curSas, sasParts) + '\u201D'
             ),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center', flexWrap: 'wrap' } },
-              h('button', {
+              h('button', { 'aria-label': 'Read Aloud',
                 onClick: function() { speakScript(buildSasScript(curSas, sasParts)); if (soundEnabled) sfxClick(); },
                 style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\uD83D\uDD0A Read Aloud'),
-              h('button', {
+              h('button', { 'aria-label': sasPracticeMode ? '\uD83C\uDFA4 Practicing...' : '\uD83C\uDFA4 Practice Mode',
                 onClick: function() { upd('sasPracticeMode', !sasPracticeMode); if (soundEnabled) sfxClick(); },
                 style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: sasPracticeMode ? '#22c55e' : '#f59e0b', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, sasPracticeMode ? '\uD83C\uDFA4 Practicing...' : '\uD83C\uDFA4 Practice Mode')
@@ -1906,11 +1906,11 @@ window.SelHub = window.SelHub || {
               '\u201C' + buildSasScript(curSas, sasParts) + '\u201D'
             ),
             h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' } },
-              h('button', {
+              h('button', { 'aria-label': 'Hear It Again',
                 onClick: function() { speakScript(buildSasScript(curSas, sasParts)); },
                 style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\uD83D\uDD0A Hear It Again'),
-              h('button', {
+              h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
                   if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
                   var newDone = sasCompleted + 1;
@@ -1937,7 +1937,7 @@ window.SelHub = window.SelHub || {
           ),
           // Navigation
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-            h('button', {
+            h('button', { 'aria-label': 'Previous',
               onClick: function() {
                 var prev = sasIdx - 1;
                 if (prev < 0) prev = sasScripts.length - 1;
@@ -1946,7 +1946,7 @@ window.SelHub = window.SelHub || {
               },
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '\u2190 Previous'),
-            h('button', {
+            h('button', { 'aria-label': 'Next',
               onClick: function() {
                 upd({ sasIdx: sasIdx + 1, sasParts: {}, sasPracticeMode: false });
                 if (soundEnabled) sfxClick();
@@ -2040,7 +2040,7 @@ window.SelHub = window.SelHub || {
               assessResults.totalScore / assessResults.totalMax < 0.4 && h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, 'Advocacy is a skill that grows with practice. Start with the Power Phrases tab \u2014 memorize a few phrases and try them in low-stakes situations. Every time you speak up, you get stronger.')
             ),
             h('div', { style: { textAlign: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'Retake Assessment',
                 onClick: function() { upd({ assessAnswers: {}, assessDone: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'Retake Assessment')
@@ -2060,7 +2060,7 @@ window.SelHub = window.SelHub || {
                   [1, 2, 3, 4, 5].map(function(val) {
                     var isSelected = currentVal === val;
                     var labels = ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'];
-                    return h('button', {
+                    return h('button', { 'aria-label': 'Toggle sound',
                       key: val,
                       onClick: function() {
                         var newAnswers = Object.assign({}, assessAnswers);
@@ -2080,7 +2080,7 @@ window.SelHub = window.SelHub || {
               );
             }),
             assessAllDone && h('div', { style: { textAlign: 'center', marginTop: 16 } },
-              h('button', {
+              h('button', { 'aria-label': 'See My Results',
                 onClick: function() {
                   upd('assessDone', true);
                   logPractice('assessment', 'advocacy_assessment');
@@ -2111,7 +2111,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
             LETTER_TEMPLATES.map(function(lt, li) {
               var isCurrent = (ltIdx % LETTER_TEMPLATES.length) === li;
-              return h('button', {
+              return h('button', { 'aria-label': lt.icon,
                 key: lt.id,
                 onClick: function() { upd({ ltIdx: li, ltFields: {}, ltPreview: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : '#334155'), background: isCurrent ? ACCENT_DIM : '#1e293b', cursor: 'pointer', textAlign: 'center' }
@@ -2150,7 +2150,7 @@ window.SelHub = window.SelHub || {
           ),
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
-            h('button', {
+            h('button', { 'aria-label': 'Hide Preview',
               onClick: function() {
                 if (!ltAllFilled) { addToast('Fill in all fields first.', 'info'); return; }
                 upd('ltPreview', !ltPreview);
@@ -2158,7 +2158,7 @@ window.SelHub = window.SelHub || {
               },
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ltPreview ? '#334155' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, ltPreview ? 'Hide Preview' : '\uD83D\uDC41\uFE0F Preview Letter'),
-            ltAllFilled && h('button', {
+            ltAllFilled && h('button', { 'aria-label': 'Copy & Save',
               onClick: function() {
                 var text = curLt.format(ltFields);
                 if (navigator.clipboard && navigator.clipboard.writeText) {

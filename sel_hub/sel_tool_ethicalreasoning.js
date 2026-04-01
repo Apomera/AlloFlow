@@ -802,7 +802,7 @@ window.SelHub = window.SelHub || {
 
         // Header
         h('div', { className: 'flex items-center gap-3' },
-          h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })), h(ArrowLeft, { size: 20 })),
+          h('button', Object.assign({ 'aria-label': 'Back to SEL Hub', className: 'p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })), h(ArrowLeft, { size: 20 })),
           h('div', null,
             h('h2', { className: 'text-xl font-black text-slate-800' }, '\u2696\uFE0F Ethical Reasoning Lab'),
             h('p', { className: 'text-xs text-slate-500' }, 'There are no easy answers \u2014 only honest questions')
@@ -830,7 +830,7 @@ window.SelHub = window.SelHub || {
             { id: 'debate', label: '\uD83C\uDFA4 Debate' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' },
           ].map(function(t) {
-            return h('button', { key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
+            return h('button', { 'aria-label': 'aria-selected', key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
               className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700')
             }, t.label);
           })
@@ -841,7 +841,7 @@ window.SelHub = window.SelHub || {
           h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a dilemma to explore. Each one has no single right answer.'),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             DILEMMAS.map(function(dl) {
-              return h('button', { key: dl.id, onClick: function() {
+              return h('button', { 'aria-label': 'Explore', key: dl.id, onClick: function() {
                 var explored = (d.deepDilemmasExplored || []).slice();
                 if (explored.indexOf(dl.id) === -1) explored.push(dl.id);
                 updMulti({ dilemmaId: dl.id, tab: 'explore', frameworkAnalysis: null, dialogue: [], deepDilemmasExplored: explored });
@@ -873,7 +873,7 @@ window.SelHub = window.SelHub || {
           !d.branchingId && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             (BRANCHING_SCENARIOS[gradeBand] || BRANCHING_SCENARIOS.elementary).map(function(sc) {
               var completed = (d.dilemmasCompleted || []).indexOf(sc.id) !== -1;
-              return h('button', { key: sc.id, onClick: function() { updMulti({ branchingId: sc.id, branchChoice: null, branchReflection: '' }); },
+              return h('button', { 'aria-label': 'Back to scenarios', key: sc.id, onClick: function() { updMulti({ branchingId: sc.id, branchChoice: null, branchReflection: '' }); },
                 className: 'p-4 rounded-2xl border-2 bg-white text-left hover:border-emerald-300 hover:shadow-md transition-all ' + (completed ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200')
               },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -894,7 +894,7 @@ window.SelHub = window.SelHub || {
 
             return h('div', { className: 'space-y-4' },
               // Back button
-              h('button', { onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-500 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
+              h('button', { 'aria-label': '},', onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-500 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
 
               // Scenario card
               h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 p-5' },
@@ -903,14 +903,14 @@ window.SelHub = window.SelHub || {
                   h('h3', { className: 'text-lg font-black text-slate-800' }, sc.title)
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, sc.scenario),
-                callTTS && h('button', { onClick: function() { callTTS(sc.scenario); }, className: 'mt-2 text-[10px] text-emerald-600 hover:text-emerald-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
+                callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(sc.scenario); }, className: 'mt-2 text-[10px] text-emerald-600 hover:text-emerald-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
               ),
 
               // Choices
               !d.branchChoice && h('div', { className: 'space-y-2' },
                 h('h4', { className: 'text-sm font-bold text-slate-700' }, 'What would you do?'),
                 sc.choices.map(function(ch, idx) {
-                  return h('button', { key: idx, onClick: function() {
+                  return h('button', { 'aria-label': 'div', key: idx, onClick: function() {
                     var completed = (d.dilemmasCompleted || []).slice();
                     if (completed.indexOf(sc.id) === -1) completed.push(sc.id);
                     updMulti({ branchChoice: idx, dilemmasCompleted: completed });
@@ -978,7 +978,7 @@ window.SelHub = window.SelHub || {
                   ),
 
                   // AI discussion button
-                  callGemini && h('button', { onClick: function() {
+                  callGemini && h('button', { 'aria-label': 'AI discussion button', onClick: function() {
                     upd('aiLoading', true);
                     var prompt = 'A ' + (gradeLevel || '5th grade') + ' student is exploring an ethical scenario.\n' +
                       'Scenario: ' + sc.scenario + '\n' +
@@ -1007,7 +1007,7 @@ window.SelHub = window.SelHub || {
                   ),
 
                   // Try another button
-                  h('button', { onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); },
+                  h('button', { 'aria-label': 'Back to scenarios', onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); },
                     className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
                   }, '\u2190 Try Another Scenario')
                 );
@@ -1023,7 +1023,7 @@ window.SelHub = window.SelHub || {
           // Grade band indicator
           h('div', { className: 'flex justify-center gap-2 mb-3' },
             ['elementary', 'middle', 'high'].map(function(band) {
-              return h('button', { key: band, onClick: function() { upd('frameworkBand', band); },
+              return h('button', { 'aria-label': 'frameworkBand', key: band, onClick: function() { upd('frameworkBand', band); },
                 className: 'px-3 py-1 rounded-full text-[10px] font-bold transition-all ' +
                   ((d.frameworkBand || gradeBand) === band ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
               }, band === 'elementary' ? '\uD83C\uDF1F Elementary' : band === 'middle' ? '\uD83D\uDE80 Middle' : '\uD83C\uDF93 High');
@@ -1036,7 +1036,7 @@ window.SelHub = window.SelHub || {
             return h('div', { key: fw.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isActive ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 bg-white hover:border-indigo-300')
             },
-              h('button', { onClick: function() {
+              h('button', { 'aria-label': 'px-4 pb-4 space-y-3', onClick: function() {
                 upd('frameworkId', isActive ? null : fw.id);
                 if (!isActive) {
                   var studied = (d.frameworksStudied || []).slice();
@@ -1075,7 +1075,7 @@ window.SelHub = window.SelHub || {
                 }),
 
                 // Apply to active dilemma
-                selectedDilemma && h('button', { onClick: function() { analyzeWithFramework(fw.id); upd('tab', 'explore'); },
+                selectedDilemma && h('button', { 'aria-label': 'explore', onClick: function() { analyzeWithFramework(fw.id); upd('tab', 'explore'); },
                   disabled: aiLoading,
                   className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40 flex items-center gap-2'
                 }, h(Sparkles, { size: 14 }), 'Analyze "' + selectedDilemma.title + '" with this framework')
@@ -1108,12 +1108,12 @@ window.SelHub = window.SelHub || {
                 h('h3', { className: 'text-lg font-black text-slate-800' }, selectedDilemma.title),
                 h('span', { className: 'text-[10px] text-slate-500 font-bold uppercase' }, selectedDilemma.category)
               ),
-              h('button', { onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-500 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
+              h('button', { 'aria-label': '},', onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-500 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
             ),
             h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
               gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario
             ),
-            callTTS && h('button', { onClick: function() { callTTS(gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario); }, className: 'mt-2 text-[10px] text-indigo-500 hover:text-indigo-700 font-bold' }, '\uD83D\uDD0A Read Aloud')
+            callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario); }, className: 'mt-2 text-[10px] text-indigo-500 hover:text-indigo-700 font-bold' }, '\uD83D\uDD0A Read Aloud')
           ),
 
           // Stakeholders
@@ -1160,7 +1160,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-indigo-300',
               'aria-label': 'Your ethical position'
             }),
-            d.position && d.position.length > 20 && h('button', { onClick: function() { upd('tab', 'dialogue'); askSocratic(d.position); },
+            d.position && d.position.length > 20 && h('button', { 'aria-label': 'dialogue', onClick: function() { upd('tab', 'dialogue'); askSocratic(d.position); },
               className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2'
             }, '\uD83D\uDCAC Challenge my reasoning with Socratic dialogue')
           ),
@@ -1168,7 +1168,7 @@ window.SelHub = window.SelHub || {
           // Quick analyze buttons
           h('div', { className: 'flex flex-wrap gap-2' },
             FRAMEWORKS.map(function(fw) {
-              return h('button', { key: fw.id, onClick: function() { analyzeWithFramework(fw.id); }, disabled: aiLoading,
+              return h('button', { 'aria-label': 'Analyze with framework', key: fw.id, onClick: function() { analyzeWithFramework(fw.id); }, disabled: aiLoading,
                 className: 'px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors disabled:opacity-40'
               }, fw.emoji + ' Analyze with ' + fw.name);
             })
@@ -1178,7 +1178,7 @@ window.SelHub = window.SelHub || {
         // ═══ EXPLORE TAB - no dilemma selected ═══
         tab === 'explore' && !selectedDilemma && h('div', { className: 'bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center' },
           h('p', { className: 'text-slate-500 font-bold' }, 'Choose a dilemma from the Dilemmas tab first, then come here to explore it deeply.'),
-          h('button', { onClick: function() { upd('tab', 'dilemmas'); }, className: 'mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700' }, 'Go to Dilemmas')
+          h('button', { 'aria-label': '},', onClick: function() { upd('tab', 'dilemmas'); }, className: 'mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700' }, 'Go to Dilemmas')
         ),
 
         // ═══ SOCRATIC DIALOGUE TAB ═══
@@ -1217,7 +1217,7 @@ window.SelHub = window.SelHub || {
                 className: 'flex-1 text-sm p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-40',
                 'aria-label': 'Your response to Socratic dialogue'
               }),
-              h('button', { onClick: function() { if (d.dialogueInput && d.dialogueInput.trim()) askSocratic(d.dialogueInput); }, disabled: aiLoading || !(d.dialogueInput && d.dialogueInput.trim()),
+              h('button', { 'aria-label': 'Send response', onClick: function() { if (d.dialogueInput && d.dialogueInput.trim()) askSocratic(d.dialogueInput); }, disabled: aiLoading || !(d.dialogueInput && d.dialogueInput.trim()),
                 className: 'px-4 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40'
               }, aiLoading ? '...' : '\u2192')
             ),
@@ -1246,7 +1246,7 @@ window.SelHub = window.SelHub || {
               ),
               h('p', { className: 'text-[10px] text-slate-500 mt-2 italic' }, 'Remember: ALL levels are valid and normal. Most adults use a mix of all three!')
             ),
-            h('button', { onClick: function() { updMulti({ kohlbergStarted: true, kohlbergStep: 0, kohlbergAnswers: {} }); },
+            h('button', { 'aria-label': 'Start assessment', onClick: function() { updMulti({ kohlbergStarted: true, kohlbergStep: 0, kohlbergAnswers: {} }); },
               className: 'px-6 py-3 bg-purple-600 text-white rounded-xl text-sm font-bold hover:bg-purple-700 transition-colors'
             }, 'Start Assessment')
           ),
@@ -1270,7 +1270,7 @@ window.SelHub = window.SelHub || {
               // Scenario
               h('div', { className: 'bg-white rounded-2xl border-2 border-purple-200 p-5' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-4' }, sc.scenario),
-                callTTS && h('button', { onClick: function() { callTTS(sc.scenario); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold mb-3 block' }, '\uD83D\uDD0A Read Aloud'),
+                callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(sc.scenario); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold mb-3 block' }, '\uD83D\uDD0A Read Aloud'),
 
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-2' }, 'What would you do, and WHY? (The "why" is what matters most)'),
                 h('textarea', { value: answers[sc.id] || '', onChange: function(e) {
@@ -1296,11 +1296,11 @@ window.SelHub = window.SelHub || {
 
               // Navigation
               h('div', { className: 'flex gap-2' },
-                step > 0 && h('button', { onClick: function() { upd('kohlbergStep', step - 1); },
+                step > 0 && h('button', { 'aria-label': 'kohlbergStep', onClick: function() { upd('kohlbergStep', step - 1); },
                   className: 'px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200'
                 }, '\u2190 Previous'),
                 h('div', { className: 'flex-1' }),
-                step < total - 1 && h('button', { onClick: function() {
+                step < total - 1 && h('button', { 'aria-label': 'See reasoning pattern', onClick: function() {
                   if (answers[sc.id] && answers[sc.id].length > 10) {
                     upd('kohlbergStep', step + 1);
                     ctx.awardXP(3);
@@ -1310,7 +1310,7 @@ window.SelHub = window.SelHub || {
                 },
                   className: 'px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors'
                 }, 'Next \u2192'),
-                step === total - 1 && answeredCount >= Math.ceil(total * 0.6) && h('button', { onClick: function() {
+                step === total - 1 && answeredCount >= Math.ceil(total * 0.6) && h('button', { 'aria-label': 'See reasoning pattern', onClick: function() {
                   getKohlbergFeedback();
                 }, disabled: aiLoading,
                   className: 'px-6 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors disabled:opacity-40 flex items-center gap-2'
@@ -1350,7 +1350,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Retake button
-            h('button', { onClick: function() { updMulti({ kohlbergStarted: false, kohlbergComplete: false, kohlbergStep: 0, kohlbergAnswers: {}, kohlbergFeedback: null }); },
+            h('button', { 'aria-label': 'Retake assessment', onClick: function() { updMulti({ kohlbergStarted: false, kohlbergComplete: false, kohlbergStep: 0, kohlbergAnswers: {}, kohlbergFeedback: null }); },
               className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
             }, '\uD83D\uDD04 Retake Assessment')
           )
@@ -1367,7 +1367,7 @@ window.SelHub = window.SelHub || {
           !d.debateTopicObj && h('div', { className: 'space-y-3' },
             h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a topic to debate:'),
             (DEBATE_TOPICS[gradeBand] || DEBATE_TOPICS.elementary).map(function(topic) {
-              return h('button', { key: topic.id, onClick: function() { updMulti({ debateTopicObj: topic, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
+              return h('button', { 'aria-label': ', debateCounter:', key: topic.id, onClick: function() { updMulti({ debateTopicObj: topic, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
                 className: 'w-full p-4 rounded-xl border-2 border-slate-200 bg-white text-left hover:border-violet-300 hover:shadow-md transition-all'
               },
                 h('p', { className: 'text-sm font-bold text-slate-800' }, topic.topic),
@@ -1382,7 +1382,7 @@ window.SelHub = window.SelHub || {
           // Active debate
           d.debateTopicObj && h('div', { className: 'space-y-4' },
             // Back button
-            h('button', { onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
+            h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
               className: 'text-xs text-slate-500 hover:text-slate-600 font-bold'
             }, '\u2190 All Topics'),
 
@@ -1403,13 +1403,13 @@ window.SelHub = window.SelHub || {
 
             // Side selection
             !d.debateSide && h('div', { className: 'flex gap-3' },
-              h('button', { onClick: function() { upd('debateSide', 'for'); ctx.awardXP(3); },
+              h('button', { 'aria-label': 'for', onClick: function() { upd('debateSide', 'for'); ctx.awardXP(3); },
                 className: 'flex-1 p-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-all text-center'
               },
                 h('p', { className: 'text-lg font-bold text-emerald-700' }, '\u2713'),
                 h('p', { className: 'text-sm font-bold text-emerald-700' }, 'Argue FOR')
               ),
-              h('button', { onClick: function() { upd('debateSide', 'against'); ctx.awardXP(3); },
+              h('button', { 'aria-label': 'against', onClick: function() { upd('debateSide', 'against'); ctx.awardXP(3); },
                 className: 'flex-1 p-4 rounded-xl border-2 border-red-300 bg-red-50 hover:bg-red-100 transition-all text-center'
               },
                 h('p', { className: 'text-lg font-bold text-red-700' }, '\u2717'),
@@ -1423,7 +1423,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'flex items-center gap-2 mb-2' },
                   h('span', { className: 'text-sm font-bold ' + (d.debateSide === 'for' ? 'text-emerald-700' : 'text-red-700') },
                     d.debateSide === 'for' ? '\u2713 You are arguing FOR' : '\u2717 You are arguing AGAINST'),
-                  h('button', { onClick: function() { upd('debateSide', d.debateSide === 'for' ? 'against' : 'for'); },
+                  h('button', { 'aria-label': 'for', onClick: function() { upd('debateSide', d.debateSide === 'for' ? 'against' : 'for'); },
                     className: 'ml-auto text-[10px] text-slate-500 hover:text-slate-600 font-bold'
                   }, 'Switch sides')
                 ),
@@ -1453,7 +1453,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Submit for feedback
-              callGemini && h('button', { onClick: function() {
+              callGemini && h('button', { 'aria-label': 'Get debate feedback', onClick: function() {
                 if ((!d.debateArgs || d.debateArgs.length < 20)) {
                   addToast('Write at least a few sentences for your arguments first!');
                   return;
@@ -1477,12 +1477,12 @@ window.SelHub = window.SelHub || {
               // Challenge: argue the other side
               h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
                 h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, '\uD83C\uDFC6 Challenge: Can you argue the OTHER side just as well?'),
-                h('button', { onClick: function() { updMulti({ debateSide: d.debateSide === 'for' ? 'against' : 'for', debateArgs: '', debateCounter: '', debateFeedback: null }); },
+                h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateSide: d.debateSide === 'for' ? 'against' : 'for', debateArgs: '', debateCounter: '', debateFeedback: null }); },
                   className: 'px-4 py-2 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors'
                 }, 'Switch Sides & Try Again')
               ),
 
-              h('button', { onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
+              h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
                 className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
               }, '\u2190 Choose Another Topic')
             )
@@ -1500,7 +1500,7 @@ window.SelHub = window.SelHub || {
           !d.caseStudyId && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             (CASE_STUDIES[gradeBand] || CASE_STUDIES.elementary).map(function(cs) {
               var completed = (d.caseStudiesCompleted || []).indexOf(cs.id) !== -1;
-              return h('button', { key: cs.id, onClick: function() {
+              return h('button', { 'aria-label': 'Back to case studies', key: cs.id, onClick: function() {
                 updMulti({ caseStudyId: cs.id, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [] });
               },
                 className: 'p-4 rounded-2xl border-2 bg-white text-left hover:border-teal-300 hover:shadow-md transition-all ' + (completed ? 'border-teal-300 bg-teal-50' : 'border-slate-200')
@@ -1523,7 +1523,7 @@ window.SelHub = window.SelHub || {
             var csSocratic = d.caseStudySocratic || [];
 
             return h('div', { className: 'space-y-4' },
-              h('button', { onClick: function() { updMulti({ caseStudyId: null, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [] }); },
+              h('button', { 'aria-label': 'Read aloud', onClick: function() { updMulti({ caseStudyId: null, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [] }); },
                 className: 'text-xs text-slate-500 hover:text-slate-600 font-bold'
               }, '\u2190 All Case Studies'),
 
@@ -1534,7 +1534,7 @@ window.SelHub = window.SelHub || {
                   h('h3', { className: 'text-lg font-black text-slate-800' }, cs.title)
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, cs.background),
-                callTTS && h('button', { onClick: function() { callTTS(cs.background); }, className: 'mt-2 text-[10px] text-teal-600 hover:text-teal-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
+                callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(cs.background); }, className: 'mt-2 text-[10px] text-teal-600 hover:text-teal-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
               ),
 
               // Stakeholders
@@ -1624,7 +1624,7 @@ window.SelHub = window.SelHub || {
                     className: 'flex-1 text-sm p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-300 disabled:opacity-40',
                     'aria-label': 'Socratic dialogue input for case study'
                   }),
-                  h('button', { onClick: function() {
+                  h('button', { 'aria-label': 'Send Socratic response', disabled: aiLoading || !(d.caseStudySocraticInput && d.caseStudySocraticInput.trim()), onClick: function() {
                     if (d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && callGemini) {
                       var userInput = d.caseStudySocraticInput;
                       upd('aiLoading', true);
@@ -1640,14 +1640,14 @@ window.SelHub = window.SelHub || {
                         ctx.awardXP(5);
                       }).catch(function() { upd('aiLoading', false); });
                     }
-                  }, disabled: aiLoading || !(d.caseStudySocraticInput && d.caseStudySocraticInput.trim()),
+                  },
                     className: 'px-4 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40'
                   }, aiLoading ? '...' : '\u2192')
                 )
               ),
 
               // Mark complete & get AI insight
-              callGemini && d.caseStudyReflection && d.caseStudyReflection.length > 20 && !d.caseStudyAIResp && h('button', { onClick: function() {
+              callGemini && d.caseStudyReflection && d.caseStudyReflection.length > 20 && !d.caseStudyAIResp && h('button', { 'aria-label': 'Mark complete & get AI insight', onClick: function() {
                 upd('aiLoading', true);
                 var prompt = 'A ' + (gradeLevel || '5th grade') + ' student just analyzed an ethical case study.\n' +
                   'Case: "' + cs.title + '": ' + cs.background + '\n' +
@@ -1677,7 +1677,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Try another
-              h('button', { onClick: function() { updMulti({ caseStudyId: null, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [], caseStudySocraticInput: '' }); },
+              h('button', { 'aria-label': 'Back to case studies', onClick: function() { updMulti({ caseStudyId: null, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [], caseStudySocraticInput: '' }); },
                 className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
               }, '\u2190 Try Another Case Study')
             );
@@ -1696,7 +1696,7 @@ window.SelHub = window.SelHub || {
             h('span', { className: 'text-4xl block mb-3' }, '\uD83D\uDC8E'),
             h('h4', { className: 'text-base font-bold text-rose-800 mb-2' }, 'What Do You Value Most?'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'There are no wrong answers here. Your values are yours \u2014 they shape how you see the world and make decisions. Tap or click on values to select your top 5, then rank them from most to least important to you.'),
-            h('button', { onClick: function() { updMulti({ valuesStarted: true, valuesSelected: [], valuesRanked: [], valuesReflection: '', valuesComplete: false, valuesAIResp: null }); },
+            h('button', { 'aria-label': 'Begin values exploration', onClick: function() { updMulti({ valuesStarted: true, valuesSelected: [], valuesRanked: [], valuesReflection: '', valuesComplete: false, valuesAIResp: null }); },
               className: 'px-6 py-3 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition-colors'
             }, 'Start Values Exercise')
           ),
@@ -1712,7 +1712,7 @@ window.SelHub = window.SelHub || {
                 VALUES_LIST.map(function(v) {
                   var isSelected = selected.indexOf(v.id) !== -1;
                   var canSelect = selected.length < 5 || isSelected;
-                  return h('button', { key: v.id, onClick: function() {
+                  return h('button', { 'aria-label': 'text-slate-700', key: v.id, onClick: function() {
                     var newSelected = selected.slice();
                     if (isSelected) {
                       newSelected = newSelected.filter(function(s) { return s !== v.id; });
@@ -1735,7 +1735,7 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              selected.length === 5 && h('button', { onClick: function() {
+              selected.length === 5 && h('button', { 'aria-label': 'div', onClick: function() {
                 upd('valuesRanked', selected.slice());
               },
                 className: 'w-full px-4 py-3 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition-colors'
@@ -1762,20 +1762,20 @@ window.SelHub = window.SelHub || {
                       h('div', { className: 'text-[10px] text-slate-500' }, v.desc)
                     ),
                     h('div', { className: 'flex flex-col gap-1 shrink-0' },
-                      idx > 0 && h('button', { onClick: function() {
+                      idx > 0 && h('button', { 'aria-label': 'Move up', onClick: function() {
                         var newRanked = ranked.slice();
                         var tmp = newRanked[idx - 1];
                         newRanked[idx - 1] = newRanked[idx];
                         newRanked[idx] = tmp;
                         upd('valuesRanked', newRanked);
-                      }, className: 'text-xs text-slate-500 hover:text-rose-600 font-bold px-2 py-0.5 rounded hover:bg-rose-50', 'aria-label': 'Move up' }, '\u25B2'),
-                      idx < ranked.length - 1 && h('button', { onClick: function() {
+                      }, className: 'text-xs text-slate-500 hover:text-rose-600 font-bold px-2 py-0.5 rounded hover:bg-rose-50' }, '\u25B2'),
+                      idx < ranked.length - 1 && h('button', { 'aria-label': 'Move down', onClick: function() {
                         var newRanked = ranked.slice();
                         var tmp = newRanked[idx + 1];
                         newRanked[idx + 1] = newRanked[idx];
                         newRanked[idx] = tmp;
                         upd('valuesRanked', newRanked);
-                      }, className: 'text-xs text-slate-500 hover:text-rose-600 font-bold px-2 py-0.5 rounded hover:bg-rose-50', 'aria-label': 'Move down' }, '\u25BC')
+                      }, className: 'text-xs text-slate-500 hover:text-rose-600 font-bold px-2 py-0.5 rounded hover:bg-rose-50' }, '\u25BC')
                     )
                   );
                 })
@@ -1792,7 +1792,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Complete button
-              callGemini && d.valuesReflection && d.valuesReflection.length > 10 && h('button', { onClick: function() {
+              callGemini && d.valuesReflection && d.valuesReflection.length > 10 && h('button', { 'aria-label': 'Complete button', onClick: function() {
                 upd('aiLoading', true);
                 var rankedNames = ranked.map(function(vid) { var v = VALUES_LIST.find(function(val) { return val.id === vid; }); return v ? v.name : vid; });
                 var prompt = 'A ' + (gradeLevel || '5th grade') + ' student completed a values clarification exercise.\n' +
@@ -1841,7 +1841,7 @@ window.SelHub = window.SelHub || {
               h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, d.valuesAIResp)
             ),
 
-            h('button', { onClick: function() { updMulti({ valuesStarted: false, valuesComplete: false, valuesSelected: [], valuesRanked: [], valuesReflection: '', valuesAIResp: null }); },
+            h('button', { 'aria-label': 'Retake values exploration', onClick: function() { updMulti({ valuesStarted: false, valuesComplete: false, valuesSelected: [], valuesRanked: [], valuesReflection: '', valuesAIResp: null }); },
               className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
             }, '\uD83D\uDD04 Retake Values Exercise')
           )
@@ -1858,7 +1858,7 @@ window.SelHub = window.SelHub || {
             h('span', { className: 'text-4xl block mb-3' }, '\uD83C\uDF32'),
             h('h4', { className: 'text-base font-bold text-green-800 mb-2' }, 'Build Your Ethical Decision Tree'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'Think through an ethical question step by step. At each step, you\u2019ll go deeper into the reasoning. At the end, you\u2019ll have a clear summary of your thinking process.'),
-            h('button', { onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
+            h('button', { 'aria-label': ', dtDecision:', onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
               className: 'px-6 py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors'
             }, 'Start Building')
           ),
@@ -1915,11 +1915,11 @@ window.SelHub = window.SelHub || {
 
               // Navigation
               h('div', { className: 'flex gap-2' },
-                step > 0 && h('button', { onClick: function() { upd('dtStep', step - 1); },
+                step > 0 && h('button', { 'aria-label': 'dtStep', onClick: function() { upd('dtStep', step - 1); },
                   className: 'px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200'
                 }, '\u2190 Previous'),
                 h('div', { className: 'flex-1' }),
-                step < steps.length - 1 && h('button', { onClick: function() {
+                step < steps.length - 1 && h('button', { 'aria-label': ') +', onClick: function() {
                   if (d[currentStep.field] && d[currentStep.field].length > 5) {
                     upd('dtStep', step + 1);
                     ctx.awardXP(3);
@@ -1929,7 +1929,7 @@ window.SelHub = window.SelHub || {
                 },
                   className: 'px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors'
                 }, 'Next \u2192'),
-                step === steps.length - 1 && d[currentStep.field] && d[currentStep.field].length > 10 && h('button', { onClick: function() {
+                step === steps.length - 1 && d[currentStep.field] && d[currentStep.field].length > 10 && h('button', { 'aria-label': 'div', onClick: function() {
                   // Generate summary
                   var summaryText = '\u2550\u2550\u2550 ETHICAL DECISION TREE SUMMARY \u2550\u2550\u2550\n\n' +
                     '\u2753 ETHICAL QUESTION:\n' + (d.dtQuestion || '') + '\n\n' +
@@ -1958,7 +1958,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Copy/export button
-            h('button', { onClick: function() {
+            h('button', { 'aria-label': 'Copy/export button', onClick: function() {
               if (navigator.clipboard && d.dtSummary) {
                 navigator.clipboard.writeText(d.dtSummary).then(function() {
                   addToast('\u2705 Decision tree copied to clipboard!');
@@ -1970,7 +1970,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full px-4 py-2 bg-green-100 border border-green-200 rounded-lg text-xs font-bold text-green-700 hover:bg-green-200 transition-colors'
             }, '\uD83D\uDCCB Copy to Clipboard'),
 
-            h('button', { onClick: function() { updMulti({ dtStarted: false, decisionTreeComplete: false, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', dtSummary: null }); },
+            h('button', { 'aria-label': ', dtDecision:', onClick: function() { updMulti({ dtStarted: false, decisionTreeComplete: false, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', dtSummary: null }); },
               className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
             }, '\uD83C\uDF32 Build Another Decision Tree')
           )
@@ -1986,7 +1986,7 @@ window.SelHub = window.SelHub || {
           // Grade band selector
           h('div', { className: 'flex justify-center gap-2 mb-3' },
             ['elementary', 'middle', 'high'].map(function(band) {
-              return h('button', { key: band, onClick: function() { upd('philBand', band); },
+              return h('button', { 'aria-label': 'philBand', key: band, onClick: function() { upd('philBand', band); },
                 className: 'px-3 py-1 rounded-full text-[10px] font-bold transition-all ' +
                   ((d.philBand || gradeBand) === band ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
               }, band === 'elementary' ? '\uD83C\uDF1F Elementary' : band === 'middle' ? '\uD83D\uDE80 Middle' : '\uD83C\uDF93 High');
@@ -2000,7 +2000,7 @@ window.SelHub = window.SelHub || {
             return h('div', { key: phil.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isExpanded ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-white hover:border-purple-300')
             },
-              h('button', { onClick: function() {
+              h('button', { 'aria-label': 'px-4 pb-4 space-y-3', onClick: function() {
                 if (!isExpanded) {
                   if (explored.indexOf(phil.id) === -1) explored.push(phil.id);
                   updMulti({ philExpanded: phil.id, philosophersExplored: explored });
@@ -2045,7 +2045,7 @@ window.SelHub = window.SelHub || {
                 }),
 
                 // TTS
-                callTTS && h('button', { onClick: function() { callTTS(phil.bio); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold' }, '\uD83D\uDD0A Read Bio Aloud')
+                callTTS && h('button', { 'aria-label': 'Read Bio Aloud', onClick: function() { callTTS(phil.bio); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold' }, '\uD83D\uDD0A Read Bio Aloud')
               )
             );
           })

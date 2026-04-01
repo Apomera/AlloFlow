@@ -612,7 +612,7 @@ window.SelHub = window.SelHub || {
       },
         tabs.map(function(t) {
           var isActive = activeTab === t.id;
-          return h('button', {
+          return h('button', { 'aria-label': t.label,
             key: t.id,
             onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
             'aria-selected': isActive,
@@ -625,13 +625,13 @@ window.SelHub = window.SelHub || {
           }, t.label);
         }),
         // Sound toggle
-        h('button', {
+        h('button', { 'aria-label': 'Toggle panel',
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         // Badge counter
-        h('button', {
+        h('button', { 'aria-label': 'Toggle panel',
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b', position: 'relative' }
         },
@@ -742,7 +742,7 @@ window.SelHub = window.SelHub || {
             h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 10, fontWeight: 700 } }, curDt.title),
             h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 16 } }, curDt.situation),
             h('div', { style: { textAlign: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'I’ve read it',
                 onClick: function() { upd('dtStep', 1); if (soundEnabled) sfxClick(); },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'I\'ve read it \u2192')
@@ -756,7 +756,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
               ['honesty', 'kindness', 'fairness', 'loyalty', 'courage', 'respect', 'responsibility', 'safety', 'inclusion', 'integrity', 'compassion', 'independence', 'generosity', 'self-care'].map(function(v) {
                 var selected = dtValues.indexOf(v) >= 0;
-                return h('button', {
+                return h('button', { 'aria-label': 'Toggle sound',
                   key: v,
                   onClick: function() {
                     var newVals = selected ? dtValues.filter(function(x) { return x !== v; }) : dtValues.concat([v]);
@@ -776,7 +776,7 @@ window.SelHub = window.SelHub || {
               'The scenario involves: ' + curDt.values.join(', ')
             ),
             h('div', { style: { textAlign: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'Next: Options',
                 onClick: function() {
                   if (dtValues.length === 0) { addToast('Select at least one value!', 'info'); return; }
                   upd('dtStep', 2); if (soundEnabled) sfxClick();
@@ -802,7 +802,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             h('div', { style: { textAlign: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'Next: Choose',
                 onClick: function() { upd('dtStep', 3); if (soundEnabled) sfxClick(); },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'Next: Choose \u2192')
@@ -816,7 +816,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
               curDt.options.map(function(opt, i) {
                 var isChosen = dtChoice === i;
-                return h('button', {
+                return h('button', { 'aria-label': String.fromCharCode(65 + i) + '.',
                   key: i,
                   onClick: function() { upd('dtChoice', i); if (soundEnabled) sfxClick(); },
                   style: {
@@ -831,7 +831,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             dtChoice != null && h('div', { style: { textAlign: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'Next: Reflect',
                 onClick: function() { upd('dtStep', 4); if (soundEnabled) sfxThink(); },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'Next: Reflect \u2192')
@@ -854,7 +854,7 @@ window.SelHub = window.SelHub || {
             }),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
               // Get AI analysis
-              h('button', {
+              h('button', { 'aria-label': 'Get AI analysis',
                 onClick: function() {
                   if (!dtReflection.trim()) { addToast('Write a bit about why you chose this!', 'info'); return; }
                   if (!callGemini) { addToast('AI advisor not available.', 'error'); return; }
@@ -885,7 +885,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: dtAiLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: dtAiLoad ? 'default' : 'pointer' }
               }, dtAiLoad ? 'Analyzing...' : '\u2728 Get Feedback'),
               // Complete
-              h('button', {
+              h('button', { 'aria-label': 'Complete & Next',
                 onClick: function() {
                   var newDone = dtCompleted + 1;
                   upd('dtCompleted', newDone);
@@ -911,7 +911,7 @@ window.SelHub = window.SelHub || {
 
           // Skip link
           dtStep === 0 && h('div', { style: { textAlign: 'center', marginTop: 4 } },
-            h('button', {
+            h('button', { 'aria-label': 'Skip to another scenario',
               onClick: function() {
                 upd({ dtIdx: dtIdx + 1, dtStep: 0, dtValues: [], dtChoice: null, dtReflection: '', dtAiResp: null });
                 if (soundEnabled) sfxClick();
@@ -995,7 +995,7 @@ window.SelHub = window.SelHub || {
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
             // AI analysis
-            h('button', {
+            h('button', { 'aria-label': 'AI analysis',
               onClick: function() {
                 if (!edVerdict.trim() && !edSideA.trim() && !edSideB.trim()) { addToast('Write your thoughts first!', 'info'); return; }
                 if (!callGemini) { addToast('AI not available.', 'error'); return; }
@@ -1027,7 +1027,7 @@ window.SelHub = window.SelHub || {
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: edAiLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: edAiLoad ? 'default' : 'pointer' }
             }, edAiLoad ? 'Thinking...' : '\u2728 Explore This Dilemma'),
             // Next
-            h('button', {
+            h('button', { 'aria-label': 'Complete & Next',
               onClick: function() {
                 var newDone = edCompleted + 1;
                 upd('edCompleted', newDone);
@@ -1127,7 +1127,7 @@ window.SelHub = window.SelHub || {
           ),
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', {
+            h('button', { 'aria-label': 'Next Scenario',
               onClick: function() {
                 if (!csShort.trim() && !csMid.trim() && !csLong.trim()) { addToast('Fill in at least one time period!', 'info'); return; }
                 var newDone = csCompleted + 1;
@@ -1143,7 +1143,7 @@ window.SelHub = window.SelHub || {
               disabled: csSaved,
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: csSaved ? '#22c55e' : ACCENT, color: csSaved ? '#fff' : '#0f172a', fontWeight: 600, fontSize: 13, cursor: csSaved ? 'default' : 'pointer' }
             }, csSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Map'),
-            csSaved && h('button', {
+            csSaved && h('button', { 'aria-label': 'Next Scenario',
               onClick: function() {
                 upd({ csIdx: csIdx + 1, csShort: '', csMid: '', csLong: '', csSaved: false });
                 if (soundEnabled) sfxClick();
@@ -1233,7 +1233,7 @@ window.SelHub = window.SelHub || {
           ),
           // Next bias
           biasRevealed && h('div', { style: { textAlign: 'center' } },
-            h('button', {
+            h('button', { 'aria-label': 'Next Bias',
               onClick: function() {
                 upd({ biasIdx: biasIdx + 1, biasRevealed: false, biasReflection: '' });
                 if (soundEnabled) sfxClick();
@@ -1244,7 +1244,7 @@ window.SelHub = window.SelHub || {
           ),
           // Skip
           !biasRevealed && h('div', { style: { textAlign: 'center', marginTop: 4 } },
-            h('button', {
+            h('button', { 'aria-label': 'Skip to another bias',
               onClick: function() {
                 upd({ biasIdx: biasIdx + 1, biasRevealed: false, biasReflection: '' });
                 if (soundEnabled) sfxClick();
@@ -1309,12 +1309,12 @@ window.SelHub = window.SelHub || {
                 // Value name
                 h('span', { style: { flex: 1, color: '#e2e8f0', fontSize: 14, fontWeight: i === 0 ? 700 : 500 } }, val),
                 // Move buttons
-                h('button', {
+                h('button', { 'aria-label': 'Move buttons',
                   onClick: function() { moveValue(i, i - 1); },
                   disabled: i === 0,
                   style: { width: 28, height: 28, borderRadius: 6, border: 'none', background: i === 0 ? '#1e293b' : '#334155', color: i === 0 ? '#334155' : '#e2e8f0', cursor: i === 0 ? 'default' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }
                 }, '\u25B2'),
-                h('button', {
+                h('button', { 'aria-label': 'Values sort saved',
                   onClick: function() { moveValue(i, i + 1); },
                   disabled: i === ranking.length - 1,
                   style: { width: 28, height: 28, borderRadius: 6, border: 'none', background: i === ranking.length - 1 ? '#1e293b' : '#334155', color: i === ranking.length - 1 ? '#334155' : '#e2e8f0', cursor: i === ranking.length - 1 ? 'default' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }
@@ -1324,7 +1324,7 @@ window.SelHub = window.SelHub || {
           ),
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', {
+            h('button', { 'aria-label': 'Next Context',
               onClick: function() {
                 var newDone = vsCompleted + 1;
                 upd({ vsSaved: true, vsCompleted: newDone });
@@ -1339,7 +1339,7 @@ window.SelHub = window.SelHub || {
               disabled: vsSaved,
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: vsSaved ? '#22c55e' : ACCENT, color: vsSaved ? '#fff' : '#0f172a', fontWeight: 600, fontSize: 13, cursor: vsSaved ? 'default' : 'pointer' }
             }, vsSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Ranking'),
-            vsSaved && h('button', {
+            vsSaved && h('button', { 'aria-label': 'Next Context',
               onClick: function() {
                 upd({ vsIdx: vsIdx + 1, vsRanking: [], vsSaved: false });
                 if (soundEnabled) sfxClick();
@@ -1413,7 +1413,7 @@ window.SelHub = window.SelHub || {
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
             // AI analysis
-            h('button', {
+            h('button', { 'aria-label': 'AI analysis',
               onClick: function() {
                 if (!rwReflection.trim()) { addToast('Write your reflection first!', 'info'); return; }
                 if (!callGemini) { addToast('AI not available.', 'error'); return; }
@@ -1444,7 +1444,7 @@ window.SelHub = window.SelHub || {
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: rwAiLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: rwAiLoad ? 'default' : 'pointer' }
             }, rwAiLoad ? 'Analyzing...' : '\u2728 Discuss With AI'),
             // Complete & Next
-            h('button', {
+            h('button', { 'aria-label': 'Complete & Next',
               onClick: function() {
                 var newDone = rwCompleted + 1;
                 upd('rwCompleted', newDone);
@@ -1530,7 +1530,7 @@ window.SelHub = window.SelHub || {
                     var isSelected = answered === choice;
                     var colors = { agree: '#22c55e', sometimes: '#f59e0b', disagree: '#ef4444' };
                     var labels = { agree: 'Agree', sometimes: 'It Depends', disagree: 'Disagree' };
-                    return h('button', {
+                    return h('button', { 'aria-label': 'Toggle sound',
                       key: choice,
                       onClick: function() {
                         var newAnswers = Object.assign({}, mcAnswers);
@@ -1553,7 +1553,7 @@ window.SelHub = window.SelHub || {
 
           // Submit button (all answered but not done)
           allAnswered && !mcDone && h('div', { style: { textAlign: 'center', marginBottom: 16 } },
-            h('button', {
+            h('button', { 'aria-label': 'Reveal My Moral Compass',
               onClick: function() {
                 upd('mcDone', true);
                 logPractice('compass', 'assessment');
@@ -1609,7 +1609,7 @@ window.SelHub = window.SelHub || {
             ),
             // Get AI deeper analysis
             h('div', { style: { textAlign: 'center', marginBottom: 16 } },
-              h('button', {
+              h('button', { 'aria-label': 'Get AI deeper analysis',
                 onClick: function() {
                   if (!callGemini) { addToast('AI not available.', 'error'); return; }
                   upd('mcAiLoad', true);
@@ -1648,7 +1648,7 @@ window.SelHub = window.SelHub || {
             ),
             // Retake
             h('div', { style: { textAlign: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'Retake the assessment',
                 onClick: function() {
                   upd({ mcAnswers: {}, mcDone: false, mcAiResp: null });
                   if (soundEnabled) sfxClick();
@@ -1681,7 +1681,7 @@ window.SelHub = window.SelHub || {
               rows: 5,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
             }),
-            h('button', {
+            h('button', { 'aria-label': 's decision:',
               onClick: function() {
                 if (!advPrompt.trim()) { addToast('Describe your decision first!', 'info'); return; }
                 if (!callGemini) { addToast('AI advisor is not available right now.', 'error'); return; }

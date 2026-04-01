@@ -735,7 +735,7 @@ window.SelHub = window.SelHub || {
         var tabBar = h('div', { role: 'tablist', 'aria-label': 'Journal tabs', style: { display: 'flex', borderBottom: '1px solid #1e293b', padding: '0 8px', alignItems: 'center', flexShrink: 0 } },
           TABS.map(function(t) {
             var isActive = activeTab === t.id;
-            return h('button', {
+            return h('button', { 'aria-label': t.icon + ' ' + t.label,
               key: t.id,
               role: 'tab', 'aria-selected': isActive,
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
@@ -746,7 +746,7 @@ window.SelHub = window.SelHub || {
               }
             }, t.icon + ' ' + t.label);
           }),
-          h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+          h('button', { 'aria-label': popBadge.icon, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         );
 
         // ══════════════════════════════════════════════════════
@@ -796,7 +796,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', justifyContent: 'center', gap: 10 } },
                 MOODS.map(function(m) {
                   var isSelected = ciMood === m.id;
-                  return h('button', {
+                  return h('button', { 'aria-label': m.emoji,
                     key: m.id,
                     onClick: function() {
                       upd({ ciMood: m.id, ciSubEmotion: null });
@@ -825,7 +825,7 @@ window.SelHub = window.SelHub || {
                     var isSel = ciSubEmotion === sub.label;
                     var moodColor = MOODS.find(function(m) { return m.id === ciMood; });
                     var col = moodColor ? moodColor.color : ACCENT;
-                    return h('button', {
+                    return h('button', { 'aria-label': sub.emoji,
                       key: sub.label,
                       onClick: function() {
                         upd('ciSubEmotion', isSel ? null : sub.label);
@@ -855,7 +855,7 @@ window.SelHub = window.SelHub || {
                       var isSel = ciExpandedEmotion === exp.label;
                       var moodColor = MOODS.find(function(m) { return m.id === ciMood; });
                       var col = moodColor ? moodColor.color : ACCENT;
-                      return h('button', {
+                      return h('button', { 'aria-label': exp.emoji,
                         key: exp.label,
                         onClick: function() {
                           upd('ciExpandedEmotion', isSel ? null : exp.label);
@@ -935,7 +935,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 TRIGGER_TAGS.map(function(tag) {
                   var isOn = ciTriggers.indexOf(tag) !== -1;
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Toggle sound',
                     key: tag,
                     onClick: function() {
                       var newArr = isOn ? ciTriggers.filter(function(t) { return t !== tag; }) : ciTriggers.concat([tag]);
@@ -967,7 +967,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Save button
-            h('button', {
+            h('button', { 'aria-label': 'Save button',
               onClick: function() {
                 if (ciMood == null) { addToast('Please select a mood first!', 'warning'); return; }
                 var entry = {
@@ -1020,7 +1020,7 @@ window.SelHub = window.SelHub || {
                   showCoping <= 2 ? '\uD83E\uDDE1 Suggested Coping Strategies' :
                   '\u2728 Keep the Momentum Going'
                 ),
-                h('button', {
+                h('button', { 'aria-label': 'You are not alone. These resources are here for you.',
                   onClick: function() { upd('showCoping', false); },
                   style: { background: 'none', border: 'none', color: '#64748b', fontSize: 14, cursor: 'pointer' }
                 }, '\u2715')
@@ -1030,7 +1030,7 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 COPING_STRATEGIES[showCoping].map(function(strat, idx) {
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Toggle sound',
                     key: idx,
                     onClick: function() {
                       var newTapped = Object.assign({}, copingTapped);
@@ -1087,7 +1087,7 @@ window.SelHub = window.SelHub || {
                       background: isDone ? '#22c55e11' : '#1e293b', transition: 'all 0.2s'
                     }
                   },
-                    h('button', {
+                    h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
                         var newCompleted = Object.assign({}, playlistCompleted);
                         if (isDone) {
@@ -1140,7 +1140,7 @@ window.SelHub = window.SelHub || {
           ];
 
           var journalSubTabs = h('div', { style: { display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', {
+            h('button', { 'aria-label': 'Free Write',
               onClick: function() { upd({ letterMode: null, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
               style: {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
@@ -1149,7 +1149,7 @@ window.SelHub = window.SelHub || {
                 color: !letterMode && !letterViewingPast ? ACCENT : '#94a3b8'
               }
             }, '\u270D\uFE0F Free Write'),
-            h('button', {
+            h('button', { 'aria-label': 'Letter to Future Self',
               onClick: function() { upd({ letterMode: 'future', jViewingPast: false, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
               style: {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
@@ -1158,7 +1158,7 @@ window.SelHub = window.SelHub || {
                 color: letterMode === 'future' ? '#22c55e' : '#94a3b8'
               }
             }, '\uD83D\uDD2E Letter to Future Self'),
-            h('button', {
+            h('button', { 'aria-label': 'Letter to Past Self',
               onClick: function() { upd({ letterMode: 'past', jViewingPast: false, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
               style: {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
@@ -1167,7 +1167,7 @@ window.SelHub = window.SelHub || {
                 color: letterMode === 'past' ? '#f59e0b' : '#94a3b8'
               }
             }, '\uD83D\uDC8C Letter to Past Self'),
-            letterEntries.length > 0 && h('button', {
+            letterEntries.length > 0 && h('button', { 'aria-label': 'My Letters ( )',
               onClick: function() { upd({ letterViewingPast: true, letterMode: null, jViewingPast: false }); if (soundEnabled) sfxClick(); },
               style: {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
@@ -1206,7 +1206,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
                   LETTER_TIME_OPTIONS.map(function(opt) {
                     var isActive = letterTimePeriod === opt.id;
-                    return h('button', {
+                    return h('button', { 'aria-label': opt.label,
                       key: opt.id,
                       onClick: function() { upd('letterTimePeriod', opt.id); if (soundEnabled) sfxClick(); },
                       style: {
@@ -1230,7 +1230,7 @@ window.SelHub = window.SelHub || {
                 style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + letterColor + '44', background: '#0f172a', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
 
-              h('button', {
+              h('button', { 'aria-label': '1month',
                 onClick: function() {
                   if (!letterText.trim()) { addToast('Write your letter first!', 'warning'); return; }
                   var readDate = null;
@@ -1324,16 +1324,16 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Writing Prompt'),
                 h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 12, fontStyle: 'italic' } }, '\u201C' + currentPrompt + '\u201D'),
                 h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8 } },
-                  h('button', {
+                  h('button', { 'aria-label': 'Prev',
                     onClick: function() { upd('jPromptIdx', (jPromptIdx - 1 + prompts.length) % prompts.length); if (soundEnabled) sfxClick(); },
                     style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
                   }, '\u2190 Prev'),
-                  h('button', {
+                  h('button', { 'aria-label': 'Next',
                     onClick: function() { upd('jPromptIdx', (jPromptIdx + 1) % prompts.length); if (soundEnabled) sfxClick(); },
                     style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
                   }, 'Next \u2192')
                 ),
-                callTTS && h('button', {
+                callTTS && h('button', { 'aria-label': 'Read aloud',
                   onClick: function() { speak(currentPrompt); },
                   style: { marginTop: 8, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer' }
                 }, '\uD83D\uDD0A Read aloud')
@@ -1350,7 +1350,7 @@ window.SelHub = window.SelHub || {
               }),
 
               h('div', { style: { display: 'flex', gap: 8, marginBottom: 16 } },
-                h('button', {
+                h('button', { 'aria-label': 'Save Entry',
                   onClick: function() {
                     if (!jText.trim()) { addToast('Write something first!', 'warning'); return; }
                     var entry = { timestamp: Date.now(), prompt: currentPrompt, text: jText };
@@ -1372,7 +1372,7 @@ window.SelHub = window.SelHub || {
                     fontSize: 13, cursor: jText.trim() ? 'pointer' : 'not-allowed'
                   }
                 }, '\uD83D\uDCBE Save Entry'),
-                journalEntries.length > 0 && h('button', {
+                journalEntries.length > 0 && h('button', { 'aria-label': 'Past ( )',
                   onClick: function() { upd('jViewingPast', true); if (soundEnabled) sfxClick(); },
                   style: { padding: '12px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: 'transparent', color: ACCENT, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                 }, '\uD83D\uDCC3 Past (' + journalEntries.length + ')')
@@ -1382,7 +1382,7 @@ window.SelHub = window.SelHub || {
             // Past entries viewer
             h('div', null,
               h('div', { style: { display: 'flex', alignItems: 'center', marginBottom: 16 } },
-                h('button', {
+                h('button', { 'aria-label': 'Past Journal Entries ( )',
                   onClick: function() { upd('jViewingPast', false); if (soundEnabled) sfxClick(); },
                   style: { background: 'none', border: 'none', color: ACCENT, fontSize: 14, cursor: 'pointer', marginRight: 8 }
                 }, '\u2190'),
@@ -1472,7 +1472,7 @@ window.SelHub = window.SelHub || {
 
             // Month navigation
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
-              h('button', {
+              h('button', { 'aria-label': MONTH_NAMES[calMonth] + ' ' + calYear,
                 onClick: function() {
                   var nm = calMonth - 1;
                   var ny = calYear;
@@ -1483,7 +1483,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
               }, '\u2190'),
               h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, MONTH_NAMES[calMonth] + ' ' + calYear),
-              h('button', {
+              h('button', { 'aria-label': m.label,
                 onClick: function() {
                   var nm = calMonth + 1;
                   var ny = calYear;
@@ -1765,12 +1765,12 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 12, color: ACCENT, fontWeight: 700, marginBottom: 8 } }, '\uD83E\uDD16 AI-Powered Insight'),
                 aiInsight ? h('div', null,
                   h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, aiInsight),
-                  callTTS && h('button', {
+                  callTTS && h('button', { 'aria-label': 'Read aloud',
                     onClick: function() { speak(aiInsight); },
                     style: { marginTop: 6, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer' }
                   }, '\uD83D\uDD0A Read aloud')
                 ) :
-                h('button', {
+                h('button', { 'aria-label': 'thoughtful and empowering',
                   onClick: function() {
                     if (!callGemini || aiLoading || checkIns.length < 2) {
                       if (checkIns.length < 2) addToast('Need at least 2 check-ins for AI insights!', 'warning');

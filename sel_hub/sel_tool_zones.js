@@ -491,7 +491,7 @@ window.SelHub = window.SelHub || {
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
-          return h('button', {
+          return h('button', { 'aria-label': tab.label,
             key: tab.id,
             role: 'tab', 'aria-selected': isActive,
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); announceToSR('Switched to ' + tab.id + ' tab'); },
@@ -505,13 +505,13 @@ window.SelHub = window.SelHub || {
           }, tab.label);
         }),
         // Sound toggle
-        h('button', {
+        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#64748b', fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         // Badges button
-        h('button', {
+        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           title: 'View badges',
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#7c3aed33' : 'transparent', color: '#64748b', fontSize: 14, flexShrink: 0 }
@@ -580,7 +580,7 @@ window.SelHub = window.SelHub || {
               );
             })
           ),
-          h('button', {
+          h('button', { 'aria-label': 'Close',
             onClick: function() { upd('showBadgesPanel', false); },
             style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
           }, 'Close')
@@ -694,7 +694,7 @@ window.SelHub = window.SelHub || {
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             }),
             // Save button
-            h('button', {
+            h('button', { 'aria-label': 'Save button',
               onClick: function() {
                 var entry = { zone: selectedZone, note: checkInNote, intensity: intensityLevel, timestamp: Date.now() };
                 var newLog = (checkInLog || []).concat([entry]);
@@ -739,7 +739,7 @@ window.SelHub = window.SelHub || {
             }, '\u2705 Save Check-In'),
 
             // Quick navigate to strategies
-            selectedZone !== 'green' && h('button', {
+            selectedZone !== 'green' && h('button', { 'aria-label': 'Need help calming down? Try a breathing exercise',
               onClick: function() { upd('activeTab', 'breathe'); },
               style: { marginTop: 8, width: '100%', padding: '10px 0', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, '\uD83C\uDF2C\uFE0F Need help calming down? Try a breathing exercise')
@@ -768,7 +768,7 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8' } }, zone.feeling)
                 ),
                 // Read aloud button (elementary)
-                band === 'elementary' && callTTS && h('button', {
+                band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read aloud',
                   onClick: function() { readAloud(zone.label + '. This is when you feel ' + zone.feeling + '. You might feel ' + descriptors.join(', ')); },
                   title: 'Read aloud',
                   style: { padding: '6px 10px', borderRadius: 8, border: 'none', background: zone.color + '22', color: zone.color, cursor: 'pointer', fontSize: 16 }
@@ -812,7 +812,7 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { fontSize: 16 } }, s.icon),
                       h('span', { style: { flex: 1, fontSize: 12, color: '#e2e8f0' } }, s.text),
                       h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || '#64748b') + '22', color: typeColors[s.type] || '#64748b', fontWeight: 600 } }, s.type),
-                      h('button', {
+                      h('button', { 'aria-label': isInToolbox ? '\u2705' : '+',
                         onClick: function() {
                           if (isInToolbox) {
                             // Remove from toolbox
@@ -836,7 +836,7 @@ window.SelHub = window.SelHub || {
                 )
               ),
               // AI advice button
-              callGemini && h('button', {
+              callGemini && h('button', { 'aria-label': 'AI advice button',
                 onClick: function() {
                   upd({ aiLoading: true, aiAdvice: null });
                   tryAwardBadge('ai_advice');
@@ -890,7 +890,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
               BREATHING_PATTERNS.map(function(pat) {
                 var totalTime = pat.steps.reduce(function(sum, s) { return sum + s.duration; }, 0) * pat.cycles;
-                return h('button', {
+                return h('button', { 'aria-label': pat.name,
                   key: pat.id,
                   onClick: function() {
                     upd({ breathingPattern: pat.id, breathingActive: false, breathingStep: 0, breathingCycle: 0, breathingTimer: 0 });
@@ -988,7 +988,7 @@ window.SelHub = window.SelHub || {
 
               // Controls
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-                !isComplete && h('button', {
+                !isComplete && h('button', { 'aria-label': 'Toggle sound',
                   onClick: function() {
                     if (breathingActive) {
                       upd('breathingActive', false);
@@ -1036,7 +1036,7 @@ window.SelHub = window.SelHub || {
                   },
                   style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: breathingActive ? '#ef4444' : '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                 }, breathingActive ? '\u23F8 Pause' : '\u25B6 Start'),
-                h('button', {
+                h('button', { 'aria-label': 'Try Another',
                   onClick: function() {
                     upd({ breathingPattern: null, breathingActive: false, breathingStep: 0, breathingCycle: 0, breathingTimer: 0 });
                   },
@@ -1083,7 +1083,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 } },
               sensations.map(function(sens) {
                 var isChosen = scanSelection.sensation === sens;
-                return h('button', {
+                return h('button', { 'aria-label': 'Toggle sound',
                   key: sens,
                   onClick: function() {
                     var newSelections = Object.assign({}, bodySelections);
@@ -1098,7 +1098,7 @@ window.SelHub = window.SelHub || {
                   }
                 }, sens);
               }),
-              h('button', {
+              h('button', { 'aria-label': ', gap: 8, justifyContent:',
                 onClick: function() {
                   var newSelections = Object.assign({}, bodySelections);
                   newSelections[scanArea.id] = Object.assign({}, scanSelection, { sensation: 'nothing' });
@@ -1120,7 +1120,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
                 ZONES.map(function(zone) {
                   var isChosen = scanSelection.zone === zone.id;
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Toggle sound',
                     key: zone.id,
                     onClick: function() {
                       var newSelections = Object.assign({}, bodySelections);
@@ -1139,11 +1139,11 @@ window.SelHub = window.SelHub || {
             ),
             // Navigation
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-              bodyScanStep > 0 && h('button', {
+              bodyScanStep > 0 && h('button', { 'aria-label': 'Back',
                 onClick: function() { upd('bodyScanStep', bodyScanStep - 1); },
                 style: { padding: '10px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
               }, '\u2190 Back'),
-              h('button', {
+              h('button', { 'aria-label': 'Body Map',
                 onClick: function() {
                   if (scanIsLast) {
                     upd({ bodyScanActive: false, bodyScanStep: 0 });
@@ -1170,7 +1170,7 @@ window.SelHub = window.SelHub || {
               'Emotions create physical sensations. Map where you feel them.'
             ),
             // Start guided scan button
-            h('button', {
+            h('button', { 'aria-label': 'Start Guided Body Scan',
               onClick: function() {
                 upd({ bodyScanActive: true, bodyScanStep: 0, bodySelections: {} });
                 if (soundEnabled) sfxClick();
@@ -1230,7 +1230,7 @@ window.SelHub = window.SelHub || {
             ),
             h('p', { style: { fontSize: 16, color: '#f1f5f9', lineHeight: 1.6, fontWeight: 500 } }, currentScenario.text),
             // Read aloud (elementary)
-            band === 'elementary' && callTTS && h('button', {
+            band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read Aloud',
               onClick: function() { readAloud(currentScenario.text); },
               style: { marginTop: 10, padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }
             }, '\uD83D\uDD0A Read Aloud')
@@ -1239,7 +1239,7 @@ window.SelHub = window.SelHub || {
           // Zone answer buttons
           !scenarioFeedback && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             ZONES.map(function(zone) {
-              return h('button', {
+              return h('button', { 'aria-label': 'incorrect',
                 key: zone.id,
                 onClick: function() {
                   var isCorrect = zone.id === currentScenario.correctZone;
@@ -1307,7 +1307,7 @@ window.SelHub = window.SelHub || {
             ),
             h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: 1.5 } }, currentScenario.followUp),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'Next Scenario',
                 onClick: function() {
                   upd({
                     scenarioIdx: scenarioIdx + 1,
@@ -1323,7 +1323,7 @@ window.SelHub = window.SelHub || {
 
           // AI scenario generation button
           callGemini && !scenarioFeedback && h('div', { style: { marginTop: 20, textAlign: 'center' } },
-            h('button', {
+            h('button', { 'aria-label': 'Next scenario',
               onClick: function() {
                 upd('aiScenarioLoading', true);
                 var prompt = 'Generate a single short scenario (1-2 sentences) that a ' + band + ' school student might experience. ' +
@@ -1389,7 +1389,7 @@ window.SelHub = window.SelHub || {
             h('h4', { style: { fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 } }, 'Quick Tools'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
               // Breathing shortcut
-              h('button', {
+              h('button', { 'aria-label': 'Breathing',
                 onClick: function() { upd('activeTab', 'breathe'); if (soundEnabled) sfxClick(); },
                 style: { padding: 16, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', cursor: 'pointer', textAlign: 'center' }
               },
@@ -1398,7 +1398,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 10, color: '#64748b' } }, 'Guided exercises')
               ),
               // Body scan shortcut
-              h('button', {
+              h('button', { 'aria-label': 'Body Scan',
                 onClick: function() { upd({ activeTab: 'body', bodyScanActive: true, bodyScanStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: { padding: 16, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', cursor: 'pointer', textAlign: 'center' }
               },
@@ -1419,7 +1419,7 @@ window.SelHub = window.SelHub || {
               band === 'elementary' ? 'Use your senses to feel calm and safe!' : 'A sensory grounding technique to bring you back to the present moment.'
             ),
             !groundingActive
-              ? h('button', {
+              ? h('button', { 'aria-label': 'Start Grounding Exercise',
                   onClick: function() { upd({ groundingActive: true, groundingStep: 0, groundingInputs: {} }); if (soundEnabled) sfxClick(); },
                   style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, cursor: 'pointer', width: '100%' }
                 }, 'Start Grounding Exercise')
@@ -1462,11 +1462,11 @@ window.SelHub = window.SelHub || {
                       }),
                       // Navigation
                       h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12 } },
-                        groundingStep > 0 && h('button', {
+                        groundingStep > 0 && h('button', { 'aria-label': 'Back',
                           onClick: function() { upd('groundingStep', groundingStep - 1); },
                           style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }
                         }, '\u2190 Back'),
-                        h('button', {
+                        h('button', { 'aria-label': groundingStep >= groundingSteps.length - 1 ? '\u2705 Done!' : 'Next \u2192',
                           onClick: function() {
                             if (groundingStep >= groundingSteps.length - 1) {
                               var newComplete = groundingComplete + 1;
@@ -1517,7 +1517,7 @@ window.SelHub = window.SelHub || {
                         h('span', { style: { fontSize: 18 } }, s.icon),
                         h('span', { style: { flex: 1, fontSize: 12, color: '#e2e8f0' } }, s.text),
                         h('div', { style: { width: 8, height: 8, borderRadius: 4, background: s.zoneColor || '#64748b', flexShrink: 0 } }),
-                        h('button', {
+                        h('button', { 'aria-label': 'My Check-In History',
                           onClick: function() {
                             var newToolbox = myToolbox.filter(function(t) { return t.text !== s.text; });
                             upd('myToolbox', newToolbox);

@@ -582,6 +582,7 @@ window.SelHub = window.SelHub || {
         // ── Quick Reflection Prompt (reusable) ──
         function renderQuickReflection(activityType) {
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155' } },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
             h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflection'),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'What teamwork skill did you practice?'),
             h('select', {
@@ -603,7 +604,7 @@ window.SelHub = window.SelHub || {
               rows: 2,
               style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
             }),
-            h('button', {
+            h('button', { 'aria-label': 'Save Reflection',
               onClick: function() {
                 if (!reflectionSkill) { addToast('Select a skill first!', 'info'); return; }
                 var entry = { skill: reflectionSkill, note: reflectionNote, activity: activityType, timestamp: Date.now() };
@@ -641,7 +642,7 @@ window.SelHub = window.SelHub || {
         },
           tabs.map(function(t) {
             var isActive = activeTab === t.id;
-            return h('button', {
+            return h('button', { 'aria-label': t.label,
               key: t.id,
               onClick: function() { upd('activeTab', t.id); trackTab(t.id); if (soundEnabled) sfxClick(); },
               'aria-selected': isActive,
@@ -654,19 +655,19 @@ window.SelHub = window.SelHub || {
             }, t.label);
           }),
           // Sound toggle
-          h('button', {
+          h('button', { 'aria-label': 'Toggle panel',
             onClick: function() { upd('soundEnabled', !soundEnabled); },
             style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           // Badge counter
-          h('button', {
+          h('button', { 'aria-label': 'Toggle panel',
             onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
             style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b', position: 'relative' }
           },
             '\uD83C\uDFC5',
             Object.keys(earnedBadges).length > 0 && h('span', {
-              style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#0f172a', borderRadius: '50%', width: 14, height: 14, fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+              style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#0f172a', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, Object.keys(earnedBadges).length)
           )
         );
@@ -705,7 +706,7 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Close',
               onClick: function() { upd('showBadgesPanel', false); },
               style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', cursor: 'pointer', fontSize: 12 }
             }, 'Close')
@@ -766,7 +767,7 @@ window.SelHub = window.SelHub || {
                         )
                       )
                     ),
-                    h('button', {
+                    h('button', { 'aria-label': 'Your Team Role Profile',
                       onClick: function(e) {
                         e.stopPropagation();
                         var newSel = selectedRoles.slice();
@@ -803,7 +804,7 @@ window.SelHub = window.SelHub || {
                 style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }
               }),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
-                h('button', {
+                h('button', { 'aria-label': 'Toggle sound',
                   onClick: function() {
                     if (!roleReflection.trim()) { addToast('Write a reflection first!', 'info'); return; }
                     upd('roleReflectionSaved', true);
@@ -818,7 +819,7 @@ window.SelHub = window.SelHub || {
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: roleReflectionSaved ? '#334155' : ACCENT, color: roleReflectionSaved ? '#94a3b8' : '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, roleReflectionSaved ? '\u2713 Saved' : 'Save Reflection'),
                 // AI Coach button
-                h('button', {
+                h('button', { 'aria-label': 'AI Coach button',
                   onClick: function() {
                     if (!roleReflection.trim()) { addToast('Write your reflection first!', 'info'); return; }
                     if (!callGemini) { addToast('AI not available.', 'error'); return; }
@@ -908,7 +909,7 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: s, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: '#0f172a' } },
                     h('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1, textTransform: 'capitalize' } }, s.replace(/-/g, ' ')),
                     [1, 2, 3, 4, 5].map(function(star) {
-                      return h('button', {
+                      return h('button', { 'aria-label': 'Toggle sound',
                         key: star,
                         onClick: function() {
                           var newRatings = Object.assign({}, challengeRatings);
@@ -937,11 +938,11 @@ window.SelHub = window.SelHub || {
 
               // Navigation
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-                challengeIdx > 0 && h('button', {
+                challengeIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd({ challengeIdx: challengeIdx - 1, challengeDiscussion: '' }); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, '\u2190 Previous'),
-                h('button', {
+                h('button', { 'aria-label': 'Complete & Next',
                   onClick: function() {
                     var newCompleted = challengesCompleted + 1;
                     upd('challengesCompleted', newCompleted);
@@ -996,7 +997,7 @@ window.SelHub = window.SelHub || {
                   var isChosen = scenarioAnswers[curSc.id] === ci;
                   var showFeedback = revealed && isChosen;
                   return h('div', { key: ci },
-                    h('button', {
+                    h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
                         if (answered) return;
                         var newAnswers = Object.assign({}, scenarioAnswers);
@@ -1062,11 +1063,11 @@ window.SelHub = window.SelHub || {
 
               // Navigation
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
-                scenarioIdx > 0 && h('button', {
+                scenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd('scenarioIdx', scenarioIdx - 1); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, '\u2190 Previous'),
-                scenarioIdx < SCENARIOS.length - 1 && h('button', {
+                scenarioIdx < SCENARIOS.length - 1 && h('button', { 'aria-label': 'Next',
                   onClick: function() { upd('scenarioIdx', scenarioIdx + 1); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, 'Next \u2192')
@@ -1085,7 +1086,7 @@ window.SelHub = window.SelHub || {
                 rows: 2,
                 style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
               }),
-              h('button', {
+              h('button', { 'aria-label': coachLoading ? 'Thinking...' : '\u2728 Ask Coach',
                 onClick: function() {
                   if (!coachPrompt.trim()) { addToast('Describe your teamwork challenge first!', 'info'); return; }
                   if (!callGemini) { addToast('AI not available.', 'error'); return; }
@@ -1155,7 +1156,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 10, color: '#64748b', marginRight: 4 } }, 'Low'),
                     [1, 2, 3, 4, 5].map(function(val) {
                       var isSelected = rating === val;
-                      return h('button', {
+                      return h('button', { 'aria-label': 'Toggle sound',
                         key: val,
                         onClick: function() {
                           if (quizSubmitted) return;
@@ -1178,7 +1179,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Submit quiz
-            !quizSubmitted && h('button', {
+            !quizSubmitted && h('button', { 'aria-label': 'Your Skills Profile',
               onClick: function() {
                 if (!quizDone) { addToast('Rate all 8 skills first!', 'info'); return; }
                 upd('quizSubmitted', true);
@@ -1248,7 +1249,7 @@ window.SelHub = window.SelHub || {
               })(),
 
               // Reset quiz
-              h('button', {
+              h('button', { 'aria-label': 'Retake Quiz',
                 onClick: function() { upd({ quizRatings: {}, quizSubmitted: false }); if (soundEnabled) sfxClick(); },
                 style: { display: 'block', margin: '12px auto 0', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 11, cursor: 'pointer' }
               }, 'Retake Quiz')
@@ -1369,7 +1370,7 @@ window.SelHub = window.SelHub || {
 
             // Save / Preview
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
-              h('button', {
+              h('button', { 'aria-label': 'Start New Contract',
                 onClick: function() {
                   var filledAgreements = contractAgreements.filter(function(a) { return a.trim(); });
                   if (filledAgreements.length < 2) { addToast('Fill in at least 2 agreements!', 'info'); return; }
@@ -1383,7 +1384,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: contractSaved ? '#334155' : ACCENT, color: contractSaved ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, contractSaved ? '\u2713 Contract Saved' : '\uD83D\uDCBE Save Contract'),
-              contractSaved && h('button', {
+              contractSaved && h('button', { 'aria-label': 'Start New Contract',
                 onClick: function() { upd({ contractAgreements: ['', '', '', '', ''], contractRoles: ['', '', '', ''], contractComms: '', contractConsequence: '', contractSaved: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 12, cursor: 'pointer' }
               }, 'Start New Contract')
@@ -1461,7 +1462,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                     q.options.map(function(opt, oi) {
                       var isSelected = commStyleAnswers[qi] === opt.style;
-                      return h('button', {
+                      return h('button', { 'aria-label': 'Toggle sound',
                         key: oi,
                         onClick: function() {
                           var newAns = Object.assign({}, commStyleAnswers);
@@ -1482,7 +1483,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Submit button
-            !commStyleDone && h('button', {
+            !commStyleDone && h('button', { 'aria-label': 'questions',
               onClick: function() {
                 if (answeredQuestions < totalQuestions) { addToast('Answer all ' + totalQuestions + ' questions first!', 'info'); return; }
                 var results = calcCommStyleResults();
@@ -1576,7 +1577,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f133', marginBottom: 16 } },
                   h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Composition Advice'),
                   h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, 'Get personalized advice on how your style fits into different team compositions.'),
-                  h('button', {
+                  h('button', { 'aria-label': commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice',
                     onClick: function() {
                       if (!callGemini) { addToast('AI not available.', 'error'); return; }
                       upd('commStyleCoachLoad', true);
@@ -1608,7 +1609,7 @@ window.SelHub = window.SelHub || {
                 ),
 
                 // Retake
-                h('button', {
+                h('button', { 'aria-label': 'Retake Quiz',
                   onClick: function() { upd({ commStyleAnswers: {}, commStyleDone: false, commStyleResult: null, commStyleCoachResp: null }); if (soundEnabled) sfxClick(); },
                   style: { display: 'block', margin: '0 auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 11, cursor: 'pointer' }
                 }, 'Retake Quiz')
@@ -1655,7 +1656,7 @@ window.SelHub = window.SelHub || {
                   var isChosen = vtAnswers[curVt.id] === ci;
                   var showFeedback = vtReveal && isChosen;
                   return h('div', { key: ci },
-                    h('button', {
+                    h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
                         if (vtAnswered) return;
                         var newAns = Object.assign({}, vtAnswers);
@@ -1718,11 +1719,11 @@ window.SelHub = window.SelHub || {
 
               // Navigation
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
-                vtScenarioIdx > 0 && h('button', {
+                vtScenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd('vtScenarioIdx', vtScenarioIdx - 1); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, '\u2190 Previous'),
-                vtScenarioIdx < VIRTUAL_TEAM_SCENARIOS.length - 1 && h('button', {
+                vtScenarioIdx < VIRTUAL_TEAM_SCENARIOS.length - 1 && h('button', { 'aria-label': 'Next',
                   onClick: function() { upd('vtScenarioIdx', vtScenarioIdx + 1); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, 'Next \u2192')
@@ -1760,7 +1761,7 @@ window.SelHub = window.SelHub || {
                 rows: 4,
                 style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }
               }),
-              h('button', {
+              h('button', { 'aria-label': 'professional coaching language for ages 15-18.',
                 onClick: function() {
                   if (!conflictInput.trim()) { addToast('Describe the conflict first!', 'info'); return; }
                   if (conflictInput.trim().length < 15) { addToast('Please describe the conflict in more detail.', 'info'); return; }
@@ -1804,7 +1805,7 @@ window.SelHub = window.SelHub || {
             conflictResult && h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '2px solid #22c55e44', marginBottom: 16 } },
               h('div', { style: { fontSize: 14, fontWeight: 700, color: '#22c55e', marginBottom: 12, textAlign: 'center' } }, '\u2705 Collaboration Opportunity'),
               h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, conflictResult),
-              h('button', {
+              h('button', { 'aria-label': 'Convert Another Conflict',
                 onClick: function() { upd({ conflictInput: '', conflictResult: null }); if (soundEnabled) sfxClick(); },
                 style: { display: 'block', margin: '14px auto 0', padding: '8px 18px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\u267B\uFE0F Convert Another Conflict')
@@ -1869,7 +1870,7 @@ window.SelHub = window.SelHub || {
                     return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid ' + cat.color + '22' } },
                       h('div', { style: { width: 4, height: 20, borderRadius: 2, background: cat.color, flexShrink: 0 } }),
                       h('span', { style: { fontSize: 12, color: '#e2e8f0', flex: 1, lineHeight: 1.5 } }, item),
-                      h('button', {
+                      h('button', { 'aria-label': 'Remove',
                         onClick: function() {
                           var newItems = cat.items.slice();
                           newItems.splice(idx, 1);
@@ -1903,7 +1904,7 @@ window.SelHub = window.SelHub || {
                     placeholder: cat.key === 'green' ? 'Something that went well...' : cat.key === 'yellow' ? 'Something to improve...' : 'An action item for next time...',
                     style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12 }
                   }),
-                  h('button', {
+                  h('button', { 'aria-label': '+ Add',
                     onClick: function() {
                       if (!cat.inputVal.trim()) return;
                       var newItems = cat.items.concat([cat.inputVal.trim()]);
@@ -1920,7 +1921,7 @@ window.SelHub = window.SelHub || {
 
             // Save / Export buttons
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
-              h('button', {
+              h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
                   var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
                   if (totalCards < 3) { addToast('Add at least 3 cards total to save!', 'info'); return; }
@@ -1934,7 +1935,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: retroSaved ? '#334155' : ACCENT, color: retroSaved ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, retroSaved ? '\u2713 Saved' : '\uD83D\uDCBE Save Retrospective'),
-              h('button', {
+              h('button', { 'aria-label': 'success',
                 onClick: function() {
                   var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
                   if (totalCards === 0) { addToast('Add some cards before exporting!', 'info'); return; }
@@ -1972,7 +1973,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCE4 Export as Text'),
-              h('button', {
+              h('button', { 'aria-label': 'Clear All',
                 onClick: function() {
                   upd({ retroGreen: [], retroYellow: [], retroBlue: [], retroGreenInput: '', retroYellowInput: '', retroBlueInput: '', retroSaved: false });
                   if (soundEnabled) sfxClick();

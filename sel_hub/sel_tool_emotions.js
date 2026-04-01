@@ -651,7 +651,7 @@ window.SelHub = window.SelHub || {
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
-          return h('button', {
+          return h('button', { 'aria-label': tab.label,
             key: tab.id,
             role: 'tab', 'aria-selected': isActive,
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); },
@@ -663,12 +663,12 @@ window.SelHub = window.SelHub || {
             }
           }, tab.label);
         }),
-        h('button', {
+        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#64748b', fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', {
+        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#3b82f633' : 'transparent', color: '#64748b', fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
@@ -720,7 +720,7 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Close',
               onClick: function() { upd('showBadgesPanel', false); },
               style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
             }, 'Close')
@@ -735,11 +735,11 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'wheel') {
         // Mode toggle: Explore vs Quiz
         var wheelToggle = h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 16 } },
-          h('button', {
+          h('button', { 'aria-label': 'Explore',
             onClick: function() { upd('wheelMode', 'explore'); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: '1px solid #334155', background: wheelMode === 'explore' ? '#3b82f6' : '#1e293b', color: wheelMode === 'explore' ? '#fff' : '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83C\uDF08 Explore'),
-          h('button', {
+          h('button', { 'aria-label': 'Vocab Quiz',
             onClick: function() { upd('wheelMode', 'quiz'); if (!quizDef) generateQuiz(); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 18px', borderRadius: '0 8px 8px 0', border: '1px solid #334155', background: wheelMode === 'quiz' ? '#8b5cf6' : '#1e293b', color: wheelMode === 'quiz' ? '#fff' : '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83E\uDDE9 Vocab Quiz')
@@ -768,7 +768,7 @@ window.SelHub = window.SelHub || {
             // Answer options
             quizDef && !quizRevealed && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               quizOptions.map(function(opt) {
-                return h('button', {
+                return h('button', { 'aria-label': 'Toggle sound',
                   key: opt,
                   onClick: function() {
                     var correct = opt === quizWord;
@@ -812,14 +812,14 @@ window.SelHub = window.SelHub || {
                   'The answer was: ' + quizWord
                 )
               ),
-              h('button', {
+              h('button', { 'aria-label': 'Next Question',
                 onClick: function() { generateQuiz(); },
                 style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, 'Next Question \u2192')
             ),
 
             // Start quiz if no question loaded
-            !quizDef && h('button', {
+            !quizDef && h('button', { 'aria-label': 'Start Quiz!',
               onClick: function() { generateQuiz(); },
               style: { display: 'block', margin: '20px auto', padding: '14px 32px', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'Start Quiz!')
@@ -843,7 +843,7 @@ window.SelHub = window.SelHub || {
           wheelMode === 'explore' && !selectedFamily && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxWidth: 400, margin: '0 auto 20px' } },
             EMOTION_FAMILIES.map(function(fam) {
               var explored = exploredFamilies[fam.id];
-              return h('button', {
+              return h('button', { 'aria-label': 'Toggle sound',
                 key: fam.id,
                 onClick: function() {
                   upd('selectedFamily', fam.id);
@@ -876,7 +876,7 @@ window.SelHub = window.SelHub || {
             var feelings = fam.feelings[band] || fam.feelings.elementary;
 
             return h('div', null,
-              h('button', {
+              h('button', { 'aria-label': 'All Emotions',
                 onClick: function() { upd({ selectedFamily: null, expandedFeeling: null }); if (soundEnabled) sfxClick(); },
                 style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Emotions'),
@@ -900,7 +900,7 @@ window.SelHub = window.SelHub || {
                       gridColumn: isExpanded ? '1 / -1' : 'auto'
                     }
                   },
-                    h('button', {
+                    h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
                         var newExpanded = isExpanded ? null : feeling.word;
                         upd('expandedFeeling', newExpanded);
@@ -930,11 +930,11 @@ window.SelHub = window.SelHub || {
                     ),
                     isExpanded && h('div', { style: { padding: '0 14px 14px', borderTop: '1px solid #334155' } },
                       h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.5, marginTop: 10, marginBottom: 10 } }, feeling.def),
-                      band === 'elementary' && callTTS && h('button', {
+                      band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read Aloud',
                         onClick: function() { readAloud(feeling.word + '. ' + feeling.def); },
                         style: { padding: '5px 12px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 11, marginRight: 6 }
                       }, '\uD83D\uDD0A Read Aloud'),
-                      h('button', {
+                      h('button', { 'aria-label': 'I’m feeling this',
                         onClick: function() {
                           upd({ activeTab: 'checkin', checkinFamily: fam.id, checkinFeeling: feeling.word });
                           if (soundEnabled) sfxClick();
@@ -977,7 +977,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = checkinFamily === fam.id;
-                return h('button', {
+                return h('button', { 'aria-label': fam.emoji,
                   key: fam.id,
                   onClick: function() { upd({ checkinFamily: fam.id, checkinFeeling: null }); if (soundEnabled) sfxClick(); },
                   style: {
@@ -1005,7 +1005,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 feelings.map(function(f) {
                   var isSel = checkinFeeling === f.word;
-                  return h('button', {
+                  return h('button', { 'aria-label': 'Toggle sound',
                     key: f.word,
                     onClick: function() { upd('checkinFeeling', f.word); if (soundEnabled) sfxClick(); },
                     style: {
@@ -1064,7 +1064,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Save check-in
-          checkinFamily && checkinFeeling && h('button', {
+          checkinFamily && checkinFeeling && h('button', { 'aria-label': 'Save check-in',
             onClick: function() {
               var entry = {
                 family: checkinFamily,
@@ -1126,7 +1126,7 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Toggle sound',
               onClick: function() {
                 var newViewed = Object.assign({}, bodyMapViewed);
                 newViewed[checkinFamily] = true;
@@ -1166,11 +1166,11 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'faces') {
         // Difficulty toggle
         var diffToggle = h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 16 } },
-          h('button', {
+          h('button', { 'aria-label': 'Emoji Faces',
             onClick: function() { upd('faceDifficulty', 'emoji'); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 16px', borderRadius: '8px 0 0 8px', border: '1px solid #334155', background: faceDifficulty === 'emoji' ? '#3b82f6' : '#1e293b', color: faceDifficulty === 'emoji' ? '#fff' : '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83D\uDE04 Emoji Faces'),
-          h('button', {
+          h('button', { 'aria-label': 'Body Language',
             onClick: function() { upd('faceDifficulty', 'body'); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 16px', borderRadius: '0 8px 8px 0', border: '1px solid #334155', background: faceDifficulty === 'body' ? '#f59e0b' : '#1e293b', color: faceDifficulty === 'body' ? '#fff' : '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83D\uDD0D Body Language')
@@ -1201,7 +1201,7 @@ window.SelHub = window.SelHub || {
             !faceRevealed
               ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 300, margin: '0 auto' } },
                   challenge.options.map(function(opt) {
-                    return h('button', {
+                    return h('button', { 'aria-label': 'Toggle sound',
                       key: opt,
                       onClick: function() {
                         var correct = opt === challenge.emotion;
@@ -1246,7 +1246,7 @@ window.SelHub = window.SelHub || {
                       'This face shows: ' + challenge.emotion
                     )
                   ),
-                  h('button', {
+                  h('button', { 'aria-label': 'Next Face',
                     onClick: function() {
                       upd({ faceIdx: faceIdx + 1, faceRevealed: null });
                     },
@@ -1282,7 +1282,7 @@ window.SelHub = window.SelHub || {
             !bodyLangRevealed
               ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 300, margin: '0 auto' } },
                   blChallenge.options.map(function(opt) {
-                    return h('button', {
+                    return h('button', { 'aria-label': 'Toggle sound',
                       key: opt,
                       onClick: function() {
                         var correct = opt === blChallenge.emotion;
@@ -1322,7 +1322,7 @@ window.SelHub = window.SelHub || {
                       'The answer was: ' + blChallenge.emotion
                     )
                   ),
-                  h('button', {
+                  h('button', { 'aria-label': 'Next Clue',
                     onClick: function() { upd({ bodyLangIdx: bodyLangIdx + 1, bodyLangRevealed: null }); },
                     style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                   }, 'Next Clue \u2192')
@@ -1338,11 +1338,11 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'scenarios') {
         // Mode toggle: Self vs Empathy
         var scenModeToggle = h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 16 } },
-          h('button', {
+          h('button', { 'aria-label': 'What Would I Feel?',
             onClick: function() { upd('scenarioMode', 'self'); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: '1px solid #334155', background: scenarioMode === 'self' ? '#3b82f6' : '#1e293b', color: scenarioMode === 'self' ? '#fff' : '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83C\uDFAD What Would I Feel?'),
-          h('button', {
+          h('button', { 'aria-label': 'What Do They Feel?',
             onClick: function() { upd('scenarioMode', 'empathy'); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 18px', borderRadius: '0 8px 8px 0', border: '1px solid #334155', background: scenarioMode === 'empathy' ? '#ec4899' : '#1e293b', color: scenarioMode === 'empathy' ? '#fff' : '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83E\uDD1D What Do They Feel?')
@@ -1391,7 +1391,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 16 } },
                 EMOTION_FAMILIES.map(function(fam) {
                   var isSel = empathyAnswer === fam.id;
-                  return h('button', {
+                  return h('button', { 'aria-label': fam.emoji,
                     key: fam.id,
                     onClick: function() { upd('empathyAnswer', fam.id); if (soundEnabled) sfxClick(); },
                     style: {
@@ -1405,7 +1405,7 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              empathyAnswer && h('button', {
+              empathyAnswer && h('button', { 'aria-label': 'See Their Perspective',
                 onClick: function() {
                   upd('empathyRevealed', true);
                   var nc = empathyCompleted + 1;
@@ -1445,7 +1445,7 @@ window.SelHub = window.SelHub || {
                     : 'Cognitive empathy \u2014 modeling another\'s internal state \u2014 is distinct from emotional empathy (feeling with them). Both are essential social-emotional competencies.'
                 )
               ),
-              h('button', {
+              h('button', { 'aria-label': 'Next Empathy Scenario',
                 onClick: function() { upd({ empathyIdx: empathyIdx + 1, empathyAnswer: null, empathyRevealed: false }); },
                 style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#ec4899', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, 'Next Empathy Scenario \u2192')
@@ -1487,7 +1487,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 16 } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = scenarioAnswer === fam.id;
-                return h('button', {
+                return h('button', { 'aria-label': fam.emoji,
                   key: fam.id,
                   onClick: function() { upd('scenarioAnswer', fam.id); if (soundEnabled) sfxClick(); },
                   style: {
@@ -1501,7 +1501,7 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            scenarioAnswer && h('button', {
+            scenarioAnswer && h('button', { 'aria-label': 'See What Others Feel',
               onClick: function() {
                 upd('scenarioRevealed', true);
                 var nc = scenariosCompleted + 1;
@@ -1539,11 +1539,11 @@ window.SelHub = window.SelHub || {
                 'Common affective responses include ' + currentScenario.likely.join(', ') + '. Note the complexity \u2014 real emotional experiences are rarely mono-dimensional.'
               )
             ),
-            currentScenario.likely.length > 2 && !earnedBadges['mixed_feelings'] && h('button', {
+            currentScenario.likely.length > 2 && !earnedBadges['mixed_feelings'] && h('button', { 'aria-label': 'I see there can be mixed emotions!',
               onClick: function() { tryAwardBadge('mixed_feelings'); addToast('You noticed that situations can cause mixed feelings!', 'success'); },
               style: { width: '100%', padding: '10px 0', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer', marginBottom: 12 }
             }, '\uD83C\uDF00 I see \u2014 there can be mixed emotions!'),
-            h('button', {
+            h('button', { 'aria-label': 'Next Scenario',
               onClick: function() { upd({ scenarioIdx: scenarioIdx + 1, scenarioAnswer: null, scenarioRevealed: false }); },
               style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'Next Scenario \u2192')
@@ -1574,7 +1574,7 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
                 EMOTION_FAMILIES.map(function(fam) {
-                  return h('button', {
+                  return h('button', { 'aria-label': fam.emoji + ' ' + fam.label,
                     key: fam.id,
                     onClick: function() { upd('journalEmotion', fam.label); if (soundEnabled) sfxClick(); },
                     style: {
@@ -1605,7 +1605,7 @@ window.SelHub = window.SelHub || {
             }),
 
             h('div', { style: { display: 'flex', gap: 8 } },
-              journalDraft.trim() && h('button', {
+              journalDraft.trim() && h('button', { 'aria-label': 'Save Entry',
                 onClick: function() {
                   var entry = { emotion: journalEmotion, text: journalDraft, timestamp: Date.now(), aiResponse: journalAiResp };
                   var newEntries = journalEntries.concat([entry]);
@@ -1619,7 +1619,7 @@ window.SelHub = window.SelHub || {
                 style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
-              callGemini && journalDraft.trim().length > 10 && h('button', {
+              callGemini && journalDraft.trim().length > 10 && h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
                   upd('journalAiLoading', true);
                   var prompt = 'You are a warm, supportive school counselor. A ' + band + ' school student wrote this emotion journal entry about feeling ' + (journalEmotion || 'something') + ':\n\n"' + journalDraft + '"\n\n' +
@@ -1896,7 +1896,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = mixEmotion1 === fam.id;
-                return h('button', {
+                return h('button', { 'aria-label': fam.emoji,
                   key: fam.id,
                   onClick: function() {
                     upd({ mixEmotion1: fam.id, mixResult: null, mixAiCustom: null });
@@ -1926,7 +1926,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.filter(function(f) { return f.id !== mixEmotion1; }).map(function(fam) {
                 var isSel = mixEmotion2 === fam.id;
-                return h('button', {
+                return h('button', { 'aria-label': fam.emoji,
                   key: fam.id,
                   onClick: function() {
                     upd({ mixEmotion2: fam.id, mixResult: null, mixAiCustom: null });
@@ -1946,7 +1946,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Mix button
-          mixEmotion1 && mixEmotion2 && !mixResult && h('button', {
+          mixEmotion1 && mixEmotion2 && !mixResult && h('button', { 'aria-label': 'Mix These Emotions!',
             onClick: function() {
               var found = findMix(mixEmotion1, mixEmotion2);
               if (found) {
@@ -1981,7 +1981,7 @@ window.SelHub = window.SelHub || {
               );
             })(),
             h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6 } }, mixResult.desc[band]),
-            h('button', {
+            h('button', { 'aria-label': 'Try Another Mix',
               onClick: function() { upd({ mixEmotion1: null, mixEmotion2: null, mixResult: null, mixAiCustom: null }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 16, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, 'Try Another Mix')
@@ -1997,7 +1997,7 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } },
                   (fam1 ? fam1.label : mixEmotion1) + ' + ' + (fam2 ? fam2.label : mixEmotion2)
                 ),
-                !mixAiCustom && !mixAiLoading && callGemini && h('button', {
+                !mixAiCustom && !mixAiLoading && callGemini && h('button', { 'aria-label': 'Toggle sound',
                   onClick: function() {
                     upd('mixAiLoading', true);
                     var prompt = 'You are an emotion scientist explaining to a ' + band + ' school student. When the emotions ' + (fam1 ? fam1.label : mixEmotion1) + ' and ' + (fam2 ? fam2.label : mixEmotion2) + ' combine, what complex feeling results? Give a creative name (2-3 words), then explain in 2 sentences what it feels like. ' +
@@ -2032,7 +2032,7 @@ window.SelHub = window.SelHub || {
                 )
               );
             })(),
-            h('button', {
+            h('button', { 'aria-label': 'Try Another Mix',
               onClick: function() { upd({ mixEmotion1: null, mixEmotion2: null, mixResult: null, mixAiCustom: null }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, 'Try Another Mix')

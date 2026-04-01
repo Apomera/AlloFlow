@@ -1041,6 +1041,7 @@ window.SelHub = window.SelHub || {
       // ═══════════════════════════════════════
 
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },
@@ -1073,7 +1074,7 @@ window.SelHub = window.SelHub || {
               'compare': '\u2696\uFE0F Compare',
               'badges': '\uD83C\uDFC5 Badges',
             };
-            return h('button', {
+            return h('button', { 'aria-label': 'Choose the type of circle you want to facilitate today.',
               key: t,
               role: 'tab', 'aria-selected': tab === t,
               onClick: function() { upd('tab', t); },
@@ -1090,7 +1091,7 @@ window.SelHub = window.SelHub || {
           // Circle type cards
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             CIRCLE_TYPES.map(function(ct) {
-              return h('button', {
+              return h('button', { 'aria-label': ct.emoji,
                 key: ct.id,
                 onClick: function() { updMulti({ circleType: ct.id, tab: 'circle', promptIdx: 0, circleActive: true, customPrompts: null }); ctx.awardXP(5); },
                 className: 'p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-md ' +
@@ -1156,12 +1157,12 @@ window.SelHub = window.SelHub || {
 
             // Navigation
             h('div', { className: 'flex gap-2 justify-center mt-4' },
-              h('button', {
+              h('button', { 'aria-label': 'Previous',
                 onClick: function() { upd('promptIdx', Math.max(0, currentPromptIdx - 1)); },
                 disabled: currentPromptIdx === 0,
                 className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-30 transition-colors'
               }, '\u2190 Previous'),
-              h('button', {
+              h('button', { 'aria-label': currentPromptIdx < prompts.length - 1 ? 'Next Round \u2192' : '\u2705 Close Circle',
                 onClick: function() {
                   if (currentPromptIdx < prompts.length - 1) {
                     upd('promptIdx', currentPromptIdx + 1);
@@ -1178,7 +1179,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Speak prompt aloud
-            callTTS && h('button', {
+            callTTS && h('button', { 'aria-label': 'Read Aloud',
               onClick: function() { callTTS(prompts[currentPromptIdx] || ''); },
               className: 'mt-3 text-[10px] text-amber-500 hover:text-amber-700 font-bold'
             }, '\uD83D\uDD0A Read Aloud')
@@ -1194,7 +1195,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
               'aria-label': 'Circle reflection'
             }),
-            d.currentReflection && h('button', {
+            d.currentReflection && h('button', { 'aria-label': 'Save Reflection',
               onClick: function() {
                 var newReflections = reflections.concat([{ text: d.currentReflection, prompt: prompts[currentPromptIdx], time: new Date().toLocaleTimeString() }]);
                 updMulti({ reflections: newReflections, currentReflection: '' });
@@ -1206,7 +1207,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Generate custom prompts
-          h('button', {
+          h('button', { 'aria-label': 'Circle Scripts',
             onClick: generateCustomPrompts,
             disabled: aiLoading,
             className: 'w-full px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
@@ -1226,7 +1227,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
             ['opening', 'checkIn', 'discussion', 'closing'].map(function(sec) {
               var secLabels = { opening: '\uD83C\uDF1F Opening', checkIn: '\u2600\uFE0F Check-In', discussion: '\uD83D\uDCAC Discussion', closing: '\uD83C\uDF19 Closing' };
-              return h('button', {
+              return h('button', { 'aria-label': 'Grade band: discussion prompts available',
                 key: sec,
                 onClick: function() { updMulti({ scriptSection: sec, activeScriptIdx: undefined }); },
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all ' +
@@ -1250,13 +1251,13 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3' },
                     h('span', { className: 'text-amber-500 font-bold text-sm mt-0.5 shrink-0' }, (i + 1) + '.'),
                     h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, prompt),
-                    callTTS && h('button', {
+                    callTTS && h('button', { 'aria-label': 'Mark Discussion Prompts as Used',
                       onClick: function() { callTTS(prompt); },
                       className: 'text-[10px] text-amber-400 hover:text-amber-600 shrink-0'
                     }, '\uD83D\uDD0A')
                   );
                 }),
-                h('button', {
+                h('button', { 'aria-label': 'Mark Discussion Prompts as Used',
                   onClick: function() { incrementBadgeStat('scriptsUsed', 1); addToast('Discussion prompts reviewed!', 'success'); ctx.awardXP(5); },
                   className: 'w-full px-4 py-2 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors mt-2'
                 }, '\u2705 Mark Discussion Prompts as Used')
@@ -1269,7 +1270,7 @@ window.SelHub = window.SelHub || {
               bandData.map(function(script, i) {
                 var isActive = activeScriptIdx === i;
                 return h('div', { key: i, className: 'bg-white rounded-xl border-2 transition-all ' + (isActive ? 'border-amber-400 shadow-md' : 'border-slate-200 hover:border-amber-300') },
-                  h('button', {
+                  h('button', { 'aria-label': script.title,
                     onClick: function() { upd('activeScriptIdx', isActive ? undefined : i); },
                     className: 'w-full text-left p-4'
                   },
@@ -1283,11 +1284,11 @@ window.SelHub = window.SelHub || {
                       h('p', { className: 'text-sm text-slate-700 leading-relaxed italic' }, '"' + script.desc + '"')
                     ),
                     h('div', { className: 'flex gap-2' },
-                      callTTS && h('button', {
+                      callTTS && h('button', { 'aria-label': 'Read Aloud',
                         onClick: function() { callTTS(script.desc); },
                         className: 'px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors'
                       }, '\uD83D\uDD0A Read Aloud'),
-                      h('button', {
+                      h('button', { 'aria-label': 'Mark as Used',
                         onClick: function() {
                           incrementBadgeStat('scriptsUsed', 1);
                           addToast('Script "' + script.title + '" marked as used!', 'success');
@@ -1354,19 +1355,19 @@ window.SelHub = window.SelHub || {
                 className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': step.title + ' response'
               }),
-              callTTS && h('button', {
+              callTTS && h('button', { 'aria-label': 'Read Guidance Aloud',
                 onClick: function() { callTTS(guidance); },
                 className: 'mt-2 text-[10px] text-amber-500 hover:text-amber-700 font-bold'
               }, '\uD83D\uDD0A Read Guidance Aloud'),
 
               // Navigation
               h('div', { className: 'flex gap-2 justify-center mt-4' },
-                h('button', {
+                h('button', { 'aria-label': 'Previous Step',
                   onClick: function() { upd('harmStep', Math.max(0, harmStep - 1)); },
                   disabled: harmStep === 0,
                   className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-30 transition-colors'
                 }, '\u2190 Previous Step'),
-                h('button', {
+                h('button', { 'aria-label': harmStep < HARM_REPAIR_STEPS.length - 1 ? 'Next Step \u2192' : '\u2705 Complete Repair Process',
                   onClick: function() {
                     if (harmStep < HARM_REPAIR_STEPS.length - 1) {
                       upd('harmStep', harmStep + 1);
@@ -1417,7 +1418,7 @@ window.SelHub = window.SelHub || {
               // Scenario selector
               h('div', { className: 'flex gap-1 overflow-x-auto pb-1' },
                 scenarios.map(function(sc, i) {
-                  return h('button', {
+                  return h('button', { 'aria-label': sc.emoji + ' ' + sc.title,
                     key: i,
                     onClick: function() { updMulti({ scenarioIdx: i, scenarioChoice: undefined, scenarioOutcome: null }); },
                     className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
@@ -1440,7 +1441,7 @@ window.SelHub = window.SelHub || {
                 !scenarioOutcome && h('div', { className: 'space-y-2' },
                   h('p', { className: 'text-xs font-bold text-slate-600 mb-1' }, 'What would you do?'),
                   scenario.choices.map(function(choice, i) {
-                    return h('button', {
+                    return h('button', { 'aria-label': choice.text,
                       key: i,
                       onClick: function() {
                         updMulti({ scenarioChoice: i, scenarioOutcome: choice.next });
@@ -1462,11 +1463,11 @@ window.SelHub = window.SelHub || {
                     h('p', { className: 'text-sm text-emerald-800 leading-relaxed' }, scenarioOutcome)
                   ),
                   h('div', { className: 'flex gap-2 justify-center' },
-                    scenarioIdx < scenarios.length - 1 && h('button', {
+                    scenarioIdx < scenarios.length - 1 && h('button', { 'aria-label': 'Next Scenario',
                       onClick: function() { updMulti({ scenarioIdx: scenarioIdx + 1, scenarioChoice: undefined, scenarioOutcome: null }); },
                       className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors'
                     }, 'Next Scenario \u2192'),
-                    h('button', {
+                    h('button', { 'aria-label': 'Try a Different Choice',
                       onClick: function() { updMulti({ scenarioChoice: undefined, scenarioOutcome: null }); },
                       className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors'
                     }, 'Try a Different Choice')
@@ -1504,7 +1505,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'flex flex-wrap gap-2' },
               (AGREEMENT_SUGGESTIONS[gradeBand] || AGREEMENT_SUGGESTIONS.elementary).map(function(sug, i) {
                 var isAdded = agreements.indexOf(sug) !== -1;
-                return h('button', {
+                return h('button', { 'aria-label': 'Next',
                   key: i,
                   onClick: function() {
                     if (!isAdded) {
@@ -1540,7 +1541,7 @@ window.SelHub = window.SelHub || {
                   }
                 }
               }),
-              h('button', {
+              h('button', { 'aria-label': '+ Add',
                 onClick: function() {
                   if (customAgreement.trim()) {
                     var newAg = agreements.concat([customAgreement.trim()]);
@@ -1576,7 +1577,7 @@ window.SelHub = window.SelHub || {
 
             // Export / complete
             h('div', { className: 'flex gap-2 mt-4' },
-              h('button', {
+              h('button', { 'aria-label': 'Copy to Clipboard',
                 onClick: function() {
                   var text = 'Our Community Agreements\n' + '='.repeat(30) + '\n\n';
                   agreements.forEach(function(ag, i) { text += (i + 1) + '. ' + ag + '\n'; });
@@ -1590,7 +1591,7 @@ window.SelHub = window.SelHub || {
                 },
                 className: 'flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
               }, '\uD83D\uDCCB Copy to Clipboard'),
-              agreements.length >= 5 && h('button', {
+              agreements.length >= 5 && h('button', { 'aria-label': 'Finalize Agreements',
                 onClick: function() {
                   addToast('Agreements finalized! Your community is ready. \uD83E\uDD1D', 'success');
                   ctx.awardXP(15);
@@ -1695,7 +1696,7 @@ window.SelHub = window.SelHub || {
             )
           ),
 
-          h('button', {
+          h('button', { 'aria-label': 'I have read and reflected on these roots',
             onClick: function() {
               ctx.awardXP(10);
               addToast('Thank you for learning about these roots \uD83C\uDF0D', 'success');
@@ -1718,7 +1719,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
             ['opening', 'community', 'harm', 'closing'].map(function(cat) {
               var catData = RESTORATIVE_QUESTIONS[cat];
-              return h('button', {
+              return h('button', { 'aria-label': catData.emoji + ' ' + catData.label,
                 key: cat,
                 onClick: function() { upd('questionCategory', cat); },
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all ' +
@@ -1767,7 +1768,7 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Random question button
-          h('button', {
+          h('button', { 'aria-label': 'Random Question',
             onClick: function() {
               var cats = Object.keys(RESTORATIVE_QUESTIONS);
               var randCat = cats[Math.floor(Math.random() * cats.length)];
@@ -1785,11 +1786,11 @@ window.SelHub = window.SelHub || {
             h('p', { className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
             h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, d.randomQuestion),
             h('div', { className: 'flex gap-2 justify-center mt-3' },
-              callTTS && h('button', {
+              callTTS && h('button', { 'aria-label': 'Read Aloud',
                 onClick: function() { callTTS(d.randomQuestion); },
                 className: 'px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors'
               }, '\uD83D\uDD0A Read Aloud'),
-              h('button', {
+              h('button', { 'aria-label': 'Copy',
                 onClick: function() {
                   if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(d.randomQuestion);
@@ -1820,7 +1821,7 @@ window.SelHub = window.SelHub || {
                 (isExpanded ? 'border-amber-400 shadow-lg' : 'border-slate-200 hover:border-amber-300')
             },
               // Header (always visible)
-              h('button', {
+              h('button', { 'aria-label': role.emoji,
                 onClick: function() {
                   upd('expandedRole', isExpanded ? null : role.id);
                   if (!isExpanded) {
@@ -1880,11 +1881,11 @@ window.SelHub = window.SelHub || {
                     role.phrases.map(function(phrase, i) {
                       return h('div', { key: i, className: 'flex items-center gap-2' },
                         h('p', { className: 'text-xs text-indigo-800 italic leading-relaxed flex-1' }, '"' + phrase + '"'),
-                        callTTS && h('button', {
+                        callTTS && h('button', { 'aria-label': 'Read aloud',
                           onClick: function() { callTTS(phrase); },
                           className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDD0A'),
-                        h('button', {
+                        h('button', { 'aria-label': 'div',
                           onClick: function() {
                             if (navigator.clipboard && navigator.clipboard.writeText) {
                               navigator.clipboard.writeText(phrase);
@@ -1922,7 +1923,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'flex gap-2 bg-slate-100 rounded-xl p-1' },
             ['personA', 'personB'].map(function(person) {
               var personLabel = person === 'personA' ? '\uD83D\uDC64 Person A' : '\uD83D\uDC65 Person B';
-              return h('button', {
+              return h('button', { 'aria-label': 'text-slate-500 hover:text-amber-600',
                 key: person,
                 onClick: function() { upd('empathyPerson', person); },
                 className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
@@ -1979,7 +1980,7 @@ window.SelHub = window.SelHub || {
           })(),
 
           // AI Analysis button
-          h('button', {
+          h('button', { 'aria-label': 'AI Analysis button',
             onClick: function() {
               if (!callGemini) return;
               upd('aiLoading', true);
@@ -2022,11 +2023,11 @@ window.SelHub = window.SelHub || {
             ),
             h('p', { className: 'text-sm text-indigo-800 leading-relaxed' }, d.empathyAnalysis),
             h('div', { className: 'flex gap-2 mt-3' },
-              callTTS && h('button', {
+              callTTS && h('button', { 'aria-label': 'Read Aloud',
                 onClick: function() { callTTS(d.empathyAnalysis); },
                 className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors'
               }, '\uD83D\uDD0A Read Aloud'),
-              h('button', {
+              h('button', { 'aria-label': 'Copy',
                 onClick: function() {
                   if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(d.empathyAnalysis);
@@ -2039,7 +2040,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Reset button
-          h('button', {
+          h('button', { 'aria-label': 'Start New Empathy Map',
             onClick: function() { updMulti({ empathyData: {}, empathyAnalysis: null, personAName: '', personBName: '', empathyPerson: 'personA' }); addToast('Empathy map cleared', 'info'); },
             className: 'w-full px-4 py-2 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
           }, '\uD83D\uDD04 Start New Empathy Map')
@@ -2101,7 +2102,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'flex gap-1 overflow-x-auto pb-1' },
                   scenarios.map(function(sc, i) {
                     var hasRating = ratings['scenario_' + i] !== undefined;
-                    return h('button', {
+                    return h('button', { 'aria-label': sc.emoji + ' ' + (i + 1),
                       key: i,
                       onClick: function() { upd('compareScenarioIdx', i); },
                       className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
@@ -2146,7 +2147,7 @@ window.SelHub = window.SelHub || {
                         : 'Which approach do you think would be more effective and why?'
                     ),
                     h('div', { className: 'flex gap-2' },
-                      h('button', {
+                      h('button', { 'aria-label': 'comparisonScenariosRated',
                         onClick: function() {
                           var newRatings = Object.assign({}, ratings);
                           newRatings[ratingKey] = 'punitive';
@@ -2157,7 +2158,7 @@ window.SelHub = window.SelHub || {
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
                           (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-500 hover:border-red-300')
                       }, gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive'),
-                      h('button', {
+                      h('button', { 'aria-label': 'compareReflections',
                         onClick: function() {
                           var newRatings = Object.assign({}, ratings);
                           newRatings[ratingKey] = 'restorative';
@@ -2190,11 +2191,11 @@ window.SelHub = window.SelHub || {
 
                   // Navigation
                   h('div', { className: 'flex gap-2 justify-center mt-4' },
-                    compareScenarioIdx > 0 && h('button', {
+                    compareScenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
                       onClick: function() { upd('compareScenarioIdx', compareScenarioIdx - 1); },
                       className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors'
                     }, '\u2190 Previous'),
-                    compareScenarioIdx < scenarios.length - 1 && h('button', {
+                    compareScenarioIdx < scenarios.length - 1 && h('button', { 'aria-label': 'Next Scenario',
                       onClick: function() { upd('compareScenarioIdx', compareScenarioIdx + 1); },
                       className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors'
                     }, 'Next Scenario \u2192')
@@ -2225,7 +2226,7 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-[10px] text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
               ),
               totalRated >= totalScenarios && h('div', { className: 'mt-2 text-center' },
-                h('button', {
+                h('button', { 'aria-label': 'Complete Comparison Study',
                   onClick: function() {
                     addToast('Comparison complete! You are a Restorative Scholar! \uD83D\uDCDA', 'success');
                     ctx.awardXP(20);
@@ -2295,7 +2296,7 @@ window.SelHub = window.SelHub || {
               h('p', { className: 'text-sm text-indigo-800 leading-relaxed' }, aiResponse)
             )
           ),
-          h('button', { onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[10px] text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
+          h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[10px] text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
         )
       );
     }

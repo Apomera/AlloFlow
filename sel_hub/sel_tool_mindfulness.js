@@ -664,7 +664,7 @@ window.SelHub = window.SelHub || {
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
-          return h('button', {
+          return h('button', { 'aria-label': tab.label,
             key: tab.id,
             role: 'tab', 'aria-selected': isActive,
             onClick: function() {
@@ -680,12 +680,12 @@ window.SelHub = window.SelHub || {
             }
           }, tab.label);
         }),
-        h('button', {
+        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#64748b', fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', {
+        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#8b5cf633' : 'transparent', color: '#64748b', fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
@@ -737,7 +737,7 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Close',
               onClick: function() { upd('showBadgesPanel', false); },
               style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
             }, 'Close')
@@ -767,7 +767,7 @@ window.SelHub = window.SelHub || {
             BREATH_PATTERNS.map(function(pat, i) {
               var isSel = breathPatternIdx === i;
               var used = breathPatternsUsed[pat.id];
-              return h('button', {
+              return h('button', { 'aria-label': pat.emoji,
                 key: pat.id,
                 onClick: function() { upd('breathPatternIdx', i); if (soundEnabled) sfxClick(); },
                 style: {
@@ -791,7 +791,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Start button
-          !breathActive && h('button', {
+          !breathActive && h('button', { 'aria-label': st.breathPatternsUsed || {},
             onClick: function() {
               stopBreathTimer();
               upd({ breathActive: true, breathPhase: 'inhale', breathTimeLeft: bp.inhale, breathCycle: 1 });
@@ -870,7 +870,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Stop button
-            h('button', {
+            h('button', { 'aria-label': 'Stop',
               onClick: function() {
                 stopBreathTimer();
                 upd({ breathActive: false, breathPhase: null });
@@ -915,7 +915,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { color: '#64748b', fontSize: 11, marginBottom: 20 } },
               scanSteps.length + ' body areas \u2022 ~' + Math.round(scanSteps.reduce(function(s,st) { return s + st.seconds; }, 0) / 60) + ' minutes'
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Toggle sound',
               onClick: function() {
                 upd({ scanStep: 0, scanTimeLeft: scanSteps[0].seconds, scanActive: true });
                 if (soundEnabled) sfxBowl();
@@ -983,7 +983,7 @@ window.SelHub = window.SelHub || {
 
             // Stop button
             h('div', { style: { textAlign: 'center' } },
-              h('button', {
+              h('button', { 'aria-label': 'Stop Scan',
                 onClick: function() {
                   stopScanTimer();
                   upd({ scanStep: -1, scanActive: false });
@@ -1072,7 +1072,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Next sense button
-              h('button', {
+              h('button', { 'aria-label': 'Next sense button',
                 onClick: function() {
                   var nextStep = groundStep + 1;
                   upd('groundStep', nextStep);
@@ -1106,7 +1106,7 @@ window.SelHub = window.SelHub || {
               band === 'elementary' ? 'You used all 5 senses to come back to the present moment. You\'re a grounding superstar!'
               : 'You\'ve re-anchored yourself to the present moment through sensory awareness. Notice how you feel compared to before.'
             ),
-            h('button', {
+            h('button', { 'aria-label': 'Do Another Round',
               onClick: function() { upd({ groundStep: 0, groundInputs: ['','','','',''] }); if (soundEnabled) sfxClick(); },
               style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, '\uD83D\uDD04 Do Another Round'),
@@ -1136,7 +1136,7 @@ window.SelHub = window.SelHub || {
 
           // Prompt inspiration
           h('div', { style: { marginBottom: 16 } },
-            h('button', {
+            h('button', { 'aria-label': 'Give Me a Prompt',
               onClick: function() {
                 var idx = Math.floor(Math.random() * prompts.length);
                 upd('gratPrompt', prompts[idx]);
@@ -1163,7 +1163,7 @@ window.SelHub = window.SelHub || {
             }),
 
             h('div', { style: { display: 'flex', gap: 8 } },
-              gratDraft.trim() && h('button', {
+              gratDraft.trim() && h('button', { 'aria-label': 'Save Entry',
                 onClick: function() {
                   var entry = { text: gratDraft, prompt: gratPrompt, timestamp: Date.now(), aiResp: gratAiResp };
                   var newEntries = gratEntries.concat([entry]);
@@ -1179,7 +1179,7 @@ window.SelHub = window.SelHub || {
                 style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
-              callGemini && gratDraft.trim().length > 10 && h('button', {
+              callGemini && gratDraft.trim().length > 10 && h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
                   upd('gratAiLoading', true);
                   var prompt = 'You are a warm mindfulness coach. A ' + band + ' school student wrote this gratitude entry:\n\n"' + gratDraft + '"\n\n' +
@@ -1255,7 +1255,7 @@ window.SelHub = window.SelHub || {
             var steps = act.steps[band] || act.steps.elementary;
 
             return h('div', null,
-              h('button', {
+              h('button', { 'aria-label': 'All Activities',
                 onClick: function() { upd({ activeActivity: null, activityStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Activities'),
@@ -1325,7 +1325,7 @@ window.SelHub = window.SelHub || {
           !activeActivity && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             MINDFUL_ACTIVITIES.map(function(act) {
               var done = activityDone[act.id];
-              return h('button', {
+              return h('button', { 'aria-label': act.emoji,
                 key: act.id,
                 onClick: function() { upd({ activeActivity: act.id, activityStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: {
@@ -1566,7 +1566,7 @@ window.SelHub = window.SelHub || {
                     )
                   )
                 ),
-                h('button', {
+                h('button', { 'aria-label': 'Toggle sound',
                   onClick: function(e) {
                     e.stopPropagation();
                     var newFavs = Object.assign({}, meditationFavs);
@@ -1600,7 +1600,7 @@ window.SelHub = window.SelHub || {
           meditationIdx >= 0 && meditationIdx < scripts.length && (function() {
             var sc = scripts[meditationIdx];
             return h('div', null,
-              h('button', {
+              h('button', { 'aria-label': 'All Scripts',
                 onClick: function() { upd({ meditationIdx: -1, meditationPlaying: false }); if (soundEnabled) sfxClick(); },
                 style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Scripts'),
@@ -1623,7 +1623,7 @@ window.SelHub = window.SelHub || {
 
               // Action buttons
               h('div', { style: { display: 'flex', gap: 8 } },
-                callTTS && h('button', {
+                callTTS && h('button', { 'aria-label': meditationPlaying ? '\uD83D\uDD0A Reading...' : '\uD83D\uDD0A Read Aloud',
                   onClick: function() {
                     upd('meditationPlaying', true);
                     callTTS(sc.script);
@@ -1632,7 +1632,7 @@ window.SelHub = window.SelHub || {
                   style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }
                 }, meditationPlaying ? '\uD83D\uDD0A Reading...' : '\uD83D\uDD0A Read Aloud'),
 
-                h('button', {
+                h('button', { 'aria-label': 'Mark Complete',
                   onClick: function() {
                     var newDone = meditationsDone + 1;
                     upd('meditationsDone', newDone);
@@ -1658,7 +1658,7 @@ window.SelHub = window.SelHub || {
 
               // Favorite toggle
               h('div', { style: { textAlign: 'center', marginTop: 12 } },
-                h('button', {
+                h('button', { 'aria-label': 'Toggle sound',
                   onClick: function() {
                     var newFavs = Object.assign({}, meditationFavs);
                     if (newFavs[sc.id]) { delete newFavs[sc.id]; } else { newFavs[sc.id] = true; }
@@ -1696,7 +1696,7 @@ window.SelHub = window.SelHub || {
             var isDone = !!movementsDone[ex.id];
 
             return h('div', null,
-              h('button', {
+              h('button', { 'aria-label': 'All Exercises',
                 onClick: function() { upd({ movementActiveId: null, movementStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Exercises'),
@@ -1772,7 +1772,7 @@ window.SelHub = window.SelHub || {
           !movementActiveId && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             MINDFUL_MOVEMENTS.map(function(ex) {
               var done = movementsDone[ex.id];
-              return h('button', {
+              return h('button', { 'aria-label': ex.emoji,
                 key: ex.id,
                 onClick: function() { upd({ movementActiveId: ex.id, movementStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: {
@@ -1819,7 +1819,7 @@ window.SelHub = window.SelHub || {
             var tech = GROUNDING_TECHNIQUES.find(function(t) { return t.id === techActiveId; });
             if (!tech) return null;
 
-            var backBtn = h('button', {
+            var backBtn = h('button', { 'aria-label': 'All Techniques',
               onClick: function() { upd({ techActiveId: null, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false }); if (soundEnabled) sfxClick(); },
               style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
             }, '\u2190 All Techniques');
@@ -1875,7 +1875,7 @@ window.SelHub = window.SelHub || {
 
                 // Start / Stop button
                 h('div', { style: { textAlign: 'center' } },
-                  !techBoxActive && h('button', {
+                  !techBoxActive && h('button', { 'aria-label': st.techsDone || {},
                     onClick: function() {
                       upd({ techBoxActive: true, techBoxPhase: 0, techBoxRound: 0, techBoxTimer: 4 });
                       if (soundEnabled) sfxBowl();
@@ -1913,7 +1913,7 @@ window.SelHub = window.SelHub || {
                     },
                     style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: tech.color, color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
                   }, '\u25B6 Start Box Breathing'),
-                  techBoxActive && h('button', {
+                  techBoxActive && h('button', { 'aria-label': 'Stop',
                     onClick: function() { upd({ techBoxActive: false }); },
                     style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                   }, '\u25A0 Stop')
@@ -1968,7 +1968,7 @@ window.SelHub = window.SelHub || {
                     rows: 3,
                     style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
                   }),
-                  h('button', {
+                  h('button', { 'aria-label': 'Toggle sound',
                     onClick: function() {
                       var next = techRainStep + 1;
                       upd('techRainStep', next);
@@ -1998,7 +1998,7 @@ window.SelHub = window.SelHub || {
                     band === 'elementary' ? 'Great job! You used all four steps to work through a big feeling.' :
                     'You have processed an emotional experience using the RAIN framework. This skill strengthens with practice.'
                   ),
-                  h('button', {
+                  h('button', { 'aria-label': 'Back to Techniques',
                     onClick: function() { upd({ techRainStep: 0, techRainInputs: ['','','',''], techActiveId: null }); },
                     style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
                   }, '\u2190 Back to Techniques')
@@ -2136,7 +2136,7 @@ window.SelHub = window.SelHub || {
                       })
                     ),
 
-                    h('button', {
+                    h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
                         var next = techStep + 1;
                         upd('techStep', next);
@@ -2165,7 +2165,7 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.6 } },
                     'You brought yourself back to the present moment using all five senses.'
                   ),
-                  h('button', {
+                  h('button', { 'aria-label': 'Back to Techniques',
                     onClick: function() { upd({ techStep: 0, techRainInputs: ['','','',''], techActiveId: null }); },
                     style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
                   }, '\u2190 Back to Techniques')
@@ -2180,7 +2180,7 @@ window.SelHub = window.SelHub || {
           !techActiveId && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             GROUNDING_TECHNIQUES.map(function(tech) {
               var done = techsDone[tech.id];
-              return h('button', {
+              return h('button', { 'aria-label': tech.emoji,
                 key: tech.id,
                 onClick: function() {
                   upd({ techActiveId: tech.id, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false });
