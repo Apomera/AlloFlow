@@ -71,5 +71,32 @@ contextBridge.exposeInMainWorld('alloAPI', {
       console.log('[preload:pocketbase:checkAdmin] Checking if admin is configured');
       return ipcRenderer.invoke('pocketbase:check-admin');
     }
+  },
+  ollama: {
+    getInstalledModels: () => {
+      return ipcRenderer.invoke('ollama:get-installed-models');
+    },
+    getAvailableModels: () => {
+      return ipcRenderer.invoke('ollama:get-available-models');
+    },
+    pullModel: (modelId) => {
+      return ipcRenderer.invoke('ollama:pull-model', { modelId });
+    },
+    checkStatus: () => {
+      return ipcRenderer.invoke('ollama:check-status');
+    },
+    checkUpdates: () => {
+      return ipcRenderer.invoke('ollama:check-updates');
+    },
+    onPullProgress: (callback) => {
+      ipcRenderer.on('ollama:pull-progress', (event, data) => {
+        callback(data);
+      });
+    },
+    onUpdateAvailable: (callback) => {
+      ipcRenderer.on('ollama:update-available', (event, data) => {
+        callback(data);
+      });
+    }
   }
 });

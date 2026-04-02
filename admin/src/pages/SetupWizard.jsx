@@ -51,6 +51,14 @@ export default function SetupWizard({ onComplete }) {
   const [gpuStatus, setGpuStatus] = useState(null); // { strategy, label, warning } or { gpu_accelerated, device, fallback_reason }
   const [webAppUrl, setWebAppUrl] = useState(null);
 
+  // Ollama model selection
+  const [availableModels, setAvailableModels] = useState([]);
+  const [selectedModels, setSelectedModels] = useState([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  
+  // Flux variant selection
+  const [fluxModel, setFluxModel] = useState('black-forest-labs/FLUX.1-schnell');
+
   // Handle deployment type selection
   const handleSelectDeployment = async (typeId) => {
     console.log('[SetupWizard] Selected deployment type:', typeId);
@@ -138,9 +146,51 @@ export default function SetupWizard({ onComplete }) {
   };
 
   //Handle services confirmation
-  const handleConfirmServices = () => {
+  const handleConfirmServices = async () => {
     console.log('[SetupWizard] Confirmed services:', selectedServices);
     setConfig({ ...config, selectedServices });
+
+    // If Ollama or Flux is selected, go to model selection step
+    if (selectedServices.includes('ollama') || selectedServices.includes('flux')) {
+      try {
+        setModelsLoading(true);
+        const result = await window.alloAPI.ollama.getAvailableModels();
+        if (result.success) {
+          setAvailableModels(result.models);
+          // Pre-select the first recommended model
+          const recommended = result.models.find(m => m.recommended);
+          if (recommended && selectedModels.length === 0) {
+            setSelectedModels([recommended.id]);
+          }
+        }
+      } catch (err) {
+        console.warn('[SetupWizard] Could not load available models:', err.message);
+      } finally {
+        setModelsLoading(false);
+      }
+      setStep('models');
+    } else {
+      setStep('config');
+    }
+  };
+
+  // Toggle model selection
+  const toggleModel = (modelId) => {
+    if (selectedModels.includes(modelId)) {
+      setSelectedModels(selectedModels.filter(m => m !== modelId));
+    } else {
+      setSelectedModels([...selectedModels, modelId]);
+    }
+  };
+
+  // Confirm model selection
+  const handleConfirmModels = () => {
+    console.log('[SetupWizard] Confirmed models:', selectedModels, 'fluxModel:', fluxModel);
+    setConfig(prev => ({ 
+      ...prev, 
+      selectedModels,
+      fluxModel: selectedServices.includes('flux') ? fluxModel : null
+    }));
     setStep('config');
   };
 
@@ -444,6 +494,139 @@ export default function SetupWizard({ onComplete }) {
     );
   }
 
+  // STEP 3b: Model Selection (when Ollama or Flux is selected)
+  if (step === 'models') {
+    return (
+      <div className="setup-wizard">
+        <div className="setup-container">
+          <button className="back-button" onClick={() => setStep('services')}>← Back</button>
+          
+          <h1>Select Models & Variants</h1>
+          <p className="setup-subtitle">Choose AI models to use</p>
+
+          {selectedServices.includes('ollama') && (
+            <>
+              <h3 style={{marginTop: '20px', marginBottom: '12px'}}>Ollama Models</h3>
+              {modelsLoading ? (
+                <div className="info-box">
+                  <p>Loading available models...</p>
+                </div>
+              ) : (
+                <div className="services-grid">
+              {availableModels.map(model => {
+                const isSelected = selectedModels.includes(model.id);
+                return (
+                  <div
+                    key={model.id}
+                    className={`service-card ${isSelected ? 'selected' : ''}`}
+                    onClick={() => toggleModel(model.id)}
+                  >
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                      <span style={{fontSize: '1.5rem'}}>🤖</span>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {}}
+                        style={{cursor: 'pointer'}}
+                      />
+                    </div>
+                    <h3>{model.name || model.id}</h3>
+                    <p className="service-description">{model.description || ''}</p>
+                    {model.size && (
+                      <p className="service-resources">Size: {model.size}</p>
+                    )}
+                    {model.tier && (
+                      <p style={{fontSize: '0.8rem', color: '#888', marginTop: '4px'}}>Tier: {model.tier}</p>
+                    )}
+                    {model.recommended && (
+                      <p style={{fontSize: '0.8rem', color: '#22c55e', fontWeight: 'bold', marginTop: '4px'}}>★ Recommended</p>
+                    )}
+                  </div>
+                );
+              })}
+                </div>
+              )}
+              {selectedModels.length === 0 && !modelsLoading && (
+                <div className="info-box error">
+                  <strong>⚠️ Select at least one model</strong>
+                  <p>An AI model is required for content generation.</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {selectedServices.includes('flux') && (
+            <>
+              <h3 style={{marginTop: '20px', marginBottom: '12px'}}>Flux Image Generation</h3>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '20px'}}>
+                <div
+                  className={`service-card ${fluxModel === 'black-forest-labs/FLUX.1-schnell' ? 'selected' : ''}`}
+                  onClick={() => setFluxModel('black-forest-labs/FLUX.1-schnell')}
+                >
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                    <span style={{fontSize: '1.5rem'}}>⚡</span>
+                    <input
+                      type="radio"
+                      name="flux-variant"
+                      checked={fluxModel === 'black-forest-labs/FLUX.1-schnell'}
+                      onChange={() => {}}
+                      style={{cursor: 'pointer'}}
+                    />
+                  </div>
+                  <h3>Flux Schnell</h3>
+                  <p className="service-description">Fast generation, good for quick iterations</p>
+                  <p className="service-resources">Speed: Fast | Quality: Good | VRAM: ~12 GB</p>
+                </div>
+
+                <div
+                  className={`service-card ${fluxModel === 'black-forest-labs/FLUX.1-dev' ? 'selected' : ''}`}
+                  onClick={() => setFluxModel('black-forest-labs/FLUX.1-dev')}
+                >
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                    <span style={{fontSize: '1.5rem'}}>🎨</span>
+                    <input
+                      type="radio"
+                      name="flux-variant"
+                      checked={fluxModel === 'black-forest-labs/FLUX.1-dev'}
+                      onChange={() => {}}
+                      style={{cursor: 'pointer'}}
+                    />
+                  </div>
+                  <h3>Flux Dev</h3>
+                  <p className="service-description">Higher quality, slower generation</p>
+                  <p className="service-resources">Speed: Slow | Quality: Excellent | VRAM: ~23 GB</p>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="info-box">
+            {selectedServices.includes('ollama') && (
+              <p>💡 Ollama models will be downloaded during deployment. Larger models require more RAM and disk space but produce better results.</p>
+            )}
+            {selectedServices.includes('flux') && (
+              <p>🎨 Flux variant will be loaded when the service starts. Dev mode produces higher quality but requires more VRAM.</p>
+            )}
+          </div>
+
+          <div className="setup-buttons">
+            <button
+              className="btn-primary"
+              onClick={handleConfirmModels}
+              disabled={(
+                selectedServices.includes('ollama') && selectedModels.length === 0
+              ) || modelsLoading}
+            >
+              Continue
+            </button>
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+        </div>
+      </div>
+    );
+  }
+
   // STEP 4: Configure Deployment
   if (step === 'config' && selectedType) {
     const deployment = DEPLOYMENT_TYPES.find(d => d.id === selectedType);
@@ -451,7 +634,15 @@ export default function SetupWizard({ onComplete }) {
     return (
       <div className="setup-wizard">
         <div className="setup-container">
-          <button className="back-button" onClick={() => setStep(hardware ? 'services' : 'deployment')}>← Back</button>
+          <button className="back-button" onClick={() => {
+            if (hardware && selectedServices.includes('ollama')) {
+              setStep('models');
+            } else if (hardware) {
+              setStep('services');
+            } else {
+              setStep('deployment');
+            }
+          }}>← Back</button>
           
           <h1>Configure {deployment.label}</h1>
           <p className="setup-subtitle">{deployment.description}</p>
@@ -607,8 +798,32 @@ export default function SetupWizard({ onComplete }) {
                   style={{width: deploymentProgress.progress + '%'}}
                 />
               </div>
-              <p className="progress-status">{deploymentProgress.status}</p>
+              <p className="progress-status" style={{whiteSpace: 'pre-line'}}>{deploymentProgress.status}</p>
               <p className="progress-phase">{deploymentProgress.phase}</p>
+            </div>
+          )}
+
+          {deploymentProgress && deploymentProgress.phase === 'models' && (
+            <div className="info-box" style={{marginTop: '12px'}}>
+              {config.selectedModels && config.selectedModels.length > 0 && (
+                <>
+                  <strong>Ollama models queued:</strong>
+                  <ul style={{margin: '8px 0 0 0', paddingLeft: '20px'}}>
+                    {config.selectedModels.map(m => (
+                      <li key={m} style={{marginBottom: '4px'}}>
+                        {deploymentProgress.status && deploymentProgress.status.includes(m) ? '⬇️' : '⏳'} {m}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {config.fluxModel && (
+                <>
+                  {config.selectedModels && config.selectedModels.length > 0 && <div style={{marginTop: '12px'}} />}
+                  <strong>Flux variant:</strong>
+                  <p style={{margin: '4px 0 0 0'}}>{config.fluxModel}</p>
+                </>
+              )}
             </div>
           )}
 

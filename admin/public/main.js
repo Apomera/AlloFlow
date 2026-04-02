@@ -646,76 +646,61 @@ async function startDeployment(setupData, onProgress) {
       }
     }
 
-    // PHASE 5: Set up Ollama models (interactive if needed)
+    // PHASE 5: Set up Ollama models (pull models selected in wizard)
     if (servicesToInstall.includes('ollama')) {
-      let modelToPull = null;
-      
+      const modelsToPull = setupData.selectedModels && setupData.selectedModels.length > 0
+        ? setupData.selectedModels
+        : ['neural-chat:7b']; // Fallback if somehow no models were selected
+
       // Check if models are already installed
+      let installedModels = [];
       try {
-        const status = await ollamaManager.checkOllamaStatus();
-        if (status.modelCount === 0) {
-          // No models — show user selection modal
-          onProgress({ phase: 'models', status: 'Waiting for model selection...', progress: 88 });
-          
-          console.log('[deploy:start] No Ollama models detected — showing selection modal');
-          
-          // Send event to renderer to show modal
-          mainWindow.webContents.send('ollama:no-models', {
-            availableModels: ollamaManager.getAvailableModels()
-          });
-          
-          // Wait for user selection via IPC (handled below)
-          modelToPull = await new Promise((resolve) => {
-            // Set a timeout — if user doesn't respond in 30s, use default
-            const timeout = setTimeout(() => {
-              console.log('[deploy:start] Model selection timeout — using default model');
-              resolve('neural-chat:7b');
-            }, 30000);
-            
-            // Listen for user selection
-            const handleModelSelected = (event, selectedModel) => {
-              clearTimeout(timeout);
-              ipcMain.removeListener('ollama:model-selected', handleModelSelected);
-              resolve(selectedModel);
-            };
-            
-            ipcMain.once('ollama:model-selected', handleModelSelected);
-          });
-        } else {
-          console.log(`[deploy:start] Found ${status.modelCount} Ollama models — skipping pull`);
-          modelToPull = null; // Already have models
-        }
+        installedModels = await ollamaManager.getInstalledModels();
       } catch (err) {
-        console.warn('[deploy:start] Could not check Ollama models:', err.message);
-        modelToPull = 'neural-chat:7b'; // Default fallback
+        console.warn('[deploy:start] Could not check installed models:', err.message);
       }
-      
-      // Pull model if needed
-      if (modelToPull) {
-        onProgress({ 
-          phase: 'models', 
-          status: `Downloading AI model: ${modelToPull}\n(This may take several minutes on first run)`, 
-          progress: 88 
-        });
-        
-        try {
-          await ollamaManager.pullModel(modelToPull, (progress) => {
-            const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
-            onProgress({ 
-              phase: 'models', 
-              status: `${progress.status}\n${Math.round(percent)}%`, 
-              progress: 88 + (percent / 100) * 4 
-            });
+
+      const installedIds = installedModels.map(m => m.name || m.model);
+      const modelsNeeded = modelsToPull.filter(m => !installedIds.includes(m));
+
+      if (modelsNeeded.length > 0) {
+        console.log(`[deploy:start] Pulling ${modelsNeeded.length} model(s):`, modelsNeeded);
+
+        for (let i = 0; i < modelsNeeded.length; i++) {
+          const modelId = modelsNeeded[i];
+          onProgress({
+            phase: 'models',
+            status: `Downloading AI model ${i + 1}/${modelsNeeded.length}: ${modelId}\n(This may take several minutes on first run)`,
+            progress: 88 + (i / modelsNeeded.length) * 4
           });
-          console.log(`[deploy:start] Model ${modelToPull} ready`);
-        } catch (err) {
-          console.warn('[deploy:start] Model pull failed (non-fatal):', err.message);
-          onProgress({ phase: 'models', status: `Model download failed — you can pull models manually via Ollama later.`, progress: 92 });
+
+          try {
+            await ollamaManager.pullModel(modelId, (progress) => {
+              const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('ollama:pull-progress', {
+                  modelId,
+                  ...progress
+                });
+              }
+              onProgress({
+                phase: 'models',
+                status: `${modelId}: ${progress.status}\n${Math.round(percent)}%`,
+                progress: 88 + ((i + percent / 100) / modelsNeeded.length) * 4
+              });
+            });
+            console.log(`[deploy:start] Model ${modelId} ready`);
+          } catch (err) {
+            console.warn(`[deploy:start] Model pull failed for ${modelId} (non-fatal):`, err.message);
+            onProgress({ phase: 'models', status: `Model download failed for ${modelId} — you can pull it later via the admin panel.`, progress: 92 });
+          }
         }
+      } else {
+        console.log('[deploy:start] All selected models already installed — skipping pull');
       }
 
       // Write ai_config.json for the web app to auto-configure itself
-      const defaultModel = modelToPull || 'neural-chat:7b';
+      const defaultModel = modelsToPull[0] || 'neural-chat:7b';
       const aiConfig = {
         backend: 'ollama',
         apiKey: '',
