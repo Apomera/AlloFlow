@@ -108,6 +108,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var complaintImpact = d.complaintImpact || '';
       var complaintResult = d.complaintResult || null;
       var complaintLoading = d.complaintLoading || false;
+      var socialText = d.socialText || '';
+      var socialPlatform = d.socialPlatform || 'instagram';
+      var socialRewrite = d.socialRewrite || null;
+      var socialRewriteLoading = d.socialRewriteLoading || false;
+      var govUrl = d.govUrl || '';
+      var govEntityType = d.govEntityType || 'school';
 
       // ── Audit PDF/Screenshot via Vision ──
       var runVisionAudit = function(base64, mimeType, label) {
@@ -161,6 +167,111 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           'Use your knowledge of this website\u2019s actual content and structure.\n\n';
         // Fall through to standard audit with URL context
         runAudit(url, 'url');
+      };
+
+      // ── Run social media audit ──
+      var runSocialAudit = function() {
+        if (!callGemini || !socialText.trim()) return;
+        upd('auditLoading', true);
+        var prompt = 'You are a social media accessibility expert. Audit this ' + socialPlatform + ' post for accessibility compliance.\n\n' +
+          'POST CONTENT:\n"""\n' + socialText.substring(0, 3000) + '\n"""\n\n' +
+          'Check ALL of the following:\n' +
+          '1. IMAGE ALT TEXT: Does the post describe any images? Are visual elements explained?\n' +
+          '2. VIDEO CAPTIONS: If video is mentioned, are captions/transcripts available?\n' +
+          '3. HASHTAG CASING: Are hashtags using CamelCase (#AccessibilityMatters) or all lowercase (#accessibilitymatters)? CamelCase is required for screen readers.\n' +
+          '4. EMOJI USAGE: Are emojis overused? More than 3-4 emojis in a row blocks screen readers. Are emojis placed at the end of text, not mid-sentence?\n' +
+          '5. PLAIN LANGUAGE: Is the text readable at a broad audience level? Jargon-free?\n' +
+          '6. COLOR CONTRAST: If the post describes graphics/images with text overlays, note potential contrast issues.\n' +
+          '7. LINK ACCESSIBILITY: Are links descriptive or bare URLs?\n' +
+          '8. TEXT IN IMAGES: Is important information conveyed only through images/graphics?\n\n' +
+          'Target audience: ' + (gradeLevel || '8th grade') + ' students learning about social media accessibility.\n\n' +
+          'Return ONLY JSON:\n' +
+          '{"score": 0-100, "grade": "A/B/C/D/F", "summary": "plain-language summary",\n' +
+          '"issues": [{"criterion": "Alt Text|Captions|Hashtags|Emoji|Readability|Contrast|Links|Text-in-Images", "issue": "description", "severity": "critical|major|minor", "who": "who is affected", "fix": "how to fix it"}],\n' +
+          '"strengths": ["good things"],\n' +
+          '"score_breakdown": {"alt_text": 0-10, "captions": 0-10, "hashtags": 0-10, "emoji": 0-10, "readability": 0-10, "contrast": 0-10, "links": 0-10, "text_in_images": 0-10},\n' +
+          '"recommendation": "fix this first"}';
+        callGemini(prompt, true).then(function(result) {
+          try {
+            var cleaned = result.trim();
+            if (cleaned.indexOf('```') !== -1) { var parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+            var audit = JSON.parse(cleaned);
+            var newHistory = auditHistory.concat([{ input: 'Social: ' + socialText.substring(0, 50) + '...', type: 'social', score: audit.score, grade: audit.grade, date: new Date().toISOString() }]);
+            updMulti({ auditResult: audit, auditLoading: false, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1, socialAudits: socialAudits + 1 });
+            if (awardStemXP) awardStemXP(10);
+            if (announceToSR) announceToSR('Social media audit complete. Score: ' + audit.score);
+          } catch(e) {
+            updMulti({ auditResult: { score: -1, summary: 'Social media audit failed.', issues: [], strengths: [] }, auditLoading: false });
+          }
+        }).catch(function() {
+          updMulti({ auditResult: { score: -1, summary: 'Social media audit failed.', issues: [], strengths: [] }, auditLoading: false });
+        });
+      };
+
+      // ── Rewrite post accessibly ──
+      var rewriteAccessibly = function() {
+        if (!callGemini || !socialText.trim()) return;
+        upd('socialRewriteLoading', true);
+        var prompt = 'Rewrite this ' + socialPlatform + ' post to be fully accessible. Keep the same message, tone, and intent.\n\n' +
+          'ORIGINAL POST:\n"""\n' + socialText.substring(0, 3000) + '\n"""\n\n' +
+          'RULES:\n' +
+          '- Use CamelCase for all hashtags (e.g. #AccessibilityMatters not #accessibilitymatters)\n' +
+          '- Place emojis at the end of text, not mid-sentence. Maximum 3-4 emojis total.\n' +
+          '- Add [Image description: ...] note if the post references images\n' +
+          '- Use plain language, no jargon\n' +
+          '- If links are bare URLs, suggest descriptive link text\n' +
+          '- Add [Alt text: ...] suggestion for any images\n' +
+          '- Preserve the original voice and personality\n\n' +
+          'Return ONLY the rewritten post text, nothing else.';
+        callGemini(prompt, true).then(function(result) {
+          updMulti({ socialRewrite: result.trim(), socialRewriteLoading: false });
+          if (announceToSR) announceToSR('Accessible rewrite generated.');
+        }).catch(function() {
+          updMulti({ socialRewrite: 'Rewrite failed. Please try again.', socialRewriteLoading: false });
+        });
+      };
+
+      // ── Run government/Title II audit ──
+      var runGovAudit = function() {
+        if (!callGemini || !govUrl.trim()) return;
+        upd('auditLoading', true);
+        var entityLabel = govEntityType === 'school' ? 'school district' : govEntityType === 'library' ? 'public library' : govEntityType === 'city' ? 'city/county government' : 'state agency';
+        var prompt = 'You are an ADA Title II digital accessibility compliance expert. Audit this ' + entityLabel + ' website at URL: ' + govUrl + '.\n\n' +
+          'This is a government entity subject to the DOJ April 2024 final rule requiring WCAG 2.1 AA compliance.\n\n' +
+          'Check ALL standard WCAG 2.1 AA criteria PLUS these Title II-specific requirements:\n' +
+          '1. ADA COORDINATOR: Is there a published ADA Coordinator name + contact info?\n' +
+          '2. ACCESSIBILITY STATEMENT: Does the site have an accessibility statement/policy page?\n' +
+          '3. GRIEVANCE PROCEDURE: Is there a published ADA grievance procedure?\n' +
+          '4. FORMS: Are enrollment forms, applications, and public comment forms keyboard-accessible?\n' +
+          '5. PDF DOCUMENTS: Are posted PDFs tagged/structured? (common violation for school board minutes, budgets, etc.)\n' +
+          '6. VIDEO CONTENT: Do videos have captions and transcripts?\n' +
+          '7. PAYMENT PORTALS: Are online payment systems keyboard-accessible?\n' +
+          '8. LANGUAGE: Is language declared? Are multilingual options available?\n' +
+          '9. THIRD-PARTY CONTENT: Are embedded third-party tools (Google Forms, Zoom, etc.) accessible?\n' +
+          '10. MOBILE: Is the site responsive and usable on mobile with screen readers?\n\n' +
+          'Target audience: ' + (gradeLevel || '8th grade') + ' students and parents learning about their digital accessibility rights.\n\n' +
+          'Return ONLY JSON with the same schema as a standard audit, plus add a "title_ii" object:\n' +
+          '{"score": 0-100, "grade": "A/B/C/D/F", "summary": "summary",\n' +
+          '"issues": [{"criterion": "...", "issue": "...", "severity": "...", "who": "...", "fix": "..."}],\n' +
+          '"strengths": ["..."],\n' +
+          '"score_breakdown": {"structure": 0-10, "images": 0-10, "contrast": 0-10, "keyboard": 0-10, "forms": 0-10, "language": 0-10, "links": 0-10, "focus": 0-10, "aria": 0-10, "navigation": 0-10},\n' +
+          '"title_ii": {"ada_coordinator": true/false, "accessibility_statement": true/false, "grievance_procedure": true/false, "compliant_forms": true/false, "tagged_pdfs": true/false, "captioned_videos": true/false},\n' +
+          '"recommendation": "fix this first"}';
+        callGemini(prompt, true).then(function(result) {
+          try {
+            var cleaned = result.trim();
+            if (cleaned.indexOf('```') !== -1) { var parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+            var audit = JSON.parse(cleaned);
+            var newHistory = auditHistory.concat([{ input: govUrl.substring(0, 100), type: 'gov', score: audit.score, grade: audit.grade, date: new Date().toISOString() }]);
+            updMulti({ auditResult: audit, auditLoading: false, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1, govAudits: govAudits + 1 });
+            if (awardStemXP) awardStemXP(15);
+            if (announceToSR) announceToSR('Title II audit complete. Score: ' + audit.score);
+          } catch(e) {
+            updMulti({ auditResult: { score: -1, summary: 'Government audit failed.', issues: [], strengths: [] }, auditLoading: false });
+          }
+        }).catch(function() {
+          updMulti({ auditResult: { score: -1, summary: 'Government audit failed.', issues: [], strengths: [] }, auditLoading: false });
+        });
       };
 
       // ── Run accessibility audit ──
@@ -319,10 +430,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             // Input mode tabs
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
               [
-                { id: 'url', icon: '\uD83C\uDF10', label: 'Website URL' },
-                { id: 'html', icon: '\uD83D\uDCBB', label: 'HTML Code' },
-                { id: 'pdf', icon: '\uD83D\uDCC4', label: 'PDF Document' },
-                { id: 'screenshot', icon: '\uD83D\uDCF7', label: 'Screenshot' }
+                { id: 'url', icon: '\uD83C\uDF10', label: 'Website' },
+                { id: 'html', icon: '\uD83D\uDCBB', label: 'HTML' },
+                { id: 'pdf', icon: '\uD83D\uDCC4', label: 'PDF' },
+                { id: 'screenshot', icon: '\uD83D\uDCF7', label: 'Screenshot' },
+                { id: 'social', icon: '\uD83D\uDCF1', label: 'Social Media' },
+                { id: 'gov', icon: '\uD83C\uDFDB\uFE0F', label: 'Gov/School' }
               ].map(function(mode) {
                 return h('button', { 'aria-label': 'Change audit input mode',
                   key: mode.id,
@@ -413,6 +526,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             )
           ),
 
+          // Social media input mode
+          auditInputMode === 'social' && h('div', { className: 'bg-white rounded-2xl border-2 border-pink-200 p-5 space-y-3' },
+            h('div', { className: 'flex items-center gap-2 mb-2' },
+              h('span', { className: 'text-2xl' }, '\uD83D\uDCF1'),
+              h('h3', { className: 'text-sm font-bold text-pink-700' }, 'Social Media Post Audit')
+            ),
+            // Platform selector
+            h('div', { className: 'flex gap-1 bg-pink-50 rounded-lg p-1' },
+              [{ id: 'instagram', label: 'Instagram' }, { id: 'twitter', label: 'X/Twitter' }, { id: 'facebook', label: 'Facebook' }, { id: 'linkedin', label: 'LinkedIn' }, { id: 'tiktok', label: 'TikTok' }].map(function(p) {
+                return h('button', { key: p.id, onClick: function() { upd('socialPlatform', p.id); },
+                  className: 'flex-1 px-2 py-1.5 rounded-md text-[10px] font-bold transition-all ' + (socialPlatform === p.id ? 'bg-white text-pink-700 shadow-sm' : 'text-pink-500/60 hover:text-pink-600')
+                }, p.label);
+              })
+            ),
+            h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Paste the post text (include hashtags, mentions, and any image descriptions)'),
+            h('textarea', { value: socialText, onChange: function(e) { upd('socialText', e.target.value); },
+              placeholder: 'Paste the full post text here...\n\nInclude:\n\u2022 All text content\n\u2022 Hashtags\n\u2022 Image descriptions (if any)\n\u2022 Link URLs',
+              className: 'w-full text-xs p-3 border border-pink-200 rounded-lg outline-none focus:ring-2 focus:ring-pink-300 resize-none h-28', 'aria-label': 'Social media post text'
+            }),
+            h('div', { className: 'flex gap-2' },
+              h('button', { 'aria-label': 'Audit social media post',
+                onClick: runSocialAudit, disabled: !socialText.trim() || auditLoading,
+                className: 'flex-1 px-4 py-2.5 bg-pink-600 text-white rounded-lg text-xs font-bold hover:bg-pink-700 disabled:opacity-40 transition-all'
+              }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit Post'),
+              h('button', { 'aria-label': 'Rewrite post accessibly',
+                onClick: rewriteAccessibly, disabled: !socialText.trim() || socialRewriteLoading,
+                className: 'flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 disabled:opacity-40 transition-all'
+              }, socialRewriteLoading ? 'Rewriting...' : '\u2728 Rewrite Accessibly')
+            ),
+            // Rewrite result
+            socialRewrite && h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2' },
+              h('h4', { className: 'text-xs font-bold text-emerald-700' }, '\u2728 Accessible Version'),
+              h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, socialRewrite),
+              h('button', { 'aria-label': 'Copy rewrite', onClick: function() { navigator.clipboard.writeText(socialRewrite); if (addToast) addToast('Copied!', 'success'); },
+                className: 'px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold hover:bg-emerald-200'
+              }, '\uD83D\uDCCB Copy to Clipboard')
+            ),
+            h('p', { className: 'text-[10px] text-slate-400' }, 'Checks: alt text, captions, CamelCase hashtags, emoji placement, readability, contrast, and text-in-images.')
+          ),
+
+          // Government/School input mode
+          auditInputMode === 'gov' && h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
+            h('div', { className: 'flex items-center gap-2 mb-2' },
+              h('span', { className: 'text-2xl' }, '\uD83C\uDFDB\uFE0F'),
+              h('h3', { className: 'text-sm font-bold text-amber-700' }, 'Government / School Title II Audit')
+            ),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Audit government and school websites for ADA Title II compliance. Includes standard WCAG checks plus Title II-specific requirements.'),
+            // Entity type
+            h('div', { className: 'flex gap-1 bg-amber-50 rounded-lg p-1 mb-2' },
+              [{ id: 'school', label: '\uD83C\uDFEB School' }, { id: 'library', label: '\uD83D\uDCDA Library' }, { id: 'city', label: '\uD83C\uDFD9\uFE0F City/County' }, { id: 'state', label: '\uD83C\uDFDB\uFE0F State' }].map(function(t) {
+                return h('button', { key: t.id, onClick: function() { upd('govEntityType', t.id); },
+                  className: 'flex-1 px-2 py-1.5 rounded-md text-[10px] font-bold transition-all ' + (govEntityType === t.id ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-500/60 hover:text-amber-600')
+                }, t.label);
+              })
+            ),
+            h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Website URL'),
+            h('div', { className: 'flex gap-2' },
+              h('input', { type: 'url', value: govUrl, onChange: function(e) { upd('govUrl', e.target.value); },
+                onKeyDown: function(e) { if (e.key === 'Enter' && govUrl.trim()) runGovAudit(); },
+                placeholder: 'https://www.portlandschools.org', 'aria-label': 'Government website URL',
+                className: 'flex-1 text-sm p-2.5 border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
+              }),
+              h('button', { 'aria-label': 'Run Title II audit',
+                onClick: runGovAudit, disabled: !govUrl.trim() || auditLoading,
+                className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
+              }, auditLoading ? 'Auditing...' : '\u2696\uFE0F Title II Audit')
+            ),
+            h('p', { className: 'text-[10px] text-slate-400 mt-1' }, 'Checks WCAG 2.1 AA + ADA Coordinator info, accessibility statement, grievance procedure, PDF tagging, form accessibility, captions, and third-party tools.')
+          ),
+
           // Loading
           auditLoading && h('div', { className: 'bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center' },
             h('div', { className: 'text-4xl mb-3 animate-pulse' }, '♿'),
@@ -443,6 +626,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   );
                 })
               )
+            ),
+
+            // Title II compliance card (government audits)
+            auditResult.title_ii && h('div', { className: 'bg-amber-50 rounded-2xl border-2 border-amber-300 p-4' },
+              h('h4', { className: 'text-xs font-bold text-amber-800 uppercase tracking-widest mb-3' }, '\u2696\uFE0F Title II Compliance Checklist'),
+              h('div', { className: 'grid grid-cols-2 gap-2' },
+                [{ key: 'ada_coordinator', label: 'ADA Coordinator Published' }, { key: 'accessibility_statement', label: 'Accessibility Statement' }, { key: 'grievance_procedure', label: 'Grievance Procedure' }, { key: 'compliant_forms', label: 'Accessible Forms' }, { key: 'tagged_pdfs', label: 'Tagged PDF Documents' }, { key: 'captioned_videos', label: 'Captioned Videos' }].map(function(item) {
+                  var pass = auditResult.title_ii[item.key];
+                  return h('div', { key: item.key, className: 'flex items-center gap-2 p-2 rounded-lg border ' + (pass ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') },
+                    h('span', { className: 'text-sm' }, pass ? '\u2705' : '\u274C'),
+                    h('span', { className: 'text-[11px] font-bold ' + (pass ? 'text-green-700' : 'text-red-700') }, item.label)
+                  );
+                })
+              ),
+              h('button', { 'aria-label': 'File complaint about findings', onClick: function() { upd('tab', 'action'); }, className: 'mt-3 w-full px-3 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors' }, '\u270D\uFE0F Take Action \u2014 Generate Complaint Letter')
             ),
 
             // Issues
