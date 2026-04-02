@@ -1229,7 +1229,7 @@ window.StemLab = window.StemLab || {
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Epidemic Simulator sections' },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
-            return h('button', { 'aria-label': 'Update setting',
+            return h('button', { 'aria-label': 'Select intervention strategy',
               key: st.id,
               onClick: function() { updMulti({ tab: st.id, hoverDay: null }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-indigo-50 border border-slate-200'),

@@ -728,7 +728,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Challenge',
               onClick: generateChallenge,
               title: 'Challenge Mode [C]',
-              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700' : 'text-amber-900 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
+              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-600 to-orange-700 shadow-md shadow-amber-600/20 hover:from-amber-700 hover:to-orange-800' : 'text-amber-900 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
             }, '\uD83C\uDFAF Challenge'),
             gd.challengeMode && h('button', { 'aria-label': 'Exit',
               onClick: function() { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox||{}, { challengeMode:false, challenge:null, challengeAnswer:'', challengeResult:null }) }); }); },
@@ -742,12 +742,12 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'STL',
               onClick: askAI,
               title: 'AI Tutor [/]',
-              className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (aiLoading ? 'text-white bg-gradient-to-r from-cyan-500 to-blue-600 animate-pulse' : showAI ? 'text-white bg-gradient-to-r from-cyan-500 to-blue-600 shadow-md' : 'text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 hover:bg-cyan-500/30')
+              className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (aiLoading ? 'text-white bg-gradient-to-r from-cyan-700 to-blue-700 animate-pulse' : showAI ? 'text-white bg-gradient-to-r from-cyan-700 to-blue-700 shadow-md' : 'text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 hover:bg-cyan-500/30')
             }, aiLoading ? '\u23F3 Thinking...' : '\uD83E\uDD16 AI Tutor'),
             h('button', { 'aria-label': 'STL',
               onClick: doExportSTL,
               title: 'Export STL [E]',
-              className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
+              className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-700 to-green-700 rounded-full hover:from-emerald-800 hover:to-green-800 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
             }, '\uD83D\uDCE6 STL'),
             h('button', { 'aria-label': 'Back',
               onClick: function() { cleanupScene(); setStemLabTool(null); },

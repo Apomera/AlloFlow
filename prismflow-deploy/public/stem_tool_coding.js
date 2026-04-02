@@ -1802,7 +1802,7 @@
               React.createElement("button", { "aria-label": "Toggle Mode",
                 onClick: toggleMode,
                 className: "coding-mode-toggle flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
-                  (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-500/90 text-white hover:bg-amber-500')
+                  (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-700 text-white hover:bg-amber-600')
               },
                 React.createElement("span", null, codeMode === 'blocks' ? '🧩' : '📝'),
                 codeMode === 'blocks' ? 'Switch to Code' : 'Switch to Blocks'
