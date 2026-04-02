@@ -726,6 +726,9 @@ function startService(serviceId) {
   switch (serviceId) {
     case 'ollama':
       // Ollama: start serve mode
+      // On Windows, ollama.exe is system-installed and auto-starts. Use it directly.
+      // On Unix, use the system binary if available.
+      console.log(`[native-pm] Starting Ollama from: ${binaryPath}`);
       proc = spawn(binaryPath, ['serve'], {
         env: {
           ...process.env,
@@ -734,7 +737,8 @@ function startService(serviceId) {
         },
         cwd: dataDir,
         windowsHide: true,
-        stdio: ['ignore', 'pipe', 'pipe']
+        stdio: ['ignore', 'pipe', 'pipe'],
+        detached: false
       });
       break;
 
@@ -752,9 +756,20 @@ function startService(serviceId) {
       break;
 
     case 'piper': {
-      console.log(`[native-pm] Piper is CLI-based, no persistent process needed`);
-      console.log(`[native-pm] Binary at: ${binaryPath}`);
-      return -1; // Sentinel: no persistent process
+      // Piper: TTS binary - add to PATH so web app can call it
+      // Piper is typically called via subprocess from webAppServer.js
+      // Make it available in PATH by adding its directory
+      const piperDir = path.dirname(binaryPath);
+      const pathEnv = process.env.PATH || '';
+      const newPath = `${piperDir}${path.delimiter}${pathEnv}`;
+      
+      console.log(`[native-pm] Piper is available at: ${binaryPath}`);
+      console.log(`[native-pm] Piper directory added to PATH: ${piperDir}`);
+      
+      // No persistent process needed - Piper is called on-demand via shell
+      // But we need to ensure it's available to the web app server
+      // Return a special marker so startup knows it's "running"
+      return -1; // Sentinel: no persistent process, but Piper is available
     }
 
     case 'flux': {

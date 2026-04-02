@@ -652,12 +652,23 @@ async function startDeployment(setupData, onProgress) {
         ? setupData.selectedModels
         : ['neural-chat:7b']; // Fallback if somehow no models were selected
 
+      console.log('[deploy:start] PHASE 5: Ollama model setup');
+      console.log('[deploy:start] setupData.selectedModels:', setupData.selectedModels);
+      console.log('[deploy:start] Models to pull:', modelsToPull);
+
       // Check if models are already installed
       let installedModels = [];
       try {
         installedModels = await ollamaManager.getInstalledModels();
+        console.log('[deploy:start] Currently installed Ollama models:', installedModels.map(m => m.name || m.model));
       } catch (err) {
-        console.warn('[deploy:start] Could not check installed models:', err.message);
+        console.error('[deploy:start] CRITICAL: Could not connect to Ollama at http://127.0.0.1:11434:', err.message);
+        console.error('[deploy:start] This usually means:');
+        console.error('[deploy:start]   1. ollama.exe is not running');
+        console.error('[deploy:start]   2. Ollama is not installed or not in PATH');
+        console.error('[deploy:start]   3. OLLAMA_HOST environment variable is set differently');
+        console.warn('[deploy:start] Continuing without model pull - you can manually pull models later');
+        onProgress({ phase: 'models', status: `Could not connect to Ollama: ${err.message}. Models can be pulled manually later.`, progress: 88 });
       }
 
       const installedIds = installedModels.map(m => m.name || m.model);
@@ -701,6 +712,24 @@ async function startDeployment(setupData, onProgress) {
 
       // Write ai_config.json for the web app to auto-configure itself
       const defaultModel = modelsToPull[0] || 'neural-chat:7b';
+      
+      // Determine TTS provider based on what's installed
+      let ttsProvider = 'browser'; // Fallback
+      let piperPath = null;
+      
+      if (servicesToInstall.includes('piper')) {
+        try {
+          const piperBinPath = nativePM.getServiceBinaryPath('piper');
+          if (piperBinPath) {
+            ttsProvider = 'piper';
+            piperPath = piperBinPath;
+            console.log('[deploy:start] Piper installed at:', piperBinPath, '— configuring as TTS provider');
+          }
+        } catch (err) {
+          console.warn('[deploy:start] Piper is in servicesToInstall but binary path not found:', err.message);
+        }
+      }
+      
       const aiConfig = {
         backend: 'ollama',
         apiKey: '',
@@ -713,7 +742,8 @@ async function startDeployment(setupData, onProgress) {
           image: 'flux',
           tts: defaultModel
         },
-        ttsProvider: 'browser',
+        ttsProvider: ttsProvider,
+        piperPath: piperPath || undefined,
         imageProvider: servicesToInstall.includes('flux') ? 'flux' : 'auto',
         configuredBy: 'alloflow-admin',
         configuredAt: new Date().toISOString()
