@@ -1520,15 +1520,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         if (_ttsOvr === 'off') return null;
         if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed);
         if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed);
+        if (_ttsOvr === 'piper') return this._piperTTS(text, voice, speed);
         if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed);
 
         // Default: route by backend
+        // NOTE: Ollama doesn't have a TTS endpoint, so fall back to browser
         switch (this.backend) {
             case 'gemini':
                 return this._geminiTTS(text, voice, speed);
+            case 'ollama':
+            case 'pocketbase':
+                // Local backends without TTS endpoints — use browser fallback
+                return this._browserSpeechSynthesis(text, speed);
             case 'openai':
             case 'localai':
-            case 'ollama':
             case 'claude':
             case 'custom':
             default:
@@ -1620,6 +1625,37 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         });
         this._ttsQueue = task.catch(() => { });
         return task;
+    }
+
+    async _piperTTS(text, voice, speed) {
+        // Use Piper WASM TTS library (offline, 40+ languages)
+        if (!window._piperTTS) {
+            this._warnLog('[AIProvider TTS] Piper library not available, falling back to browser');
+            return this._browserSpeechSynthesis(text, speed);
+        }
+
+        try {
+            // Cache check
+            const cacheKey = `piper_${(text || '').toLowerCase().trim()}__${voice}__${speed}`;
+            if (this._ttsCache.has(cacheKey)) {
+                this._debugLog('⚡ Piper TTS cache HIT:', text?.substring(0, 30));
+                return this._ttsCache.get(cacheKey);
+            }
+
+            // Call Piper WASM library
+            this._debugLog(`[AIProvider] Piper TTS: "${text?.substring(0, 30)}..." lang=${voice}`);
+            const audioUrl = await window._piperTTS.speak(text, voice, speed);
+            
+            if (audioUrl) {
+                this._ttsCache.set(cacheKey, audioUrl);
+                return audioUrl;
+            }
+        } catch (e) {
+            this._warnLog('[AIProvider TTS] Piper error:', e.message);
+        }
+
+        // Fallback to browser speech synthesis if Piper fails
+        return this._browserSpeechSynthesis(text, speed);
     }
 
     async _openaiTTS(text, voice, speed) {
