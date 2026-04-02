@@ -634,7 +634,7 @@ if (!safetyChecked) {
       React.createElement("div", { className: "p-5 space-y-2" },
         safetyItems.map(function (item) {
           var checked = safetyChecks[item.id] || false;
-          return React.createElement("button", { "aria-label": "Titration action",
+          return React.createElement("button", { "aria-label": "Toggle safety check: " + item.label,
             key: item.id,
             onClick: function () {
               var next = Object.assign({}, safetyChecks);
@@ -679,7 +679,7 @@ if (!safetyChecked) {
 
       // Enter button
       React.createElement("div", { className: "px-5 pb-5" },
-        React.createElement("button", { "aria-label": "Change safety checked",
+        React.createElement("button", { "aria-label": "Enter lab after completing safety checklist",
           disabled: !allSafetyChecked,
           onClick: function () { upd('safetyChecked', true); },
           className: "w-full py-3 rounded-xl text-sm font-black transition-all " +
@@ -821,7 +821,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
       { id: 'molarity', label: '\uD83E\uDDEE Dilution Calc', color: '#a78bfa' }
     ].map(function(tab) {
       var active = labTab === tab.id;
-      return React.createElement("button", { "aria-label": "Change lab tab",
+      return React.createElement("button", { "aria-label": "Switch to " + tab.label + " tab",
         key: tab.id,
         role: "tab",
         'aria-selected': active,
@@ -843,7 +843,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       var active = p.id === presetId;
 
-      return React.createElement("button", { "aria-label": "Update setting",
+      return React.createElement("button", { "aria-label": "Select titration preset: " + p.label,
 
         key: p.id,
 
@@ -879,7 +879,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       var active = ind.id === indicatorId;
 
-      return React.createElement("button", { "aria-label": "Change indicator",
+      return React.createElement("button", { "aria-label": "Select indicator: " + ind.label,
 
         key: ind.id,
 
@@ -937,7 +937,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       [0.1, 0.5, 1, 5].map(function (amt) {
         var dropIcon = amt <= 0.1 ? '💧' : amt <= 1 ? '💧💧' : '🌊';
-        return React.createElement("button", { "aria-label": "Update setting",
+        return React.createElement("button", { "aria-label": "Add " + amt + " milliliters of titrant",
           key: amt,
           onClick: function () { updMulti({ volumeAdded: Math.min(maxVol, Math.round((volumeAdded + amt) * 10) / 10), _prevVolume: volumeAdded }); },
           className: "px-2 py-1 rounded-lg text-[10px] font-bold text-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-800/40 transition-all hover:scale-105",
@@ -945,7 +945,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
         }, dropIcon + " +" + amt);
       }),
 
-      React.createElement("button", { "aria-label": "Reset",
+      React.createElement("button", { "aria-label": "Reset titration volume to zero",
         onClick: function () { updMulti({ volumeAdded: 0, _reachedEquiv: false, _prevVolume: 0 }); if (addToast) addToast('♻️ ' + safetyTips.reset.text, 'info'); },
         className: "px-2 py-1 rounded-lg text-[10px] font-bold text-amber-300 bg-amber-900/30 hover:bg-amber-800/50 border border-amber-800/40 transition-all hover:scale-105"
       }, "↺ Reset")
@@ -1591,7 +1591,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             else if (showResult && isSelected && !isCorrect) cls += "bg-red-600 text-white";
             else if (showResult && isCorrect) cls += "bg-emerald-600/20 text-emerald-300 border border-emerald-500";
             else cls += "bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400";
-            return React.createElement("button", { "aria-label": "Select option",
+            return React.createElement("button", { "aria-label": "Select answer: " + opt,
               key: opt, disabled: showResult,
               onClick: function() {
                 var correct = opt === cq.answer;
@@ -1647,7 +1647,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
     React.createElement("div", { className: "flex gap-2 justify-center" },
       incidentScenarios.map(function(sc, i) {
         var completed = incidentCompleted[sc.id];
-        return React.createElement("button", { "aria-label": "Update setting",
+        return React.createElement("button", { "aria-label": "Select incident scenario: " + sc.title,
           key: sc.id,
           onClick: function() { updMulti({ incidentIdx: i, incidentAnswer: null }); },
           className: "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all " +
@@ -1685,7 +1685,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             else if (showResult && isSelected && !opt.correct) cls += "bg-red-600 text-white";
             else if (showResult && opt.correct) cls += "bg-emerald-600/20 text-emerald-300 border border-emerald-500";
             else cls += "bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400";
-            return React.createElement("button", { "aria-label": "Titration action",
+            return React.createElement("button", { "aria-label": "Select emergency response: " + opt.label,
               key: opt.id, disabled: showResult,
               onClick: function() {
                 var newCompleted = Object.assign({}, incidentCompleted);
@@ -1736,7 +1736,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
       labEquipment.map(function(eq) {
         var isSelected = selectedEquip === eq.id;
-        return React.createElement("button", { "aria-label": "Change selected equip",
+        return React.createElement("button", { "aria-label": "View equipment: " + eq.name,
           key: eq.id,
           onClick: function() { upd('selectedEquip', isSelected ? null : eq.id); if (!isSelected && typeof awardStemXP === 'function') awardStemXP('equip-' + eq.id, 5, 'Studied ' + eq.name); },
           className: "text-left p-3 rounded-xl border transition-all " +
@@ -1901,7 +1901,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
   React.createElement("div", { className: "flex justify-end" },
 
-    React.createElement("button", { "aria-label": "Action",
+    React.createElement("button", { "aria-label": "Save titration snapshot",
 
       onClick: function () {
 

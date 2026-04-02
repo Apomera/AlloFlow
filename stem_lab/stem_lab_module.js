@@ -1847,7 +1847,7 @@
           className: "w-full py-2.5 border-2 border-dashed border-slate-300 text-slate-400 font-bold text-sm rounded-xl hover:border-indigo-400 hover:text-indigo-500 transition-all"
         }, "+ Add Block"), assessmentBlocks.length > 0 && /*#__PURE__*/React.createElement("div", {
           className: "flex gap-3 pt-2"
-        }, /*#__PURE__*/React.createElement("button", { "aria-label": "Action",
+        }, /*#__PURE__*/React.createElement("button", { "aria-label": "Generate assessment problems",
           onClick: () => {
             const fluencyBlocks = assessmentBlocks.filter(b => b.type === 'fluency');
             if (fluencyBlocks.length > 0 && assessmentBlocks.length === fluencyBlocks.length) {
@@ -2612,7 +2612,7 @@
 
             // Save + Cancel buttons
             React.createElement("div", { className: "flex gap-2" },
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Save STEM station",
                 onClick: function() {
                   var selectedIds = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
                   if (selectedIds.length === 0) { if (addToast) addToast('Select at least one tool', 'error'); return; }
@@ -5267,7 +5267,7 @@
             var showId = 'tip_' + props.id;
             var isOpen = d[showId];
             return React.createElement("span", { className: "relative inline-block ml-1" },
-              React.createElement("button", { "aria-label": "Update setting",
+              React.createElement("button", { "aria-label": "Toggle tooltip: " + props.title,
                 onClick: function () { upd(showId, !isOpen); },
                 className: "w-4 h-4 rounded-full text-[11px] font-bold leading-none inline-flex items-center justify-center " + (isOpen ? "bg-violet-600 text-white" : "bg-violet-100 text-violet-500 hover:bg-violet-200"),
                 title: props.text
@@ -7516,10 +7516,10 @@
               React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u2728 Effects"),
-                  React.createElement("button", { "aria-label": "Reset", onClick: function () { upd('bpFxOn', !d.bpFxOn); if (!d.bpFxOn) _initBpFx(); },
+                  React.createElement("button", { "aria-label": "Toggle audio effects", onClick: function () { upd('bpFxOn', !d.bpFxOn); if (!d.bpFxOn) _initBpFx(); },
                     className: "px-2 py-0.5 rounded-full text-[11px] font-bold transition-all " + (d.bpFxOn ? 'bg-violet-600 text-white' : 'bg-violet-100 text-violet-600')
                   }, d.bpFxOn ? 'FX ON' : 'FX OFF'),
-                  d.bpFxOn && React.createElement("button", { "aria-label": "Reset", onClick: function () { upd('bpReverb', 0); upd('bpDelay', 0); upd('bpFilterCut', 20000); }, className: "text-[11px] text-violet-400 hover:text-violet-600" }, "Reset")
+                  d.bpFxOn && React.createElement("button", { "aria-label": "Reset audio effects", onClick: function () { upd('bpReverb', 0); upd('bpDelay', 0); upd('bpFilterCut', 20000); }, className: "text-[11px] text-violet-400 hover:text-violet-600" }, "Reset")
                 ),
                 d.bpFxOn && React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                   [

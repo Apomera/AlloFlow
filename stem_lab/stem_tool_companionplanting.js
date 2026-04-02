@@ -2666,7 +2666,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     var pct = onCooldown ? Math.min(100, Math.round(((cd - day) / 5) * 100)) : 0;
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": action.label + " garden action",
 
                       key: action.id,
 
@@ -2900,7 +2900,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 ),
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Harvest and start next season",
 
                   onClick: function () {
 
@@ -3124,7 +3124,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   var showResult = quizAnswer !== '';
 
-                  return React.createElement("button", { "aria-label": "Action",
+                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                     key: opt,
 

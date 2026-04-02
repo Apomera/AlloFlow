@@ -1982,7 +1982,7 @@ const d = labToolData.physics;
 
                 React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF Predict the Landing"),
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Generate landing prediction quiz",
 
                   onClick: function () {
 

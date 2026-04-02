@@ -5802,7 +5802,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 TANK_TYPES.map(function (tank) {
 
-                  return React.createElement("button", { "aria-label": "Select option",
+                  return React.createElement("button", { "aria-label": "Select tank: " + tank.name,
 
                     key: tank.id,
 
@@ -5916,7 +5916,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     ].map(function (s) {
 
-                      return React.createElement("button", { "aria-label": "Action",
+                      return React.createElement("button", { "aria-label": "Set simulation speed: " + s.tip,
 
                         key: s.spd,
 
@@ -7074,7 +7074,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex gap-2" },
 
-                    React.createElement("button", { "aria-label": "Action",
+                    React.createElement("button", { "aria-label": "Toggle aquarium simulation",
 
                       onClick: function () {
 
@@ -7772,7 +7772,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   ['small', 'medium', 'large'].map(function (m) {
 
-                    return React.createElement("button", { "aria-label": "Select option",
+                    return React.createElement("button", { "aria-label": "Select mesh size: " + m,
 
                       key: m,
 
@@ -7860,7 +7860,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 }, "\u23E9\u00D75"),
 
-                React.createElement("button", { "aria-label": "Reset",
+                React.createElement("button", { "aria-label": "Reset ocean simulation",
 
                   onClick: resetOcean,
 
@@ -8034,7 +8034,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var isChosen = opt === quizQ.answered;
 
-                    return React.createElement("button", { "aria-label": "Select option",
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                       key: opt,
 

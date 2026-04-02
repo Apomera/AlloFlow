@@ -1132,7 +1132,7 @@ var d = labToolData.plateTectonics || {};
 
                   var active = simTab === tab[0];
 
-                  return React.createElement("button", { "aria-label": "Update setting",
+                  return React.createElement("button", { "aria-label": "Switch to " + tab[2] + " tab",
 
                     key: tab[0],
 
@@ -1932,7 +1932,7 @@ var d = labToolData.plateTectonics || {};
 
             React.createElement("div", { className: "mt-6" },
 
-              React.createElement("button", { "aria-label": "Update setting",
+              React.createElement("button", { "aria-label": "Toggle educational panel: Earth Layers and Plate Boundaries",
 
                 onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('plateTectonics', 5, 'Learned about tectonics'); },
 

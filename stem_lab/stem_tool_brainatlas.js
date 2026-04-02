@@ -3999,7 +3999,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
 
-                      React.createElement("button", { "aria-label": "Function", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
+                      React.createElement("button", { "aria-label": "Close region detail panel", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
 
                     ),
 

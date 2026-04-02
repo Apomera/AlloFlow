@@ -945,7 +945,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2" },
 
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Import CSV data file",
 
                 onClick: function () {
 

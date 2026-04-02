@@ -983,7 +983,7 @@ window.StemLab = window.StemLab || {
 
                     fgQuiz.opts.map(function (opt) {
 
-                      return React.createElement("button", { "aria-label": "Action",
+                      return React.createElement("button", { "aria-label": "Select answer: " + String(opt),
 
                         key: String(opt), onClick: function () {
 

@@ -3,6 +3,19 @@
 // Extracted from stem_tool_science.js for modular loading
 // =================================================================
 (function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-rocks')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-rocks';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   if (!window.StemLab) { console.warn("StemLab registry not found"); return; }
 
   // ═══ 🔬 rocks (rocks) ═══
@@ -45,6 +58,7 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (rocks) ──
       return (function() {
@@ -54,6 +68,14 @@ const d = labToolData.rocks || {};
 
           const mode = d.mode || 'landscape';
 
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('rocks', 'init', {
+              first: 'Rocks and Minerals Explorer loaded. ' + (mode === 'landscape' ? 'Interactive landscape view active. Click on the volcano, river delta, or mountain zones to explore rock types.' : 'Current mode: ' + mode + '.'),
+              repeat: 'Rocks Explorer, mode: ' + mode + '.',
+              terse: 'Rocks Explorer.'
+            }, { debounce: 800 });
+          }
 
 
           // ── Rock type data ──
@@ -1138,7 +1160,7 @@ const d = labToolData.rocks || {};
 
                 ['landscape', 'rocks', 'minerals', 'quiz'].map(function (m) {
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change mode",
 
                     key: m, onClick: function () {
 
@@ -1148,7 +1170,9 @@ const d = labToolData.rocks || {};
 
                       else { upd("quizMode", false); }
 
-                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                      if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', repeat: (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', terse: m + '.' }, { debounce: 500 }); }
+
+                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                   },
 
@@ -1187,6 +1211,8 @@ const d = labToolData.rocks || {};
                         upd("selectedType", type);
 
                         upd("mode", "rocks");
+
+                        if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'zone_select', { first: 'Exploring ' + type + ' rocks. Selected ' + rockId + ' from the ' + (type === 'igneous' ? 'volcano zone' : type === 'sedimentary' ? 'river delta zone' : 'mountain core zone') + '.', repeat: type + ' rock: ' + rockId + '.', terse: rockId + '.' }, { debounce: 500 }); }
 
                       };
 
@@ -1236,7 +1262,7 @@ const d = labToolData.rocks || {};
 
                 ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function (t) {
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change selected type",
 
                     key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
 
@@ -1260,7 +1286,7 @@ const d = labToolData.rocks || {};
 
                   const rt = ROCK_TYPES[rock.type];
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change selected rock",
 
                     key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
 
@@ -1330,7 +1356,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-3" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Hardness Scale"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Mohs Hardness Scale"),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -1354,7 +1380,7 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-400 mt-0.5" },
+                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-500 mt-0.5" },
 
                     React.createElement("span", null, "1 (Talc)"),
 
@@ -1927,7 +1953,7 @@ const d = labToolData.rocks || {};
                 // Mineral grid
                 React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
                   MINERALS.map(function (mineral) {
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Change selected mineral",
                       key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
                       className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
                         (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'bg-slate-50 border-slate-200 hover:border-violet-200'),
@@ -2011,7 +2037,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-1" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Position"),
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Mohs Position"),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -2035,7 +2061,7 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-400 mt-0.5" },
+                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-500 mt-0.5" },
 
                     React.createElement("span", null, "1 (Talc)"),
 
@@ -2069,7 +2095,7 @@ const d = labToolData.rocks || {};
 
                 quizQ.options.map(function (opt) {
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                     key: opt, onClick: function () {
 
@@ -2093,7 +2119,7 @@ const d = labToolData.rocks || {};
 
                 d.quizFeedback.msg,
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Next",
 
                   onClick: function () {
 
@@ -2101,7 +2127,7 @@ const d = labToolData.rocks || {};
 
                     upd("quizIdx", nextIdx); upd("quizFeedback", null);
 
-                  }, className: "ml-3 px-2 py-0.5 bg-amber-600 text-white rounded text-xs"
+                  }, className: "ml-3 px-2 py-0.5 bg-amber-700 text-white rounded text-xs"
 
                 }, "Next \u2192")
 
@@ -2115,7 +2141,7 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Snapshot",
 
                 onClick: function () {
 
@@ -3029,7 +3055,7 @@ const d = labToolData.rockCycle;
 
               ROCKS.map(function (rock) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change selected rock",
 
                   key: rock.id, onClick: function () { upd('selectedRock', rock.id); },
 
@@ -3053,7 +3079,7 @@ const d = labToolData.rockCycle;
 
                   React.createElement("h4", { className: "text-lg font-black", style: { color: sel.color } }, sel.label + " Rocks"),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-400" }, sel.examples)
+                  React.createElement("p", { className: "text-[10px] text-slate-500" }, sel.examples)
 
                 )
 
@@ -3065,7 +3091,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-slate-400 uppercase" }, "Hardness"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Hardness"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.hardness)
 
@@ -3073,7 +3099,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-slate-400 uppercase" }, "Crystals"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Crystals"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.crystals)
 
@@ -3081,7 +3107,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-slate-400 uppercase" }, "Real Uses"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Real Uses"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.uses)
 
@@ -3099,7 +3125,7 @@ const d = labToolData.rockCycle;
 
             React.createElement("div", { className: "mb-3" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\u2194\uFE0F Transformation Processes"),
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\u2194\uFE0F Transformation Processes"),
 
               React.createElement("div", { className: "grid grid-cols-3 gap-2" },
 
@@ -3107,7 +3133,7 @@ const d = labToolData.rockCycle;
 
                   var isActive = d.selectedProcess && d.selectedProcess.label === proc.label && d.selectedProcess.from === proc.from;
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change selected process",
 
                     key: i, onClick: function () { upd('selectedProcess', proc); },
 
@@ -3117,7 +3143,7 @@ const d = labToolData.rockCycle;
 
                     React.createElement("p", { className: "text-sm font-bold " + (isActive ? 'text-orange-700' : 'text-slate-600') }, proc.emoji + " " + proc.label),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-400" }, ROCKS.find(function (r) { return r.id === proc.from; }).label + " \u2192 " + ROCKS.find(function (r) { return r.id === proc.to; }).label)
+                    React.createElement("p", { className: "text-[10px] text-slate-500" }, ROCKS.find(function (r) { return r.id === proc.from; }).label + " \u2192 " + ROCKS.find(function (r) { return r.id === proc.to; }).label)
 
                   );
 
@@ -3135,7 +3161,7 @@ const d = labToolData.rockCycle;
 
             React.createElement("div", { className: "border-t border-slate-200 pt-3" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Start rock cycle quiz",
 
                 onClick: function () {
 
@@ -3167,7 +3193,7 @@ const d = labToolData.rockCycle;
 
                   upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0 });
 
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + " transition-all"
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
 
               }, d.rcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
 
@@ -3187,7 +3213,7 @@ const d = labToolData.rockCycle;
 
                     var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                       key: opt, disabled: d.rcQuiz.answered, onClick: function () {
 
@@ -3209,7 +3235,7 @@ const d = labToolData.rockCycle;
 
             ),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
           );
       })();

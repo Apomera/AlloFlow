@@ -2,6 +2,19 @@
 // Extracted and enhanced with Journey Mode
 (function(){
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-watercycle')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-watercycle';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'waterCycle', desc:'Interactive Water Cycle with Journey Mode',
@@ -14,10 +27,12 @@
       var addToast=ctx.addToast; var t=ctx.t;
       var ArrowLeft=ctx.icons.ArrowLeft;
       var announceToSR=ctx.announceToSR;
+      var a11yClick=ctx.a11yClick;
       var awardStemXP=ctx.awardXP; var getStemXP=ctx.getXP;
       var stemCelebrate=ctx.celebrate; var stemBeep=ctx.beep;
       var gradeLevel=ctx.gradeLevel;
       var callGemini=ctx.callGemini;
+      var canvasNarrate=ctx.canvasNarrate;
       return (function(){
 const d = labToolData.waterCycle;
 
@@ -99,6 +114,16 @@ const d = labToolData.waterCycle;
           // Resolve grade-tiered content
           var selDesc = sel ? (typeof sel.desc === 'object' ? (sel.desc[gradeBand] || sel.desc['3-5']) : sel.desc) : '';
           var selFunFact = sel ? (typeof sel.funFact === 'object' ? (sel.funFact[gradeBand] || sel.funFact['3-5']) : sel.funFact) : '';
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('waterCycle', 'init', {
+              first: 'Water Cycle Simulator loaded. Currently viewing ' + (sel ? sel.label : 'evaporation') + '. This interactive diagram shows evaporation, condensation, precipitation, collection, transpiration, and infiltration.',
+              repeat: 'Water Cycle, stage: ' + (sel ? sel.label : 'evaporation') + '.',
+              terse: 'Water Cycle.'
+            }, { debounce: 800 });
+          }
+
 
 
 
@@ -1503,7 +1528,7 @@ const d = labToolData.waterCycle;
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
               React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
               GRADE_BANDS.map(function(gb) {
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change wc grade override",
                   key: gb,
                   onClick: function() {
                     upd('wcGradeOverride', gb);
@@ -1512,7 +1537,7 @@ const d = labToolData.waterCycle;
                   className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50 border border-slate-200')
                 }, gb);
               }),
-              React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded-full border border-indigo-200" },
+              React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[11px] font-bold rounded-full border border-indigo-200" },
                 gradeBand === 'K-2' ? '\uD83E\uDDF8 Elementary' : gradeBand === '3-5' ? '\uD83D\uDCDA Upper Elementary' : gradeBand === '6-8' ? '\uD83E\uDD13 Middle School' : '\uD83C\uDF93 High School'
               )
             ),
@@ -1522,9 +1547,9 @@ const d = labToolData.waterCycle;
               React.createElement("canvas", { ref: canvasRef, id: "wcCanvas", "data-active-stage": d.activeStage || 'evaporation', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), style: { width: "100%", height: "100%", display: "block" } }),
 
               // Weather badge overlay
-              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[9px] font-bold rounded-full backdrop-blur-sm" }, "\u2744\uFE0F SNOW"),
-              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[9px] font-bold rounded-full backdrop-blur-sm" }, "\u26A1 STORM"),
-              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-2 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[9px] font-bold rounded-full backdrop-blur-sm" }, "\uD83C\uDF19 NIGHT")
+              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\u2744\uFE0F SNOW"),
+              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\u26A1 STORM"),
+              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-2 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "\uD83C\uDF19 NIGHT")
 
             ),
 
@@ -1533,7 +1558,7 @@ const d = labToolData.waterCycle;
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-lg" }, "\uD83C\uDF21"),
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "Climate Lab"),
-                React.createElement("span", { className: "px-2 py-0.5 bg-amber-200 text-amber-800 text-[9px] font-bold rounded-full" }, "INTERACTIVE")
+                React.createElement("span", { className: "px-2 py-0.5 bg-amber-200 text-amber-800 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
               ),
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                 // Solar Intensity
@@ -1583,7 +1608,7 @@ const d = labToolData.waterCycle;
                 )
               ),
               // Weather readout
-              React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 text-[9px] font-bold" },
+              React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold" },
                 (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded" }, "\u2744\uFE0F Snow active"),
                 (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded" }, "\u26A1 Thunderstorm"),
                 (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded" }, "\uD83C\uDF08 Rainbow"),
@@ -1599,9 +1624,9 @@ const d = labToolData.waterCycle;
 
               STAGES.map(function (stage) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change active stage",
 
-                  key: stage.id, onClick: function () { upd('activeStage', stage.id); },
+                  key: stage.id, onClick: function () { upd('activeStage', stage.id); if (typeof canvasNarrate === 'function') { canvasNarrate('waterCycle', 'stage_select', { first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''), repeat: stage.label + ' stage.', terse: stage.label + '.' }, { debounce: 500 }); } },
 
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.activeStage || 'evaporation') === stage.id ? 'text-white shadow-md' : 'border hover:opacity-80'),
 
@@ -1621,10 +1646,10 @@ const d = labToolData.waterCycle;
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { className: "text-xl" }, "\uD83D\uDCA7"),
                   React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "Journey Mode"),
-                  React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[9px] font-bold rounded-full" }, "PLAY AS WATER")
+                  React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "PLAY AS WATER")
                 ),
                 !d.journeyActive
-                  ? React.createElement("button", {
+                  ? React.createElement("button", { "aria-label": "Start Journey",
                       onClick: function() {
                         upd('journeyActive', true);
                         upd('journeyState', 'ocean');
@@ -1637,14 +1662,14 @@ const d = labToolData.waterCycle;
                       className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105"
                     }, "\uD83C\uDFAE Start Journey")
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "End Journey",
                         onClick: function() {
                           upd('journeyActive', false);
                           upd('journeyState', 'idle');
                           var cv = document.getElementById('wcCanvas');
                           if (cv) { cv.dataset.journeyState = 'idle'; }
                         },
-                        className: "px-3 py-1.5 bg-slate-400 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
                       }, "\u23F9 End Journey")
                     )
               ),
@@ -1659,7 +1684,7 @@ const d = labToolData.waterCycle;
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
                   ),
                   d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Change journey state",
                       onClick: function() {
                         upd('journeyState', 'river_runoff');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { runoff: (d.journeyPaths.runoff || 0) + 1 }));
@@ -1670,9 +1695,9 @@ const d = labToolData.waterCycle;
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
                       React.createElement("p", { className: "text-[10px] font-bold text-blue-700" }, "River Runoff"),
-                      React.createElement("p", { className: "text-[9px] text-blue-500" }, "Fast path!")
+                      React.createElement("p", { className: "text-[11px] text-blue-500" }, "Fast path!")
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Change journey state",
                       onClick: function() {
                         upd('journeyState', 'infiltrating');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { infiltrate: (d.journeyPaths.infiltrate || 0) + 1 }));
@@ -1683,9 +1708,9 @@ const d = labToolData.waterCycle;
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
                       React.createElement("p", { className: "text-[10px] font-bold text-amber-700" }, "Underground"),
-                      React.createElement("p", { className: "text-[9px] text-amber-500" }, "Slow + deep")
+                      React.createElement("p", { className: "text-[11px] text-amber-500" }, "Slow + deep")
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Change journey state",
                       onClick: function() {
                         upd('journeyState', 'plant_absorb');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { plant: (d.journeyPaths.plant || 0) + 1 }));
@@ -1696,10 +1721,10 @@ const d = labToolData.waterCycle;
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
                       React.createElement("p", { className: "text-[10px] font-bold text-emerald-700" }, "Enter Plant"),
-                      React.createElement("p", { className: "text-[9px] text-emerald-500" }, "Transpiration!")
+                      React.createElement("p", { className: "text-[11px] text-emerald-500" }, "Transpiration!")
                     )
                   ),
-                  d.journeyState === 'complete' && React.createElement("button", {
+                  d.journeyState === 'complete' && React.createElement("button", { "aria-label": "Start Another Loop",
                     onClick: function() {
                       upd('journeyState', 'ocean');
                       upd('journeyLoops', (d.journeyLoops || 0) + 1);
@@ -1784,7 +1809,7 @@ const d = labToolData.waterCycle;
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Start water cycle quiz",
 
                 onClick: function () {
                   // Grade-tiered static quiz banks
@@ -1828,7 +1853,7 @@ const d = labToolData.waterCycle;
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
-              callGemini && React.createElement("button", {
+              callGemini && React.createElement("button", { "aria-label": "Generate AI quiz question",
                 onClick: function() {
                   if (d.aiQuizLoading) return;
                   upd('aiQuizLoading', true);
@@ -1876,7 +1901,7 @@ const d = labToolData.waterCycle;
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
               d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
-              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[9px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
+              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
               (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
               d.wcQuiz && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-xl p-3 border border-sky-200 shadow-sm" },
@@ -1893,7 +1918,7 @@ const d = labToolData.waterCycle;
 
                     var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm' : isCorrect ? 'bg-emerald-100 border-emerald-400 shadow-sm' : wasChosen ? 'bg-red-100 border-red-400' : 'bg-slate-50 border-slate-200 opacity-40';
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                       key: opt, disabled: d.wcQuiz.answered, onClick: function () {
 
@@ -1930,7 +1955,7 @@ const d = labToolData.waterCycle;
 
             ),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
           );
       })();

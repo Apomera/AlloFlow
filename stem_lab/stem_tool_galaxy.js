@@ -1342,7 +1342,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
 
-                  return React.createElement("button", { "aria-label": "Action",
+                  return React.createElement("button", { "aria-label": "Switch to " + m.label + " mode",
 
                     key: m.key, onClick: function () {
 
@@ -1615,7 +1615,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex gap-1.5 mt-2" },
 
-                  React.createElement("button", { "aria-label": "Action",
+                  React.createElement("button", { "aria-label": "Toggle cosmic time-lapse playback",
 
                     onMouseDown: function (e) {
 
@@ -1886,7 +1886,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   quizQ.options.map(function (opt) {
 
-                    return React.createElement("button", { "aria-label": "Select option",
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                       key: opt, disabled: !!d.quizFeedback,
 

@@ -3509,7 +3509,7 @@ var d = labToolData.cell;
 
                 ),
 
-                d.mode === 'play' && React.createElement("button", { "aria-label": "Action",
+                d.mode === 'play' && React.createElement("button", { "aria-label": "Play as " + selDef.label,
 
                   onClick: function () {
 
@@ -3662,7 +3662,7 @@ var d = labToolData.cell;
 
                   quizQuestion.options.map(function (opt) {
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": "Select quiz answer: " + opt,
 
                       key: opt, onClick: function () {
 
@@ -3698,7 +3698,7 @@ var d = labToolData.cell;
 
                   ORGANISMS.map(function (org) {
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": "Select answer: " + org.label,
 
                       key: org.id, onClick: function () {
 
