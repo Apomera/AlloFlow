@@ -274,63 +274,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         });
       };
 
-      // ── Run accessibility audit ──
+      // ── Triangulated accessibility audit (3 parallel passes) ──
+      var parseAuditJson = function(result) {
+        var cleaned = result.trim();
+        if (cleaned.indexOf('`' + '') !== -1) { var parts = cleaned.split('`' + ''); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('`' + '') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('`' + '')); }
+        return JSON.parse(cleaned);
+      };
+
       var runAudit = function(input, inputType) {
         if (!callGemini) return;
         upd('auditLoading', true);
+        var target = inputType === 'url' ? 'a website at URL: ' + input + '. Use your training knowledge of this website\u2019s structure, layout, and common patterns.' : 'the following HTML content';
+        var htmlCtx = inputType === 'html' ? 'HTML:\n"""\n' + input.substring(0, 8000) + '\n"""\n\n' : '';
+        var audience = 'Target audience: ' + (gradeLevel || '8th grade') + ' students learning about digital accessibility.\nExplain each issue in plain language. For each, explain WHO is affected and WHY.\n\n';
+        var jsonSchema = 'Return ONLY JSON:\n{"score": 0-100, "grade": "A/B/C/D/F", "summary": "plain-language summary", "issues": [{"criterion": "X.X.X", "issue": "desc", "severity": "critical|major|minor", "who": "affected", "fix": "how"}], "strengths": ["good things"], "score_breakdown": {"structure": 0-10, "images": 0-10, "contrast": 0-10, "keyboard": 0-10, "forms": 0-10, "language": 0-10, "links": 0-10, "focus": 0-10, "aria": 0-10, "navigation": 0-10}, "recommendation": "fix this first"}';
 
-        var prompt = 'You are a WCAG 2.1 AA accessibility expert auditing ' +
-          (inputType === 'url' ? 'a website at URL: ' + input + '. Use your training knowledge of this website\u2019s structure, layout, and common patterns.' : 'the following HTML content') + '.\n\n' +
-          (inputType === 'html' ? 'HTML:\n"""\n' + input.substring(0, 8000) + '\n"""\n\n' : '') +
-          'Perform a thorough accessibility audit checking these WCAG 2.1 AA criteria:\n' +
-          '1. Non-text Content (1.1.1) — images without alt text\n' +
-          '2. Info & Relationships (1.3.1) — heading hierarchy, semantic structure\n' +
-          '3. Color Contrast (1.4.3) — text contrast ratios\n' +
-          '4. Keyboard Access (2.1.1) — all functions keyboard-operable\n' +
-          '5. Bypass Blocks (2.4.1) — skip navigation links\n' +
-          '6. Link Purpose (2.4.4) — descriptive link text\n' +
-          '7. Focus Visible (2.4.7) — visible focus indicators\n' +
-          '8. Language (3.1.1) — page language declared\n' +
-          '9. Labels (3.3.2) — form inputs labeled\n' +
-          '10. Name/Role/Value (4.1.2) — ARIA roles correct\n\n' +
-          'Target audience: ' + (gradeLevel || '8th grade') + ' students learning about digital accessibility.\n' +
-          'Explain each issue in plain language a student can understand.\n' +
-          'For each issue, explain WHO is affected and WHY it matters.\n\n' +
-          'Return ONLY JSON:\n' +
-          '{\n' +
-          '  "score": 0-100,\n' +
-          '  "grade": "A/B/C/D/F",\n' +
-          '  "summary": "One-paragraph plain-language summary for students",\n' +
-          '  "issues": [{"criterion": "1.1.1", "issue": "description", "severity": "critical|major|minor", "who": "who is affected", "fix": "how to fix it"}],\n' +
-          '  "strengths": ["things done well"],\n' +
-          '  "score_breakdown": {"structure": 0-10, "images": 0-10, "contrast": 0-10, "keyboard": 0-10, "forms": 0-10, "language": 0-10, "links": 0-10, "focus": 0-10, "aria": 0-10, "navigation": 0-10},\n' +
-          '  "recommendation": "One sentence: what should be fixed first?"\n' +
-          '}';
+        var p1 = callGemini('You are a WCAG 2.1 AA STRUCTURAL accessibility expert auditing ' + target + '.\n\n' + htmlCtx + 'Focus ONLY on structural and semantic issues:\n1. Heading hierarchy (1.3.1)\n2. Language declaration (3.1.1)\n3. ARIA roles and properties (4.1.2)\n4. Form labels and instructions (3.3.2)\n5. Semantic HTML usage (1.3.1)\n\n' + audience + jsonSchema, true);
+        var p2 = callGemini('You are a WCAG 2.1 AA VISUAL accessibility expert auditing ' + target + '.\n\n' + htmlCtx + 'Focus ONLY on visual and perceivable issues:\n1. Images without alt text (1.1.1)\n2. Color contrast ratios (1.4.3)\n3. Text resize and reflow (1.4.4, 1.4.10)\n4. Focus indicators (2.4.7)\n5. Use of color alone to convey meaning (1.4.1)\n\n' + audience + jsonSchema, true);
+        var p3 = callGemini('You are a WCAG 2.1 AA NAVIGATION accessibility expert auditing ' + target + '.\n\n' + htmlCtx + 'Focus ONLY on navigation and operability:\n1. Keyboard access (2.1.1)\n2. Skip navigation links (2.4.1)\n3. Link purpose and descriptive text (2.4.4)\n4. Focus order and tab sequence (2.4.3)\n5. No keyboard traps (2.1.2)\n\n' + audience + jsonSchema, true);
 
-        callGemini(prompt, true).then(function(result) {
+        Promise.all([p1, p2, p3]).then(function(results) {
           try {
-            var cleaned = result.trim();
-            if (cleaned.indexOf('```') !== -1) { var parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
-            var audit = JSON.parse(cleaned);
-            var newHistory = auditHistory.concat([{ input: input.substring(0, 100), type: inputType, score: audit.score, grade: audit.grade, date: new Date().toISOString() }]);
-            var newWorst = Math.min(worstScore === 999 ? audit.score : worstScore, audit.score);
-            var newUnique = inputType === 'url' ? new Set(newHistory.filter(function(h) { return h.type === 'url'; }).map(function(h) { return h.input; })).size : uniqueSites;
-            updMulti({
-              auditResult: audit,
-              auditLoading: false,
-              auditHistory: newHistory.slice(-20),
-              auditsCompleted: auditsCompleted + 1,
-              worstScore: newWorst,
-              uniqueSites: newUnique,
+            var audits = results.map(function(r) { try { return parseAuditJson(r); } catch(e) { return null; } }).filter(Boolean);
+            if (audits.length === 0) throw new Error('All passes failed');
+            var allIssues = []; var seenKeys = {};
+            audits.forEach(function(a) { (a.issues || []).forEach(function(iss) {
+              var key = (iss.criterion || '') + ':' + (iss.issue || '').substring(0, 40);
+              if (!seenKeys[key]) { seenKeys[key] = { count: 1, issue: iss }; allIssues.push(iss); }
+              else { seenKeys[key].count++; if (iss.severity === 'critical' && seenKeys[key].issue.severity !== 'critical') seenKeys[key].issue.severity = 'critical'; }
+            }); });
+            allIssues.forEach(function(iss) { var key = (iss.criterion || '') + ':' + (iss.issue || '').substring(0, 40); if (seenKeys[key] && seenKeys[key].count >= 2) iss.issue = '\u2705 ' + iss.issue; });
+            var mergedBreakdown = {};
+            ['structure','images','contrast','keyboard','forms','language','links','focus','aria','navigation'].forEach(function(k) {
+              var vals = audits.map(function(a) { return a.score_breakdown && a.score_breakdown[k]; }).filter(function(v) { return v != null; });
+              mergedBreakdown[k] = vals.length > 0 ? Math.round(vals.reduce(function(a,b){return a+b;},0) / vals.length) : 5;
             });
-            if (awardStemXP) awardStemXP(10);
-            if (announceToSR) announceToSR('Audit complete. Score: ' + audit.score + ' out of 100. Grade: ' + audit.grade);
-            if (audit.score >= 90 && stemCelebrate) stemCelebrate();
-          } catch (e) {
-            updMulti({ auditResult: { score: -1, summary: 'Audit failed — try different content or a simpler URL.', issues: [], strengths: [] }, auditLoading: false });
+            var allStrengths = []; var seenStr = {};
+            audits.forEach(function(a) { (a.strengths || []).forEach(function(s) { if (!seenStr[s]) { seenStr[s] = true; allStrengths.push(s); } }); });
+            var avgScore = Math.round(audits.reduce(function(s,a){return s+(a.score||0);},0) / audits.length);
+            var grade = avgScore >= 90 ? 'A' : avgScore >= 80 ? 'B' : avgScore >= 70 ? 'C' : avgScore >= 60 ? 'D' : 'F';
+            var merged = { score: avgScore, grade: grade, summary: (audits[0] || {}).summary || 'Triangulated audit complete.',
+              issues: allIssues, strengths: allStrengths, score_breakdown: mergedBreakdown,
+              recommendation: (audits[0] || {}).recommendation || '', _triangulated: true, _passCount: audits.length };
+            var newHistory = auditHistory.concat([{ input: input.substring(0, 100), type: inputType, score: merged.score, grade: merged.grade, date: new Date().toISOString() }]);
+            var newWorst = Math.min(worstScore === 999 ? merged.score : worstScore, merged.score);
+            var newUnique = inputType === 'url' ? new Set(newHistory.filter(function(h) { return h.type === 'url'; }).map(function(h) { return h.input; })).size : uniqueSites;
+            updMulti({ auditResult: merged, auditLoading: false, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1, worstScore: newWorst, uniqueSites: newUnique });
+            if (awardStemXP) awardStemXP(15);
+            if (announceToSR) announceToSR('Triangulated audit complete. Score: ' + merged.score + ' out of 100. Grade: ' + merged.grade);
+            if (merged.score >= 90 && stemCelebrate) stemCelebrate();
+          } catch(e) {
+            updMulti({ auditResult: { score: -1, summary: 'Audit failed. Try different content or a simpler URL.', issues: [], strengths: [] }, auditLoading: false });
           }
         }).catch(function() {
-          updMulti({ auditResult: { score: -1, summary: 'Audit failed — the content could not be analyzed.', issues: [], strengths: [] }, auditLoading: false });
+          updMulti({ auditResult: { score: -1, summary: 'Audit failed. The content could not be analyzed.', issues: [], strengths: [] }, auditLoading: false });
         });
       };
 

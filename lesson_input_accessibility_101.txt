@@ -1,0 +1,35 @@
+Topic: Introduction to Digital Accessibility
+Grade Level: 7-10
+Standards: ISTE 1.1, ISTE 1.2, Common Core ELA W.7-10.6
+
+Learning Objectives:
+1. Students will explain what digital accessibility means and why it matters
+2. Students will identify at least 3 common accessibility barriers on websites
+3. Students will audit a real website using WCAG 2.1 AA criteria
+4. Students will write alt text for 5 different types of images
+5. Students will create an accessible social media post
+
+Key Concepts:
+- WCAG 2.1 (Web Content Accessibility Guidelines)
+- Alt text and its importance for screen reader users
+- Color contrast and visual accessibility
+- Keyboard navigation and focus indicators
+- Heading hierarchy and document structure
+- CamelCase hashtags for screen readers
+- ADA Title II and websites as "places of public accommodation"
+
+Activities:
+- Activity 1: "Blindfold Browse" - Students use a screen reader to navigate a website they visit daily and document the experience
+- Activity 2: "Audit Your School" - Students use the AlloFlow Digital Accessibility Lab to audit their school's website
+- Activity 3: "Rewrite for Access" - Students take a popular social media post and rewrite it to be accessible
+- Activity 4: "Complaint or Compliment?" - Students draft either a formal ADA complaint or an accessibility compliment letter based on their findings
+
+Essential Questions:
+- How does inaccessible technology create barriers equivalent to a building with no wheelchair ramp?
+- Who is responsible for making the internet accessible?
+- What rights do people with disabilities have regarding digital services?
+- How can students be advocates for digital accessibility in their communities?
+
+Vocabulary: WCAG, alt text, screen reader, ARIA, color contrast ratio, semantic HTML, heading hierarchy, keyboard trap, focus indicator, skip navigation, ADA Title II, remediation
+
+Assessment: Students will complete a portfolio containing: (1) an audit report of a real website, (2) a set of 5 alt text descriptions, (3) an accessible social media post, and (4) a reflection on how accessibility connects to equity and justice.
