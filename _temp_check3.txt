@@ -1,6 +1,0 @@
-Triage: flag documents that need expert remediation ──
-      // Only recommend expert review if problems persist AFTER remediation attempts,
-      // not on initial high-variance Gemini audit. Specifically Knowbility referral
-      // triggers only when: (a) score is still poor after auto-fix, or (b) critical
-      // axe-core violations remain after auto-fix passes.
-      const axeViolations

@@ -1,8 +1,0 @@
-Triage: flag documents that need expert remediation ──
-      const axeViolations = axeResults ? axeResults.totalViolations : 0;
-      const axeCritical = axeResults ? axeResults.critical.length : 0;
-      const needsExpertReview = (finalAfterScore !== null && finalAfterScore < 70) || axeCritical > 0 || axeViolations > 5;
-
-      // ── Store results ──
-      const _result = {
-        accessib

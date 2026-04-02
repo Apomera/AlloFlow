@@ -1,4 +1,0 @@
-Action buttons — transforms after pipeline has run */}
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {pdfFixResult ? (<>
-                      <button onClick={a
