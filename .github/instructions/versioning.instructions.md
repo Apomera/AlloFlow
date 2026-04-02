@@ -31,17 +31,16 @@ Each completed substep = patch increment (v0.1.0 → v0.1.1 → v0.1.2, etc.)
 
 ## Checklist: After Making Code Changes
 
-**BEFORE** running build:
+**DO NOT build the installer during active development phases.**
+The installer is only built once all phases in the current roadmap milestone are fully implemented and tested.
 
-- [ ] **Identify change type**: Bug vs New Feature
+**BEFORE** running build (only when all phases are complete):
+
+- [ ] **Confirm all phases done**: Every task in the milestone is implemented and tested
+- [ ] **Identify version increment**: Bug fix → patch, new phase milestone → minor
 - [ ] **Check current version**: Look at `admin/package.json` `"version"` field
-- [ ] **Increment version ONLY IF**:
-  - [ ] Bug fix within same phase → Increment patch (0.1.0 → 0.1.1)
-  - [ ] New feature completing next phase → Increment minor (0.1.x → 0.2.0)
-- [ ] **Update in TWO places**:
-  1. `admin/package.json` - `"version"` field
-  2. Session notes (`.memories/session/`) - document what was changed
-- [ ] **Then build**: `npm run dist`
+- [ ] **Update version**: `admin/package.json` `"version"` field only
+- [ ] **Then build**: `npm run dist` in `admin/`
 
 ## Keep in Sync with Upstream Repository
 

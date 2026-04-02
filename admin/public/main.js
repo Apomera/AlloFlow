@@ -46,6 +46,7 @@ function stopOllamaUpdateDetector() {
 // AlloFlow config directory and files
 const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
 const CONFIG_FILE = path.join(ALLOFLOW_DIR, 'config.json');
+const AI_CONFIG_FILE = path.join(ALLOFLOW_DIR, 'ai_config.json');
 const VERSION_FILE = path.join(ALLOFLOW_DIR, 'version.json');
 const DEPLOYMENT_MANIFEST = path.join(ALLOFLOW_DIR, 'deployment.json');
 
@@ -1139,5 +1140,142 @@ ipcMain.handle('ollama:check-updates', async (event) => {
   } catch (err) {
     console.error('[ipc:ollama:check-updates] Error:', err.message);
     return { success: false, updates: null };
+  }
+});
+
+// ============================================================================
+// AI CONFIG READ / WRITE  (used by AIConfig.jsx)
+// ============================================================================
+
+ipcMain.handle('config:read-ai', async (event) => {
+  try {
+    if (!fs.existsSync(AI_CONFIG_FILE)) return null;
+    const raw = fs.readFileSync(AI_CONFIG_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('[ipc:config:read-ai] Error:', err.message);
+    return null;
+  }
+});
+
+ipcMain.handle('config:write-ai', async (event, config) => {
+  try {
+    if (!fs.existsSync(ALLOFLOW_DIR)) fs.mkdirSync(ALLOFLOW_DIR, { recursive: true });
+    fs.writeFileSync(AI_CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8');
+    console.log('[ipc:config:write-ai] AI config saved');
+    return { success: true };
+  } catch (err) {
+    console.error('[ipc:config:write-ai] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// ============================================================================
+// SERVICES HEALTH & STATUS  (used by Dashboard.jsx, Services.jsx)
+// ============================================================================
+
+// Overall health — checks Ollama reachability
+ipcMain.handle('services:health', async (event) => {
+  try {
+    const status = await ollamaManager.checkOllamaStatus();
+    return status.running ? 'healthy' : 'offline';
+  } catch (err) {
+    return 'offline';
+  }
+});
+
+// Service list — returns Ollama + Piper status with installed model count
+ipcMain.handle('services:list', async (event) => {
+  try {
+    const [ollamaStatus, models] = await Promise.all([
+      ollamaManager.checkOllamaStatus().catch(() => ({ running: false })),
+      ollamaManager.getInstalledModels().catch(() => [])
+    ]);
+
+    const services = [
+      {
+        name: 'Ollama',
+        id: 'ollama',
+        status: ollamaStatus.running ? 'running' : 'stopped',
+        details: ollamaStatus.running ? `${models.length} model(s) installed` : 'Not running',
+        port: 11434
+      }
+    ];
+
+    // Check Piper (native process)
+    try {
+      const allStatuses = nativePM.getServiceStatuses();
+      const piperStatus = allStatuses['piper'];
+      if (piperStatus) {
+        services.push({
+          name: 'Piper TTS',
+          id: 'piper',
+          status: piperStatus.running ? 'running' : 'stopped',
+          details: piperStatus.running ? 'TTS ready' : 'Not running',
+          port: null
+        });
+      }
+    } catch (_) { /* Piper not configured */ }
+
+    return { success: true, containers: services };
+  } catch (err) {
+    console.error('[ipc:services:list] Error:', err.message);
+    return { success: false, containers: [] };
+  }
+});
+
+// System metrics — uptime, memory, CPU load
+ipcMain.handle('services:metrics', async (event) => {
+  try {
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const memUsagePct = Math.round((usedMem / totalMem) * 100);
+
+    const cpuLoad = os.loadavg()[0]; // 1-min avg
+    const cpuCount = os.cpus().length;
+    const cpuUsage = Math.min(100, Math.round((cpuLoad / cpuCount) * 100));
+
+    const uptimeSec = os.uptime();
+    const h = Math.floor(uptimeSec / 3600);
+    const m = Math.floor((uptimeSec % 3600) / 60);
+    const uptime = `${h}h ${m}m`;
+
+    const models = await ollamaManager.getInstalledModels().catch(() => []);
+
+    return {
+      success: true,
+      uptime,
+      cpuUsage,
+      memUsage: memUsagePct,
+      diskUsage: 0, // not critical, skip for now
+      modelCount: models.length
+    };
+  } catch (err) {
+    console.error('[ipc:services:metrics] Error:', err.message);
+    return { success: false };
+  }
+});
+
+// Restart — restarts Ollama via native process manager
+ipcMain.handle('services:restart', async (event) => {
+  try {
+    await nativePM.stopService('ollama');
+    await nativePM.startService('ollama');
+    return { success: true };
+  } catch (err) {
+    console.error('[ipc:services:restart] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// Logs — returns recent log lines for a service
+ipcMain.handle('services:logs', async (event, service) => {
+  try {
+    // nativeProcessManager tracks running processes but doesn't buffer logs.
+    // Return a message directing user to check system logs.
+    return { success: true, logs: `Live log streaming not yet implemented for "${service}". Check system event logs or run the service manually to view output.` };
+  } catch (err) {
+    return { success: true, logs: 'Logs not available for this service' };
   }
 });

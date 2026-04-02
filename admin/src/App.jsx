@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, Cpu, Settings as SettingsIcon, Server, Wrench, Trash2 } from 'lucide-react';
 import SetupWizard from './pages/SetupWizard';
+import Dashboard from './pages/Dashboard';
+import Models from './pages/Models';
+import AIConfig from './pages/AIConfig';
+import Services from './pages/Services';
 import './App.css';
 
 const SERVICE_LABELS = {
@@ -175,7 +180,15 @@ function UninstallPanel({ onComplete, onCancel }) {
   );
 }
 
+const TAB_NAV = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'models',    label: 'Models',    icon: Cpu },
+  { id: 'aiconfig',  label: 'AI Config', icon: SettingsIcon },
+  { id: 'services',  label: 'Services',  icon: Server },
+];
+
 function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [setupState, setSetupState] = useState({
     loading: true,
     installed: false,
@@ -244,55 +257,66 @@ function App() {
     return <SetupWizard onComplete={handleSetupComplete} />;
   }
 
-  // If installed, show dashboard or update screen
-  return (
-    <div className="app-container dashboard">
-      <div className="dashboard-header">
-        <h1>AlloFlow Admin</h1>
-        <p>Deployment: {setupState.config?.deploymentType}</p>
-      </div>
-      
-      {setupState.showUninstall ? (
+  // If installed, show admin shell with sidebar navigation
+  const navigateTab = (tabId) => {
+    setActiveTab(tabId);
+    setSetupState(prev => ({ ...prev, showUninstall: false }));
+  };
+
+  const renderContent = () => {
+    if (setupState.showUninstall) {
+      return (
         <UninstallPanel
           onComplete={() => {
-            // App will reload from main process if config was removed
-            // If only services were removed, refresh state
             checkSetupStatus();
             setSetupState(prev => ({ ...prev, showUninstall: false }));
           }}
           onCancel={() => setSetupState(prev => ({ ...prev, showUninstall: false }))}
         />
-      ) : (
-        <div className="dashboard-content">
-          <h2>Installation Complete</h2>
-          <p>AlloFlow has been configured with deployment type: <strong>{setupState.config?.deploymentType}</strong></p>
-          <p>Setup date: {new Date(setupState.config?.setupDate).toLocaleString()}</p>
-          
-          {setupState.config?.selectedServices && (
-            <p>Services: {setupState.config.selectedServices.join(', ')}</p>
-          )}
-          
-          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-            <button className="btn-primary" onClick={() => {
-              console.log('[App] Re-running setup wizard');
-              setSetupState({ ...setupState, installed: false });
-            }}>
-              Re-run Setup Wizard
-            </button>
-            
-            <button style={{
-              padding: '8px 20px', borderRadius: '6px', border: '1px solid #ef4444',
-              background: 'transparent', color: '#ef4444', cursor: 'pointer',
-              fontWeight: 'bold'
-            }} onClick={() => {
-              console.log('[App] Opening uninstall panel');
-              setSetupState(prev => ({ ...prev, showUninstall: true }));
-            }}>
-              Uninstall Services
-            </button>
-          </div>
+      );
+    }
+    switch (activeTab) {
+      case 'dashboard': return <Dashboard onNavigateTab={navigateTab} />;
+      case 'models':    return <Models />;
+      case 'aiconfig':  return <AIConfig />;
+      case 'services':  return <Services />;
+      default:          return <Dashboard onNavigateTab={navigateTab} />;
+    }
+  };
+
+  return (
+    <div className="admin-shell">
+      <aside className="admin-sidebar">
+        <div className="sidebar-logo">
+          <span>AlloFlow</span>
+          <span className="sidebar-logo-sub">Admin</span>
         </div>
-      )}
+        <nav className="sidebar-nav">
+          {TAB_NAV.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              className={`nav-item${activeTab === id && !setupState.showUninstall ? ' active' : ''}`}
+              onClick={() => navigateTab(id)}
+            >
+              <Icon size={18} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <button className="nav-item" onClick={() => setSetupState(prev => ({ ...prev, installed: false }))}>
+            <Wrench size={18} />
+            <span>Re-run Setup</span>
+          </button>
+          <button className="nav-item danger" onClick={() => setSetupState(prev => ({ ...prev, showUninstall: true }))}>
+            <Trash2 size={18} />
+            <span>Uninstall</span>
+          </button>
+        </div>
+      </aside>
+      <main className="admin-content">
+        {renderContent()}
+      </main>
     </div>
   );
 }

@@ -98,5 +98,20 @@ contextBridge.exposeInMainWorld('alloAPI', {
         callback(data);
       });
     }
-  }
+  },
+
+  // ── Flat model API (used by Models.jsx) ──────────────────────────────────
+  listModels: () => ipcRenderer.invoke('ollama:get-installed-models'),
+  pullModel: (model) => ipcRenderer.invoke('ollama:pull-model', { modelId: model }),
+
+  // ── AI Config read/write (used by AIConfig.jsx) ──────────────────────────
+  readAIConfig: () => ipcRenderer.invoke('config:read-ai'),
+  writeAIConfig: (config) => ipcRenderer.invoke('config:write-ai', config),
+
+  // ── Service health & status (used by Dashboard.jsx, Services.jsx) ────────
+  getHealth:       () => ipcRenderer.invoke('services:health'),
+  getServices:     () => ipcRenderer.invoke('services:list'),
+  getSystemMetrics:() => ipcRenderer.invoke('services:metrics'),
+  startStack:      () => ipcRenderer.invoke('services:restart'),
+  getServiceLogs:  (service) => ipcRenderer.invoke('services:logs', service),
 });
