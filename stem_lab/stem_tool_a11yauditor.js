@@ -45,12 +45,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
   ];
 
   var AUDIT_BADGES = [
-    { id: 'first_audit', icon: '🔍', name: 'First Audit', desc: 'Complete your first accessibility audit', check: function(s) { return s.auditsCompleted >= 1; } },
-    { id: 'five_audits', icon: '📊', name: 'Pattern Spotter', desc: 'Complete 5 audits', check: function(s) { return s.auditsCompleted >= 5; } },
-    { id: 'perfect_find', icon: '🎯', name: 'Eagle Eye', desc: 'Find a document with score below 30', check: function(s) { return s.worstScore < 30 && s.worstScore >= 0; } },
-    { id: 'advocate', icon: '✊', name: 'Accessibility Advocate', desc: 'Audit 3 different websites', check: function(s) { return s.uniqueSites >= 3; } },
-    { id: 'expert', icon: '🏅', name: 'WCAG Expert', desc: 'Learn about all 10 core criteria', check: function(s) { return s.criteriaExplored >= 10; } },
-    { id: 'reporter', icon: '📋', name: 'Compliance Reporter', desc: 'Download an audit report', check: function(s) { return s.reportsDownloaded >= 1; } },
+    { id: 'first_audit', icon: '\uD83D\uDD0D', name: 'First Audit', desc: 'Complete your first accessibility audit', check: function(s) { return s.auditsCompleted >= 1; } },
+    { id: 'five_audits', icon: '\uD83D\uDCCA', name: 'Pattern Spotter', desc: 'Complete 5 audits', check: function(s) { return s.auditsCompleted >= 5; } },
+    { id: 'perfect_find', icon: '\uD83C\uDFAF', name: 'Eagle Eye', desc: 'Find a document with score below 30', check: function(s) { return s.worstScore < 30 && s.worstScore >= 0; } },
+    { id: 'advocate', icon: '\u270A', name: 'Accessibility Advocate', desc: 'Audit 3 different websites', check: function(s) { return s.uniqueSites >= 3; } },
+    { id: 'expert', icon: '\uD83C\uDFC5', name: 'WCAG Expert', desc: 'Learn about all 10 core criteria', check: function(s) { return s.criteriaExplored >= 10; } },
+    { id: 'reporter', icon: '\uD83D\uDCCB', name: 'Compliance Reporter', desc: 'Download an audit report', check: function(s) { return s.reportsDownloaded >= 1; } },
+    { id: 'change_agent', icon: '\uD83D\uDCE3', name: 'Change Agent', desc: 'Generate your first accessibility complaint', check: function(s) { return s.complaintsGenerated >= 1; } },
+    { id: 'social_scout', icon: '\uD83D\uDCF1', name: 'Social Media Scout', desc: 'Audit 3 social media posts', check: function(s) { return s.socialAudits >= 3; } },
+    { id: 'title2_expert', icon: '\u2696\uFE0F', name: 'Title II Expert', desc: 'Complete a government website audit', check: function(s) { return s.govAudits >= 1; } },
+    { id: 'knowbility_ally', icon: '\u267F', name: 'Knowbility Ally', desc: 'Explore all Knowbility programs', check: function(s) { return s.knowbilityExplored >= 3; } },
   ];
 
   window.StemLab.registerTool('a11yAuditor', {
@@ -95,6 +99,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var reportsDownloaded = d.reportsDownloaded || 0;
       var worstScore = d.worstScore !== undefined ? d.worstScore : 999;
       var uniqueSites = d.uniqueSites || 0;
+      var complaintsGenerated = d.complaintsGenerated || 0;
+      var socialAudits = d.socialAudits || 0;
+      var govAudits = d.govAudits || 0;
+      var knowbilityExplored = d.knowbilityExplored || 0;
+      var complaintEntity = d.complaintEntity || '';
+      var complaintType = d.complaintType || 'ada_coordinator';
+      var complaintImpact = d.complaintImpact || '';
+      var complaintResult = d.complaintResult || null;
+      var complaintLoading = d.complaintLoading || false;
 
       // ── Audit PDF/Screenshot via Vision ──
       var runVisionAudit = function(base64, mimeType, label) {
@@ -226,7 +239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
       // ── Badge checker ──
       var checkBadges = function() {
-        var state = { auditsCompleted: auditsCompleted, worstScore: worstScore, uniqueSites: uniqueSites, criteriaExplored: criteriaExplored, reportsDownloaded: reportsDownloaded };
+        var state = { auditsCompleted: auditsCompleted, worstScore: worstScore, uniqueSites: uniqueSites, criteriaExplored: criteriaExplored, reportsDownloaded: reportsDownloaded, complaintsGenerated: complaintsGenerated, socialAudits: socialAudits, govAudits: govAudits, knowbilityExplored: knowbilityExplored };
         var earned = badges.slice();
         AUDIT_BADGES.forEach(function(b) {
           if (earned.indexOf(b.id) < 0 && b.check(state)) {
@@ -250,8 +263,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h(ArrowLeft, { size: 20 })
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
-            h('h2', { className: 'text-xl font-black text-slate-800' }, '♿ Digital Accessibility Lab'),
-            h('p', { className: 'text-xs text-slate-500' }, 'Audit websites and documents for WCAG 2.1 AA compliance')
+            h('h2', { className: 'text-xl font-black text-slate-800' }, '\u267F Digital Accessibility Lab'),
+            h('p', { className: 'text-xs text-slate-500' }, 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate')
           ),
           auditsCompleted > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
         ),
@@ -286,12 +299,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         ),
 
         // Tabs
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, role: 'tablist', 'aria-label': 'Accessibility Lab sections', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200' },
-          [{ id: 'audit', label: '🔍 Audit' }, { id: 'learn', label: '📖 Learn WCAG' }, { id: 'history', label: '📊 History' }, { id: 'badges', label: '🏅 Badges' }].map(function(t) {
-            return h('button', { 'aria-label': 'Change tab',
+        h('div', { role: 'tablist', 'aria-label': 'Accessibility Lab sections', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 flex-wrap' },
+          [{ id: 'audit', label: '\uD83D\uDD0D Audit' }, { id: 'learn', label: '\uD83D\uDCD6 Learn' }, { id: 'knowbility', label: '\u267F Knowbility' }, { id: 'action', label: '\u2696\uFE0F Take Action' }, { id: 'history', label: '\uD83D\uDCCA History' }, { id: 'badges', label: '\uD83C\uDFC5 Badges' }].map(function(t) {
+            return h('button', { 'aria-label': 'Switch to ' + t.label + ' tab',
               key: t.id, role: 'tab', 'aria-selected': tab === t.id,
               onClick: function() { upd('tab', t.id); },
-              className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-600/60 hover:text-teal-700')
+              className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold transition-all min-w-[60px] ' + (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-600/60 hover:text-teal-700')
             }, t.label);
           })
         ),
@@ -510,6 +523,167 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               )
             );
           })
+        ),
+
+        // ═══ KNOWBILITY TAB ═══
+        tab === 'knowbility' && h('div', { className: 'space-y-4' },
+          // Hero banner
+          h('div', { className: 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-2xl p-6 text-center' },
+            h('div', { className: 'text-4xl mb-2' }, '\u267F'),
+            h('h3', { className: 'text-lg font-black' }, 'Knowbility'),
+            h('p', { className: 'text-sm opacity-90 mt-1' }, 'Creating an inclusive digital world since 1999')
+          ),
+          // History
+          h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
+            h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, 'Our Partner\u2019s Story'),
+            h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
+              parseInt(gradeLevel, 10) <= 5
+                ? 'Knowbility is a group of people in Austin, Texas who believe everyone should be able to use the internet \u2014 including people who are blind, deaf, or have other disabilities. They\u2019ve been working on this since 1999, which is over 25 years! They teach people how to build websites the right way and help test if websites actually work for everyone.'
+                : 'Knowbility is a 501(c)(3) nonprofit founded in 1999 in Austin, TX. Born from a community effort during the late-1990s tech boom, they recognized that the digital revolution was leaving people with disabilities behind. For over 25 years, they\u2019ve worked to ensure equal access to technology through three pillars: Awareness, Education, and Accessibility Services.'
+            ),
+            h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
+              [{ num: '25+', label: 'Years' }, { num: '1999', label: 'Founded' }, { num: '501(c)(3)', label: 'Nonprofit' }].map(function(stat) {
+                return h('div', { key: stat.label, className: 'text-center p-2 bg-indigo-50 rounded-lg' },
+                  h('div', { className: 'text-lg font-black text-indigo-700' }, stat.num),
+                  h('div', { className: 'text-[10px] text-indigo-600 font-bold' }, stat.label)
+                );
+              })
+            )
+          ),
+          // Programs
+          h('div', { className: 'space-y-3' },
+            h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, 'Key Programs'),
+            // AccessU
+            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-purple-200 p-4 hover:border-purple-400 transition-all' },
+              h('div', { className: 'flex items-start gap-3' },
+                h('div', { className: 'text-2xl' }, '\uD83C\uDF93'),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'font-bold text-sm text-purple-800' }, 'John Slatin AccessU'),
+                  h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Annual hands-on training conference (hybrid). Named after Dr. John Slatin, it teaches practical skills in coding, usability, and inclusive design. Next session: May 11\u201314, 2026.'),
+                  h('div', { className: 'text-[10px] text-purple-500 font-bold mt-2' }, '\uD83D\uDD17 knowbility.org/programs/accessu')
+                )
+              )
+            ),
+            // AIR
+            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-teal-200 p-4 hover:border-teal-400 transition-all' },
+              h('div', { className: 'flex items-start gap-3' },
+                h('div', { className: 'text-2xl' }, '\uD83C\uDF10'),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'font-bold text-sm text-teal-800' }, 'Accessibility Internet Rally (AIR)'),
+                  h('p', { className: 'text-xs text-slate-600 mt-1' }, 'An 8-week global online competition pairing volunteer web professionals with nonprofits to build accessible websites. Started as a one-day hackathon and evolved into Knowbility\u2019s signature program.'),
+                  h('div', { className: 'text-[10px] text-teal-500 font-bold mt-2' }, '\uD83D\uDD17 knowbility.org/programs/air')
+                )
+              )
+            )
+          ),
+          // Get Involved
+          h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-5 space-y-3' },
+            h('h4', { className: 'text-sm font-black text-amber-800 uppercase tracking-widest' }, '\uD83E\uDD1D How to Get Involved'),
+            h('div', { className: 'space-y-2' },
+              [{ icon: '\uD83D\uDE4B', title: 'Volunteer at AccessU', desc: 'Help with registration, room hosting, and support. Earn free conference access for a 4-8 hour shift.' },
+               { icon: '\uD83D\uDCBB', title: 'Join an AIR Team', desc: 'Developers, designers, and content creators build accessible websites for nonprofits.' },
+               { icon: '\uD83D\uDCDA', title: 'Learn', desc: 'Attend AccessU sessions, use free resources, and build your accessibility skills.' },
+               { icon: '\uD83D\uDCE3', title: 'Advocate', desc: 'Use THIS tool to audit and report accessibility barriers. Be a change agent in your community!' }
+              ].map(function(item) {
+                return h('button', { key: item.title, onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(3); }, className: 'w-full text-left flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-100 hover:border-amber-300 transition-all' },
+                  h('span', { className: 'text-lg' }, item.icon),
+                  h('div', null,
+                    h('div', { className: 'font-bold text-xs text-amber-800' }, item.title),
+                    h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, item.desc)
+                  )
+                );
+              })
+            ),
+            h('a', { href: 'https://knowbility.org/about/volunteer-with-knowbility', target: '_blank', rel: 'noopener', className: 'block text-center px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors mt-3' }, '\u267F Visit Knowbility \u2014 Volunteer Today')
+          )
+        ),
+
+        // ═══ TAKE ACTION TAB ═══
+        tab === 'action' && h('div', { className: 'space-y-4' },
+          // Title II explainer
+          h('div', { className: 'bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl p-6' },
+            h('h3', { className: 'text-lg font-black flex items-center gap-2' }, '\u2696\uFE0F ADA Title II & Digital Accessibility'),
+            h('p', { className: 'text-sm opacity-90 mt-2 leading-relaxed' },
+              parseInt(gradeLevel, 10) <= 5
+                ? 'There\u2019s a law called the ADA (Americans with Disabilities Act) that says government websites \u2014 like your school district\u2019s website, the library, and city hall \u2014 must work for EVERYONE, including people with disabilities. If they don\u2019t, you can ask them to fix it!'
+                : parseInt(gradeLevel, 10) <= 8
+                  ? 'In April 2024, the U.S. Department of Justice updated Title II of the ADA to require all state and local government websites to meet WCAG 2.1 AA standards. This includes school districts, libraries, courts, DMVs, and public transit. Entities with 50,000+ population must comply by April 24, 2026.'
+                  : 'The DOJ\u2019s April 2024 final rule under ADA Title II mandates WCAG 2.1 AA compliance for all state and local government web content and mobile apps. Compliance deadlines: April 24, 2026 (pop \u226550K) and April 26, 2027 (pop <50K). This covers schools, libraries, courts, DMVs, public transit, parks, voting systems, and all third-party vendor content.'
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+              ['Schools', 'Libraries', 'City/County Gov', 'Courts', 'Public Transit', 'Parks & Rec', 'DMV', 'Voting'].map(function(e) {
+                return h('span', { key: e, className: 'bg-white/15 text-white/90 px-2 py-1 rounded-md text-[10px] font-bold' }, e);
+              })
+            )
+          ),
+          // Complaint builder
+          h('div', { className: 'bg-white rounded-2xl border-2 border-red-200 p-5 space-y-3' },
+            h('h4', { className: 'text-sm font-black text-red-800 flex items-center gap-2' }, '\uD83D\uDCDD Accessibility Complaint Builder'),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Found accessibility barriers? Generate a formal complaint letter to request change. Choose your recipient:'),
+            // Recipient selector
+            h('div', { className: 'flex gap-2 mb-3' },
+              [{ id: 'ada_coordinator', label: '\uD83C\uDFE2 ADA Coordinator' }, { id: 'doj', label: '\uD83C\uDFDB\uFE0F Dept. of Justice' }].map(function(opt) {
+                return h('button', { key: opt.id, onClick: function() { upd('complaintType', opt.id); },
+                  className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-500 hover:border-red-300')
+                }, opt.label);
+              })
+            ),
+            // Entity name
+            h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Entity Name (school, city, agency)'),
+            h('input', { type: 'text', value: complaintEntity, onChange: function(e) { upd('complaintEntity', e.target.value); }, placeholder: 'e.g. Portland Public Schools, City of Austin', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-300 mt-1', 'aria-label': 'Entity name' }),
+            // Impact description
+            h('label', { className: 'text-xs font-bold text-slate-600 block mt-2' }, 'Describe the impact (who is affected and how)'),
+            h('textarea', { value: complaintImpact, onChange: function(e) { upd('complaintImpact', e.target.value); }, placeholder: 'e.g. My child uses a screen reader and cannot navigate the enrollment forms...', className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none h-20 mt-1', 'aria-label': 'Impact description' }),
+            // Auto-populate from last audit
+            auditResult && auditResult.issues && h('p', { className: 'text-[10px] text-teal-600 font-bold' }, '\u2705 ' + auditResult.issues.length + ' issues from your last audit will be included automatically'),
+            // Generate button
+            h('button', {
+              'aria-label': 'Generate complaint letter',
+              disabled: !complaintEntity.trim() || complaintLoading,
+              onClick: function() {
+                if (!callGemini) return;
+                upd('complaintLoading', true);
+                var issuesList = auditResult && auditResult.issues ? auditResult.issues.map(function(i) { return 'WCAG ' + i.criterion + ': ' + i.issue + ' (Severity: ' + i.severity + ')'; }).join('\n') : 'No automated audit data available.';
+                var prompt = 'Generate a formal ADA accessibility complaint letter.\n\n' +
+                  'RECIPIENT: ' + (complaintType === 'doj' ? 'U.S. Department of Justice, Civil Rights Division, 950 Pennsylvania Avenue NW, Washington DC 20530' : 'ADA Coordinator at ' + complaintEntity) + '\n' +
+                  'ENTITY: ' + complaintEntity + '\n' +
+                  'IMPACT: ' + (complaintImpact || 'Barriers encountered accessing digital services.') + '\n' +
+                  'AUDIT FINDINGS:\n' + issuesList + '\n\n' +
+                  'TONE: Constructive and partnership-oriented. Emphasize improving access, not punishment.\n' +
+                  'INCLUDE: Specific WCAG violations cited, relevant legal authority (ADA Title II, DOJ 2024 final rule, Section 508), compliance deadlines, and a request for remediation timeline.\n' +
+                  'GRADE LEVEL: Write at a ' + (gradeLevel || '8th grade') + ' reading level.\n' +
+                  'FORMAT: Return the complete letter ready to send, with proper formatting, date, addresses, and signature line. Include filing instructions at the end.';
+                callGemini(prompt, true).then(function(result) {
+                  updMulti({ complaintResult: result, complaintLoading: false, complaintsGenerated: complaintsGenerated + 1 });
+                  if (awardStemXP) awardStemXP(20);
+                  if (announceToSR) announceToSR('Complaint letter generated.');
+                }).catch(function() {
+                  updMulti({ complaintResult: 'Error generating complaint letter. Please try again.', complaintLoading: false });
+                });
+              },
+              className: 'w-full px-4 py-2.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 disabled:opacity-40 transition-colors mt-2'
+            }, complaintLoading ? 'Generating...' : '\uD83D\uDCDD Generate Complaint Letter'),
+            // Result
+            complaintResult && h('div', { className: 'mt-3 space-y-2' },
+              h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-4 max-h-60 overflow-y-auto' },
+                h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, complaintResult)
+              ),
+              h('div', { className: 'flex gap-2' },
+                h('button', { 'aria-label': 'Copy letter', onClick: function() { navigator.clipboard.writeText(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, '\uD83D\uDCCB Copy to Clipboard'),
+                h('button', { 'aria-label': 'Reset complaint', onClick: function() { upd('complaintResult', null); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200' }, '\uD83D\uDD04 New Letter')
+              )
+            )
+          ),
+          // Filing guide
+          h('div', { className: 'bg-blue-50 border border-blue-200 rounded-2xl p-5' },
+            h('h4', { className: 'text-sm font-black text-blue-800 mb-2' }, '\uD83D\uDCCB How to File'),
+            h('ol', { className: 'space-y-2 text-xs text-blue-900' },
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '1.'), 'Contact the entity\u2019s ADA Coordinator first \u2014 they can often resolve issues quickly.'),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '2.'), 'If unresolved, file with the DOJ at ada.gov/file-a-complaint/'),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '3.'), 'You can also mail: U.S. DOJ, Civil Rights Division, 950 Pennsylvania Ave NW, Washington DC 20530'),
+              h('li', { className: 'flex gap-2' }, h('span', { className: 'font-black text-blue-500' }, '4.'), 'ADA Info Line: 1-800-514-0301 (voice) / 1-833-610-1264 (TTY)')
+            )
+          )
         ),
 
         // ═══ HISTORY TAB ═══
