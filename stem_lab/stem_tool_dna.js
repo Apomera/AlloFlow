@@ -262,6 +262,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
+      var canvasNarrate = ctx.canvasNarrate;
       var awardStemXP = ctx.awardXP;
       var getStemXP = ctx.getXP;
       var setStemLabTool = ctx.setStemLabTool;

@@ -43,12 +43,35 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (brainAtlas) ──
       return (function() {
 var d = labToolData.brainAtlas || {};
 
-          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () { var o = {}; o[k] = v; return o; })()) }); }); };
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('brainAtlas', 'init', {
+              first: 'Brain Atlas loaded. Explore brain regions, their functions, and neural pathways in an interactive 3D model.',
+              repeat: 'Brain Atlas active.',
+              terse: 'Brain Atlas.'
+            }, { debounce: 800 });
+          }
+
+          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-brainatlas')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-brainatlas';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+ var o = {}; o[k] = v; return o; })()) }); }); };
 
 
 
@@ -3399,7 +3422,7 @@ var d = labToolData.brainAtlas || {};
 
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
 
-                React.createElement("p", { className: "text-xs text-slate-400" }, currentView.desc)
+                React.createElement("p", { className: "text-xs text-slate-500" }, currentView.desc)
 
               )
 
@@ -3413,7 +3436,7 @@ var d = labToolData.brainAtlas || {};
 
                 var v = VIEWS[key];
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Change view",
 
                   key: key,
 
@@ -3443,11 +3466,11 @@ var d = labToolData.brainAtlas || {};
 
               }),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Change quiz mode",
 
                 onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
 
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
 
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
 
@@ -3467,7 +3490,7 @@ var d = labToolData.brainAtlas || {};
 
                   var isActive = simScenario === s.id;
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change sim scenario",
 
                     key: s.id,
 
@@ -3610,7 +3633,7 @@ var d = labToolData.brainAtlas || {};
 
                       var showResult = fb !== null && fb !== undefined;
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Brainatlas action",
 
                         key: opt.id, disabled: showResult,
 
@@ -3650,11 +3673,11 @@ var d = labToolData.brainAtlas || {};
 
                   ),
 
-                  d.quizFeedback && React.createElement("button", {
+                  d.quizFeedback && React.createElement("button", { "aria-label": "Next Question",
 
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
 
-                    className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                    className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-700"
 
                   }, "Next Question \u2192")
 
@@ -3700,7 +3723,7 @@ var d = labToolData.brainAtlas || {};
 
                         var isActive = (d.brainwaveType || 'alpha') === waveType;
 
-                        return React.createElement("button", {
+                        return React.createElement("button", { "aria-label": "Change brainwave type",
 
                           key: waveType,
 
@@ -3986,7 +4009,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
 
-                      React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                      React.createElement("button", { "aria-label": "Close region detail panel", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
 
                     ),
 
@@ -3994,7 +4017,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Function"),
 
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
 
@@ -4002,7 +4025,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.brodmann && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Brodmann Areas"),
 
                         React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
 
@@ -4010,7 +4033,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.blood && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Blood Supply"),
 
                         React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
 
@@ -4026,7 +4049,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.synthesis && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
 
@@ -4034,7 +4057,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.receptors && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
 
@@ -4042,7 +4065,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.pathways && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
 
@@ -4080,11 +4103,11 @@ var d = labToolData.brainAtlas || {};
 
                   React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
 
-                    filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
+                    filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-500 italic py-4 text-center" }, "No regions match your search."),
 
                     filtered.map(function (r) {
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Change selected region",
 
                         key: r.id,
 
@@ -4098,7 +4121,7 @@ var d = labToolData.brainAtlas || {};
 
                         React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
 
-                        React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
+                        React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
 
                       );
 

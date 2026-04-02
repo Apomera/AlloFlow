@@ -37,12 +37,22 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
       var _codingCanvasRef = ctx._codingCanvasRef;
 
       // ── Tool body (codingPlayground) ──
     return (function() {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('coding', 'init', {
+              first: 'Coding Playground loaded. Write and run code with a visual canvas output. Create programs with blocks or text-based coding.',
+              repeat: 'Coding Playground active.',
+              terse: 'Coding.'
+            }, { debounce: 800 });
+          }
           var upd = function (key, val) {
             setLabToolData(function (prev) {
               var cp = Object.assign({}, (prev && prev._codingPlayground) || {});
@@ -519,6 +529,19 @@
             var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
             updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: true });
             setTimeout(function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-coding')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-coding';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
               executeRobotBlocks(robotBlocks, ch.start, ch.startDir, grid, function (finalPos, trail, finalGrid, goalReached) {
                 updMulti({ robotPos: finalPos, robotTrail: trail, robotGrid: finalGrid, robotRunning: false });
                 if (ch.check(finalPos, trail, finalGrid)) {
@@ -1669,7 +1692,7 @@
                 cdef ? cdef.label : child.type,
                 cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
               ),
-              React.createElement("button", { onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
+              React.createElement("button", { "aria-label": "Remove child block", onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
             );
           }
 
@@ -1677,7 +1700,7 @@
           function renderQuickAdd(parentIdx, isElse) {
             return React.createElement("div", { className: "flex flex-wrap gap-1 mt-1" },
               ['forward', 'backward', 'right', 'left', 'circle', 'color', 'playNote', 'random'].map(function (ct) {
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Add Child Block",
                   key: ct, onClick: function () { addChildBlock(parentIdx, ct, isElse); },
                   className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
                 }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : ct === 'playNote' ? '+🎵' : ct === 'random' ? '+🎲' : '+🎨');
@@ -1696,7 +1719,7 @@
             },
               React.createElement("div", { className: "flex items-center justify-between mb-3" },
                 React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Close templates panel",
                   onClick: function () { upd('showTemplates', false); },
                   className: "text-slate-400 hover:text-white text-lg px-2"
                 }, "×")
@@ -1706,7 +1729,7 @@
                 style: { gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }
               },
                 TEMPLATES.map(function (tmpl, ti) {
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Load Template",
                     key: ti,
                     onClick: function () { loadTemplate(tmpl); },
                     className: "flex flex-col items-center gap-1 p-3 rounded-lg bg-slate-700/80 hover:bg-slate-600 border border-slate-600 hover:border-amber-500/50 transition-all text-left group"
@@ -1714,7 +1737,7 @@
                     React.createElement("span", { className: "text-2xl group-hover:scale-110 transition-transform" }, tmpl.icon),
                     React.createElement("span", { className: "text-xs font-bold text-white text-center" }, tmpl.name),
                     React.createElement("span", { className: "text-[10px] text-slate-400 text-center leading-tight" }, tmpl.desc),
-                    React.createElement("span", { className: "text-[9px] text-amber-400/70 mt-0.5" }, tmpl.blocks.length + ' blocks')
+                    React.createElement("span", { className: "text-[11px] text-amber-400/70 mt-0.5" }, tmpl.blocks.length + ' blocks')
                   );
                 })
               )
@@ -1743,7 +1766,7 @@
                     })
                   )
                 ),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Got it!",
                   onClick: function () { upd('tutorialDismissed', true); },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-400 transition-all shrink-0"
                 }, "Got it! ✕")
@@ -1767,7 +1790,7 @@
               // Playground Mode Tabs (Turtle / Robot)
               React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20 mr-2" },
                 [{ key: 'turtle', icon: '\uD83D\uDC22', label: 'Turtle' }, { key: 'robot', icon: '\uD83E\uDD16', label: 'Robot' }].map(function(tab) {
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Switch to " + tab.label + " playground mode",
                     key: tab.key,
                     onClick: function() { upd('playgroundMode', tab.key); },
                     className: "px-3 py-1.5 text-xs font-bold transition-all " +
@@ -1776,7 +1799,7 @@
                 })
               ),
               // Mode toggle
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Toggle Mode",
                 onClick: toggleMode,
                 className: "coding-mode-toggle flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
                   (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-500/90 text-white hover:bg-amber-500')
@@ -1811,35 +1834,35 @@
                   (redoStack.length > 0 ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-white/5 text-white/30 cursor-not-allowed')
               }, "↪"),
               // Export PNG
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "PNG",
                 onClick: handleExportPNG,
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "📥 PNG"),
               // Templates
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Templates",
                 onClick: function () { upd('showTemplates', !showTemplates); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (showTemplates ? 'bg-amber-500 text-white' : 'bg-white/15 text-white hover:bg-white/25')
+                  (showTemplates ? 'bg-amber-700 text-white' : 'bg-white/15 text-white hover:bg-white/25')
               }, "📂 Templates"),
 
 
               // AI Assistant buttons
               callGemini && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Handle Explain Code",
                   onClick: handleExplainCode,
                   disabled: aiLoading || blocks.length === 0,
                   title: "AI explains what your code does",
                   className: "px-2.5 py-1.5 text-[10px] font-bold transition-all " +
                     (aiLoading ? "bg-white/5 text-white/30 cursor-wait" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, aiLoading ? "⏳" : "🤖 Explain"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Suggest",
                   onClick: handleSuggestNext,
                   disabled: aiLoading,
                   title: "AI suggests what to try next",
                   className: "px-2.5 py-1.5 text-[10px] font-bold transition-all border-l border-white/20 " +
                     (aiLoading ? "bg-white/5 text-white/30" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, "💡 Suggest"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Debug",
                   onClick: handleDebugHelp,
                   disabled: aiLoading || challengeIdx < 0,
                   title: "AI helps debug your challenge attempt",
@@ -1848,28 +1871,29 @@
                 }, "🐛 Debug")
               ),
               // SVG Export + Share
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "SVG",
                 onClick: handleExportSVG,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "📐 SVG"),
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Share",
                 onClick: handleShareLink,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "🔗 Share"),
 
 
               // 3D Mode toggle
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Toggle 3D rendering mode",
                 onClick: function() { upd('show3D', !show3D); if (!show3D) { upd('pitchAngle', 0); upd('yawAngle', 0); } },
                 title: show3D ? 'Switch to 2D mode' : 'Switch to 3D isometric mode',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (show3D ? "bg-teal-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
+                  (show3D ? "bg-teal-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, show3D ? "\u{1F310} 3D" : "\u{1F4D0} 2D"),
               // Turtle Skin selector
               React.createElement("select", {
                 value: turtleSkin,
                 onChange: function(e) { upd('turtleSkin', e.target.value); },
                 title: 'Turtle Skin',
+                'aria-label': 'Turtle skin',
                 className: "px-1.5 py-1 rounded-lg bg-indigo-900/50 text-white text-xs border border-indigo-400/30 cursor-pointer"
               },
                 TURTLE_SKINS.map(function(sk) {
@@ -1877,52 +1901,52 @@
                 })
               ),
               // Import/Export
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Save",
                 onClick: handleExportJSON,
                 title: 'Export program as JSON',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "💾 Save"),
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Load",
                 onClick: handleImportJSON,
                 title: 'Import program from JSON',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "📂 Load"),
               // Coordinate Picker
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Pick",
                 onClick: function() { upd('showCoordPicker', !showCoordPicker); },
                 title: showCoordPicker ? 'Cancel coordinate picker' : 'Click canvas to add goto(x,y)',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (showCoordPicker ? "bg-amber-500 text-white animate-pulse" : "bg-white/15 text-white hover:bg-white/25")
+                  (showCoordPicker ? "bg-amber-700 text-white animate-pulse" : "bg-white/15 text-white hover:bg-white/25")
               }, "📌 Pick"),
               // Background Music toggle
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Toggle Bg Music",
                 onClick: toggleBgMusic,
                 title: bgMusicPlaying ? 'Stop background music' : 'Play background music loop',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (bgMusicPlaying ? "bg-green-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
+                  (bgMusicPlaying ? "bg-green-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, bgMusicPlaying ? "🔊 Music" : "🔇 Music"),
               // Canvas Layer toggle
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Drawing layer: ",
                 onClick: function() { upd('canvasLayer', canvasLayer === 'foreground' ? 'background' : 'foreground'); },
                 title: 'Drawing layer: ' + canvasLayer,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
-                  (canvasLayer === 'background' ? "bg-purple-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
+                  (canvasLayer === 'background' ? "bg-purple-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, canvasLayer === 'background' ? "🎨 BG" : "🎨 FG"),
               // Canvas controls
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Toggle canvas grid overlay",
                 onClick: function () { upd('showGrid', !showGrid); },
                 title: showGrid ? 'Hide grid' : 'Show grid',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showGrid ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "⊞"),
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Toggle canvas coordinate display",
                 onClick: function () { upd('showCoords', !showCoords); },
                 title: showCoords ? 'Hide coordinates' : 'Show coordinates',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showCoords ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "📐"),
               // Tutorial help button
-              tutorialDismissed && React.createElement("button", {
+              tutorialDismissed && React.createElement("button", { "aria-label": "Reopen coding tutorial",
                 onClick: function () { upd('tutorialDismissed', false); },
                 title: 'Show tutorial',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
@@ -1938,7 +1962,7 @@
                 React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
                 React.createElement("div", { className: "space-y-1" },
                   ROBOT_BLOCKS.map(function(rb) {
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Add robot command: " + rb.label,
                       key: rb.type,
                       onClick: function() { addRobotBlock(rb.type); },
                       disabled: robotRunning,
@@ -1947,7 +1971,7 @@
                     },
                       React.createElement("span", null, rb.label.split(' ')[0]),
                       React.createElement("span", { className: "flex-1 text-left" }, rb.label.split(' ').slice(1).join(' ')),
-                      React.createElement("span", { className: "text-[9px] opacity-60" }, "+")
+                      React.createElement("span", { className: "text-[11px] opacity-60" }, "+")
                     );
                   })
                 ),
@@ -2043,12 +2067,12 @@
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
                     React.createElement("div", { className: "flex gap-1" },
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Clear",
                         onClick: function() { upd('robotBlocks', []); },
                         disabled: robotBlocks.length === 0,
                         className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\uD83D\uDDD1 Clear"),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Reset robot grid",
                         onClick: function() {
                           if (robotChallengeIdx >= 0) {
                             var ch = ROBOT_CHALLENGES[robotChallengeIdx];
@@ -2058,11 +2082,11 @@
                         },
                         className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\u21BA Reset"),
-                      React.createElement("button", {
+                      React.createElement("button", { "aria-label": "Handle Robot Run",
                         onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-500 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
                     )
                   ),
@@ -2076,10 +2100,11 @@
                             React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
                             b.type === 'repeatR' && React.createElement("input", {
                               type: "number", min: 1, max: 20, value: b.times || 3,
+                              'aria-label': 'Repeat count',
                               onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
-                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none"
+                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
                             }),
-                            React.createElement("button", {
+                            React.createElement("button", { "aria-label": "Remove robot block",
                               onClick: function() { removeRobotBlock(bi); },
                               className: "text-white/60 hover:text-white text-xs px-1"
                             }, "\u2715")
@@ -2090,7 +2115,7 @@
                                 var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
                                 return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
                                   React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                  React.createElement("button", { onClick: function() {
+                                  React.createElement("button", { "aria-label": "Remove child block", onClick: function() {
                                     var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                     upd('robotBlocks', updated);
                                   }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
@@ -2098,21 +2123,21 @@
                               }),
                               React.createElement("div", { className: "flex gap-1 flex-wrap" },
                                 ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                  return React.createElement("button", {
+                                  return React.createElement("button", { "aria-label": "Add child command: " + rb.label,
                                     key: rb.type,
                                     onClick: function() { addRobotChildBlock(bi, rb.type, false); },
-                                    className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-white/80 hover:text-white transition-all",
+                                    className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
                                     style: { backgroundColor: rb.color + '80' }
                                   }, "+ " + rb.label.split(' ').slice(1).join(' '));
                                 })
                               ),
                               (b.type === 'ifWall' || b.type === 'ifGem') && React.createElement("div", null,
-                                React.createElement("div", { className: "text-[9px] font-bold text-slate-500 mt-1" }, "ELSE:"),
+                                React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mt-1" }, "ELSE:"),
                                 (b.elseChildren || []).map(function(child, ci) {
                                   var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
                                   return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
                                     React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                    React.createElement("button", { onClick: function() {
+                                    React.createElement("button", { "aria-label": "Remove else block", onClick: function() {
                                       var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                       upd('robotBlocks', updated);
                                     }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
@@ -2120,10 +2145,10 @@
                                 }),
                                 React.createElement("div", { className: "flex gap-1 flex-wrap mt-1" },
                                   ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                    return React.createElement("button", {
+                                    return React.createElement("button", { "aria-label": "Add else block: " + rb.label,
                                       key: 'e' + rb.type,
                                       onClick: function() { addRobotChildBlock(bi, rb.type, true); },
-                                      className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-white/80 hover:text-white transition-all",
+                                      className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
                                       style: { backgroundColor: rb.color + '60' }
                                     }, "+ " + rb.label.split(' ').slice(1).join(' '));
                                   })
@@ -2142,7 +2167,7 @@
                   ROBOT_CHALLENGES.map(function(ch, ci) {
                     var done = robotCompleted.indexOf(ch.id) >= 0;
                     var active = robotChallengeIdx === ci;
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Load Robot Challenge",
                       key: ch.id,
                       onClick: function() { loadRobotChallenge(ci); },
                       className: "w-full text-left p-2.5 rounded-lg border transition-all " +
@@ -2154,9 +2179,9 @@
                           React.createElement("div", { className: "text-xs font-bold " + (done ? "text-emerald-300" : active ? "text-indigo-300" : "text-slate-300") }, ch.title),
                           React.createElement("div", { className: "text-[10px] " + (done ? "text-emerald-400/60" : "text-slate-500") + " truncate" }, ch.desc)
                         ),
-                        React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full border " +
+                        React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full border " +
                           (ch.concept === 'Sequencing' ? "border-blue-500/40 text-blue-400 bg-blue-500/10" :
-                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-400 bg-purple-500/10" :
+                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-700 bg-purple-500/10" :
                            ch.concept.indexOf('Conditional') >= 0 ? "border-red-500/40 text-red-400 bg-red-500/10" :
                            "border-amber-500/40 text-amber-400 bg-amber-500/10")
                         }, ch.concept)
@@ -2175,8 +2200,8 @@
                   )
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-gradient-to-r from-violet-900/30 to-indigo-900/30 border border-violet-500/20" },
-                  React.createElement("p", { className: "text-[9px] text-violet-300 font-bold" }, "\uD83C\uDF93 CS Standards"),
-                  React.createElement("p", { className: "text-[9px] text-violet-400/70 mt-0.5" }, "CSTA K-12 \u2022 ISTE CT \u2022 Sequencing, Loops, Conditionals, Algorithms")
+                  React.createElement("p", { className: "text-[11px] text-violet-300 font-bold" }, "\uD83C\uDF93 CS Standards"),
+                  React.createElement("p", { className: "text-[11px] text-violet-400/70 mt-0.5" }, "CSTA K-12 \u2022 ISTE CT \u2022 Sequencing, Loops, Conditionals, Algorithms")
                 )
               )
             ),
@@ -2188,7 +2213,7 @@
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, "🧰 Toolbox"),
                 React.createElement("div", { className: "flex flex-col gap-1" },
                   BLOCK_TYPES.map(function (bt) {
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Add Block",
                       key: bt.type,
                       onClick: function () { addBlock(bt.type); },
                       disabled: running,
@@ -2244,6 +2269,7 @@
                         // Param editor (single-param basic blocks only)
                         def && def.param && b.type !== 'color' && b.type !== 'goto' && b.type !== 'setVar' && b.type !== 'changeVar' && b.type !== 'ifelse' && React.createElement("input", {
                           type: "number", value: b[def.param] || def.defaultVal,
+                          'aria-label': (def.label || b.type) + ' parameter',
                           onChange: function (e) { updateBlockParam(idx, def.param, parseInt(e.target.value) || def.defaultVal); },
                           className: "w-12 px-1 py-0.5 rounded text-xs bg-white/20 text-white text-center",
                           style: { appearance: 'textfield' }
@@ -2253,6 +2279,7 @@
                           React.createElement("span", { className: "text-[10px] text-white/60" }, "x"),
                           React.createElement("input", {
                             type: "number", value: b.x != null ? b.x : 250,
+                            'aria-label': 'Goto X coordinate',
                             onChange: function (e) { updateBlockParam(idx, 'x', parseInt(e.target.value) || 0); },
                             className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2260,6 +2287,7 @@
                           React.createElement("span", { className: "text-[10px] text-white/60" }, "y"),
                           React.createElement("input", {
                             type: "number", value: b.y != null ? b.y : 250,
+                            'aria-label': 'Goto Y coordinate',
                             onChange: function (e) { updateBlockParam(idx, 'y', parseInt(e.target.value) || 0); },
                             className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2268,6 +2296,7 @@
                         // Color picker
                         b.type === 'color' && React.createElement("input", {
                           type: "color", value: b.color || '#6366f1',
+                          'aria-label': 'Pen color',
                           onChange: function (e) { updateBlockParam(idx, 'color', e.target.value); },
                           className: "w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
                         }),
@@ -2275,6 +2304,7 @@
                         b.type === 'setVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
                           React.createElement("input", {
                             type: "text", value: b.varName || 'size',
+                            'aria-label': 'Variable name',
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
                             className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             placeholder: "name"
@@ -2282,6 +2312,7 @@
                           React.createElement("span", { className: "text-[10px] text-white/60" }, "="),
                           React.createElement("input", {
                             type: "number", value: b.varValue != null ? b.varValue : 50,
+                            'aria-label': 'Variable value',
                             onChange: function (e) { updateBlockParam(idx, 'varValue', parseFloat(e.target.value) || 0); },
                             className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2291,6 +2322,7 @@
                         b.type === 'changeVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
                           React.createElement("input", {
                             type: "text", value: b.varName || 'size',
+                            'aria-label': 'Variable name to change',
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
                             className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             placeholder: "name"
@@ -2298,6 +2330,7 @@
                           React.createElement("span", { className: "text-[10px] text-white/60" }, "+="),
                           React.createElement("input", {
                             type: "number", value: b.varDelta != null ? b.varDelta : 10,
+                            'aria-label': 'Change amount',
                             onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
                             className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2306,14 +2339,15 @@
                         // ── ifelse condition editor ──
                         b.type === 'ifelse' && React.createElement("input", {
                           type: "text", value: b.condition || 'x > 250',
+                          'aria-label': 'If-else condition',
                           onChange: function (e) { updateBlockParam(idx, 'condition', e.target.value); },
                           className: "w-24 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center font-mono",
                           placeholder: "x > 250"
                         }),
                         // Move / Remove buttons
-                        React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
-                        React.createElement("button", { onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
+                        React.createElement("button", { "aria-label": "Move block up", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
+                        React.createElement("button", { "aria-label": "Move block down", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
+                        React.createElement("button", { "aria-label": "Remove block", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
                       ),
                       // ── Repeat children ──
                       b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
@@ -2324,14 +2358,14 @@
                       b.type === 'ifelse' && React.createElement("div", { className: "ml-3 mt-1 flex flex-col gap-1" },
                         // IF branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-fuchsia-400/50" },
-                          React.createElement("span", { className: "text-[9px] font-bold text-fuchsia-300 uppercase tracking-wider" }, "✔ If true"),
+                          React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-300 uppercase tracking-wider" }, "✔ If true"),
                           (b.children || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
                           (b.children || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, false); }),
                           renderQuickAdd(idx, false)
                         ),
                         // ELSE branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-slate-500/50 mt-1" },
-                          React.createElement("span", { className: "text-[9px] font-bold text-slate-400 uppercase tracking-wider" }, "✖ Else"),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider" }, "✖ Else"),
                           (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
                           (b.elseChildren || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, true); }),
                           renderQuickAdd(idx, true)
@@ -2373,17 +2407,17 @@
 
               // Controls
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Run",
                   onClick: handleRun,
                   disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
                   className: "coding-run-btn flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
                     (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-green-500/30')
                 }, "▶ Run"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Clear Canvas",
                   onClick: handleClear,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition-all"
                 }, "🗑️ Clear Canvas"),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Reset All",
                   onClick: handleReset,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-600/80 text-white hover:bg-red-600 transition-all"
                 }, "⏪ Reset All"),
@@ -2394,12 +2428,12 @@
 
               // Options bar (turtle toggle + cumulative mode)
               React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Toggle turtle cursor visibility",
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Toggle cumulative drawing mode",
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -2419,7 +2453,7 @@
                   CHALLENGES.map(function (ch, ci) {
                     var done = completed.indexOf(ch.id) >= 0;
                     var active = challengeIdx === ci;
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Select challenge: " + ch.title,
                       key: ch.id,
                       onClick: function () { upd('challengeIdx', active ? -1 : ci); },
                       className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all " +
@@ -2452,12 +2486,13 @@
                 ),
                 // Camera Elevation
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[9px] text-slate-400 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
                     React.createElement("span", null, "Elevation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotX) + "\u00b0")
                   ),
                   React.createElement("input", {
                     type: "range", min: -90, max: 90, value: cameraRotX,
+                    'aria-label': 'Camera elevation',
                     onChange: function(e) { upd('cameraRotX', parseInt(e.target.value)); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2465,12 +2500,13 @@
                 ),
                 // Camera Azimuth
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[9px] text-slate-400 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
                     React.createElement("span", null, "Rotation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotZ) + "\u00b0")
                   ),
                   React.createElement("input", {
                     type: "range", min: 0, max: 360, value: cameraRotZ,
+                    'aria-label': 'Camera rotation',
                     onChange: function(e) { upd('cameraRotZ', parseInt(e.target.value)); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2478,12 +2514,13 @@
                 ),
                 // Zoom
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[9px] text-slate-400 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
                     React.createElement("span", null, "Zoom"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, (cameraZoom * 100).toFixed(0) + "%")
                   ),
                   React.createElement("input", {
                     type: "range", min: 30, max: 300, value: Math.round(cameraZoom * 100),
+                    'aria-label': 'Camera zoom',
                     onChange: function(e) { upd('cameraZoom', parseInt(e.target.value) / 100); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2491,30 +2528,30 @@
                 ),
                 // Toggle buttons
                 React.createElement("div", { className: "flex gap-1" },
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Grid",
                     onClick: function() { upd('show3DGrid', !show3DGrid); },
-                    className: "flex-1 px-2 py-1 rounded text-[9px] font-bold transition-all " +
+                    className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
                       (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
                   }, "\u{2B1C} Grid"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Axes",
                     onClick: function() { upd('show3DAxes', !show3DAxes); },
-                    className: "flex-1 px-2 py-1 rounded text-[9px] font-bold transition-all " +
+                    className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
                       (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
                   }, "\u{1F4CD} Axes"),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Reset 3D camera view",
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },
-                    className: "flex-1 px-2 py-1 rounded text-[9px] font-bold bg-slate-700/50 text-slate-500 hover:text-white transition-all"
+                    className: "flex-1 px-2 py-1 rounded text-[11px] font-bold bg-slate-700/50 text-slate-300 hover:text-white transition-all"
                   }, "\u{1F504} Reset")
                 ),
                 // 3D coordinates display
                 React.createElement("div", { className: "mt-2 grid gap-1", style: { gridTemplateColumns: '1fr 1fr 1fr' } },
-                  React.createElement("div", { className: "text-[9px] font-mono text-center bg-slate-700/40 rounded px-1 py-0.5" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-center bg-slate-700/40 rounded px-1 py-0.5" },
                     "x:", React.createElement("span", { className: "text-red-400 font-bold" }, " " + Math.round(turtleState.x))
                   ),
-                  React.createElement("div", { className: "text-[9px] font-mono text-center bg-slate-700/40 rounded px-1 py-0.5" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-center bg-slate-700/40 rounded px-1 py-0.5" },
                     "y:", React.createElement("span", { className: "text-green-400 font-bold" }, " " + Math.round(turtleState.y))
                   ),
-                  React.createElement("div", { className: "text-[9px] font-mono text-center bg-slate-700/40 rounded px-1 py-0.5" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-center bg-slate-700/40 rounded px-1 py-0.5" },
                     "z:", React.createElement("span", { className: "text-blue-400 font-bold" }, " " + Math.round(turtleZ))
                   )
                 )
@@ -2529,11 +2566,12 @@
                   min: 0,
                   max: Math.max(0, timelineFrames.length - 1),
                   value: timelinePos >= 0 ? timelinePos : 0,
+                  'aria-label': 'Animation timeline position',
                   onChange: function(e) { seekTimeline(parseInt(e.target.value)); },
                   className: "w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
                   style: { accentColor: '#6366f1' }
                 }),
-                React.createElement("div", { className: "flex justify-between text-[9px] text-slate-500 mt-1" },
+                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-500 mt-1" },
                   React.createElement("span", null, "Frame 0"),
                   React.createElement("span", { className: "text-indigo-400 font-bold" }, timelinePos >= 0 ? "Frame " + timelinePos : "—"),
                   React.createElement("span", null, "Frame " + (timelineFrames.length - 1))
@@ -2560,7 +2598,7 @@
 
               // ── Accessibility Controls ──
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Toggle high contrast mode",
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
                   className: "flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " +
                     (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-400 hover:text-white")
@@ -2572,7 +2610,7 @@
                   React.createElement("h4", { className: "text-xs font-bold text-blue-300 flex items-center gap-1" },
                     React.createElement("span", null, "🤖"), " AI Assistant"
                   ),
-                  React.createElement("button", {
+                  React.createElement("button", { "aria-label": "Close AI assistant panel",
                     onClick: function() { updMulti({ showAIPanel: false, aiExplanation: '' }); },
                     className: "text-slate-400 hover:text-white text-sm px-1"
                   }, "×")
@@ -2612,7 +2650,7 @@
                 ),
                 // User-defined variables
                 d._vars && Object.keys(d._vars).length > 0 && React.createElement("div", { className: "mt-2 border-t border-slate-600/30 pt-2" },
-                  React.createElement("span", { className: "text-[9px] font-bold text-slate-500 uppercase tracking-wider" }, "User Variables"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider" }, "User Variables"),
                   React.createElement("div", { className: "grid gap-1 mt-1", style: { gridTemplateColumns: '1fr 1fr' } },
                     Object.keys(d._vars || {}).filter(function(k) { return k.indexOf('__func_') !== 0; }).map(function(vk) {
                       return React.createElement("div", { key: vk, className: "text-[10px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },
@@ -2633,7 +2671,7 @@
               ),
 
               // Snapshot button
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Snapshot",
                 onClick: function () {
                   setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
                   if (addToast) addToast('📸 Code snapshot saved!', 'success');

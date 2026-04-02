@@ -454,12 +454,22 @@ window.StemLab = window.StemLab || {
       var t = ctx.t;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
+      var canvasNarrate = ctx.canvasNarrate;
 
       return (function() {
 
       // ── State ──
       var gd = (labToolData && labToolData.geoSandbox) || {};
       var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox || {}, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('geoSandbox', 'init', {
+              first: '3D Geometry Sandbox loaded. Build and explore 3D shapes, calculate volume and surface area interactively.',
+              repeat: 'Geometry Sandbox active.',
+              terse: 'Geo Sandbox.'
+            }, { debounce: 800 });
+          }
       var updDim = function(key, val) {
         setLabToolData(function(prev) {
           var g = prev.geoSandbox || {};

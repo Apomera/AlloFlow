@@ -29,6 +29,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-funcgrapher')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-funcgrapher';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ═══ 📈 Function Grapher ═══
   window.StemLab.registerTool('funcGrapher', {
@@ -70,6 +83,7 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (funcGrapher) ──
       return (function() {
@@ -88,6 +102,15 @@ window.StemLab = window.StemLab || {
           }
 
           const d = labToolData.funcGrapher;
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('funcGrapher', 'init', {
+              first: 'Function Grapher loaded. Plot mathematical functions, explore transformations, and visualize equations on an interactive coordinate plane.',
+              repeat: 'Function Grapher active.',
+              terse: 'Grapher.'
+            }, { debounce: 800 });
+          }
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
 
@@ -325,7 +348,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
 
-              TYPES.map(function(tp) { return React.createElement("button", {
+              TYPES.map(function(tp) { return React.createElement("button", { "aria-label": "Change type",
 
                 key: tp.id, onClick: function() { upd("type", tp.id); },
 
@@ -504,7 +527,7 @@ window.StemLab = window.StemLab || {
               React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan up' }, "\u2B06"),
               React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin - dy, yMax: yR.yMax - dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan down' }, "\u2B07"),
               React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 transition-all", 'aria-label': 'Reset view' }, "\u21BA Reset"),
-              React.createElement("span", { className: "text-[9px] text-slate-400 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
+              React.createElement("span", { className: "text-[11px] text-slate-500 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
             ),
 
             // ── Transformation Labels ──
@@ -518,13 +541,13 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex gap-2 mt-3 mb-2 flex-wrap" },
 
-              React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-600 border border-amber-200') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
+              React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-200') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
 
-              React.createElement("button", { onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-200') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
+              React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-200') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
 
-              React.createElement("button", { onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-500 text-white' : 'bg-cyan-50 text-cyan-600 border border-cyan-200') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
+              React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-700 text-white' : 'bg-cyan-50 text-cyan-600 border border-cyan-200') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
 
-              React.createElement("button", { onClick: () => upd('showLearn', !d.showLearn), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600 border border-emerald-200') }, d.showLearn ? "\u2705 Learn" : "\uD83D\uDCD6 Learn"),
+              React.createElement("button", { "aria-label": "Upd", onClick: () => upd('showLearn', !d.showLearn), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-600 border border-emerald-200') }, d.showLearn ? "\u2705 Learn" : "\uD83D\uDCD6 Learn"),
 
               roots.length > 0 && React.createElement("span", { className: "px-2 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold border border-red-200" }, "\uD83D\uDCCD " + roots.length + " root" + (roots.length > 1 ? 's' : '') + ": x = " + roots.map(r => r.toFixed(2)).join(', ')),
 
@@ -545,11 +568,11 @@ window.StemLab = window.StemLab || {
             d.showTable && React.createElement("div", { className: "mt-2 bg-cyan-50 rounded-xl border border-cyan-200 p-3 overflow-x-auto" },
               React.createElement("p", { className: "text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCB Table of Values"),
               React.createElement("table", { className: "w-full text-xs" },
-                React.createElement("thead", null,
+                React.createElement("caption", { className: "sr-only" }, "funcgrapher data table"), React.createElement("thead", null,
                   React.createElement("tr", { className: "border-b border-cyan-200" },
-                    React.createElement("th", { className: "px-2 py-1 text-left font-bold text-cyan-800" }, "x"),
-                    React.createElement("th", { className: "px-2 py-1 text-left font-bold text-indigo-700" }, "f(x)"),
-                    d.showDeriv && React.createElement("th", { className: "px-2 py-1 text-left font-bold text-amber-700" }, "f\u2032(x)")
+                    React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-cyan-800" }, "x"),
+                    React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-indigo-700" }, "f(x)"),
+                    d.showDeriv && React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-amber-700" }, "f\u2032(x)")
                   )
                 ),
                 React.createElement("tbody", null,
@@ -625,10 +648,10 @@ window.StemLab = window.StemLab || {
 
             // ── Compare Mode Toggle + Sliders ──
             React.createElement("div", { className: "mt-2 flex items-center gap-2" },
-              React.createElement("button", { onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-500 text-white shadow-md' : 'bg-orange-50 text-orange-600 border border-orange-200') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
+              React.createElement("button", { "aria-label": "Change compare", onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-600 border border-orange-200') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
               d.compare && React.createElement("div", { className: "flex gap-1.5" },
                 TYPES.map(function(tp) {
-                  return React.createElement("button", { key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-500') }, tp.emoji);
+                  return React.createElement("button", { "aria-label": "Change compare type", key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-500') }, tp.emoji);
                 })
               )
             ),
@@ -643,7 +666,7 @@ window.StemLab = window.StemLab || {
 
             // ── AI Explain Button ──
             callGemini && React.createElement("div", { className: "mt-2" },
-              React.createElement("button", { onClick: function() {
+              React.createElement("button", { "aria-label": "Funcgrapher action", onClick: function() {
                 if (d.aiExplainLoading) return;
                 upd('aiExplainLoading', true);
                 upd('aiExplain', '');
@@ -698,7 +721,7 @@ window.StemLab = window.StemLab || {
 
                 ].map(function (p) {
 
-                  return React.createElement("button", {
+                  return React.createElement("button", { "aria-label": "Change type",
 
                     key: p.label, onClick: function () {
 
@@ -718,7 +741,7 @@ window.StemLab = window.StemLab || {
 
             // Legend
 
-            React.createElement("div", { className: "mt-2 flex items-center gap-4 text-[9px] text-slate-400" },
+            React.createElement("div", { className: "mt-2 flex items-center gap-4 text-[11px] text-slate-500" },
 
               React.createElement("span", null, "\u2014\u2014 f(x)"),
 
@@ -934,7 +957,7 @@ window.StemLab = window.StemLab || {
 
                     var isActive = challengeMode === cm.id;
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { "aria-label": "Change fg challenge mode",
 
                       key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
 
@@ -950,7 +973,7 @@ window.StemLab = window.StemLab || {
 
                 // Start / New Challenge button
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Start Challenge",
 
                   onClick: startChallenge,
 
@@ -970,7 +993,7 @@ window.StemLab = window.StemLab || {
 
                     fgQuiz.opts.map(function (opt) {
 
-                      return React.createElement("button", {
+                      return React.createElement("button", { "aria-label": "Select answer: " + String(opt),
 
                         key: String(opt), onClick: function () {
 
@@ -1032,7 +1055,7 @@ window.StemLab = window.StemLab || {
 
             })(),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
           )
       })();

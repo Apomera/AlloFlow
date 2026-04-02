@@ -86,10 +86,20 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (geoQuiz) ──
       return (function() {
 var d = labToolData || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('geo', 'init', {
+              first: 'Geography Explorer loaded. Explore world maps, countries, capitals, and geographic features with interactive quizzes.',
+              repeat: 'Geography active.',
+              terse: 'Geography.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
 

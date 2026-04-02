@@ -83,6 +83,7 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (funcGrapher) ──
       return (function() {
@@ -101,6 +102,15 @@ window.StemLab = window.StemLab || {
           }
 
           const d = labToolData.funcGrapher;
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('funcGrapher', 'init', {
+              first: 'Function Grapher loaded. Plot mathematical functions, explore transformations, and visualize equations on an interactive coordinate plane.',
+              repeat: 'Function Grapher active.',
+              terse: 'Grapher.'
+            }, { debounce: 800 });
+          }
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
 

@@ -37,12 +37,22 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
       var _codingCanvasRef = ctx._codingCanvasRef;
 
       // ── Tool body (codingPlayground) ──
     return (function() {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('coding', 'init', {
+              first: 'Coding Playground loaded. Write and run code with a visual canvas output. Create programs with blocks or text-based coding.',
+              repeat: 'Coding Playground active.',
+              terse: 'Coding.'
+            }, { debounce: 800 });
+          }
           var upd = function (key, val) {
             setLabToolData(function (prev) {
               var cp = Object.assign({}, (prev && prev._codingPlayground) || {});

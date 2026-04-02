@@ -1866,7 +1866,7 @@ const d = labToolData.wave;
 
                   var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
 
-                  return React.createElement("button", { "aria-label": "Select option",
+                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                     key: opt, disabled: d.quiz.answered, onClick: function () {
 

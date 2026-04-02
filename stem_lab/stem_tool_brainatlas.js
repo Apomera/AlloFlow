@@ -43,10 +43,20 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (brainAtlas) ──
       return (function() {
 var d = labToolData.brainAtlas || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('brainAtlas', 'init', {
+              first: 'Brain Atlas loaded. Explore brain regions, their functions, and neural pathways in an interactive 3D model.',
+              repeat: 'Brain Atlas active.',
+              terse: 'Brain Atlas.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () {
   // WCAG 4.1.3: Status live region for dynamic content announcements

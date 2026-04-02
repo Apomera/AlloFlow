@@ -32,6 +32,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-datastudio')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-datastudio';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   window.StemLab.registerTool('dataStudio', {
     icon: '🔬',
@@ -72,10 +85,20 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (dataStudio) ──
       return (function() {
 var d = (labToolData && labToolData._dataStudio) || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('dataStudio', 'init', {
+              first: 'Data Studio loaded. Create charts, analyze datasets, and explore statistics with interactive visualization tools.',
+              repeat: 'Data Studio active.',
+              terse: 'Data Studio.'
+            }, { debounce: 800 });
+          }
 
           var updDS = function (key, val) {
 
@@ -347,7 +370,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", { className: "flex gap-2" },
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Upd D S",
 
                   onClick: function () { updDS('showStats', !showStats); },
 
@@ -357,7 +380,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 }, showStats ? '📊 Stats On' : '📊 Stats'),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "Back",
 
                   onClick: function () { setStemLabTool(null); },
 
@@ -379,7 +402,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               CHART_TYPES.map(function (ct) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Datastudio action",
 
                   key: ct.id,
 
@@ -415,7 +438,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
 
-              style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+              style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+              onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
             }),
 
@@ -461,7 +485,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       return React.createElement("g", { key: 'yl' + i },
 
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal),
+                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
 
                         React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
 
@@ -483,7 +507,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         React.createElement("rect", { x: x, y: y, width: barW, height: barH, rx: 3, fill: COLORS[i % COLORS.length], opacity: 0.85 }),
 
-                        React.createElement("text", { x: x + barW / 2, y: y - 4, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _text } }, row.value),
+                        React.createElement("text", { x: x + barW / 2, y: y - 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, row.value),
 
                         React.createElement("text", { x: x + barW / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, row.label.length > 6 ? row.label.substring(0, 5) + '..' : row.label)
 
@@ -627,7 +651,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var yPos = (H - pad) - frac * (H - pad - chartTop);
 
-                      return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal);
+                      return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal);
 
                     }),
 
@@ -721,7 +745,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       return React.createElement("g", { key: 'syl' + i },
 
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal),
+                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
 
                         React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
 
@@ -797,7 +821,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.85, rx: 2 }),
 
-                        bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _text } }, bin.count),
+                        bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, bin.count),
 
                         React.createElement("text", { x: x + bw / 2, y: H - pad + 11, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
 
@@ -827,7 +851,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 var labels = { none: '— None', asc: '↑ Asc', desc: '↓ Desc' };
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Upd D S",
 
                   key: s,
 
@@ -853,7 +877,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
 
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
               }),
 
@@ -867,11 +892,12 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
 
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
               }),
 
-              (filterMin !== '' || filterMax !== '') && React.createElement("button", {
+              (filterMin !== '' || filterMax !== '') && React.createElement("button", { "aria-label": "Clear",
 
                 onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
 
@@ -885,7 +911,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Trendline toggle (for line/scatter)
 
-              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", {
+              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { "aria-label": "Upd D S",
 
                 onClick: function () { updDS('showTrendline', !showTrendline); },
 
@@ -907,7 +933,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               PRESETS.map(function (p, i) {
 
-                return React.createElement("button", {
+                return React.createElement("button", { "aria-label": "Upd D S",
 
                   key: i,
 
@@ -929,7 +955,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2" },
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Import CSV data file",
 
                 onClick: function () {
 
@@ -965,7 +991,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               }, "📂 Import CSV"),
 
-              React.createElement("button", {
+              React.createElement("button", { "aria-label": "Export CSV",
 
                 onClick: function () {
 
@@ -1013,7 +1039,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "flex-1 px-2 py-1.5 rounded-lg text-xs",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 }),
 
@@ -1039,11 +1066,12 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 }),
 
-                React.createElement("button", {
+                React.createElement("button", { "aria-label": "+ Add",
 
                   onClick: function () {
 
@@ -1079,7 +1107,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
 
-                    React.createElement("button", {
+                    React.createElement("button", { "aria-label": "Upd D S",
 
                       onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
 
@@ -1095,7 +1123,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Clear
 
-              dataRows.length > 0 && React.createElement("button", {
+              dataRows.length > 0 && React.createElement("button", { "aria-label": "Clear All",
 
                 onClick: function () { updDS('dataRows', []); },
 
@@ -1127,7 +1155,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 return React.createElement("div", { key: i, className: "p-2 rounded-xl text-center", style: { background: _card, border: '1px solid ' + _border } },
 
-                  React.createElement("div", { className: "text-[9px] font-bold uppercase", style: { color: _muted } }, stat.label),
+                  React.createElement("div", { className: "text-[11px] font-bold uppercase", style: { color: _muted } }, stat.label),
 
                   React.createElement("div", { className: "text-sm font-bold font-mono", style: { color: _accent } }, stat.val)
 
