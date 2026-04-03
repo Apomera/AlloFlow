@@ -543,29 +543,50 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       }
     } catch(e) {}
 
-    const batchTransformPrompt = `Transform this extracted document text into a fully accessible HTML document.
+    const batchTransformPrompt = `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.
 
-ACCESSIBILITY REQUIREMENTS (the original PDF had these issues):
+ORIGINAL ACCESSIBILITY ISSUES FOUND:
 ${batchIssueList}
 
-TEXT CONTENT:
+TEXT CONTENT TO TRANSFORM:
 ${'\"\"\"'}
-${extractedText.substring(0, 15000)}
+${extractedText.substring(0, 30000)}
 ${'\"\"\"'}
 
-Create a COMPLETE HTML document with:
-- <!DOCTYPE html>, <html lang="en">, <head> with <meta charset="UTF-8"> and <title>
+Create a COMPLETE, polished HTML document following ALL of these requirements:
+
+STRUCTURAL ACCESSIBILITY:
+- <!DOCTYPE html>, <html lang="en">, <head> with <meta charset="UTF-8">, meaningful <title>
 - <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-- Skip-to-content link
+- Skip-to-content link: <a href="#main-content" class="sr-only">Skip to main content</a>
 - <main id="main-content" role="main"> wrapping all content
-- Proper heading hierarchy (exactly one h1)
-- <table> with <caption>, <thead>, <th scope="col">, <tbody>
-- Lists using <ul>/<ol> (not bullet characters)
-- Inline styles for professional appearance (font-family: ${batchDocStyle.bodyFont}; headings in ${batchDocStyle.headingColor})
-- All images with descriptive alt text
+- <nav>, <header>, <footer>, <section> landmarks where appropriate
+- Exactly ONE <h1>, with proper h2→h3→h4 hierarchy (no skipped levels)
 
-Return ONLY the complete HTML document.`;
+TABLE ACCESSIBILITY:
+- <table> with <caption> describing the table's purpose
+- <thead> with <th scope="col"> for column headers
+- <th scope="row"> for row headers where applicable
+- <tbody> wrapping data rows
+
+CONTENT QUALITY:
+- Convert bullet characters (•, -, *) to semantic <ul>/<ol> lists
+- Convert [Image: description] markers to <figure> with <img alt="description"> and <figcaption>
+- Preserve all hyperlinks as <a href="..."> with descriptive link text
+- Preserve all content — do not summarize or shorten anything
+- Use <blockquote> for quoted text, <code> for code snippets
+- Use <abbr> for abbreviations on first use
+
+VISUAL STYLING (inline CSS):
+- Font: font-family: ${batchDocStyle.bodyFont}
+- Headings: color: ${batchDocStyle.headingColor}; accent elements: ${batchDocStyle.accentColor}
+- Background: ${batchDocStyle.bgColor}; max-width: 800px; margin: 0 auto; padding: 2rem
+- Tables: border-collapse:collapse; th background: ${batchDocStyle.tableBg}; border: 1px solid ${batchDocStyle.tableBorder}
+- Color contrast: ALL text must meet 4.5:1 ratio against its background
+- Line-height: 1.7 for body text (readability)
+- Print styles: @media print { body { max-width: 100%; } .sr-only { display: none; } }
+
+Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
 
     let accessibleHtml = await callGemini(batchTransformPrompt, true);
 
@@ -829,7 +850,20 @@ Return ONLY the complete HTML document.`;
 
     log(`Done in ${elapsed}s: ${beforeScore}\u2192${finalScore} (+${(finalScore || 0) - beforeScore}) | ${autoFixPasses} fix passes`);
 
-    return { accessibleHtml, beforeScore, afterScore: finalScore, autoFixPasses, needsExpertReview, axeViolations: curAxeResults ? curAxeResults.totalViolations : 0, elapsed, docStyle: batchDocStyle };
+    // ── Inject accessibility remediation footer into the output ──
+    const axeViolationCount = curAxeResults ? curAxeResults.totalViolations : 0;
+    const remediationFooter = `<footer role="contentinfo" style="margin-top:48px;padding:16px 20px;border-top:2px solid ${batchDocStyle.accentColor || '#6366f1'};font-family:system-ui,sans-serif;font-size:11px;color:#64748b;page-break-inside:avoid">` +
+      `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">` +
+      `<span>\u267f Accessibility remediated by AlloFlow \u2014 Score: ${finalScore || '?'}/100 | ${axeViolationCount} axe violation${axeViolationCount !== 1 ? 's' : ''} | ${autoFixPasses} fix pass${autoFixPasses !== 1 ? 'es' : ''}</span>` +
+      `<span>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>` +
+      `</div></footer>`;
+    if (accessibleHtml.includes('</main>')) {
+      accessibleHtml = accessibleHtml.replace('</main>', remediationFooter + '\n</main>');
+    } else if (accessibleHtml.includes('</body>')) {
+      accessibleHtml = accessibleHtml.replace('</body>', remediationFooter + '\n</body>');
+    }
+
+    return { accessibleHtml, beforeScore, afterScore: finalScore, autoFixPasses, needsExpertReview, axeViolations: axeViolationCount, elapsed, docStyle: batchDocStyle };
   };
 
   const runPdfBatchRemediation = async () => {
