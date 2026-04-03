@@ -17058,7 +17058,7 @@ Return ONLY valid JSON:
     sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
     sourceVocabulary, resourceCount, targetStandards, dokLevel,
     selectedFont, includeSourceCitations,
-    alloBotRef, isBotVisible, isPlayingRef, isSystemAudioActiveRef, currentAudioRef,
+    alloBotRef, isBotVisible, isPlayingRef, isSystemAudioActiveRef,
     audioRef, playbackTimeoutRef,
     setActiveView, setConceptInput, setError, setGeneratedContent,
     setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource,
