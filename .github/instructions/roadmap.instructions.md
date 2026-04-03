@@ -53,40 +53,47 @@ A1.1 (preload) → A1.2 (wizard step) → A1.3 (deployment fix) → A1.4 (progre
 
 | Task | Detail |
 |------|--------|
-| **B1.1** Define module boundaries | Use AlloFlowANTI.txt's 38 `@section` markers as split points. Group into ~15-20 logical modules |
-| **B1.2** Design module registry | Each module exports via `window.AlloModules.ModuleName` (matching existing pattern). Central `moduleLoader.js` handles lazy loading |
-| **B1.3** Define shared dependencies | Create `sharedContext.js` provider injecting: React, hooks, `ai`, `t()`, `db`, Firestore refs, etc. |
+| **B1.1** Define module boundaries | ✅ Done — 30 `@section` markers cataloged (see Module Map below). 6 already fully extracted standalone files (no @section left in monolith). 6 CDN-stubs (section still present but content already in separate CDN module file). 18 sections are new to local app. Grouped into 17 logical modules |
+| **B1.2** Design module registry | ✅ Done — `window.AlloModules.ModuleName` (matches existing CDN pattern). `moduleLoader.js` lazy-injects `<script>` tags; modules signal load via `window.AlloModules.__loaded` registration |
+| **B1.3** Define shared dependencies | ✅ Done — `sharedContext_local.js`: React, `ai` (Ollama-only), `t(key)` (localization), `db` (SQLite REST client), `user` (local auth state), `isTeacherMode`, `audioBank`, `globalMuteEnabled`, `onMute` |
 
-### Module Map (from @section analysis)
+### Module Map (verified from 30 @section catalog)
 
-| Module File | Sections Included | Load Trigger |
-|------------|-------------------|--------------|
-| `core/config.js` | CONFIG, SAFETY_CHECKER | Always (startup) |
-| `core/providers.js` | CONTEXTS, PROVIDERS | Always (startup) |
-| `core/ui_components.js` | UI COMPONENTS | Always (startup) |
-| `core/localization.js` | LOCALIZATION STRINGS, HELPERS | Always (startup) |
-| `modules/word_sounds.js` | WORD_SOUNDS_STRINGS, PHONEME_DATA, WORD_SOUNDS_GENERATOR, WORD_SOUNDS_REVIEW | When Word Sounds opened |
-| `modules/visual_panel.js` | VISUAL_PANEL | When lesson has diagrams |
-| `modules/allobot.js` | ALLOBOT, SPEECH_BUBBLE | When bot activated |
-| `modules/student_analytics.js` | STUDENT_ANALYTICS | When teacher opens analytics |
-| `modules/adventure.js` | ADVENTURE_SYSTEMS, ADVENTURE_UI | When Adventure Mode activated |
-| `modules/games.js` | INTERACTIVE_GAMES | When any game launched |
-| `modules/escape_room.js` | ESCAPE_ROOM, ESCAPE_ROOM_TEACHER | When Escape Room launched |
-| `modules/live_quiz.js` | LIVE_QUIZ | When Live Quiz started |
-| `modules/teacher.js` | TEACHER_DASHBOARD, TEACHER_GATE, QUICKSTART_WIZARD | When teacher mode active |
-| `modules/learner_progress.js` | LEARNER_PROGRESS, CHARTS | When progress view opened |
-| `modules/reader.js` | IMMERSIVE_READER, READ_THIS_PAGE, BILINGUAL_RENDERER, CAST_LOBBY | When reader activated |
-| `modules/student_interaction.js` | STUDENT_SUBMIT, STUDENT_QUIZ, DRAFT_FEEDBACK, MISSION_REPORT | When student submits work |
-| `app/main_app.js` | MAIN APPLICATION + APP EXPORT | Always (the shell) |
+| Module File | @Sections Included | Line Range | ~Lines | CDN Module | Load Trigger |
+|------------|-------------------|-----------|--------|------------|--------------|
+| `core/bootstrap.js` | *(pre-core — no @section)* | 1–285 | 285 | New | Always |
+| `core/utilities.js` | GLOBAL_MUTE | 286–310 | 25 | New | Always |
+| `core/audio.js` | LARGE_FILE_HANDLER | 311–664 | 354 | New | Always |
+| `core/safety.js` | SAFETY_CHECKER | 665–780 | 116 | New | Always |
+| `modules/word_sounds.js` | WORD_SOUNDS_STRINGS, PHONEME_DATA, WORD_SOUNDS_GENERATOR, WORD_SOUNDS_REVIEW | 781–4399 | 3619 | ✅ WordSoundsModal | Word Sounds opened |
+| `modules/visual_panel.js` | VISUAL_PANEL | 1439–2677 | 1239 | New | Lesson has diagrams |
+| `modules/analytics.js` | STUDENT_ANALYTICS, CHARTS, LEARNER_PROGRESS | 4400–5788, 11782–11913, 13533–14082 | 2070 | ✅ StudentAnalytics | Teacher opens analytics |
+| `modules/student_interaction.js` | STUDENT_SUBMIT, MISSION_REPORT, STUDENT_QUIZ, DRAFT_FEEDBACK | 5789–6042, 8599–9236 | 893 | New | Student submits work |
+| `modules/allobot.js` | SPEECH_BUBBLE, ALLOBOT | 6043–8598 | 2556 | ✅ AlloBot | Bot activated |
+| `modules/teacher.js` | TEACHER_GATE, TEACHER_DASHBOARD, QUICKSTART_WIZARD | 9237–9601, 14083–16478 | 2863 | ✅ TeacherModule + QuickStartWizard | Teacher mode active |
+| `modules/adventure.js` | ADVENTURE_SYSTEMS, ADVENTURE_UI | 9602–10584, 10906–11781 | 1858 | New | Adventure Mode |
+| `modules/games.js` | INTERACTIVE_GAMES | 10585–10905 | 321 | ✅ GamesBundle | Game launched |
+| `modules/escape_room.js` | ESCAPE_ROOM, ESCAPE_ROOM_TEACHER | 11914–12704 | 791 | New | Escape Room |
+| `modules/live_quiz.js` | LIVE_QUIZ | 12705–13532 | 828 | New | Live Quiz |
+| `modules/cast.js` | CAST_LOBBY | 16621–23673 | 7053 | New | Cast/multi-device |
+| `modules/reader.js` | IMMERSIVE_READER, READ_THIS_PAGE, BILINGUAL_RENDERER | 16479–16620, 23674–25900+ | ~2350 | New | Reader activated |
+| `app/main.js` | *(main app shell — after BILINGUAL_RENDERER)* | 25900+–end | ~3000+ | New | Always |
 
-### Phase B2 — Extraction Tooling (v0.3.0)
+**Already fully extracted (no @section in monolith — separate standalone files):**
+`stem_lab_module.js`, `behavior_lens_module.js`, `report_writer_module.js`, `symbol_studio_module.js`, `sel_hub/sel_hub_module.js`, `story_forge_module.js`
+
+> ⚠️ **Note on overlapping ranges**: VISUAL_PANEL (1439–2677) falls inside WORD_SOUNDS_STRINGS+ block. In the monolith, visual_panel is nested. During extraction, use its explicit `@section` markers as the split boundary regardless of surrounding section.
+
+> ⚠️ **CRITICAL NOTE on BILINGUAL_RENDERER size**: AlloFlowANTI.txt is **68,853 lines** total (verified). BILINGUAL_RENDERER starts at line 25865 and extends to line 68,820 (≂42,956 lines). Most of the main app JSX components live in this section. Only the final 33 lines (`function App()` / export) split off as `__main_app__`. The `modules/reader.js` group therefore includes the bulk of the app UI. In B4/module-splitting, BILINGUAL_RENDERER will likely need manual subsectioning.
+
+### Phase B2 — Extraction Tooling (✅ Complete)
 
 | Task | Detail |
 |------|--------|
-| **B2.1** Build `extract_modules.js` | Reads AlloFlowANTI.txt, splits by `@section` markers, outputs individual module files into `local-app/modules/`. Uses IIFE + dependency injection pattern from existing extraction SKILL |
-| **B2.2** Build `extract_modules_local.js` variant | Same as B2.1 but STRIPS cloud code: removes Gemini API calls, OpenAI fallbacks, Firebase auth, hybrid provider logic. Output goes to `local-app/modules/` with markers for local-only code paths |
-| **B2.3** Build `local_build.js` | Assembles the local app from local-only modules via dynamic imports or `<script>` tags with the module registry |
-| **B2.4** Create `local-app/` scaffold | `index.html`, `moduleLoader.js`, `sharedContext_local.js` (Ollama + Piper only), `modules/`, `package.json` for dev server |
+| **B2.1** `scripts/extract_modules.js` | ✅ Done — Reads AlloFlowANTI.txt, splits 30 @sections + pre-core + main-app into 32 tagged files in `local-app/modules/raw/`. SHA-256 hashes per section in `manifest.json` |
+| **B2.2** `scripts/extract_modules_local.js` | ✅ Done — Same + C1 cloud stripping (block-comment replacements to avoid breaking arrow functions). Outputs `local-app/modules/local/` with `manifest_local.json`. 134 cloud replacements across 6 sections |
+| **B2.3** `local_build.js` | ✅ Done — Assembles all local sections in SECTION_ORDER into `local-app/src/LocalApp.jsx` (69,222 lines / 4574 KB). Compiles with esbuild JS API (not CLI, NodeJS v25 compat). Output: `local-app/build/app.js` (2574 KB minified) |
+| **B2.4** `local-app/` scaffold | ✅ Done — `public/index.html` (React CDN + CSP + Ollama health check), `package.json`, `moduleLoader.js` (B4.1 stub), `sharedContext_local.js` (B4.2 impl), `server.js` (dev server), `src/bootstrap_local.js` (override stub) |
 
 ### Phase B3 — Sync System (v0.3.0)
 
@@ -177,9 +184,9 @@ C1.1 → C1.2 → C1.3 → C1.4 → C1.5 (all stripping)
 | Priority | Phase | Target Version | Effort | Status |
 |----------|-------|----------------|--------|--------|
 | **1** | A1 — Fix Wizard Model Flow | v0.2.24 | Small | ✅ Complete |
-| **2** | A2 — Admin Model Manager | v0.2.25 | Medium | ⏳ Next |
-| **3** | B1 — Architecture Design | — (planning) | Planning | ⏳ Waiting |
-| **4** | B2 + C1 — Extraction Tooling + Cloud Stripping | v0.3.0 | Medium | ⏳ After B1 |
+| **2** | A2 — Admin Model Manager | v0.2.25 | Medium | ✅ Complete |
+| **3** | B1 — Architecture Design | — (planning) | Planning | ✅ Complete |
+| **4** | B2 + C1 — Extraction Tooling + Cloud Stripping | v0.3.0 | Medium | ✅ Complete |
 | **5** | B3 + C2 — Sync System + Local Enforcement | v0.3.0 | Medium | ⏳ After B2/C1 |
 | **6** | B4 + C3 — Local Runtime + Config | v0.4.0 | Large | ⏳ After B3/C2 |
 | **7** | A3 — Teacher Model Selection | v0.5.0 | Medium | ⏳ After local app stable |
@@ -209,7 +216,7 @@ Once B2 extraction begins, **two separate applications branch from the same sour
 ## Key Architecture Facts
 
 ### Existing Architecture
-- **MonolithicSource**: AlloFlowANTI.txt contains ~38 `@section` markers defining logical module boundaries
+- **MonolithicSource**: AlloFlowANTI.txt contains **30** `@section` markers defining logical module boundaries (verified June 2025)
 - **Two preload files exist**: `admin/preload.js` (old, wrong API shape) and `admin/public/preload.js` (active). Only edit the `public/` one
 - **Two SetupWizards exist**: `admin/src/pages/SetupWizard.jsx` (active, used by App.jsx) and `admin/src/setup/SetupWizard.jsx` (orphaned). Only edit `pages/`
 - **Orphaned admin pages**: `AIConfig.jsx`, `Models.jsx`, `Dashboard.jsx`, `Services.jsx`, `Security.jsx`, `Settings.xlsx`, `Cluster.jsx`, `Deploy.jsx` — all built but unreachable from `App.jsx` (no router)

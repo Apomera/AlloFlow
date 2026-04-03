@@ -2,7 +2,7 @@
  * AlloFlow Web App Server
  * Serves the built AlloFlow web app on a local port (default 3000).
  * Injects local AI config auto-detection into the served HTML so the
- * web app auto-connects to local Ollama/Flux/PocketBase with zero setup.
+ * web app auto-connects to local Ollama and Piper with zero setup.
  */
 
 const http = require('http');

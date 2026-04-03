@@ -66,12 +66,6 @@ contextBridge.exposeInMainWorld('alloAPI', {
       });
     }
   },
-  pocketbase: {
-    checkAdmin: () => {
-      console.log('[preload:pocketbase:checkAdmin] Checking if admin is configured');
-      return ipcRenderer.invoke('pocketbase:check-admin');
-    }
-  },
   ollama: {
     getInstalledModels: () => {
       return ipcRenderer.invoke('ollama:get-installed-models');
@@ -114,4 +108,16 @@ contextBridge.exposeInMainWorld('alloAPI', {
   getSystemMetrics:() => ipcRenderer.invoke('services:metrics'),
   startStack:      () => ipcRenderer.invoke('services:restart'),
   getServiceLogs:  (service) => ipcRenderer.invoke('services:logs', service),
+
+  // ── Local App (B4.4 + C3.1) ───────────────────────────────────────────────
+  localApp: {
+    // Read ~/.alloflow/local_config.json
+    readConfig: () => ipcRenderer.invoke('local:read-config'),
+    // Write ~/.alloflow/local_config.json
+    writeConfig: (cfg) => ipcRenderer.invoke('local:write-config', cfg),
+    // Get local app URL + SQLite backend URL + port info
+    getUrl: () => ipcRenderer.invoke('local:get-url'),
+    // Check if SQLite backend is running
+    backendStatus: () => ipcRenderer.invoke('local:backend-status'),
+  },
 });

@@ -1,0 +1,20 @@
+{
+  "name": "alloflow-local",
+  "version": "0.1.0",
+  "description": "AlloFlow local-only app (Ollama + Piper + SQLite, no cloud)",
+  "private": true,
+  "scripts": {
+    "extract": "node ../scripts/extract_modules_local.js",
+    "build": "node ../local_build.js",
+    "build:fast": "node ../local_build.js --skip-extract",
+    "dev": "node ../local_build.js --dev",
+    "start": "node server.js",
+    "backend": "node backend/server.js",
+    "start:all": "node server.js --with-backend",
+    "clean": "node -e \"const fs=require('fs'); ['build','modules/local','src/LocalApp.jsx'].forEach(p => { try { fs.rmSync(p,{recursive:true}); } catch{} });\""
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "dependencies": {}
+}

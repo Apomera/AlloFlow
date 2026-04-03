@@ -2,22 +2,6 @@ import React, { useState } from 'react';
 
 const DEPLOYMENT_TYPES = [
   {
-    id: 'cloud',
-    label: 'Cloud',
-    description: 'Use cloud AI resources (OpenAI, Anthropic, etc.) via API keys',
-    icon: '☁️',
-    requires: ['apiKey', 'provider'],
-    needsLocal: false
-  },
-  {
-    id: 'hybrid',
-    label: 'Hybrid',
-    description: 'Local AI services + cloud API fallback',
-    icon: '🔗',
-    requires: ['apiKey'],
-    needsLocal: true
-  },
-  {
     id: 'local',
     label: 'Local',
     description: 'Full local setup — AI services run natively on your machine',
@@ -218,7 +202,7 @@ export default function SetupWizard({ onComplete }) {
       }
 
       // For local/hybrid, actually start deployment
-      if (selectedType === 'local' || selectedType === 'hybrid') {
+      if (selectedType === 'local') {
         setStep('deploying');
         
         const setupData = {
@@ -266,7 +250,7 @@ export default function SetupWizard({ onComplete }) {
           throw new Error(result.error || 'Failed to start deployment');
         }
       } else {
-        // For cloud/cluster, just save config
+      // For cluster, just save config
         const result = await window.alloAPI.setup.saveConfig({
           deploymentType: selectedType,
           ...config
@@ -648,71 +632,6 @@ export default function SetupWizard({ onComplete }) {
           <p className="setup-subtitle">{deployment.description}</p>
 
           <form className="setup-form">
-            {selectedType === 'cloud' && (
-              <>
-                <div className="form-group">
-                  <label>AI Provider</label>
-                  <select
-                    value={config.provider || ''}
-                    onChange={(e) => handleConfigChange('provider', e.target.value)}
-                  >
-                    <option value="">Select provider...</option>
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic (Claude)</option>
-                    <option value="huggingface">Hugging Face</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>API Key</label>
-                  <input
-                    type="password"
-                    value={config.apiKey || ''}
-                    onChange={(e) => handleConfigChange('apiKey', e.target.value)}
-                    placeholder="Enter your API key"
-                  />
-                </div>
-              </>
-            )}
-
-            {selectedType === 'hybrid' && (
-              <>
-                <div className="form-group">
-                  <label>Cloud API Provider</label>
-                  <select
-                    value={config.provider || ''}
-                    onChange={(e) => handleConfigChange('provider', e.target.value)}
-                  >
-                    <option value="">Select provider...</option>
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic (Claude)</option>
-                    <option value="huggingface">Hugging Face</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Fallback API Key</label>
-                  <input
-                    type="password"
-                    value={config.apiKey || ''}
-                    onChange={(e) => handleConfigChange('apiKey', e.target.value)}
-                    placeholder="Enter your API key for cloud fallback"
-                  />
-                </div>
-
-                <div className="info-box">
-                  <strong>Your Services:</strong>
-                  <ul>
-                    {config.selectedServices && config.selectedServices.map(svc => {
-                      const svcDef = services && services.find(s => s.id === svc);
-                      return svcDef ? <li key={svc}>{svcDef.icon} {svcDef.name}</li> : null;
-                    })}
-                  </ul>
-                </div>
-              </>
-            )}
-
             {selectedType === 'local' && (
               <>
                 <div className="info-box">
@@ -774,7 +693,7 @@ export default function SetupWizard({ onComplete }) {
               onClick={handleStartDeployment}
               disabled={loading}
             >
-              {loading ? 'Preparing...' : (selectedType === 'local' || selectedType === 'hybrid') ? 'Start Deployment' : 'Complete Setup'}
+              {loading ? 'Preparing...' : selectedType === 'local' ? 'Start Deployment' : 'Complete Setup'}
             </button>
           </div>
         </div>
@@ -867,7 +786,7 @@ export default function SetupWizard({ onComplete }) {
             <code>~/.alloflow/config.json</code>
           </div>
 
-          {(selectedType === 'local' || selectedType === 'hybrid') && (
+          {selectedType === 'local' && (
             <div className="info-box">
               <p>Services are running natively on your machine.</p>
               <p style={{marginTop: '10px'}}>Data stored in <code>~/.alloflow/</code></p>

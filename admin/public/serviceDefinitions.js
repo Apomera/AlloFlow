@@ -5,39 +5,6 @@
  */
 
 const SERVICE_DEFINITIONS = {
-  pocketbase: {
-    id: 'pocketbase',
-    name: 'PocketBase',
-    description: 'NoSQL database and real-time API for storing student data, assessment results, and learning profiles',
-    icon: '📦',
-    required: false,
-    optional: true,
-    defaultEnabled: false,
-    native: true,
-    port: 8090,
-    healthCheck: {
-      endpoint: 'http://127.0.0.1:8090/api/health',
-      method: 'GET',
-      timeout: 10000,
-      maxRetries: 30,
-      retryInterval: 1000
-    },
-    resources: {
-      minRAM: 512,
-      minCPU: 1,
-      minDisk: 1000
-    },
-    description_detailed: `
-      **Database & API Backend**
-      - Stores all student data, assessments, and learning profiles
-      - Real-time synchronization across devices
-      - RESTful API for all AlloFlow features
-      - Built-in admin panel for data management
-      
-      *Comes automatically with every setup*
-    `
-  },
-
   ollama: {
     id: 'ollama',
     name: 'Ollama',
@@ -258,9 +225,9 @@ const HARDWARE_PROFILES = {
       maxRAM: 16384,
       optionalGPU_VRAM: 4000
     },
-    servicesToInclude: ['ollama', 'piper', 'search'], // Flux optional
+    servicesToInclude: ['ollama', 'piper', 'search'],
     limitations: [
-      'Up to 13B LLMs recommended',
+      'Up to 13B LLMs recommended',,
       'Image generation optional (GPU-dependent)',
       'Reasonable inference speeds'
     ],

@@ -1,7 +1,7 @@
 /**
  * AlloFlow Native Process Manager
  * Downloads, spawns, monitors, and stops native service binaries.
- * Replaces Docker-based deployment for Ollama, PocketBase, and Piper.
+ * Runs Ollama, Piper, and Flux as native processes.
  */
 
 const { spawn } = require('child_process');
@@ -30,7 +30,6 @@ function getDownloadInfo() {
 
   return {
     ollama: getOllamaDownload(platform, arch),
-    pocketbase: getPocketBaseDownload(platform, arch),
     piper: getPiperDownload(platform, arch)
   };
 }
@@ -51,20 +50,6 @@ function getOllamaDownload(platform, arch) {
     url: 'https://ollama.com/install.sh',
     type: 'script',
     binary: 'ollama'
-  };
-}
-
-function getPocketBaseDownload(platform, arch) {
-  const version = '0.25.9';
-  let fname;
-  if (platform === 'win32') fname = `pocketbase_${version}_windows_amd64.zip`;
-  else if (platform === 'darwin') fname = `pocketbase_${version}_darwin_${arch === 'arm64' ? 'arm64' : 'amd64'}.zip`;
-  else fname = `pocketbase_${version}_linux_${arch === 'arm64' ? 'arm64' : 'amd64'}.zip`;
-
-  return {
-    url: `https://github.com/pocketbase/pocketbase/releases/download/v${version}/${fname}`,
-    type: 'zip',
-    binary: platform === 'win32' ? 'pocketbase.exe' : 'pocketbase'
   };
 }
 
@@ -742,19 +727,6 @@ function startService(serviceId) {
       });
       break;
 
-    case 'pocketbase':
-      // PocketBase: serve with data directory
-      // --origins flag restricts CORS and prevents auto-opening browser on first run
-      proc = spawn(binaryPath, ['serve', '--http=127.0.0.1:8090', '--origins=http://localhost:3000,http://127.0.0.1:3000', `--dir=${path.join(dataDir, 'pb_data')}`], {
-        cwd: dataDir,
-        windowsHide: true,
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, BROWSER: 'none' }
-      });
-      // Send newline to stdin to skip the "press Enter to open browser" prompt
-      try { proc.stdin.write('\n'); proc.stdin.end(); } catch {}
-      break;
-
     case 'piper': {
       // Piper: TTS binary - add to PATH so web app can call it
       // Piper is typically called via subprocess from webAppServer.js
@@ -881,7 +853,6 @@ function stopAllServices() {
 async function checkServiceHealth(serviceId) {
   const healthEndpoints = {
     ollama: 'http://127.0.0.1:11434/api/tags',
-    pocketbase: 'http://127.0.0.1:8090/api/health',
     flux: 'http://127.0.0.1:7860/health'
   };
 
@@ -967,7 +938,7 @@ async function uninstallService(serviceId) {
  * Uninstall ALL services and remove the ~/.alloflow directory entirely.
  */
 async function uninstallAll(onProgress) {
-  const allServices = ['ollama', 'pocketbase', 'piper', 'flux'];
+  const allServices = ['ollama', 'piper', 'flux'];
   const total = allServices.length;
   
   for (let i = 0; i < total; i++) {
@@ -1105,214 +1076,6 @@ function decryptData(encrypted) {
   return JSON.parse(decrypted);
 }
 
-/**
- * Auto-create a PocketBase admin account if one doesn't exist.
- * Generates a secure random password and stores encrypted credentials in ~/.alloflow/pb_admin.json
- * @returns {Promise<{email: string, password: string}>}
- */
-function createPocketBaseAdmin() {
-  return new Promise((resolve, reject) => {
-    // Generate a random 32-character password
-    const generatePassword = () => {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-      let password = '';
-      for (let i = 0; i < 32; i++) {
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return password;
-    };
-
-    const email = 'admin@alloflow.local';
-    const password = generatePassword();
-    const credFile = path.join(ALLOFLOW_DIR, 'pb_admin.json');
-
-    // Check if admin credentials already exist
-    if (fs.existsSync(credFile)) {
-      try {
-        const encrypted = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
-        const creds = decryptData(encrypted);
-        console.log('[native-pm] PocketBase admin already configured');
-        resolve(creds);
-        return;
-      } catch (err) {
-        console.warn('[native-pm] Could not read existing pb_admin.json, will regenerate:', err.message);
-      }
-    }
-
-    // Use PocketBase CLI to create admin
-    const pbPath = getServiceBinaryPath('pocketbase');
-    if (!pbPath) {
-      reject(new Error('PocketBase binary not found'));
-      return;
-    }
-
-    // Ensure the PocketBase data directory exists
-    const pbDataDir = path.join(getServiceDataDir('pocketbase'), 'pb_data');
-    if (!fs.existsSync(pbDataDir)) {
-      fs.mkdirSync(pbDataDir, { recursive: true });
-    }
-
-    console.log('[native-pm] Creating PocketBase admin account...');
-    const proc = spawn(pbPath, ['superuser', 'upsert', email, password, `--dir=${pbDataDir}`], {
-      cwd: path.dirname(pbDataDir),
-      windowsHide: true,
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
-
-    let output = '';
-    let errors = '';
-
-    proc.stdout.on('data', (data) => {
-      output += data.toString();
-      console.log('[pb:admin]', data.toString().trim());
-    });
-
-    proc.stderr.on('data', (data) => {
-      errors += data.toString();
-      console.log('[pb:admin-err]', data.toString().trim());
-    });
-
-    proc.on('close', (code) => {
-      if (code === 0) {
-        // Success: save encrypted credentials
-        const creds = { email, password, createdAt: new Date().toISOString() };
-        try {
-          const encrypted = encryptData(creds);
-          fs.writeFileSync(credFile, JSON.stringify(encrypted, null, 2));
-          console.log('[native-pm] PocketBase admin created and credentials encrypted:', email);
-          resolve(creds);
-        } catch (writeErr) {
-          console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
-          resolve(creds); // Still resolve with creds even if saving failed
-        }
-      } else {
-        // Admin might already exist (code !== 0 doesn't always mean failure)
-        // Try to check if it exists, if not generate default creds anyway
-        const creds = { email, password, createdAt: new Date().toISOString() };
-        try {
-          const encrypted = encryptData(creds);
-          fs.writeFileSync(credFile, JSON.stringify(encrypted, null, 2));
-          console.log('[native-pm] Saved encrypted PocketBase admin credentials (may not be first-time creation)');
-          resolve(creds);
-        } catch (writeErr) {
-          console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
-          resolve(creds);
-        }
-      }
-    });
-
-    proc.on('error', (err) => {
-      console.warn('[native-pm] Failed to create PocketBase admin:', err.message);
-      // Even if creation failed, save the encrypted creds for user reference
-      const creds = { email, password, createdAt: new Date().toISOString() };
-      try {
-        const encrypted = encryptData(creds);
-        fs.writeFileSync(credFile, JSON.stringify(encrypted, null, 2));
-      } catch (writeErr) {
-        console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
-      }
-      resolve(creds); // Resolve anyway so deployment continues
-    });
-  });
-}
-
-/**
- * Create a PocketBase superuser via the REST API (fallback when CLI fails).
- * Only works when PocketBase is running and no superuser exists yet.
- * @returns {Promise<{email: string, password: string}>}
- */
-function createPocketBaseAdminViaAPI() {
-  return new Promise((resolve, reject) => {
-    const credFile = path.join(ALLOFLOW_DIR, 'pb_admin.json');
-
-    // If creds already saved, return them
-    if (fs.existsSync(credFile)) {
-      try {
-        const encrypted = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
-        const creds = decryptData(encrypted);
-        console.log('[native-pm] PocketBase admin already configured (API check)');
-        resolve(creds);
-        return;
-      } catch (err) {
-        console.warn('[native-pm] Could not read existing pb_admin.json for API fallback:', err.message);
-      }
-    }
-
-    const email = 'admin@alloflow.local';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-    let password = '';
-    for (let i = 0; i < 32; i++) password += chars.charAt(Math.floor(Math.random() * chars.length));
-
-    const http = require('http');
-
-    // PocketBase v0.23+ uses _superusers collection for the first admin
-    const body = JSON.stringify({ email, password, passwordConfirm: password });
-    const options = {
-      hostname: '127.0.0.1',
-      port: 8090,
-      path: '/api/collections/_superusers/records',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
-    };
-
-    console.log('[native-pm] Creating PocketBase admin via REST API...');
-    const req = http.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          const creds = { email, password, createdAt: new Date().toISOString() };
-          try {
-            const encrypted = encryptData(creds);
-            fs.writeFileSync(credFile, JSON.stringify(encrypted, null, 2));
-            console.log('[native-pm] PocketBase admin created via API and credentials encrypted:', email);
-          } catch (writeErr) {
-            console.warn('[native-pm] Could not save admin credentials:', writeErr.message);
-          }
-          resolve(creds);
-        } else {
-          console.warn('[native-pm] PocketBase API admin creation returned:', res.statusCode, data);
-          // 400 often means admin already exists — try auth to confirm
-          reject(new Error(`API returned ${res.statusCode}: ${data}`));
-        }
-      });
-    });
-
-    req.on('error', (err) => {
-      console.warn('[native-pm] PocketBase API admin creation failed:', err.message);
-      reject(err);
-    });
-
-    req.write(body);
-    req.end();
-  });
-}
-
-/**
- * Read and decrypt PocketBase admin credentials from ~/.alloflow/pb_admin.json
- * @returns {Promise<{email: string, password: string} | null>}
- */
-function getPocketBaseAdmin() {
-  return new Promise((resolve) => {
-    const credFile = path.join(ALLOFLOW_DIR, 'pb_admin.json');
-    
-    if (!fs.existsSync(credFile)) {
-      resolve(null);
-      return;
-    }
-    
-    try {
-      const encrypted = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
-      const creds = decryptData(encrypted);
-      console.log('[native-pm] Successfully decrypted PocketBase admin credentials');
-      resolve(creds);
-    } catch (err) {
-      console.error('[native-pm] Failed to decrypt PocketBase credentials:', err.message);
-      resolve(null);
-    }
-  });
-}
-
 module.exports = {
   ensureDirectories,
   getDownloadInfo,
@@ -1327,9 +1090,6 @@ module.exports = {
   uninstallService,
   uninstallAll,
   pullOllamaModel,
-  createPocketBaseAdmin,
-  createPocketBaseAdminViaAPI,
-  getPocketBaseAdmin,
   BINARIES_DIR,
   DATA_DIR,
   ALLOFLOW_DIR

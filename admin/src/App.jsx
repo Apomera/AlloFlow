@@ -9,7 +9,6 @@ import './App.css';
 
 const SERVICE_LABELS = {
   ollama: { name: 'Ollama', desc: 'AI models (LLM inference engine)' },
-  pocketbase: { name: 'PocketBase', desc: 'Database & auth backend' },
   piper: { name: 'Piper TTS', desc: 'Text-to-speech engine' },
   flux: { name: 'Flux', desc: 'AI image generation' },
 };

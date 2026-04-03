@@ -6,6 +6,8 @@ const nativePM = require('./nativeProcessManager');
 const ollamaManager = require('./ollamaManager');
 const { startSearchServer, stopSearchServer } = require('./searchModule');
 const { startWebAppServer, stopWebAppServer, getWebAppPort } = require('./webAppServer');
+const { startLocalAppServer, stopLocalAppServer, getLocalAppPort } = require('./localAppServer');
+const localBackend = require('./localBackendManager');
 
 const isDev = !app.isPackaged;
 let mainWindow;
@@ -48,7 +50,40 @@ const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
 const CONFIG_FILE = path.join(ALLOFLOW_DIR, 'config.json');
 const AI_CONFIG_FILE = path.join(ALLOFLOW_DIR, 'ai_config.json');
 const VERSION_FILE = path.join(ALLOFLOW_DIR, 'version.json');
-const DEPLOYMENT_MANIFEST = path.join(ALLOFLOW_DIR, 'deployment.json');
+const DEPLOYMENT_MANIFEST  = path.join(ALLOFLOW_DIR, 'deployment.json');
+const LOCAL_CONFIG_FILE    = path.join(ALLOFLOW_DIR, 'local_config.json');
+
+// ── Local config helpers (C3.1) ──────────────────────────────────────────────
+const LOCAL_CONFIG_DEFAULTS = {
+  ollamaUrl:    'http://localhost:11434',
+  sqliteUrl:    'http://localhost:3747',
+  piperEnabled: true,
+  defaultModel: 'llama3.2:3b',
+};
+
+function readLocalConfig() {
+  try {
+    if (fs.existsSync(LOCAL_CONFIG_FILE)) {
+      return { ...LOCAL_CONFIG_DEFAULTS, ...JSON.parse(fs.readFileSync(LOCAL_CONFIG_FILE, 'utf-8')) };
+    }
+  } catch (err) {
+    console.warn('[local-config] Read error:', err.message);
+  }
+  return { ...LOCAL_CONFIG_DEFAULTS };
+}
+
+function writeLocalConfig(cfg) {
+  try {
+    ensureAlloFlowDir();
+    const merged = { ...LOCAL_CONFIG_DEFAULTS, ...cfg };
+    fs.writeFileSync(LOCAL_CONFIG_FILE, JSON.stringify(merged, null, 2), 'utf-8');
+    console.log('[local-config] Saved:', LOCAL_CONFIG_FILE);
+    return true;
+  } catch (err) {
+    console.error('[local-config] Write error:', err.message);
+    return false;
+  }
+}
 
 // Get installer version from package.json
 function getInstallerVersion() {
@@ -196,6 +231,23 @@ app.on('ready', async () => {
     console.error('[app:ready] Failed to start web app server:', err.message);
   }
 
+  // Start the local app server + SQLite backend (B4.4)
+  try {
+    const localConfig = readLocalConfig();
+    const sqlitePort  = parseInt((localConfig.sqliteUrl || '').split(':').pop(), 10) || 3747;
+    await localBackend.start(sqlitePort, app.isPackaged);
+    console.log('[app:ready] Local SQLite backend started on port', localBackend.getPort());
+  } catch (err) {
+    console.warn('[app:ready] Local SQLite backend failed to start:', err.message);
+  }
+
+  try {
+    const localPort = await startLocalAppServer(3730, app.isPackaged);
+    console.log('[app:ready] Local app server started on port', localPort);
+  } catch (err) {
+    console.warn('[app:ready] Local app server failed to start:', err.message);
+  }
+
   // If already configured, start native services
   const config = getConfig();
   if (config && config.deploymentType === 'local') {
@@ -220,6 +272,8 @@ app.on('window-all-closed', () => {
   nativePM.stopAllServices();
   stopSearchServer();
   stopWebAppServer();
+  stopLocalAppServer();
+  localBackend.stop();
   stopOllamaUpdateDetector();
   if (process.platform !== 'darwin') {
     app.quit();
@@ -230,6 +284,8 @@ app.on('before-quit', () => {
   nativePM.stopAllServices();
   stopSearchServer();
   stopWebAppServer();
+  stopLocalAppServer();
+  localBackend.stop();
   stopOllamaUpdateDetector();
 });
 
@@ -275,6 +331,18 @@ ipcMain.handle('setup:save-config', async (event, setupData) => {
     };
     
     const success = saveConfig(config);
+
+    // C3.2 — Write local_config.json when saving a local deployment
+    if (success && (setupData.deploymentType === 'local' || setupData.deploymentType === 'hybrid')) {
+      const localCfg = {
+        ollamaUrl:    setupData.ollamaUrl    || LOCAL_CONFIG_DEFAULTS.ollamaUrl,
+        sqliteUrl:    setupData.sqliteUrl    || LOCAL_CONFIG_DEFAULTS.sqliteUrl,
+        piperEnabled: setupData.piperEnabled !== false,
+        defaultModel: setupData.defaultModel || LOCAL_CONFIG_DEFAULTS.defaultModel,
+      };
+      writeLocalConfig(localCfg);
+      console.log('[setup:save] local_config.json written for local deployment');
+    }
     
     if (success) {
       console.log('[setup:save] Configuration saved successfully');
@@ -529,29 +597,6 @@ async function startDeployment(setupData, onProgress) {
     
     } // End of needsInstallation block (only skips download/install)
     
-    // PHASE 2.5: Create PocketBase admin BEFORE starting serve
-    // PocketBase auto-opens browser on first serve if no admin exists.
-    // By creating admin first via CLI, the browser auto-open is suppressed.
-    if (servicesToInstall.includes('pocketbase')) {
-      onProgress({ phase: 'pocketbase_admin', status: 'Configuring PocketBase admin account...', progress: 68 });
-      try {
-        const adminCreds = await nativePM.createPocketBaseAdmin();
-        console.log('[deploy:start] PocketBase admin ready:', adminCreds.email);
-        fs.writeFileSync(
-          path.join(ALLOFLOW_DIR, 'pb_admin_info.txt'),
-          `PocketBase Admin Credentials\n` +
-          `=============================\n` +
-          `Email: ${adminCreds.email}\n` +
-          `Password: ${adminCreds.password}\n` +
-          `Created: ${adminCreds.createdAt}\n` +
-          `\nAccess at: http://localhost:8090/_/\n`
-        );
-      } catch (err) {
-        console.warn('[deploy:start] PocketBase admin creation failed:', err.message);
-        onProgress({ phase: 'pocketbase_admin', status: `PocketBase admin setup warning: ${err.message}`, progress: 68 });
-      }
-    }
-
     // PHASE 3: Start services (always runs — ensures services are up)
     onProgress({ phase: 'starting', status: 'Starting services...', progress: 70 });
     
@@ -610,40 +655,6 @@ async function startDeployment(setupData, onProgress) {
       
       if (!isHealthy) {
         console.warn(`[deploy:start] ${serviceId} may not be fully healthy yet`);
-      }
-    }
-
-    // PHASE 4.5: REST API fallback for PocketBase admin creation
-    // If CLI admin creation in Phase 2.5 didn't work (e.g. wrong PB version),
-    // try the REST API now that PocketBase is running and healthy
-    if (servicesToInstall.includes('pocketbase')) {
-      const credFile = path.join(ALLOFLOW_DIR, 'pb_admin.json');
-      let adminReady = false;
-      if (fs.existsSync(credFile)) {
-        try {
-          const encrypted = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
-          // If we can decrypt it, CLI probably worked
-          nativePM.getPocketBaseAdmin().then(() => { adminReady = true; }).catch(() => {});
-          adminReady = true;
-        } catch { /* will try API */ }
-      }
-      if (!adminReady) {
-        console.log('[deploy:start] PocketBase admin not yet confirmed — trying REST API fallback...');
-        try {
-          const apiCreds = await nativePM.createPocketBaseAdminViaAPI();
-          console.log('[deploy:start] PocketBase admin created via API:', apiCreds.email);
-          fs.writeFileSync(
-            path.join(ALLOFLOW_DIR, 'pb_admin_info.txt'),
-            `PocketBase Admin Credentials\n` +
-            `=============================\n` +
-            `Email: ${apiCreds.email}\n` +
-            `Password: ${apiCreds.password}\n` +
-            `Created: ${apiCreds.createdAt}\n` +
-            `\nAccess at: http://localhost:8090/_/\n`
-          );
-        } catch (apiErr) {
-          console.warn('[deploy:start] PocketBase API admin fallback also failed:', apiErr.message);
-        }
       }
     }
 
@@ -1047,7 +1058,7 @@ ipcMain.handle('setup:uninstall-services', async (event, { serviceIds, removeCon
 // IPC Handler: Get list of currently installed services
 ipcMain.handle('setup:get-installed-services', async (event) => {
   try {
-    const allServices = ['ollama', 'pocketbase', 'piper', 'flux'];
+    const allServices = ['ollama', 'piper', 'flux'];
     const installed = {};
     for (const serviceId of allServices) {
       installed[serviceId] = nativePM.isServiceInstalled(serviceId);
@@ -1055,20 +1066,6 @@ ipcMain.handle('setup:get-installed-services', async (event) => {
     return { success: true, services: installed };
   } catch (err) {
     return { success: false, error: err.message };
-  }
-});
-
-// IPC Handler: Check if PocketBase admin is configured
-ipcMain.handle('pocketbase:check-admin', async (event) => {
-  try {
-    const creds = await nativePM.getPocketBaseAdmin();
-    return {
-      configured: creds !== null,
-      email: creds ? creds.email : null
-    };
-  } catch (err) {
-    console.error('[ipc:pocketbase:check-admin] Error:', err.message);
-    return { configured: false, email: null };
   }
 });
 
@@ -1141,6 +1138,41 @@ ipcMain.handle('ollama:check-updates', async (event) => {
     console.error('[ipc:ollama:check-updates] Error:', err.message);
     return { success: false, updates: null };
   }
+});
+
+// ============================================================================
+// LOCAL APP CONFIG READ / WRITE + STATUS  (C3.1 — local_config.json)
+// ============================================================================
+
+ipcMain.handle('local:read-config', async () => {
+  return readLocalConfig();
+});
+
+ipcMain.handle('local:write-config', async (_event, cfg) => {
+  try {
+    const ok = writeLocalConfig(cfg);
+    return { success: ok };
+  } catch (err) {
+    console.error('[ipc:local:write-config] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('local:get-url', async () => {
+  return {
+    localAppUrl:  `http://localhost:${getLocalAppPort()}`,
+    sqliteUrl:    `http://localhost:${localBackend.getPort()}`,
+    localAppPort: getLocalAppPort(),
+    sqlitePort:   localBackend.getPort(),
+    backendRunning: localBackend.isRunning(),
+  };
+});
+
+ipcMain.handle('local:backend-status', async () => {
+  return {
+    running: localBackend.isRunning(),
+    port:    localBackend.getPort(),
+  };
 });
 
 // ============================================================================

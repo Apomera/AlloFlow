@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' localhost:* 127.0.0.1:*;
+             script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net;
+             style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+             font-src 'self' https://fonts.gstatic.com;
+             img-src 'self' data: blob:;
+             media-src 'self' blob:;
+             connect-src 'self' localhost:* 127.0.0.1:* ws://localhost:*;" />
+  <title>AlloFlow — Local</title>
+
+  <!-- Tailwind (optional — served from build or CDN for dev) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React + ReactDOM from CDN (pinned to same version as web app) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Expose React globals for modules that read window.React -->
+  <script>window.React = React; window.ReactDOM = ReactDOM;</script>
+
+  <!-- Shared context (must load first — defines window.__alloShared) -->
+  <script src="./sharedContext_local.js" defer></script>
+
+  <!-- Local AI module (Ollama + Piper — no cloud) -->
+  <script src="./ai_local_module.js" defer></script>
+
+  <!-- Local DB module (SQLite REST client + IndexedDB cache + auth) -->
+  <script src="./db_local_module.js" defer></script>
+
+  <!-- App bundle (compiled from LocalApp.jsx by local_build.js) -->
+  <script src="./app.js" defer></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body, #root { height: 100%; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; }
+    /* Offline status banner */
+    #offline-banner {
+      display: none;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #f59e0b; color: #1c1917; padding: 8px 16px;
+      font-size: 13px; font-weight: 600; text-align: center;
+    }
+    #offline-banner.visible { display: block; }
+    /* Service error overlay */
+    #service-error {
+      display: none;
+      position: fixed; inset: 0; z-index: 9998; background: rgba(15,23,42,0.9);
+      align-items: center; justify-content: center;
+    }
+    #service-error.visible { display: flex; }
+    #service-error-box {
+      background: #1e293b; border: 1px solid #ef4444; border-radius: 12px;
+      padding: 32px; max-width: 440px; text-align: center; color: #f1f5f9;
+    }
+    #service-error-box h2 { margin: 0 0 12px; color: #f87171; font-size: 18px; }
+    #service-error-box p { margin: 0 0 20px; font-size: 14px; color: #94a3b8; line-height: 1.5; }
+    #service-error-box button {
+      background: #3b82f6; color: white; border: none; border-radius: 8px;
+      padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="offline-banner">⚠️ Ollama service offline — AI features unavailable. Start Ollama to restore.</div>
+
+  <div id="service-error">
+    <div id="service-error-box">
+      <h2>Local Service Unavailable</h2>
+      <p id="service-error-msg">One or more required local services could not be reached.</p>
+      <button onclick="document.getElementById('service-error').classList.remove('visible')">Dismiss</button>
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <script>
+    // ── Local config injected by admin app ──────────────────────────────────
+    // The admin Electron app injects __alloLocalConfig into the served HTML.
+    // Fallback values used when loading the file directly in dev mode.
+    window.__alloLocalConfig = window.__alloLocalConfig || {
+      ollamaUrl: 'http://localhost:11434',
+      sqliteUrl: 'http://localhost:3747',
+      piperEnabled: true,
+      defaultModel: 'llama3.2:3b',
+    };
+
+    window.__alloLocalDBUrl = window.__alloLocalConfig.sqliteUrl;
+
+    // ── Offline / service health check (C3.3) ──────────────────────────────
+    async function checkServices() {
+      const config = window.__alloLocalConfig;
+      const errors = [];
+
+      // Check Ollama
+      try {
+        const res = await fetch(config.ollamaUrl + '/api/tags', { signal: AbortSignal.timeout(3000) });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+      } catch {
+        errors.push({ service: 'Ollama', url: config.ollamaUrl, required: false });
+        document.getElementById('offline-banner').classList.add('visible');
+      }
+
+      // Check SQLite backend
+      try {
+        const res = await fetch(config.sqliteUrl + '/health', { signal: AbortSignal.timeout(2000) });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+      } catch {
+        errors.push({ service: 'AlloFlow data backend', url: config.sqliteUrl, required: true });
+      }
+
+      if (errors.length > 0) {
+        const names = errors.map(e => e.service + ' (' + e.url + ')').join(', ');
+        const hasRequired = errors.some(e => e.required);
+
+        document.getElementById('service-error-msg').innerHTML =
+          'Could not reach: <strong>' + names + '</strong>.<br>' +
+          'Please start the required service(s) via the ' +
+          '<a href="alloflow://admin" style="color:#60a5fa">AlloFlow admin app</a>.' +
+          (hasRequired ? '<br><em style="font-size:12px;color:#f87171">Data features are offline until the backend is running.</em>' : '');
+
+        if (hasRequired) {
+          document.getElementById('service-error').classList.add('visible');
+        }
+      }
+    }
+
+    // Run after a short delay to let services initialize
+    setTimeout(checkServices, 2000);
+  </script>
+</body>
+</html>
