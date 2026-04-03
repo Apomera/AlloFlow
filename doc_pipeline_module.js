@@ -445,7 +445,7 @@ SCORING RUBRIC — Start at 100, deduct points for each unique violation:
   MINOR (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists, missing document metadata
 
 Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"major":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false}`;
-    const batchAllVariants = [batchAuditPrompt, batchAuditPrompt.replace('accessibility auditor', 'document remediation specialist'), batchAuditPrompt.replace('Analyze this PDF', 'Perform a deep-dive accessibility review of this PDF')];
+    const batchAllVariants = [batchAuditPrompt, batchAuditPrompt.replace('accessibility auditor', 'document remediation specialist'), batchAuditPrompt.replace('Analyze this PDF', 'Perform a deep-dive accessibility review of this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'As a strict WCAG compliance officer, audit this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'From the perspective of a screen reader user, assess this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'As a disability rights advocate, critically review this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'Using Section 508 federal standards, evaluate this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'As a university Title II compliance officer, assess this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'As an assistive technology expert, test this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'Conduct an independent accessibility evaluation of this PDF')];
     const batchNumAuditors = Math.min(pdfAuditorCount, batchAllVariants.length);
     const batchAuditVariants = batchAllVariants.slice(0, batchNumAuditors);
     const batchAuditResults = await Promise.all(batchAuditVariants.map(p => callGeminiVision(p, base64Data, 'application/pdf').catch(() => null)));
@@ -456,6 +456,33 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
         return null;
       }
     }).filter(Boolean);
+
+    // ── Retry backfill for batch audits (same pattern as single-file audit) ──
+    let batchRetryRound = 0;
+    while (batchParsedAudits.length < batchNumAuditors && batchParsedAudits.length > 0 && batchRetryRound < 2) {
+      batchRetryRound++;
+      const shortfall = batchNumAuditors - batchParsedAudits.length;
+      log(`Audit retry round ${batchRetryRound}: ${batchParsedAudits.length}/${batchNumAuditors}, retrying ${shortfall}...`);
+      await new Promise(r => setTimeout(r, 1000 * batchRetryRound));
+      const retryVariants = batchAllVariants.slice(batchNumAuditors).concat(batchAllVariants.slice(0, batchNumAuditors).map(p => p + `\n\n(Retry attempt ${batchRetryRound + 1})`)).slice(0, shortfall);
+      const retryResults = [];
+      for (const p of retryVariants) {
+        try {
+          retryResults.push(await callGeminiVision(p, base64Data, 'application/pdf'));
+        } catch {
+          retryResults.push(null);
+        }
+        await new Promise(r => setTimeout(r, 500));
+      }
+      const retryParsed = retryResults.filter(Boolean).map(r => {
+        try {
+          return parseAuditJson(r);
+        } catch {
+          return null;
+        }
+      }).filter(Boolean);
+      if (retryParsed.length > 0) batchParsedAudits.push(...retryParsed);
+    }
     if (batchParsedAudits.length === 0) throw new Error('All audit attempts failed');
 
     // Recalculate scores from issue counts
@@ -859,6 +886,39 @@ Return ONLY the complete HTML document.`;
       }
       if (i < queue.length - 1) {
         setPdfBatchStep('Cooling down before next file...');
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    }
+
+    // ── Retry failed files once ──
+    const failedFiles = queue.filter(q => q.status === 'failed');
+    if (failedFiles.length > 0 && failedFiles.length < queue.length) {
+      setPdfBatchStep(`Retrying ${failedFiles.length} failed file(s)...`);
+      await new Promise(r => setTimeout(r, 5000)); // longer cooldown before retry
+      for (const failedItem of failedFiles) {
+        const idx = queue.indexOf(failedItem);
+        setPdfBatchCurrentIndex(idx);
+        setPdfBatchStep(`Retrying: ${failedItem.fileName}`);
+        try {
+          const result = await processSinglePdfForBatch(failedItem.base64, failedItem.fileName, msg => {
+            setPdfBatchStep(`[Retry] ${failedItem.fileName}: ${msg}`);
+          });
+          queue[idx] = {
+            ...failedItem,
+            status: 'done',
+            result,
+            retried: true
+          };
+          setPdfBatchQueue([...queue]);
+        } catch (err) {
+          warnLog(`[Batch Retry] ${failedItem.fileName} failed again:`, err);
+          queue[idx] = {
+            ...failedItem,
+            status: 'failed',
+            error: 'Failed after retry: ' + err.message
+          };
+          setPdfBatchQueue([...queue]);
+        }
         await new Promise(r => setTimeout(r, 3000));
       }
     }
