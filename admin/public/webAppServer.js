@@ -67,6 +67,49 @@ function buildConfigScript() {
 }
 
 /**
+ * Build the cloud provider removal script.
+ * Strips Gemini, OpenAI, Claude, Custom, ONNX-NPU, and LocalAI from the provider dropdown.
+ * Only Ollama is shown for local deployment.
+ */
+function buildCloudProviderRemovalScript() {
+  return `<script>
+/* AlloFlow Cloud Provider Removal - Local Build Only */
+(function() {
+  var cloudProviders = ['gemini', 'openai', 'claude', 'custom', 'onnx-npu', 'localai'];
+  
+  var remover = function() {
+    var select = document.getElementById('ai-backend-provider');
+    if (!select) {
+      // Not yet mounted, try again in ~100ms
+      setTimeout(remover, 100);
+      return;
+    }
+    
+    // Remove all cloud-only provider options
+    var options = select.querySelectorAll('option');
+    options.forEach(function(opt) {
+      if (cloudProviders.includes(opt.value.toLowerCase())) {
+        opt.remove();
+      }
+    });
+    
+    // Ensure Ollama is selected (it's the only local provider left)
+    if (select.value === '' || !cloudProviders.includes(select.value)) {
+      select.value = 'ollama';
+    }
+    
+    console.log('[AlloFlow] Cloud providers removed. Available backends: Ollama only');
+  };
+  
+  // Try immediately for fast-path case, then watch for React mount
+  remover();
+  setTimeout(remover, 250);
+  setTimeout(remover, 500);
+})();
+</script>`;
+}
+
+/**
  * Resolve the web app build directory.
  * In dev: ../prismflow-deploy/build (relative to admin/public/)
  * In production: process.resourcesPath/webapp
@@ -146,9 +189,10 @@ function startWebAppServer(port, isPackaged) {
         try {
           let html = fs.readFileSync(indexPath, 'utf-8');
 
-          // Inject local config script after <head>
+          // Inject both local config script AND cloud provider removal script
           const configScript = buildConfigScript();
-          html = html.replace('<head>', '<head>' + configScript);
+          const cloudRemovalScript = buildCloudProviderRemovalScript();
+          html = html.replace('<head>', '<head>' + configScript + cloudRemovalScript);
 
           res.writeHead(200, {
             'Content-Type': 'text/html; charset=utf-8',
@@ -190,7 +234,8 @@ function startWebAppServer(port, isPackaged) {
         try {
           let html = fs.readFileSync(indexPath, 'utf-8');
           const configScript = buildConfigScript();
-          html = html.replace('<head>', '<head>' + configScript);
+          const cloudRemovalScript = buildCloudProviderRemovalScript();
+          html = html.replace('<head>', '<head>' + configScript + cloudRemovalScript);
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
           res.end(html);
         } catch (innerErr) {
