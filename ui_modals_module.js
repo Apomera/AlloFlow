@@ -15,6 +15,17 @@ var useRef = React.useRef;
 var useContext = React.useContext;
 var useMemo = React.useMemo;
 var useCallback = React.useCallback;
+var APP_CONFIG = window.APP_CONFIG || {};
+var warnLog = window.warnLog || function () {
+  console.warn.apply(console, arguments);
+};
+var doc = window._fbDoc || function () {
+  return null;
+};
+var updateDoc = window._fbUpdateDoc || function () {
+  return Promise.resolve();
+};
+var db = window._fbDb || null;
 var _i = window.AlloIcons || {};
 var CheckCircle = _i.CheckCircle || function () {
   return null;
