@@ -14,6 +14,7 @@ var createDocPipeline = function(deps) {
   var addToast = deps.addToast;
   var t = deps.t;
   var isRtlLang = deps.isRtlLang || function() { return false; };
+  var updateExportPreview = deps.updateExportPreview || function() {};
   // Proxy all state access through window.__docPipelineState
   var _s = function() { return window.__docPipelineState || {}; };
   // Re-expose state vars as getters so existing code works unchanged
