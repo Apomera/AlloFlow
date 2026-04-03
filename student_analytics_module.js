@@ -1314,6 +1314,74 @@
       URL.revokeObjectURL(link.href);
       addToast && addToast('Research CSV exported with ' + students.length + ' students', 'success');
     };
+    // ── Session-level CSV export (fidelity log data) ──
+    const exportSessionLogCSV = () => {
+      var log;
+      try { log = JSON.parse(localStorage.getItem('alloflow_fidelity_log') || '[]'); } catch { log = []; }
+      if (!log.length) { addToast && addToast('No session log data to export', 'info'); return; }
+      var headers = ['Date', 'Weekday', 'Student', 'Activity', 'Duration_Minutes', 'Study_Name'];
+      var rows = log.map(function(s) {
+        var d = s.date ? new Date(s.date) : new Date();
+        var weekday = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()] || '';
+        return [
+          s.date || d.toISOString(),
+          weekday,
+          '"' + String(s.student || '').replace(/"/g, '""') + '"',
+          '"' + String(s.activity || '').replace(/"/g, '""') + '"',
+          s.duration || '',
+          '"' + String(s.researchStudy || '').replace(/"/g, '""') + '"'
+        ].join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow_Session_Log_' + new Date().toISOString().split('T')[0] + '.csv';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      addToast && addToast('Session log exported (' + log.length + ' sessions)', 'success');
+    };
+
+    // ── Survey responses CSV export (with timepoints) ──
+    const exportSurveyCSV = () => {
+      var allResponses = [];
+      Object.keys(surveyResponses).forEach(function(key) {
+        var entries = surveyResponses[key] || [];
+        entries.forEach(function(entry) {
+          allResponses.push(entry);
+        });
+      });
+      if (!allResponses.length) { addToast && addToast('No survey responses to export', 'info'); return; }
+      var headers = ['Timestamp', 'Type', 'Respondent', 'Timepoint', 'Study_Name'];
+      var questionIds = new Set();
+      allResponses.forEach(function(r) {
+        Object.keys(r).forEach(function(k) {
+          if (!['timestamp','type','respondent','timepoint','studyName'].includes(k)) questionIds.add(k);
+        });
+      });
+      var qids = Array.from(questionIds).sort();
+      headers = headers.concat(qids);
+      var rows = allResponses.map(function(r) {
+        var base = [
+          r.timestamp || '',
+          r.type || '',
+          '"' + String(r.respondent || '').replace(/"/g, '""') + '"',
+          r.timepoint || 'unspecified',
+          '"' + String(r.studyName || '').replace(/"/g, '""') + '"'
+        ];
+        var answers = qids.map(function(q) { return r[q] !== undefined ? r[q] : ''; });
+        return base.concat(answers).join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow_Survey_Responses_' + new Date().toISOString().split('T')[0] + '.csv';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      addToast && addToast('Survey responses exported (' + allResponses.length + ' responses)', 'success');
+    };
+
     const [externalCBMScores, setExternalCBMScores] = React.useState(() => {
       try {
         return JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}');
@@ -1525,7 +1593,9 @@
           ...responses,
           timestamp: new Date().toISOString(),
           type,
-          respondent
+          respondent,
+          timepoint: surveyTimepoint || 'unspecified',
+          studyName: (researchMode && researchMode.studyName) || 'No active study'
         }]
       };
       setSurveyResponses(updated);
@@ -1535,6 +1605,7 @@
     };
     const [surveyAnswers, setSurveyAnswers] = React.useState({});
     const [surveyRespondent, setSurveyRespondent] = React.useState('');
+    const [surveyTimepoint, setSurveyTimepoint] = React.useState('pre');
     const SURVEY_QUESTIONS = {
       student: [{
         id: 'engagement',
@@ -1658,6 +1729,16 @@
         onChange: e => setSurveyRespondent(e.target.value),
         placeholder: 'Enter name...'
       })), React.createElement('div', {
+        className: 'mb-4'
+      }, React.createElement('label', {
+        className: 'text-xs font-bold text-slate-600 uppercase'
+      }, 'Survey Timepoint'), React.createElement('div', {
+        className: 'flex gap-2 mt-1'
+      }, ...['pre', 'mid', 'post'].map(tp => React.createElement('button', {
+        key: tp,
+        className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' + (surveyTimepoint === tp ? 'bg-indigo-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-indigo-50'),
+        onClick: () => setSurveyTimepoint(tp)
+      }, tp === 'pre' ? 'Pre-Study' : tp === 'mid' ? 'Mid-Study' : 'Post-Study')))), React.createElement('div', {
         className: 'space-y-4'
       }, ...questions.map(q => React.createElement('div', {
         key: q.id,
@@ -1842,6 +1923,12 @@
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-medium text-slate-700',
         onClick: exportResearchCSV
       }, React.createElement('span', null, '\u{1F4C4}'), 'Export Research CSV'), React.createElement('button', {
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
+        onClick: exportSessionLogCSV
+      }, React.createElement('span', null, '\u{1F4C5}'), 'Session Log CSV'), React.createElement('button', {
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all text-xs font-medium text-slate-700',
+        onClick: exportSurveyCSV
+      }, React.createElement('span', null, '\u{1F4DD}'), 'Survey CSV'), React.createElement('button', {
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowCBMModal(true)
       }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', {

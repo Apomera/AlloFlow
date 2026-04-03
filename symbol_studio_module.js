@@ -718,6 +718,7 @@
     var _gardenSelectedWord = useState(null); var gardenSelectedWord = _gardenSelectedWord[0]; var setGardenSelectedWord = _gardenSelectedWord[1];
     var _gardenSort = useState('growth'); var gardenSort = _gardenSort[0]; var setGardenSort = _gardenSort[1];
     var _gardenStudentView = useState(false); var gardenStudentView = _gardenStudentView[0]; var setGardenStudentView = _gardenStudentView[1];
+    var _gardenBehaviorFn = useState(''); var gardenBehaviorFn = _gardenBehaviorFn[0]; var setGardenBehaviorFn = _gardenBehaviorFn[1];
 
     // ── Vocabulary Familiarity System ──
     // Tracks every symbol interaction across all tabs to build a learning profile.
@@ -1886,8 +1887,16 @@
       setStoryCurrent(0);
       try {
         var name = storyStudentName.trim() || 'the student';
+        // Enrich story with garden vocabulary — aided language modeling via narrative
+        var gardenVocab = '';
+        try {
+          var storyBank = computeWordBank();
+          var growingWords = storyBank.filter(function (w) { return w.growth === 'sprout' || w.growth === 'growing'; }).map(function (w) { return w.displayLabel; }).slice(0, 6);
+          if (growingWords.length >= 2) gardenVocab = '\nIMPORTANT: Naturally incorporate these vocabulary words into the story (the student is currently learning them): ' + growingWords.join(', ') + '. Use each word at least once in a natural context.\n';
+        } catch (e) {}
         var prompt = 'Write a social story in Carol Gray format for ' + name + ' about: "' + storySituation.trim() + '".\n'
           + (storyDetails.trim() ? 'Additional details: ' + storyDetails.trim() + '\n' : '')
+          + gardenVocab
           + '\nCarol Gray rules:\n'
           + '- Descriptive sentences: factual, 3rd-person descriptions (majority of text)\n'
           + '- Perspective sentences: describe others\' thoughts and feelings\n'
@@ -2336,7 +2345,30 @@
 
     function questPickRound(mode, pool) {
       if (pool.length < 2) return;
-      var target = pool[Math.floor(Math.random() * pool.length)];
+      // Garden-aware target selection: prefer words that need practice (sprout/growing)
+      var target;
+      if (pool.length >= 4) {
+        var famData = familiarity || {};
+        var weighted = pool.map(function (item) {
+          var k = item.label.trim().toLowerCase();
+          var entry = famData[k];
+          if (!entry) return { item: item, weight: 3 }; // never practiced = high priority
+          var score = ((entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3) / 25;
+          if (score < 0.15) return { item: item, weight: 3 }; // seed
+          if (score < 0.45) return { item: item, weight: 2 }; // sprout/growing
+          return { item: item, weight: 1 }; // familiar/mastered — still included but less often
+        });
+        var totalWeight = weighted.reduce(function (s, w) { return s + w.weight; }, 0);
+        var roll = Math.random() * totalWeight;
+        var cum = 0;
+        target = weighted[0].item;
+        for (var wi = 0; wi < weighted.length; wi++) {
+          cum += weighted[wi].weight;
+          if (roll < cum) { target = weighted[wi].item; break; }
+        }
+      } else {
+        target = pool[Math.floor(Math.random() * pool.length)];
+      }
       var opts = [target];
       while (opts.length < Math.min(4, pool.length)) {
         var r = pool[Math.floor(Math.random() * pool.length)];
@@ -2652,6 +2684,61 @@
     var GROWTH_ORDER = ['seed', 'sprout', 'growing', 'blooming', 'mastered'];
     var CONTEXT_ICONS = { gallery: '🎨', board: '📋', schedule: '📅', story: '📖', quickboard: '⚡' };
 
+    // Communication functions — maps words to their likely pragmatic purpose
+    // Based on AAC clinical practice: SLPs track function distribution in IEP goals
+    var COMM_FUNCTIONS = {
+      requesting:  { icon: '🗣️', label: 'Requesting', color: '#7c3aed', words: 'want,more,help,give,get,need,can i,please,i want,open,turn on,play,read,eat,drink,go,come here,my turn,more food'.split(',') },
+      rejecting:   { icon: '🚫', label: 'Rejecting', color: '#dc2626', words: 'no,stop,all done,don\'t want,not,finished,go away,yucky,leave me,enough'.split(',') },
+      commenting:  { icon: '👀', label: 'Commenting', color: '#2563eb', words: 'look,funny,big,little,pretty,cool,yummy,uh oh,wow,good,bad,different,same,new,broken,hot,cold,fast,slow,loud,quiet'.split(',') },
+      social:      { icon: '👋', label: 'Social', color: '#059669', words: 'hi,bye,hello,goodbye,thank you,sorry,please,excuse me,good morning,goodnight,good job,welcome,nice,friend,share'.split(',') },
+      questioning: { icon: '❓', label: 'Questioning', color: '#d97706', words: 'what,where,when,who,why,how,what is,where is,can i,is it,do you'.split(',') },
+      expressing:  { icon: '😊', label: 'Expressing', color: '#ec4899', words: 'happy,sad,angry,scared,tired,frustrated,excited,worried,bored,proud,silly,surprised,hurt,sick,better,love,like'.split(',') }
+    };
+    var COMM_FN_ORDER = ['requesting', 'rejecting', 'commenting', 'social', 'questioning', 'expressing'];
+    function getWordFunction(label) {
+      var k = label.trim().toLowerCase();
+      for (var i = 0; i < COMM_FN_ORDER.length; i++) {
+        var fn = COMM_FN_ORDER[i];
+        if (COMM_FUNCTIONS[fn].words.indexOf(k) !== -1) return fn;
+      }
+      return null;
+    }
+
+    // Functional Communication Training (FCT) — maps BehaviorLens behavioral functions
+    // to replacement communication vocabulary. The most evidence-based bridge between
+    // behavior analysis and communication intervention.
+    var FCT_MAP = {
+      Attention: {
+        icon: '👀', label: 'Attention-Seeking', color: '#3b82f6',
+        desc: 'Behavior is maintained by getting attention from others.',
+        replacements: ['requesting', 'social', 'commenting'],
+        priorityWords: 'look,help,hi,excuse me,come here,play,friend,my turn,look at me,watch me'.split(','),
+        tip: 'Teach attention-getting words so the student can access social connection through communication instead of behavior.'
+      },
+      Escape: {
+        icon: '🏃', label: 'Escape/Avoidance', color: '#f59e0b',
+        desc: 'Behavior is maintained by avoiding or escaping demands.',
+        replacements: ['rejecting', 'expressing'],
+        priorityWords: 'break,stop,all done,help,too hard,need help,not now,wait,finished,no'.split(','),
+        tip: 'Teach rejection and help-seeking words so the student can appropriately request breaks or assistance.'
+      },
+      Tangible: {
+        icon: '🎁', label: 'Tangible Access', color: '#10b981',
+        desc: 'Behavior is maintained by accessing items or activities.',
+        replacements: ['requesting', 'questioning'],
+        priorityWords: 'want,more,give,my turn,can i,please,open,play,eat,drink'.split(','),
+        tip: 'Teach requesting vocabulary so the student can ask for desired items instead of taking them.'
+      },
+      Sensory: {
+        icon: '🌀', label: 'Sensory Regulation', color: '#8b5cf6',
+        desc: 'Behavior is maintained by sensory stimulation or avoidance.',
+        replacements: ['expressing', 'rejecting'],
+        priorityWords: 'too loud,need break,need quiet,need headphones,feel overwhelmed,need to move,need fidget,too bright,deep breath,help'.split(','),
+        tip: 'Teach sensory self-advocacy words so the student can communicate their needs before dysregulation.'
+      }
+    };
+    var FCT_FUNCTIONS = ['Attention', 'Escape', 'Tangible', 'Sensory'];
+
     function computeWordBank() {
       var bank = {};
       function ensure(lbl, cat) { var k = lbl.trim().toLowerCase(); if (!k) return null; if (!bank[k]) bank[k] = { d: lbl.trim(), cat: cat || 'other', cx: [], img: null }; return k; }
@@ -2688,7 +2775,7 @@
         return { key: key, displayLabel: w.d, category: w.cat, contexts: w.cx, uniqueContextCount: uc,
           contextTypes: Object.keys(ctxT), image: w.img, aacUses: aac, famScore: fs,
           questCorrect: famEntry.questCorrect || 0, questWrong: famEntry.questWrong || 0,
-          taps: famEntry.taps || 0, growth: growth, isCore: !!CORE_SET[key] };
+          taps: famEntry.taps || 0, growth: growth, isCore: !!CORE_SET[key], commFn: getWordFunction(w.d) };
       });
     }
 
@@ -2790,6 +2877,19 @@
             e('h2', { style: { fontSize: '22px', fontWeight: 800, color: '#1f2937', margin: '0 0 4px' } }, sName + '\'s Word Garden'),
             e('p', { style: { fontSize: '16px', fontWeight: 600, color: '#059669', margin: 0 } }, total + ' words growing!'),
             milestone && e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '8px', padding: '6px 16px', background: '#fef9c3', borderRadius: '20px', border: '2px solid #facc15', fontSize: '14px', fontWeight: 700, color: '#92400e' } }, e('span', null, milestone.icon), e('span', null, milestone.text)),
+            // Lexical diversity celebration (student-friendly)
+            (function () {
+              var pid = activeProfileId || '__global__';
+              var pLog = usageLog[pid] || { sessions: [] };
+              var tw = 0; var uw = {};
+              (pLog.sessions || []).forEach(function (s) { (s.entries || []).forEach(function (en) { tw++; uw[en.label.trim().toLowerCase()] = true; }); });
+              if (tw < 10) return null;
+              var ld = Object.keys(uw).length / tw;
+              if (ld >= 0.5) return e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', padding: '4px 12px', background: '#dbeafe', borderRadius: '16px', border: '1px solid #93c5fd', fontSize: '12px', fontWeight: 600, color: '#1e40af' } }, e('span', null, '🌈'), e('span', null, 'Using lots of different words!'));
+              return null;
+            })(),
+            // The answer — for Dr. Pomeranz, who gave his son science fiction and believed consciousness lives in unexpected places
+            total === 42 && e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', padding: '4px 12px', background: 'linear-gradient(135deg, #fef9c3, #fef3c7)', borderRadius: '16px', border: '2px solid #fbbf24', fontSize: '12px', fontWeight: 700, color: '#92400e' }, title: 'The Answer to Life, the Universe, and Everything — starts with knowing what to say' }, e('span', null, '✨'), e('span', null, '42 — the answer is in the questions you ask')),
             // "Hear My Words" — speaks all mastered words aloud, a celebration of voice
             grouped.mastered.length > 0 && e('button', {
               onClick: function () {
@@ -2817,7 +2917,13 @@
               disabled: gardenStoryLoading,
               'aria-label': 'Generate a story about your word garden',
               style: { marginTop: '6px', padding: '8px 20px', background: gardenStoryLoading ? '#d1d5db' : 'linear-gradient(135deg, #059669 0%, #0d9488 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: gardenStoryLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }
-            }, gardenStoryLoading ? '✨ Growing a story...' : '📖 My Garden Story')),
+            }, gardenStoryLoading ? '✨ Growing a story...' : '📖 My Garden Story'),
+            // "Print My Garden" — printable poster for the student's desk
+            total >= 3 && e('button', {
+              onClick: function () { printGardenPoster(bank, grouped, sName, total, counts); },
+              'aria-label': 'Print garden poster',
+              style: { marginTop: '6px', padding: '8px 20px', background: 'linear-gradient(135deg, #b45309 0%, #d97706 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(180,83,9,0.3)' }
+            }, '🖨️ Print My Garden')),
           // Story display
           gardenStory && e('div', { style: { margin: '0 16px', padding: '16px', background: 'rgba(255,255,255,0.9)', borderRadius: '14px', border: '2px solid #a7f3d0', boxShadow: '0 2px 10px rgba(5,150,105,0.1)' } },
             e('p', { style: { fontSize: '15px', color: '#1f2937', lineHeight: 1.7, margin: '0 0 10px', fontFamily: 'Georgia, serif' } }, gardenStory),
@@ -2860,6 +2966,7 @@
               e('div', { style: { fontSize: '24px', fontWeight: 800, color: '#1f2937' } }, w.displayLabel),
               e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' } },
                 e('span', { style: { padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: catFill[w.category] || '#f3f4f6', color: catBorder[w.category] || '#6b7280', border: '1px solid ' + (catBorder[w.category] || '#d1d5db') } }, w.category),
+                w.commFn && (function () { var cf = COMM_FUNCTIONS[w.commFn]; return e('span', { style: { padding: '2px 8px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, background: cf.color + '15', color: cf.color, border: '1px solid ' + cf.color + '33' } }, cf.icon + ' ' + cf.label); })(),
                 e('span', { style: { fontSize: '20px' } }, gl.icon), e('span', { style: { fontSize: '13px', fontWeight: 700, color: gl.color } }, gl.label)),
               e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '6px 0 0', fontStyle: 'italic' } }, gl.desc))),
           // Stats
@@ -2869,9 +2976,9 @@
             e('div', { style: { background: '#faf5ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: PURPLE } }, (function () { var tq = (w.questCorrect || 0) + (w.questWrong || 0); return tq > 0 ? Math.round(w.questCorrect / tq * 100) + '%' : '—'; })()), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'quest accuracy')),
             e('div', { style: { background: '#fefce8', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#b45309' } }, Math.round((w.famScore || 0) * 100)), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'familiarity %'))),
           // Growth journey
-          e('div', { style: { padding: '12px 16px', background: '#f9fafb', borderRadius: '10px' } },
+          e('div', { style: { padding: '12px 16px', background: '#f9fafb', borderRadius: '10px' }, role: 'group', 'aria-label': 'Growth journey for ' + w.displayLabel + ': currently at ' + GROWTH_LEVELS[w.growth].label + ' stage' },
             e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#374151', marginBottom: '8px' } }, '🌱 Growth Journey'),
-            e('div', { style: { display: 'flex', gap: '2px', height: '8px', borderRadius: '4px', overflow: 'hidden', background: '#e5e7eb' } },
+            e('div', { role: 'progressbar', 'aria-valuenow': GROWTH_ORDER.indexOf(w.growth) + 1, 'aria-valuemin': 1, 'aria-valuemax': 5, 'aria-label': w.displayLabel + ' is at growth stage ' + (GROWTH_ORDER.indexOf(w.growth) + 1) + ' of 5: ' + GROWTH_LEVELS[w.growth].label, style: { display: 'flex', gap: '2px', height: '8px', borderRadius: '4px', overflow: 'hidden', background: '#e5e7eb' } },
               GROWTH_ORDER.map(function (lv, i) { return e('div', { key: lv, style: { flex: 1, background: GROWTH_ORDER.indexOf(w.growth) >= i ? GROWTH_LEVELS[lv].border : 'transparent', transition: 'background 0.3s' } }); })),
             e('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: '4px' } },
               GROWTH_ORDER.map(function (lv) { var g2 = GROWTH_LEVELS[lv]; return e('span', { key: lv, style: { fontSize: '10px', fontWeight: lv === w.growth ? 700 : 400, color: lv === w.growth ? g2.color : '#9ca3af' } }, g2.icon + ' ' + g2.label); }))),
@@ -2941,9 +3048,9 @@
             e('button', { onClick: function () { setTab('stories'); }, style: S.btn('#f3f4f6', '#374151', false) }, '📖 Create Story')));
       }
       // Main grid
-      var summaryBar = e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', padding: '12px 16px', background: 'linear-gradient(135deg,#fefce8 0%,#f0fdf4 50%,#ede9fe 100%)', borderRadius: '12px', marginBottom: '4px' } },
+      var summaryBar = e('div', { role: 'group', 'aria-label': 'Filter by growth level: ' + total + ' total words', style: { display: 'flex', gap: '6px', flexWrap: 'wrap', padding: '12px 16px', background: 'linear-gradient(135deg,#fefce8 0%,#f0fdf4 50%,#ede9fe 100%)', borderRadius: '12px', marginBottom: '4px' } },
         GROWTH_ORDER.map(function (lv) { var g2 = GROWTH_LEVELS[lv]; var act = gardenFilter === lv;
-          return e('button', { key: lv, onClick: function () { setGardenFilter(gardenFilter === lv ? 'all' : lv); }, 'aria-label': 'Filter ' + g2.label, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', border: '2px solid ' + (act ? g2.border : 'transparent'), background: act ? g2.bg : 'rgba(255,255,255,0.7)', fontSize: '11px', fontWeight: 600, color: g2.color, cursor: 'pointer' } }, e('span', null, g2.icon), e('span', null, counts[lv] || 0)); }),
+          return e('button', { key: lv, onClick: function () { setGardenFilter(gardenFilter === lv ? 'all' : lv); }, 'aria-label': (counts[lv] || 0) + ' ' + g2.label + ' words' + (act ? ' (active filter)' : ''), 'aria-pressed': act ? 'true' : 'false', style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', border: '2px solid ' + (act ? g2.border : 'transparent'), background: act ? g2.bg : 'rgba(255,255,255,0.7)', fontSize: '11px', fontWeight: 600, color: g2.color, cursor: 'pointer' } }, e('span', { 'aria-hidden': 'true' }, g2.icon), e('span', null, counts[lv] || 0)); }),
         (function () {
           var coreInBank = bank.filter(function (w) { return w.isCore; }).length;
           var coreMastered = bank.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); }).length;
@@ -3022,15 +3129,64 @@
             else if (total >= 10 && counts.mastered >= 3) whisper = { icon: '✨', text: name + ' has ' + counts.mastered + ' mastered word' + (counts.mastered !== 1 ? 's' : '') + ' and ' + (total - counts.mastered) + ' more growing. Every interaction helps the garden flourish.' };
             else if (total > 0) whisper = { icon: '🌱', text: 'Every word here is a connection waiting to strengthen. The more places a word appears, the more it becomes ' + name + '\'s own.' };
             if (!whisper) return null;
-            return e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '8px 12px', background: '#fffbeb', borderRadius: '8px', marginBottom: '4px', border: '1px solid #fef3c7' } },
-              e('span', { style: { fontSize: '16px', flexShrink: 0, marginTop: '1px' } }, whisper.icon),
+            return e('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '8px 12px', background: '#fffbeb', borderRadius: '8px', marginBottom: '4px', border: '1px solid #fef3c7' } },
+              e('span', { 'aria-hidden': 'true', style: { fontSize: '16px', flexShrink: 0, marginTop: '1px' } }, whisper.icon),
               e('span', { style: { fontSize: '12px', color: '#78350f', lineHeight: 1.5, fontStyle: 'italic' } }, whisper.text));
+          })(),
+          // Communication function distribution
+          (function () {
+            var fnCounts = {}; var fnTotal = 0;
+            bank.forEach(function (w) { if (w.commFn) { fnCounts[w.commFn] = (fnCounts[w.commFn] || 0) + 1; fnTotal++; } });
+            if (fnTotal < 3) return null;
+            return e('div', { role: 'group', 'aria-label': 'Communication function distribution', style: { display: 'flex', gap: '4px', padding: '6px 12px', background: '#faf5ff', borderRadius: '8px', marginBottom: '4px', border: '1px solid #e9d5ff', alignItems: 'center', flexWrap: 'wrap' } },
+              e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#7c3aed', whiteSpace: 'nowrap', marginRight: '2px' } }, '🗣️ Functions:'),
+              COMM_FN_ORDER.map(function (fn) {
+                var ct = fnCounts[fn] || 0; if (ct === 0) return null;
+                var cf = COMM_FUNCTIONS[fn];
+                return e('span', { key: fn, 'aria-label': ct + ' ' + cf.label + ' words', style: { display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '1px 6px', borderRadius: '8px', background: '#fff', fontSize: '10px', fontWeight: 600, color: cf.color, border: '1px solid ' + cf.color + '33' } },
+                  e('span', { 'aria-hidden': 'true' }, cf.icon), e('span', null, ct));
+              }),
+              // Flag missing functions
+              (function () {
+                var missing = COMM_FN_ORDER.filter(function (fn) { return !fnCounts[fn]; });
+                if (missing.length === 0 || missing.length > 3) return null;
+                return e('span', { style: { fontSize: '9px', color: '#9ca3af', marginLeft: '4px' } }, 'Missing: ' + missing.map(function (fn) { return COMM_FUNCTIONS[fn].label; }).join(', '));
+              })());
+          })(),
+          // FCT Bridge — Functional Communication Training link to BehaviorLens
+          e('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', padding: '0 16px', marginBottom: '4px' } },
+            e('select', { value: gardenBehaviorFn, onChange: function (ev) { setGardenBehaviorFn(ev.target.value); }, 'aria-label': 'Behavioral function for FCT', style: Object.assign({}, S.input, { width: 'auto', fontSize: '10px', padding: '3px 6px' }) },
+              e('option', { value: '' }, '🔗 BehaviorLens FCT...'),
+              FCT_FUNCTIONS.map(function (fn) { return e('option', { key: fn, value: fn }, FCT_MAP[fn].icon + ' ' + FCT_MAP[fn].label); }))),
+          gardenBehaviorFn && (function () {
+            var fct = FCT_MAP[gardenBehaviorFn]; if (!fct) return null;
+            var priorityInGarden = bank.filter(function (w) { return fct.priorityWords.indexOf(w.key) !== -1; });
+            var mastered = priorityInGarden.filter(function (w) { return w.growth === 'mastered' || w.growth === 'blooming'; });
+            var growing = priorityInGarden.filter(function (w) { return w.growth === 'growing' || w.growth === 'sprout'; });
+            var missing = fct.priorityWords.filter(function (pw) { return !bank.some(function (w) { return w.key === pw; }); });
+            return e('div', { style: { padding: '8px 16px' } },
+              e('div', { style: { padding: '10px 14px', background: fct.color + '10', borderRadius: '10px', border: '1px solid ' + fct.color + '33' } },
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' } },
+                  e('span', { style: { fontSize: '16px' } }, fct.icon),
+                  e('span', { style: { fontSize: '12px', fontWeight: 700, color: fct.color } }, 'FCT: ' + fct.label + ' → Communication Replacements')),
+                e('p', { style: { fontSize: '11px', color: '#374151', margin: '0 0 8px', lineHeight: 1.5 } }, fct.tip),
+                mastered.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' } },
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669' } }, '✅ Ready:'),
+                  mastered.map(function (w) { return e('span', { key: w.key, style: { padding: '1px 6px', borderRadius: '8px', background: '#dcfce7', fontSize: '10px', fontWeight: 600, color: '#15803d' } }, w.displayLabel); })),
+                growing.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' } },
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#d97706' } }, '🌿 Growing:'),
+                  growing.map(function (w) { return e('span', { key: w.key, style: { padding: '1px 6px', borderRadius: '8px', background: '#fef3c7', fontSize: '10px', fontWeight: 600, color: '#92400e' } }, w.displayLabel); })),
+                missing.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#dc2626' } }, '🌰 Not yet planted:'),
+                  missing.slice(0, 5).map(function (pw) { return e('span', { key: pw, style: { padding: '1px 6px', borderRadius: '8px', background: '#fee2e2', fontSize: '10px', fontWeight: 600, color: '#991b1b' } }, pw); }))));
           })(),
           summaryBar, controlsBar),
         e('div', { style: { flex: 1, overflowY: 'auto', padding: '0 16px 16px' } },
           filtered.length === 0 ? e('div', { style: { textAlign: 'center', padding: '30px', color: '#6b7280' } }, e('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'), e('p', { style: { fontSize: '13px' } }, gardenSearch ? 'No words match "' + gardenSearch + '"' : 'No words at this growth level yet'))
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' } }, gridItems),
-          total > 0 && e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px', margin: '8px 0' }) }, '📊 Print Vocabulary Report')));
+          total > 0 && e('div', { style: { display: 'flex', gap: '6px', margin: '8px 0', flexWrap: 'wrap' } },
+            e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print clinical report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Clinical Report'),
+            e('button', { onClick: function () { printGardenHomeNote(bank, counts, total); }, 'aria-label': 'Print home note for family', style: Object.assign({}, S.btn('#dcfce7', '#15803d', false), { fontSize: '11px' }) }, '🏠 Home Note'))));
     }
 
     function printGardenReport(bank, counts, total) {
@@ -3137,11 +3293,165 @@
       html += '<p>Words in ' + name + '\'s garden grow stronger when they appear in <strong>multiple tools</strong> (communication boards, visual schedules, social stories, and games) and when ' + name + ' <strong>practices and uses them</strong> in daily communication.</p>';
       html += '<p style="margin-top:8px">This approach is called <em>aided language modeling</em> — research shows that vocabulary is best acquired when the same words appear across different activities and contexts, with many opportunities to see, hear, and use them.</p>';
       html += '</div>';
+      // Communication function distribution
+      (function () {
+        var fnCounts = {}; var fnTotal = 0;
+        rows.forEach(function (w) { if (w.commFn) { fnCounts[w.commFn] = (fnCounts[w.commFn] || 0) + 1; fnTotal++; } });
+        if (fnTotal >= 3) {
+          html += '<h2>🗣️ Communication Functions</h2>';
+          html += '<p style="font-size:13px;color:#6b7280;margin:0 0 10px">How ' + name + '\'s vocabulary is distributed across communication purposes. A balanced profile includes requesting, commenting, social, and expressing words.</p>';
+          html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
+          COMM_FN_ORDER.forEach(function (fn) {
+            var ct = fnCounts[fn] || 0;
+            var cf = COMM_FUNCTIONS[fn];
+            html += '<div class="pill" style="background:' + cf.color + '15;color:' + cf.color + ';border:1px solid ' + cf.color + '33">' + cf.icon + ' ' + cf.label + ': ' + ct + '</div>';
+          });
+          html += '</div>';
+          var missing = COMM_FN_ORDER.filter(function (fn) { return !fnCounts[fn]; });
+          if (missing.length > 0 && missing.length <= 3) {
+            html += '<p style="font-size:12px;color:#78350f;background:#fffbeb;padding:8px 12px;border-radius:8px;border:1px solid #fef3c7"><strong>Suggestion:</strong> Consider adding ' + missing.map(function (fn) { return COMM_FUNCTIONS[fn].label.toLowerCase(); }).join(' and ') + ' vocabulary to broaden communicative range.</p>';
+          }
+        }
+      })();
+      // IEP Goals section
+      if (activeGoals.length > 0) {
+        var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669' };
+        html += '<h2>🎯 IEP Goal Progress</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 10px">Communication goals tracked through the Word Garden and Symbol Quest.</p>';
+        html += '<table><tr><th>Goal</th><th>Type</th><th>Progress</th><th>Top Words</th></tr>';
+        activeGoals.forEach(function (g) {
+          var pct = g.targetCount > 0 ? Math.round(g.currentCount / g.targetCount * 100) : 0;
+          // Find top words contributing to this goal
+          var wordHits = {};
+          (g.trials || []).forEach(function (t) {
+            if (!t.context) return;
+            var parts = t.context.split(':');
+            var wordLabel = parts[parts.length - 1];
+            if (wordLabel) wordHits[wordLabel] = (wordHits[wordLabel] || 0) + 1;
+          });
+          var topWords = Object.keys(wordHits).sort(function (a, b) { return wordHits[b] - wordHits[a]; }).slice(0, 4).join(', ') || '—';
+          var tc = goalTypeColors[g.type] || '#6b7280';
+          html += '<tr><td>' + g.text + '</td><td><span class="badge" style="background:' + tc + ';color:#fff">' + g.type + '</span></td><td><strong>' + g.currentCount + '/' + g.targetCount + '</strong> (' + pct + '%)</td><td style="font-size:11px;color:#6b7280">' + topWords + '</td></tr>';
+        });
+        html += '</table>';
+      }
       // Footer
       html += '<div class="footer">';
       html += 'Generated by AlloFlow Visual Supports Studio · Word Garden<br>';
       html += name + '\'s vocabulary is tracked across all tools automatically. No words are lost. Every interaction counts.<br>';
       html += '<strong>Every word in this garden belongs to ' + name + '.</strong>';
+      html += '</div></body></html>';
+      var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+    }
+
+    function printGardenPoster(_, grouped, studentName, total) {
+      var html = '<html><head><title>' + studentName + '\'s Word Garden</title><style>'
+        + 'body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:20px;color:#1f2937;background:linear-gradient(180deg,#e0f2fe 0%,#f0fdf4 40%,#fefce8 80%,#fef3c7 100%)}'
+        + '.poster{border:4px solid #4ade80;border-radius:24px;padding:30px;background:rgba(255,255,255,0.85);box-shadow:0 0 40px rgba(74,222,128,0.15)}'
+        + '.title{text-align:center;margin-bottom:20px}'
+        + '.title h1{font-size:36px;font-weight:900;margin:0;color:#1f2937}'
+        + '.title .count{font-size:20px;font-weight:700;color:#059669;margin:4px 0}'
+        + '.title .sub{font-size:12px;color:#6b7280;font-style:italic}'
+        + '.bed{border-radius:16px;padding:14px 16px;margin-bottom:12px}'
+        + '.bed-label{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:16px;font-weight:700}'
+        + '.words{display:flex;flex-wrap:wrap;gap:10px}'
+        + '.word{display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:8px 12px;background:rgba(255,255,255,0.9);border-radius:14px;min-width:70px;text-align:center}'
+        + '.word .icon{font-size:24px}'
+        + '.word .label{font-size:14px;font-weight:700;color:#1f2937}'
+        + '.footer{text-align:center;margin-top:20px;font-size:18px;font-weight:800;color:#92400e}'
+        + '@media print{body{background:#fff;padding:10px}.poster{box-shadow:none;border-color:#86efac}}'
+        + '</style></head><body><div class="poster">';
+      html += '<div class="title">';
+      html += '<div style="font-size:48px;margin-bottom:4px">🌱</div>';
+      html += '<h1>' + studentName + '\'s Word Garden</h1>';
+      html += '<div class="count">' + total + ' words growing!</div>';
+      html += '<div class="sub">Every word here is mine</div>';
+      html += '</div>';
+      var rowBg = { mastered: '#fefce8', blooming: '#ede9fe', growing: '#d1fae5', sprout: '#dcfce7', seed: '#fef3c7' };
+      var rowBorder = { mastered: '2px solid #facc15', blooming: '2px solid #a78bfa', growing: '2px solid #34d399', sprout: '2px solid #4ade80', seed: '2px solid #fbbf24' };
+      ['mastered', 'blooming', 'growing', 'sprout', 'seed'].forEach(function (level) {
+        var words = grouped[level]; if (!words || !words.length) return;
+        var gl = GROWTH_LEVELS[level];
+        html += '<div class="bed" style="background:' + rowBg[level] + ';border:' + rowBorder[level] + '">';
+        html += '<div class="bed-label" style="color:' + gl.color + '">' + gl.icon + ' ' + gl.label + ' <span style="font-size:13px;opacity:0.7">(' + words.length + ')</span></div>';
+        html += '<div class="words">';
+        words.forEach(function (w) {
+          html += '<div class="word" style="border:2px solid ' + gl.border + '">';
+          if (w.image) html += '<img src="' + w.image + '" style="width:48px;height:48px;object-fit:contain;border-radius:8px" />';
+          else html += '<div class="icon">' + gl.icon + '</div>';
+          html += '<div class="label">' + w.displayLabel + '</div></div>';
+        });
+        html += '</div></div>';
+      });
+      html += '<div class="footer">Every word in this garden belongs to ' + studentName + '. 🌳</div>';
+      html += '</div></body></html>';
+      var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+    }
+
+    function printGardenHomeNote(bank, counts, total) {
+      var prof = profiles.find(function (p) { return p.id === activeProfileId; }) || { name: 'Student' };
+      var name = prof.name || 'your child';
+      var codename = prof.codename || '';
+      var now = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      // Pick 3-5 words to practice at home: prefer growing/sprout words with images
+      var practiceWords = bank.filter(function (w) { return (w.growth === 'growing' || w.growth === 'sprout') && w.image; }).slice(0, 4);
+      if (practiceWords.length < 2) practiceWords = bank.filter(function (w) { return w.image; }).slice(0, 4);
+      var masteredList = bank.filter(function (w) { return w.growth === 'mastered'; }).map(function (w) { return w.displayLabel; });
+      var html = '<html><head><title>Home Note — ' + name + '</title><style>'
+        + 'body{font-family:Georgia,serif;max-width:680px;margin:0 auto;padding:24px;color:#1f2937;line-height:1.7}'
+        + '.header{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid #86efac;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px}'
+        + '.header h1{font-size:22px;margin:0;color:#15803d;font-weight:800}'
+        + '.header .date{font-size:12px;color:#6b7280;margin-top:4px}'
+        + '.section{margin-bottom:18px}'
+        + '.section h2{font-size:15px;font-weight:700;color:#1f2937;margin:0 0 8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px}'
+        + '.words-row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}'
+        + '.word-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;background:#fff;border:2px solid #4ade80;border-radius:12px;min-width:80px;text-align:center}'
+        + '.word-card img{width:48px;height:48px;object-fit:contain;border-radius:8px}'
+        + '.word-card .label{font-size:14px;font-weight:700;color:#1f2937}'
+        + '.tip{background:#fffbeb;border:1px solid #fef3c7;border-radius:10px;padding:12px;font-size:13px;color:#78350f;margin:8px 0}'
+        + '.tip strong{color:#92400e}'
+        + '.celebration{background:#fefce8;border:2px solid #facc15;border-radius:12px;padding:12px;text-align:center;font-size:14px;color:#92400e;font-weight:700;margin:12px 0}'
+        + '.footer{text-align:center;font-size:10px;color:#9ca3af;margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb}'
+        + '@media print{body{padding:10px}}'
+        + '</style></head><body>';
+      // Header
+      html += '<div class="header">';
+      html += '<div style="font-size:32px;margin-bottom:4px">🌱🏠</div>';
+      html += '<h1>' + name + '\'s Vocabulary Update</h1>';
+      html += '<div class="date">' + now + ' — from AlloFlow Word Garden</div>';
+      html += '</div>';
+      // Celebration
+      if (masteredList.length > 0) {
+        html += '<div class="celebration">🌳 ' + name + ' has mastered ' + masteredList.length + ' word' + (masteredList.length !== 1 ? 's' : '') + ': <strong>' + masteredList.slice(0, 8).join(', ') + '</strong>' + (masteredList.length > 8 ? ' and more!' : '!') + '</div>';
+      }
+      html += '<div class="section"><h2>📊 Garden Snapshot</h2>';
+      html += '<p style="font-size:13px">' + name + ' currently has <strong>' + total + ' words</strong> in their vocabulary garden. ';
+      if (counts.mastered > 0) html += '<strong>' + counts.mastered + '</strong> are mastered. ';
+      if (counts.growing + counts.blooming > 0) html += '<strong>' + (counts.growing + counts.blooming) + '</strong> are actively growing. ';
+      html += '</p></div>';
+      // Words to practice at home
+      if (practiceWords.length > 0) {
+        html += '<div class="section"><h2>🌿 Words to Practice at Home</h2>';
+        html += '<p style="font-size:13px">These words are growing at school. You can help them grow at home too!</p>';
+        html += '<div class="words-row">';
+        practiceWords.forEach(function (w) {
+          html += '<div class="word-card">';
+          if (w.image) html += '<img src="' + w.image + '" alt="' + w.displayLabel + '" />';
+          html += '<div class="label">' + w.displayLabel + '</div></div>';
+        });
+        html += '</div>';
+        html += '<div class="tip"><strong>How to help:</strong> When you see ' + name + ' reaching for something or showing a need, <strong>point to the word</strong> and <strong>say it out loud</strong>. Then wait 3-5 seconds for ' + name + ' to try. Respond to any attempt — a look, a point, a sound — as if they said the word. <em>Every response teaches that words work.</em></div>';
+        html += '<div class="tip"><strong>At mealtimes:</strong> Point to "' + practiceWords[0].displayLabel + '" before giving it. <strong>During play:</strong> Model the words naturally: "Oh, you ' + (practiceWords.length > 1 ? practiceWords[1].displayLabel : 'want') + '!" <strong>At bedtime:</strong> Name one thing from the day using a garden word.</div>';
+      }
+      html += '<div class="section"><h2>💡 Remember</h2>';
+      html += '<p style="font-size:13px">You don\'t need to be a speech therapist to help. Just <strong>use the words naturally</strong> during daily routines. The more places ' + name + ' hears and sees a word, the more it becomes theirs. Even pointing to a picture on the fridge counts!</p>';
+      html += '<p style="font-size:13px;margin-top:8px">Words are like plants — they grow with attention, patience, and sunlight. Your voice is the sunlight. 🌱</p>';
+      html += '</div>';
+      html += '<div class="footer">';
+      html += 'Generated by AlloFlow Word Garden';
+      if (codename) html += ' · Tracking ID: ' + codename;
+      html += '<br>This note contains vocabulary guidance only — no clinical assessments or diagnoses.<br>';
+      html += '<strong>Thank you for helping ' + name + '\'s words grow. 🌳</strong>';
       html += '</div></body></html>';
       var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
     }
@@ -4130,6 +4440,28 @@
             })
           )
         ),
+        // Garden seed hint — suggest words that would benefit from board context
+        (function () {
+          var bank = computeWordBank();
+          var seeds = bank.filter(function (w) {
+            return (w.growth === 'seed' || w.growth === 'sprout') && w.image && !w.contextTypes.some(function (t) { return t === 'board'; });
+          }).slice(0, 6);
+          if (seeds.length === 0) return null;
+          return e('div', { style: { flexShrink: 0, display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 10px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #d1fae5', flexWrap: 'wrap' } },
+            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' } }, '🌱 Could grow here:'),
+            seeds.map(function (w) {
+              return e('button', { key: w.key, onClick: function () {
+                setBoardWords(function (prev) {
+                  if (prev.some(function (bw) { return bw.label.toLowerCase() === w.key; })) return prev;
+                  return prev.concat([{ id: uid(), label: w.displayLabel, category: w.category, description: '', image: w.image }]);
+                });
+                addToast && addToast('"' + w.displayLabel + '" added!', 'success');
+              }, 'aria-label': 'Add ' + w.displayLabel + ' to board', title: 'This word is a seed — adding it to a board helps it grow',
+                style: { display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', background: '#fff', border: '1px solid #4ade80', borderRadius: '12px', fontSize: '10px', fontWeight: 600, color: '#15803d', cursor: 'pointer' } },
+                e('img', { src: w.image, alt: '', style: { width: 16, height: 16, borderRadius: '3px', objectFit: 'contain' } }),
+                w.displayLabel, e('span', { style: { color: '#9ca3af' } }, '+'));
+            }));
+        })(),
         // Controls row
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1, minWidth: '200px' } },
@@ -4502,6 +4834,23 @@
     // ── Visual Schedule tab ────────────────────────────────────────────────
     function renderScheduleTab() {
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '12px' } },
+        // Garden hint — words that would benefit from schedule context
+        (function () {
+          var bank = computeWordBank();
+          var needsSched = bank.filter(function (w) {
+            return (w.growth === 'seed' || w.growth === 'sprout') && !w.contextTypes.some(function (t) { return t === 'schedule'; }) && (w.category === 'verb' || w.category === 'other');
+          }).slice(0, 5);
+          if (needsSched.length === 0) return null;
+          return e('div', { style: { flexShrink: 0, display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 10px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #d1fae5', flexWrap: 'wrap' } },
+            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' } }, '🌱 Could grow in a schedule:'),
+            needsSched.map(function (w) {
+              return e('button', { key: w.key, onClick: function () {
+                setSchedInput(function (prev) { return prev ? prev + '\n' + w.displayLabel : w.displayLabel; });
+              }, 'aria-label': 'Add ' + w.displayLabel + ' to schedule input', title: 'Add to schedule activities',
+                style: { padding: '2px 8px', background: '#fff', border: '1px solid #4ade80', borderRadius: '12px', fontSize: '10px', fontWeight: 600, color: '#15803d', cursor: 'pointer' } },
+                w.displayLabel, e('span', { style: { color: '#9ca3af', marginLeft: '2px' } }, '+'));
+            }));
+        })(),
         // Controls
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1 } },
