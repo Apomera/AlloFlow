@@ -54230,7 +54230,7 @@ Return only the corrected version of this exact text:`;
                     ref={exportPreviewRef}
                     title="Export Preview — click any text to edit"
                     className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-200"
-                    sandbox="allow-same-origin allow-scripts"
+                    sandbox="allow-same-origin allow-scripts allow-forms"
                     onLoad={() => {
                       setTimeout(() => {
                         updateExportPreview();
