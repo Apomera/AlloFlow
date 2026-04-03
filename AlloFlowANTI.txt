@@ -17056,8 +17056,8 @@ Return ONLY valid JSON:
     conceptInput, interestInput, languageInput, activeView, showSourceGen,
     generationStep, isGeneratingSource, selectionMenu, phonicsData,
     sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
-    sourceVocabulary, sourceCount, targetStandards, dokLevel,
-    selectedFont, includeCitations, includeSourceCitations,
+    sourceVocabulary, resourceCount, targetStandards, dokLevel,
+    selectedFont, includeSourceCitations,
     alloBotRef, isBotVisible, isPlayingRef, isSystemAudioActiveRef, currentAudioRef,
     audioRef, playbackTimeoutRef,
     setActiveView, setConceptInput, setError, setGeneratedContent,
@@ -53323,6 +53323,9 @@ Return only the corrected version of this exact text:`;
                   </div>
                 </div>
 
+                {/* ── SECTION: Appearance ── */}
+                <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></div>
+
                 {/* Theme */}
                 <div>
                   <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Theme</div>
@@ -53349,6 +53352,9 @@ Return only the corrected version of this exact text:`;
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
                 </div>
+
+                {/* ── SECTION: Content ── */}
+                <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Resource Toggles */}
                 <div>
@@ -53397,6 +53403,9 @@ Return only the corrected version of this exact text:`;
                     })()}
                   </div>
                 </div>
+
+                {/* ── SECTION: Export ── */}
+                <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Additional Options */}
                 <div>
