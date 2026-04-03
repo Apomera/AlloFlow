@@ -147,6 +147,11 @@ const MODULES = [
         name: 'PersonaUIModule',
         filename: 'persona_ui_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'DocPipelineModule',
+        filename: 'doc_pipeline_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
