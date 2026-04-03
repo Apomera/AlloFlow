@@ -113,6 +113,110 @@ var createContentEngine = function (deps) {
     }
     return finalLines.join('\n');
   };
+  // Citation utilities
+  var renumberCitations = function (text, originalChunks) {
+    if (!text || !originalChunks || originalChunks.length === 0) return {
+      renumberedText: text,
+      reorderedChunks: originalChunks || []
+    };
+    var reverseMap = {
+      '⁰': 0,
+      '¹': 1,
+      '²': 2,
+      '³': 3,
+      '⁴': 4,
+      '⁵': 5,
+      '⁶': 6,
+      '⁷': 7,
+      '⁸': 8,
+      '⁹': 9
+    };
+    var decodeSuperscript = function (str) {
+      return parseInt(str.split('').map(function (c) {
+        return reverseMap[c];
+      }).join(''), 10);
+    };
+    var newChunksMap = new Map();
+    var reorderedChunks = [];
+    var nextIndex = 1;
+    var renumberedText = text.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, function (match, digits) {
+      var oldIdx = decodeSuperscript(digits) - 1;
+      if (!originalChunks[oldIdx]) return match;
+      var newIdx;
+      if (newChunksMap.has(oldIdx)) {
+        newIdx = newChunksMap.get(oldIdx);
+      } else {
+        newIdx = nextIndex++;
+        newChunksMap.set(oldIdx, newIdx);
+        reorderedChunks.push(originalChunks[oldIdx]);
+      }
+      return '⁽' + toSuperscript(newIdx) + '⁾';
+    });
+    return reorderedChunks.length === 0 ? {
+      renumberedText: text,
+      reorderedChunks: []
+    } : {
+      renumberedText: renumberedText,
+      reorderedChunks: reorderedChunks
+    };
+  };
+  var validateAndRepairCitations = function (text, groundingChunks) {
+    if (!text || !groundingChunks || groundingChunks.length === 0) return text;
+    var reverseMap = {
+      '⁰': 0,
+      '¹': 1,
+      '²': 2,
+      '³': 3,
+      '⁴': 4,
+      '⁵': 5,
+      '⁶': 6,
+      '⁷': 7,
+      '⁸': 8,
+      '⁹': 9
+    };
+    var decodeSuperscript = function (str) {
+      return parseInt(str.split('').map(function (c) {
+        return reverseMap[c];
+      }).join(''), 10);
+    };
+    var usedCitations = new Set();
+    var repairedText = text.replace(/(\[)?⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾(\]\([^)]+\))?/g, function (match, bracket, digits, linkPart) {
+      var citNum = decodeSuperscript(digits);
+      usedCitations.add(citNum);
+      if (bracket && linkPart) return match;
+      var chunk = groundingChunks[citNum - 1];
+      return chunk && chunk.web && chunk.web.uri ? '[⁽' + digits + '⁾](' + chunk.web.uri + ')' : '⁽' + digits + '⁾';
+    });
+    return repairedText;
+  };
+  var generateBibliographyString = function (metadata, citationStyle, title) {
+    citationStyle = citationStyle || 'Links Only';
+    title = title || 'Verified Sources';
+    if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
+    var chunks = metadata.groundingChunks;
+    var bib = '\n\n### ' + title + '\n\n';
+    chunks.forEach(function (chunk, i) {
+      var t = chunk.web && chunk.web.title || "Unknown Source";
+      var u = chunk.web && chunk.web.uri || "#";
+      bib += i + 1 + '. [' + t + '](' + u + ')\n\n';
+    });
+    return bib;
+  };
+  var sanitizeRawUrls = function (text) {
+    if (!text) return text;
+    var linkPlaceholders = [];
+    var protectedText = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (match) {
+      var ph = '__LINK_PLACEHOLDER_' + linkPlaceholders.length + '__';
+      linkPlaceholders.push(match);
+      return ph;
+    });
+    protectedText = protectedText.replace(/https?:\/\/[^\s<>\[\]()'"]+/gi, '');
+    protectedText = protectedText.replace(/\s{2,}/g, ' ').replace(/\s+([.,;:!?])/g, '$1');
+    linkPlaceholders.forEach(function (link, idx) {
+      protectedText = protectedText.replace('__LINK_PLACEHOLDER_' + idx + '__', link);
+    });
+    return protectedText;
+  };
   var cleanSourceMetaCommentary = function (text) {
     if (!text) return text;
     var cleaned = text;
