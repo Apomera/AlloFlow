@@ -16478,6 +16478,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
   const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   const EXPORT_THEMES = _docPipeline ? _docPipeline.EXPORT_THEMES : {};
+  const [exportTheme, setExportTheme] = useState('professional');
   const generateFullPackHTML = _docPipeline ? _docPipeline.generateFullPackHTML : () => '';
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
