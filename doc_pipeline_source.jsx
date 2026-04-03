@@ -733,31 +733,24 @@ Return ONLY the complete HTML document.`;
           break;
         }
 
-        // Run axe-core (fast, deterministic) + 1 AI audit per pass
-        // Only run triple-audit on FINAL pass to save API calls and avoid rate limits
+        // Run axe-core (local, zero API calls) + 2 Gemini audits per pass
+        // 2 audits prevents false score swings from prematurely ending remediation
+        // Final pass gets 3 audits for statistical reliability
         const isFinalPass = (fp === batchMaxFix - 1) || (curAxeResults && curAxeResults.totalViolations === 0);
-        const rAxe = await runAxeAudit(accessibleHtml);
+        const numAudits = isFinalPass ? 3 : 2;
+        const auditPromises = [];
+        for (let ai = 0; ai < numAudits; ai++) auditPromises.push(auditOutputAccessibility(accessibleHtml));
+        auditPromises.push(runAxeAudit(accessibleHtml)); // axe-core is local — no API cost
+        const auditResults = await Promise.all(auditPromises);
+        const rAxe = auditResults[auditResults.length - 1]; // last result is axe
+        const rvAll = auditResults.slice(0, -1); // all but last are AI audits
 
-        let rv, newAi, rvSEM = 0, rvSD = 0, rvScores;
-        if (isFinalPass) {
-          // Final pass: triple-audit for reliability
-          const [rv1, rv2, rv3] = await Promise.all([
-            auditOutputAccessibility(accessibleHtml),
-            auditOutputAccessibility(accessibleHtml),
-            auditOutputAccessibility(accessibleHtml),
-          ]);
-          rvScores = [rv1, rv2, rv3].map(v => v ? v.score : null).filter(s => s !== null);
-          newAi = rvScores.length > 0 ? Math.round(rvScores.reduce((a, b) => a + b, 0) / rvScores.length) : bestAiScore;
-          rvSD = rvScores.length > 1 ? Math.sqrt(rvScores.reduce((s, x) => s + (x - newAi) ** 2, 0) / (rvScores.length - 1)) : 0;
-          rvSEM = rvScores.length > 1 ? rvSD / Math.sqrt(rvScores.length) : 0;
-          rv = [rv1, rv2, rv3].filter(Boolean).sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
-          if (rv) { rv.score = newAi; rv._sem = rvSEM; rv._sd = rvSD; rv._scores = rvScores; }
-        } else {
-          // Intermediate pass: single audit (fast, saves 2 API calls per pass)
-          rv = await auditOutputAccessibility(accessibleHtml);
-          newAi = rv ? rv.score : bestAiScore;
-          rvScores = [newAi];
-        }
+        const rvScores = rvAll.map(v => v ? v.score : null).filter(s => s !== null);
+        const newAi = rvScores.length > 0 ? Math.round(rvScores.reduce((a, b) => a + b, 0) / rvScores.length) : bestAiScore;
+        const rvSD = rvScores.length > 1 ? Math.sqrt(rvScores.reduce((s, x) => s + (x - newAi) ** 2, 0) / (rvScores.length - 1)) : 0;
+        const rvSEM = rvScores.length > 1 ? rvSD / Math.sqrt(rvScores.length) : 0;
+        const rv = rvAll.filter(Boolean).sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
+        if (rv) { rv.score = newAi; rv._sem = rvSEM; rv._sd = rvSD; rv._scores = rvScores; }
         const newAxe = rAxe ? rAxe.totalViolations : bestAxeViolations;
         autoFixPasses++;
 
