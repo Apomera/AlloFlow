@@ -17078,7 +17078,7 @@ Return ONLY valid JSON:
     const factory = window.AlloModules && window.AlloModules.createContentEngine;
     if (!factory) { console.warn('[ContentEngine] Factory not found on window.AlloModules'); return null; }
     try {
-      _contentEngineRef.current = factory({ callGemini, addToast, t, getBilingualPromptInstruction });
+      _contentEngineRef.current = factory({ callGemini, addToast, t, getBilingualPromptInstruction, flyToElement, callTTS });
       console.log('[ContentEngine] Factory created successfully:', Object.keys(_contentEngineRef.current || {}));
     } catch(err) {
       console.error('[ContentEngine] Factory creation FAILED:', err);

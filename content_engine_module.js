@@ -27,6 +27,10 @@ var createContentEngine = function (deps) {
   var getBilingualPromptInstruction = deps.getBilingualPromptInstruction || function () {
     return '';
   };
+  var flyToElement = deps.flyToElement || function () {};
+  var callTTS = deps.callTTS || function () {
+    return Promise.resolve();
+  };
   var _s = function () {
     return window.__contentEngineState || {};
   };
