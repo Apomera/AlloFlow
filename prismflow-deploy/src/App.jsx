@@ -7130,25 +7130,25 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/doc_pipeline_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/doc_pipeline_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7163,7 +7163,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4853341/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -52534,6 +52534,12 @@ Return only the corrected version of this exact text:`;
                       { label: '3 Columns', icon: '⬛⬛⬛', html: '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0"><div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">Col 1</div><div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">Col 2</div><div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">Col 3</div></div>' },
                       { label: 'Divider', icon: '➖', html: '<hr style="border:none;border-top:2px solid #e2e8f0;margin:24px 0">' },
                       { label: 'Page Break', icon: '📄', html: '<div style="page-break-before:always;border-top:2px dashed #cbd5e1;margin:24px 0;padding-top:8px;text-align:center"><span style="font-size:10px;color:#94a3b8;background:white;padding:0 8px">— Page Break —</span></div>' },
+                      { label: 'Checklist', icon: '☑️', html: '<ul role="list" style="list-style:none;padding:0;margin:12px 0" aria-label="Checklist"><li style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9"><input type="checkbox" aria-label="Task 1" style="width:18px;height:18px;accent-color:#6366f1"><span>Task item 1</span></li><li style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9"><input type="checkbox" aria-label="Task 2" style="width:18px;height:18px;accent-color:#6366f1"><span>Task item 2</span></li><li style="display:flex;align-items:center;gap:8px;padding:6px 0"><input type="checkbox" aria-label="Task 3" style="width:18px;height:18px;accent-color:#6366f1"><span>Task item 3</span></li></ul>' },
+                      { label: 'Data Table', icon: '📊', html: '<figure style="margin:16px 0"><table role="table" style="width:100%;border-collapse:collapse;font-size:14px" aria-label="Data table"><caption style="font-weight:700;font-size:13px;text-align:left;padding:8px 0;color:#374151">Table Title — Edit Me</caption><thead><tr style="background:#f1f5f9"><th scope="col" style="padding:10px 12px;text-align:left;font-weight:700;border-bottom:2px solid #cbd5e1">Header 1</th><th scope="col" style="padding:10px 12px;text-align:left;font-weight:700;border-bottom:2px solid #cbd5e1">Header 2</th><th scope="col" style="padding:10px 12px;text-align:left;font-weight:700;border-bottom:2px solid #cbd5e1">Header 3</th></tr></thead><tbody><tr><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td></tr><tr style="background:#f9fafb"><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td></tr></tbody></table></figure>' },
+                      { label: 'Image + Alt', icon: '🖼️', html: '<figure style="margin:16px 0;text-align:center" role="figure" aria-label="Image with description"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:12px;padding:40px 20px;color:#64748b;font-size:13px">📷 Click to replace with image URL<br><em style="font-size:11px">or paste an image</em></div><figcaption style="font-size:12px;color:#64748b;margin-top:8px;font-style:italic">Image description for screen readers — edit this caption</figcaption></figure>' },
+                      { label: 'Definition', icon: '📖', html: '<dl style="margin:12px 0;padding:16px;background:#faf5ff;border-left:4px solid #7c3aed;border-radius:0 8px 8px 0"><dt style="font-weight:800;color:#5b21b6;font-size:15px;margin-bottom:4px">Term</dt><dd style="color:#374151;font-size:14px;margin:0;line-height:1.6">Definition goes here. Students can reference this for key vocabulary.</dd></dl>' },
+                      { label: 'Numbered Steps', icon: '1️⃣', html: '<ol role="list" style="margin:12px 0;padding-left:0;counter-reset:steps;list-style:none" aria-label="Step-by-step instructions"><li style="display:flex;gap:12px;margin-bottom:12px;align-items:flex-start"><span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">1</span><div style="flex:1;padding-top:3px">First step description</div></li><li style="display:flex;gap:12px;margin-bottom:12px;align-items:flex-start"><span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">2</span><div style="flex:1;padding-top:3px">Second step description</div></li><li style="display:flex;gap:12px;align-items:flex-start"><span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">3</span><div style="flex:1;padding-top:3px">Third step description</div></li></ol>' },
+                      { label: 'Accordion', icon: '📂', html: '<details style="margin:12px 0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden"><summary style="padding:12px 16px;font-weight:700;cursor:pointer;background:#f8fafc;color:#1e293b;font-size:14px;user-select:none">Click to expand section title</summary><div style="padding:16px;border-top:1px solid #e2e8f0;font-size:14px;line-height:1.6">Hidden content goes here. Great for differentiation — let students reveal content at their own pace.</div></details>' },
                     ].map(block => (
                       <button key={block.label} onClick={() => {
                         const iframe = pdfPreviewRef.current; if (!iframe) return;
