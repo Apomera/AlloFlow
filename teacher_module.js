@@ -2815,11 +2815,12 @@ var TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardDa
   window.AlloModules.LongitudinalProgressChart = LongitudinalProgressChart;
   window.AlloModules.ConfettiEffect = ConfettiEffect;
   window.AlloModules.StudentEscapeRoomOverlay = StudentEscapeRoomOverlay;
+  window.AlloModules.EscapeRoomTeacherControls = EscapeRoomTeacherControls;
   window.AlloModules.TeacherLiveQuizControls = TeacherLiveQuizControls;
   window.AlloModules.calculateAnalyticsMetrics = calculateAnalyticsMetrics;
   window.AlloModules.LearnerProgressView = LearnerProgressView;
   window.AlloModules.TeacherDashboard = TeacherDashboard;
 
   window.AlloModules.TeacherModule = true;
-  console.log('[TeacherModule] 10 components registered:', ["RosterKeyPanel","SimpleBarChart","SimpleDonutChart","LongitudinalProgressChart","ConfettiEffect","StudentEscapeRoomOverlay","TeacherLiveQuizControls","calculateAnalyticsMetrics","LearnerProgressView","TeacherDashboard"]);
+  console.log('[TeacherModule] 11 components registered:', ["RosterKeyPanel","SimpleBarChart","SimpleDonutChart","LongitudinalProgressChart","ConfettiEffect","StudentEscapeRoomOverlay","EscapeRoomTeacherControls","TeacherLiveQuizControls","calculateAnalyticsMetrics","LearnerProgressView","TeacherDashboard"]);
 })();

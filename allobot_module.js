@@ -51,19 +51,25 @@
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
   var isGlobalMuted = window.__alloIsGlobalMuted || function() { return false; };
 
+  // ── Style constants (mirrored from host app) ──
+  var STYLE_ANIMATION_DELAY_HALF = { animationDelay: '0.5s' };
+  var STYLE_POINTER_EVENTS_NONE = { pointerEvents: 'none' };
+  var STYLE_IMAGE_PIXELATED = { imageRendering: 'pixelated' };
+  var STYLE_TEXT_SHADOW_WHITE = { textShadow: '0 2px 4px rgba(255,255,255,1)' };
+
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
   var Mic = _icons.Mic || function() { return null; };
-  var MicOff = _icons.MicOff || function() { return null; };
-  var Settings = _icons.Settings || function() { return null; };
   var Volume2 = _icons.Volume2 || function() { return null; };
   var VolumeX = _icons.VolumeX || function() { return null; };
+  var Settings = _icons.Settings || function() { return null; };
+  var X = _icons.X || function() { return null; };
 
   // ═══════════════════════════════════════════════════════════════
-  // ALLOBOT COMPONENTS (JSX pre-transformed by esbuild)
+  // COMPILED COMPONENTS
   // ═══════════════════════════════════════════════════════════════
 
-var SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = "speech" }) => {
+const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = "speech" }) => {
   const { t } = useContext(LanguageContext);
   const bubbleRef = useRef(null);
   const [placement, setPlacement] = useState("top-right");
@@ -177,11 +183,11 @@ var SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyp
     variant === "speech" ? /* @__PURE__ */ React.createElement("div", { className: `absolute w-0 h-0 ${arrowClasses[placement]}` }) : renderThoughtTrail()
   );
 });
-var LandingDust = ({ active }) => {
+const LandingDust = ({ active }) => {
   if (!active) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-2 left-1/2 -translate-x-1/2 flex justify-center items-end w-24 h-12 pointer-events-none z-[-1]" }, /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 w-8 h-8 bg-slate-300/40 rounded-full blur-md animate-dust-left" }), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 w-8 h-8 bg-slate-300/40 rounded-full blur-md animate-dust-right" }), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-1 w-6 h-6 bg-white/60 rounded-full blur-sm animate-dust-puff" }));
 };
-var JetpackParticles = ({ active }) => {
+const JetpackParticles = ({ active }) => {
   const [particles, setParticles] = useState([]);
   useEffect(() => {
     if (!active) return;
@@ -223,7 +229,7 @@ var JetpackParticles = ({ active }) => {
     }
   )));
 };
-var ReactionBubble = ({ emoji, onComplete }) => /* @__PURE__ */ React.createElement(
+const ReactionBubble = ({ emoji, onComplete }) => /* @__PURE__ */ React.createElement(
   "div",
   {
     className: "absolute top-0 right-1/2 translate-x-1/2 text-4xl animate-float-reaction pointer-events-none select-none z-50 filter drop-shadow-md",
@@ -231,7 +237,7 @@ var ReactionBubble = ({ emoji, onComplete }) => /* @__PURE__ */ React.createElem
   },
   emoji
 );
-var BotConfettiBurst = ({ onComplete }) => {
+const BotConfettiBurst = ({ onComplete }) => {
   const calledRef = useRef(false);
   const handleEnd = () => {
     if (!calledRef.current) {
@@ -264,10 +270,10 @@ var BotConfettiBurst = ({ onComplete }) => {
     }
   )));
 };
-var spokenEventIds = /* @__PURE__ */ new Set();
-var lastGlobalSpeech = { text: "", time: 0 };
-var introFiredGlobal = false;
-var AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
+const spokenEventIds = /* @__PURE__ */ new Set();
+const lastGlobalSpeech = { text: "", time: 0 };
+let introFiredGlobal = false;
+const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
   const { t } = useContext(LanguageContext);
   const [position, setPosition] = useState(() => {
     try {
@@ -411,6 +417,12 @@ var AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, ho
         return "pointer";
       case "behavior-lens":
         return "clipboard";
+      case "dbq":
+        return "pencil";
+      case "storyforge-config":
+        return "book";
+      case "storyforge-submission":
+        return "book";
       default:
         return null;
     }
@@ -1502,6 +1514,21 @@ var AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, ho
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  [class*="animate-"], [class*="transition-"] {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* WCAG 2.4.7 Focus Visible \u2014 ensure all interactive elements show focus */
+*:focus-visible {
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25) !important;
+}
+[role="button"]:focus-visible, button:focus-visible, a:focus-visible,
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px !important;
 }
 `), /* @__PURE__ */ React.createElement(
     "div",
@@ -1669,7 +1696,7 @@ var AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, ho
             "aria-label": t("bot.wake_title")
           }
         ),
-        /* @__PURE__ */ React.createElement("svg", { width: "64", height: "64", viewBox: "0 0 100 100", fill: "none", xmlns: "http://www.w3.org/2000/svg", className: "select-none overflow-visible" }, activeView === "image" && !isFlightActive && !isDragging && /* @__PURE__ */ React.createElement("g", { transform: "translate(110, 30) scale(0.85) rotate(8)", className: "animate-in fade-in zoom-in-95 duration-500", opacity: "0.95" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "5", width: "4", height: "55", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "38", y: "5", width: "4", height: "55", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "22", y: "8", width: "4", height: "52", rx: "2", fill: "#78350F", transform: "rotate(-4 24 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "12", width: "45", height: "32", rx: "3", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "15", width: "39", height: "26", rx: "2", fill: "#FEFCE8", stroke: "#E5E7EB", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "24", r: "4", fill: "#60A5FA", opacity: "0.7" }), /* @__PURE__ */ React.createElement("circle", { cx: "28", cy: "22", r: "3", fill: "#F472B6", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "36", cy: "32", r: "3", fill: "#34D399", opacity: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "22", cy: "33", rx: "5", ry: "3", fill: "#FCD34D", opacity: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "42", width: "50", height: "4", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" })), !isFlightActive && !isDragging && /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("svg", { width: "64", height: "64", viewBox: "0 0 100 100", fill: "none", xmlns: "http://www.w3.org/2000/svg", className: "select-none overflow-visible", "aria-hidden": "true" }, activeView === "image" && !isFlightActive && !isDragging && /* @__PURE__ */ React.createElement("g", { transform: "translate(110, 30) scale(0.85) rotate(8)", className: "animate-in fade-in zoom-in-95 duration-500", opacity: "0.95" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "5", width: "4", height: "55", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "38", y: "5", width: "4", height: "55", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "22", y: "8", width: "4", height: "52", rx: "2", fill: "#78350F", transform: "rotate(-4 24 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "12", width: "45", height: "32", rx: "3", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "15", width: "39", height: "26", rx: "2", fill: "#FEFCE8", stroke: "#E5E7EB", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "24", r: "4", fill: "#60A5FA", opacity: "0.7" }), /* @__PURE__ */ React.createElement("circle", { cx: "28", cy: "22", r: "3", fill: "#F472B6", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "36", cy: "32", r: "3", fill: "#34D399", opacity: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "22", cy: "33", rx: "5", ry: "3", fill: "#FCD34D", opacity: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "42", width: "50", height: "4", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" })), !isFlightActive && !isDragging && /* @__PURE__ */ React.createElement(
           "ellipse",
           {
             cx: "50",
@@ -1897,11 +1924,15 @@ var AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, ho
   ));
 }));
 
-
   // ═══════════════════════════════════════════════════════════════
   // REGISTRATION
   // ═══════════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
+  window.AlloModules.SpeechBubble = (typeof SpeechBubble !== 'undefined') ? SpeechBubble : null;
+  window.AlloModules.LandingDust = (typeof LandingDust !== 'undefined') ? LandingDust : null;
+  window.AlloModules.JetpackParticles = (typeof JetpackParticles !== 'undefined') ? JetpackParticles : null;
+  window.AlloModules.ReactionBubble = (typeof ReactionBubble !== 'undefined') ? ReactionBubble : null;
+  window.AlloModules.BotConfettiBurst = (typeof BotConfettiBurst !== 'undefined') ? BotConfettiBurst : null;
   window.AlloModules.AlloBot = AlloBot;
 
   console.log('[AlloBotModule] AlloBot registered successfully');

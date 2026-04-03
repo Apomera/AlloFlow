@@ -61,6 +61,14 @@
                     "behavior_desc": "FBA/BIP behavioral support tools. Track, analyze, and plan interventions.",
                       "badge_recommended": "Recommended",
                         "badge_new": "New",
+                          "badge_3_tools": "3 Tools",
+                            "ai_backend_settings": "AI Backend Settings",
+                              "badge_educator": "\ud83d\udd12 Educator",
+                                "badge_educator_open": "\ud83d\udee0\ufe0f Educator",
+                                  "learning_tools_title": "Learning Tools",
+                                    "learning_tools_desc": "STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow",
+                                      "educator_tools_title": "Educator Tools",
+                                        "educator_tools_desc": "BehaviorLens, Report Writer, and professional clinical tools \u2014 password protected",
                           "switch_hint": "You can switch modes at any time from within the app"
   },
   "guided": {
@@ -72,7 +80,8 @@
             "about": "About",
               "source_prompt": "Paste or enter source text to begin",
                 "history_hint": "\ud83d\udca1 Your generated resources are saved in the History tab \u2014 you can revisit and export them anytime!",
-                  "about_prefix": "\ud83d\udcd6"
+                  "about_prefix": "\ud83d\udcd6",
+                    "exit": "Exit"
   },
   "guided": {
     "indicator_title": "Guided Mode",
@@ -3855,7 +3864,8 @@
                                             "wizard_url_input": "Paste a URL to import web content as source material. The system fetches, cleans, and extracts the main article text.",
                                               "wizard_url_input_title": "URL Input",
                                                 "wizard_search_input": "Describe what you need and let the AI find relevant educational resources. Results include titles, descriptions, and direct links.",
-                                                  "wizard_search_input_title": "Search Query"
+                                                  "wizard_search_input_title": "Search Query",
+                                                    "onboarding_hint": "💡 Click <strong>?</strong> anytime for help!"
   },
   "groups": {
     "title": "Differentiation Groups",
@@ -4835,7 +4845,9 @@
                         "student_tools_close": "Close Student Tools",
                           "dictation_toggle": "Toggle Voice Input",
                             "dictation_start": "Start Voice Input",
-                              "dictation_stop": "Stop Voice Input"
+                              "dictation_stop": "Stop Voice Input",
+                                "rerun_wizard": "Re-run Setup Wizard",
+                                  "rerun_wizard_aria": "Re-run the QuickStart setup wizard"
   },
   "about": {
     "title": "About AlloFlow v1.0",
