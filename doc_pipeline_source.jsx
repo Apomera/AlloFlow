@@ -717,7 +717,7 @@ Return ONLY the complete HTML document.`;
         const violIns = axeIns.concat(aiIns).join('\n');
 
         try {
-          let fixed = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve all content and styles.\n\nVIOLATIONS:\n${violIns}\n\nHTML (first 12000 chars):\n${'\"\"\"'}\n${accessibleHtml.substring(0, 12000)}\n${'\"\"\"'}\n\nReturn the COMPLETE fixed HTML.`, true);
+          let fixed = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve all content and styles.\n\nVIOLATIONS:\n${violIns}\n\nHTML:\n${'\"\"\"'}\n${accessibleHtml.substring(0, 25000)}\n${'\"\"\"'}\n\nReturn the COMPLETE fixed HTML.`, true);
           // Strip markdown fencing if AI wrapped response
           if (fixed && fixed.includes('`' + '``')) {
             const fParts = fixed.split('`' + '``');
@@ -1386,7 +1386,7 @@ RULES:
 
 HTML TO FIX:
 """
-${currentHtml.substring(0, 15000)}${currentHtml.length > 15000 ? '\n[... document continues, ' + currentHtml.length + ' chars total — fix violations in portion shown, return complete document ...]' : ''}
+${currentHtml.substring(0, 30000)}${currentHtml.length > 30000 ? '\n[... document continues, ' + currentHtml.length + ' chars total — fix violations in the portion shown and propagate fixes to similar patterns throughout ...]' : ''}
 """
 
 Return ONLY the complete fixed HTML.`, true);
@@ -1407,7 +1407,38 @@ Return ONLY the complete fixed HTML.`, true);
       warnLog(`[Auto-fix] Pass ${passCount}: ${currentAxe.totalViolations} → ${newAxe.totalViolations} (fixed ${fixed})`);
 
       if (newAxe.totalViolations >= currentAxe.totalViolations) {
-        warnLog('[Auto-fix] No improvement, stopping');
+        // If no improvement but violations remain and we have passes left, try a more targeted approach
+        if (newAxe.totalViolations > 0 && passCount < maxPasses) {
+          warnLog(`[Auto-fix] No improvement on pass ${passCount} — trying targeted fix for top violation...`);
+          const topViolation = currentAxe.critical[0] || currentAxe.serious[0] || currentAxe.moderate[0];
+          if (topViolation) {
+            try {
+              const targetedFix = await callGemini(`Fix ONLY this one specific accessibility violation in the HTML below:
+
+VIOLATION: ${topViolation.description} (${topViolation.id})
+WCAG: ${topViolation.wcag || 'N/A'}
+AFFECTED ELEMENTS: ${topViolation.nodes || 'unknown'} element(s)
+
+Find every instance of this violation in the HTML and fix it. Do NOT change anything else.
+Return the COMPLETE HTML document.
+
+HTML:
+"""
+${currentHtml.substring(0, 20000)}
+"""`, true);
+              if (targetedFix && targetedFix.length > currentHtml.length * 0.5 && (targetedFix.includes('<!DOCTYPE') || targetedFix.includes('<html'))) {
+                const targetedAxe = await runAxeAudit(targetedFix);
+                if (targetedAxe && targetedAxe.totalViolations < currentAxe.totalViolations) {
+                  currentHtml = targetedFix;
+                  currentAxe = targetedAxe;
+                  warnLog(`[Auto-fix] Targeted fix worked: ${currentAxe.totalViolations} → ${targetedAxe.totalViolations}`);
+                  continue;
+                }
+              }
+            } catch (e) { warnLog('[Auto-fix] Targeted fix failed:', e); }
+          }
+        }
+        warnLog('[Auto-fix] No improvement possible, stopping');
         break;
       }
       currentAxe = newAxe;
@@ -1427,12 +1458,11 @@ Return ONLY the complete fixed HTML.`, true);
     const _onProgress = batchOverrides?.onProgress || null;
     const _startTime = Date.now();
 
-    console.warn('[fixAndVerifyPdf] ENTERED — _isBatch:', _isBatch, '_base64:', !!_base64, '(length:', (_base64||'').length, ') _auditResult:', !!_auditResult, '_fileName:', _fileName);
+    warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
-    if (!_base64) { console.warn('[fixAndVerifyPdf] EARLY EXIT: no _base64'); addToast('⚠️ Cannot fix: PDF data not found in memory. Please re-upload the PDF.', 'error'); return null; }
-    if (!_isBatch && !_auditResult) { console.warn('[fixAndVerifyPdf] EARLY EXIT: no _auditResult'); addToast('⚠️ Cannot fix: No audit results found. Please run the audit first.', 'error'); return null; }
+    if (!_base64) { addToast('Cannot fix: PDF data not found in memory. Please re-upload the PDF.', 'error'); return null; }
+    if (!_isBatch && !_auditResult) { addToast('Cannot fix: No audit results found. Please run the audit first.', 'error'); return null; }
     if (!_isBatch) { setPdfFixLoading(true); setPdfFixResult(null); }
-    console.warn('[fixAndVerifyPdf] Past guards — starting pipeline');
 
     const beforeScore = (_auditResult?.score) || 0;
     const pageCount = (_auditResult?.pageCount) || 1;
@@ -2385,7 +2415,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const violationInstructions = axeInstructions.concat(aiInstructions).join('\n');
 
           try {
-            const fixedHtml = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed to fix each violation. Preserve all content and styles.\n\nVIOLATIONS:\n${violationInstructions}\n\nHTML (first 12000 chars):\n"""\n${accessibleHtml.substring(0, 12000)}\n"""\n\nReturn the COMPLETE fixed HTML.`, true);
+            const fixedHtml = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed to fix each violation. Preserve all content and styles.\n\nVIOLATIONS:\n${violationInstructions}\n\nHTML:\n"""\n${accessibleHtml.substring(0, 25000)}\n"""\n\nReturn the COMPLETE fixed HTML.`, true);
             if (fixedHtml && fixedHtml.length > accessibleHtml.length * 0.5 && (fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') || fixedHtml.includes('<main'))) {
               accessibleHtml = fixedHtml;
             }
