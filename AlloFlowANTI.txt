@@ -3834,6 +3834,7 @@ window._fbDb = db;
 window.__alloUtils = window.__alloUtils || {};
 window.__alloUtils.fetchAndCleanUrl = fetchAndCleanUrl;
 window.__alloUtils.isGoogleRedirect = isGoogleRedirect;
+// processGrounding and cleanJson exported later (after their definitions)
 const getIconForType = (type) => {
     switch (type) {
         case 'simplified': return <BookOpen size={16} />;
@@ -4644,6 +4645,10 @@ const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson =
     }
     return newText;
 };
+// Export grounding + JSON utilities for CDN modules
+window.__alloUtils = window.__alloUtils || {};
+window.__alloUtils.processGrounding = processGrounding;
+window.__alloUtils.cleanJson = cleanJson;
 const InfoTooltip = React.memo(({ text, id }) => {
   const tooltipId = id || ('tooltip-' + Math.random().toString(36).substr(2, 6));
   return (
