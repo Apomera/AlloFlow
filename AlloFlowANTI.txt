@@ -17074,10 +17074,17 @@ Return ONLY valid JSON:
   const _getContentEngine = () => {
     if (_contentEngineRef.current) return _contentEngineRef.current;
     const factory = window.AlloModules && window.AlloModules.createContentEngine;
-    if (factory) _contentEngineRef.current = factory({ callGemini, addToast, t, getBilingualPromptInstruction });
+    if (!factory) { console.warn('[ContentEngine] Factory not found on window.AlloModules'); return null; }
+    try {
+      _contentEngineRef.current = factory({ callGemini, addToast, t, getBilingualPromptInstruction });
+      console.log('[ContentEngine] Factory created successfully:', Object.keys(_contentEngineRef.current || {}));
+    } catch(err) {
+      console.error('[ContentEngine] Factory creation FAILED:', err);
+      return null;
+    }
     return _contentEngineRef.current;
   };
-  const _ceFn = (name, fallback) => (...args) => { const e = _getContentEngine(); return e ? e[name](...args) : (typeof fallback === 'function' ? fallback(...args) : fallback); };
+  const _ceFn = (name, fallback) => function() { const e = _getContentEngine(); if (e && typeof e[name] === 'function') return e[name].apply(this, arguments); return (typeof fallback === 'function' ? fallback.apply(this, arguments) : undefined); };
   const handleGenerateSource = _ceFn('handleGenerateSource', async () => { addToast('Content engine loading — please try again in a moment', 'info'); });
   const addLanguage = _ceFn('addLanguage');
   const addInterest = _ceFn('addInterest');
