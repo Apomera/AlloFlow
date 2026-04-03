@@ -18873,9 +18873,6 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         setDownloadingContentId(null);
     }
   };
-  // ── Doc generation delegated to doc_pipeline_module.js ──
-  const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
-  const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   // EXPORT_THEMES + exportTheme kept inline to preserve hook order (hook #1079 in original)
   const EXPORT_THEMES = {
     professional: { name: 'Professional', emoji: '💼', bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' },
@@ -18923,6 +18920,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
   const parseAuditJson = _docPipeline ? _docPipeline.parseAuditJson : () => ({});
+  const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
+  const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   const generateFullPackHTML = _docPipeline ? _docPipeline.generateFullPackHTML : () => '';
   const handleExportQTI = async () => {
       if (!window.JSZip) {
