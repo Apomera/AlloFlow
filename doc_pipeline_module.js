@@ -116,6 +116,7 @@ IMPORTANT FORMATTING RULES for the "issue" field:
 Return ONLY valid JSON:
 {
   "score": "<calculated from rubric deductions>",
+  "confidence": "<your confidence in this score: 'high' if document is straightforward, 'medium' if some elements are ambiguous, 'low' if you had to guess about key aspects>",
   "summary": "One sentence overall assessment",
   "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "major": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
@@ -210,6 +211,38 @@ Return ONLY valid JSON:
           a.score = calculatedScore;
         }
       });
+
+      // ── Adaptive audit: check for score divergence or low confidence → add more audits ──
+      const initialScores = parsedAudits.map(a => a.score).filter(s => typeof s === 'number');
+      const lowConfidence = parsedAudits.some(a => a.confidence === 'low');
+      const initialRange = initialScores.length > 1 ? Math.max(...initialScores) - Math.min(...initialScores) : 0;
+      if (parsedAudits.length >= 2 && parsedAudits.length < allVariants.length && (initialRange > 20 || lowConfidence)) {
+        const reason = initialRange > 20 ? `score divergence (${initialRange} point spread: ${initialScores.join(', ')})` : 'low confidence flagged by auditor';
+        const additionalCount = Math.min(2, allVariants.length - parsedAudits.length);
+        warnLog(`[PDF Audit] Adaptive: adding ${additionalCount} auditor(s) due to ${reason}`);
+        addToast && addToast(`Adding ${additionalCount} extra audit(s) — ${reason}`, 'info');
+        const extraVariants = allVariants.slice(parsedAudits.length, parsedAudits.length + additionalCount);
+        const extraResults = await Promise.all(extraVariants.map(p => callGeminiVision(p, base64Data, 'application/pdf').catch(() => null)));
+        const extraParsed = extraResults.filter(Boolean).map(r => {
+          try {
+            return parseAudit(r);
+          } catch {
+            return null;
+          }
+        }).filter(Boolean);
+        extraParsed.forEach(a => {
+          const critCount = (a.critical || []).length;
+          const majCount = (a.major || []).length;
+          const minCount = (a.minor || []).length;
+          const passCount = (a.passes || []).length;
+          const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
+          const pf = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
+          const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
+          if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) a.score = calculatedScore;
+        });
+        parsedAudits.push(...extraParsed);
+        warnLog(`[PDF Audit] Adaptive: now ${parsedAudits.length} total audits (was ${initialScores.length})`);
+      }
 
       // ── Triangulate: average scores, compute reliability statistics ──
       const scores = parsedAudits.map(a => a.score).filter(s => typeof s === 'number');
@@ -800,7 +833,17 @@ Return ONLY the complete HTML document.`;
         const rAxe = auditResults[auditResults.length - 1]; // last result is axe
         const rvAll = auditResults.slice(0, -1); // all but last are AI audits
 
-        const rvScores = rvAll.map(v => v ? v.score : null).filter(s => s !== null);
+        let rvScores = rvAll.map(v => v ? v.score : null).filter(s => s !== null);
+
+        // Adaptive: if 2 auditors diverge by >15 points, add a tiebreaker 3rd
+        if (rvScores.length === 2 && Math.abs(rvScores[0] - rvScores[1]) > 15) {
+          log(`Score divergence (${rvScores[0]} vs ${rvScores[1]}) — adding tiebreaker audit`);
+          const tiebreaker = await auditOutputAccessibility(accessibleHtml);
+          if (tiebreaker && typeof tiebreaker.score === 'number') {
+            rvAll.push(tiebreaker);
+            rvScores.push(tiebreaker.score);
+          }
+        }
         const newAi = rvScores.length > 0 ? Math.round(rvScores.reduce((a, b) => a + b, 0) / rvScores.length) : bestAiScore;
         const rvSD = rvScores.length > 1 ? Math.sqrt(rvScores.reduce((s, x) => s + (x - newAi) ** 2, 0) / (rvScores.length - 1)) : 0;
         const rvSEM = rvScores.length > 1 ? rvSD / Math.sqrt(rvScores.length) : 0;
