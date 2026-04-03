@@ -161,6 +161,7 @@ var createContentEngine = function(deps) {
       sourceVocabulary, resourceCount, targetStandards, dokLevel,
       selectedFont, includeSourceCitations,
       interactionMode, revisionData, standardsPromptString,
+      ai, webSearchProvider,
       setActiveView, setConceptInput, setError, setGeneratedContent,
       setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource,
       setLanguageInput, setLeveledTextLanguage, setSelectedConcepts,
@@ -193,6 +194,8 @@ var createContentEngine = function(deps) {
     interactionMode = s.interactionMode;
     revisionData = s.revisionData;
     standardsPromptString = s.standardsPromptString || '';
+    ai = s.ai || null;
+    webSearchProvider = s.webSearchProvider || null;
     alloBotRef = s.alloBotRef || { current: null };
     isBotVisible = s.isBotVisible || false;
     isPlayingRef = s.isPlayingRef || { current: false };
