@@ -251,18 +251,55 @@ app.on('ready', async () => {
   // If already configured, start native services
   const config = getConfig();
   if (config && config.deploymentType === 'local') {
-    console.log('[app:ready] Existing local config found, starting services...');
+    console.log('[app:ready] Existing local config found, auto-starting services...');
     const selectedServices = config.selectedServices || [];
+    
+    // **IMPROVED**: Try to start each service, with better error handling
     for (const serviceId of selectedServices) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
-      if (svcDef && !svcDef.builtin && nativePM.isServiceInstalled(serviceId)) {
-        try {
-          nativePM.startService(serviceId);
-        } catch (err) {
-          console.error(`[app:ready] Failed to start ${serviceId}:`, err.message);
-        }
+      if (!svcDef) {
+        console.warn(`[app:ready] Service definition not found: ${serviceId}`);
+        continue;
+      }
+      
+      // Skip builtin services (they're already running in-process)
+      if (svcDef.builtin) {
+        console.log(`[app:ready] Skipping builtin service: ${serviceId}`);
+        continue;
+      }
+      
+      // Check if service is installed before trying to start
+      if (!nativePM.isServiceInstalled(serviceId)) {
+        console.warn(`[app:ready] Service not installed (will skip): ${serviceId}`);
+        continue;
+      }
+      
+      try {
+        console.log(`[app:ready] Starting service: ${serviceId}`);
+        nativePM.startService(serviceId);
+        console.log(`[app:ready] ✓ ${serviceId} started`);
+      } catch (err) {
+        console.error(`[app:ready] Failed to start ${serviceId}:`, err.message);
+        // Non-fatal: continue with other services
       }
     }
+    
+    // **NEW**: After starting services, wait a bit for them to become healthy
+    // This ensures they're ready when the admin app UI loads
+    console.log('[app:ready] Waiting for services to become healthy...');
+    if (selectedServices.includes('ollama')) {
+      try {
+        await ollamaManager.waitForHealthy(30000, 1000);
+        console.log('[app:ready] ✓ Ollama is healthy');
+      } catch (err) {
+        console.warn('[app:ready] Ollama did not become healthy quickly:', err.message);
+        // Non-fatal: Ollama may still start in the background
+      }
+    }
+  } else if (config) {
+    console.log('[app:ready] Non-local deployment detected:', config.deploymentType);
+  } else {
+    console.log('[app:ready] No configuration found - will show setup wizard');
   }
 
   createWindow();
@@ -668,7 +705,35 @@ async function startDeployment(setupData, onProgress) {
       console.log('[deploy:start] setupData.selectedModels:', setupData.selectedModels);
       console.log('[deploy:start] Models to pull:', modelsToPull);
 
-      // Check if models are already installed
+      // **CRITICAL FIX**: Wait for Ollama to be healthy before attempting to pull models
+      onProgress({ phase: 'models', status: 'Waiting for Ollama to be ready (this may take 10-30 seconds)...', progress: 86 });
+      let retryCount = 0;
+      const maxRetries = 3;
+      while (retryCount < maxRetries) {
+        try {
+          console.log(`[deploy:start] Waiting for Ollama to become healthy (attempt ${retryCount + 1}/${maxRetries})...`);
+          await ollamaManager.waitForHealthy(30000, 2000); // Wait up to 30s, retry every 2s
+          console.log('[deploy:start] Ollama is now healthy and ready for model pulls');
+          break;
+        } catch (err) {
+          retryCount++;
+          console.warn(`[deploy:start] Ollama health check failed (attempt ${retryCount}/${maxRetries}):`, err.message);
+          if (retryCount >= maxRetries) {
+            console.error('[deploy:start] CRITICAL: Ollama failed to start after 3 attempts. Continuing without models...');
+            onProgress({ 
+              phase: 'models', 
+              status: `Ollama did not start properly. You can pull models manually later from the admin panel. Error: ${err.message}`, 
+              progress: 87 
+            });
+            // Continue deployment without pulling models
+            break;
+          }
+          // Wait before retry
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+
+      // Check if models are already installed (only if Ollama became healthy)
       let installedModels = [];
       try {
         installedModels = await ollamaManager.getInstalledModels();

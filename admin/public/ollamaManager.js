@@ -240,6 +240,36 @@ class OllamaManager {
       }).on('error', reject).setTimeout(10000);
     });
   }
+
+  /**
+   * Wait for Ollama to become healthy (ready to serve requests)
+   * Used during startup to ensure Ollama is ready before pulling models
+   * @param {number} maxWaitMs - Maximum time to wait in milliseconds (default: 30000)
+   * @param {number} retryIntervalMs - Time between retry attempts (default: 1000)
+   * @returns {Promise<void>} - Resolves when Ollama is healthy, rejects if timeout
+   */
+  async waitForHealthy(maxWaitMs = 30000, retryIntervalMs = 1000) {
+    const startTime = Date.now();
+    let lastError = null;
+
+    while (Date.now() - startTime < maxWaitMs) {
+      try {
+        const status = await this.checkOllamaStatus();
+        if (status.isRunning) {
+          console.log('[Ollama] Ollama is healthy and ready');
+          return;
+        }
+      } catch (err) {
+        lastError = err;
+      }
+
+      if (Date.now() - startTime < maxWaitMs) {
+        await new Promise(r => setTimeout(r, retryIntervalMs));
+      }
+    }
+
+    throw new Error(`Ollama failed to become healthy after ${maxWaitMs}ms: ${lastError?.message || 'Unknown error'}`);
+  }
 }
 
 module.exports = new OllamaManager();
