@@ -3824,6 +3824,7 @@ const useFocusTrap = (ref, isOpen) => {
 };
 // Expose shared hooks & utilities for CDN-loaded modules
 window.__alloHooks = { useFocusTrap };
+window.UiLanguageSelector = UiLanguageSelector;
 window.__alloUtils = window.__alloUtils || {};
 window.__alloUtils.fetchAndCleanUrl = fetchAndCleanUrl;
 window.__alloUtils.isGoogleRedirect = isGoogleRedirect;

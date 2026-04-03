@@ -3,6 +3,7 @@
 
 var LanguageContext = window.AlloLanguageContext;
 var useFocusTrap = window.__alloHooks && window.__alloHooks.useFocusTrap;
+var UiLanguageSelector = window.UiLanguageSelector || function() { return null; };
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
 
