@@ -1,37 +1,17 @@
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
-// Extracted from AlloFlowANTI.txt for CDN modularization
-// Contains: runPdfAccessibilityAudit, auditOutputAccessibility, runAxeAudit,
-//   fixContrastViolations, autoFixAxeViolations, fixAndVerifyPdf,
-//   generateAuditReportHtml, downloadAccessiblePdf, updatePdfPreview,
-//   generateCustomExportStyle, parseMarkdownToHTML, generateResourceHTML,
-//   EXPORT_THEMES, generateFullPackHTML
+// Pure function extraction — no hooks, no React state, no render JSX.
+// All functions receive their dependencies as parameters.
 
-var LanguageContext = window.AlloLanguageContext;
-var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
-var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
 var warnLog = window.warnLog || function() { console.warn.apply(console, arguments); };
-var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
-var Download = _lazyIcon('Download');
-var FileDown = _lazyIcon('FileDown');
-var ImageIcon = _lazyIcon('ImageIcon');
-var RefreshCw = _lazyIcon('RefreshCw');
-var Sparkles = _lazyIcon('Sparkles');
-var Wrench = _lazyIcon('Wrench');
+var processMathHTML = window.processMathHTML || function(t) { return t; };
 
-// The DocPipeline module exposes functions via window.AlloModules.
-// Each function takes its dependencies (callGemini, addToast, state setters) as parameters.
-// The monolith creates thin wrappers that close over its local state.
-
-// ── PDF Accessibility Audit Pipeline (lines 16429-19165 from monolith) ──
-// These functions are called by the monolith with bound state params.
-
+// Factory: returns all pipeline functions bound to provided deps
 var createDocPipeline = function(deps) {
   var callGemini = deps.callGemini;
   var addToast = deps.addToast;
   var t = deps.t;
-  var getState = deps.getState; // function that returns current state object
-  var setState = deps.setState; // function(updates) that merges state
 
+  // ── PDF Accessibility Audit ──
   const runPdfAccessibilityAudit = async (base64Data) => {
     setPdfAuditLoading(true);
     try {
@@ -2769,8 +2749,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     setIsGeneratingStyle(false);
   };
 
-
-  // ── parseMarkdownToHTML + generateResourceHTML + EXPORT_THEMES + generateFullPackHTML ──
+  // ── Document Generation (parseMarkdownToHTML, generateResourceHTML, etc.) ──
   const parseMarkdownToHTML = (text) => {
       if (!text) return '';
       let processedText = text.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
@@ -3699,7 +3678,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     nature: { name: 'Nature & Calm', emoji: '🌿', bodyFont: "'Lexend', system-ui, sans-serif", headingColor: '#166534', accentColor: '#15803d', bgColor: '#f0fdf4', cardBg: '#ffffff', cardBorder: '#bbf7d0', headerBg: 'linear-gradient(135deg, #166534, #15803d)', headerText: '#ffffff', extraCSS: '.section { border-left: 4px solid #86efac; border-radius: 8px; background: white; } .resource-header { background: #f0fdf4; color: #166534; }' },
     print: { name: 'Print Optimized', emoji: '🖨️', bodyFont: "'Times New Roman', serif", headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
   };
-  const [exportTheme, setExportTheme] = useState('professional');
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = config || exportConfig;
@@ -3909,22 +3887,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
 
   return {
-    runPdfAccessibilityAudit: runPdfAccessibilityAudit,
-    auditOutputAccessibility: auditOutputAccessibility,
-    runAxeAudit: runAxeAudit,
-    fixContrastViolations: fixContrastViolations,
-    autoFixAxeViolations: autoFixAxeViolations,
-    fixAndVerifyPdf: fixAndVerifyPdf,
-    generateAuditReportHtml: generateAuditReportHtml,
-    downloadAccessiblePdf: downloadAccessiblePdf,
-    updatePdfPreview: updatePdfPreview,
-    generateCustomExportStyle: generateCustomExportStyle,
-    parseMarkdownToHTML: parseMarkdownToHTML,
-    generateResourceHTML: generateResourceHTML,
-    EXPORT_THEMES: EXPORT_THEMES,
-    generateFullPackHTML: generateFullPackHTML,
-    runPdfBatchRemediation: runPdfBatchRemediation,
-    proceedWithPdfTransform: proceedWithPdfTransform,
+    runPdfAccessibilityAudit, auditOutputAccessibility, runAxeAudit,
+    fixContrastViolations, autoFixAxeViolations, fixAndVerifyPdf,
+    generateAuditReportHtml, downloadAccessiblePdf, updatePdfPreview,
+    generateCustomExportStyle, parseMarkdownToHTML, generateResourceHTML,
+    EXPORT_THEMES, generateFullPackHTML, runPdfBatchRemediation,
+    proceedWithPdfTransform, parseAuditJson,
   };
 };
 
