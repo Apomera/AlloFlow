@@ -152,6 +152,11 @@ const MODULES = [
         name: 'DocPipelineModule',
         filename: 'doc_pipeline_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ContentEngineModule',
+        filename: 'content_engine_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -176,6 +181,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_coordgrid.js',
     'stem_lab/stem_tool_angles.js',
     'stem_lab/stem_tool_archstudio.js',
+    'stem_lab/stem_tool_geometryworld.js',
     'stem_lab/stem_tool_cyberdefense.js',
     'stem_lab/stem_tool_physics.js',
     'stem_lab/stem_tool_watercycle.js',
