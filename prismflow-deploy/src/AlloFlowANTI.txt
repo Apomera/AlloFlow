@@ -7121,24 +7121,24 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/persona_ui_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/persona_ui_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7153,7 +7153,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8e477e3/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@792b3d1/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8305,68 +8305,6 @@ Return ONLY a valid JSON object:
   const [externalCBMScores, setExternalCBMScores] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_external_cbm_scores') || '{}'); } catch { return {}; }
   });
-  // ── Research data JSON export/import ──
-  const handleExportResearchJSON = useCallback(() => {
-    const researchBundle = {
-      exportVersion: 1,
-      exportDate: new Date().toISOString(),
-      probeHistory,
-      surveyResponses,
-      fidelityLog,
-      sessionCounter,
-      externalCBMScores,
-      interventionLogs,
-    };
-    const blob = new Blob([JSON.stringify(researchBundle, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `alloflow_research_data_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    if (addToast) addToast('Research data exported to JSON', 'success');
-  }, [probeHistory, surveyResponses, fidelityLog, sessionCounter, externalCBMScores, interventionLogs, addToast]);
-
-  const handleImportResearchJSON = useCallback((file) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        if (data.probeHistory) {
-          setProbeHistory(data.probeHistory);
-          try { localStorage.setItem('alloflow_probe_history', JSON.stringify(data.probeHistory)); } catch {}
-        }
-        if (data.surveyResponses) {
-          setSurveyResponses(data.surveyResponses);
-          try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(data.surveyResponses)); } catch {}
-        }
-        if (data.fidelityLog) {
-          setFidelityLog(data.fidelityLog);
-          try { localStorage.setItem('alloflow_fidelity_log', JSON.stringify(data.fidelityLog)); } catch {}
-        }
-        if (data.sessionCounter !== undefined) {
-          setSessionCounter(data.sessionCounter);
-          try { localStorage.setItem('alloflow_session_counter', String(data.sessionCounter)); } catch {}
-        }
-        if (data.externalCBMScores) {
-          setExternalCBMScores(data.externalCBMScores);
-          try { localStorage.setItem('alloflow_external_cbm_scores', JSON.stringify(data.externalCBMScores)); } catch {}
-        }
-        if (data.interventionLogs) {
-          setInterventionLogs(data.interventionLogs);
-          try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {}
-        }
-        if (addToast) addToast('Research data imported successfully', 'success');
-      } catch (err) {
-        warnLog('Failed to import research JSON:', err);
-        if (addToast) addToast('Invalid research data file', 'error');
-      }
-    };
-    reader.readAsText(file);
-  }, [addToast]);
 
   const { isRecording: isFluencyRecording, startRecording: startFluencyRecording, stopRecording: stopFluencyRecording } = useAudioRecorder();
   const wordSoundsModalRef = useRef(null);
@@ -9601,6 +9539,68 @@ Return ONLY a valid JSON object:
   useEffect(() => {
       addToastRef.current = addToast;
   }, []);
+  // ── Research data JSON export/import ──
+  const handleExportResearchJSON = useCallback(() => {
+    const researchBundle = {
+      exportVersion: 1,
+      exportDate: new Date().toISOString(),
+      probeHistory,
+      surveyResponses,
+      fidelityLog,
+      sessionCounter,
+      externalCBMScores,
+      interventionLogs,
+    };
+    const blob = new Blob([JSON.stringify(researchBundle, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `alloflow_research_data_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (addToast) addToast('Research data exported to JSON', 'success');
+  }, [probeHistory, surveyResponses, fidelityLog, sessionCounter, externalCBMScores, interventionLogs, addToast]);
+
+  const handleImportResearchJSON = useCallback((file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.probeHistory) {
+          setProbeHistory(data.probeHistory);
+          try { localStorage.setItem('alloflow_probe_history', JSON.stringify(data.probeHistory)); } catch {}
+        }
+        if (data.surveyResponses) {
+          setSurveyResponses(data.surveyResponses);
+          try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(data.surveyResponses)); } catch {}
+        }
+        if (data.fidelityLog) {
+          setFidelityLog(data.fidelityLog);
+          try { localStorage.setItem('alloflow_fidelity_log', JSON.stringify(data.fidelityLog)); } catch {}
+        }
+        if (data.sessionCounter !== undefined) {
+          setSessionCounter(data.sessionCounter);
+          try { localStorage.setItem('alloflow_session_counter', String(data.sessionCounter)); } catch {}
+        }
+        if (data.externalCBMScores) {
+          setExternalCBMScores(data.externalCBMScores);
+          try { localStorage.setItem('alloflow_external_cbm_scores', JSON.stringify(data.externalCBMScores)); } catch {}
+        }
+        if (data.interventionLogs) {
+          setInterventionLogs(data.interventionLogs);
+          try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {}
+        }
+        if (addToast) addToast('Research data imported successfully', 'success');
+      } catch (err) {
+        warnLog('Failed to import research JSON:', err);
+        if (addToast) addToast('Invalid research data file', 'error');
+      }
+    };
+    reader.readAsText(file);
+  }, [addToast]);
   useEffect(() => {
       const handleFocusIn = (e) => {
           if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
