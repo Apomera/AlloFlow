@@ -733,23 +733,31 @@ Return ONLY the complete HTML document.`;
           break;
         }
 
-        const [rv1, rv2, rv3, rAxe] = await Promise.all([
-          auditOutputAccessibility(accessibleHtml),
-          auditOutputAccessibility(accessibleHtml),
-          auditOutputAccessibility(accessibleHtml),
-          runAxeAudit(accessibleHtml)
-        ]);
+        // Run axe-core (fast, deterministic) + 1 AI audit per pass
+        // Only run triple-audit on FINAL pass to save API calls and avoid rate limits
+        const isFinalPass = (fp === batchMaxFix - 1) || (curAxeResults && curAxeResults.totalViolations === 0);
+        const rAxe = await runAxeAudit(accessibleHtml);
 
-        // Average 3 scores + compute SEM
-        const rvScores = [rv1, rv2, rv3].map(v => v ? v.score : null).filter(s => s !== null);
-        const newAi = rvScores.length > 0 ? Math.round(rvScores.reduce((a, b) => a + b, 0) / rvScores.length) : bestAiScore;
-        const rvSD = rvScores.length > 1 ? Math.sqrt(rvScores.reduce((s, x) => s + (x - newAi) ** 2, 0) / (rvScores.length - 1)) : 0;
-        const rvSEM = rvScores.length > 1 ? rvSD / Math.sqrt(rvScores.length) : 0;
-        // Pick auditor with HIGHEST score for issues list (not first truthy)
-        const rv = [rv1, rv2, rv3]
-          .filter(Boolean)
-          .sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
-        if (rv) { rv.score = newAi; rv._sem = rvSEM; rv._sd = rvSD; rv._scores = rvScores; }
+        let rv, newAi, rvSEM = 0, rvSD = 0, rvScores;
+        if (isFinalPass) {
+          // Final pass: triple-audit for reliability
+          const [rv1, rv2, rv3] = await Promise.all([
+            auditOutputAccessibility(accessibleHtml),
+            auditOutputAccessibility(accessibleHtml),
+            auditOutputAccessibility(accessibleHtml),
+          ]);
+          rvScores = [rv1, rv2, rv3].map(v => v ? v.score : null).filter(s => s !== null);
+          newAi = rvScores.length > 0 ? Math.round(rvScores.reduce((a, b) => a + b, 0) / rvScores.length) : bestAiScore;
+          rvSD = rvScores.length > 1 ? Math.sqrt(rvScores.reduce((s, x) => s + (x - newAi) ** 2, 0) / (rvScores.length - 1)) : 0;
+          rvSEM = rvScores.length > 1 ? rvSD / Math.sqrt(rvScores.length) : 0;
+          rv = [rv1, rv2, rv3].filter(Boolean).sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
+          if (rv) { rv.score = newAi; rv._sem = rvSEM; rv._sd = rvSD; rv._scores = rvScores; }
+        } else {
+          // Intermediate pass: single audit (fast, saves 2 API calls per pass)
+          rv = await auditOutputAccessibility(accessibleHtml);
+          newAi = rv ? rv.score : bestAiScore;
+          rvScores = [newAi];
+        }
         const newAxe = rAxe ? rAxe.totalViolations : bestAxeViolations;
         autoFixPasses++;
 
