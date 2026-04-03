@@ -7067,7 +7067,9 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       MessageSquare, Mic, MicOff, Minimize, MonitorPlay, Palette, Play, PlayCircle,
       Plus, Printer, Quote, RefreshCw, Search, Send, Settings, Share2, ShieldCheck, ShoppingBag,
       Sparkles, Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
-      Volume2, VolumeX, Wrench, X, Zap
+      Volume2, VolumeX, Wrench, X, Zap,
+      ArrowLeft, ChevronRight, FolderOpen, Heart, List, Pause, Pencil,
+      School, Settings2, UserCircle2, XCircle
     };
   }, []);
   // Load external modules from GitHub CDN via script tags
