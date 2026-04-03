@@ -52732,6 +52732,44 @@ Return only the corrected version of this exact text:`;
                 </div>
               </details>
 
+              {/* Auto Table of Contents */}
+              <button onClick={() => {
+                const doc = pdfPreviewRef.current?.contentDocument;
+                if (!doc) return;
+                const existing = doc.getElementById('alloflow-toc');
+                if (existing) { existing.remove(); addToast('Table of contents removed', 'info'); return; }
+                const headings = Array.from(doc.querySelectorAll('h1,h2,h3,h4'));
+                if (headings.length < 2) { addToast('Need at least 2 headings to generate a TOC', 'info'); return; }
+                headings.forEach((h, i) => { if (!h.id) h.id = 'toc-heading-' + i; });
+                const tocItems = headings.map((h, i) => {
+                  const level = parseInt(h.tagName[1]);
+                  const indent = (level - 1) * 16;
+                  const num = (() => {
+                    const counts = [0,0,0,0];
+                    for (let j = 0; j <= i; j++) {
+                      const l = parseInt(headings[j].tagName[1]) - 1;
+                      counts[l]++;
+                      for (let k = l + 1; k < 4; k++) counts[k] = 0;
+                    }
+                    return counts.slice(0, level).filter(c => c > 0).join('.');
+                  })();
+                  const text = h.textContent.trim().substring(0, 60) + (h.textContent.length > 60 ? '...' : '');
+                  return '<a href="#' + h.id + '" style="display:flex;align-items:baseline;gap:6px;padding:4px 0 4px ' + indent + 'px;color:#1e293b;text-decoration:none;font-size:' + (level === 1 ? '13px' : '12px') + ';font-weight:' + (level === 1 ? '700' : '400') + ';border-bottom:1px dotted #e2e8f0;transition:background 0.15s" onmouseover="this.style.background=\'#f1f5f9\'" onmouseout="this.style.background=\'transparent\'"><span style="color:#6366f1;font-weight:600;font-size:11px;min-width:20px">' + num + '</span><span>' + text + '</span></a>';
+                }).join('');
+                const toc = doc.createElement('nav');
+                toc.id = 'alloflow-toc';
+                toc.setAttribute('role', 'navigation');
+                toc.setAttribute('aria-label', 'Table of Contents');
+                toc.style.cssText = 'background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1px solid #c7d2fe;border-radius:12px;padding:16px 20px;margin:0 0 24px 0;page-break-after:always;';
+                toc.innerHTML = '<div style="font-weight:800;font-size:14px;color:#4338ca;margin-bottom:8px;display:flex;align-items:center;gap:6px">📑 Table of Contents</div>' + tocItems +
+                  '<div style="font-size:9px;color:#94a3b8;margin-top:8px;text-align:right">Auto-generated · Click headings to navigate</div>';
+                const main = doc.querySelector('main') || doc.body;
+                main.insertBefore(toc, main.firstChild);
+                addToast('📑 Table of contents added — click to remove', 'success');
+              }} className="w-full text-[9px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+                📑 Toggle Table of Contents
+              </button>
+
               {/* Download audio */}
               {callTTS && (
                 <button id="preview-audio-dl-btn" onClick={async () => {
