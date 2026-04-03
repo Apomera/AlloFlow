@@ -833,6 +833,10 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     }
   };
   const handleDeleteImage = () => {
+    if (generatedContent) {
+      setGeneratedContent(function(prev) { return prev ? Object.assign({}, prev, { data: Object.assign({}, prev.data, { imageUrl: null, visualPlan: null }) }) : null; });
+    }
+  };
 
   // ── Text Revision + Selection handlers ──
   const handleTextMouseUp = () => {
@@ -1155,7 +1159,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     handleConceptKeyDown: _wrap(handleConceptKeyDown),
     handleDownloadImage: _wrap(handleDownloadImage),
     handleDeleteImage: _wrap(handleDeleteImage),
-    downloadWithLabels: _wrap(downloadWithLabels),
+    // downloadWithLabels is internal to handleDownloadImage, not exported
     handleTextMouseUp: _wrap(handleTextMouseUp),
     handleReviseSelection: _wrapAsync(handleReviseSelection),
     handleWordClick: _wrapAsync(handleWordClick),
@@ -1167,7 +1171,6 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     handleDefineSelection: _wrapAsync(handleDefineSelection),
     stopPlayback: _wrap(stopPlayback),
   };
-  }; // end return
 }; // end createContentEngine
 
 window.AlloModules = window.AlloModules || {};

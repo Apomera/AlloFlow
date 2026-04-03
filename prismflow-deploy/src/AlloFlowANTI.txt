@@ -17113,7 +17113,6 @@ Return ONLY valid JSON:
   const handleConceptKeyDown = _ceFn('handleConceptKeyDown');
   const handleDownloadImage = _ceFn('handleDownloadImage');
   const handleDeleteImage = _ceFn('handleDeleteImage');
-  const downloadWithLabels = _ceFn('downloadWithLabels');
   const handleTextMouseUp = _ceFn('handleTextMouseUp');
   const handleReviseSelection = _ceFn('handleReviseSelection', async () => {});
   const handleWordClick = _ceFn('handleWordClick', async () => {});

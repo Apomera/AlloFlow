@@ -909,45 +909,57 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     }
   };
   const handleDeleteImage = () => {
-    // ── Text Revision + Selection handlers ──
-    const handleTextMouseUp = () => {
-      const selection = window.getSelection();
-      if (!selection || selection.toString().trim().length === 0) {
-        return;
-      }
-      const text = selection.toString().trim();
-      const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'define' || interactionMode === 'add-glossary') {
-        setSelectionMenu({
-          x: rect.left + rect.width / 2,
-          y: rect.top,
-          text: text
-        });
-      }
-    };
-    const handleReviseSelection = async (action, customInstruction = '') => {
-      if (!selectionMenu || !selectionMenu.text) return;
-      const originalText = selectionMenu.text;
-      if (action === 'custom-input') {
-        setIsCustomReviseOpen(true);
-        return;
-      }
-      setSelectionMenu(null);
-      setIsCustomReviseOpen(false);
-      setRevisionData({
-        type: action,
-        original: originalText,
-        result: null,
-        x: selectionMenu.x,
-        y: selectionMenu.y
+    if (generatedContent) {
+      setGeneratedContent(function (prev) {
+        return prev ? Object.assign({}, prev, {
+          data: Object.assign({}, prev.data, {
+            imageUrl: null,
+            visualPlan: null
+          })
+        }) : null;
       });
-      try {
-        var _generatedContent8, _generatedContent9;
-        const currentFullText = typeof ((_generatedContent8 = generatedContent) === null || _generatedContent8 === void 0 ? void 0 : _generatedContent8.data) === 'string' ? (_generatedContent9 = generatedContent) === null || _generatedContent9 === void 0 ? void 0 : _generatedContent9.data : '';
-        const isBilingual = currentFullText.includes("--- ENGLISH TRANSLATION ---");
-        if (isBilingual && (action === 'simplify' || action === 'custom')) {
-          const prompt = `
+    }
+  };
+
+  // ── Text Revision + Selection handlers ──
+  const handleTextMouseUp = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.toString().trim().length === 0) {
+      return;
+    }
+    const text = selection.toString().trim();
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'define' || interactionMode === 'add-glossary') {
+      setSelectionMenu({
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+        text: text
+      });
+    }
+  };
+  const handleReviseSelection = async (action, customInstruction = '') => {
+    if (!selectionMenu || !selectionMenu.text) return;
+    const originalText = selectionMenu.text;
+    if (action === 'custom-input') {
+      setIsCustomReviseOpen(true);
+      return;
+    }
+    setSelectionMenu(null);
+    setIsCustomReviseOpen(false);
+    setRevisionData({
+      type: action,
+      original: originalText,
+      result: null,
+      x: selectionMenu.x,
+      y: selectionMenu.y
+    });
+    try {
+      var _generatedContent8, _generatedContent9;
+      const currentFullText = typeof ((_generatedContent8 = generatedContent) === null || _generatedContent8 === void 0 ? void 0 : _generatedContent8.data) === 'string' ? (_generatedContent9 = generatedContent) === null || _generatedContent9 === void 0 ? void 0 : _generatedContent9.data : '';
+      const isBilingual = currentFullText.includes("--- ENGLISH TRANSLATION ---");
+      if (isBilingual && (action === 'simplify' || action === 'custom')) {
+        const prompt = `
                 You are an expert educational editor helping a teacher revise a bilingual text.
                 Goal: ${action === 'simplify' ? `Simplify the selected text for ${gradeLevel}.` : `Revise based on: "${customInstruction}".`}
                 Context:
@@ -969,25 +981,25 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                     ]
                 }
                `;
-          const jsonStr = await callGemini(prompt, true);
-          try {
-            const data = JSON.parse(cleanJson(jsonStr));
-            setRevisionData(prev => ({
-              ...prev,
-              result: data.primaryRevision,
-              replacements: data.replacements
-            }));
-            return;
-          } catch (jsonErr) {
-            warnLog("Bilingual revision JSON parse failed, falling back to standard revision.", jsonErr);
-            addToast(t('toasts.complex_revision_fallback'), "info");
-          }
+        const jsonStr = await callGemini(prompt, true);
+        try {
+          const data = JSON.parse(cleanJson(jsonStr));
+          setRevisionData(prev => ({
+            ...prev,
+            result: data.primaryRevision,
+            replacements: data.replacements
+          }));
+          return;
+        } catch (jsonErr) {
+          warnLog("Bilingual revision JSON parse failed, falling back to standard revision.", jsonErr);
+          addToast(t('toasts.complex_revision_fallback'), "info");
         }
-        let prompt;
-        const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
-        const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
-        if (action === 'simplify') {
-          prompt = `
+      }
+      let prompt;
+      const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+      const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
+      if (action === 'simplify') {
+        prompt = `
                 Simplify this specific sentence/phrase for a ${gradeLevel} student.
                 Keep the meaning but make it easier to read.
                 Context Topic: ${sourceTopic || "General"}.
@@ -996,8 +1008,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 ${dialectInstruction}
                 Return ONLY the simplified text. No quotes or labels.
               `;
-        } else if (action === 'custom') {
-          prompt = `
+      } else if (action === 'custom') {
+        prompt = `
                 Revise the following text based on these instructions: "${customInstruction}",
                 Text to revise: "${originalText}"
                 Context Topic: ${sourceTopic || "General"}.
@@ -1006,8 +1018,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 ${dialectInstruction}
                 Return ONLY the revised text. No quotes, no conversational filler.
               `;
-        } else {
-          prompt = `
+      } else {
+        prompt = `
                 Explain the meaning of this phrase for a ${gradeLevel} student.
                 Provide a short, clear explanation or definition.
                 Context Topic: ${sourceTopic || "General"}.
@@ -1017,34 +1029,34 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 ${dialectInstruction}
                 Return ONLY the explanation.
               `;
-        }
-        const result = await callGemini(prompt);
-        setRevisionData(prev => ({
-          ...prev,
-          result: result
-        }));
-      } catch (err) {
-        warnLog("Unhandled error:", err);
-        setRevisionData(null);
-        addToast(t('toasts.revision_failed'), "error");
-      } finally {}
-    };
-    const handleWordClick = async (rawWord, e) => {
-      if (interactionMode !== 'define') return;
-      e.stopPropagation();
-      const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
-      if (!word || word.length < 2) return;
-      const x = e.clientX;
-      const y = e.clientY;
-      setDefinitionData({
-        word,
-        text: null,
-        x,
-        y
-      });
-      try {
-        const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
-        const prompt = `
+      }
+      const result = await callGemini(prompt);
+      setRevisionData(prev => ({
+        ...prev,
+        result: result
+      }));
+    } catch (err) {
+      warnLog("Unhandled error:", err);
+      setRevisionData(null);
+      addToast(t('toasts.revision_failed'), "error");
+    } finally {}
+  };
+  const handleWordClick = async (rawWord, e) => {
+    if (interactionMode !== 'define') return;
+    e.stopPropagation();
+    const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
+    if (!word || word.length < 2) return;
+    const x = e.clientX;
+    const y = e.clientY;
+    setDefinitionData({
+      word,
+      text: null,
+      x,
+      y
+    });
+    try {
+      const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+      const prompt = `
             Define the word "${word}" for a ${gradeLevel} student.
             Context Topic: ${sourceTopic || "General"}.
             Output Language: ${outputLang}.
@@ -1052,119 +1064,119 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
-        const result = await callGemini(prompt);
-        setDefinitionData(prev => ({
-          ...prev,
-          text: result
-        }));
-      } catch (err) {
-        warnLog("Unhandled error:", err);
-        setDefinitionData(null);
-        addToast(t('toasts.definition_failed'), "error");
-      } finally {}
-    };
-    const handlePhonicsClick = async (rawWord, e = null) => {
-      const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
-      if (!word) return;
-      if (e) e.stopPropagation();
-      setPhonicsData({
-        word,
-        data: null,
-        isLoading: true,
-        x: e ? e.clientX : 0,
-        y: e ? e.clientY : 0
-      });
+      const result = await callGemini(prompt);
+      setDefinitionData(prev => ({
+        ...prev,
+        text: result
+      }));
+    } catch (err) {
+      warnLog("Unhandled error:", err);
+      setDefinitionData(null);
+      addToast(t('toasts.definition_failed'), "error");
+    } finally {}
+  };
+  const handlePhonicsClick = async (rawWord, e = null) => {
+    const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
+    if (!word) return;
+    if (e) e.stopPropagation();
+    setPhonicsData({
+      word,
+      data: null,
+      isLoading: true,
+      x: e ? e.clientX : 0,
+      y: e ? e.clientY : 0
+    });
+    try {
+      const prompt = `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`;
+      const result = await callGemini(prompt, true);
+      let data;
       try {
-        const prompt = `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`;
-        const result = await callGemini(prompt, true);
-        let data;
-        try {
-          data = JSON.parse(cleanJson(result));
-        } catch (jsonError) {
-          warnLog("Phonics JSON Parse Error:", jsonError);
-          setPhonicsData(null);
-          addToast(t('toasts.phonics_parse_failed'), "error");
-          return;
-        }
-        const audioUrl = await callTTS(word, selectedVoice);
-        if (audioUrl) {
-          const audio = new Audio(audioUrl);
-          audio.playbackRate = voiceSpeed;
-          await audio.play();
-        }
-        setPhonicsData(prev => ({
-          ...prev,
-          data: data,
-          audioUrl: audioUrl,
-          isLoading: false
-        }));
-      } catch (error) {
-        warnLog("Phonics Error:", error);
-        addToast(t('toasts.phonics_analyze_failed'), "error");
+        data = JSON.parse(cleanJson(result));
+      } catch (jsonError) {
+        warnLog("Phonics JSON Parse Error:", jsonError);
         setPhonicsData(null);
+        addToast(t('toasts.phonics_parse_failed'), "error");
+        return;
       }
-    };
-    const applyTextRevision = () => {
-      var _generatedContent0, _generatedContent1;
-      if (!revisionData || !revisionData.result || !generatedContent) return;
-      const currentFullText = typeof ((_generatedContent0 = generatedContent) === null || _generatedContent0 === void 0 ? void 0 : _generatedContent0.data) === 'string' ? (_generatedContent1 = generatedContent) === null || _generatedContent1 === void 0 ? void 0 : _generatedContent1.data : '';
-      let newFullText = currentFullText;
-      if (revisionData.replacements && Array.isArray(revisionData.replacements)) {
-        let notFoundCount = 0;
-        revisionData.replacements.forEach(rep => {
-          if (newFullText.includes(rep.original)) {
-            newFullText = newFullText.replace(rep.original, rep.new);
-          } else {
-            notFoundCount++;
-          }
-        });
-        if (notFoundCount === revisionData.replacements.length) {
-          addToast(t('toasts.text_not_found'), "error");
-          return;
-        }
-      } else {
-        newFullText = currentFullText.replace(revisionData.original, revisionData.result);
-        if (newFullText === currentFullText) {
-          addToast(t('toasts.text_exact_not_found'), "error");
-          return;
-        }
+      const audioUrl = await callTTS(word, selectedVoice);
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        audio.playbackRate = voiceSpeed;
+        await audio.play();
       }
-      handleSimplifiedTextChange(newFullText);
-      setRevisionData(null);
-      window.getSelection().removeAllRanges();
-      addToast(t('toasts.text_updated'), "success");
-    };
-    const closeRevision = () => {
-      setRevisionData(null);
-      setSelectionMenu(null);
-      setIsCustomReviseOpen(false);
-      setCustomReviseInstruction('');
-      window.getSelection().removeAllRanges();
-    };
-    const closeDefinition = () => setDefinitionData(null);
-    const closePhonics = () => {
-      var _phonicsData;
-      if ((_phonicsData = phonicsData) !== null && _phonicsData !== void 0 && _phonicsData.audioUrl) {
-        URL.revokeObjectURL(phonicsData.audioUrl);
-      }
+      setPhonicsData(prev => ({
+        ...prev,
+        data: data,
+        audioUrl: audioUrl,
+        isLoading: false
+      }));
+    } catch (error) {
+      warnLog("Phonics Error:", error);
+      addToast(t('toasts.phonics_analyze_failed'), "error");
       setPhonicsData(null);
-      stopPlayback();
-    };
-    const handleDefineSelection = async () => {
-      if (!selectionMenu || !selectionMenu.text) return;
-      const word = selectionMenu.text.trim();
-      const x = selectionMenu.x;
-      const y = selectionMenu.y;
-      setDefinitionData({
-        word,
-        text: null,
-        x,
-        y
+    }
+  };
+  const applyTextRevision = () => {
+    var _generatedContent0, _generatedContent1;
+    if (!revisionData || !revisionData.result || !generatedContent) return;
+    const currentFullText = typeof ((_generatedContent0 = generatedContent) === null || _generatedContent0 === void 0 ? void 0 : _generatedContent0.data) === 'string' ? (_generatedContent1 = generatedContent) === null || _generatedContent1 === void 0 ? void 0 : _generatedContent1.data : '';
+    let newFullText = currentFullText;
+    if (revisionData.replacements && Array.isArray(revisionData.replacements)) {
+      let notFoundCount = 0;
+      revisionData.replacements.forEach(rep => {
+        if (newFullText.includes(rep.original)) {
+          newFullText = newFullText.replace(rep.original, rep.new);
+        } else {
+          notFoundCount++;
+        }
       });
-      setSelectionMenu(null);
-      try {
-        const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
-        const prompt = `
+      if (notFoundCount === revisionData.replacements.length) {
+        addToast(t('toasts.text_not_found'), "error");
+        return;
+      }
+    } else {
+      newFullText = currentFullText.replace(revisionData.original, revisionData.result);
+      if (newFullText === currentFullText) {
+        addToast(t('toasts.text_exact_not_found'), "error");
+        return;
+      }
+    }
+    handleSimplifiedTextChange(newFullText);
+    setRevisionData(null);
+    window.getSelection().removeAllRanges();
+    addToast(t('toasts.text_updated'), "success");
+  };
+  const closeRevision = () => {
+    setRevisionData(null);
+    setSelectionMenu(null);
+    setIsCustomReviseOpen(false);
+    setCustomReviseInstruction('');
+    window.getSelection().removeAllRanges();
+  };
+  const closeDefinition = () => setDefinitionData(null);
+  const closePhonics = () => {
+    var _phonicsData;
+    if ((_phonicsData = phonicsData) !== null && _phonicsData !== void 0 && _phonicsData.audioUrl) {
+      URL.revokeObjectURL(phonicsData.audioUrl);
+    }
+    setPhonicsData(null);
+    stopPlayback();
+  };
+  const handleDefineSelection = async () => {
+    if (!selectionMenu || !selectionMenu.text) return;
+    const word = selectionMenu.text.trim();
+    const x = selectionMenu.x;
+    const y = selectionMenu.y;
+    setDefinitionData({
+      word,
+      text: null,
+      x,
+      y
+    });
+    setSelectionMenu(null);
+    try {
+      const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+      const prompt = `
             Define the word or phrase "${word}" for a ${gradeLevel} student.
             Context Topic: ${sourceTopic || "General"}.
             Output Language: ${outputLang}.
@@ -1172,91 +1184,90 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
-        const result = await callGemini(prompt);
-        setDefinitionData(prev => ({
-          ...prev,
-          text: result
-        }));
-      } catch (err) {
-        warnLog("Unhandled error:", err);
-        setDefinitionData(null);
-        addToast(t('toasts.definition_failed'), "error");
-      } finally {}
-    };
-    const stopPlayback = () => {
-      // Invalidate the current playback session so any in-flight playSequence
-      // chain stops at its next iteration check
-      playbackSessionRef.current = -1;
-      if (audioRef.current) {
-        const currentSrc = audioRef.current.src;
-        audioRef.current.pause();
-        audioRef.current.onended = null; // prevent chained playback
-        if (currentSrc && currentSrc.startsWith('blob:')) {
-          URL.revokeObjectURL(currentSrc);
-          activeBlobUrlsRef.current.delete(currentSrc);
-        }
-        audioRef.current = null;
+      const result = await callGemini(prompt);
+      setDefinitionData(prev => ({
+        ...prev,
+        text: result
+      }));
+    } catch (err) {
+      warnLog("Unhandled error:", err);
+      setDefinitionData(null);
+      addToast(t('toasts.definition_failed'), "error");
+    } finally {}
+  };
+  const stopPlayback = () => {
+    // Invalidate the current playback session so any in-flight playSequence
+    // chain stops at its next iteration check
+    playbackSessionRef.current = -1;
+    if (audioRef.current) {
+      const currentSrc = audioRef.current.src;
+      audioRef.current.pause();
+      audioRef.current.onended = null; // prevent chained playback
+      if (currentSrc && currentSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(currentSrc);
+        activeBlobUrlsRef.current.delete(currentSrc);
       }
-      // Stop any Kokoro streaming queue
-      if (window._kokoroTTS && window._kokoroTTS.stop) {
-        try {
-          window._kokoroTTS.stop();
-        } catch (e) {}
-      }
-      // Cancel any browser speechSynthesis
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
-      if (playbackTimeoutRef.current) {
-        clearTimeout(playbackTimeoutRef.current);
-        playbackTimeoutRef.current = null;
-      }
-      setIsPlaying(false);
-      setIsPaused(false);
-      setPlayingContentId(null);
-      setPlaybackState({
-        sentences: [],
-        currentIdx: -1
-      });
-      isPlayingRef.current = false;
-      isSystemAudioActiveRef.current = false;
+      audioRef.current = null;
+    }
+    // Stop any Kokoro streaming queue
+    if (window._kokoroTTS && window._kokoroTTS.stop) {
+      try {
+        window._kokoroTTS.stop();
+      } catch (e) {}
+    }
+    // Cancel any browser speechSynthesis
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (playbackTimeoutRef.current) {
+      clearTimeout(playbackTimeoutRef.current);
+      playbackTimeoutRef.current = null;
+    }
+    setIsPlaying(false);
+    setIsPaused(false);
+    setPlayingContentId(null);
+    setPlaybackState({
+      sentences: [],
+      currentIdx: -1
+    });
+    isPlayingRef.current = false;
+    isSystemAudioActiveRef.current = false;
+  };
+  var _wrap = function (fn) {
+    return function () {
+      _bindState();
+      return fn.apply(this, arguments);
     };
-    var _wrap = function (fn) {
-      return function () {
-        _bindState();
-        return fn.apply(this, arguments);
-      };
+  };
+  var _wrapAsync = function (fn) {
+    return async function () {
+      _bindState();
+      return fn.apply(this, arguments);
     };
-    var _wrapAsync = function (fn) {
-      return async function () {
-        _bindState();
-        return fn.apply(this, arguments);
-      };
-    };
-    return {
-      handleGenerateSource: _wrapAsync(handleGenerateSource),
-      addLanguage: _wrap(addLanguage),
-      addInterest: _wrap(addInterest),
-      removeInterest: _wrap(removeInterest),
-      handleInterestKeyDown: _wrap(handleInterestKeyDown),
-      removeLanguage: _wrap(removeLanguage),
-      handleKeyDown: _wrap(handleKeyDown),
-      addConcept: _wrap(addConcept),
-      removeConcept: _wrap(removeConcept),
-      handleConceptKeyDown: _wrap(handleConceptKeyDown),
-      handleDownloadImage: _wrap(handleDownloadImage),
-      handleDeleteImage: _wrap(handleDeleteImage),
-      downloadWithLabels: _wrap(downloadWithLabels),
-      handleTextMouseUp: _wrap(handleTextMouseUp),
-      handleReviseSelection: _wrapAsync(handleReviseSelection),
-      handleWordClick: _wrapAsync(handleWordClick),
-      handlePhonicsClick: _wrapAsync(handlePhonicsClick),
-      applyTextRevision: _wrap(applyTextRevision),
-      closeRevision: _wrap(closeRevision),
-      closeDefinition: _wrap(closeDefinition),
-      closePhonics: _wrap(closePhonics),
-      handleDefineSelection: _wrapAsync(handleDefineSelection),
-      stopPlayback: _wrap(stopPlayback)
-    };
-  }; // end return
+  };
+  return {
+    handleGenerateSource: _wrapAsync(handleGenerateSource),
+    addLanguage: _wrap(addLanguage),
+    addInterest: _wrap(addInterest),
+    removeInterest: _wrap(removeInterest),
+    handleInterestKeyDown: _wrap(handleInterestKeyDown),
+    removeLanguage: _wrap(removeLanguage),
+    handleKeyDown: _wrap(handleKeyDown),
+    addConcept: _wrap(addConcept),
+    removeConcept: _wrap(removeConcept),
+    handleConceptKeyDown: _wrap(handleConceptKeyDown),
+    handleDownloadImage: _wrap(handleDownloadImage),
+    handleDeleteImage: _wrap(handleDeleteImage),
+    // downloadWithLabels is internal to handleDownloadImage, not exported
+    handleTextMouseUp: _wrap(handleTextMouseUp),
+    handleReviseSelection: _wrapAsync(handleReviseSelection),
+    handleWordClick: _wrapAsync(handleWordClick),
+    handlePhonicsClick: _wrapAsync(handlePhonicsClick),
+    applyTextRevision: _wrap(applyTextRevision),
+    closeRevision: _wrap(closeRevision),
+    closeDefinition: _wrap(closeDefinition),
+    closePhonics: _wrap(closePhonics),
+    handleDefineSelection: _wrapAsync(handleDefineSelection),
+    stopPlayback: _wrap(stopPlayback)
+  };
 }; // end createContentEngine
 
 window.AlloModules = window.AlloModules || {};
