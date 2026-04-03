@@ -14,6 +14,62 @@ var createContentEngine = function(deps) {
   var getBilingualPromptInstruction = deps.getBilingualPromptInstruction || function() { return ''; };
   var flyToElement = deps.flyToElement || function() {};
   var callTTS = deps.callTTS || function() { return Promise.resolve(); };
+  var toSuperscript = function(num) {
+    var map = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+    return num.toString().split('').map(function(d) { return map[d] || d; }).join('');
+  };
+  var ensureTitleHeading = function(text) {
+    if (!text) return text;
+    var lines = text.split('\n');
+    var firstNonEmptyIdx = lines.findIndex(function(l) { return l.trim().length > 0; });
+    if (firstNonEmptyIdx === -1) return text;
+    var firstLine = lines[firstNonEmptyIdx].trim();
+    if (/^#{1,6}\s/.test(firstLine)) return text;
+    if (firstLine.length > 120) return text;
+    if (lines.filter(function(l) { return l.trim().length > 0; }).length < 2) return text;
+    var titlePrefixMatch = firstLine.match(/^Title:\s*(.+)/i);
+    if (titlePrefixMatch) { lines[firstNonEmptyIdx] = '# ' + titlePrefixMatch[1]; }
+    else { lines[firstNonEmptyIdx] = '# ' + firstLine; }
+    return lines.join('\n');
+  };
+  var repairSourceMarkdown = function(rawText) {
+    if (!rawText) return rawText;
+    var bibMatch = rawText.match(/(\n---\n|\n#{2,3} Source Text References)/s);
+    var body = bibMatch ? rawText.substring(0, bibMatch.index) : rawText;
+    var bib = bibMatch ? rawText.substring(bibMatch.index) : '';
+    var trimmedBody = body.trimEnd();
+    if (trimmedBody.length > 50) {
+      var lastSentenceEnd = Math.max(trimmedBody.lastIndexOf('.'), trimmedBody.lastIndexOf('!'), trimmedBody.lastIndexOf('?'));
+      if (lastSentenceEnd > 0 && (trimmedBody.length - lastSentenceEnd) < 120) {
+        var afterPunctuation = trimmedBody.substring(lastSentenceEnd + 1).trim();
+        if (afterPunctuation.length > 5 && !/[.!?]/.test(afterPunctuation)) body = trimmedBody.substring(0, lastSentenceEnd + 1);
+      }
+    }
+    rawText = body + bib;
+    rawText = rawText.replace(/([.!?])\s*(#{1,6}\s+)/g, '$1\n\n$2');
+    var lines = rawText.split('\n');
+    var titleProcessed = false;
+    var repairedLines = lines.map(function(line, index) {
+      var trimmed = line.trim();
+      if (!titleProcessed && trimmed.length > 0) {
+        if (/^Title:\s*/i.test(trimmed)) { titleProcessed = true; return trimmed.replace(/^Title:\s*/i, '# '); }
+        if (!/^[#\-*]/.test(trimmed) && !/^\*\*/.test(trimmed) && !/^\[/.test(trimmed) && !/^\d+\.\s/.test(trimmed) && trimmed.length < 80 && index < 3) { titleProcessed = true; return '# ' + trimmed; }
+      }
+      if (!titleProcessed && trimmed.length >= 80) titleProcessed = true;
+      if (/^#{1,6}\s+/.test(trimmed) && trimmed.length > 150) return line.replace(/^#{1,6}\s+/, '');
+      return line;
+    });
+    var finalLines = [];
+    for (var i = 0; i < repairedLines.length; i++) {
+      var line = repairedLines[i];
+      if (/^#{1,6}\s+/.test(line.trim()) && i > 0) {
+        var prevLine = finalLines[finalLines.length - 1];
+        if (prevLine && prevLine.trim().length > 0) finalLines.push('');
+      }
+      finalLines.push(line);
+    }
+    return finalLines.join('\n');
+  };
   var cleanSourceMetaCommentary = function(text) {
     if (!text) return text;
     var cleaned = text;
