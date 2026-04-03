@@ -12,34 +12,21 @@ var useRef = React.useRef;
 var useContext = React.useContext;
 var useMemo = React.useMemo;
 var useCallback = React.useCallback;
-var _i = window.AlloIcons || {};
-var ArrowLeft = _i.ArrowLeft || function () {
-  return null;
+var _lazyIcon = function (name) {
+  return function (props) {
+    var I = window.AlloIcons && window.AlloIcons[name];
+    return I ? React.createElement(I, props) : null;
+  };
 };
-var ArrowRight = _i.ArrowRight || function () {
-  return null;
-};
-var ChevronLeft = _i.ChevronLeft || function () {
-  return null;
-};
-var ChevronRight = _i.ChevronRight || function () {
-  return null;
-};
-var List = _i.List || function () {
-  return null;
-};
-var Pause = _i.Pause || function () {
-  return null;
-};
-var Play = _i.Play || function () {
-  return null;
-};
-var Settings2 = _i.Settings2 || function () {
-  return null;
-};
-var Zap = _i.Zap || function () {
-  return null;
-};
+var ArrowLeft = _lazyIcon('ArrowLeft');
+var ArrowRight = _lazyIcon('ArrowRight');
+var ChevronLeft = _lazyIcon('ChevronLeft');
+var ChevronRight = _lazyIcon('ChevronRight');
+var List = _lazyIcon('List');
+var Pause = _lazyIcon('Pause');
+var Play = _lazyIcon('Play');
+var Settings2 = _lazyIcon('Settings2');
+var Zap = _lazyIcon('Zap');
 const SpeedReaderOverlay = React.memo(({
   text,
   onClose,

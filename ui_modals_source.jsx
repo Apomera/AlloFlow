@@ -11,22 +11,24 @@ var warnLog = window.warnLog || function() { console.warn.apply(console, argumen
 var doc = window._fbDoc || function() { return null; };
 var updateDoc = window._fbUpdateDoc || function() { return Promise.resolve(); };
 var db = window._fbDb || null;
-var _i = window.AlloIcons || {};
-var CheckCircle = _i.CheckCircle || function(){return null;};
-var CheckCircle2 = _i.CheckCircle2 || function(){return null;};
-var FolderOpen = _i.FolderOpen || function(){return null;};
-var GraduationCap = _i.GraduationCap || function(){return null;};
-var Heart = _i.Heart || function(){return null;};
-var Layers = _i.Layers || function(){return null;};
-var Lock = _i.Lock || function(){return null;};
-var Mic = _i.Mic || function(){return null;};
-var RefreshCw = _i.RefreshCw || function(){return null;};
-var School = _i.School || function(){return null;};
-var ShieldCheck = _i.ShieldCheck || function(){return null;};
-var Sparkles = _i.Sparkles || function(){return null;};
-var Upload = _i.Upload || function(){return null;};
-var UserCircle2 = _i.UserCircle2 || function(){return null;};
-var XCircle = _i.XCircle || function(){return null;};
+// Lazy icon wrappers — window.AlloIcons is set in a useEffect after CDN scripts load,
+// so each icon must look up window.AlloIcons at RENDER time, not at script load time.
+var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
+var CheckCircle = _lazyIcon('CheckCircle');
+var CheckCircle2 = _lazyIcon('CheckCircle2');
+var FolderOpen = _lazyIcon('FolderOpen');
+var GraduationCap = _lazyIcon('GraduationCap');
+var Heart = _lazyIcon('Heart');
+var Layers = _lazyIcon('Layers');
+var Lock = _lazyIcon('Lock');
+var Mic = _lazyIcon('Mic');
+var RefreshCw = _lazyIcon('RefreshCw');
+var School = _lazyIcon('School');
+var ShieldCheck = _lazyIcon('ShieldCheck');
+var Sparkles = _lazyIcon('Sparkles');
+var Upload = _lazyIcon('Upload');
+var UserCircle2 = _lazyIcon('UserCircle2');
+var XCircle = _lazyIcon('XCircle');
 
 const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, activeSessionCode, targetAppId }) => {
   const { t } = useContext(LanguageContext);
