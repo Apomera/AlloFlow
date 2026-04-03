@@ -7130,25 +7130,25 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/doc_pipeline_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/doc_pipeline_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7163,7 +7163,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@fd536d0/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a9d1d8a/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -52846,6 +52846,112 @@ Return only the corrected version of this exact text:`;
                 addToast('📑 Table of contents added — click to remove', 'success');
               }} className="w-full text-[9px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                 📑 Toggle Table of Contents
+              </button>
+
+              {/* Watermark / Draft Stamp */}
+              <details className="group">
+                <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
+                  🔒 Watermark & Stamps <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                </summary>
+                <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200 space-y-1">
+                  {[
+                    { label: 'DRAFT', color: '#ef4444', opacity: 0.08 },
+                    { label: 'CONFIDENTIAL', color: '#7c3aed', opacity: 0.07 },
+                    { label: 'FINAL', color: '#16a34a', opacity: 0.08 },
+                    { label: 'SAMPLE', color: '#2563eb', opacity: 0.08 },
+                    { label: 'DO NOT DISTRIBUTE', color: '#dc2626', opacity: 0.06 },
+                  ].map(wm => (
+                    <button key={wm.label} onClick={() => {
+                      const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
+                      const existing = doc.getElementById('alloflow-watermark');
+                      if (existing && existing.dataset.label === wm.label) { existing.remove(); addToast('Watermark removed', 'info'); return; }
+                      if (existing) existing.remove();
+                      const el = doc.createElement('div');
+                      el.id = 'alloflow-watermark';
+                      el.dataset.label = wm.label;
+                      el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:120px;font-weight:900;color:' + wm.color + ';opacity:' + wm.opacity + ';pointer-events:none;z-index:9998;white-space:nowrap;letter-spacing:8px;font-family:system-ui;user-select:none;';
+                      el.textContent = wm.label;
+                      doc.body.appendChild(el);
+                      addToast('Watermark "' + wm.label + '" added — click again to remove', 'success');
+                    }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2"
+                      aria-label={`Toggle ${wm.label} watermark`}>
+                      🔒 {wm.label}
+                    </button>
+                  ))}
+                  <div className="border-t border-slate-200 pt-1.5 mt-1">
+                    <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Version Stamp</div>
+                    {[
+                      { label: 'Version 1.0', icon: '📌' },
+                      { label: 'Revised ' + new Date().toLocaleDateString(), icon: '📝' },
+                      { label: 'Approved ' + new Date().toLocaleDateString(), icon: '✅' },
+                    ].map(stamp => (
+                      <button key={stamp.label} onClick={() => {
+                        const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
+                        const existing = doc.getElementById('alloflow-version-stamp');
+                        if (existing) existing.remove();
+                        const el = doc.createElement('div');
+                        el.id = 'alloflow-version-stamp';
+                        el.style.cssText = 'position:fixed;top:12px;right:12px;background:white;border:2px solid #6366f1;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:#4338ca;font-family:system-ui;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.1);';
+                        el.textContent = stamp.icon + ' ' + stamp.label;
+                        doc.body.appendChild(el);
+                        addToast('Version stamp added', 'success');
+                      }} className="w-full text-[9px] font-bold text-slate-600 py-1 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5">
+                        {stamp.icon} {stamp.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </details>
+
+              {/* Bilingual Side-by-Side Layout */}
+              <button onClick={() => {
+                const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
+                const existing = doc.getElementById('bilingual-style');
+                if (existing) { existing.remove(); addToast('Bilingual layout removed — content restored to single column', 'info'); return; }
+                const main = doc.querySelector('main') || doc.body;
+                const sections = Array.from(main.querySelectorAll('.section, section, article, [class*="resource"]'));
+                if (sections.length === 0) { addToast('No content sections found to arrange', 'info'); return; }
+                const style = doc.createElement('style');
+                style.id = 'bilingual-style';
+                style.textContent = `
+                  .bilingual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; padding: 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fafafa; page-break-inside: avoid; }
+                  .bilingual-col { padding: 0; }
+                  .bilingual-col-header { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #6366f1; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #e0e7ff; }
+                  .bilingual-divider { width: 1px; background: #cbd5e1; margin: 0 -10px; }
+                  @media print { .bilingual-row { border: 1px solid #ddd; } }
+                `;
+                doc.head.appendChild(style);
+                sections.forEach(section => {
+                  const wrapper = doc.createElement('div');
+                  wrapper.className = 'bilingual-row';
+                  const leftCol = doc.createElement('div');
+                  leftCol.className = 'bilingual-col';
+                  const leftHeader = doc.createElement('div');
+                  leftHeader.className = 'bilingual-col-header';
+                  leftHeader.textContent = '🇺🇸 English';
+                  leftCol.appendChild(leftHeader);
+                  const clone = section.cloneNode(true);
+                  leftCol.appendChild(clone);
+                  const rightCol = doc.createElement('div');
+                  rightCol.className = 'bilingual-col';
+                  const rightHeader = doc.createElement('div');
+                  rightHeader.className = 'bilingual-col-header';
+                  rightHeader.textContent = '🌐 Translation';
+                  rightCol.appendChild(rightHeader);
+                  const placeholder = doc.createElement('div');
+                  placeholder.contentEditable = 'true';
+                  placeholder.style.cssText = 'min-height:60px;padding:12px;background:#f0f9ff;border:1px dashed #93c5fd;border-radius:6px;color:#64748b;font-style:italic;font-size:13px;line-height:1.6;';
+                  placeholder.textContent = 'Paste or type translation here...';
+                  placeholder.onfocus = function() { if (this.textContent === 'Paste or type translation here...') this.textContent = ''; this.style.color = '#1e293b'; this.style.fontStyle = 'normal'; };
+                  rightCol.appendChild(placeholder);
+                  wrapper.appendChild(leftCol);
+                  wrapper.appendChild(rightCol);
+                  section.parentNode.insertBefore(wrapper, section);
+                  section.style.display = 'none';
+                });
+                addToast('📐 Bilingual layout applied — paste translations in the right column. Click again to remove.', 'success');
+              }} className="w-full text-[9px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+                🌐 Toggle Bilingual Side-by-Side
               </button>
 
               {/* Download audio */}
