@@ -132,22 +132,34 @@ Return ONLY valid JSON:
       const auditResults = await Promise.all(auditVariants.map(p => callGeminiVision(p, base64Data, 'application/pdf').catch(() => null)));
       const parsedAudits = auditResults.filter(Boolean).map(r => { try { return parseAudit(r); } catch { return null; } }).filter(Boolean);
 
-      // ── Retry backfill: if fewer audits completed than requested, retry with unused prompt variants ──
-      if (parsedAudits.length < numAuditors && parsedAudits.length > 0) {
+      // ── Retry backfill: keep retrying until we hit the target count or exhaust attempts ──
+      const MAX_RETRY_ROUNDS = 3;
+      let retryRound = 0;
+      while (parsedAudits.length < numAuditors && parsedAudits.length > 0 && retryRound < MAX_RETRY_ROUNDS) {
+        retryRound++;
         const shortfall = numAuditors - parsedAudits.length;
-        warnLog(`[PDF Audit] ${parsedAudits.length}/${numAuditors} audits completed. Retrying ${shortfall} with fresh variants...`);
-        // Use unused prompt variants first (indices beyond what was already tried)
-        const retryPool = allVariants.slice(numAuditors).concat(allVariants.slice(0, numAuditors));
+        warnLog(`[PDF Audit] Round ${retryRound}: ${parsedAudits.length}/${numAuditors} completed. Retrying ${shortfall}...`);
+        addToast && addToast(`Audit pass ${parsedAudits.length}/${numAuditors} — retrying ${shortfall} (round ${retryRound})...`, 'info');
+        // Delay between retry rounds to avoid rate limiting
+        if (retryRound > 1) await new Promise(r => setTimeout(r, 1000 * retryRound));
+        // Build retry prompts from unused variants + fresh temperature variations
+        const retryPool = allVariants.slice(numAuditors).concat(
+          allVariants.slice(0, numAuditors).map(p => p + `\n\n(Attempt ${retryRound + 1} — be especially thorough.)`)
+        );
         const retryVariants = retryPool.slice(0, shortfall);
-        const retryResults = await Promise.all(retryVariants.map(p => callGeminiVision(p, base64Data, 'application/pdf').catch(() => null)));
+        // Run retries sequentially if rate limited, parallel otherwise
+        const retryResults = retryRound > 1
+          ? await (async () => { const res = []; for (const p of retryVariants) { try { res.push(await callGeminiVision(p, base64Data, 'application/pdf')); } catch { res.push(null); } await new Promise(r => setTimeout(r, 500)); } return res; })()
+          : await Promise.all(retryVariants.map(p => callGeminiVision(p, base64Data, 'application/pdf').catch(() => null)));
         const retryParsed = retryResults.filter(Boolean).map(r => { try { return parseAudit(r); } catch { return null; } }).filter(Boolean);
         if (retryParsed.length > 0) {
           parsedAudits.push(...retryParsed);
-          warnLog(`[PDF Audit] Backfill recovered ${retryParsed.length} audit(s) → ${parsedAudits.length}/${numAuditors} total`);
+          warnLog(`[PDF Audit] Round ${retryRound} recovered ${retryParsed.length} → ${parsedAudits.length}/${numAuditors} total`);
         }
-        if (parsedAudits.length < numAuditors) {
-          addToast(`⚠️ ${parsedAudits.length}/${numAuditors} audit analyses completed (${numAuditors - parsedAudits.length} failed after retry)`, 'info');
-        }
+        if (parsedAudits.length >= numAuditors) break;
+      }
+      if (parsedAudits.length < numAuditors && parsedAudits.length > 0) {
+        addToast(`⚠️ ${parsedAudits.length}/${numAuditors} audit passes completed after ${MAX_RETRY_ROUNDS} retry rounds`, 'info');
       }
 
       if (parsedAudits.length === 0) throw new Error('All audit attempts failed');
