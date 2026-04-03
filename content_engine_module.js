@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.ContentEngineModule){console.log("[CDN] ContentEngineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.ContentEngineModule){return;}
 "use strict";
 
 // content_engine_source.jsx — Content Generation + Text Revision handlers
@@ -139,9 +139,11 @@ var createContentEngine = function (deps) {
       return;
     }
     const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
+    console.error('[CE-TRACE] About to setIsGeneratingSource. typeof:', typeof setIsGeneratingSource);
     setIsGeneratingSource(true);
     setGenerationStep(t('status_steps.generating_source'));
     setError(null);
+    console.error('[CE-TRACE] State setters called. About to call Gemini...');
     if (switchView) {
       setGeneratedContent(null);
       setActiveView('input');
@@ -797,6 +799,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       setShowSourceGen(false);
     } catch (err) {
       var _err$message, _err$message2, _err$message3, _err$message4;
+      console.error('[CE-TRACE] CAUGHT ERROR in handleGenerateSource:', err);
       if (!((_err$message = err.message) !== null && _err$message !== void 0 && _err$message.includes("401"))) {
         warnLog("Unhandled error:", err);
       }
