@@ -14,6 +14,13 @@ var createContentEngine = function(deps) {
   var getBilingualPromptInstruction = deps.getBilingualPromptInstruction || function() { return ''; };
   var flyToElement = deps.flyToElement || function() {};
   var callTTS = deps.callTTS || function() { return Promise.resolve(); };
+  var getStructureForLength = function(lengthInput) {
+    var length = parseInt(lengthInput) || 0;
+    if (length <= 350) return "Structure: Write exactly 2 paragraphs. Do not use section headers.";
+    if (length <= 650) return "Structure: Write exactly 4 sections. Each section must have a header and exactly 2 paragraphs.";
+    if (length <= 1000) return "Structure: Write exactly 6 sections. Each section must have a header and 2-3 paragraphs.";
+    return "Structure: Write exactly 8 sections. Each section must have a header and 3 paragraphs.";
+  };
   var _s = function() { return window.__contentEngineState || {}; };
   var _bindState;
   var inputText, gradeLevel, sourceTopic, generatedContent,
