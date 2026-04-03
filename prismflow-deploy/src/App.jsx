@@ -7138,26 +7138,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7172,7 +7172,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7208,6 +7208,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_algebraCAS.js',
         'stem_lab/stem_tool_circuit.js',
         'stem_lab/stem_tool_climateExplorer.js',
+        'stem_lab/stem_tool_fireecology.js',
         'sel_hub/sel_tool_perspective.js',
         'sel_hub/sel_tool_decisions.js',
         'sel_hub/sel_tool_conflict.js',
@@ -35976,6 +35977,11 @@ Return ONLY JSON:
                             </div>
                         </div>
                     </div>
+                    {!hasSourceOrAnalysis && (
+                        <div className="px-3 pb-2">
+                            <p className="text-[10px] text-rose-400 italic flex items-center gap-1">⬆️ Paste a source text above first — the DBQ will be built from it.</p>
+                        </div>
+                    )}
                     <button
                         aria-label="Generate DBQ"
                         data-help-key="dbq_generate_button"
@@ -46206,10 +46212,10 @@ Return only the corrected version of this exact text:`;
                     return (
                     <div className="space-y-0 max-w-5xl mx-auto h-full flex flex-col overflow-hidden">
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-5 mb-4 shrink-0">
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex-1">
-                                    <h2 className="text-xl font-black text-amber-900 flex items-center gap-2">📜 {dbqData.title || 'Document-Based Question'}</h2>
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 sm:p-5 mb-4 shrink-0">
+                            <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h2 className="text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words">📜 {dbqData.title || 'Document-Based Question'}</h2>
                                     {dbqData.historicalContext && (
                                         <p className="mt-2 text-sm text-amber-800 leading-relaxed bg-white/60 rounded-lg p-3 border border-amber-100">
                                             <strong>Historical Context:</strong> {dbqData.historicalContext}
@@ -46224,29 +46230,135 @@ Return only the corrected version of this exact text:`;
                                     </div>
                                 </div>
                             </div>
+                            {/* Print & Export Actions */}
+                            <div className="flex gap-2 mt-3 flex-wrap">
+                                <button onClick={() => {
+                                    const typeColors = { primary: '#dc2626', secondary: '#2563eb', data: '#059669', visual: '#d97706', testimony: '#7c3aed' };
+                                    const docSections = docs.map(doc => {
+                                        const happFields = [
+                                            { label: 'Historical Context', prompt: doc.happPrompts?.historical || 'What was happening when this was created?' },
+                                            { label: 'Audience', prompt: doc.happPrompts?.audience || 'Who was this written for?' },
+                                            { label: 'Purpose', prompt: doc.happPrompts?.purpose || 'Why was this created?' },
+                                            { label: 'Point of View', prompt: doc.happPrompts?.pointOfView || 'What perspective does the author have?' }
+                                        ];
+                                        const sourcingQs = (doc.sourcingQuestions || []).map((q, i) =>
+                                            `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#6b21a8;margin:0 0 4px">${i + 1}. ${q}</p>${doc.sentenceStarters ? '<p style="font-size:10px;color:#a78bfa;margin:0 0 4px;font-style:italic">Try: "' + doc.sentenceStarters[i % doc.sentenceStarters.length] + '"</p>' : ''}<div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`
+                                        ).join('');
+                                        const analysisQs = (doc.analysisQuestions || []).map((q, i) =>
+                                            `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#1d4ed8;margin:0 0 4px">${i + 1}. ${q}</p><div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`
+                                        ).join('');
+                                        return `<div style="page-break-inside:avoid;margin-bottom:24px;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden">
+                                            <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
+                                                <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${doc.title || 'Document ' + doc.id}</h3>
+                                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${(typeColors[doc.documentType] || '#64748b')}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${doc.documentType || 'source'}</span>
+                                            </div>
+                                            ${doc.source ? '<p style="font-size:11px;color:#64748b;padding:8px 16px 0;margin:0;font-style:italic">Source: ' + doc.source + '</p>' : ''}
+                                            <div style="padding:12px 16px;font-size:13px;line-height:1.7;color:#334155;border-left:4px solid #f59e0b;margin:8px 16px;background:#fffbeb;border-radius:0 8px 8px 0;padding:12px">${doc.excerpt || ''}</div>
+                                            <div style="padding:0 16px 12px">
+                                                <h4 style="font-size:12px;font-weight:800;color:#4338ca;margin:12px 0 8px">🔍 HAPP Source Analysis</h4>
+                                                <table style="width:100%;border-collapse:collapse"><tbody>${happFields.map(h =>
+                                                    '<tr><td style="border:1px solid #e0e7ff;padding:6px 10px;font-size:11px;font-weight:700;color:#4338ca;width:25%;background:#eef2ff;vertical-align:top">' + h.label + '<br><span style="font-weight:400;font-size:10px;color:#818cf8;font-style:italic">' + h.prompt + '</span></td><td style="border:1px solid #e0e7ff;padding:6px 10px;min-height:36px"></td></tr>'
+                                                ).join('')}</tbody></table>
+                                                ${sourcingQs ? '<h4 style="font-size:12px;font-weight:800;color:#6b21a8;margin:14px 0 6px">🔎 Sourcing Questions</h4>' + sourcingQs : ''}
+                                                ${analysisQs ? '<h4 style="font-size:12px;font-weight:800;color:#1d4ed8;margin:14px 0 6px">🧠 Analysis Questions</h4>' + analysisQs : ''}
+                                            </div>
+                                        </div>`;
+                                    }).join('');
+
+                                    const corrobSection = claims.length > 0 ? `<div style="page-break-before:always;margin-top:24px">
+                                        <h2 style="font-size:16px;font-weight:800;color:#065f46;border-left:4px solid #059669;padding-left:8px;margin:0 0 12px">🔗 Corroboration</h2>
+                                        ${claims.map((c, i) => `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:12px">
+                                            <p style="font-size:13px;font-weight:700;color:#1e293b;margin:0 0 4px">Claim ${i + 1}: "${c.claim}"</p>
+                                            ${c.guideQuestion ? '<p style="font-size:11px;color:#059669;font-style:italic;margin:0 0 8px">' + c.guideQuestion + '</p>' : ''}
+                                            <p style="font-size:11px;margin:0 0 4px"><strong style="color:#16a34a">Supporting:</strong> ${(c.supportingDocs || []).map(id => 'Doc ' + id).join(', ') || 'None'} &nbsp; <strong style="color:#dc2626">Challenging:</strong> ${(c.challengingDocs || []).map(id => 'Doc ' + id).join(', ') || 'None'}</p>
+                                            <div style="border-bottom:1px solid #d1d5db;min-height:48px;margin-top:8px"></div>
+                                        </div>`).join('')}
+                                    </div>` : '';
+
+                                    const rubricSection = rubric.length > 0 ? `<div style="page-break-before:always;margin-top:24px">
+                                        <h2 style="font-size:16px;font-weight:800;color:#9a3412;border-left:4px solid #ea580c;padding-left:8px;margin:0 0 12px">📊 Rubric</h2>
+                                        <table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fff7ed;text-align:left;font-weight:700;color:#9a3412">Criteria</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fef2f2;text-align:center;color:#991b1b;width:20%">1 — Beginning</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fefce8;text-align:center;color:#854d0e;width:20%">2 — Developing</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#f0fdf4;text-align:center;color:#166534;width:20%">3 — Proficient</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#eff6ff;text-align:center;color:#1e40af;width:20%">4 — Advanced</th>
+                                        </tr></thead><tbody>${rubric.map(row =>
+                                            '<tr><td style="border:1px solid #fed7aa;padding:8px;font-weight:700;color:#1e293b">' + row.criteria + '</td>' +
+                                            ['1','2','3','4'].map(l => '<td style="border:1px solid #fed7aa;padding:8px;font-size:10px;color:#475569">' + (row[l] || '') + '</td>').join('') + '</tr>'
+                                        ).join('')}</tbody></table>
+                                    </div>` : '';
+
+                                    const essaySection = `<div style="page-break-before:always;margin-top:24px">
+                                        <h2 style="font-size:16px;font-weight:800;color:#3730a3;border-left:4px solid #4f46e5;padding-left:8px;margin:0 0 12px">✏️ Synthesis Essay</h2>
+                                        <div style="background:#eef2ff;border:2px solid #c7d2fe;border-radius:8px;padding:14px;margin-bottom:16px">
+                                            <p style="font-size:13px;color:#3730a3;line-height:1.6;margin:0">${dbqData.synthesisPrompt || ''}</p>
+                                            ${dbqData.thesisStarter ? '<p style="font-size:11px;color:#6366f1;margin:8px 0 0;font-style:italic">Thesis starter: ' + dbqData.thesisStarter + '</p>' : ''}
+                                        </div>
+                                        <div style="border:1px solid #e2e8f0;border-radius:8px;min-height:200px;padding:12px">
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
+                                            <div style="border-bottom:1px dotted #cbd5e1;min-height:28px"></div>
+                                        </div>
+                                    </div>`;
+
+                                    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>DBQ: ${dbqData.title || 'Document-Based Question'}</title>
+                                    <style>body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5}h1{font-size:20px;color:#1e3a5f;border-bottom:3px solid #f59e0b;padding-bottom:6px;margin:0 0 8px}@media print{body{padding:0.4in;font-size:11px}h1{font-size:16px}}</style></head><body>
+                                    <h1>📜 ${dbqData.title || 'Document-Based Question'}</h1>
+                                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:12px"><span>Name: ________________________</span><span>Date: ____________</span><span>Period: ______</span></div>
+                                    ${dbqData.historicalContext ? '<div style="background:#fffbeb;border:2px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:16px"><p style="font-size:12px;font-weight:700;color:#92400e;margin:0 0 4px">Historical Context</p><p style="font-size:13px;color:#78350f;line-height:1.6;margin:0">' + dbqData.historicalContext + '</p></div>' : ''}
+                                    <h2 style="font-size:16px;font-weight:800;color:#1e3a5f;border-left:4px solid #f59e0b;padding-left:8px;margin:16px 0 12px">📄 Documents</h2>
+                                    ${docSections}
+                                    ${corrobSection}
+                                    ${essaySection}
+                                    ${rubricSection}
+                                    <div style="margin-top:24px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center">Generated by AlloFlow &bull; ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                                    </body></html>`;
+
+                                    const w = window.open('', '_blank');
+                                    if (w) {
+                                        w.document.write(html); w.document.close();
+                                        const banner = w.document.createElement('div'); banner.id = 'pb';
+                                        banner.innerHTML = '<div style="background:#92400e;color:white;padding:10px 16px;font-family:system-ui;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:9999"><span style="font-weight:bold;font-size:13px">📜 DBQ Packet — ' + docs.length + ' Documents</span><button onclick="document.getElementById(\'pb\').remove();window.print()" style="margin-left:auto;background:white;color:#92400e;border:none;padding:6px 14px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px">🖨 Print Packet</button><button onclick="document.getElementById(\'pb\').remove()" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px">✕</button></div>';
+                                        w.document.body.insertBefore(banner, w.document.body.firstChild);
+                                        const ps = w.document.createElement('style'); ps.textContent = '@media print{#pb{display:none!important}}';
+                                        w.document.head.appendChild(ps);
+                                    }
+                                }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">
+                                    🖨️ Print DBQ Packet
+                                </button>
+                            </div>
                         </div>
                         {/* Tab Bar */}
-                        <div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1" role="tablist" aria-label="DBQ sections">
-                            {[['documents', `📄 Documents (${docs.length})`], ['corroboration', '🔗 Corroboration'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => (
-                                <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={tabBtnStyle(id)}>{label}</button>
+                        <div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto" role="tablist" aria-label="DBQ sections">
+                            {[['documents', `📄 Docs (${docs.length})`], ['corroboration', '🔗 Corroborate'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => (
+                                <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{...tabBtnStyle(id), whiteSpace: 'nowrap', fontSize: '12px'}}>{label}</button>
                             ))}
                         </div>
                         {/* Tab Content */}
-                        <div className="flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-5" role="tabpanel">
+                        <div className="flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5" role="tabpanel">
                         {/* ═══ DOCUMENTS TAB ═══ */}
                         {dbqTab === 'documents' && (
-                            <div className="flex gap-4">
-                                <div className="w-40 shrink-0 space-y-1.5">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                {/* Doc selector — horizontal scroll on mobile, vertical sidebar on desktop */}
+                                <div className="flex sm:flex-col gap-1.5 sm:w-36 shrink-0 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0">
                                     {docs.map(doc => {
                                         const docDone = ['historical','audience','purpose','pointOfView'].every(k => (happNotes[doc.id] || {})[k]);
                                         return (
                                         <button key={doc.id} onClick={() => setDoc(doc.id)}
-                                            className={`w-full text-left p-2.5 rounded-xl text-xs font-bold transition-all border-2 ${dbqActiveDoc === doc.id ? 'border-indigo-400 bg-indigo-50 text-indigo-800 shadow-md' : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-                                            <div className="flex items-center justify-between">
+                                            className={`text-left p-2 sm:p-2.5 rounded-xl text-xs font-bold transition-all border-2 shrink-0 min-w-[5rem] sm:min-w-0 sm:w-full ${dbqActiveDoc === doc.id ? 'border-indigo-400 bg-indigo-50 text-indigo-800 shadow-md' : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+                                            <div className="flex items-center justify-between gap-1">
                                                 <span>Doc {doc.id}</span>
                                                 {docDone && <span className="text-green-500">✓</span>}
                                             </div>
-                                            <div className="text-[10px] font-normal mt-0.5 truncate opacity-70">{doc.title?.replace(`Document ${doc.id}: `, '') || ''}</div>
+                                            <div className="text-[10px] font-normal mt-0.5 truncate opacity-70 hidden sm:block">{doc.title?.replace(`Document ${doc.id}: `, '') || ''}</div>
                                         </button>);
                                     })}
                                 </div>
@@ -46290,7 +46402,7 @@ Return only the corrected version of this exact text:`;
                                     {/* HAPP Framework */}
                                     <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4">
                                         <h4 className="text-sm font-black text-indigo-800 mb-3 flex items-center gap-2">🔍 HAPP Source Analysis</h4>
-                                        <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {[{ key: 'historical', label: 'Historical Context', icon: '🕰️', prompt: activeDoc.happPrompts?.historical || 'What was happening when this was created?' },
                                               { key: 'audience', label: 'Audience', icon: '👥', prompt: activeDoc.happPrompts?.audience || 'Who was this written for?' },
                                               { key: 'purpose', label: 'Purpose', icon: '🎯', prompt: activeDoc.happPrompts?.purpose || 'Why was this created?' },
@@ -46351,7 +46463,7 @@ Return only the corrected version of this exact text:`;
                                         <div key={ci} className="bg-white rounded-xl border border-emerald-100 p-4 mb-4">
                                             <h4 className="text-sm font-bold text-slate-800 mb-2">Claim {ci + 1}: "{claim.claim}"</h4>
                                             {claim.guideQuestion && <p className="text-xs text-emerald-600 italic mb-3">{claim.guideQuestion}</p>}
-                                            <div className="flex gap-4 mb-3">
+                                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3">
                                                 <div className="flex-1"><div className="text-[10px] font-bold text-green-700 uppercase mb-1">✅ Supporting</div><div className="flex gap-1 flex-wrap">{(claim.supportingDocs || []).map(id => <span key={id} className="text-xs bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full border border-green-200">Doc {id}</span>)}</div></div>
                                                 <div className="flex-1"><div className="text-[10px] font-bold text-red-700 uppercase mb-1">❌ Challenging</div><div className="flex gap-1 flex-wrap">{(claim.challengingDocs || []).length > 0 ? (claim.challengingDocs || []).map(id => <span key={id} className="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full border border-red-200">Doc {id}</span>) : <span className="text-xs text-slate-500 italic">None</span>}</div></div>
                                             </div>
