@@ -18905,7 +18905,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
   };
   const _createDocPipeline = window.AlloModules && window.AlloModules.createDocPipeline;
   const _docPipeline = _createDocPipeline
-    ? _createDocPipeline({ callGemini, callGeminiVision, addToast, t, isRtlLang })
+    ? _createDocPipeline({ callGemini, callGeminiVision, addToast, t, isRtlLang, updateExportPreview })
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
@@ -54536,7 +54536,10 @@ Return only the corrected version of this exact text:`;
                     selHubTab, setSelHubTab,
                     selHubTool, setSelHubTool,
                     addToast, gradeLevel,
-                    callGemini, callTTS, callImagen, callGeminiVision,
+                    callGemini: studentProjectSettings.allowSocraticTutor ? callGemini : null,
+                    callTTS, callImagen, callGeminiVision,
+                    onSafetyFlag: handleAiSafetyFlag,
+                    studentCodename: studentNickname || 'student',
                     t, ArrowLeft, X, Sparkles, Heart, GripVertical
                 });
             }
