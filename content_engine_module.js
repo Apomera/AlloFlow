@@ -31,6 +31,59 @@ var createContentEngine = function (deps) {
   var callTTS = deps.callTTS || function () {
     return Promise.resolve();
   };
+  var cleanSourceMetaCommentary = function (text) {
+    if (!text) return text;
+    var cleaned = text;
+    cleaned = cleaned.replace(/\n*\s*\*\((?:Word Count|Note|Target|Revised|Total)[^)]{5,}\)\*\s*\n*/gi, '\n');
+    var revisedMatch = cleaned.match(/^(###?\s*Revised\s+(?:Content|Version)[^\n]*\n)/mi);
+    if (revisedMatch) {
+      var revisedIdx = cleaned.indexOf(revisedMatch[0]);
+      if (revisedIdx > 0) cleaned = cleaned.substring(revisedIdx + revisedMatch[0].length);
+    }
+    cleaned = cleaned.replace(/^(?:Note that |The research confirms |I (?:will|must|should) (?:now )?(?:write|increase|revise|ensure)|This (?:is|meets|exceeds) (?:within|significantly|the target)|Aiming for \d+ words)[^\n]*\n*/gmi, '');
+    cleaned = cleaned.replace(/\n---\n\s*\n/g, '\n\n');
+    cleaned = cleaned.replace(/([^\n])\n(#{1,4}\s)/g, '$1\n\n$2');
+    cleaned = cleaned.replace(/(#{1,4}\s[^\n]+)\n([^#\n])/g, '$1\n\n$2');
+    var lines = cleaned.split('\n');
+    var nonEmptyLines = lines.filter(function (l) {
+      return l.trim().length > 0;
+    });
+    var headerLines = nonEmptyLines.filter(function (l) {
+      return /^#{1,4}\s/.test(l.trim());
+    });
+    var headerRatio = nonEmptyLines.length > 3 ? headerLines.length / nonEmptyLines.length : 0;
+    if (headerRatio > 0.4) {
+      var prevWasHeader = false;
+      cleaned = lines.map(function (line, idx) {
+        var trimmed = line.trim();
+        var headerMatch = trimmed.match(/^(#{1,4})\s+(.*)/);
+        if (!headerMatch) {
+          prevWasHeader = false;
+          return line;
+        }
+        var headerText = headerMatch[2];
+        var headerLevel = headerMatch[1].length;
+        if (idx === lines.findIndex(function (l) {
+          return l.trim().length > 0;
+        })) {
+          prevWasHeader = true;
+          return line;
+        }
+        if (headerText.length <= 80 && !prevWasHeader && headerLevel <= 3) {
+          prevWasHeader = true;
+          return line;
+        }
+        prevWasHeader = false;
+        return headerText;
+      }).join('\n');
+    } else {
+      cleaned = cleaned.replace(/^(#{1,4})\s+(.{150,})$/gm, function (match, hashes, text) {
+        return text;
+      });
+    }
+    cleaned = cleaned.replace(/\n{4,}/g, '\n\n\n');
+    return cleaned.trim();
+  };
   var getStructureForLength = function (lengthInput) {
     var length = parseInt(lengthInput) || 0;
     if (length <= 350) return "Structure: Write exactly 2 paragraphs. Do not use section headers.";
