@@ -7130,25 +7130,25 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/doc_pipeline_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/doc_pipeline_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7163,7 +7163,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a1ddf9/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -52731,6 +52731,44 @@ Return only the corrected version of this exact text:`;
                   </button>
                 </div>
               </details>
+
+              {/* Auto Table of Contents */}
+              <button onClick={() => {
+                const doc = pdfPreviewRef.current?.contentDocument;
+                if (!doc) return;
+                const existing = doc.getElementById('alloflow-toc');
+                if (existing) { existing.remove(); addToast('Table of contents removed', 'info'); return; }
+                const headings = Array.from(doc.querySelectorAll('h1,h2,h3,h4'));
+                if (headings.length < 2) { addToast('Need at least 2 headings to generate a TOC', 'info'); return; }
+                headings.forEach((h, i) => { if (!h.id) h.id = 'toc-heading-' + i; });
+                const tocItems = headings.map((h, i) => {
+                  const level = parseInt(h.tagName[1]);
+                  const indent = (level - 1) * 16;
+                  const num = (() => {
+                    const counts = [0,0,0,0];
+                    for (let j = 0; j <= i; j++) {
+                      const l = parseInt(headings[j].tagName[1]) - 1;
+                      counts[l]++;
+                      for (let k = l + 1; k < 4; k++) counts[k] = 0;
+                    }
+                    return counts.slice(0, level).filter(c => c > 0).join('.');
+                  })();
+                  const text = h.textContent.trim().substring(0, 60) + (h.textContent.length > 60 ? '...' : '');
+                  return '<a href="#' + h.id + '" style="display:flex;align-items:baseline;gap:6px;padding:4px 0 4px ' + indent + 'px;color:#1e293b;text-decoration:none;font-size:' + (level === 1 ? '13px' : '12px') + ';font-weight:' + (level === 1 ? '700' : '400') + ';border-bottom:1px dotted #e2e8f0;transition:background 0.15s" onmouseover="this.style.background=\'#f1f5f9\'" onmouseout="this.style.background=\'transparent\'"><span style="color:#6366f1;font-weight:600;font-size:11px;min-width:20px">' + num + '</span><span>' + text + '</span></a>';
+                }).join('');
+                const toc = doc.createElement('nav');
+                toc.id = 'alloflow-toc';
+                toc.setAttribute('role', 'navigation');
+                toc.setAttribute('aria-label', 'Table of Contents');
+                toc.style.cssText = 'background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1px solid #c7d2fe;border-radius:12px;padding:16px 20px;margin:0 0 24px 0;page-break-after:always;';
+                toc.innerHTML = '<div style="font-weight:800;font-size:14px;color:#4338ca;margin-bottom:8px;display:flex;align-items:center;gap:6px">📑 Table of Contents</div>' + tocItems +
+                  '<div style="font-size:9px;color:#94a3b8;margin-top:8px;text-align:right">Auto-generated · Click headings to navigate</div>';
+                const main = doc.querySelector('main') || doc.body;
+                main.insertBefore(toc, main.firstChild);
+                addToast('📑 Table of contents added — click to remove', 'success');
+              }} className="w-full text-[9px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+                📑 Toggle Table of Contents
+              </button>
 
               {/* Download audio */}
               {callTTS && (
