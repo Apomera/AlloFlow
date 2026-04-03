@@ -6,6 +6,22 @@ var useFocusTrap = window.__alloHooks && window.__alloHooks.useFocusTrap;
 var UiLanguageSelector = window.UiLanguageSelector || function() { return null; };
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
+var _i = window.AlloIcons || {};
+var CheckCircle = _i.CheckCircle || function(){return null;};
+var CheckCircle2 = _i.CheckCircle2 || function(){return null;};
+var FolderOpen = _i.FolderOpen || function(){return null;};
+var GraduationCap = _i.GraduationCap || function(){return null;};
+var Heart = _i.Heart || function(){return null;};
+var Layers = _i.Layers || function(){return null;};
+var Lock = _i.Lock || function(){return null;};
+var Mic = _i.Mic || function(){return null;};
+var RefreshCw = _i.RefreshCw || function(){return null;};
+var School = _i.School || function(){return null;};
+var ShieldCheck = _i.ShieldCheck || function(){return null;};
+var Sparkles = _i.Sparkles || function(){return null;};
+var Upload = _i.Upload || function(){return null;};
+var UserCircle2 = _i.UserCircle2 || function(){return null;};
+var XCircle = _i.XCircle || function(){return null;};
 
 const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, activeSessionCode, targetAppId }) => {
   const { t } = useContext(LanguageContext);

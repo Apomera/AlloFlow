@@ -4,6 +4,16 @@
 var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
+var _i = window.AlloIcons || {};
+var CheckCircle2 = _i.CheckCircle2 || function(){return null;};
+var GripVertical = _i.GripVertical || function(){return null;};
+var Lock = _i.Lock || function(){return null;};
+var Pencil = _i.Pencil || function(){return null;};
+var Plus = _i.Plus || function(){return null;};
+var RefreshCw = _i.RefreshCw || function(){return null;};
+var Search = _i.Search || function(){return null;};
+var Sparkles = _i.Sparkles || function(){return null;};
+var Trash2 = _i.Trash2 || function(){return null;};
 
 const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCancel }) => {
   const { t } = useContext(LanguageContext);

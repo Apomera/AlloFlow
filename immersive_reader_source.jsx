@@ -4,6 +4,16 @@
 var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
+var _i = window.AlloIcons || {};
+var ArrowLeft = _i.ArrowLeft || function(){return null;};
+var ArrowRight = _i.ArrowRight || function(){return null;};
+var ChevronLeft = _i.ChevronLeft || function(){return null;};
+var ChevronRight = _i.ChevronRight || function(){return null;};
+var List = _i.List || function(){return null;};
+var Pause = _i.Pause || function(){return null;};
+var Play = _i.Play || function(){return null;};
+var Settings2 = _i.Settings2 || function(){return null;};
+var Zap = _i.Zap || function(){return null;};
 
 const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
