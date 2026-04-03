@@ -179,7 +179,7 @@ C1.1 → C1.2 → C1.3 → C1.4 → C1.5 (all stripping)
 
 ## Execution Priority
 
-> **Versioning rule (roadmap phases only)**: **Do NOT build the installer during active roadmap phase work (B1–C3).** Version bumps and installer builds for these phases happen once at the end when all roadmap phases are complete, implemented, and tested. This rule applies to the modularization and local-only deployment work only — it does not apply to admin app feature work (Phase A) or hotfixes.
+> **Versioning rule (roadmap phases only)**: Version bumps and installer builds for these phases happen once at the end when all roadmap phases are complete, implemented, and tested. This rule applies to the modularization and local-only deployment work only — it does not apply to admin app feature work (Phase A) or hotfixes.
 
 | Priority | Phase | Target Version | Effort | Status |
 |----------|-------|----------------|--------|--------|

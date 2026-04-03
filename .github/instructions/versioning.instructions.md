@@ -14,8 +14,8 @@ Current version: **v0.1.x** (Phase 0 iterations)
 
 | Change Type | Action | Example |
 |-------------|--------|---------|
-| **Bug fix** within same phase | Patch: `0.1.0` → `0.1.1` → `0.1.2` | Docker detection improvements |
-| **New feature** completing next phase | Minor: `0.1.x` → `0.2.0` | Phase 1: Dashboard skeleton (new version) |
+| **Bug fix** within same phase | Patch: `0.1.0` → `0.1.1` → `0.1.2` 
+| **New feature** completing next phase | Minor: `0.1.x` → `0.2.0`
 | **Major restructure** or breaking changes | Major: `1.0.0` (future) | Only after Phase 3+ complete |
 
 ### Current Phase Info
@@ -128,17 +128,6 @@ git merge upstream/main
 ✅ **RIGHT**:
 - Implement Docker detection → v0.1.0 → Build
 - Implement folder browsing → v0.1.1 → Build
-
-## Phase Roadmap
-
-- **v0.1.x** (Phase 0): Setup Wizard ← Current
-- **v0.2.0** (Phase 1): Dashboard Skeleton
-- **v0.3.0** (Phase 2): Docker Container Listing
-- **v0.4.0** (Phase 3): Start/Stop Containers
-- **v0.5.0** (Phase 4): Settings UI
-- **v0.6.0** (Phase 5): Model Management
-- **v0.7.0** (Phase 6): Monitoring Dashboard
-- **v0.8.0** (Phase 7): Security & Auth
 
 ## Files to Update
 

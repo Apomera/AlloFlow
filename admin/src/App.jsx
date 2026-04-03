@@ -62,7 +62,6 @@ function UninstallPanel({ onComplete, onCancel }) {
     }
   };
 
-  const anyInstalled = Object.values(installedServices).some(v => v);
   const anySelected = Object.values(selectedForRemoval).some(v => v);
 
   if (loading) {

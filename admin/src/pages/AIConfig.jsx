@@ -37,10 +37,15 @@ export default function AIConfig() {
     // Check Ollama
     try {
       const result = await window.alloAPI?.ollama?.checkStatus?.();
-      setOllamaStatus(result?.running ? 'ok' : 'error');
-      if (result?.running) {
-        const models = await window.alloAPI.ollama.getInstalledModels();
-        setInstalledModels(models || []);
+      // checkStatus returns { success, isRunning, ... } from checkOllamaStatus()
+      const running = result?.success ? result?.isRunning : false;
+      setOllamaStatus(running ? 'ok' : 'error');
+      if (running) {
+        const modelsResult = await window.alloAPI.ollama.getInstalledModels();
+        // Models come as { success, models: [{name, digest, size, ...}] }
+        if (modelsResult?.success) {
+          setInstalledModels(modelsResult.models || []);
+        }
       }
     } catch {
       setOllamaStatus('error');
@@ -149,9 +154,10 @@ export default function AIConfig() {
             {installedModels.length > 0 ? (
               <select value={defaultModel} onChange={(e) => setDefaultModel(e.target.value)} style={{ width: '100%' }}>
                 <option value="">— Auto-select first available —</option>
-                {installedModels.map(m => (
-                  <option key={m.name || m} value={m.name || m}>{m.name || m}</option>
-                ))}
+                {installedModels.map(m => {
+                  const name = typeof m === 'string' ? m : m.name || m.model || '';
+                  return <option key={name} value={name}>{name}</option>;
+                })}
               </select>
             ) : (
               <div style={{ padding: '0.75rem', backgroundColor: 'var(--color-bg)', borderRadius: '6px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>

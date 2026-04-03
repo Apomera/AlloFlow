@@ -145,8 +145,8 @@ export default function Services() {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Docker Services</h2>
-        <p>Manage AlloFlow microservices</p>
+        <h2>Services</h2>
+        <p>Manage AlloFlow AI services</p>
       </div>
 
       {error && (
@@ -166,7 +166,7 @@ export default function Services() {
       {/* Service controls */}
       <div className="card">
         <div className="card-header">
-          <h3>Stack Controls</h3>
+          <h3>Service Controls</h3>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button 
@@ -238,7 +238,7 @@ export default function Services() {
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button 
                         className="btn btn-small btn-primary"
-                        onClick={() => handleRestart(service.name)}
+                        onClick={() => handleRestart(service.id || service.name)}
                         title="Restart service"
                       >
                         <RotateCw size={14} />

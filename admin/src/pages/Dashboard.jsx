@@ -60,19 +60,21 @@ export default function Dashboard({ onNavigateTab }) {
     if (!window.alloAPI) return;
     setActionLoading('restart');
     try {
+      // Stop all services first, then start them
+      await window.alloAPI.stopStack();
       const result = await window.alloAPI.startStack();
       if (result.success) {
-        alert('Docker stack restarted successfully');
+        alert('Services restarted successfully');
         // Reload services after restart
-        const services = await window.alloAPI.getServices();
-        if (services.success) {
-          setServices(services.containers || []);
+        const svcResult = await window.alloAPI.getServices();
+        if (svcResult.success) {
+          setServices(svcResult.containers || []);
         }
       } else {
-        alert(`Error restarting stack: ${result.error}`);
+        alert(`Error restarting services: ${result.error}`);
       }
     } catch (err) {
-      alert(`Failed to restart stack: ${err.message}`);
+      alert(`Failed to restart services: ${err.message}`);
     } finally {
       setActionLoading(null);
     }
@@ -82,7 +84,7 @@ export default function Dashboard({ onNavigateTab }) {
     if (!window.alloAPI) return;
     setActionLoading('logs');
     try {
-      const result = await window.alloAPI.getServiceLogs('docker-compose');
+      const result = await window.alloAPI.getServiceLogs('ollama');
       if (result.success) {
         // Open logs in a modal or new window
         const logsWindow = window.open('', '', 'width=800,height=600');
@@ -194,7 +196,7 @@ export default function Dashboard({ onNavigateTab }) {
         {services.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
             <Server size={32} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-            <p>No services detected. Is Docker running?</p>
+            <p>No services detected. Check the Services tab.</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
@@ -320,7 +322,7 @@ export default function Dashboard({ onNavigateTab }) {
             onClick={handleRestartStack}
             disabled={actionLoading === 'restart'}
           >
-            {actionLoading === 'restart' ? '🔄 Restarting...' : '🔄 Restart Docker Stack'}
+            {actionLoading === 'restart' ? '🔄 Restarting...' : '🔄 Restart Services'}
           </button>
           <button 
             className="btn btn-warning"

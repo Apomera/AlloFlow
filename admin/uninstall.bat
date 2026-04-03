@@ -11,19 +11,20 @@ echo ╚════════════════════════
 echo.
 echo This will remove:
 echo   - Ollama (AI language model server)
-echo   - PocketBase (database)
 echo   - Piper (text-to-speech)
 echo   - Flux (image generation + Python venv)
-echo   - All AlloFlow data in %%USERPROFILE%%\.alloflow
-echo   - AlloFlow configuration
+echo   - Service binaries and data
 echo.
 
-set /p CONFIRM="Are you sure you want to uninstall everything? (Y/N): "
+set /p CONFIRM="Are you sure you want to uninstall services? (Y/N): "
 if /I not "%CONFIRM%"=="Y" (
     echo Cancelled.
     pause
     exit /b 0
 )
+
+echo.
+set /p RESET_CONFIG="Also reset AlloFlow configuration? This will remove all settings and require re-setup. (Y/N): "
 
 echo.
 echo ── Step 1/5: Stopping services ──────────────────────────
@@ -93,16 +94,23 @@ if exist "%USERPROFILE%\.alloflow\data" (
 )
 
 echo.
-echo ── Step 5/5: Removing AlloFlow configuration ────────────
+echo ── Step 5/5: Configuration ──────────────────────────────
 echo.
+
+if /I not "%RESET_CONFIG%"=="Y" (
+    echo Configuration preserved. You can re-use your settings on next install.
+    goto :done
+)
 
 if exist "%USERPROFILE%\.alloflow" (
     echo Removing %USERPROFILE%\.alloflow ...
     rmdir /s /q "%USERPROFILE%\.alloflow" 2>nul
-    echo Done.
+    echo Configuration removed.
 ) else (
     echo No configuration directory found.
 )
+
+:done
 
 echo.
 echo ╔═══════════════════════════════════════════════════════╗

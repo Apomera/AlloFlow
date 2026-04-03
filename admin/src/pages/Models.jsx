@@ -31,7 +31,9 @@ export default function Models() {
     try {
       const result = await window.alloAPI.listModels();
       if (result.success) {
-        setInstalledModels(result.models || []);
+        // Models come as objects with {name, digest, size, modifiedAt}
+        const modelNames = (result.models || []).map(m => typeof m === 'string' ? m : m.name || m.model || '');
+        setInstalledModels(modelNames.filter(Boolean));
       } else {
         console.error('Failed to load models:', result.error);
       }
@@ -43,8 +45,9 @@ export default function Models() {
   };
 
   const isModelInstalled = (modelName) => {
+    const searchName = modelName.split(':')[0].toLowerCase();
     return installedModels.some(installed => 
-      installed.toLowerCase().includes(modelName.split(':')[0].toLowerCase())
+      installed.toLowerCase().includes(searchName)
     );
   };
 
@@ -56,30 +59,63 @@ export default function Models() {
     setDownloading(packName);
     setLastError(null);
     
+    // First check if Ollama is running
     try {
+      const status = await window.alloAPI.ollama.checkStatus();
+      if (!status.success || !status.isRunning) {
+        setLastError('Ollama is not running. Go to the Services tab and start it first.');
+        alert('Ollama is not running. Start it from the Services tab first.');
+        setDownloading(null);
+        return;
+      }
+    } catch (err) {
+      setLastError('Cannot connect to Ollama. Make sure it is running.');
+      alert('Cannot connect to Ollama. Start it from the Services tab first.');
+      setDownloading(null);
+      return;
+    }
+
+    try {
+      let pulled = 0;
+      let skipped = 0;
+      let failed = 0;
+
       for (const model of models) {
         // Skip if already installed
         if (isModelInstalled(model)) {
           console.log(`Model ${model} already installed, skipping`);
+          skipped++;
           continue;
         }
 
         console.log(`Pulling model: ${model}`);
-        const result = await window.alloAPI.pullModel(model);
-        
-        if (!result.success) {
-          setLastError(`Failed to pull ${model}: ${result.error}`);
-          console.error(`Error pulling ${model}:`, result.error);
-          // Continue with next model instead of stopping
-          continue;
+        try {
+          const result = await window.alloAPI.pullModel(model);
+          
+          if (!result.success) {
+            setLastError(`Failed to pull ${model}: ${result.error}`);
+            console.error(`Error pulling ${model}:`, result.error);
+            failed++;
+            continue;
+          }
+          
+          console.log(`Successfully pulled ${model}`);
+          pulled++;
+        } catch (err) {
+          console.error(`Error pulling ${model}:`, err.message);
+          setLastError(`Failed to pull ${model}: ${err.message}`);
+          failed++;
         }
-        
-        console.log(`Successfully pulled ${model}`);
       }
       
       // Reload installed models
       await loadInstalledModels();
-      alert(`Model pack "${packName}" download complete!`);
+      
+      if (failed > 0) {
+        alert(`Pack "${packName}": ${pulled} downloaded, ${skipped} already installed, ${failed} failed. Check errors above.`);
+      } else {
+        alert(`Model pack "${packName}" complete! ${pulled} downloaded, ${skipped} already installed.`);
+      }
     } catch (err) {
       setLastError(`Error downloading pack: ${err.message}`);
       alert(`Error downloading pack: ${err.message}`);
@@ -92,22 +128,10 @@ export default function Models() {
     setDownloading('flux');
     setLastError(null);
     
-    try {
-      const result = await window.alloAPI.pullModel('flux-schnell');
-      
-      if (result.success) {
-        await loadInstalledModels();
-        alert('Flux model downloaded successfully!');
-      } else {
-        setLastError(`Failed to download Flux: ${result.error}`);
-        alert(`Error downloading Flux: ${result.error}`);
-      }
-    } catch (err) {
-      setLastError(`Error downloading Flux: ${err.message}`);
-      alert(`Error: ${err.message}`);
-    } finally {
-      setDownloading(null);
-    }
+    // Flux is NOT an Ollama model — it requires separate installation via nativeProcessManager
+    setLastError('Flux image generation requires separate installation. It will be installed automatically during initial setup if selected, or can be installed via the setup wizard.');
+    alert('Flux requires a separate Python environment and GPU. It is installed during initial setup if you selected it. To add it later, re-run the setup wizard.');
+    setDownloading(null);
   };
 
   return (

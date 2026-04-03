@@ -103,11 +103,13 @@ contextBridge.exposeInMainWorld('alloAPI', {
   writeAIConfig: (config) => ipcRenderer.invoke('config:write-ai', config),
 
   // ── Service health & status (used by Dashboard.jsx, Services.jsx) ────────
-  getHealth:       () => ipcRenderer.invoke('services:health'),
-  getServices:     () => ipcRenderer.invoke('services:list'),
-  getSystemMetrics:() => ipcRenderer.invoke('services:metrics'),
-  startStack:      () => ipcRenderer.invoke('services:restart'),
-  getServiceLogs:  (service) => ipcRenderer.invoke('services:logs', service),
+  getHealth:        () => ipcRenderer.invoke('services:health'),
+  getServices:      () => ipcRenderer.invoke('services:list'),
+  getSystemMetrics: () => ipcRenderer.invoke('services:metrics'),
+  startStack:       () => ipcRenderer.invoke('services:start-all'),
+  stopStack:        () => ipcRenderer.invoke('services:stop-all'),
+  restartService:   (service) => ipcRenderer.invoke('services:restart-one', service),
+  getServiceLogs:   (service) => ipcRenderer.invoke('services:logs', service),
 
   // ── Local App (B4.4 + C3.1) ───────────────────────────────────────────────
   localApp: {

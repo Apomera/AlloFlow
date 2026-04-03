@@ -1190,7 +1190,7 @@ ipcMain.handle('ollama:check-status', async (event) => {
     return { success: true, ...status };
   } catch (err) {
     console.error('[ipc:ollama:check-status] Error:', err.message);
-    return { success: false, error: err.message };
+    return { success: false, isRunning: false, error: err.message };
   }
 });
 
@@ -1357,11 +1357,106 @@ ipcMain.handle('services:metrics', async (event) => {
 // Restart — restarts Ollama via native process manager
 ipcMain.handle('services:restart', async (event) => {
   try {
-    await nativePM.stopService('ollama');
-    await nativePM.startService('ollama');
-    return { success: true };
+    nativePM.stopService('ollama');
+    // Give it a moment to fully stop
+    await new Promise(r => setTimeout(r, 1000));
+    nativePM.startService('ollama');
+    await ollamaManager.waitForHealthy(15000, 1000);
+    return { success: true, message: 'Ollama restarted successfully' };
   } catch (err) {
     console.error('[ipc:services:restart] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// Start all services — starts all configured services
+ipcMain.handle('services:start-all', async (event) => {
+  try {
+    const config = getConfig();
+    const selectedServices = config?.selectedServices || ['ollama'];
+    const started = [];
+    const failed = [];
+
+    for (const serviceId of selectedServices) {
+      const svcDef = SERVICE_DEFINITIONS[serviceId];
+      if (!svcDef || svcDef.builtin) continue;
+      if (!nativePM.isServiceInstalled(serviceId)) {
+        failed.push(`${serviceId} (not installed)`);
+        continue;
+      }
+      try {
+        nativePM.startService(serviceId);
+        started.push(serviceId);
+      } catch (err) {
+        console.error(`[ipc:services:start-all] Failed to start ${serviceId}:`, err.message);
+        failed.push(`${serviceId} (${err.message})`);
+      }
+    }
+
+    // Wait for Ollama to be healthy if it was started
+    if (started.includes('ollama')) {
+      try {
+        await ollamaManager.waitForHealthy(15000, 1000);
+      } catch (err) {
+        console.warn('[ipc:services:start-all] Ollama started but not yet healthy:', err.message);
+      }
+    }
+
+    const message = `Started: ${started.join(', ') || 'none'}` + (failed.length ? `. Failed: ${failed.join(', ')}` : '');
+    return { success: true, message, started, failed };
+  } catch (err) {
+    console.error('[ipc:services:start-all] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// Stop all services
+ipcMain.handle('services:stop-all', async (event) => {
+  try {
+    const config = getConfig();
+    const selectedServices = config?.selectedServices || ['ollama'];
+    const stopped = [];
+
+    for (const serviceId of selectedServices) {
+      const svcDef = SERVICE_DEFINITIONS[serviceId];
+      if (!svcDef || svcDef.builtin) continue;
+      try {
+        nativePM.stopService(serviceId);
+        stopped.push(serviceId);
+      } catch (err) {
+        console.error(`[ipc:services:stop-all] Failed to stop ${serviceId}:`, err.message);
+      }
+    }
+
+    return { success: true, message: `Stopped: ${stopped.join(', ') || 'none'}` };
+  } catch (err) {
+    console.error('[ipc:services:stop-all] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// Restart individual service
+ipcMain.handle('services:restart-one', async (event, serviceName) => {
+  try {
+    // Map display name to service ID
+    const serviceId = serviceName.toLowerCase().replace(/\s+/g, '').replace('tts', '');
+    const actualId = Object.keys(SERVICE_DEFINITIONS).find(id => {
+      const def = SERVICE_DEFINITIONS[id];
+      return id === serviceId || def.name?.toLowerCase() === serviceName.toLowerCase();
+    }) || serviceId;
+
+    console.log(`[ipc:services:restart-one] Restarting service: ${actualId} (from name: ${serviceName})`);
+    nativePM.stopService(actualId);
+    await new Promise(r => setTimeout(r, 1000));
+    nativePM.startService(actualId);
+
+    if (actualId === 'ollama') {
+      await ollamaManager.waitForHealthy(15000, 1000);
+    }
+
+    return { success: true, message: `${serviceName} restarted` };
+  } catch (err) {
+    console.error('[ipc:services:restart-one] Error:', err.message);
     return { success: false, error: err.message };
   }
 });
