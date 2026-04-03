@@ -7130,25 +7130,25 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/doc_pipeline_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/doc_pipeline_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7163,7 +7163,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c5c8ef1/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa2e007/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -52626,6 +52626,9 @@ Return only the corrected version of this exact text:`;
                       'newsletter': 'body{font-family:Georgia,serif;max-width:800px;columns:2;column-gap:24px} h1{column-span:all;text-align:center;color:#dc2626;border-bottom:3px double #dc2626;padding-bottom:8px} h2{color:#dc2626;break-after:avoid} p{text-align:justify}',
                       'report': 'body{font-family:"Times New Roman",serif;max-width:700px;font-size:12pt} h1{text-align:center;font-size:14pt;text-transform:uppercase} h2{font-size:12pt;font-weight:bold;text-decoration:underline} p{text-indent:0.5in;text-align:justify;line-height:2}',
                       'accessible': 'body{font-family:"Atkinson Hyperlegible",system-ui;max-width:700px;font-size:1.1rem;line-height:1.8;letter-spacing:0.02em} h1{color:#000;font-size:1.75rem} h2{color:#000;font-size:1.3rem} a{color:#0000ff;text-decoration:underline} th{background:#000;color:#fff}',
+                      'iep': 'body{font-family:"Inter",system-ui;max-width:750px;font-size:13px;line-height:1.6} h1{font-size:16px;text-align:center;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:4px} h2{font-size:13px;font-weight:bold;background:#f1f5f9;padding:6px 10px;border-left:3px solid #1e3a5f;margin-top:1.5em} table{width:100%;font-size:12px} th{background:#1e3a5f;color:white;padding:6px 8px;text-align:left} td{padding:6px 8px;border-bottom:1px solid #e5e7eb} .section{page-break-inside:avoid;margin-bottom:1em} @media print{body{font-size:11px;max-width:100%}}',
+                      'intervention': 'body{font-family:system-ui;max-width:700px;font-size:14px} h1{color:#7c3aed;text-align:center;font-size:1.4em;border:2px solid #7c3aed;padding:12px;border-radius:10px;background:#faf5ff} h2{color:#7c3aed;font-size:1.1em;margin-top:1.5em;border-bottom:2px solid #e9d5ff;padding-bottom:4px} table{width:100%} th{background:#7c3aed;color:white} ul{list-style:none;padding-left:0} li:before{content:"✓ ";color:#7c3aed;font-weight:bold}',
+                      'parentletter': 'body{font-family:Georgia,serif;max-width:650px;font-size:14px;line-height:1.8} h1{font-size:1.3em;color:#1e3a5f;margin-bottom:0.25em} h2{font-size:1.1em;color:#1e3a5f;margin-top:1.5em} p{margin-bottom:1em} .section{background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;margin:12px 0} @media print{body{font-size:12pt}}',
                     };
                     const css = templates[e.target.value];
                     if (css) {
@@ -52645,7 +52648,87 @@ Return only the corrected version of this exact text:`;
                     <option value="newsletter">📰 Newsletter</option>
                     <option value="report">📋 Formal Report</option>
                     <option value="accessible">♿ Maximum Accessibility</option>
+                    <option value="iep">📋 IEP / Progress Report</option>
+                    <option value="intervention">🎯 Intervention Plan</option>
+                    <option value="parentletter">👪 Parent Communication</option>
                   </select>
+                </div>
+              </details>
+
+              {/* Document Stats & Readability */}
+              <details className="group">
+                <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
+                  📊 Stats & Readability <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                </summary>
+                <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200 space-y-2">
+                  <button onClick={() => {
+                    const doc = pdfPreviewRef.current?.contentDocument;
+                    const text = doc?.body?.textContent || '';
+                    if (!text.trim()) { addToast('No content to analyze', 'info'); return; }
+                    const words = text.split(/\s+/).filter(w => w.length > 0);
+                    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+                    const syllables = words.reduce((sum, w) => {
+                      const s = w.toLowerCase().replace(/[^a-z]/g, '');
+                      if (s.length <= 3) return sum + 1;
+                      let c = s.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').match(/[aeiouy]{1,2}/g);
+                      return sum + (c ? c.length : 1);
+                    }, 0);
+                    const avgWords = sentences.length > 0 ? words.length / sentences.length : 0;
+                    const avgSyllables = words.length > 0 ? syllables / words.length : 0;
+                    const fkGrade = Math.max(0, Math.round((0.39 * avgWords + 11.8 * avgSyllables - 15.59) * 10) / 10);
+                    const fkEase = Math.max(0, Math.round((206.835 - 1.015 * avgWords - 84.6 * avgSyllables) * 10) / 10);
+                    const chars = text.replace(/\s/g, '').length;
+                    const headings = doc?.querySelectorAll('h1,h2,h3,h4,h5,h6')?.length || 0;
+                    const images = doc?.querySelectorAll('img')?.length || 0;
+                    const tables = doc?.querySelectorAll('table')?.length || 0;
+                    const links = doc?.querySelectorAll('a[href]')?.length || 0;
+                    const easeLabel = fkEase >= 80 ? '🟢 Easy' : fkEase >= 60 ? '🟡 Standard' : fkEase >= 40 ? '🟠 Difficult' : '🔴 Very Difficult';
+                    const statsEl = doc.getElementById('alloflow-stats-overlay');
+                    if (statsEl) { statsEl.remove(); return; }
+                    const overlay = doc.createElement('div');
+                    overlay.id = 'alloflow-stats-overlay';
+                    overlay.style.cssText = 'position:fixed;bottom:16px;right:16px;background:white;border:2px solid #6366f1;border-radius:12px;padding:16px;font-family:system-ui;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;max-width:280px;';
+                    overlay.innerHTML = `<div style="font-weight:800;font-size:14px;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">📊 Document Stats <span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#94a3b8;font-size:18px">&times;</span></div>` +
+                      `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">` +
+                      `<div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${words.length.toLocaleString()}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Words</div></div>` +
+                      `<div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${sentences.length}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Sentences</div></div>` +
+                      `<div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${chars.toLocaleString()}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Characters</div></div>` +
+                      `<div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${Math.ceil(words.length / 250)}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">~Pages</div></div>` +
+                      `</div>` +
+                      `<div style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);padding:10px;border-radius:8px;margin-bottom:8px">` +
+                      `<div style="font-weight:800;color:#4338ca;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Reading Level</div>` +
+                      `<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:22px;font-weight:900;color:#1e293b">Grade ${fkGrade}</span><span style="font-size:11px;font-weight:600;color:#64748b">${easeLabel}</span></div>` +
+                      `<div style="font-size:10px;color:#6366f1;margin-top:2px">Flesch-Kincaid | Ease: ${fkEase}/100</div>` +
+                      `</div>` +
+                      `<div style="font-size:10px;color:#64748b;display:flex;flex-wrap:wrap;gap:6px">` +
+                      `<span>📑 ${headings} headings</span><span>🖼️ ${images} images</span><span>📊 ${tables} tables</span><span>🔗 ${links} links</span>` +
+                      `</div>`;
+                    doc.body.appendChild(overlay);
+                  }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                    📊 Toggle Reading Level & Stats
+                  </button>
+                  <button onClick={async () => {
+                    const doc = pdfPreviewRef.current?.contentDocument;
+                    if (!doc) return;
+                    const issues = [];
+                    doc.querySelectorAll('img').forEach((img, i) => { if (!img.alt || img.alt.trim() === '') issues.push('🖼️ Image ' + (i+1) + ': missing alt text'); });
+                    const headings = Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+                    let prevLevel = 0;
+                    headings.forEach(h => { const level = parseInt(h.tagName[1]); if (level > prevLevel + 1 && prevLevel > 0) issues.push('📑 Heading skip: h' + prevLevel + ' → h' + level + ' ("' + h.textContent.substring(0,30) + '...")'); prevLevel = level; });
+                    doc.querySelectorAll('table').forEach((tbl, i) => { if (!tbl.querySelector('th') && !tbl.querySelector('thead')) issues.push('📊 Table ' + (i+1) + ': no header cells (th)'); if (!tbl.querySelector('caption') && !tbl.getAttribute('aria-label')) issues.push('📊 Table ' + (i+1) + ': no caption or aria-label'); });
+                    doc.querySelectorAll('a[href]').forEach((a, i) => { const txt = a.textContent.trim().toLowerCase(); if (['click here','here','link','read more','more'].includes(txt)) issues.push('🔗 Link ' + (i+1) + ': vague text "' + txt + '"'); });
+                    if (issues.length === 0) { addToast('✅ No common accessibility issues found!', 'success'); return; }
+                    const fixable = issues.length;
+                    addToast('⚠️ Found ' + fixable + ' accessibility issue' + (fixable !== 1 ? 's' : ''), 'info');
+                    const overlay = doc.getElementById('a11y-quick-report') || doc.createElement('div');
+                    overlay.id = 'a11y-quick-report';
+                    overlay.style.cssText = 'position:fixed;top:16px;right:16px;background:white;border:2px solid #f59e0b;border-radius:12px;padding:16px;font-family:system-ui;font-size:11px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;max-width:320px;max-height:60vh;overflow-y:auto;';
+                    overlay.innerHTML = '<div style="font-weight:800;font-size:13px;color:#92400e;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">⚠️ A11y Quick Check (' + fixable + ') <span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#94a3b8;font-size:18px">&times;</span></div>' +
+                      issues.map(i => '<div style="padding:4px 0;border-bottom:1px solid #fef3c7;line-height:1.4">' + i + '</div>').join('');
+                    doc.body.appendChild(overlay);
+                  }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors">
+                    ♿ Quick A11y Check
+                  </button>
                 </div>
               </details>
 
