@@ -53728,7 +53728,8 @@ Return only the corrected version of this exact text:`;
                   labToolData, setLabToolData, gradeLevel,
                   callGemini, callTTS, callImagen, callGeminiVision, callGeminiImageEdit,
                   activeStation, setActiveStation,
-                  theme
+                  theme,
+                  activeSessionCode, studentNickname, isTeacherMode
                 });
             }
             return (

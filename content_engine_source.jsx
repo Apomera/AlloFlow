@@ -76,9 +76,9 @@ var createContentEngine = function(deps) {
   };
 
   const handleGenerateSource = async (overrides = {}, switchView = true) => {
-    console.error('[CE-TRACE] handleGenerateSource called. overrides:', JSON.stringify(overrides || {}).substring(0, 200));
-    console.error('[CE-TRACE] sourceTopic:', JSON.stringify(sourceTopic), 'sourceLevel:', sourceLevel, 'standardsPromptString:', JSON.stringify(standardsPromptString));
-    console.error('[CE-TRACE] inputText length:', (inputText || '').length, 'callGemini:', typeof callGemini);
+    // Guard: if called from onClick, first arg is an event — ignore it
+    if (overrides && overrides.nativeEvent) { overrides = {}; }
+    console.error('[CE-TRACE] handleGenerateSource called. sourceTopic:', sourceTopic, 'inputText.length:', (inputText || '').length, 'callGemini:', typeof callGemini);
     const effTopic = (overrides && typeof overrides.topic === 'string') ? overrides.topic : sourceTopic;
     const effGrade = (overrides && typeof overrides.grade === 'string') ? overrides.grade : sourceLevel;
     const effStandards = (overrides && typeof overrides.standards === 'string') ? overrides.standards : standardsPromptString;
