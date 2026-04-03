@@ -7130,26 +7130,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7164,7 +7164,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e58a28c/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a064151/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -17113,7 +17113,6 @@ Return ONLY valid JSON:
   const handleConceptKeyDown = _ceFn('handleConceptKeyDown');
   const handleDownloadImage = _ceFn('handleDownloadImage');
   const handleDeleteImage = _ceFn('handleDeleteImage');
-  const downloadWithLabels = _ceFn('downloadWithLabels');
   const handleTextMouseUp = _ceFn('handleTextMouseUp');
   const handleReviseSelection = _ceFn('handleReviseSelection', async () => {});
   const handleWordClick = _ceFn('handleWordClick', async () => {});
