@@ -218,6 +218,7 @@ const DOM_TO_TOOL_ID_MAP = {
   'tour-tool-brainstorm': 'brainstorm',
   'tour-tool-timeline': 'timeline',
   'tour-tool-concept-sort': 'concept-sort',
+  'tour-tool-dbq': 'dbq',
   'tour-tool-math': 'math',
   'tour-tool-adventure': 'adventure',
   'ui-tool-quiz': 'quiz',
@@ -5200,6 +5201,7 @@ const UI_ELEMENT_MAP = {
   "brainstorm": "tour-tool-brainstorm",
   "timeline": "tour-tool-timeline",
   "concept": "tour-tool-concept-sort",
+  "dbq": "tour-tool-dbq",
   "adventure": "tour-tool-adventure",
   "alignment": "tour-tool-alignment",
   "udl": "tour-tool-udl",
@@ -6479,6 +6481,7 @@ const AlloFlowContent = () => {
     'persona': 'tour-tool-persona',
     'timeline': 'tour-tool-timeline',
     'concept-sort': 'tour-tool-concept-sort',
+    'dbq': 'tour-tool-dbq',
     'math': 'tour-tool-math',
     'adventure': 'tour-tool-adventure',
     'quiz': 'ui-tool-quiz',
@@ -7135,26 +7138,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7169,7 +7172,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9145d1c/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@99f252e/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8858,6 +8861,7 @@ Return ONLY a valid JSON object:
     'tour-tool-persona': 'persona',
     'tour-tool-timeline': 'timeline',
     'tour-tool-concept-sort': 'concept-sort',
+    'tour-tool-dbq': 'dbq',
     'tour-tool-math': 'math',
     'tour-tool-adventure': 'adventure',
     'ui-tool-quiz': 'quiz',
@@ -9426,6 +9430,7 @@ Return ONLY a valid JSON object:
           'brainstorm': 'tour-tool-brainstorm',
           'timeline': 'tour-tool-timeline',
           'concept-sort': 'tour-tool-concept-sort',
+          'dbq': 'tour-tool-dbq',
           'math': 'tour-tool-math',
           'adventure': 'tour-tool-adventure',
           'quiz': 'ui-tool-quiz',
@@ -17092,6 +17097,7 @@ Return ONLY valid JSON:
     selectedFont, includeSourceCitations,
     interactionMode, revisionData,
     standardsPromptString: targetStandards.join('; '),
+    ai, webSearchProvider: WebSearchProvider,
     alloBotRef, isBotVisible, isPlayingRef, isSystemAudioActiveRef,
     audioRef, playbackTimeoutRef,
     setActiveView, setConceptInput, setError, setGeneratedContent,
@@ -28523,6 +28529,7 @@ Return ONLY JSON:
           if (type === 'sentence-frames') flyToElement('tour-tool-scaffolds');
           if (type === 'timeline') flyToElement('tour-tool-timeline');
           if (type === 'concept-sort') flyToElement('tour-tool-concept-sort');
+          if (type === 'dbq') flyToElement('tour-tool-dbq');
           if (type === 'alignment-report') flyToElement('tour-tool-alignment');
           if (type === 'gemini-bridge') flyToElement('tour-tool-brainstorm');
           if (type === 'outline') flyToElement('tour-tool-outline');
@@ -35937,6 +35944,47 @@ Return ONLY JSON:
                     >
                         <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('concept_sort.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
                         <ArrowRight size={16} className="text-slate-500 group-hover:text-indigo-600" />
+                    </button>
+                </div>
+                )}
+            </div>
+            {/* ── DBQ Tool Panel ── */}
+            <div style={{display: isGuidedToolVisible('dbq') ? undefined : 'none'}} id="tour-tool-dbq" data-help-key="tool_dbq" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+                ${activeView === 'dbq' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
+              `}>
+                <button
+                    aria-label="Document-Based Questions"
+                    data-help-key="tool_dbq"
+                    onClick={() => toggleTool('dbq')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('dbq.title') || 'Document Analysis (DBQ)'}</div>
+                  {expandedTools.includes('dbq') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
+                </button>
+                {expandedTools.includes('dbq') && (
+                <div className="animate-in slide-in-from-top-2 duration-200">
+                    <div className="p-3 border-b border-slate-100 bg-rose-50">
+                        <p className="text-xs text-slate-600 mb-3">{t('dbq.desc') || 'Generate a complete Document-Based Question activity from your source text — with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.'}</p>
+                        <div className="bg-white rounded-lg p-2 border border-rose-100 mb-2">
+                            <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">{t('dbq.includes') || 'DBQ Packet Includes'}</div>
+                            <div className="flex flex-wrap gap-1">
+                                <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📄 Document Excerpts</span>
+                                <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">🔍 HAPP Sourcing</span>
+                                <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">🔗 Corroboration</span>
+                                <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">✍️ Essay Prompt</span>
+                                <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📊 4-Point Rubric</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        aria-label="Generate DBQ"
+                        data-help-key="dbq_generate_button"
+                        onClick={() => handleGenerate('dbq')}
+                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span className="text-sm text-slate-600 group-hover:text-rose-700 transition-colors flex items-center gap-2">{t('dbq.generate') || 'Generate DBQ Packet'} <Sparkles size={14} className="text-yellow-600"/></span>
+                        <ArrowRight size={16} className="text-slate-500 group-hover:text-rose-600" />
                     </button>
                 </div>
                 )}
