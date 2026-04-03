@@ -18889,7 +18889,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
   window.__docPipelineState = {
     exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
     selectedFont, responses: studentResponses, history, inputText, gradeLevel,
-    projectName, studentNickname, isTeacherMode, generatedContent,
+    studentNickname, isTeacherMode, generatedContent,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
     pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
