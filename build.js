@@ -107,6 +107,46 @@ const MODULES = [
         name: 'StoryForge',
         filename: 'story_forge_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'VisualPanelModule',
+        filename: 'visual_panel_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'WordSoundsSetupModule',
+        filename: 'word_sounds_setup_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AdventureModule',
+        filename: 'adventure_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StudentInteractionModule',
+        filename: 'student_interaction_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MathFluency',
+        filename: 'math_fluency_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'UIModalsModule',
+        filename: 'ui_modals_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ImmersiveReaderModule',
+        filename: 'immersive_reader_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PersonaUIModule',
+        filename: 'persona_ui_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -152,6 +192,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
     'stem_lab/stem_tool_climateExplorer.js',
+    'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
     'sel_hub/sel_tool_social.js',
@@ -168,7 +209,12 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_restorativecircle.js',
     'sel_hub/sel_tool_civicaction.js',
     'sel_hub/sel_tool_ethicalreasoning.js',
-    'sel_hub/sel_tool_cultureexplorer.js'
+    'sel_hub/sel_tool_cultureexplorer.js',
+    'sel_hub/sel_tool_growthmindset.js',
+    'sel_hub/sel_tool_transitions.js',
+    'sel_hub/sel_tool_friendship.js',
+    'sel_hub/sel_tool_compassion.js',
+    'sel_hub/sel_tool_upstander.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────
