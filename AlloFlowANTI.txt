@@ -18905,7 +18905,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
   };
   const _createDocPipeline = window.AlloModules && window.AlloModules.createDocPipeline;
   const _docPipeline = _createDocPipeline
-    ? _createDocPipeline({ callGemini, addToast, t })
+    ? _createDocPipeline({ callGemini, callGeminiVision, addToast, t, isRtlLang })
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};

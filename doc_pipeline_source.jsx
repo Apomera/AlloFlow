@@ -10,8 +10,10 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 // This avoids stale closures — each function call reads fresh state from the window ref.
 var createDocPipeline = function(deps) {
   var callGemini = deps.callGemini;
+  var callGeminiVision = deps.callGeminiVision;
   var addToast = deps.addToast;
   var t = deps.t;
+  var isRtlLang = deps.isRtlLang || function() { return false; };
   // Proxy all state access through window.__docPipelineState
   var _s = function() { return window.__docPipelineState || {}; };
   // Re-expose state vars as getters so existing code works unchanged
