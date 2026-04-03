@@ -17881,7 +17881,7 @@ Return ONLY valid JSON:
   };
   const _createDocPipeline = window.AlloModules && window.AlloModules.createDocPipeline;
   const _docPipeline = _createDocPipeline
-    ? _createDocPipeline({ callGemini, callGeminiVision, addToast, t, isRtlLang, updateExportPreview })
+    ? _createDocPipeline({ callGemini, callGeminiVision, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); } })
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
