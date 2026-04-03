@@ -17086,8 +17086,22 @@ Return ONLY valid JSON:
     }
     return _contentEngineRef.current;
   };
-  const _ceFn = (name, fallback) => function() { const e = _getContentEngine(); if (e && typeof e[name] === 'function') return e[name].apply(this, arguments); return (typeof fallback === 'function' ? fallback.apply(this, arguments) : undefined); };
-  const handleGenerateSource = _ceFn('handleGenerateSource', async () => { addToast('Content engine loading — please try again in a moment', 'info'); });
+  const _ceFn = (name, fallback) => function() {
+    const e = _getContentEngine();
+    if (e && typeof e[name] === 'function') {
+      try { return e[name].apply(this, arguments); }
+      catch(err) { console.error('[ContentEngine] ' + name + ' threw:', err); addToast('Content engine error: ' + err.message, 'error'); }
+    } else {
+      console.error('[ContentEngine] ' + name + ': engine=' + !!e + ', fn=' + (e ? typeof e[name] : 'N/A'));
+      return (typeof fallback === 'function' ? fallback.apply(this, arguments) : undefined);
+    }
+  };
+  const handleGenerateSource = _ceFn('handleGenerateSource', async () => {
+    console.error('[ContentEngine] handleGenerateSource FALLBACK hit. State bag keys:', Object.keys(window.__contentEngineState || {}));
+    console.error('[ContentEngine] AlloModules.createContentEngine exists:', !!(window.AlloModules && window.AlloModules.createContentEngine));
+    console.error('[ContentEngine] _contentEngineRef.current:', _contentEngineRef.current);
+    addToast('Content engine loading — please try again in a moment', 'info');
+  });
   const addLanguage = _ceFn('addLanguage');
   const addInterest = _ceFn('addInterest');
   const removeInterest = _ceFn('removeInterest');
