@@ -7209,7 +7209,33 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_teamwork.js',
         'sel_hub/sel_tool_journal.js',
         'sel_hub/sel_tool_safety.js',
+        'stem_lab/stem_tool_worldbuilder.js',
+        'stem_lab/stem_tool_geometryworld.js',
+        'stem_lab/stem_tool_creative.js',
+        'stem_lab/stem_tool_art.js',
+        'sel_hub/sel_safety_layer.js',
+        'sel_hub/sel_tool_advocacy.js',
+        'sel_hub/sel_tool_restorativecircle.js',
+        'sel_hub/sel_tool_civicaction.js',
+        'sel_hub/sel_tool_ethicalreasoning.js',
+        'sel_hub/sel_tool_cultureexplorer.js',
+        'sel_hub/sel_tool_growthmindset.js',
+        'sel_hub/sel_tool_compassion.js',
+        'sel_hub/sel_tool_friendship.js',
+        'sel_hub/sel_tool_transitions.js',
+        'sel_hub/sel_tool_upstander.js',
       ];
+      // Wait for StemLab registry to be available before loading plugins
+      var waitForRegistry = function(cb) {
+        if (window.StemLab && window.StemLab.registerTool) { cb(); return; }
+        var attempts = 0;
+        var interval = setInterval(function() {
+          attempts++;
+          if (window.StemLab && window.StemLab.registerTool) { clearInterval(interval); cb(); }
+          else if (attempts > 50) { clearInterval(interval); console.warn('[Plugins] StemLab registry not found after 5s — loading anyway'); cb(); }
+        }, 100);
+      };
+      waitForRegistry(function() {
       toolModules.forEach(function(mod) {
         var s = document.createElement('script');
         s.src = pluginCdnBase + mod;
@@ -7219,6 +7245,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         s.onerror = function() { console.warn('[StemLab Plugin] Failed to load: ' + mod + ' (using inline fallback)'); };
         document.head.appendChild(s);
       });
+      }); // end waitForRegistry callback
     }, 600);
     // ─── Canvas TTS: Load Kokoro + Piper WASM TTS engines ──────────
     // Guard: React StrictMode runs useEffect twice. Prevent duplicate <script> injection.
