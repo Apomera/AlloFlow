@@ -13,6 +13,76 @@ const isDev = !app.isPackaged;
 let mainWindow;
 let updateDetectorInterval = null;
 
+// ── Log streaming infrastructure ────────────────────────────────────────────
+const LOG_DIR = path.join(os.homedir(), '.alloflow', 'logs');
+const logBuffers = {
+  main: [],
+  ollama: [],
+  piper: [],
+  flux: []
+};
+const MAX_BUFFER_SIZE = 1000; // Keep last 1000 lines in memory
+
+// Ensure log directory exists
+function ensureLogDir() {
+  if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+  }
+}
+
+// Append to log and stream to UI
+function logToService(service, message) {
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] ${message}`;
+  
+  // Keep in buffer
+  if (logBuffers[service]) {
+    logBuffers[service].push(logEntry);
+    if (logBuffers[service].length > MAX_BUFFER_SIZE) {
+      logBuffers[service].shift();
+    }
+  }
+  
+  // Write to file
+  try {
+    ensureLogDir();
+    const logFile = path.join(LOG_DIR, `${service}.log`);
+    fs.appendFileSync(logFile, logEntry + '\n');
+  } catch (err) {
+    console.error(`[logs] Failed to write to ${service}.log:`, err.message);
+  }
+  
+  // Stream to UI
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(`logs:${service}`, {
+      line: logEntry,
+      timestamp
+    });
+  }
+}
+
+// Override console.log to capture main process logs
+const originalLog = console.log;
+console.log = (...args) => {
+  originalLog(...args);
+  const message = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
+  logToService('main', message);
+};
+
+const originalError = console.error;
+console.error = (...args) => {
+  originalError(...args);
+  const message = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
+  logToService('main', `ERROR: ${message}`);
+};
+
+const originalWarn = console.warn;
+console.warn = (...args) => {
+  originalWarn(...args);
+  const message = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
+  logToService('main', `WARN: ${message}`);
+};
+
 // Start Ollama update detector (runs every 24 hours)
 function startOllamaUpdateDetector() {
   if (updateDetectorInterval) return; // Already running
@@ -1469,5 +1539,44 @@ ipcMain.handle('services:logs', async (event, service) => {
     return { success: true, logs: `Live log streaming not yet implemented for "${service}". Check system event logs or run the service manually to view output.` };
   } catch (err) {
     return { success: true, logs: 'Logs not available for this service' };
+  }
+});
+
+// ============================================================================
+// LOG STREAMING (NEW — C.4: Debug Support)
+// ============================================================================
+
+// Get recent logs from buffer or file
+ipcMain.handle('logs:get-recent', async (event, { service = 'main', lines = 100 }) => {
+  try {
+    const buffer = logBuffers[service] || [];
+    const recentLines = buffer.slice(Math.max(0, buffer.length - lines));
+    return { success: true, logs: recentLines };
+  } catch (err) {
+    console.error('[ipc:logs:get-recent] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// Clear logs for a service
+ipcMain.handle('logs:clear', async (event, { service = 'main' }) => {
+  try {
+    if (logBuffers[service]) {
+      logBuffers[service] = [];
+    }
+    // Also clear the log file
+    try {
+      ensureLogDir();
+      const logFile = path.join(LOG_DIR, `${service}.log`);
+      if (fs.existsSync(logFile)) {
+        fs.unlinkSync(logFile);
+      }
+    } catch (e) {
+      console.warn('[logs:clear] Could not delete log file:', e.message);
+    }
+    return { success: true };
+  } catch (err) {
+    console.error('[ipc:logs:clear] Error:', err.message);
+    return { success: false, error: err.message };
   }
 });

@@ -122,4 +122,32 @@ contextBridge.exposeInMainWorld('alloAPI', {
     // Check if SQLite backend is running
     backendStatus: () => ipcRenderer.invoke('local:backend-status'),
   },
+
+  // ── Log Streaming ──────────────────────────────────────────────────────────
+  logs: {
+    // Stream main process logs (deployment, service startup, etc.)
+    onMainLogs: (callback) => {
+      ipcRenderer.on('logs:main', (event, data) => callback(data));
+    },
+    // Stream Ollama logs
+    onOllamaLogs: (callback) => {
+      ipcRenderer.on('logs:ollama', (event, data) => callback(data));
+    },
+    // Stream Piper logs
+    onPiperLogs: (callback) => {
+      ipcRenderer.on('logs:piper', (event, data) => callback(data));
+    },
+    // Stream Flux logs
+    onFluxLogs: (callback) => {
+      ipcRenderer.on('logs:flux', (event, data) => callback(data));
+    },
+    // Request recent logs from file (for log viewer)
+    getRecentLogs: (service = 'main', lines = 100) => {
+      return ipcRenderer.invoke('logs:get-recent', { service, lines });
+    },
+    // Clear logs for a service
+    clearLogs: (service = 'main') => {
+      return ipcRenderer.invoke('logs:clear', { service });
+    }
+  },
 });
