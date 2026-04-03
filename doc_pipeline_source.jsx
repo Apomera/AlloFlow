@@ -6,10 +6,60 @@ var warnLog = window.warnLog || function() { console.warn.apply(console, argumen
 var processMathHTML = window.processMathHTML || function(t) { return t; };
 
 // Factory: returns all pipeline functions bound to provided deps
+// State access: functions read window.__docPipelineState (updated every render by monolith)
+// This avoids stale closures — each function call reads fresh state from the window ref.
 var createDocPipeline = function(deps) {
   var callGemini = deps.callGemini;
   var addToast = deps.addToast;
   var t = deps.t;
+  // Proxy all state access through window.__docPipelineState
+  var _s = function() { return window.__docPipelineState || {}; };
+  // Re-expose state vars as getters so existing code works unchanged
+  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
+      selectedFont, responses, history, inputText, gradeLevel,
+      projectName, studentNickname, isTeacherMode, generatedContent,
+      pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
+      pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
+      pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
+      pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
+      customExportCSS, exportStylePrompt, pdfFixModeRef,
+      setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
+      setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
+      setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
+      setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle,
+      setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting,
+      setExportAuditLoading, setExportAuditResult;
+  // Bind all vars from the state bag before each public function call
+  var _bindState = function() {
+    var s = _s();
+    exportTheme = s.exportTheme; exportConfig = s.exportConfig;
+    exportPreviewMode = s.exportPreviewMode; leveledTextLanguage = s.leveledTextLanguage;
+    selectedFont = s.selectedFont; responses = s.responses; history = s.history;
+    inputText = s.inputText; gradeLevel = s.gradeLevel;
+    projectName = s.projectName; studentNickname = s.studentNickname;
+    isTeacherMode = s.isTeacherMode; generatedContent = s.generatedContent;
+    pendingPdfBase64 = s.pendingPdfBase64; pendingPdfFile = s.pendingPdfFile;
+    pdfFixResult = s.pdfFixResult; pdfAuditResult = s.pdfAuditResult;
+    pdfAutoFixPasses = s.pdfAutoFixPasses; pdfPolishPasses = s.pdfPolishPasses;
+    pdfAuditorCount = s.pdfAuditorCount;
+    pdfPreviewTheme = s.pdfPreviewTheme; pdfPreviewFontSize = s.pdfPreviewFontSize;
+    pdfPreviewA11yInspect = s.pdfPreviewA11yInspect;
+    pdfBatchQueue = s.pdfBatchQueue; pdfExperimentMode = s.pdfExperimentMode;
+    pdfExperimentRuns = s.pdfExperimentRuns;
+    customExportCSS = s.customExportCSS; exportStylePrompt = s.exportStylePrompt;
+    pdfFixModeRef = s.pdfFixModeRef;
+    setPdfAuditResult = s.setPdfAuditResult; setPdfAuditLoading = s.setPdfAuditLoading;
+    setPdfFixResult = s.setPdfFixResult; setPdfFixLoading = s.setPdfFixLoading;
+    setPdfFixStep = s.setPdfFixStep; setPendingPdfBase64 = s.setPendingPdfBase64;
+    setPendingPdfFile = s.setPendingPdfFile;
+    setPdfBatchQueue = s.setPdfBatchQueue; setPdfBatchProcessing = s.setPdfBatchProcessing;
+    setPdfBatchCurrentIndex = s.setPdfBatchCurrentIndex;
+    setPdfBatchStep = s.setPdfBatchStep; setPdfBatchSummary = s.setPdfBatchSummary;
+    setIsGeneratingStyle = s.setIsGeneratingStyle; setCustomExportCSS = s.setCustomExportCSS;
+    setInputText = s.setInputText; setGenerationStep = s.setGenerationStep;
+    setIsExtracting = s.setIsExtracting;
+    setExportAuditLoading = s.setExportAuditLoading; setExportAuditResult = s.setExportAuditResult;
+  };
 
   // ── PDF Accessibility Audit ──
   const runPdfAccessibilityAudit = async (base64Data) => {
@@ -3886,13 +3936,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       `;
   };
 
+  // Wrap each function to bind fresh state before execution
+  var _wrap = function(fn) { return function() { _bindState(); return fn.apply(this, arguments); }; };
+  var _wrapAsync = function(fn) { return async function() { _bindState(); return fn.apply(this, arguments); }; };
   return {
-    runPdfAccessibilityAudit, auditOutputAccessibility, runAxeAudit,
-    fixContrastViolations, autoFixAxeViolations, fixAndVerifyPdf,
-    generateAuditReportHtml, downloadAccessiblePdf, updatePdfPreview,
-    generateCustomExportStyle, parseMarkdownToHTML, generateResourceHTML,
-    EXPORT_THEMES, generateFullPackHTML, runPdfBatchRemediation,
-    proceedWithPdfTransform, parseAuditJson,
+    runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
+    auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
+    runAxeAudit: _wrapAsync(runAxeAudit),
+    fixContrastViolations: _wrap(fixContrastViolations),
+    autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
+    fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
+    generateAuditReportHtml: _wrap(generateAuditReportHtml),
+    downloadAccessiblePdf: _wrap(downloadAccessiblePdf),
+    updatePdfPreview: _wrap(updatePdfPreview),
+    generateCustomExportStyle: _wrapAsync(generateCustomExportStyle),
+    parseMarkdownToHTML: _wrap(parseMarkdownToHTML),
+    generateResourceHTML: _wrap(generateResourceHTML),
+    EXPORT_THEMES,
+    generateFullPackHTML: _wrap(generateFullPackHTML),
+    runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
+    proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
+    parseAuditJson: _wrap(parseAuditJson),
   };
 };
 

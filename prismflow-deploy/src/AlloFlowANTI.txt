@@ -16429,8 +16429,28 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   };
   // ── PDF Accessibility Audit ──
   // ── PDF Pipeline delegated to doc_pipeline_module.js ──
-  const _docPipeline = (window.AlloModules && window.AlloModules.createDocPipeline)
-    ? window.AlloModules.createDocPipeline({ callGemini, addToast, t })
+  // Expose current state for doc_pipeline_module.js functions via window ref
+  // Updated every render so CDN functions always access fresh state
+  window.__docPipelineState = {
+    exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
+    selectedFont, responses: studentResponses, history, inputText, gradeLevel,
+    projectName, studentNickname, isTeacherMode, generatedContent,
+    pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
+    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
+    pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
+    pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
+    customExportCSS, exportStylePrompt, pdfFixModeRef,
+    // setters
+    setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
+    setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
+    setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
+    setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle,
+    setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting,
+    setExportAuditLoading, setExportAuditResult,
+  };
+  const _createDocPipeline = window.AlloModules && window.AlloModules.createDocPipeline;
+  const _docPipeline = _createDocPipeline
+    ? _createDocPipeline({ callGemini, addToast, t })
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
