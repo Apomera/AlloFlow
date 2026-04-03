@@ -3036,6 +3036,7 @@
     function printGardenReport(bank, counts, total) {
       var prof = profiles.find(function (p) { return p.id === activeProfileId; }) || { name: 'Student' };
       var name = prof.name || 'Student';
+      var codename = prof.codename || '';
       var now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       var rows = bank.slice().sort(function (a, b) { var ai = GROWTH_ORDER.indexOf(a.growth), bi = GROWTH_ORDER.indexOf(b.growth); return bi !== ai ? bi - ai : a.displayLabel.localeCompare(b.displayLabel); });
       var html = '<html><head><title>' + name + '\'s Vocabulary Report</title><style>'
@@ -3063,6 +3064,7 @@
       html += '<div style="font-size:40px;margin-bottom:4px">🌱</div>';
       html += '<h1>' + name + '\'s Word Garden</h1>';
       html += '<div class="hero-sub">Vocabulary Growth Report — ' + now + '</div>';
+      if (codename) html += '<div class="hero-sub" style="font-size:11px">Tracking ID: ' + codename + '</div>';
       html += '<div class="hero-sub">' + total + ' words growing across ' + (savedBoards.length + savedSchedules.length) + ' boards and schedules</div>';
       html += '</div>';
       // Garden map — visual growth distribution
