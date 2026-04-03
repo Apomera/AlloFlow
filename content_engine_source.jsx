@@ -21,6 +21,7 @@ var createContentEngine = function(deps) {
       sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
       sourceVocabulary, resourceCount, targetStandards, dokLevel,
       selectedFont, includeSourceCitations,
+      interactionMode, revisionData, standardsPromptString,
       setActiveView, setConceptInput, setError, setGeneratedContent,
       setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource,
       setLanguageInput, setLeveledTextLanguage, setSelectedConcepts,
@@ -50,6 +51,9 @@ var createContentEngine = function(deps) {
     resourceCount = s.resourceCount; targetStandards = s.targetStandards;
     dokLevel = s.dokLevel; selectedFont = s.selectedFont;
     includeSourceCitations = s.includeSourceCitations;
+    interactionMode = s.interactionMode;
+    revisionData = s.revisionData;
+    standardsPromptString = s.standardsPromptString || '';
     alloBotRef = s.alloBotRef || { current: null };
     isBotVisible = s.isBotVisible || false;
     isPlayingRef = s.isPlayingRef || { current: false };

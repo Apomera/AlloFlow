@@ -31,7 +31,7 @@ var createContentEngine = function (deps) {
     return window.__contentEngineState || {};
   };
   var _bindState;
-  var inputText, gradeLevel, sourceTopic, generatedContent, leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts, conceptInput, interestInput, languageInput, activeView, showSourceGen, generationStep, isGeneratingSource, selectionMenu, phonicsData, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceVocabulary, resourceCount, targetStandards, dokLevel, selectedFont, includeSourceCitations, setActiveView, setConceptInput, setError, setGeneratedContent, setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource, setLanguageInput, setLeveledTextLanguage, setSelectedConcepts, setSelectedLanguages, setShowSourceGen, setStudentInterests, setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen, setPhonicsData, setRevisionData, setSelectionMenu, setPlayingContentId, setPlaybackState;
+  var inputText, gradeLevel, sourceTopic, generatedContent, leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts, conceptInput, interestInput, languageInput, activeView, showSourceGen, generationStep, isGeneratingSource, selectionMenu, phonicsData, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceVocabulary, resourceCount, targetStandards, dokLevel, selectedFont, includeSourceCitations, interactionMode, revisionData, standardsPromptString, setActiveView, setConceptInput, setError, setGeneratedContent, setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource, setLanguageInput, setLeveledTextLanguage, setSelectedConcepts, setSelectedLanguages, setShowSourceGen, setStudentInterests, setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen, setPhonicsData, setRevisionData, setSelectionMenu, setPlayingContentId, setPlaybackState;
   var alloBotRef = {
     current: null
   };
@@ -74,6 +74,9 @@ var createContentEngine = function (deps) {
     dokLevel = s.dokLevel;
     selectedFont = s.selectedFont;
     includeSourceCitations = s.includeSourceCitations;
+    interactionMode = s.interactionMode;
+    revisionData = s.revisionData;
+    standardsPromptString = s.standardsPromptString || '';
     alloBotRef = s.alloBotRef || {
       current: null
     };
