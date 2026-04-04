@@ -25,7 +25,7 @@ var createDocPipeline = function(deps) {
       pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
       pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
       pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
-      customExportCSS, exportStylePrompt, pdfFixModeRef,
+      customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
       setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
       setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
       setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
@@ -50,7 +50,7 @@ var createDocPipeline = function(deps) {
     pdfBatchQueue = s.pdfBatchQueue; pdfExperimentMode = s.pdfExperimentMode;
     pdfExperimentRuns = s.pdfExperimentRuns;
     customExportCSS = s.customExportCSS; exportStylePrompt = s.exportStylePrompt;
-    pdfFixModeRef = s.pdfFixModeRef;
+    pdfFixModeRef = s.pdfFixModeRef; pdfPreviewRef = s.pdfPreviewRef;
     setPdfAuditResult = s.setPdfAuditResult; setPdfAuditLoading = s.setPdfAuditLoading;
     setPdfFixResult = s.setPdfFixResult; setPdfFixLoading = s.setPdfFixLoading;
     setPdfFixStep = s.setPdfFixStep; setPendingPdfBase64 = s.setPendingPdfBase64;
