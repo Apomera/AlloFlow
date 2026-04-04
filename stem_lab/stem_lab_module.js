@@ -11592,7 +11592,12 @@
             setMultTableRevealed: typeof setMultTableRevealed === 'function' ? setMultTableRevealed : function() {},
             // ── Shared labToolData ──
             labToolData: labToolData || {},
-            setLabToolData: typeof setLabToolData === 'function' ? setLabToolData : function() {}
+            setLabToolData: function(updater) {
+              if (typeof setLabToolData === 'function') {
+                if (_ctx._isRendering) setTimeout(function() { setLabToolData(updater); }, 0);
+                else setLabToolData(updater);
+              }
+            }
           };
 
           try {
@@ -11602,7 +11607,13 @@
             if (!window.__stemPluginComponents) window.__stemPluginComponents = {};
             if (!window.__stemPluginComponents[stemLabTool]) {
               window.__stemPluginComponents[stemLabTool] = function StemPluginBridge(props) {
-                return window.StemLab.renderTool(props._toolId, props._ctx);
+                var c = props._ctx;
+                c._isRendering = true;
+                try {
+                  return window.StemLab.renderTool(props._toolId, c);
+                } finally {
+                  c._isRendering = false;
+                }
               };
             }
             return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + stemLabTool, _toolId: stemLabTool, _ctx: _ctx });
