@@ -7142,26 +7142,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7176,7 +7176,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b2ec1bb/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -51269,10 +51269,70 @@ Return only the corrected version of this exact text:`;
                       )}
 
                       {/* Action buttons */}
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <button onClick={() => { setPdfPreviewOpen(true); setTimeout(updatePdfPreview, 200); }}
                           className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold text-sm hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2">
                           ✏️ Preview & Edit
+                        </button>
+                        <button onClick={() => {
+                          if (!pendingPdfBase64 || !pdfFixResult?.accessibleHtml) { addToast('Need both original PDF and remediated version', 'info'); return; }
+                          const win = window.open('', '_blank');
+                          if (!win) { addToast('Pop-up blocked', 'error'); return; }
+                          const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? '?';
+                          const afterAi = pdfFixResult.afterScore;
+                          const afterAxe = pdfFixResult.axeAudit?.score ?? null;
+                          const afterScore = (afterAi !== null && afterAxe !== null) ? Math.round((afterAxe + afterAi) / 2) : (afterAxe ?? afterAi ?? '?');
+                          const scoreColor = (s) => typeof s === 'number' ? (s >= 80 ? '#16a34a' : s >= 50 ? '#d97706' : '#dc2626') : '#64748b';
+                          win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Before / After Comparison</title>
+                          <style>
+                            * { box-sizing: border-box; margin: 0; padding: 0; }
+                            body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+                            .header { background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+                            .header h1 { font-size: 16px; font-weight: 800; color: #fff; }
+                            .scores { display: flex; gap: 12px; align-items: center; }
+                            .score-badge { padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 14px; }
+                            .arrow { color: #94a3b8; font-size: 18px; }
+                            .compare { display: flex; height: calc(100vh - 56px); }
+                            .pane { flex: 1; display: flex; flex-direction: column; }
+                            .pane-header { padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+                            .pane-left .pane-header { background: #7f1d1d; color: #fca5a5; }
+                            .pane-right .pane-header { background: #14532d; color: #86efac; }
+                            .divider { width: 3px; background: #334155; cursor: col-resize; }
+                            iframe, embed { flex: 1; width: 100%; border: none; background: white; }
+                            @media (max-width: 768px) { .compare { flex-direction: column; } .pane { height: 50vh; } .divider { height: 3px; width: 100%; } }
+                          </style></head><body>
+                          <div class="header">
+                            <h1>📄 Before / After Comparison</h1>
+                            <div class="scores">
+                              <span class="score-badge" style="background:${scoreColor(beforeScore)}20;color:${scoreColor(beforeScore)}">${beforeScore}/100</span>
+                              <span class="arrow">→</span>
+                              <span class="score-badge" style="background:${scoreColor(afterScore)}20;color:${scoreColor(afterScore)}">${afterScore}/100</span>
+                              ${typeof afterScore === 'number' && typeof beforeScore === 'number' && afterScore > beforeScore ? '<span class="score-badge" style="background:#16a34a20;color:#16a34a">+' + (afterScore - beforeScore) + '</span>' : ''}
+                            </div>
+                          </div>
+                          <div class="compare">
+                            <div class="pane pane-left">
+                              <div class="pane-header">Original PDF (Before)</div>
+                              <embed src="data:application/pdf;base64,${pendingPdfBase64.includes(',') ? pendingPdfBase64.split(',')[1] : pendingPdfBase64}" type="application/pdf" />
+                            </div>
+                            <div class="divider"></div>
+                            <div class="pane pane-right">
+                              <div class="pane-header">Accessible HTML (After)</div>
+                              <iframe id="after-frame"></iframe>
+                            </div>
+                          </div>
+                          <script>
+                            var iframe = document.getElementById('after-frame');
+                            var doc = iframe.contentDocument || iframe.contentWindow.document;
+                            doc.open();
+                            doc.write(${JSON.stringify(pdfFixResult.accessibleHtml)});
+                            doc.close();
+                          </script>
+                          </body></html>`);
+                          win.document.close();
+                          addToast('📄 Before/After comparison opened', 'success');
+                        }} className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5">
+                          🔀 Compare
                         </button>
                         <button onClick={() => downloadAccessiblePdf(pdfFixResult.accessibleHtml, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-accessible')}
                           className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 transition-colors flex items-center gap-1.5">
