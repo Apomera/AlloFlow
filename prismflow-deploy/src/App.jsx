@@ -7142,26 +7142,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7176,7 +7176,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86e0298/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -51621,6 +51621,80 @@ Return only the corrected version of this exact text:`;
                           🎧 Download Audio
                         </button>}
                       </div>
+
+                      {/* ── Remediation Changelog ── */}
+                      <details className="group">
+                        <summary className="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
+                          📋 What Changed <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                        </summary>
+                        <div className="mt-2 bg-white rounded-lg border border-slate-200 p-3 space-y-1.5 text-xs text-slate-600">
+                          {(() => {
+                            const changes = [];
+                            if (pdfFixResult.autoFixPasses > 0) changes.push(`🔧 ${pdfFixResult.autoFixPasses} automated fix pass${pdfFixResult.autoFixPasses > 1 ? 'es' : ''} applied`);
+                            const html = pdfFixResult.accessibleHtml || '';
+                            if (html.includes('lang="en"') || html.includes("lang='en'")) changes.push('🌐 Document language tag added (lang="en")');
+                            if (html.includes('<main')) changes.push('🏛️ Main content landmark added');
+                            if (html.includes('skip-nav') || html.includes('Skip to')) changes.push('⏭️ Skip-to-content navigation link added');
+                            const h1s = (html.match(/<h1[\s>]/g) || []).length;
+                            const h2s = (html.match(/<h2[\s>]/g) || []).length;
+                            if (h1s > 0) changes.push(`📑 Heading hierarchy: ${h1s} h1, ${h2s} h2${html.match(/<h3[\s>]/g) ? ', ' + (html.match(/<h3[\s>]/g) || []).length + ' h3' : ''}`);
+                            const alts = (html.match(/alt="[^"]+"/g) || []).length;
+                            if (alts > 0) changes.push(`🖼️ ${alts} image${alts > 1 ? 's' : ''} with alt text`);
+                            const ths = (html.match(/<th[\s>]/g) || []).length;
+                            if (ths > 0) changes.push(`📊 ${ths} table header cell${ths > 1 ? 's' : ''} with scope attributes`);
+                            if (html.includes('<caption')) changes.push('📊 Table caption(s) added');
+                            if (html.includes('viewport')) changes.push('📱 Viewport meta tag for responsive design');
+                            if (html.includes('forced-colors')) changes.push('🔲 Windows High Contrast Mode support');
+                            if (html.includes('prefers-reduced-motion')) changes.push('♿ Reduced motion support');
+                            const axeFixed = pdfFixResult.axeAudit ? `${pdfFixResult.axeAudit.totalViolations} axe violation${pdfFixResult.axeAudit.totalViolations !== 1 ? 's' : ''} remaining` : 'axe-core not available';
+                            changes.push(`🔬 ${axeFixed}`);
+                            const gain = (pdfFixResult.afterScore || 0) - (pdfFixResult.beforeScore || 0);
+                            if (gain > 0) changes.push(`📈 Score improved by +${gain} points`);
+                            return changes.map((c, i) => <div key={i} className="flex items-start gap-2"><span className="text-green-500 shrink-0">✓</span><span>{c}</span></div>);
+                          })()}
+                        </div>
+                      </details>
+
+                      {/* ── Plain Language Summary Generator ── */}
+                      <button onClick={async () => {
+                        if (!callGemini || !pdfFixResult?.accessibleHtml) return;
+                        addToast('Generating plain language summary...', 'info');
+                        try {
+                          const text = pdfFixResult.accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim().substring(0, 8000);
+                          const summary = await callGemini(`You are a communication specialist who makes complex documents understandable for everyone.
+
+Take this document content and create a PLAIN LANGUAGE SUMMARY suitable for parents, guardians, or community members who may not have specialized knowledge.
+
+RULES:
+- Write at a 5th-grade reading level (Flesch-Kincaid Grade 5)
+- Use short sentences (max 15 words)
+- Replace jargon with everyday words
+- Use bullet points for key information
+- Start with "This document is about..."
+- Include a "What You Need to Know" section
+- Include a "What You Can Do" section if applicable
+- Keep it under 300 words
+- Be warm and respectful — this is for real families
+
+DOCUMENT CONTENT:
+"""
+${text}
+"""
+
+Return ONLY the plain language summary.`, false);
+                          if (summary) {
+                            const summaryHtml = summary.replace(/\n\n/g, '</p><p>').replace(/\n- /g, '</p><li>').replace(/\n/g, '<br>');
+                            const win = window.open('', '_blank');
+                            if (win) {
+                              win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Plain Language Summary</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:16px}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-block;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">📖 Plain Language Version</div><h1>Easy-to-Read Summary</h1><p>${summaryHtml}</p><div class="footer"><p>This summary was generated from: ${pendingPdfFile?.name || 'document'}</p><p>Generated ${new Date().toLocaleDateString()} by AlloFlow · <a href="https://prismflow-911fe.web.app">prismflow-911fe.web.app</a></p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">🖨️ Print</button></div></body></html>`);
+                              win.document.close();
+                              addToast('📖 Plain language summary generated!', 'success');
+                            }
+                          }
+                        } catch (e) { addToast('Summary generation failed', 'error'); }
+                      }} className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-xs font-bold text-blue-700 hover:from-blue-100 hover:to-indigo-100 transition-all flex items-center justify-center gap-2">
+                        📖 Generate Plain Language Summary (for parents/families)
+                      </button>
                     </div>
                   )}
                 </div>
