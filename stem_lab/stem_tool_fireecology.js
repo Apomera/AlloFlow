@@ -1646,7 +1646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
               h('button', { 'aria-label': 'Cultural Burn (+10 yrs)',
                 onClick: function() { advanceDecade('culturalBurn'); },
-                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 14 }
+                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 14 }
               }, '\uD83D\uDD25 Cultural Burn (+10 yrs)'),
               h('button', { 'aria-label': 'Prescribed Burn (+10 yrs)',
                 onClick: function() { advanceDecade('prescribe'); },
@@ -1654,7 +1654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }, '\uD83D\uDCCB Prescribed Burn (+10 yrs)'),
               h('button', { 'aria-label': 'Suppress Fire (+10 yrs)',
                 onClick: function() { advanceDecade('suppress'); },
-                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontWeight: 700, fontSize: 14 }
+                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 14 }
               }, '\u26D4 Suppress Fire (+10 yrs)')
             ),
 
@@ -1842,7 +1842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             h('button', { 'aria-label': 'Evaluate Burn Plan',
               onClick: evaluateBurn,
-              style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 16 }
+              style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 16 }
             }, '\uD83D\uDD25 Evaluate Burn Plan'),
 
             burnResult ? h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, border: '2px solid ' + burnResult.verdict.color } },
@@ -2009,7 +2009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               quizAnswer >= 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12 } },
                 h('button', { 'aria-label': 'Next Question',
                   onClick: nextQuestion,
-                  style: { padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 14 }
+                  style: { padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 14 }
                 }, 'Next Question \u2192')
               ) : null
             )
@@ -2319,7 +2319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }),
               h('button', { 'aria-label': 'Calculate Carbon Impact',
                 onClick: calculate,
-                style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 15, marginTop: 12 }
+                style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 15, marginTop: 12 }
               }, '\u2601\uFE0F Calculate Carbon Impact')
             ),
 
@@ -2991,7 +2991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   })
                 ),
                 h('button', { 'aria-label': 'Begin the Challenge', onClick: startGame,
-                  style: { padding: '14px 40px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 18 }
+                  style: { padding: '14px 40px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 18 }
                 }, '\uD83D\uDD25 Begin the Challenge')
               )
             );
@@ -3088,7 +3088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ) : null,
 
               h('button', { 'aria-label': 'Play Again', onClick: function() { updMulti({ gameActive: false, gameState: null, gameEvent: null, gameScore: 0, gameOver: false, gameHistory: [], pendingDecision: null }); },
-                style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 16 }
+                style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 16 }
               }, '\uD83D\uDD04 Play Again')
             );
           }
