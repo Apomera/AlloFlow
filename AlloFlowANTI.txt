@@ -7138,26 +7138,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7172,7 +7172,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e743a61/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@78f2f1f/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -28213,10 +28213,17 @@ Return ONLY valid JSON:
          setGenerationStep('Creating Document-Based Questions...');
          const isElementary = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
          const isMiddle = /6th|7th|8th/i.test(gradeLevel);
+         const _dbqMode = window._dbqMode || 'standard';
+         const _dbqFocusTopic = document.getElementById('dbq-focus-topic')?.value || '';
+         const _dbqModeInstructions = _dbqMode === 'perspectives'
+           ? `\n\nSPECIAL MODE — COMPETING PERSPECTIVES:\nYou MUST structure this DBQ around two or more clearly opposing viewpoints or interpretations.${_dbqFocusTopic ? ' Focus on: ' + _dbqFocusTopic + '.' : ''}\n- At least 2 documents should represent each major perspective\n- Label each document's perspective in a "perspective" field (e.g., "Federalist", "Anti-Federalist", "Pro-expansion", "Indigenous resistance")\n- The corroborationClaims MUST include at least one claim where documents directly contradict each other\n- The synthesis essay prompt MUST require students to evaluate BOTH perspectives and take a position\n- Include a "perspectives" array in the JSON root: [{"label": "Perspective A Name", "description": "Brief description", "docIds": ["A","C"]}, {"label": "Perspective B Name", "description": "Brief description", "docIds": ["B","D"]}]\n`
+           : _dbqMode === 'search'
+           ? `\n\nSPECIAL MODE — WEB-ENHANCED SOURCES:\nIn addition to extracting documents from the provided source text, you should GENERATE additional document excerpts that represent real historical primary sources relevant to this topic.${_dbqFocusTopic ? ' Search focus: ' + _dbqFocusTopic + '.' : ''}\n- Create realistic excerpts attributed to real historical figures, organizations, or publications (with accurate dates and contexts)\n- Include a mix of document types: speeches, letters, newspaper editorials, government records, testimony, data/statistics\n- Mark AI-generated historical sources with "documentType": "reconstructed" so teachers know they are illustrative, not verbatim\n- Aim for 5-6 total documents (2-3 from source text + 2-3 reconstructed historical sources)\n- Each reconstructed source must include accurate historical context in the "source" field\n`
+           : '';
          const dbqPrompt = `You are an expert social studies and ELA curriculum designer creating a Document-Based Question (DBQ) activity.
 
 Target Audience: ${gradeLevel} students.
-Language: ${effectiveLanguage}.
+Language: ${effectiveLanguage}.${_dbqModeInstructions}
 ${effCustomInstructions ? `Teacher Instructions: ${effCustomInstructions}` : ''}
 
 Source Material:
@@ -35964,9 +35971,37 @@ Return ONLY JSON:
                 </button>
                 {expandedTools.includes('dbq') && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
-                    <div className="p-3 border-b border-slate-100 bg-rose-50">
-                        <p className="text-xs text-slate-600 mb-3">{t('dbq.desc') || 'Generate a complete Document-Based Question activity from your source text — with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.'}</p>
-                        <div className="bg-white rounded-lg p-2 border border-rose-100 mb-2">
+                    <div className="p-3 border-b border-slate-100 bg-rose-50 space-y-3">
+                        <p className="text-xs text-slate-600">{t('dbq.desc') || 'Generate a complete Document-Based Question activity from your source text — with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.'}</p>
+                        {/* DBQ Mode Selector */}
+                        <div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Analysis Mode</div>
+                            <div className="flex gap-1">
+                                {[['standard', '📄 Standard DBQ', 'Extract documents from your source text'],
+                                  ['perspectives', '⚔️ Competing Perspectives', 'AI finds 2+ viewpoints that agree and disagree'],
+                                  ['search', '🔍 Web-Enhanced', 'AI searches for real primary sources on your topic']
+                                ].map(([mode, label, desc]) => (
+                                    <button key={mode} onClick={() => window._dbqMode = mode}
+                                        className={`flex-1 text-left p-2 rounded-lg text-[10px] font-bold transition-all border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-500 hover:bg-rose-50'}`}>
+                                        <div>{label}</div>
+                                        <div className="font-normal mt-0.5 opacity-70">{desc}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        {/* Optional: Focus topic for search/perspectives modes */}
+                        {(window._dbqMode === 'search' || window._dbqMode === 'perspectives') && (
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                                    {window._dbqMode === 'search' ? 'Search Topic (optional — refines source hunting)' : 'Perspectives to Compare (optional)'}
+                                </label>
+                                <input type="text" placeholder={window._dbqMode === 'search' ? 'e.g. "Japanese internment primary sources"' : 'e.g. "Federalists vs Anti-Federalists"'}
+                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
+                                    aria-label="DBQ focus topic"
+                                    id="dbq-focus-topic" />
+                            </div>
+                        )}
+                        <div className="bg-white rounded-lg p-2 border border-rose-100">
                             <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">{t('dbq.includes') || 'DBQ Packet Includes'}</div>
                             <div className="flex flex-wrap gap-1">
                                 <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📄 Document Excerpts</span>
@@ -35974,6 +36009,8 @@ Return ONLY JSON:
                                 <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">🔗 Corroboration</span>
                                 <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">✍️ Essay Prompt</span>
                                 <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📊 4-Point Rubric</span>
+                                {(window._dbqMode === 'perspectives') && <span className="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium">⚔️ POV Comparison</span>}
+                                {(window._dbqMode === 'search') && <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium">🌐 Web Sources</span>}
                             </div>
                         </div>
                     </div>
@@ -46206,7 +46243,7 @@ Return only the corrected version of this exact text:`;
                         border: 'none', borderRadius: '8px 8px 0 0', transition: 'all 0.2s'
                     });
                     const docTypeBadge = (type) => {
-                        const colors = { primary: '#dc2626', secondary: '#2563eb', data: '#059669', visual: '#d97706', testimony: '#7c3aed' };
+                        const colors = { primary: '#dc2626', secondary: '#2563eb', data: '#059669', visual: '#d97706', testimony: '#7c3aed', reconstructed: '#0891b2' };
                         return <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: (colors[type] || '#64748b') + '20', color: colors[type] || '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{type || 'source'}</span>;
                     };
                     return (
@@ -46367,6 +46404,7 @@ Return only the corrected version of this exact text:`;
                                     <div className="flex items-center gap-3 mb-2">
                                         <h3 className="text-lg font-black text-slate-800">{activeDoc.title || `Document ${activeDoc.id}`}</h3>
                                         {docTypeBadge(activeDoc.documentType)}
+                                        {activeDoc.perspective && <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: '#7c3aed20', color: '#7c3aed', marginLeft: '4px' }}>⚔️ {activeDoc.perspective}</span>}
                                     </div>
                                     {activeDoc.source && <p className="text-xs text-slate-500 italic -mt-2 mb-3">Source: {activeDoc.source}</p>}
                                     {/* Document Excerpt with Annotation */}
@@ -46456,6 +46494,32 @@ Return only the corrected version of this exact text:`;
                         {/* ═══ CORROBORATION TAB ═══ */}
                         {dbqTab === 'corroboration' && (
                             <div className="space-y-5">
+                                {/* Competing Perspectives Overview (when available) */}
+                                {dbqData.perspectives && dbqData.perspectives.length >= 2 && (
+                                    <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
+                                        <h3 className="text-base font-black text-purple-800 mb-3">⚔️ Competing Perspectives</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {dbqData.perspectives.map((pov, pi) => (
+                                                <div key={pi} className={`rounded-xl p-4 border-2 ${pi === 0 ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}>
+                                                    <h4 className={`text-sm font-black mb-1 ${pi === 0 ? 'text-blue-800' : 'text-red-800'}`}>{pov.label}</h4>
+                                                    {pov.description && <p className="text-xs text-slate-600 mb-2">{pov.description}</p>}
+                                                    <div className="flex gap-1 flex-wrap">
+                                                        {(pov.docIds || []).map(id => (
+                                                            <span key={id} className={`text-xs font-bold px-2 py-0.5 rounded-full ${pi === 0 ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>Doc {id}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-3 bg-white rounded-lg p-3 border border-purple-100">
+                                            <label className="text-[10px] font-bold text-purple-600 uppercase block mb-1">Which perspective do you find more convincing? Why?</label>
+                                            <textarea value={r._perspectiveResponse || ''} onChange={(e) => setDbq('_perspectiveResponse', e.target.value)}
+                                                rows={3} placeholder="I find the perspective of... more convincing because..."
+                                                className="w-full text-sm border border-purple-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-purple-400 outline-none"
+                                                aria-label="Perspective comparison response" />
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4">
                                     <h3 className="text-base font-black text-emerald-800 mb-1">🔗 Corroboration Matrix</h3>
                                     <p className="text-xs text-emerald-600 mb-4">Compare how documents agree or disagree on key claims.</p>
