@@ -382,15 +382,10 @@ const d = labToolData.physics;
             var dt = 0.035;
 
             function draw() {
-
               if (!canvasEl.isConnected) {
-
                 canvasEl._physAnimActive = false;
-
                 return;
-
               }
-
               tick++;
 
               ctx.clearRect(0, 0, cW, cH);

@@ -126,21 +126,7 @@ const d = labToolData.wave;
 
           const canvasRef = function (canvasEl) {
 
-            if (!canvasEl) {
-
-              if (canvasRef._lastCanvas && canvasRef._lastCanvas._waveAnim) {
-
-                cancelAnimationFrame(canvasRef._lastCanvas._waveAnim);
-
-                canvasRef._lastCanvas._waveInit = false;
-
-                canvasRef._lastCanvas = null;
-
-              }
-
-              return;
-
-            }
+            if (!canvasEl) return;
 
             if (canvasEl._waveInit) return;
 
@@ -219,7 +205,7 @@ const d = labToolData.wave;
 
 
             function draw() {
-
+              if (!document.body.contains(canvasEl)) return;
               tick++;
               var t = tick;
 
