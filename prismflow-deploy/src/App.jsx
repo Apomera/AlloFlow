@@ -15028,6 +15028,7 @@ Keep coverageGaps to max 3 suggestions. Keep conceptConnections to max 2.`;
                   }
               }
               setGlossaryHealthCheck(parsed);
+              setShowHealthCheckPanel(true); // Re-assert visibility when results arrive
               setIsRunningHealthCheck(false);
               return parsed;
           }
@@ -15093,10 +15094,9 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                           }, 6000);
                       }
                   });
-              }, 12000);
+              }, 3000);
           }
       }
-      return () => { if (glossaryHealthCheckTimerRef.current) { clearTimeout(glossaryHealthCheckTimerRef.current); glossaryHealthCheckTimerRef.current = null; } };
       return () => { if (glossaryHealthCheckTimerRef.current) { clearTimeout(glossaryHealthCheckTimerRef.current); glossaryHealthCheckTimerRef.current = null; } };
   }, [generatedContent, history, runGlossaryHealthCheck]);
   const resilientJsonParse = async (jsonString, attempt = 1) => {

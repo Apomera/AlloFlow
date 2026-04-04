@@ -72,6 +72,7 @@
     { id: 'quickboards', icon: '⚡', label: 'Quick Boards' },
     { id: 'books', icon: '📚', label: 'Activity Sets' },
     { id: 'quest', icon: '🎮', label: 'Symbol Quest' },
+    { id: 'search', icon: '🔍', label: 'Symbol Search' },
     { id: 'garden', icon: '🌱', label: 'Word Garden' },
   ];
 
@@ -2009,27 +2010,25 @@
         var pages = parsed.map(function (p) { return { id: uid(), text: p.text || '', imagePrompt: p.imagePrompt || '', image: null }; });
         setStoryPages(pages);
         addToast && addToast('Story written! Generating illustrations...', 'success');
-        // Auto-generate illustrations
+        // Auto-generate illustrations — sequential to avoid rate limiting
         if (onCallImagen) {
           var illMap = {};
           pages.forEach(function (p) { illMap[p.id] = true; });
           setStoryIllustrating(illMap);
           for (var i = 0; i < pages.length; i++) {
-            (function (page) {
-              var fullPrompt = page.imagePrompt
-                ? ('Illustration for a children\'s social story: ' + page.imagePrompt + '. Warm, friendly, child-appropriate watercolor style. Simple composition. White or soft background. STRICTLY NO TEXT.')
-                : ('Warm illustration of a child in a social situation, friendly, simple, child-appropriate. NO TEXT.');
-              genWithRetry(fullPrompt, onCallImagen, onCallGeminiImageEdit, false, avatarRef, 600)
-                .then(function (img) {
-                  setStoryPages(function (prev) { return prev.map(function (pp) { return pp.id === page.id ? Object.assign({}, pp, { image: img }) : pp; }); });
-                  setStoryIllustrating(function (p) { var n = Object.assign({}, p); delete n[page.id]; return n; });
-                })
-                .catch(function (e) {
-                  warnLog("Illustration failed:", e.message);
-                  setStoryIllustrating(function (p) { var n = Object.assign({}, p); delete n[page.id]; return n; });
-                });
-            })(pages[i]);
-            if (i < pages.length - 1) await new Promise(function (r) { setTimeout(r, BATCH_DELAY); });
+            var page = pages[i];
+            var fullPrompt = page.imagePrompt
+              ? ('Illustration for a children\'s social story: ' + page.imagePrompt + '. Warm, friendly, child-appropriate watercolor style. Simple composition. White or soft background. STRICTLY NO TEXT.')
+              : ('Warm illustration of a child in a social situation, friendly, simple, child-appropriate. NO TEXT.');
+            try {
+              var img = await genWithRetry(fullPrompt, onCallImagen, onCallGeminiImageEdit, false, avatarRef, 600);
+              setStoryPages(function (prev) { var pid = page.id; return prev.map(function (pp) { return pp.id === pid ? Object.assign({}, pp, { image: img }) : pp; }); });
+            } catch (illErr) {
+              warnLog("Illustration failed for page " + (i + 1) + ":", illErr.message);
+            }
+            setStoryIllustrating(function (p) { var pid = page.id; var n = Object.assign({}, p); delete n[pid]; return n; });
+            // Rate-limit pause between pages (skip after last)
+            if (i < pages.length - 1) await new Promise(function (r) { setTimeout(r, 1500); });
           }
         }
       } catch (e) {
@@ -2439,6 +2438,235 @@
     var _questCorrectCount = useState(0); var questCorrectCount = _questCorrectCount[0]; var setQuestCorrectCount = _questCorrectCount[1];
     var _questInput = useState(''); var questInput = _questInput[0]; var setQuestInput = _questInput[1];
     var _questBoardPos = useState(0); var questBoardPos = _questBoardPos[0]; var setQuestBoardPos = _questBoardPos[1];
+
+    // ── Symbol Search state ──
+    var STORAGE_SEARCH_STATS = 'alloSymbolSearchStats';
+    var _srchMode = useState('menu'); var srchMode = _srchMode[0]; var setSrchMode = _srchMode[1];
+    var _srchDifficulty = useState(3); var srchDifficulty = _srchDifficulty[0]; var setSrchDifficulty = _srchDifficulty[1]; // 2-6 options
+    var _srchTarget = useState(null); var srchTarget = _srchTarget[0]; var setSrchTarget = _srchTarget[1];
+    var _srchOptions = useState([]); var srchOptions = _srchOptions[0]; var setSrchOptions = _srchOptions[1];
+    var _srchFeedback = useState(null); var srchFeedback = _srchFeedback[0]; var setSrchFeedback = _srchFeedback[1];
+    var _srchScore = useState(0); var srchScore = _srchScore[0]; var setSrchScore = _srchScore[1];
+    var _srchTotal = useState(0); var srchTotal = _srchTotal[0]; var setSrchTotal = _srchTotal[1];
+    var _srchCorrect = useState(0); var srchCorrect = _srchCorrect[0]; var setSrchCorrect = _srchCorrect[1];
+    var _srchStreak = useState(0); var srchStreak = _srchStreak[0]; var setSrchStreak = _srchStreak[1];
+    var _srchBest = useState(0); var srchBest = _srchBest[0]; var setSrchBest = _srchBest[1];
+    var _srchSpeaking = useState(false); var srchSpeaking = _srchSpeaking[0]; var setSrchSpeaking = _srchSpeaking[1];
+    var _srchRevealed = useState(false); var srchRevealed = _srchRevealed[0]; var setSrchRevealed = _srchRevealed[1];
+    // Listen & Build mode (sentence strip)
+    var _srchSentence = useState([]); var srchSentence = _srchSentence[0]; var setSrchSentence = _srchSentence[1];
+    var _srchSentenceTarget = useState([]); var srchSentenceTarget = _srchSentenceTarget[0]; var setSrchSentenceTarget = _srchSentenceTarget[1];
+    var _srchBuildPool = useState([]); var srchBuildPool = _srchBuildPool[0]; var setSrchBuildPool = _srchBuildPool[1];
+    // Persistent stats
+    var _srchStats = useState(function () { return load(STORAGE_SEARCH_STATS, { sessions: 0, totalCorrect: 0, totalTrials: 0, bestStreak: 0 }); });
+    var srchStats = _srchStats[0]; var setSrchStats = _srchStats[1];
+    var srchTimerRef = useRef(null);
+
+    // ── Symbol Search logic ──
+    function srchSpeakWord(label) {
+      setSrchSpeaking(true);
+      setSrchRevealed(false);
+      if (onCallTTS) {
+        onCallTTS(label, selectedVoice || 'Kore', 1).then(function (url) {
+          if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+          setSrchSpeaking(false);
+        }).catch(function () {
+          // Fallback to browser TTS
+          if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            var utt = new SpeechSynthesisUtterance(label);
+            applyVoice(utt);
+            utt.onend = function () { setSrchSpeaking(false); };
+            window.speechSynthesis.speak(utt);
+          } else { setSrchSpeaking(false); }
+        });
+      } else if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        var utt = new SpeechSynthesisUtterance(label);
+        applyVoice(utt);
+        utt.onend = function () { setSrchSpeaking(false); };
+        window.speechSynthesis.speak(utt);
+      } else { setSrchSpeaking(false); }
+    }
+
+    function srchPickRound(mode, pool) {
+      if (pool.length < 2) return;
+      var famData = familiarity || {};
+      // Garden-aware: prefer words at sprout/growing level
+      var target;
+      if (pool.length >= 4) {
+        var weighted = pool.map(function (item) {
+          var k = item.label.trim().toLowerCase();
+          var entry = famData[k];
+          if (!entry) return { item: item, weight: 3 };
+          var score = ((entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3) / 25;
+          if (score < 0.15) return { item: item, weight: 3 };
+          if (score < 0.45) return { item: item, weight: 2 };
+          return { item: item, weight: 1 };
+        });
+        var totalWeight = weighted.reduce(function (s, w) { return s + w.weight; }, 0);
+        var roll = Math.random() * totalWeight;
+        var cum = 0;
+        target = weighted[0].item;
+        for (var wi = 0; wi < weighted.length; wi++) {
+          cum += weighted[wi].weight;
+          if (roll < cum) { target = weighted[wi].item; break; }
+        }
+      } else {
+        target = pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      if (mode === 'build') {
+        // Pick 2-3 word phrase from gallery items
+        var phraseLen = Math.min(pool.length, Math.random() < 0.5 ? 2 : 3);
+        var phraseWords = [target];
+        while (phraseWords.length < phraseLen) {
+          var r = pool[Math.floor(Math.random() * pool.length)];
+          if (!phraseWords.find(function (w) { return w.id === r.id; })) phraseWords.push(r);
+        }
+        // Build a shuffled option pool (phrase words + distractors)
+        var buildPool = phraseWords.slice();
+        while (buildPool.length < Math.min(pool.length, phraseLen + 3)) {
+          var d = pool[Math.floor(Math.random() * pool.length)];
+          if (!buildPool.find(function (w) { return w.id === d.id; })) buildPool.push(d);
+        }
+        // Shuffle build pool
+        for (var bi = buildPool.length - 1; bi > 0; bi--) {
+          var bj = Math.floor(Math.random() * (bi + 1));
+          var bt = buildPool[bi]; buildPool[bi] = buildPool[bj]; buildPool[bj] = bt;
+        }
+        setSrchSentenceTarget(phraseWords);
+        setSrchSentence([]);
+        setSrchBuildPool(buildPool);
+        setSrchTarget(phraseWords[0]); // for audio
+        setSrchOptions([]);
+        setSrchFeedback(null);
+        setSrchRevealed(false);
+        // Speak the phrase
+        var phraseText = phraseWords.map(function (w) { return w.label; }).join(' ');
+        setTimeout(function () { srchSpeakWord(phraseText); }, 300);
+        return;
+      }
+
+      // Listen & Find mode (single word)
+      var numOpts = Math.max(2, Math.min(srchDifficulty, pool.length));
+      var opts = [target];
+      while (opts.length < numOpts) {
+        var r2 = pool[Math.floor(Math.random() * pool.length)];
+        if (!opts.find(function (o) { return o.id === r2.id; })) opts.push(r2);
+      }
+      // Shuffle
+      for (var si = opts.length - 1; si > 0; si--) {
+        var sj = Math.floor(Math.random() * (si + 1));
+        var st = opts[si]; opts[si] = opts[sj]; opts[sj] = st;
+      }
+      setSrchTarget(target);
+      setSrchOptions(opts);
+      setSrchFeedback(null);
+      setSrchRevealed(false);
+      // Auto-speak the word after a short delay
+      setTimeout(function () { srchSpeakWord(target.label); }, 300);
+    }
+
+    function srchCheckAnswer(picked) {
+      if (!srchTarget) return;
+      var correct = picked.id === srchTarget.id;
+      setSrchTotal(function (t) { return t + 1; });
+      recordFamiliarity(srchTarget.label, correct ? 'quest-correct' : 'quest-wrong');
+      if (!correct && picked.label) recordFamiliarity(picked.label, 'exposure');
+      // IEP trial
+      var receptiveGoal = activeGoals.find(function (g) { return g.type === 'receptive' && g.currentCount < g.targetCount; });
+      if (receptiveGoal) recordIepTrial(receptiveGoal.id, correct, 'search:listen:' + srchTarget.label);
+      if (correct) {
+        var ns = srchStreak + 1;
+        setSrchStreak(ns);
+        if (ns > srchBest) setSrchBest(ns);
+        var pts = 10 + (ns >= 5 ? 10 : ns >= 3 ? 5 : 0);
+        setSrchScore(function (s) { return s + pts; });
+        setSrchCorrect(function (c) { return c + 1; });
+        setSrchFeedback({ ok: true, msg: '✅ Correct! +' + pts + (ns >= 3 ? ' 🔥x' + ns : '') });
+        var pool = gallery.filter(function (g) { return g.image; });
+        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, pool); }, 1200);
+      } else {
+        setSrchStreak(0);
+        setSrchRevealed(true);
+        setSrchFeedback({ ok: false, msg: '❌ That was "' + picked.label + '". Listen for "' + srchTarget.label + '".' });
+        var pool2 = gallery.filter(function (g) { return g.image; });
+        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, pool2); }, 2500);
+      }
+    }
+
+    function srchCheckBuildAnswer(picked) {
+      var nextIdx = srchSentence.length;
+      if (nextIdx >= srchSentenceTarget.length) return;
+      var expected = srchSentenceTarget[nextIdx];
+      var correct = picked.id === expected.id;
+      recordFamiliarity(expected.label, correct ? 'quest-correct' : 'quest-wrong');
+      if (correct) {
+        var newSentence = srchSentence.concat([picked]);
+        setSrchSentence(newSentence);
+        if (newSentence.length === srchSentenceTarget.length) {
+          // Whole phrase completed
+          setSrchTotal(function (t) { return t + 1; });
+          setSrchCorrect(function (c) { return c + 1; });
+          var ns2 = srchStreak + 1;
+          setSrchStreak(ns2);
+          if (ns2 > srchBest) setSrchBest(ns2);
+          setSrchScore(function (s) { return s + 15 + (ns2 >= 3 ? 5 : 0); });
+          setSrchFeedback({ ok: true, msg: '✅ Perfect phrase! "' + srchSentenceTarget.map(function (w) { return w.label; }).join(' ') + '"' });
+          // IEP trial for expressive goal
+          var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
+          if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'search:build:' + srchSentenceTarget.map(function (w) { return w.label; }).join('+'));
+          var pool3 = gallery.filter(function (g) { return g.image; });
+          srchTimerRef.current = setTimeout(function () { srchPickRound('build', pool3); }, 1800);
+        } else {
+          setSrchFeedback({ ok: true, msg: '✅ ' + picked.label + '!' });
+        }
+      } else {
+        setSrchStreak(0);
+        setSrchTotal(function (t) { return t + 1; });
+        setSrchFeedback({ ok: false, msg: '❌ Next word should be "' + expected.label + '"' });
+        // Reset the sentence and retry
+        srchTimerRef.current = setTimeout(function () {
+          setSrchSentence([]);
+          setSrchFeedback(null);
+          // Re-speak
+          var phraseText = srchSentenceTarget.map(function (w) { return w.label; }).join(' ');
+          srchSpeakWord(phraseText);
+        }, 2000);
+      }
+    }
+
+    function srchStartSession(mode) {
+      setSrchMode(mode);
+      setSrchScore(0); setSrchTotal(0); setSrchCorrect(0); setSrchStreak(0); setSrchBest(0);
+      setSrchFeedback(null); setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
+      var pool = gallery.filter(function (g) { return g.image; });
+      srchPickRound(mode, pool);
+      // Increment session count
+      setSrchStats(function (prev) {
+        var upd = Object.assign({}, prev, { sessions: (prev.sessions || 0) + 1 });
+        store(STORAGE_SEARCH_STATS, upd);
+        return upd;
+      });
+    }
+
+    function srchEndSession() {
+      if (srchTimerRef.current) clearTimeout(srchTimerRef.current);
+      // Persist stats
+      setSrchStats(function (prev) {
+        var upd = Object.assign({}, prev, {
+          totalCorrect: (prev.totalCorrect || 0) + srchCorrect,
+          totalTrials: (prev.totalTrials || 0) + srchTotal,
+          bestStreak: Math.max(prev.bestStreak || 0, srchBest)
+        });
+        store(STORAGE_SEARCH_STATS, upd);
+        return upd;
+      });
+      setSrchMode('menu');
+      setSrchTarget(null); setSrchOptions([]); setSrchFeedback(null);
+      setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
+    }
 
     function questPickRound(mode, pool) {
       if (pool.length < 2) return;
@@ -2989,6 +3217,8 @@
         action: function () { setSymLabel(word.displayLabel); setSymCategory(word.category); setTab('symbols'); } });
       if (word.image && word.aacUses === 0) sug.push({ icon: '🎮', text: 'Practice in Symbol Quest to build recognition',
         action: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', gallery.filter(function (g) { return g.image; })); } });
+      if (word.image && word.growth !== 'mastered') sug.push({ icon: '🔍', text: 'Try Symbol Search — hear "' + word.displayLabel + '" and find the symbol',
+        action: function () { setTab('search'); srchStartSession('listen'); } });
       if (word.growth === 'mastered') sug.push({ icon: '⭐', text: 'Mastered! Consider introducing related words or multi-word phrases' });
       return sug;
     }
@@ -3013,6 +3243,266 @@
                 e('span', { style: { color: toGl.color, fontWeight: 700 } }, toGl.icon + ' ' + toGl.label))),
             e('button', { onClick: function () { setGrowthEvents(function (prev) { return prev.filter(function (_, j) { return j !== i; }); }); }, 'aria-label': 'Dismiss', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#9ca3af', padding: '4px' } }, '×'));
         }));
+    }
+
+    // ── Symbol Search Tab ────────────────────────────────────────────────
+    function renderSearchTab() {
+      var pool = gallery.filter(function (g) { return g.image; });
+      var SEARCH_MODES = [
+        { id: 'listen', icon: '🔊', label: 'Listen & Find', desc: 'Hear a word, tap the matching symbol' },
+        { id: 'build', icon: '🧩', label: 'Listen & Build', desc: 'Hear a phrase, tap symbols in order to build it' },
+      ];
+
+      if (pool.length < 3) {
+        return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#6b7280', padding: '40px' } },
+          e('div', { style: { fontSize: '48px' } }, '🔍'),
+          e('h3', { style: { fontWeight: 700, color: '#374151' } }, 'Symbol Search'),
+          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbols tab first, then come back to practice finding symbols by listening!')
+        );
+      }
+
+      // Menu screen
+      if (srchMode === 'menu') {
+        var allTimeAcc = srchStats.totalTrials > 0 ? Math.round((srchStats.totalCorrect / srchStats.totalTrials) * 100) : 0;
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px', gap: '16px', overflowY: 'auto' } },
+          e('div', { style: { fontSize: '48px' } }, '🔍'),
+          e('h3', { style: { fontWeight: 800, fontSize: '22px', color: '#374151', margin: 0 } }, 'Symbol Search'),
+          e('p', { style: { fontSize: '13px', color: '#6b7280', textAlign: 'center', maxWidth: '420px', margin: 0 } },
+            'Train the auditory-to-visual connection that AAC learners need. Hear a word or phrase, then find the matching symbol(s).'),
+          // Difficulty selector
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151' } },
+            e('span', { style: { fontWeight: 600 } }, 'Difficulty:'),
+            [2, 3, 4, 6].map(function (n) {
+              return e('button', {
+                key: n,
+                onClick: function () { setSrchDifficulty(n); },
+                'aria-label': n + ' options',
+                style: {
+                  padding: '4px 12px', borderRadius: '16px', border: '2px solid ' + (srchDifficulty === n ? PURPLE : '#d1d5db'),
+                  background: srchDifficulty === n ? LIGHT_PURPLE : '#f9fafb',
+                  color: srchDifficulty === n ? PURPLE : '#6b7280',
+                  fontWeight: srchDifficulty === n ? 700 : 500, fontSize: '12px', cursor: 'pointer'
+                }
+              }, n + ' choices');
+            })
+          ),
+          // All-time stats
+          srchStats.sessions > 0 && e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' } },
+            e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#059669' } }, srchStats.totalCorrect),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'all-time correct')
+            ),
+            e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: PURPLE } }, allTimeAcc + '%'),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'accuracy')
+            ),
+            e('div', { style: { flex: 1, background: '#fef3c7', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#d97706' } }, srchStats.bestStreak + 'x'),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'best streak')
+            )
+          ),
+          // Mode selection
+          e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', maxWidth: '400px' } },
+            SEARCH_MODES.map(function (m) {
+              var minPool = m.id === 'build' ? 4 : 3;
+              var disabled = pool.length < minPool;
+              return e('button', {
+                key: m.id,
+                onClick: function () { if (!disabled) srchStartSession(m.id); },
+                disabled: disabled,
+                'aria-label': m.label,
+                style: {
+                  display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px',
+                  background: disabled ? '#f9fafb' : 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
+                  border: '2px solid ' + (disabled ? '#e5e7eb' : '#c4b5fd'),
+                  borderRadius: '14px', cursor: disabled ? 'not-allowed' : 'pointer',
+                  textAlign: 'left', opacity: disabled ? 0.5 : 1, transition: 'all 0.2s'
+                }
+              },
+                e('div', { style: { fontSize: '32px', lineHeight: 1 } }, m.icon),
+                e('div', null,
+                  e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#374151' } }, m.label),
+                  e('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '2px' } }, m.desc),
+                  disabled && e('div', { style: { fontSize: '10px', color: '#f97316', marginTop: '3px' } }, 'Need at least ' + minPool + ' symbols')
+                )
+              );
+            })
+          ),
+          // Clinical note
+          e('div', { style: { maxWidth: '420px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px 14px', fontSize: '11px', color: '#1e40af' } },
+            e('strong', null, 'Clinical note: '),
+            'Symbol Search trains receptive auditory-to-visual mapping — the core skill AAC learners need to locate symbols from spoken input. ',
+            'Listen & Build adds sequential symbol construction for multi-word utterances. ',
+            'Results feed into Word Garden familiarity tracking and IEP goal recording.'
+          )
+        );
+      }
+
+      // Active session — controls bar
+      var backBtn = e('button', { onClick: function () { srchEndSession(); }, 'aria-label': 'Back to menu', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
+      var pctAcc = srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0;
+      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Score: ' + srchScore + ', Accuracy: ' + pctAcc + '%', style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
+        e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + srchScore),
+        e('span', null, '🎯 ' + srchCorrect + '/' + srchTotal),
+        srchStreak >= 2 && e('span', { style: { color: '#f97316', fontWeight: 700 } }, '🔥 x' + srchStreak),
+        e('span', null, pctAcc + '% acc')
+      );
+      var feedbackBar = srchFeedback && e('div', { role: 'status', 'aria-live': 'assertive', style: { padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, textAlign: 'center', background: srchFeedback.ok ? '#dcfce7' : '#fee2e2', color: srchFeedback.ok ? '#166534' : '#991b1b', border: '1px solid ' + (srchFeedback.ok ? '#86efac' : '#fca5a5') } }, srchFeedback.msg);
+
+      // ── Listen & Find mode ──
+      if (srchMode === 'listen') {
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '14px', gap: '12px', overflowY: 'auto' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, backBtn, scoreBar),
+          // Audio prompt area
+          e('div', { style: { textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
+            e('button', {
+              onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label); },
+              disabled: srchSpeaking,
+              'aria-label': 'Play word audio',
+              style: {
+                padding: '14px 28px', fontSize: '24px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
+                border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', transition: 'all 0.2s',
+                width: '72px', height: '72px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+              }
+            }, srchSpeaking ? '⏳' : '🔊'),
+            e('div', { style: { marginTop: '8px', fontSize: '12px', color: '#7c3aed', fontWeight: 600 } },
+              srchSpeaking ? 'Playing...' : 'Tap to hear again'),
+            // Reveal hint
+            srchRevealed && srchTarget && e('div', { style: { marginTop: '8px', fontSize: '16px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
+              '→ ' + srchTarget.label)
+          ),
+          feedbackBar,
+          // Symbol options grid
+          e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px', padding: '4px' } },
+            srchOptions.map(function (opt) {
+              var isCorrect = srchFeedback && srchFeedback.ok && opt.id === srchTarget.id;
+              var isWrong = srchFeedback && !srchFeedback.ok && srchRevealed && opt.id !== srchTarget.id;
+              var isAnswer = srchRevealed && opt.id === srchTarget.id;
+              return e('button', {
+                key: opt.id,
+                onClick: function () { if (!srchFeedback) srchCheckAnswer(opt); },
+                disabled: !!srchFeedback,
+                'aria-label': 'Symbol: ' + opt.label,
+                style: {
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                  padding: '12px 8px', borderRadius: '14px', cursor: srchFeedback ? 'default' : 'pointer',
+                  border: '3px solid ' + (isCorrect ? '#22c55e' : isAnswer ? '#22c55e' : isWrong ? '#fca5a5' : '#e5e7eb'),
+                  background: isCorrect ? '#dcfce7' : isAnswer ? '#dcfce7' : isWrong ? '#fee2e2' : '#fff',
+                  boxShadow: isCorrect || isAnswer ? '0 0 16px rgba(34,197,94,0.3)' : 'none',
+                  transition: 'all 0.15s', transform: isCorrect ? 'scale(1.05)' : 'scale(1)',
+                  opacity: isWrong ? 0.5 : 1
+                }
+              },
+                opt.image && e('img', { src: opt.image, alt: '', style: { width: '64px', height: '64px', objectFit: 'contain', borderRadius: '8px' } }),
+                (srchRevealed || (srchFeedback && srchFeedback.ok)) && e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#374151' } }, opt.label)
+              );
+            })
+          ),
+          // Hint button
+          !srchFeedback && !srchRevealed && e('div', { style: { textAlign: 'center' } },
+            e('button', {
+              onClick: function () { setSrchRevealed(true); },
+              'aria-label': 'Show hint',
+              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+            }, '💡 Show word hint')
+          )
+        );
+      }
+
+      // ── Listen & Build mode ──
+      if (srchMode === 'build') {
+        var phraseText = srchSentenceTarget.map(function (w) { return w.label; }).join(' ');
+        var nextIdx = srchSentence.length;
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '14px', gap: '12px', overflowY: 'auto' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, backBtn, scoreBar),
+          // Audio prompt
+          e('div', { style: { textAlign: 'center', padding: '16px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Build the phrase:'),
+            e('button', {
+              onClick: function () { srchSpeakWord(phraseText); },
+              disabled: srchSpeaking,
+              'aria-label': 'Replay phrase',
+              style: {
+                padding: '12px 24px', fontSize: '20px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
+                border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)',
+                width: '64px', height: '64px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+              }
+            }, srchSpeaking ? '⏳' : '🔊'),
+            e('div', { style: { marginTop: '6px', fontSize: '11px', color: '#7c3aed', fontWeight: 600 } },
+              srchSpeaking ? 'Playing...' : srchSentenceTarget.length + ' words — tap to hear again'),
+            // Reveal full phrase hint
+            srchRevealed && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
+              phraseText)
+          ),
+          feedbackBar,
+          // Sentence strip — shows progress
+          e('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', padding: '8px', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb', minHeight: '60px', alignItems: 'center', flexWrap: 'wrap' } },
+            srchSentenceTarget.map(function (w, idx) {
+              var filled = idx < srchSentence.length;
+              var isCurrent = idx === nextIdx;
+              return e('div', {
+                key: idx,
+                style: {
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+                  padding: '6px 10px', borderRadius: '10px', minWidth: '60px',
+                  border: '2px ' + (filled ? 'solid #22c55e' : isCurrent ? 'dashed ' + PURPLE : 'dashed #d1d5db'),
+                  background: filled ? '#dcfce7' : isCurrent ? LIGHT_PURPLE : '#fff'
+                }
+              },
+                filled
+                  ? (srchSentence[idx].image && e('img', { src: srchSentence[idx].image, alt: '', style: { width: '36px', height: '36px', objectFit: 'contain', borderRadius: '6px' } }))
+                  : e('div', { style: { width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', color: isCurrent ? PURPLE : '#d1d5db' } }, isCurrent ? '?' : '·'),
+                filled && e('div', { style: { fontSize: '9px', fontWeight: 600, color: '#166534' } }, srchSentence[idx].label)
+              );
+            })
+          ),
+          // Build pool — available symbols to choose from
+          e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '8px', padding: '4px' } },
+            srchBuildPool.map(function (opt) {
+              var alreadyUsed = srchSentence.some(function (s) { return s.id === opt.id; });
+              return e('button', {
+                key: opt.id,
+                onClick: function () { if (!alreadyUsed && nextIdx < srchSentenceTarget.length) srchCheckBuildAnswer(opt); },
+                disabled: alreadyUsed,
+                'aria-label': 'Symbol: ' + opt.label,
+                style: {
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                  padding: '10px 6px', borderRadius: '12px', cursor: alreadyUsed ? 'default' : 'pointer',
+                  border: '2px solid ' + (alreadyUsed ? '#d1fae5' : '#e5e7eb'),
+                  background: alreadyUsed ? '#f0fdf4' : '#fff',
+                  opacity: alreadyUsed ? 0.4 : 1, transition: 'all 0.15s'
+                }
+              },
+                opt.image && e('img', { src: opt.image, alt: '', style: { width: '52px', height: '52px', objectFit: 'contain', borderRadius: '6px' } }),
+                e('div', { style: { fontSize: '10px', fontWeight: 600, color: alreadyUsed ? '#9ca3af' : '#374151' } }, opt.label)
+              );
+            })
+          ),
+          // Controls
+          e('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
+            !srchRevealed && e('button', {
+              onClick: function () { setSrchRevealed(true); },
+              'aria-label': 'Show phrase hint',
+              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+            }, '💡 Show phrase'),
+            e('button', {
+              onClick: function () {
+                setSrchSentence([]);
+                setSrchFeedback(null);
+                srchSpeakWord(phraseText);
+              },
+              'aria-label': 'Reset phrase',
+              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+            }, '↻ Reset')
+          )
+        );
+      }
+
+      // Fallback
+      return e('div', null, 'Unknown mode');
     }
 
     function renderGardenTab() {
@@ -4346,15 +4836,43 @@
           // Edit panel for active profile
           showAvatar && e('div', { style: { borderTop: '1px solid #f3f4f6', paddingTop: '10px' } },
             activeProfile.image && e('img', { src: activeProfile.image, style: { width: '100%', maxHeight: '70px', objectFit: 'cover', borderRadius: '7px', marginBottom: '8px' } }),
-            e('label', { style: S.lbl }, 'Name'),
+            e('label', { style: S.lbl }, 'Display Name (local only)'),
             e('input', { type: 'text', value: avatarName, onChange: function (ev) {
               var val = ev.target.value; setAvatarName(val);
               var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { name: val }) : p; });
               setProfiles(upd); store(STORAGE_PROFILES, upd);
-            }, placeholder: 'e.g. Marcus', 'aria-label': 'Avatar name', style: Object.assign({}, S.input, { marginBottom: '6px' }) }),
+            }, placeholder: 'e.g. Marcus (never leaves this device)', 'aria-label': 'Display name - local only', style: Object.assign({}, S.input, { marginBottom: '2px' }) }),
+            e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '0 0 6px' } }, 'Used in Social Stories & prints. Never exported or synced.'),
             e('label', { style: S.lbl }, 'Codename (used for tracking)'),
             e('div', { style: { display: 'flex', gap: '4px', marginBottom: '6px', alignItems: 'center' } },
-              e('span', { style: { flex: 1, fontSize: '12px', fontWeight: 600, color: PURPLE, padding: '5px 8px', background: LIGHT_PURPLE, borderRadius: '6px', border: '1px solid #c4b5fd' } }, activeProfile.codename || 'No codename'),
+              e('select', {
+                value: (activeProfile.codename || '').split(' ')[0] || '',
+                onChange: function (ev) {
+                  var animal = (activeProfile.codename || '').split(' ').slice(1).join(' ') || CN_ANI[0];
+                  var cn = ev.target.value ? (ev.target.value + ' ' + animal) : animal;
+                  var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
+                  setProfiles(upd); store(STORAGE_PROFILES, upd);
+                },
+                'aria-label': 'Codename adjective',
+                style: { flex: 1, fontSize: '11px', fontWeight: 600, color: PURPLE, padding: '4px 6px', background: LIGHT_PURPLE, borderRadius: '6px', border: '1px solid #c4b5fd', cursor: 'pointer' }
+              },
+                e('option', { value: '' }, '— Adjective —'),
+                CN_ADJ.map(function (a) { return e('option', { key: a, value: a }, a); })
+              ),
+              e('select', {
+                value: (activeProfile.codename || '').split(' ').slice(1).join(' ') || '',
+                onChange: function (ev) {
+                  var adj = (activeProfile.codename || '').split(' ')[0] || CN_ADJ[0];
+                  var cn = ev.target.value ? (adj + ' ' + ev.target.value) : adj;
+                  var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
+                  setProfiles(upd); store(STORAGE_PROFILES, upd);
+                },
+                'aria-label': 'Codename animal',
+                style: { flex: 1, fontSize: '11px', fontWeight: 600, color: PURPLE, padding: '4px 6px', background: LIGHT_PURPLE, borderRadius: '6px', border: '1px solid #c4b5fd', cursor: 'pointer' }
+              },
+                e('option', { value: '' }, '— Animal —'),
+                CN_ANI.map(function (a) { return e('option', { key: a, value: a }, a); })
+              ),
               e('button', { onClick: function () {
                 var cn = generateCodename();
                 var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
@@ -6174,6 +6692,7 @@
             tab === 'quickboards' && renderQuickBoardsTab(),
             tab === 'books' && renderBooksTab(),
             tab === 'quest' && renderQuestTab(),
+            tab === 'search' && renderSearchTab(),
             tab === 'garden' && renderGardenTab()
           )
         )
