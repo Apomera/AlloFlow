@@ -7142,26 +7142,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7176,7 +7176,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2bc1959/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c743c0a/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -12103,7 +12103,8 @@ Return only the corrected version of this exact text:`;
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
-  const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(5);
+  const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(8);
+  const [pdfTargetScore, setPdfTargetScore] = useState(90);
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const [pdfPreviewTheme, setPdfPreviewTheme] = useState('professional');
   const [pdfPreviewFontSize, setPdfPreviewFontSize] = useState(16);
@@ -17974,7 +17975,7 @@ Return ONLY valid JSON:
     selectedFont, responses: studentResponses, history, inputText, gradeLevel,
     studentNickname, isTeacherMode, generatedContent,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
-    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
+    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
     pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
@@ -50271,11 +50272,19 @@ Return only the corrected version of this exact text:`;
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px]">
-                        <span className="font-bold text-slate-600">Auto-fix Loops: {pdfAutoFixPasses}</span>
-                        <span className="text-slate-400">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Standard' : pdfAutoFixPasses <= 5 ? 'Thorough' : 'Aggressive'}</span>
+                        <span className="font-bold text-slate-600">Target Score: {pdfTargetScore}</span>
+                        <span className="text-slate-400">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
                       </div>
-                      <input type="range" min="0" max="10" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Auto-fix loop count" />
-                      <div className="flex justify-between text-[8px] text-slate-400"><span>0 (off)</span><span>5 (default)</span><span>10 (max)</span></div>
+                      <input type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label="Target accessibility score" />
+                      <div className="flex justify-between text-[8px] text-slate-400"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className="font-bold text-slate-600">Max Fix Passes: {pdfAutoFixPasses}</span>
+                        <span className="text-slate-400">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Quick' : pdfAutoFixPasses <= 5 ? 'Standard' : pdfAutoFixPasses <= 8 ? 'Thorough' : 'Maximum'}</span>
+                      </div>
+                      <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Max fix pass count" />
+                      <div className="flex justify-between text-[8px] text-slate-400"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px]">
