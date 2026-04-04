@@ -8309,20 +8309,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 phonemes: wordSoundsPhonemes?.phonemes || [],
               },
             ]);
-                ...currentQueue,
-                wordEntry,
-              ];
-              debugLog(
-                "♻️ Re-queued missed word for retry:",
-                currentWordSoundsWord,
-              );
-            }
-            */
-            updateMasteryStats(
-              wordSoundsActivity,
-              isCorrect,
-              currentWordSoundsWord,
-            );
             const currentLessonConfig = lessonPlanConfig;
             const hasLessonPlan =
               currentLessonConfig &&
