@@ -4322,90 +4322,6 @@ const AdventureAmbience = React.memo((props) => {
     if (Ext) return <Ext {...props} />;
     return null;
 });
-const renumberCitations = (text, originalChunks) => {
-    if (!text || !originalChunks || originalChunks.length === 0) {
-        return { renumberedText: text, reorderedChunks: originalChunks || [] };
-    }
-    const reverseMap = {
-        '⁰': 0, '¹': 1, '²': 2, '³': 3, '⁴': 4,
-        '⁵': 5, '⁶': 6, '⁷': 7, '⁸': 8, '⁹': 9
-    };
-    const decodeSuperscript = (str) => {
-        return parseInt(str.split('').map(c => reverseMap[c]).join(''), 10);
-    };
-    const newChunksMap = new Map();
-    const reorderedChunks = [];
-    let nextIndex = 1;
-    const renumberedText = text.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, (match, digits) => {
-        const oldIdxOneBased = decodeSuperscript(digits);
-        const oldIdx = oldIdxOneBased - 1;
-        if (!originalChunks[oldIdx]) return match;
-        let newIdx;
-        if (newChunksMap.has(oldIdx)) {
-            newIdx = newChunksMap.get(oldIdx);
-        } else {
-            newIdx = nextIndex++;
-            newChunksMap.set(oldIdx, newIdx);
-            reorderedChunks.push(originalChunks[oldIdx]);
-        }
-        return `⁽${toSuperscript(newIdx)}⁾`;
-    });
-    if (reorderedChunks.length === 0) {
-        return { renumberedText: text, reorderedChunks: [] };
-    }
-    return { renumberedText, reorderedChunks };
-};
-const validateAndRepairCitations = (text, groundingChunks) => {
-    if (!text || !groundingChunks || groundingChunks.length === 0) return text;
-    const reverseMap = {
-        '⁰': 0, '¹': 1, '²': 2, '³': 3, '⁴': 4,
-        '⁵': 5, '⁶': 6, '⁷': 7, '⁸': 8, '⁹': 9
-    };
-    const decodeSuperscript = (str) => {
-        return parseInt(str.split('').map(c => reverseMap[c]).join(''), 10);
-    };
-    const usedCitations = new Set();
-    let repairedText = text.replace(/(\[)?⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾(\]\([^)]+\))?/g, (match, bracket, digits, linkPart) => {
-        const citNum = decodeSuperscript(digits);
-        usedCitations.add(citNum);
-        if (bracket && linkPart) return match;
-        const chunkIdx = citNum - 1;
-        const chunk = groundingChunks[chunkIdx];
-        if (chunk?.web?.uri) {
-            return `[⁽${digits}⁾](${chunk.web.uri})`;
-        }
-        return `⁽${digits}⁾`;
-    });
-    const bibMatch = repairedText.match(/### Source Text References\n\n([\s\S]*?)(?=\n\n#|$)/);
-    if (bibMatch) {
-        const bibSection = bibMatch[1];
-        const listedNums = new Set();
-        bibSection.replace(/^(\d+)\.\s/gm, (_, num) => {
-            listedNums.add(parseInt(num, 10));
-            return _;
-        });
-        const missingEntries = [];
-        usedCitations.forEach(num => {
-            if (!listedNums.has(num)) {
-                const chunk = groundingChunks[num - 1];
-                if (chunk?.web) {
-                    const title = chunk.web.title || "Source";
-                    const uri = chunk.web.uri || "#";
-                    missingEntries.push({ num, title, uri });
-                }
-            }
-        });
-        if (missingEntries.length > 0) {
-            missingEntries.sort((a, b) => a.num - b.num);
-            const additions = missingEntries.map(e => `${e.num}. [${e.title}](${e.uri})`).join('\n');
-            repairedText = repairedText.replace(
-                /(### Source Text References\n\n[\s\S]*?)(\n\n#|$)/,
-                `$1\n${additions}$2`
-            );
-        }
-    }
-    return repairedText;
-};
 /**
  * Deterministic normalizer for citation placement.
  * Fixes: citations before punctuation, duplicate citations, extra whitespace,
@@ -4469,26 +4385,6 @@ const generateBibliographyString = (metadata, citationStyle = 'Links Only', titl
         bib += `${num}. [${title}](${uri})\n\n`;
     });
     return bib;
-};
-const sanitizeRawUrls = (text) => {
-    if (!text) return text;
-    const linkPlaceholders = [];
-    let protectedText = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match) => {
-        const placeholder = `__LINK_PLACEHOLDER_${linkPlaceholders.length}__`;
-        linkPlaceholders.push(match);
-        return placeholder;
-    });
-    protectedText = protectedText.replace(/https?:\/\/[^\s<>\[\]()'"]+/gi, (url) => {
-        if (/[a-zA-Z0-9]$/.test(url) && !url.includes('?') && url.length > 50) {
-            return '';
-        }
-        return '';
-    });
-    protectedText = protectedText.replace(/\s{2,}/g, ' ').replace(/\s+([.,;:!?])/g, '$1');
-    linkPlaceholders.forEach((link, idx) => {
-        protectedText = protectedText.replace(`__LINK_PLACEHOLDER_${idx}__`, link);
-    });
-    return protectedText;
 };
 const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson = false, includeBibliography = true) => {
     if (!metadata) return text;
@@ -7162,6 +7058,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/persona_ui_module.js');
     loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/doc_pipeline_module.js');
     loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/content_engine_module.js');
+    loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b7a022/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -25700,820 +25597,62 @@ Return ONLY JSON.`;
         setIsProcessing(false);
     }
   };
-  const derangeShuffle = (arr) => {
-    if (arr.length <= 1) return [...arr];
-    const shuffled = [...arr];
-    let maxAttempts = 50;
-    do {
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      maxAttempts--;
-    } while (
-      maxAttempts > 0 &&
-      shuffled.some((val, idx) => val === arr[idx])
-    );
-    return shuffled;
-  };
-    const generateEscapeRoom = async () => {
-    if (!inputText.trim()) {
-      addToast(t('errors.no_text'), 'error');
-      return;
-    }
-    const puzzleCount = escapeRoomState?.puzzleCount || 10;
-    const difficultyPresets = {
-      easy: { timePerPuzzle: 45, lives: 99, hints: 5, xpMultiplier: 0.5 },
-      normal: { timePerPuzzle: 30, lives: 3, hints: 3, xpMultiplier: 1.0 },
-      hard: { timePerPuzzle: 20, lives: 1, hints: 1, xpMultiplier: 2.0 }
-    };
-    const selectedDifficulty = escapeRoomState?.difficulty || 'normal';
-    const preset = difficultyPresets[selectedDifficulty];
-    const totalTime = puzzleCount * preset.timePerPuzzle;
-    setEscapeRoomState(prev => ({
-      ...prev,
-      isActive: true,
-      isGenerating: true,
-      room: null,
-      puzzles: [],
-      solvedPuzzles: new Set(),
-      isEscaped: false,
-      timeRemaining: totalTime,
-      maxTime: totalTime,
-      selectedObject: null,
-      discoveredClues: {},
-      finalDoorUnlocked: false,
-      finalDoorPuzzle: null,
-      showFinalDoor: false,
-      difficulty: selectedDifficulty,
-      lives: preset.lives,
-      maxLives: preset.lives,
-      hintsRemaining: preset.hints,
-      maxHints: preset.hints,
-      xpMultiplier: preset.xpMultiplier,
-      streak: 0,
-      wrongAttempts: 0,
-      isGameOver: false,
-      timerPaused: true
-    }));
-    setEscapeTimeLeft(totalTime);
-    setIsEscapeTimerRunning(false);
-    const escapeRoomPrompt = `You are creating an ADVANCED educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.
-SOURCE CONTENT:
-${inputText.substring(0, 6000)}
-TASK:
-Generate a themed escape room with ${puzzleCount} interactive objects. Each object hides a DIFFERENT TYPE of puzzle.
-PUZZLE TYPES (use a variety - ensure good mix):
-1. "mcq" - Multiple choice question with 4 options
-2. "sequence" - Put 4-5 items in the correct order (chronological, size, importance, etc.)
-3. "cipher" - A content-based RIDDLE with word options. The riddle clues to a key vocabulary word. MUST include "wordbank" array with 1 correct + 3-4 decoy words
-4. "matching" - Match 4 pairs of related items (term↔definition, cause↔effect, etc.)
-5. "scramble" - Unscramble letters to form a key vocabulary word from the content
-6. "fillin" - Fill-in-the-blank CLOZE STYLE with wordbank (NO TYPING - student selects from choices). MUST include "wordbank" array with 1 correct + 3-4 decoys
-CLUE CHAIN:
-- Create connections between puzzles! When a puzzle is solved, it can reveal a clue that helps with another puzzle.
-- Puzzle 1 should reveal a clue for Puzzle 3
-- Puzzle 2 should reveal a clue for Puzzle 4
-- This creates a narrative flow and interdependency.
-FINAL DOOR:
-- Include a final synthesis puzzle that requires knowledge from solving the other puzzles
-- This should be a challenging fill-in-the-blank or short answer that ties everything together
-IMPORTANT:
-- Generate EXACTLY ${puzzleCount} objects and ${puzzleCount} puzzles
-- All content must be answerable from the source material
-- Theme should relate to the content topic (science lab, historical archive, mystery library, etc.)
-- Each object needs a thematic emoji and evocative name
-- Questions should test understanding, not just memorization
-- HINTS MUST BE VAGUE AND INDIRECT: Hints should NEVER reveal or strongly suggest the correct answer. Good hints encourage thinking about the topic area without pointing to specific answers. Bad: "The answer is the first option" or "It starts with P". Good: "Think about what you learned about energy..." or "Consider the time period...". Hints are a nudge in the right direction, NOT a giveaway.
-Return ONLY valid JSON (no markdown wrapper):
-{
-  "room": {
-    "theme": "string (e.g., 'Ancient Library', 'Space Station Lab', 'Detective Office')",
-    "description": "2-3 sentence atmospheric description setting the scene",
-  },
-  "objects": [
-    { "id": "obj1", "emoji": "📖", "name": "Old Book", "description": "A dusty tome with strange symbols" },
-    { "id": "obj2", "emoji": "🗝️", "name": "Golden Key", "description": "An ornate key under glass" },
-    ...repeat for ${puzzleCount} objects total...
-  ],
-  "puzzles": [
-    {
-      "id": "p1",
-      "type": "mcq",
-      "linkedObjectId": "obj1",
-      "question": "Multiple choice question?",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctIndex": 0,
-      "hint": "Optional hint text",
-      "revealsClueFor": "p3",
-      "revealedClue": "The clue text that helps solve puzzle p3",
-    },
-    {
-      "id": "p2",
-      "type": "sequence",
-      "linkedObjectId": "obj2",
-      "question": "Put these items in the correct order:",
-      "items": ["First item", "Second item", "Third item", "Fourth item"],
-      "correctOrder": [0, 1, 2, 3],
-      "hint": "Think chronologically...",
-    },
-    {
-      "id": "p3",
-      "type": "fillin",
-      "linkedObjectId": "obj3",
-      "question": "Complete this sentence:",
-      "sentence": "The process of _____ converts sunlight into energy.",
-      "answer": "photosynthesis",
-      "wordbank": ["photosynthesis", "respiration", "digestion", "evaporation"],
-      "hint": "Plants do this with sunlight...",
-    },
-    {
-      "id": "p4",
-      "type": "matching",
-      "linkedObjectId": "obj4",
-      "question": "Match each term with its definition:",
-      "pairs": [
-        { "left": "Term 1", "right": "Definition 1" },
-        { "left": "Term 2", "right": "Definition 2" },
-        { "left": "Term 3", "right": "Definition 3" },
-        { "left": "Term 4", "right": "Definition 4" }
-      ],
-      "hint": "Think about the relationships...",
-    },
-    {
-      "id": "p5",
-      "type": "scramble",
-      "linkedObjectId": "obj5",
-      "question": "Unscramble this key term from the content:",
-      "scrambledWord": "NOMTPOAIHHS",
-      "answer": "PHOTOSYNTHESIS",
-      "hint": "It's a scientific process...",
-    },
-    {
-      "id": "p6",
-      "type": "cipher",
-      "linkedObjectId": "obj6",
-      "question": "Solve this riddle:",
-      "encodedText": "I am made by plants using sunlight. I am stored in glucose. I release oxygen as a byproduct. What process am I?",
-      "answer": "photosynthesis",
-      "wordbank": ["photosynthesis", "respiration", "decomposition", "fermentation"],
-      "hint": "Think about what plants do during the day...",
-    }
-    ...continue for all ${puzzleCount} puzzles...
-  ],
-  "finalDoor": {
-    "sentence": "A fill-in-the-blank synthesis sentence with _____ for the blank - e.g., 'The main concept that connects all the puzzles is _____'",
-    "answer": "The expected answer word",
-    "wordbank": ["correct_answer", "decoy1", "decoy2", "decoy3"],
-    "acceptableAnswers": ["answer1", "answer2", "similar answer"]
-  }
-}`;
-    try {
-      const response = await callGemini(escapeRoomPrompt, true);
-      let jsonText = response.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
-      const data = JSON.parse(jsonText);
-      if (data.room && data.objects && data.puzzles) {
-        const processedPuzzles = data.puzzles.map((p, i) => {
-          const processed = {
-            ...p,
-            linkedObject: data.objects.find(o => o.id === p.linkedObjectId) || data.objects[i]
-          };
-          if (p.type === 'sequence' && p.items) {
-            const indices = p.items.map((_, i) => i);
-            processed.shuffledItems = derangeShuffle(indices);
-          }
-          if (p.type === 'scramble' && p.scrambledWord) {
-            processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(c => c.trim()));
-          }
-          if (p.type === 'matching' && p.pairs) {
-            processed.leftColumn = derangeShuffle(p.pairs.map(pair => pair.left));
-            processed.rightColumn = derangeShuffle(p.pairs.map(pair => pair.right));
-          }
-          if (p.type === 'fillin' && p.wordbank) {
-            processed.wordbank = derangeShuffle(p.wordbank);
-          }
-          if (p.type === 'cipher' && p.wordbank) {
-            processed.wordbank = derangeShuffle(p.wordbank);
-          }
-          return processed;
-        });
-        let processedFinalDoor = data.finalDoor || null;
-        if (processedFinalDoor && processedFinalDoor.wordbank) {
-          processedFinalDoor = {
-            ...processedFinalDoor,
-            wordbank: derangeShuffle(processedFinalDoor.wordbank)
-          };
-        }
-        setEscapeRoomState(prev => ({
-          ...prev,
-          isGenerating: false,
-          isActive: false,
-          room: data.room,
-          puzzles: processedPuzzles,
-          objects: data.objects,
-          totalPuzzles: processedPuzzles.length,
-          finalDoorPuzzle: processedFinalDoor,
-          savedEscapeRoom: { room: data.room, objects: data.objects, puzzles: data.puzzles, finalDoor: data.finalDoor || processedFinalDoor },
-          isPreview: true,
-        }));
-        playSound('correct');
-      } else {
-        throw new Error('Invalid escape room data structure');
-      }
-    } catch (e) {
-      warnLog('Escape room generation failed:', e);
-      addToast(t('errors.generation_failed'), 'error');
-      setEscapeRoomState(prev => ({ ...prev, isActive: false, isGenerating: false }));
-    }
-  };
-  const launchCollaborativeEscapeRoom = async () => {
-    if (!inputText.trim()) {
-      addToast(t('errors.no_text'), 'error');
-      return;
-    }
-    if (!activeSessionCode) {
-      addToast(t('errors.no_session'), 'error');
-      return;
-    }
-    setEscapeRoomState(prev => ({
-      ...prev,
-      isActive: true,
-      isGenerating: true,
-      room: null,
-      puzzles: [],
-      solvedPuzzles: new Set(),
-      isEscaped: false,
-      timeRemaining: 300
-    }));
-    const escapeRoomPrompt = `You are creating an educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.
-SOURCE CONTENT:
-${inputText.substring(0, 6000)}
-TASK:
-Generate a themed escape room with 10 interactive objects. Each object hides a puzzle.
-Return ONLY valid JSON:
-{
-  "room": { "theme": "string", "description": "2-3 sentence description" },
-  "objects": [{ "id": "obj1", "emoji": "📖", "name": "Old Book" }],
-  "puzzles": [{ "id": "p1", "type": "mcq", "linkedObjectId": "obj1", "question": "?", "options": ["A","B","C","D"], "correctIndex": 0, "hint": "" }]
-}`;
-    try {
-      const response = await callGemini(escapeRoomPrompt, true);
-      let jsonText = response.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
-      const data = JSON.parse(jsonText);
-      if (data.room && data.objects && data.puzzles) {
-        const processedPuzzles = data.puzzles.map((p, i) => {
-          let shuffledItems = null;
-          let correctOrder = p.correctOrder || null;
-          if (p.type === 'sequence' && p.items) {
-            const indices = p.items.map((_, idx) => idx);
-            shuffledItems = derangeShuffle(indices);
-            correctOrder = p.items.map((_, idx) => idx);
-          }
-          return {
-            ...p,
-            linkedObject: data.objects.find(o => o.id === p.linkedObjectId) || data.objects[i],
-            shuffledItems: shuffledItems,
-            correctOrder: correctOrder,
-            displayLetters: p.type === 'scramble' && p.scrambledWord ? derangeShuffle(p.scrambledWord.split('')) : null
-          };
-        });
-        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-        await updateDoc(sessionRef, {
-          'escapeRoomState': {
-            isActive: true,
-            room: data.room,
-            puzzles: processedPuzzles,
-            objects: data.objects,
-            teams: {},
-            teamProgress: {
-              Red: { solvedPuzzles: [], isEscaped: false },
-              Blue: { solvedPuzzles: [], isEscaped: false },
-              Green: { solvedPuzzles: [], isEscaped: false },
-              Yellow: { solvedPuzzles: [], isEscaped: false }
-            },
-            timeRemaining: 300,
-            startedAt: Date.now(),
-            hostId: user?.uid || null
-          }
-        });
-        setEscapeRoomState(prev => ({
-          ...prev,
-          isGenerating: false,
-          room: data.room,
-          puzzles: processedPuzzles,
-          objects: data.objects,
-          totalPuzzles: processedPuzzles.length
-        }));
-        playSound('correct');
-        addToast(t('escape_room.team_race'), 'success');
-      } else {
-        throw new Error('Invalid escape room data');
-      }
-    } catch (e) {
-      warnLog('Collaborative escape room failed:', e);
-      addToast(t('errors.generation_failed'), 'error');
-      setEscapeRoomState(prev => ({ ...prev, isActive: false, isGenerating: false }));
-    }
-  };
-  const endCollaborativeEscapeRoom = async () => {
-    if (!activeSessionCode) return;
-    try {
-      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-      await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
-      addToast(t('escape_room.end_game'), 'success');
-    } catch (e) { warnLog('Failed to end escape room:', e); }
-    resetEscapeRoom();
-  };
-  const handlePuzzleSolved = (puzzleId) => {
-    const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
-    if (!puzzle) return;
-    playSound('correct');
-    const newSolved = new Set(escapeRoomState.solvedPuzzles);
-    newSolved.add(puzzleId);
-    const newClues = { ...escapeRoomState.discoveredClues };
-    if (puzzle.revealsClueFor && puzzle.revealedClue) {
-      newClues[puzzle.revealsClueFor] = puzzle.revealedClue;
-    }
-    const shouldUnlockDoor = newSolved.size >= 4 && !escapeRoomState.finalDoorUnlocked;
-    const baseXP = 20;
-    const calculatedStreak = escapeRoomState.currentStreak + 1;
-    const streakMultiplier = calculatedStreak >= 5 ? 3 : calculatedStreak >= 3 ? 2 : 1;
-    const difficultyMultiplier = escapeRoomState.difficulty === 'hard' ? 1.5 :
-                                 escapeRoomState.difficulty === 'easy' ? 0.75 : 1;
-    const hintPenalty = (escapeRoomState.hintsUsed?.[puzzleId] || 0) * 5;
-    const timeBonus = escapeRoomState.timerEnabled && escapeRoomState.timeRemaining > 180 ? 10 :
-                      escapeRoomState.timerEnabled && escapeRoomState.timeRemaining > 60 ? 5 : 0;
-    const puzzleXP = Math.max(5, Math.round((baseXP * streakMultiplier * difficultyMultiplier) + timeBonus - hintPenalty));
-    handleScoreUpdate(puzzleXP, "Escape Room Puzzle", puzzleId);
-    setEscapeRoomState(prev => ({
-      ...prev,
-      solvedPuzzles: newSolved,
-      selectedObject: null,
-      discoveredClues: newClues,
-      finalDoorUnlocked: shouldUnlockDoor || prev.finalDoorUnlocked,
-      showClueAnimation: puzzle.revealsClueFor ? true : false,
-      currentStreak: calculatedStreak,
-      bestStreak: Math.max(prev.bestStreak, calculatedStreak),
-      streakMultiplier: streakMultiplier,
-      textInput: '',
-      sequenceOrder: [],
-      matchingPairs: [],
-      matchingSelected: null,
-      scrambleLetters: []
-    }));
-    if (activeSessionCode && sessionData?.escapeRoomState?.isActive && user?.uid) {
-      const userTeam = sessionData.escapeRoomState.teams?.[user.uid];
-      if (userTeam) {
-        const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'sessions', activeSessionCode);
-        const currentSolved = sessionData.escapeRoomState.teamProgress?.[userTeam]?.solvedPuzzles || [];
-        const totalPuzzles = sessionData.escapeRoomState.puzzles?.length || 5;
-        const newTeamSolved = [...new Set([...currentSolved, puzzleId])];
-        const isEscaped = newTeamSolved.length >= totalPuzzles;
-        updateDoc(sessionRef, {
-          [`escapeRoomState.teamProgress.${userTeam}.solvedPuzzles`]: newTeamSolved,
-          [`escapeRoomState.teamProgress.${userTeam}.isEscaped`]: isEscaped
-        }).catch(e => warnLog('Failed to sync puzzle progress:', e));
-        if (isEscaped) {
-          addToast(t('escape_room.team_escaped', { team: userTeam }), 'success');
-        }
-      }
-    }
-    if (calculatedStreak === 3) {
-      addToast(`🔥 ${t('escape_room.streak_bonus', { streak: 3, multiplier: 2 })}`, 'success');
-    } else if (calculatedStreak === 5) {
-      addToast(`🔥🔥🔥 ${t('escape_room.streak_bonus', { streak: 5, multiplier: 3 })}`, 'success');
-    }
-    if (puzzle.revealsClueFor && puzzle.revealedClue) {
-      setTimeout(() => {
-        addToast(`${t('escape_room.clue_found')} ${puzzle.revealedClue}`, 'info');
-        setEscapeRoomState(prev => ({ ...prev, showClueAnimation: false }));
-      }, 500);
-    }
-    const xpMessage = streakMultiplier > 1
-      ? t('escape_room.xp_earned_streak', { xp: puzzleXP, multiplier: streakMultiplier })
-      : t('escape_room.xp_earned', { xp: puzzleXP });
-    addToast(`${t('escape_room.correct')} ${xpMessage}`, 'success');
-    if (shouldUnlockDoor) {
-      setTimeout(() => {
-        addToast(t('escape_room.final_door_ready'), 'info');
-      }, 1500);
-    }
-    if (newSolved.size >= escapeRoomState.puzzles.length) {
-      const completionBonus = escapeRoomState.difficulty === 'hard' ? 75 :
-                              escapeRoomState.difficulty === 'easy' ? 25 : 50;
-      handleScoreUpdate(completionBonus, "Escape Room Complete", `escape-room-complete-${escapeRoomState.theme || 'default'}`);
-      addToast(`🏆 ${t('escape_room.all_solved_bonus', { xp: completionBonus })}`, 'success');
-    }
-  };
-  const handleSelectObject = (obj) => {
-    if (!obj || escapeRoomState.solvedPuzzles?.has(obj.id)) return;
-    const puzzle = escapeRoomState.puzzles?.find(p => p.linkedObject?.id === obj.id || p.linkedObjectId === obj.id);
-    setEscapeRoomState(prev => ({
-      ...prev,
-      selectedObject: obj,
-      timerPaused: false
-    }));
-    playSound('click');
-  };
-  const handleWrongAnswer = (puzzleId = null) => {
-    playSound('incorrect');
-    const timePenalty = 10;
-    const newTimeRemaining = Math.max(0, escapeRoomState.timeRemaining - timePenalty);
-    setEscapeRoomState(prev => ({
-      ...prev,
-      wrongAttempts: (prev.wrongAttempts || 0) + 1,
-      currentStreak: 0,
-      timeRemaining: newTimeRemaining
-    }));
-    if (newTimeRemaining <= 0) {
-      addToast(t('escape_room.game_over_time'), 'error');
-      setTimeout(() => {
-        setEscapeRoomState(prev => ({ ...prev, isActive: false, hasEscaped: false }));
-      }, 2000);
-    } else {
-      addToast(`${t('escape_room.incorrect')} ${t('escape_room.time_penalty', { seconds: timePenalty })}`, 'error');
-    }
-  };
-  const handleEscapeRoomAnswer = (puzzleId, selectedIndex) => {
-    const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
-    if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-    if (selectedIndex === puzzle.correctIndex) {
-      handlePuzzleSolved(puzzleId);
-    } else {
-      handleWrongAnswer(puzzleId);
-    }
-  };
-  const handleSequenceAnswer = (puzzleId, userOrder) => {
-    const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
-    if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-    const isCorrect = JSON.stringify(userOrder) === JSON.stringify(puzzle.correctOrder);
-    if (isCorrect) {
-      handlePuzzleSolved(puzzleId);
-    } else {
-      handleWrongAnswer(puzzleId);
-    }
-  };
-  const handleCipherAnswer = (puzzleId, userAnswer) => {
-    const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
-    if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-    const normalizedUser = userAnswer.toLowerCase().trim();
-    const normalizedAnswer = puzzle.answer.toLowerCase().trim();
-    if (normalizedUser === normalizedAnswer) {
-      handlePuzzleSolved(puzzleId);
-    } else {
-      handleWrongAnswer(puzzleId);
-    }
-  };
-  const handleMatchingSelect = (puzzleId, item, column) => {
-    const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
-    if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-    const currentSelected = escapeRoomState.matchingSelected;
-    if (!currentSelected) {
-      setEscapeRoomState(prev => ({
-        ...prev,
-        matchingSelected: { item, column }
-      }));
-    } else if (currentSelected.column === column) {
-      setEscapeRoomState(prev => ({
-        ...prev,
-        matchingSelected: { item, column }
-      }));
-    } else {
-      const pair = currentSelected.column === 'left'
-        ? [currentSelected.item, item]
-        : [item, currentSelected.item];
-      const isCorrectPair = puzzle.pairs.some(p =>
-        p.left === pair[0] && p.right === pair[1]
-      );
-      if (isCorrectPair) {
-        const newPairs = [...escapeRoomState.matchingPairs, pair];
-        if (newPairs.length >= puzzle.pairs.length) {
-          handlePuzzleSolved(puzzleId);
-        } else {
-          playSound('click');
-          setEscapeRoomState(prev => ({
-            ...prev,
-            matchingPairs: newPairs,
-            matchingSelected: null
-          }));
-        }
-      } else {
-        handleWrongAnswer(puzzleId);
-        setEscapeRoomState(prev => ({ ...prev, matchingSelected: null }));
-      }
-    }
-  };
-  const handleScrambleAnswer = (puzzleId, userAnswer) => {
-    const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
-    if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-    const normalizedUser = userAnswer.toUpperCase().trim().replace(/\s/g, '');
-    const normalizedAnswer = puzzle.answer.toUpperCase().trim().replace(/\s/g, '');
-    if (normalizedUser === normalizedAnswer) {
-      handlePuzzleSolved(puzzleId);
-    } else {
-      handleWrongAnswer(puzzleId);
-    }
-  };
-  const handleFillinAnswer = (puzzleId, userAnswer) => {
-    handleCipherAnswer(puzzleId, userAnswer);
-  };
-  const handleFinalDoorAnswer = (userAnswer) => {
-    const finalPuzzle = escapeRoomState.finalDoorPuzzle;
-    if (!finalPuzzle) return;
-    const normalizedUser = userAnswer.toLowerCase().trim();
-    const normalizedMain = finalPuzzle.answer.toLowerCase().trim();
-    const acceptableAnswers = (finalPuzzle.acceptableAnswers || []).map(a => a.toLowerCase().trim());
-    const isCorrect = normalizedUser === normalizedMain ||
-                      acceptableAnswers.includes(normalizedUser) ||
-                      acceptableAnswers.some(a => normalizedUser.includes(a) || a.includes(normalizedUser));
-    if (isCorrect) {
-      playSound('correct');
-      const isPerfect = (escapeRoomState.wrongAttempts || 0) === 0;
-      if (isPerfect) {
-        const bonusXP = 50;
-        setGlobalPoints(prev => prev + bonusXP);
-        addToast(t('escape_room.victory_perfect'), 'success');
-      } else {
-        addToast(t('escape_room.victory_normal'), 'success');
-      }
-      setEscapeRoomState(prev => ({
-        ...prev,
-        isEscaped: true,
-        showFinalDoor: false
-      }));
-      setIsEscapeTimerRunning(false);
-    } else {
-      handleWrongAnswer();
-    }
-  };
-  const resetEscapeRoom = () => {
-    setEscapeRoomState({
-      isActive: false,
-      room: null,
-      puzzles: [],
-      currentPuzzleIndex: null,
-      solvedPuzzles: new Set(),
-      totalPuzzles: 5,
-      timeRemaining: 300,
-      isEscaped: false,
-      isGenerating: false,
-      selectedObject: null,
-      objects: [],
-      wrongAttempts: 0,
-      discoveredClues: {},
-      sequenceOrder: [],
-      matchingPairs: [],
-      matchingSelected: null,
-      scrambleLetters: [],
-      textInput: '',
-      showClueAnimation: false,
-      finalDoorUnlocked: false,
-      finalDoorPuzzle: null,
-      showFinalDoor: false,
-      difficulty: 'normal',
-      timerEnabled: true,
-      timerPaused: false,
-      timeLimit: 300,
-      hintsUsed: {},
-      totalHintsUsed: 0,
-      livesEnabled: false,
-      livesRemaining: 3,
-      maxLives: 3,
-      currentStreak: 0,
-      bestStreak: 0,
-      streakMultiplier: 1,
-      roomTheme: null,
-      achievements: [],
-      showSettings: false
+  // @section ESCAPE_ROOM_ENGINE — CDN factory delegation
+  const _escapeRoomEngineRef = { current: null };
+  const _getEscapeRoomEngine = () => {
+    if (_escapeRoomEngineRef.current) return _escapeRoomEngineRef.current;
+    const factory = window.AlloModules && window.AlloModules.createEscapeRoomEngine;
+    if (!factory) { console.warn('[EscapeRoom] Module not loaded'); return null; }
+    _escapeRoomEngineRef.current = factory({
+      callGemini, addToast, t, handleScoreUpdate, setGlobalPoints, playSound,
+      getState: () => ({ escapeRoomState, escapeTimeLeft, isEscapeTimerRunning, inputText, activeSessionCode, sessionData, user, activeSessionAppId }),
+      setState: { setEscapeRoomState, setEscapeTimeLeft, setIsEscapeTimerRunning },
+      firebase: window.__alloFirebase || {},
+      shared: { safeGetItem, safeSetItem, warnLog, fetchWithExponentialBackoff },
     });
+    return _escapeRoomEngineRef.current;
   };
-  const handleRevealHint = (puzzleId) => {
-    const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
-    if (!puzzle) return;
-    if (escapeRoomState.hintsUsed?.[puzzleId]) {
-      const hintText = puzzle.hint || puzzle.hints?.[0];
-      if (hintText) {
-        addToast(`💡 ${t('escape_room.hint')}: ${hintText}`, 'info');
-      }
-      return;
-    }
-    if ((escapeRoomState.hintsRemaining || 0) <= 0) {
-      addToast(t('escape_room.no_hints_remaining') || 'No hints remaining!', 'warning');
-      return;
-    }
-    const hintText = puzzle.hint || puzzle.hints?.[0];
-    if (!hintText) {
-      addToast(t('escape_room.no_hint_available') || 'No hint available for this puzzle', 'info');
-      return;
-    }
-    const hintCost = 5;
-    setGlobalPoints(prev => Math.max(0, prev - hintCost));
-    setEscapeRoomState(prev => ({
-      ...prev,
-      hintsRemaining: Math.max(0, (prev.hintsRemaining || 0) - 1),
-      hintsUsed: {
-        ...prev.hintsUsed,
-        [puzzleId]: true
-      },
-      totalHintsUsed: (prev.totalHintsUsed || 0) + 1
-    }));
-    addToast(`💡 ${t('escape_room.hint')}: ${hintText}`, 'info');
-  };
-  const openEscapeRoomSettings = () => {
-    setEscapeRoomState(prev => ({
-      ...prev,
-      showSettings: true,
-      puzzleCount: prev.puzzleCount || 10,
-      difficulty: prev.difficulty || 'normal',
-    }));
-  };
-  const updateEscapeRoomSetting = (key, value) => {
-    setEscapeRoomState(prev => ({ ...prev, [key]: value }));
-  };
-  const launchEscapeRoomWithSettings = () => {
-    setEscapeRoomState(prev => ({ ...prev, showSettings: false }));
-    generateEscapeRoom();
-  };
-  const confirmEscapeRoomPreview = () => {
-    setEscapeRoomState(prev => ({
-      ...prev,
-      isPreview: false,
-      isActive: true,
-      timerPaused: true,
-    }));
-    playSound('correct');
-    addToast(t('escape_room.preview_confirmed') || '✅ Escape Room locked — ready to play!', 'success');
-  };
-  const updateEscapeRoomPuzzle = (puzzleIndex, field, value) => {
-    setEscapeRoomState(prev => {
-      const newPuzzles = [...prev.puzzles];
-      const puzzle = { ...newPuzzles[puzzleIndex] };
-      if (field === 'question') puzzle.question = value;
-      else if (field === 'hint') puzzle.hint = value;
-      else if (field === 'answer') puzzle.answer = value;
-      else if (field === 'sentence') puzzle.sentence = value;
-      else if (field === 'encodedText') puzzle.encodedText = value;
-      else if (field === 'options' && puzzle.type === 'mcq') {
-        const newOptions = [...puzzle.options];
-        newOptions[value.index] = value.text;
-        puzzle.options = newOptions;
-      }
-      newPuzzles[puzzleIndex] = puzzle;
-      const savedPuzzles = prev.savedEscapeRoom ? [...prev.savedEscapeRoom.puzzles] : [];
-      if (savedPuzzles[puzzleIndex]) {
-        savedPuzzles[puzzleIndex] = { ...savedPuzzles[puzzleIndex] };
-        if (field === 'question') savedPuzzles[puzzleIndex].question = value;
-        else if (field === 'hint') savedPuzzles[puzzleIndex].hint = value;
-        else if (field === 'answer') savedPuzzles[puzzleIndex].answer = value;
-        else if (field === 'sentence') savedPuzzles[puzzleIndex].sentence = value;
-        else if (field === 'encodedText') savedPuzzles[puzzleIndex].encodedText = value;
-        else if (field === 'options' && puzzle.type === 'mcq') {
-          const newOpts = [...savedPuzzles[puzzleIndex].options];
-          newOpts[value.index] = value.text;
-          savedPuzzles[puzzleIndex].options = newOpts;
-        }
-      }
-      return {
-        ...prev,
-        puzzles: newPuzzles,
-        savedEscapeRoom: prev.savedEscapeRoom ? { ...prev.savedEscapeRoom, puzzles: savedPuzzles } : null
-      };
-    });
-  };
-  const updateEscapeRoomFinalDoor = (field, value) => {
-    setEscapeRoomState(prev => ({
-      ...prev,
-      finalDoorPuzzle: { ...prev.finalDoorPuzzle, [field]: value },
-      savedEscapeRoom: prev.savedEscapeRoom ? {
-        ...prev.savedEscapeRoom,
-        finalDoor: { ...(prev.savedEscapeRoom.finalDoor || prev.finalDoorPuzzle), [field]: value }
-      } : null
-    }));
-  };
-  const saveEscapeRoomConfig = () => {
-    const config = escapeRoomState.savedEscapeRoom;
-    if (!config) return;
-    try {
-      const saveData = {
-        config,
-        difficulty: escapeRoomState.difficulty,
-        puzzleCount: escapeRoomState.puzzleCount || config.puzzles.length,
-        timestamp: Date.now(),
-        sourceTextHash: inputText.substring(0, 100),
-      };
-      safeSetItem('allo_saved_escape_room', JSON.stringify(saveData));
-      addToast(t('escape_room.config_saved') || '💾 Escape Room saved! Load it anytime from settings.', 'success');
-    } catch (e) {
-      warnLog('Failed to save escape room config:', e);
-      addToast(t('errors.storage_full') || 'Storage full — could not save', 'error');
-    }
-  };
-  const loadSavedEscapeRoom = () => {
-    try {
-      const saved = safeGetItem('allo_saved_escape_room');
-      if (!saved) {
-        addToast(t('escape_room.no_saved') || 'No saved Escape Room found', 'info');
-        return;
-      }
-      const saveData = JSON.parse(saved);
-      const config = saveData.config;
-      if (!config || !config.room || !config.puzzles) {
-        addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
-        return;
-      }
-      const processedPuzzles = config.puzzles.map((p, i) => {
-        const processed = {
-          ...p,
-          linkedObject: config.objects?.find(o => o.id === p.linkedObjectId) || config.objects?.[i] || { emoji: '🔮', name: `Puzzle ${i+1}` }
-        };
-        if (p.type === 'sequence' && p.items) {
-          const indices = p.items.map((_, idx) => idx);
-          processed.shuffledItems = derangeShuffle(indices);
-        }
-        if (p.type === 'scramble' && p.scrambledWord) {
-          processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(c => c.trim()));
-        }
-        if (p.type === 'matching' && p.pairs) {
-          processed.leftColumn = derangeShuffle(p.pairs.map(pair => pair.left));
-          processed.rightColumn = derangeShuffle(p.pairs.map(pair => pair.right));
-        }
-        if (p.type === 'fillin' && p.wordbank) {
-          processed.wordbank = derangeShuffle(p.wordbank);
-        }
-        if (p.type === 'cipher' && p.wordbank) {
-          processed.wordbank = derangeShuffle(p.wordbank);
-        }
-        return processed;
-      });
-      let processedFinalDoor = config.finalDoor || null;
-      if (processedFinalDoor && processedFinalDoor.wordbank) {
-        processedFinalDoor = { ...processedFinalDoor, wordbank: derangeShuffle(processedFinalDoor.wordbank) };
-      }
-      const diffPresets = {
-        easy: { timePerPuzzle: 45, lives: 99, hints: 5, xpMultiplier: 0.5 },
-        normal: { timePerPuzzle: 30, lives: 3, hints: 3, xpMultiplier: 1.0 },
-        hard: { timePerPuzzle: 20, lives: 1, hints: 1, xpMultiplier: 2.0 }
-      };
-      const diff = saveData.difficulty || 'normal';
-      const preset = diffPresets[diff];
-      const totalTime = processedPuzzles.length * preset.timePerPuzzle;
-      setEscapeRoomState(prev => ({
-        ...prev,
-        isActive: false,
-        isPreview: true,
-        isGenerating: false,
-        showSettings: false,
-        room: config.room,
-        puzzles: processedPuzzles,
-        objects: config.objects,
-        totalPuzzles: processedPuzzles.length,
-        finalDoorPuzzle: processedFinalDoor,
-        savedEscapeRoom: config,
-        solvedPuzzles: new Set(),
-        isEscaped: false,
-        timeRemaining: totalTime,
-        maxTime: totalTime,
-        difficulty: diff,
-        lives: preset.lives,
-        maxLives: preset.lives,
-        hintsRemaining: preset.hints,
-        maxHints: preset.hints,
-        xpMultiplier: preset.xpMultiplier,
-        streak: 0,
-        wrongAttempts: 0,
-        isGameOver: false,
-        timerPaused: true,
-      }));
-      setEscapeTimeLeft(totalTime);
-      setIsEscapeTimerRunning(false);
-      playSound('correct');
-      addToast(t('escape_room.loaded_saved') || '📂 Saved Escape Room loaded! Review and launch when ready.', 'success');
-    } catch (e) {
-      warnLog('Failed to load saved escape room:', e);
-      addToast(t('errors.load_failed') || 'Failed to load saved config', 'error');
-    }
-  };
-    let hasSavedEscapeRoom = false;
-    try { hasSavedEscapeRoom = !!safeGetItem("allo_saved_escape_room"); } catch (e) { /* ignore */ }
+  const _erCall = (name) => function() { const e = _getEscapeRoomEngine(); return e && typeof e[name] === 'function' ? e[name].apply(null, arguments) : undefined; };
+  const derangeShuffle = _erCall('derangeShuffle');
+  const generateEscapeRoom = _erCall('generateEscapeRoom');
+  const handlePuzzleSolved = _erCall('handlePuzzleSolved');
+  const handleSelectObject = _erCall('handleSelectObject');
+  const handleWrongAnswer = _erCall('handleWrongAnswer');
+  const handleEscapeRoomAnswer = _erCall('handleEscapeRoomAnswer');
+  const handleSequenceAnswer = _erCall('handleSequenceAnswer');
+  const handleCipherAnswer = _erCall('handleCipherAnswer');
+  const handleMatchingSelect = _erCall('handleMatchingSelect');
+  const handleScrambleAnswer = _erCall('handleScrambleAnswer');
+  const handleFillinAnswer = _erCall('handleFillinAnswer');
+  const handleFinalDoorAnswer = _erCall('handleFinalDoorAnswer');
+  const resetEscapeRoom = _erCall('resetEscapeRoom');
+  const handleRevealHint = _erCall('handleRevealHint');
+  const openEscapeRoomSettings = _erCall('openEscapeRoomSettings');
+  const updateEscapeRoomSetting = _erCall('updateEscapeRoomSetting');
+  const launchEscapeRoomWithSettings = _erCall('launchEscapeRoomWithSettings');
+  const confirmEscapeRoomPreview = _erCall('confirmEscapeRoomPreview');
+  const updateEscapeRoomPuzzle = _erCall('updateEscapeRoomPuzzle');
+  const updateEscapeRoomFinalDoor = _erCall('updateEscapeRoomFinalDoor');
+  const saveEscapeRoomConfig = _erCall('saveEscapeRoomConfig');
+  const loadSavedEscapeRoom = _erCall('loadSavedEscapeRoom');
+  const launchCollaborativeEscapeRoom = _erCall('launchCollaborativeEscapeRoom');
+  const endCollaborativeEscapeRoom = _erCall('endCollaborativeEscapeRoom');
+  // Escape room timer — delegated to CDN module hook or inline fallback
   useEffect(() => {
-    let interval = null;
-    if (isEscapeTimerRunning && escapeTimeLeft > 0) {
-      interval = setInterval(() => {
-        setEscapeTimeLeft((prevTime) => {
-          const newTime = prevTime - 1;
-          if (newTime === 60) {
-            addToast(t('escape_room.one_minute_warning'), 'warning');
-          } else if (newTime === 30) {
-            addToast(t('escape_room.thirty_seconds_warning'), 'error');
-          }
-          return newTime;
-        });
-      }, 1000);
-    } else if (escapeTimeLeft === 0 && isEscapeTimerRunning) {
-      setIsEscapeTimerRunning(false);
-      addToast(t('escape_room.time_up'), 'error');
-      setEscapeRoomState(prev => ({ ...prev, isActive: false }));
+    if (!isEscapeTimerRunning || escapeTimeLeft <= 0) {
+      if (escapeTimeLeft === 0 && isEscapeTimerRunning) {
+        setIsEscapeTimerRunning(false);
+        addToast(t('escape_room.time_up'), 'error');
+        setEscapeRoomState(prev => ({ ...prev, isActive: false }));
+      }
+      return;
     }
+    const interval = setInterval(() => {
+      setEscapeTimeLeft(prev => {
+        if (prev <= 1) { clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
     return () => clearInterval(interval);
   }, [isEscapeTimerRunning, escapeTimeLeft, t, addToast]);
   const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true) => {
@@ -41836,683 +40975,20 @@ Return only the corrected version of this exact text:`;
                             </div>
                         </div>
                     ) : escapeRoomState.isActive ? (
-                        <div className="animate-in fade-in duration-500">
-                            <div className="bg-slate-900 p-6 rounded-2xl shadow-2xl border-4 border-purple-500 relative overflow-hidden min-h-[700px] flex flex-col">
-                                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                                    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.2),transparent_70%)]"></div>
-                                </div>
-                                <div className="flex justify-between items-start mb-6 relative z-10">
-                                    <div className="text-left">
-                                        <h2 className="text-3xl font-black text-purple-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3">
-                                            <DoorOpen size={32}/> {t('escape_room.title')}
-                                        </h2>
-                                        {escapeRoomState.room && (
-                                            <p className="text-slate-500 text-sm mt-1 font-medium">{escapeRoomState.room.theme}</p>
-                                        )}
-                                    </div>
-                                    <div className="flex gap-2 items-center">
-                                        <div className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${escapeTimeLeft <= 60 ? 'bg-red-900/50 animate-pulse' : 'bg-slate-800/50'}`}>
-                                            <Clock size={16} className={escapeTimeLeft <= 60 ? 'text-red-400' : 'text-slate-400'}/>
-                                            <span className={`font-mono font-bold ${escapeTimeLeft <= 60 ? 'text-red-400' : 'text-white'}`}>
-                                                {Math.floor(escapeTimeLeft / 60)}:{(escapeTimeLeft % 60).toString().padStart(2, '0')}
-                                            </span>
-                                        </div>
-                                        <div className="bg-purple-900/50 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                                            <Trophy size={16} className="text-yellow-400"/>
-                                            <span className="text-white font-bold">{escapeRoomState.solvedPuzzles.size}/{escapeRoomState.totalPuzzles}</span>
-                                        </div>
-                                        <div className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${(escapeRoomState.hintsRemaining || 0) > 0 ? 'bg-amber-900/50' : 'bg-slate-800/50'}`}>
-                                            <Lightbulb size={16} className={(escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text-slate-500'}/>
-                                            <span className={`font-bold ${(escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
-                                                {escapeRoomState.hintsRemaining || 0}
-                                            </span>
-                                        </div>
-                                        <button aria-label={t('common.volume')}
-                                            onClick={() => { setSoundEnabled(!soundEnabled); if(!soundEnabled) playSound('click'); }}
-                                            className={`p-2 rounded-full transition-colors ${soundEnabled ? 'bg-purple-700 text-white' : 'bg-slate-700 text-slate-500'}`}
-                                        >
-                                            {soundEnabled ? <Volume2 size={20}/> : <MicOff size={20}/>}
-                                        </button>
-                                    </div>
-                                </div>
-                                {escapeRoomState.isGenerating ? (
-                                    <div className="flex-grow flex flex-col items-center justify-center gap-4">
-                                        <Sparkles className="animate-spin text-purple-400" size={48}/>
-                                        <p className="text-purple-300 text-lg font-bold">{t('escape_room.generating')}</p>
-                                        <p className="text-slate-500 text-sm">{t('escape_room.generating_hint')}</p>
-                                    </div>
-                                ) : escapeRoomState.isEscaped ? (() => {
-                                    const maxTime = escapeRoomState.maxTime || 300;
-                                    const timeTaken = maxTime - escapeTimeLeft;
-                                    const minutes = Math.floor(timeTaken / 60);
-                                    const seconds = timeTaken % 60;
-                                    const puzzlesSolved = escapeRoomState.solvedPuzzles.size;
-                                    const totalPuzzles = escapeRoomState.totalPuzzles;
-                                    const wrongAttempts = escapeRoomState.wrongAttempts || 0;
-                                    const hintsUsed = escapeRoomState.totalHintsUsed || 0;
-                                    const xpMultiplier = escapeRoomState.xpMultiplier || 1;
-                                    const baseXP = puzzlesSolved * 20;
-                                    const bonusXP = wrongAttempts === 0 ? 50 : 0;
-                                    const hintPenalty = hintsUsed * 5;
-                                    const totalXP = Math.round((baseXP + bonusXP - hintPenalty) * xpMultiplier);
-                                    let rating = 'good';
-                                    let ratingEmoji = '👍';
-                                    let ratingColor = 'text-blue-400';
-                                    if (wrongAttempts === 0 && hintsUsed === 0) {
-                                        rating = 'perfect';
-                                        ratingEmoji = '🏆';
-                                        ratingColor = 'text-yellow-400';
-                                    } else if (wrongAttempts <= 2 && hintsUsed <= 1) {
-                                        rating = 'great';
-                                        ratingEmoji = '⭐';
-                                        ratingColor = 'text-green-400';
-                                    }
-                                    return (
-                                        <div className="flex-grow flex flex-col items-center justify-center gap-6 text-center p-6">
-                                            <div className="text-8xl animate-bounce">{ratingEmoji}</div>
-                                            <h3 className={`text-4xl font-black ${ratingColor}`}>
-                                                {t(`escape_room.performance_${rating}`) || (rating === 'perfect' ? 'Perfect Escape!' : rating === 'great' ? 'Great Job!' : 'Good Effort!')}
-                                            </h3>
-                                            <p className="text-slate-400">{t('escape_room.escaped_desc')}</p>
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-2xl mt-4">
-                                                <div className="bg-slate-800/70 p-4 rounded-xl border border-slate-700">
-                                                    <div className="text-2xl mb-1">⏱️</div>
-                                                    <div className="text-2xl font-bold text-white">{minutes}:{seconds.toString().padStart(2, '0')}</div>
-                                                    <div className="text-xs text-slate-400 uppercase">{t('escape_room.time_taken') || 'Time Taken'}</div>
-                                                </div>
-                                                <div className="bg-slate-800/70 p-4 rounded-xl border border-slate-700">
-                                                    <div className="text-2xl mb-1">✅</div>
-                                                    <div className="text-2xl font-bold text-green-400">{puzzlesSolved}/{totalPuzzles}</div>
-                                                    <div className="text-xs text-slate-400 uppercase">{t('escape_room.puzzles_solved') || 'Puzzles Solved'}</div>
-                                                </div>
-                                                <div className="bg-slate-800/70 p-4 rounded-xl border border-slate-700">
-                                                    <div className="text-2xl mb-1">❌</div>
-                                                    <div className={`text-2xl font-bold ${wrongAttempts === 0 ? 'text-green-400' : 'text-red-400'}`}>{wrongAttempts}</div>
-                                                    <div className="text-xs text-slate-400 uppercase">{t('escape_room.wrong_attempts') || 'Wrong Attempts'}</div>
-                                                </div>
-                                                <div className="bg-slate-800/70 p-4 rounded-xl border border-slate-700">
-                                                    <div className="text-2xl mb-1">💡</div>
-                                                    <div className={`text-2xl font-bold ${hintsUsed === 0 ? 'text-green-400' : 'text-amber-400'}`}>{hintsUsed}</div>
-                                                    <div className="text-xs text-slate-400 uppercase">{t('escape_room.hints_used') || 'Hints Used'}</div>
-                                                </div>
-                                            </div>
-                                            <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 p-4 rounded-xl border border-purple-500/30 w-full max-w-md">
-                                                <div className="text-lg font-bold text-purple-300 mb-2">{t('escape_room.xp_earned_label') || 'XP Earned'}</div>
-                                                <div className="text-4xl font-black text-purple-400">+{totalXP} XP</div>
-                                                <div className="text-xs text-slate-400 mt-2">
-                                                    {baseXP} base {bonusXP > 0 && `+ ${bonusXP} bonus`} {hintPenalty > 0 && `- ${hintPenalty} hints`} {xpMultiplier !== 1 && `× ${xpMultiplier}`}
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-4 mt-4">
-                                                <button aria-label={t('common.reset_escape_room')}
-                                                    onClick={resetEscapeRoom}
-                                                    className="bg-purple-600 text-white px-6 py-3 rounded-full font-bold hover:bg-purple-700 transition-colors flex items-center gap-2"
-                                                >
-                                                    <RefreshCw size={18}/>
-                                                    {t('escape_room.play_again')}
-                                                </button>
-                                                <button
-                                                    onClick={() => setEscapeRoomState(prev => ({ ...prev, isActive: false }))}
-                                                    className="bg-slate-700 text-white px-6 py-3 rounded-full font-bold hover:bg-slate-600 transition-colors"
-                                                >
-                                                    {t('escape_room.close') || 'Close'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                })()
-                                : escapeRoomState.room ? (
-                                    <div className="flex-grow flex flex-col">
-                                        <div className="bg-slate-800/50 p-4 rounded-xl mb-6 text-center border border-slate-700">
-                                            <p className="text-slate-500 italic">{escapeRoomState.room.description}</p>
-                                            {!isEscapeTimerRunning ? (
-                                                <div className="mt-4">
-                                                    <button
-                                                        aria-label={t('common.play')}
-                                                        onClick={handleSetIsEscapeTimerRunningToTrue}
-                                                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-8 py-3 rounded-full font-bold text-lg transition-all shadow-lg shadow-green-900/50 flex items-center gap-3 mx-auto animate-pulse"
-                                                    >
-                                                        <Play size={20} />
-                                                        {t('escape_room.start') || 'Start Escape Room'}
-                                                    </button>
-                                                    <p className="text-slate-500 text-sm mt-2">{t('escape_room.start_hint') || 'Start the timer to begin inspecting objects'}</p>
-                                                </div>
-                                            ) : (
-                                                <p className="text-purple-400 text-sm mt-2">{t('escape_room.click_to_inspect')}</p>
-                                            )}
-                                        </div>
-                                        <div className={`flex-grow grid grid-cols-3 md:grid-cols-5 gap-4 place-items-center ${!isEscapeTimerRunning ? 'opacity-50 pointer-events-none' : ''}`}>
-                                            {escapeRoomState.objects?.map((obj, idx) => {
-                                                const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === obj.id);
-                                                const isSolved = puzzle && escapeRoomState.solvedPuzzles.has(puzzle.id);
-                                                const isDisabled = isSolved || !isEscapeTimerRunning;
-                                                return (
-                                                    <button
-                                                        key={obj.id}
-                                                        onClick={() => !isDisabled && handleSelectObject(obj)}
-                                                        disabled={isDisabled}
-                                                        className={`relative flex flex-col items-center gap-2 p-4 rounded-xl transition-all transform ${isEscapeTimerRunning ? 'hover:scale-110' : ''} ${
-                                                            isSolved
-                                                                ? 'bg-green-900/50 border-2 border-green-500 opacity-60 cursor-not-allowed'
-                                                                : !isEscapeTimerRunning
-                                                                    ? 'bg-slate-800 border-2 border-slate-700 cursor-not-allowed'
-                                                                    : 'bg-slate-800 border-2 border-slate-600 hover:border-purple-400 hover:bg-slate-700 cursor-pointer'
-                                                        }`}
-                                                    >
-                                                        <span className="text-4xl">{obj.emoji}</span>
-                                                        <span className="text-xs text-slate-400 font-medium text-center">{obj.name}</span>
-                                                        {isSolved && <CheckCircle className="absolute top-1 right-1 text-green-400" size={16}/>}
-                                                        {!isEscapeTimerRunning && !isSolved && <Lock className="absolute top-1 right-1 text-slate-500" size={14}/>}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex-grow flex items-center justify-center">
-                                        <p className="text-slate-500">{t('escape_room.loading_error')}</p>
-                                    </div>
-                                )}
-                                {escapeRoomState.selectedObject && (
-                                    <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setEscapeRoomState(prev => ({ ...prev, selectedObject: null }))}>
-                                        <div className="bg-slate-800 w-full max-w-2xl rounded-2xl border-4 border-purple-500 shadow-2xl p-6 relative" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-                                            {(() => {
-                                                const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === escapeRoomState.selectedObject.id);
-                                                if (!puzzle) return <p className="text-slate-500">{t('escape_room.no_puzzle')}</p>;
-                                                return (
-                                                    <>
-                                                        <button
-                                                            aria-label={t('common.close')}
-                                                            onClick={() => setEscapeRoomState(prev => ({ ...prev, selectedObject: null }))}
-                                                            className="absolute top-4 right-4 text-slate-400 hover:text-white"
-                                                        >
-                                                            <X size={24}/>
-                                                        </button>
-                                                        <div className="flex items-center gap-3 mb-6">
-                                                            <span className="text-4xl">{escapeRoomState.selectedObject.emoji}</span>
-                                                            <div>
-                                                                <h3 className="text-xl font-bold text-white">{escapeRoomState.selectedObject.name}</h3>
-                                                                <p className="text-slate-500 text-sm">{escapeRoomState.selectedObject.description}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="bg-slate-900 p-4 rounded-xl mb-6">
-                                                            <div className="flex items-center justify-between gap-2 mb-2">
-                                                                <span className="text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full font-bold uppercase">
-                                                                    {t(`escape_room.type_${puzzle.type || 'mcq'}`)}
-                                                                </span>
-                                                                {(puzzle.hint || puzzle.hints?.length > 0) && (
-                                                                    <button
-                                                                        onClick={() => handleRevealHint(puzzle.id)}
-                                                                        disabled={(escapeRoomState.hintsRemaining || 0) <= 0 && !escapeRoomState.hintsUsed?.[puzzle.id]}
-                                                                        className={`text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
-                                                                            escapeRoomState.hintsUsed?.[puzzle.id]
-                                                                                ? 'bg-amber-700 text-white cursor-pointer'
-                                                                                : (escapeRoomState.hintsRemaining || 0) > 0
-                                                                                    ? 'bg-amber-900/50 text-amber-400 hover:bg-amber-800 border border-amber-600'
-                                                                                    : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                                                                        }`}
-                                                                        title={escapeRoomState.hintsUsed?.[puzzle.id] ? t('escape_room.show_hint') : t('escape_room.get_hint')}
-                                                                    >
-                                                                        <Lightbulb size={14}/>
-                                                                        {escapeRoomState.hintsUsed?.[puzzle.id]
-                                                                            ? (t('escape_room.show_hint') || 'Show Hint')
-                                                                            : `${t('escape_room.get_hint') || 'Get Hint'} (${escapeRoomState.hintsRemaining || 0})`}
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-lg text-white font-medium">{puzzle.question}</p>
-                                                            {escapeRoomState.hintsUsed?.[puzzle.id] && (puzzle.hint || puzzle.hints?.[0]) && (
-                                                                <p className="text-amber-400 text-sm mt-3 bg-amber-900/30 p-2 rounded-lg">💡 {puzzle.hint || puzzle.hints?.[0]}</p>
-                                                            )}
-                                                            {escapeRoomState.discoveredClues?.[puzzle.id] && (
-                                                                <p className="text-yellow-400 text-sm mt-2 bg-yellow-900/30 p-2 rounded-lg">🔑 {t('escape_room.clue')}: {escapeRoomState.discoveredClues[puzzle.id]}</p>
-                                                            )}
-                                                        </div>
-                                                        {(!puzzle.type || puzzle.type === 'mcq') && puzzle.options && (
-                                                            <div className="grid gap-3" role="radiogroup" aria-label={t('escape_room.answer_options') || 'Answer options'}>
-                                                                {puzzle.options.map((opt, idx) => (
-                                                                    <button
-                                                                        key={idx}
-                                                                        onClick={() => handleEscapeRoomAnswer(puzzle.id, idx)}
-                                                                        role="radio"
-                                                                        aria-checked="false"
-                                                                        className="w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
-                                                                    >
-                                                                        <span className="inline-block w-8 font-bold text-purple-400" aria-hidden="true">{String.fromCharCode(65+idx)}.</span>
-                                                                        <span className="sr-only">{t('escape_room.option') || 'Option'} {String.fromCharCode(65+idx)}: </span>
-                                                                        {opt}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        {puzzle.type === 'sequence' && puzzle.items && (
-                                                            <div className="space-y-3">
-                                                                <p className="text-slate-500 text-sm">{t('escape_room.sequence_instructions')}</p>
-                                                                <div className="space-y-2" role="list" aria-label={t('escape_room.sequence_list_label') || 'Sequence items to reorder'}>
-                                                                    {(() => {
-                                                                        const currentOrder = escapeRoomState.sequenceOrder?.length > 0
-                                                                            ? escapeRoomState.sequenceOrder
-                                                                            : (puzzle.shuffledItems || puzzle.items.map((_, i) => i));
-                                                                        const moveItem = (fromIdx, direction) => {
-                                                                            const toIdx = fromIdx + direction;
-                                                                            if (toIdx < 0 || toIdx >= currentOrder.length) return;
-                                                                            const newOrder = [...currentOrder];
-                                                                            [newOrder[fromIdx], newOrder[toIdx]] = [newOrder[toIdx], newOrder[fromIdx]];
-                                                                            setEscapeRoomState(prev => ({ ...prev, sequenceOrder: newOrder }));
-                                                                            setTimeout(() => {
-                                                                                document.getElementById(`sequence-item-${toIdx}`)?.focus();
-                                                                            }, 50);
-                                                                        };
-                                                                        return currentOrder.map((itemIdx, displayIdx) => (
-                                                                            <div
-                                                                                key={displayIdx}
-                                                                                id={`sequence-item-${displayIdx}`}
-                                                                                role="listitem"
-                                                                                tabIndex={0}
-                                                                                draggable
-                                                                                onDragStart={(e) => e.dataTransfer.setData('text/plain', displayIdx.toString())}
-                                                                                onDragOver={(e) => e.preventDefault()}
-                                                                                onDrop={(e) => {
-                                                                                    e.preventDefault();
-                                                                                    const fromDisplayIdx = parseInt(e.dataTransfer.getData('text/plain'));
-                                                                                    const newOrder = [...currentOrder];
-                                                                                    const [removed] = newOrder.splice(fromDisplayIdx, 1);
-                                                                                    newOrder.splice(displayIdx, 0, removed);
-                                                                                    setEscapeRoomState(prev => ({ ...prev, sequenceOrder: newOrder }));
-                                                                                }}
-                                                                                onKeyDown={(e) => {
-                                                                                    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-                                                                                        e.preventDefault();
-                                                                                        moveItem(displayIdx, -1);
-                                                                                    } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-                                                                                        e.preventDefault();
-                                                                                        moveItem(displayIdx, 1);
-                                                                                    }
-                                                                                }}
-                                                                                aria-label={`${t('escape_room.position') || 'Position'} ${displayIdx + 1}: ${puzzle.items[itemIdx]}. ${t('escape_room.use_arrows') || 'Use arrow keys to reorder.'}`}
-                                                                                className="flex items-center gap-3 p-4 bg-slate-700 rounded-xl text-white font-medium cursor-move hover:bg-slate-600 border-2 border-transparent hover:border-purple-400 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800 transition-all"
-                                                                            >
-                                                                                <div className="flex flex-col gap-1" role="group" aria-label={t('escape_room.reorder_buttons') || 'Reorder buttons'}>
-                                                                                    <button
-                                                                                        onClick={(e) => { e.stopPropagation(); moveItem(displayIdx, -1); }}
-                                                                                        disabled={displayIdx === 0}
-                                                                                        className="p-1 rounded hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300"
-                                                                                        aria-label={`${t('escape_room.move_up') || 'Move up'}: ${puzzle.items[itemIdx]}`}
-                                                                                        title={t('escape_room.move_up') || 'Move up'}
-                                                                                    >
-                                                                                        <ChevronUp size={16} className="text-slate-400"/>
-                                                                                    </button>
-                                                                                    <button
-                                                                                        onClick={(e) => { e.stopPropagation(); moveItem(displayIdx, 1); }}
-                                                                                        disabled={displayIdx === currentOrder.length - 1}
-                                                                                        className="p-1 rounded hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300"
-                                                                                        aria-label={`${t('escape_room.move_down') || 'Move down'}: ${puzzle.items[itemIdx]}`}
-                                                                                        title={t('escape_room.move_down') || 'Move down'}
-                                                                                    >
-                                                                                        <ChevronDown size={16} className="text-slate-400"/>
-                                                                                    </button>
-                                                                                </div>
-                                                                                <GripVertical size={20} className="text-slate-500" aria-hidden="true"/>
-                                                                                <span className="inline-flex w-6 h-6 bg-purple-600 text-white text-sm font-bold rounded-full items-center justify-center" aria-hidden="true">{displayIdx + 1}</span>
-                                                                                <span className="flex-grow">{puzzle.items[itemIdx]}</span>
-                                                                            </div>
-                                                                        ));
-                                                                    })()}
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        const currentOrder = escapeRoomState.sequenceOrder?.length > 0
-                                                                            ? escapeRoomState.sequenceOrder
-                                                                            : (puzzle.shuffledItems || puzzle.items.map((_, i) => i));
-                                                                        handleSequenceAnswer(puzzle.id, currentOrder);
-                                                                    }}
-                                                                    className="w-full mt-4 p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
-                                                                >
-                                                                    {t('escape_room.check_sequence')}
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                        {puzzle.type === 'cipher' && (
-                                                            <div className="space-y-4">
-                                                                <div className="bg-slate-900 p-6 rounded-xl border-2 border-purple-500">
-                                                                    <div className="flex items-center gap-2 mb-4">
-                                                                        <span className="text-2xl">🔮</span>
-                                                                        <p className="text-purple-300 text-sm font-bold uppercase tracking-wider">{t('escape_room.riddle_challenge') || 'Riddle Challenge'}</p>
-                                                                    </div>
-                                                                    <p className="text-xl text-white font-medium italic leading-relaxed">"{puzzle.encodedText || puzzle.riddle}"</p>
-                                                                </div>
-                                                                {puzzle.wordbank && puzzle.wordbank.length > 0 ? (
-                                                                    <div className="space-y-3">
-                                                                        <p className="text-xs text-slate-500 text-center uppercase font-bold">{t('escape_room.select_answer') || 'Select your answer:'}</p>
-                                                                        <div className="grid grid-cols-2 gap-3" role="group" aria-label={t('escape_room.answer_options') || 'Answer options'}>
-                                                                            {puzzle.wordbank.map((word, idx) => {
-                                                                                const isSelected = escapeRoomState.textInput === word;
-                                                                                return (
-                                                                                    <button
-                                                                                        key={idx}
-                                                                                        onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
-                                                                                        aria-pressed={isSelected}
-                                                                                        className={`p-4 rounded-xl font-bold text-lg transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800 ${
-                                                                                            isSelected
-                                                                                                ? 'bg-purple-600 text-white ring-2 ring-purple-300 scale-105'
-                                                                                                : 'bg-slate-700 text-white hover:bg-slate-600 hover:scale-102'
-                                                                                        }`}
-                                                                                    >
-                                                                                        {word}
-                                                                                        {isSelected && <span className="sr-only"> - {t('escape_room.selected') || 'selected'}</span>}
-                                                                                    </button>
-                                                                                );
-                                                                            })}
-                                                                        </div>
-                                                                    </div>
-                                                                ) : (
-                                                                    <input aria-label={t('common.escape_room_enter_answer')}
-                                                                        type="text"
-                                                                        value={escapeRoomState.textInput || ''}
-                                                                        onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
-                                                                        placeholder={t('escape_room.enter_answer')}
-                                                                        className="w-full p-4 bg-slate-700 rounded-xl text-white font-medium border-2 border-slate-600 focus:border-purple-400 outline-none"
-                                                                    />
-                                                                )}
-                                                                <button
-                                                                    onClick={() => handleCipherAnswer(puzzle.id, escapeRoomState.textInput || '')}
-                                                                    disabled={!escapeRoomState.textInput}
-                                                                    className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                >
-                                                                    {t('escape_room.submit_answer')}
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                        {puzzle.type === 'matching' && puzzle.pairs && (
-                                                            <div className="space-y-4">
-                                                                <p className="text-slate-500 text-sm">{t('escape_room.matching_instructions')}</p>
-                                                                <p className="text-purple-400 text-xs">{t('escape_room.matching_keyboard_hint') || 'Tip: Use Tab to switch columns, Enter to select'}</p>
-                                                                {(escapeRoomState.matchingPairs || []).length > 0 && (
-                                                                    <div className="space-y-2 mb-4" role="status" aria-live="polite">
-                                                                        <p className="text-green-400 text-xs font-bold">{t('escape_room.matched_pairs')}</p>
-                                                                        {(escapeRoomState.matchingPairs || []).map((pair, idx) => (
-                                                                            <div key={idx} className="flex items-center gap-2 p-2 bg-green-900/30 rounded-lg text-green-400 text-sm" role="status">
-                                                                                <CheckCircle size={14} aria-hidden="true"/>
-                                                                                <span>{pair[0]} ↔ {pair[1]}</span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                                <div className="grid grid-cols-2 gap-4" role="group" aria-label={t('escape_room.matching_columns') || 'Matching columns'}>
-                                                                    <div className="space-y-2" role="listbox" aria-label={t('escape_room.left_column') || 'Left column options'}>
-                                                                        {(puzzle.leftColumn || puzzle.pairs.map(p => p.left)).filter(item =>
-                                                                            !(escapeRoomState.matchingPairs || []).some(pair => pair[0] === item)
-                                                                        ).map((item, idx) => {
-                                                                            const isSelected = escapeRoomState.matchingSelected?.item === item && escapeRoomState.matchingSelected?.column === 'left';
-                                                                            return (
-                                                                                <button
-                                                                                    key={idx}
-                                                                                    onClick={() => handleMatchingSelect(puzzle.id, item, 'left')}
-                                                                                    onKeyDown={(e) => {
-                                                                                        if (e.key === 'ArrowRight') {
-                                                                                            e.preventDefault();
-                                                                                            document.querySelector('[data-matching-column="right"] button')?.focus();
-                                                                                        }
-                                                                                    }}
-                                                                                    role="option"
-                                                                                    aria-selected={isSelected}
-                                                                                    data-matching-column="left"
-                                                                                    className={`w-full p-3 rounded-xl text-white text-sm font-medium transition-all border-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800 ${
-                                                                                        isSelected
-                                                                                            ? 'bg-purple-600 border-purple-400'
-                                                                                            : 'bg-slate-700 border-slate-600 hover:border-purple-400'
-                                                                                    }`}
-                                                                                >
-                                                                                    {item}
-                                                                                    {isSelected && <span className="sr-only"> - {t('escape_room.selected') || 'selected'}</span>}
-                                                                                </button>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                    <div className="space-y-2" role="listbox" aria-label={t('escape_room.right_column') || 'Right column options'} data-matching-column="right">
-                                                                        {(puzzle.rightColumn || puzzle.pairs.map(p => p.right)).filter(item =>
-                                                                            !(escapeRoomState.matchingPairs || []).some(pair => pair[1] === item)
-                                                                        ).map((item, idx) => {
-                                                                            const isSelected = escapeRoomState.matchingSelected?.item === item && escapeRoomState.matchingSelected?.column === 'right';
-                                                                            return (
-                                                                                <button
-                                                                                    key={idx}
-                                                                                    onClick={() => handleMatchingSelect(puzzle.id, item, 'right')}
-                                                                                    onKeyDown={(e) => {
-                                                                                        if (e.key === 'ArrowLeft') {
-                                                                                            e.preventDefault();
-                                                                                            document.querySelector('[data-matching-column="left"]')?.focus();
-                                                                                        }
-                                                                                    }}
-                                                                                    role="option"
-                                                                                    aria-selected={isSelected}
-                                                                                    className={`w-full p-3 rounded-xl text-white text-sm font-medium transition-all border-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800 ${
-                                                                                        isSelected
-                                                                                            ? 'bg-purple-600 border-purple-400'
-                                                                                            : 'bg-slate-700 border-slate-600 hover:border-purple-400'
-                                                                                    }`}
-                                                                                >
-                                                                                    {item}
-                                                                                    {isSelected && <span className="sr-only"> - {t('escape_room.selected') || 'selected'}</span>}
-                                                                                </button>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {puzzle.type === 'scramble' && (
-                                                            <div className="space-y-4">
-                                                                <p className="sr-only" aria-live="polite">
-                                                                    {t('escape_room.scramble_sr_desc') || 'Scrambled letters:'} {(puzzle.displayLetters || puzzle.scrambledWord?.split('')).join(', ')}
-                                                                </p>
-                                                                <div
-                                                                    className="flex flex-wrap gap-2 justify-center p-4 bg-slate-900 rounded-xl"
-                                                                    role="list"
-                                                                    aria-label={t('escape_room.scrambled_letters') || 'Scrambled letters to unscramble'}
-                                                                >
-                                                                    {(puzzle.displayLetters || puzzle.scrambledWord?.split('')).map((letter, idx, arr) => (
-                                                                        <span
-                                                                            key={idx}
-                                                                            role="listitem"
-                                                                            aria-label={`${t('escape_room.letter') || 'Letter'} ${idx + 1} ${t('escape_room.of') || 'of'} ${arr.length}: ${letter}`}
-                                                                            className="w-10 h-10 bg-purple-600 text-white font-bold text-xl rounded-lg flex items-center justify-center shadow-md"
-                                                                        >
-                                                                            {letter}
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                                <label className="sr-only" htmlFor="scramble-input">
-                                                                    {t('escape_room.enter_unscrambled') || 'Enter the unscrambled word'}
-                                                                </label>
-                                                                <input aria-label={t('common.enter_escape_room_state')}
-                                                                    id="scramble-input"
-                                                                    type="text"
-                                                                    value={escapeRoomState.textInput || ''}
-                                                                    onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value.toUpperCase() }))}
-                                                                    placeholder={t('escape_room.unscramble_placeholder')}
-                                                                    className="w-full p-4 bg-slate-700 rounded-xl text-white font-mono text-xl text-center tracking-widest border-2 border-slate-600 focus:border-purple-400 focus:ring-2 focus:ring-purple-400 outline-none uppercase"
-                                                                    aria-describedby="scramble-hint"
-                                                                />
-                                                                <p id="scramble-hint" className="sr-only">
-                                                                    {t('escape_room.scramble_hint_sr') || 'Type the correct word using the scrambled letters shown above'}
-                                                                </p>
-                                                                <button
-                                                                    onClick={() => handleScrambleAnswer(puzzle.id, escapeRoomState.textInput || '')}
-                                                                    className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800"
-                                                                >
-                                                                    {t('escape_room.check_word')}
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                        {puzzle.type === 'fillin' && (
-                                                            <div className="space-y-4">
-                                                                {puzzle.sentence && (
-                                                                    <div
-                                                                        className="bg-slate-900 p-4 rounded-xl text-white text-center text-lg"
-                                                                        role="status"
-                                                                        aria-live="polite"
-                                                                        aria-label={t('escape_room.sentence_with_blank') || 'Sentence with blank'}
-                                                                        id="fillin-sentence"
-                                                                    >
-                                                                        {puzzle.sentence.replace('___', escapeRoomState.textInput ? `[${escapeRoomState.textInput}]` : '______')}
-                                                                    </div>
-                                                                )}
-                                                                {puzzle.wordbank && puzzle.wordbank.length > 0 ? (
-                                                                    <div className="space-y-3">
-                                                                        <p className="text-xs text-slate-500 text-center uppercase font-bold" id="fillin-wordbank-label">
-                                                                            {t('escape_room.select_word') || 'Select the correct word:'}
-                                                                        </p>
-                                                                        <div
-                                                                            className="flex flex-wrap gap-2 justify-center"
-                                                                            role="group"
-                                                                            aria-labelledby="fillin-wordbank-label"
-                                                                        >
-                                                                            {puzzle.wordbank.map((word, idx) => (
-                                                                                <button
-                                                                                    key={idx}
-                                                                                    onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
-                                                                                    aria-pressed={escapeRoomState.textInput === word}
-                                                                                    className={`px-4 py-2 rounded-lg font-bold transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                                                                                        escapeRoomState.textInput === word
-                                                                                            ? 'bg-purple-600 text-white ring-2 ring-purple-300'
-                                                                                            : 'bg-slate-700 text-white hover:bg-slate-600'
-                                                                                    }`}
-                                                                                >
-                                                                                    {word}
-                                                                                    <span className="sr-only">
-                                                                                        {escapeRoomState.textInput === word ? ` - ${t('escape_room.selected') || 'selected'}` : ''}
-                                                                                    </span>
-                                                                                </button>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                        <label className="sr-only" htmlFor="fillin-text-input">
-                                                                            {t('escape_room.enter_answer_label') || 'Enter your answer'}
-                                                                        </label>
-                                                                        <input aria-label={t('common.enter_escape_room_state')}
-                                                                            id="fillin-text-input"
-                                                                            type="text"
-                                                                            autoFocus
-                                                                            value={escapeRoomState.textInput || ''}
-                                                                            onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
-                                                                            placeholder={t('escape_room.enter_answer')}
-                                                                            className="w-full p-4 bg-slate-700 rounded-xl text-white font-medium border-2 border-slate-600 focus:border-purple-400 focus:ring-2 focus:ring-purple-400 outline-none"
-                                                                            aria-describedby="fillin-sentence"
-                                                                        />
-                                                                    </>
-                                                                )}
-                                                                <button
-                                                                    onClick={() => handleFillinAnswer(puzzle.id, escapeRoomState.textInput || '')}
-                                                                    disabled={!escapeRoomState.textInput}
-                                                                    className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800"
-                                                                    aria-disabled={!escapeRoomState.textInput}
-                                                                >
-                                                                    {t('escape_room.submit_answer')}
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
-                                    </div>
-                                )}
-                                {escapeRoomState.finalDoorUnlocked && escapeRoomState.finalDoorPuzzle && !escapeRoomState.isEscaped && (
-                                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        <button
-                                            onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: true, textInput: '' }))}
-                                            className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 text-slate-900 font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform animate-pulse border-4 border-yellow-300 focus:outline-none focus:ring-4 focus:ring-yellow-200"
-                                            aria-label={t('escape_room.approach_door') || 'Approach the final door'}
-                                        >
-                                            <DoorOpen size={28} className="animate-bounce" aria-hidden="true"/>
-                                            <span className="text-lg">{t('escape_room.approach_door')}</span>
-                                            <Sparkles size={20} aria-hidden="true"/>
-                                        </button>
-                                    </div>
-                                )}
-                                {escapeRoomState.showFinalDoor && escapeRoomState.finalDoorPuzzle && (
-                                    <div
-                                        className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-                                        onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: false }))}
-                                        role="dialog"
-                                        aria-modal="true"
-                                        aria-labelledby="final-door-title"
-                                    >
-                                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); }}} className="bg-gradient-to-b from-slate-800 to-slate-900 w-full max-w-2xl rounded-2xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] p-8 relative" onClick={e => e.stopPropagation()}>
-                                            <button
-                                                onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: false }))}
-                                                className="absolute top-4 right-4 text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded"
-                                                aria-label={t('escape_room.close') || 'Close'}
-                                            >
-                                                <X size={24} aria-hidden="true"/>
-                                            </button>
-                                            <div className="text-center mb-8">
-                                                <div className="text-6xl mb-4" aria-hidden="true">🚪</div>
-                                                <h3 id="final-door-title" className="text-2xl font-bold text-yellow-400">{t('escape_room.final_door_title')}</h3>
-                                                <p className="text-slate-500 text-sm mt-2">{t('escape_room.final_door_desc')}</p>
-                                            </div>
-                                            <div className="bg-slate-900 p-6 rounded-xl mb-6 border-2 border-yellow-500/30">
-                                                <p id="final-door-question" className="text-lg text-white font-medium text-center">
-                                                    {escapeRoomState.finalDoorPuzzle.sentence || escapeRoomState.finalDoorPuzzle.question}
-                                                </p>
-                                            </div>
-                                            <div className="space-y-4">
-                                                {escapeRoomState.finalDoorPuzzle.wordbank && escapeRoomState.finalDoorPuzzle.wordbank.length > 0 ? (
-                                                    <>
-                                                        <p className="text-xs text-slate-500 text-center uppercase font-bold">
-                                                            {t('escape_room.select_word') || 'Select the correct answer:'}
-                                                        </p>
-                                                        <div className="flex flex-wrap gap-2 justify-center">
-                                                            {escapeRoomState.finalDoorPuzzle.wordbank.map((word, idx) => (
-                                                                <button
-                                                                    key={idx}
-                                                                    onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
-                                                                    aria-pressed={escapeRoomState.textInput === word}
-                                                                    className={`px-4 py-2 rounded-lg font-bold transition-all focus:outline-none focus:ring-2 focus:ring-yellow-400 ${
-                                                                        escapeRoomState.textInput === word
-                                                                            ? 'bg-yellow-500 text-slate-900 ring-2 ring-yellow-300'
-                                                                            : 'bg-slate-700 text-white hover:bg-slate-600'
-                                                                    }`}
-                                                                >
-                                                                    {word}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <label className="sr-only" htmlFor="final-door-answer">
-                                                            {t('escape_room.final_answer_label') || 'Enter your final answer'}
-                                                        </label>
-                                                        <textarea
-                                                            id="final-door-answer"
-                                                            autoFocus
-                                                            value={escapeRoomState.textInput || ''}
-                                                            onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
-                                                            placeholder={t('escape_room.final_answer_placeholder')}
-                                                            rows={3}
-                                                            className="w-full p-4 bg-slate-700 rounded-xl text-white font-medium border-2 border-slate-600 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400 outline-none resize-none"
-                                                            aria-describedby="final-door-question"
-                                                        />
-                                                    </>
-                                                )}
-                                                <button
-                                                    onClick={() => handleFinalDoorAnswer(escapeRoomState.textInput || '')}
-                                                    disabled={!escapeRoomState.textInput}
-                                                    className="w-full p-4 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-slate-900 font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    <Key size={20} aria-hidden="true"/>
-                                                    {t('escape_room.unlock_door')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        window.AlloModules && window.AlloModules.EscapeRoomGameplay ? (
+                            <window.AlloModules.EscapeRoomGameplay
+                                escapeRoomState={escapeRoomState}
+                                setEscapeRoomState={setEscapeRoomState}
+                                escapeTimeLeft={escapeTimeLeft}
+                                isEscapeTimerRunning={isEscapeTimerRunning}
+                                setIsEscapeTimerRunning={setIsEscapeTimerRunning}
+                                handlers={{generateEscapeRoom, handlePuzzleSolved, handleSelectObject, handleWrongAnswer, handleEscapeRoomAnswer, handleSequenceAnswer, handleCipherAnswer, handleMatchingSelect, handleScrambleAnswer, handleFillinAnswer, handleFinalDoorAnswer, resetEscapeRoom, handleRevealHint, derangeShuffle, openEscapeRoomSettings}}
+                                t={t}
+                                soundEnabled={soundEnabled}
+                                globalPoints={globalPoints}
+                                inputText={inputText}
+                            />
+                        ) : null
                     ) : isPresentationMode ? (
                         <div className="space-y-8 animate-in fade-in duration-500">
                             <div className="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl shadow-lg">
@@ -47811,224 +46287,23 @@ Return only the corrected version of this exact text:`;
             </div>
         </div>
       )}
-      {escapeRoomState.showSettings && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setEscapeRoomState(prev => ({ ...prev, showSettings: false }))}>
-            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-hidden max-w-md w-full mx-4 transform transition-all animate-in zoom-in-95 duration-300" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-                <button
-                    onClick={() => setEscapeRoomState(prev => ({ ...prev, showSettings: false }))}
-                    className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                    aria-label={t('common.close')}
-                >
-                    <X size={20} />
-                </button>
-                <div className="text-center mb-6 relative">
-                    <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                        <Key size={32} className="text-amber-600" />
-                    </div>
-                    <h2 className="text-2xl font-black text-slate-800 mb-1">{t('escape_room.title')}</h2>
-                    <p className="text-slate-500 text-sm">{t('escape_room.settings_btn')}</p>
-                </div>
-                <div className="space-y-4 mb-6">
-                    <div>
-                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                            {t('escape_room.difficulty')}
-                        </label>
-                        <div className="grid grid-cols-3 gap-2">
-                            {['easy', 'normal', 'hard'].map(diff => (
-                                <button
-                                    key={diff}
-                                    onClick={() => updateEscapeRoomSetting('difficulty', diff)}
-                                    className={`p-3 rounded-xl border-2 font-bold text-sm capitalize transition-all ${
-                                        escapeRoomState.difficulty === diff
-                                            ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-md'
-                                            : 'border-slate-200 text-slate-600 hover:border-amber-200 hover:bg-amber-50'
-                                    }`}
-                                >
-                                    {t(`escape_room.${diff}`)}
-                                </button>
-                            ))}
-                        </div>
-                        <p className="text-xs text-slate-500 mt-2 text-center">
-                            {escapeRoomState.difficulty === 'easy' && '45s per puzzle • 99 lives • 5 hints'}
-                            {escapeRoomState.difficulty === 'normal' && '30s per puzzle • 3 lives • 3 hints'}
-                            {escapeRoomState.difficulty === 'hard' && '20s per puzzle • 1 life • 1 hint'}
-                        </p>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                            {t('escape_room.puzzle_count')}
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <input aria-label={t('common.adjust_escape_room_state')}
-                                type="range"
-                                min="5"
-                                max="15"
-                                value={escapeRoomState.puzzleCount || 30}
-                                onChange={(e) => updateEscapeRoomSetting('puzzleCount', parseInt(e.target.value))}
-                                className="flex-grow h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                            />
-                            <span className="w-10 text-center font-bold text-amber-800 bg-amber-50 rounded-lg py-1 border border-amber-200">
-                                {escapeRoomState.puzzleCount || 30}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex gap-3">
-                    {hasSavedEscapeRoom && (
-                        <button
-                            aria-label={t('common.load_saved_escape_room')}
-                            onClick={loadSavedEscapeRoom}
-                            className="flex-1 py-3 rounded-xl border-2 border-emerald-300 text-emerald-700 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
-                        >
-                            📂 {t('escape_room.load_saved') || 'Load Saved'}
-                        </button>
-                    )}
-                    <button
-                        aria-label={t('common.generate')}
-                        onClick={() => setEscapeRoomState(prev => ({ ...prev, showSettings: false }))}
-                        className="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors"
-                    >
-                        {t('common.cancel')}
-                    </button>
-                    <button
-                        aria-label={t('common.launch_escape_room')}
-                        onClick={launchEscapeRoomWithSettings}
-                        disabled={!hasSourceOrAnalysis}
-                        className="flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-600 transition-all shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                        <Sparkles size={18} /> {t('escape_room.start')}
-                    </button>
-                </div>
-            </div>
-        </div>
+      {escapeRoomState.showSettings && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
+          <window.AlloModules.EscapeRoomDialogs
+              mode="settings"
+              escapeRoomState={escapeRoomState}
+              setEscapeRoomState={setEscapeRoomState}
+              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom}}
+              t={t}
+          />
       )}
-      {escapeRoomState.isPreview && escapeRoomState.room && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" style={{ overflowY: 'auto' }}>
-            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-y-auto max-w-3xl w-full mx-4 my-8 max-h-[90vh] transform transition-all animate-in zoom-in-95 duration-300" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-                <button
-                    onClick={() => setEscapeRoomState(prev => ({ ...prev, isPreview: false, isActive: false, room: null, puzzles: [], savedEscapeRoom: null }))}
-                    className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors z-10"
-                    aria-label={t('common.close')}
-                >
-                    <X size={20} />
-                </button>
-                <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                        <Key size={32} className="text-amber-600" />
-                    </div>
-                    <h2 className="text-2xl font-black text-slate-800 mb-1">👁️ {t('escape_room.preview_title') || 'Preview Escape Room'}</h2>
-                    <p className="text-slate-500 text-sm">{t('escape_room.preview_desc') || 'Review and edit puzzles before students play. Click any field to edit.'}</p>
-                </div>
-                <div className="mb-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200">
-                    <h3 className="font-bold text-amber-800 text-lg">🏰 {escapeRoomState.room.theme}</h3>
-                    <p className="text-amber-700 text-sm mt-1">{escapeRoomState.room.description}</p>
-                </div>
-                <div className="space-y-3 mb-6">
-                    {escapeRoomState.puzzles.map((puzzle, idx) => (
-                        <div key={puzzle.id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-amber-300 transition-colors">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xl">{puzzle.linkedObject?.emoji || '🔮'}</span>
-                                <span className="font-bold text-slate-700">{puzzle.linkedObject?.name || `Puzzle ${idx + 1}`}</span>
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
-                                    puzzle.type === 'mcq' ? 'bg-blue-100 text-blue-700' :
-                                    puzzle.type === 'sequence' ? 'bg-purple-100 text-purple-700' :
-                                    puzzle.type === 'cipher' ? 'bg-red-100 text-red-700' :
-                                    puzzle.type === 'matching' ? 'bg-green-100 text-green-700' :
-                                    puzzle.type === 'scramble' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-teal-100 text-teal-700'
-                                }`}>{puzzle.type}</span>
-                            </div>
-                            <div className="space-y-2">
-                                <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase">Question</label>
-                                    <input
-                                        type="text"
-                                        value={puzzle.question || puzzle.sentence || puzzle.encodedText || ''}
-                                        onChange={e => updateEscapeRoomPuzzle(idx, puzzle.sentence ? 'sentence' : puzzle.encodedText ? 'encodedText' : 'question', e.target.value)}
-                                        className="w-full mt-1 p-2 text-sm border border-slate-200 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none transition-colors"
-                                    />
-                                </div>
-                                {puzzle.type === 'mcq' && puzzle.options && (
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {puzzle.options.map((opt, optIdx) => (
-                                            <div key={optIdx} className="flex items-center gap-1">
-                                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${optIdx === puzzle.correctIndex ? 'bg-green-700 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                                                    {String.fromCharCode(65 + optIdx)}
-                                                </span>
-                                                <input
-                                                    type="text"
-                                                    value={opt}
-                                                    onChange={e => updateEscapeRoomPuzzle(idx, 'options', { index: optIdx, text: e.target.value })}
-                                                    className={`flex-1 p-1.5 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 transition-colors ${optIdx === puzzle.correctIndex ? 'border-green-300 bg-green-50' : 'border-slate-200'}`}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                                {puzzle.type === 'scramble' && (
-                                    <p className="text-xs text-slate-500">✅ Answer: <strong>{puzzle.answer}</strong></p>
-                                )}
-                                {(puzzle.type === 'fillin' || puzzle.type === 'cipher') && (
-                                    <p className="text-xs text-slate-500">✅ Answer: <strong>{puzzle.answer}</strong> | Wordbank: {(puzzle.wordbank || []).join(', ')}</p>
-                                )}
-                                {puzzle.type === 'sequence' && puzzle.items && (
-                                    <p className="text-xs text-slate-500">📋 Correct order: {puzzle.items.join(' → ')}</p>
-                                )}
-                                {puzzle.type === 'matching' && puzzle.pairs && (
-                                    <p className="text-xs text-slate-500">🔗 Pairs: {puzzle.pairs.map(p => `${p.left}↔${p.right}`).join(', ')}</p>
-                                )}
-                                {puzzle.hint && (
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase">Hint</label>
-                                        <input
-                                            type="text"
-                                            value={puzzle.hint}
-                                            onChange={e => updateEscapeRoomPuzzle(idx, 'hint', e.target.value)}
-                                            className="w-full mt-1 p-2 text-xs border border-slate-200 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                {escapeRoomState.finalDoorPuzzle && (
-                    <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-200">
-                        <h4 className="font-bold text-red-800 mb-2">🚪 Final Door Puzzle</h4>
-                        <input
-                            type="text"
-                            value={escapeRoomState.finalDoorPuzzle.sentence || ''}
-                            onChange={e => updateEscapeRoomFinalDoor('sentence', e.target.value)}
-                            className="w-full p-2 text-sm border border-red-200 rounded-lg focus:border-red-400 outline-none mb-2"
-                        />
-                        <p className="text-xs text-red-600">✅ Answer: <strong>{escapeRoomState.finalDoorPuzzle.answer}</strong></p>
-                    </div>
-                )}
-                <div className="flex gap-3">
-                    <button
-                        aria-label={t('common.discard_preview')}
-                        onClick={() => setEscapeRoomState(prev => ({ ...prev, isPreview: false, isActive: false, room: null, puzzles: [], savedEscapeRoom: null }))}
-                        className="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors"
-                    >
-                        {t('common.discard') || '🗑️ Discard'}
-                    </button>
-                    <button
-                        aria-label={t('common.save_escape_room_configuration')}
-                        onClick={saveEscapeRoomConfig}
-                        className="flex-1 py-3 rounded-xl border-2 border-emerald-300 text-emerald-700 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
-                    >
-                        💾 {t('escape_room.save_config') || 'Save'}
-                    </button>
-                    <button
-                        aria-label={t('common.confirm_and_launch_escape_room')}
-                        onClick={confirmEscapeRoomPreview}
-                        className="flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-600 transition-all shadow-lg hover:shadow-amber-500/30 flex items-center justify-center gap-2"
-                    >
-                        🚀 {t('escape_room.launch') || 'Launch!'}
-                    </button>
-                </div>
-            </div>
-        </div>
+      {escapeRoomState.showPreview && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
+          <window.AlloModules.EscapeRoomDialogs
+              mode="preview"
+              escapeRoomState={escapeRoomState}
+              setEscapeRoomState={setEscapeRoomState}
+              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom}}
+              t={t}
+          />
       )}
       {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && (
         <div
@@ -52766,7 +51041,25 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   aria-label="Insert table" title="Insert accessible table">📊</button>
               </div>
               <iframe ref={pdfPreviewRef} title="Accessible document preview" className="flex-1 w-full border-0"
-                sandbox="allow-same-origin allow-scripts" />
+                sandbox="allow-same-origin allow-scripts allow-forms"
+                onLoad={() => {
+                  const iframe = pdfPreviewRef.current;
+                  const doc = iframe?.contentDocument;
+                  if (doc) {
+                    doc.body.spellcheck = true;
+                    doc.addEventListener('keydown', function(e) {
+                      if (e.ctrlKey || e.metaKey) {
+                        if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+                        else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
+                        else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
+                        else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
+                        else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt('Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
+                        else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
+                        else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
+                      }
+                    });
+                  }
+                }} />
             </div>
           </div>
         </div>
@@ -53908,6 +52201,67 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       className="flex-1 accent-indigo-600" aria-label="Font size" />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-slate-500 shrink-0">Margins:</span>
+                    <div className="flex gap-1 flex-1">
+                      {[
+                        { label: 'Narrow', val: '0.5in' },
+                        { label: 'Normal', val: '1in' },
+                        { label: 'Wide', val: '1.5in' },
+                      ].map(m => (
+                        <button key={m.label} onClick={() => {
+                          const iframe = exportPreviewRef.current;
+                          const doc = iframe?.contentDocument;
+                          if (doc) {
+                            let ms = doc.getElementById('allo-margin-style');
+                            if (!ms) { ms = doc.createElement('style'); ms.id = 'allo-margin-style'; doc.head.appendChild(ms); }
+                            ms.textContent = `@media print { @page { margin: ${m.val}; } } body { padding-left: ${m.val}; padding-right: ${m.val}; }`;
+                          }
+                        }}
+                          className="flex-1 text-[8px] font-bold text-slate-500 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                          title={`${m.label} margins (${m.val})`} aria-label={`Set ${m.label} page margins`}>{m.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Word count + goal */}
+                <div className="bg-slate-50 rounded-lg border border-slate-200 p-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase">Word Count</span>
+                    <span className="text-[10px] font-mono text-slate-600" aria-live="polite">
+                      {(() => {
+                        const iframe = exportPreviewRef.current;
+                        const text = iframe?.contentDocument?.body?.textContent || '';
+                        return text.split(/\s+/).filter(w => w.length > 0).length.toLocaleString();
+                      })()} words
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-[9px] text-slate-400 shrink-0" htmlFor="word-goal-input">Goal:</label>
+                    <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
+                      className="flex-1 text-[10px] border border-slate-200 rounded px-2 py-1 bg-white"
+                      aria-label="Target word count goal"
+                      onChange={(e) => {
+                        const goal = parseInt(e.target.value);
+                        const iframe = exportPreviewRef.current;
+                        const text = iframe?.contentDocument?.body?.textContent || '';
+                        const count = text.split(/\s+/).filter(w => w.length > 0).length;
+                        const bar = document.getElementById('word-goal-bar');
+                        const lbl = document.getElementById('word-goal-label');
+                        if (bar && goal > 0) {
+                          const pct = Math.min(100, Math.round((count / goal) * 100));
+                          bar.style.width = pct + '%';
+                          bar.style.background = pct >= 100 ? '#16a34a' : pct >= 75 ? '#2563eb' : '#d97706';
+                          if (lbl) lbl.textContent = count + ' / ' + goal + ' (' + pct + '%)';
+                        }
+                      }} />
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label="Word count progress">
+                    <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
+                  </div>
+                  <div id="word-goal-label" className="text-[8px] text-slate-400 mt-0.5"></div>
+                  <div className="text-[8px] text-slate-300 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
                 </div>
 
                 {/* ── SECTION: Content ── */}
@@ -54198,6 +52552,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           const doc = iframe?.contentDocument;
                           if (doc) {
                             doc.designMode = 'on';
+                            doc.body.spellcheck = true;
                             // Add editing styles
                             const editStyle = doc.createElement('style');
                             editStyle.textContent = `
@@ -54207,6 +52562,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               ::selection { background: #c7d2fe; }
                             `;
                             doc.head.appendChild(editStyle);
+                            // Keyboard shortcuts for power users
+                            doc.addEventListener('keydown', function(e) {
+                              if (e.ctrlKey || e.metaKey) {
+                                if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+                                else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
+                                else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
+                                else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
+                                else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt('Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
+                                else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
+                                else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
+                              }
+                            });
                           }
                         }, 300);
                       }, 100);
