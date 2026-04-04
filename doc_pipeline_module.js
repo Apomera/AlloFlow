@@ -28,7 +28,7 @@ var createDocPipeline = function (deps) {
     return window.__docPipelineState || {};
   };
   // Re-expose state vars as getters so existing code works unchanged
-  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage, selectedFont, responses, history, inputText, gradeLevel, projectName, studentNickname, isTeacherMode, generatedContent, pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult, pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect, pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns, customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading, setPdfFixStep, setPendingPdfBase64, setPendingPdfFile, setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex, setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle, setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting, setExportAuditLoading, setExportAuditResult, exportAuditResult;
+  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage, selectedFont, responses, history, inputText, gradeLevel, projectName, studentNickname, isTeacherMode, generatedContent, pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult, pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect, pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns, customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, pdfTargetScore, setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading, setPdfFixStep, setPendingPdfBase64, setPendingPdfFile, setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex, setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle, setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting, setExportAuditLoading, setExportAuditResult;
   // Bind all vars from the state bag before each public function call
   var _bindState = function () {
     var s = _s();
@@ -62,6 +62,7 @@ var createDocPipeline = function (deps) {
     exportStylePrompt = s.exportStylePrompt;
     pdfFixModeRef = s.pdfFixModeRef;
     pdfPreviewRef = s.pdfPreviewRef;
+    pdfTargetScore = s.pdfTargetScore || 90;
     setPdfAuditResult = s.setPdfAuditResult;
     setPdfAuditLoading = s.setPdfAuditLoading;
     setPdfFixResult = s.setPdfFixResult;
@@ -81,7 +82,6 @@ var createDocPipeline = function (deps) {
     setIsExtracting = s.setIsExtracting;
     setExportAuditLoading = s.setExportAuditLoading;
     setExportAuditResult = s.setExportAuditResult;
-    exportAuditResult = s.exportAuditResult;
   };
 
   // ── PDF Accessibility Audit ──
@@ -815,6 +815,14 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         log(`Fixed ${cf.fixCount} contrast violations`);
       }
     }
+    // Deterministic list-structure fix
+    if (batchAxeResults && batchAxeResults.critical.concat(batchAxeResults.serious).some(v => v.id === 'list')) {
+      const lf = fixListViolations(accessibleHtml);
+      if (lf.fixCount > 0) {
+        accessibleHtml = lf.html;
+        log(`Fixed ${lf.fixCount} list-structure violations`);
+      }
+    }
 
     // ── Phase 5: Self-correcting AI fix loop ──
     let autoFixPasses = 0;
@@ -892,8 +900,9 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         bestAiScore = newAi;
         bestAxeViolations = newAxe;
         log(`Pass ${fp + 1}: AI ${newAi}/100, axe ${newAxe} violations`);
-        if (newAxe === 0 && newAi >= 90) {
-          log('Excellent \u2014 stopping');
+        const targetScore = pdfTargetScore || 90;
+        if (newAxe === 0 && newAi >= targetScore) {
+          log(`Target score ${targetScore} reached (${newAi}) with 0 violations \u2014 stopping`);
           break;
         }
         const bMinDet = Math.max(2, Math.round(rvSEM * 1.5));
@@ -1558,7 +1567,7 @@ HTML section ${chunkNum}/${chunks.length}:
     }
   };
 
-  // ── Deterministic color-contrast fixer (no AI needed) ──
+  // ── Deterministic color-contrast fixer (comprehensive) ──
   const fixContrastViolations = htmlContent => {
     const hexToRgb = hex => {
       const h = hex.replace('#', '');
@@ -1575,54 +1584,292 @@ HTML section ${chunkNum}/${chunks.length}:
         l2 = luminance(...rgb2);
       return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
     };
-    // Darken a color until it meets 4.5:1 against a background
-    const darkenToPass = (fgHex, bgRgb) => {
-      let [r, g, b] = hexToRgb(fgHex);
-      for (let i = 0; i < 20; i++) {
-        if (contrastRatio([r, g, b], bgRgb) >= 4.5) break;
-        r = Math.max(0, Math.round(r * 0.85));
-        g = Math.max(0, Math.round(g * 0.85));
-        b = Math.max(0, Math.round(b * 0.85));
+
+    // Named CSS colors that fail contrast against white
+    const namedColorMap = {
+      'gray': '#808080',
+      'grey': '#808080',
+      'silver': '#c0c0c0',
+      'darkgray': '#a9a9a9',
+      'darkgrey': '#a9a9a9',
+      'lightgray': '#d3d3d3',
+      'lightgrey': '#d3d3d3',
+      'gainsboro': '#dcdcdc',
+      'lightslategray': '#778899',
+      'lightsteelblue': '#b0c4de',
+      'lightblue': '#add8e6',
+      'lightskyblue': '#87cefa',
+      'lightcoral': '#f08080',
+      'lightpink': '#ffb6c1',
+      'lightsalmon': '#ffa07a',
+      'lightyellow': '#ffffe0',
+      'lightgreen': '#90ee90',
+      'lightcyan': '#e0ffff',
+      'lemonchiffon': '#fffacd',
+      'lavender': '#e6e6fa',
+      'linen': '#faf0e6',
+      'mistyrose': '#ffe4e1',
+      'mintcream': '#f5fffa',
+      'oldlace': '#fdf5e6',
+      'papayawhip': '#ffefd5',
+      'peachpuff': '#ffdab9',
+      'seashell': '#fff5ee',
+      'snow': '#fffafa',
+      'wheat': '#f5deb3',
+      'white': '#ffffff',
+      'whitesmoke': '#f5f5f5',
+      'beige': '#f5f5dc',
+      'cornsilk': '#fff8dc',
+      'honeydew': '#f0fff0',
+      'ivory': '#fffff0',
+      'khaki': '#f0e68c',
+      'tan': '#d2b48c',
+      'thistle': '#d8bfd8',
+      'plum': '#dda0dd',
+      'yellow': '#ffff00',
+      'lime': '#00ff00',
+      'aqua': '#00ffff',
+      'cyan': '#00ffff',
+      'magenta': '#ff00ff',
+      'orange': '#ffa500',
+      'coral': '#ff7f50',
+      'tomato': '#ff6347',
+      'orangered': '#ff4500',
+      'red': '#ff0000',
+      'pink': '#ffc0cb',
+      'hotpink': '#ff69b4',
+      'deeppink': '#ff1493',
+      'mediumslateblue': '#7b68ee',
+      'royalblue': '#4169e1',
+      'dodgerblue': '#1e90ff',
+      'cornflowerblue': '#6495ed',
+      'mediumpurple': '#9370db',
+      'orchid': '#da70d6',
+      'violet': '#ee82ee',
+      'gold': '#ffd700',
+      'greenyellow': '#adff2f',
+      'chartreuse': '#7fff00',
+      'springgreen': '#00ff7f',
+      'mediumspringgreen': '#00fa9a',
+      'palegreen': '#98fb98',
+      'paleturquoise': '#afeeee',
+      'powderblue': '#b0e0e6',
+      'skyblue': '#87ceeb',
+      'mediumaquamarine': '#66cdaa',
+      'turquoise': '#40e0d0',
+      'mediumturquoise': '#48d1cc',
+      'sandybrown': '#f4a460',
+      'burlywood': '#deb887',
+      'navajowhite': '#ffdead',
+      'moccasin': '#ffe4b5',
+      'rosybrown': '#bc8f8f',
+      'darkkhaki': '#bdb76b',
+      'darkseagreen': '#8fbc8f'
+    };
+
+    // Darken a color until it meets 4.5:1 against a background (or lighten if bg is dark)
+    const fixToPass = (fgRgb, bgRgb, targetRatio = 4.5) => {
+      let [r, g, b] = fgRgb;
+      const bgLum = luminance(...bgRgb);
+      const isDarkBg = bgLum < 0.18;
+      for (let i = 0; i < 30; i++) {
+        if (contrastRatio([r, g, b], bgRgb) >= targetRatio) break;
+        if (isDarkBg) {
+          // Lighten foreground against dark backgrounds
+          r = Math.min(255, Math.round(r + (255 - r) * 0.15));
+          g = Math.min(255, Math.round(g + (255 - g) * 0.15));
+          b = Math.min(255, Math.round(b + (255 - b) * 0.15));
+        } else {
+          // Darken foreground against light backgrounds
+          r = Math.max(0, Math.round(r * 0.82));
+          g = Math.max(0, Math.round(g * 0.82));
+          b = Math.max(0, Math.round(b * 0.82));
+        }
       }
-      return rgbToHex(r, g, b);
+      return [r, g, b];
+    };
+
+    // Parse any CSS color value to RGB
+    const parseColor = colorStr => {
+      if (!colorStr) return null;
+      const s = colorStr.trim().toLowerCase();
+      if (s.startsWith('#')) {
+        try {
+          return hexToRgb(s);
+        } catch (e) {
+          return null;
+        }
+      }
+      const rgbMatch = s.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+      if (rgbMatch) return [parseInt(rgbMatch[1]), parseInt(rgbMatch[2]), parseInt(rgbMatch[3])];
+      if (namedColorMap[s]) {
+        try {
+          return hexToRgb(namedColorMap[s]);
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
     };
     let fixed = htmlContent;
     let fixCount = 0;
     const whiteBg = [255, 255, 255];
-    const lightBgs = [[255, 255, 255], [248, 250, 252], [241, 245, 249], [226, 232, 240], [250, 250, 250]];
 
-    // Find ALL color:#hex declarations in inline styles and check contrast against white/light bg
-    fixed = fixed.replace(/(?:^|;|\s)color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, hex) => {
+    // ── Pass 1: Fix color:#hex declarations against white background ──
+    fixed = fixed.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
       try {
         const rgb = hexToRgb(hex);
-        // Check contrast against white (most common bg)
-        const ratio = contrastRatio(rgb, whiteBg);
-        if (ratio < 4.5) {
-          const fixed = darkenToPass(hex, whiteBg);
+        if (contrastRatio(rgb, whiteBg) < 4.5) {
+          const [fr, fg, fb] = fixToPass(rgb, whiteBg);
           fixCount++;
-          return match.replace(hex, fixed);
+          return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
       } catch (e) {}
       return match;
     });
 
-    // Also fix rgb() color declarations
-    fixed = fixed.replace(/color:\s*rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/gi, (match, r, g, b) => {
+    // ── Pass 2: Fix color:rgb() and color:rgba() declarations ──
+    fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)/gi, (match, r, g, b) => {
       const rgb = [parseInt(r), parseInt(g), parseInt(b)];
       if (contrastRatio(rgb, whiteBg) < 4.5) {
-        const fixedColor = darkenToPass(rgbToHex(...rgb), whiteBg);
+        const [fr, fg, fb] = fixToPass(rgb, whiteBg);
         fixCount++;
-        return `color:${fixedColor}`;
+        return 'color:' + rgbToHex(fr, fg, fb);
       }
       return match;
     });
 
-    // Fix low opacity that reduces effective contrast
-    fixed = fixed.replace(/opacity:\s*0\.[0-6]\d*/g, () => {
+    // ── Pass 3: Fix named CSS color values ──
+    const namedColorRegex = new RegExp('([;"\\s])color:\\s*(' + Object.keys(namedColorMap).join('|') + ')\\b', 'gi');
+    fixed = fixed.replace(namedColorRegex, (match, prefix, name) => {
+      const hex = namedColorMap[name.toLowerCase()];
+      if (!hex) return match;
+      try {
+        const rgb = hexToRgb(hex);
+        if (contrastRatio(rgb, whiteBg) < 4.5) {
+          const [fr, fg, fb] = fixToPass(rgb, whiteBg);
+          fixCount++;
+          return prefix + 'color:' + rgbToHex(fr, fg, fb);
+        }
+      } catch (e) {}
+      return match;
+    });
+
+    // ── Pass 4: Fix foreground+background combos within same style attribute ──
+    fixed = fixed.replace(/style="([^"]*)"/gi, (fullMatch, styleContent) => {
+      const fgMatch = styleContent.match(/(?:^|;)\s*color:\s*([^;]+)/i);
+      const bgMatch = styleContent.match(/background(?:-color)?:\s*([^;]+)/i);
+      if (fgMatch && bgMatch) {
+        const fgRgb = parseColor(fgMatch[1].trim());
+        const bgRgb = parseColor(bgMatch[1].trim().replace(/\s*!important/gi, ''));
+        if (fgRgb && bgRgb && contrastRatio(fgRgb, bgRgb) < 4.5) {
+          const [fr, fg, fb] = fixToPass(fgRgb, bgRgb);
+          const newStyle = styleContent.replace(/(?:^|;)\s*color:\s*[^;]+/i, ';color:' + rgbToHex(fr, fg, fb));
+          fixCount++;
+          return 'style="' + newStyle + '"';
+        }
+      }
+      // Fix bg-only case: if element has a dark background but no explicit foreground color, add one
+      if (bgMatch && !fgMatch) {
+        const bgRgb = parseColor(bgMatch[1].trim().replace(/\s*!important/gi, ''));
+        if (bgRgb) {
+          const bgLum = luminance(...bgRgb);
+          // Dark background with no text color specified — default text (#000) may fail
+          if (bgLum < 0.18 && contrastRatio([0, 0, 0], bgRgb) < 4.5) {
+            fixCount++;
+            return 'style="' + styleContent + ';color:#ffffff"';
+          }
+          // Light background — ensure dark text
+          if (bgLum > 0.7 && contrastRatio([0, 0, 0], bgRgb) < 4.5) {
+            fixCount++;
+            return 'style="' + styleContent + ';color:#1e293b"';
+          }
+        }
+      }
+      return fullMatch;
+    });
+
+    // ── Pass 5: Fix low opacity ──
+    fixed = fixed.replace(/opacity:\s*0\.[0-5]\d*/g, () => {
       fixCount++;
       return 'opacity:0.85';
     });
+
+    // ── Pass 6: Inject a global CSS rule as a safety net for common light-colored classes ──
+    // This catches elements styled by class names rather than inline styles
+    if (fixed.includes('<head>') && !fixed.includes('/* a11y-contrast-safety */')) {
+      const safetyCSS = `<style>/* a11y-contrast-safety */
+.text-gray-400,.text-gray-300,.text-slate-400,.text-slate-300,.text-zinc-400,.text-zinc-300{color:#4b5563 !important}
+.text-blue-300,.text-sky-300,.text-cyan-300,.text-indigo-300{color:#1e40af !important}
+.text-green-300,.text-emerald-300{color:#166534 !important}
+.text-red-300,.text-rose-300,.text-pink-300{color:#991b1b !important}
+.text-yellow-300,.text-amber-300,.text-orange-300{color:#92400e !important}
+.text-purple-300,.text-violet-300{color:#5b21b6 !important}
+.bg-gray-800 *,.bg-slate-800 *,.bg-gray-900 *,.bg-slate-900 *,.bg-black *{color:#e2e8f0}
+</style>`;
+      fixed = fixed.replace('<head>', '<head>\n' + safetyCSS);
+      fixCount++;
+    }
     warnLog(`[Contrast Fix] Fixed ${fixCount} color-contrast issues deterministically`);
+    return {
+      html: fixed,
+      fixCount
+    };
+  };
+
+  // ── Deterministic list-structure fixer (no AI needed) ──
+  const fixListViolations = htmlContent => {
+    let fixed = htmlContent;
+    let fixCount = 0;
+
+    // Fix 1: Wrap direct non-<li> children of <ul>/<ol> in <li> tags
+    // Matches <ul> or <ol> content blocks and ensures all direct children are <li>
+    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>[\s\S]*?<\/\1>/gi, (listBlock, tag) => {
+      // Parse direct children — find text/elements between <ul> and </ul> that aren't <li>
+      let result = listBlock;
+
+      // Remove stray text nodes directly inside <ul>/<ol> (wrap them in <li>)
+      result = result.replace(new RegExp('(<' + tag + '(?:\\s[^>]*)?>)([\\s\\S]*?)(<\\/' + tag + '>)', 'i'), (m, open, content, close) => {
+        // Split content into segments: <li>...</li> blocks and everything else
+        let newContent = content;
+
+        // Wrap bare <div>, <p>, <span>, <a> inside <li>
+        newContent = newContent.replace(/(?<=<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)\s*(<(?:div|p|span|a|strong|em|b|i|h[1-6])\b[^>]*>[\s\S]*?<\/(?:div|p|span|a|strong|em|b|i|h[1-6])>)\s*(?=<li|<\/(?:ul|ol)>)/gi, (bareEl, inner) => {
+          fixCount++;
+          return '<li>' + inner + '</li>';
+        });
+
+        // Wrap bare text nodes (non-whitespace text between closing </li> and opening <li>)
+        newContent = newContent.replace(/(<\/li>)\s*([^<\s][^<]*[^<\s])\s*(<li|<\/(?:ul|ol)>)/gi, (m2, closeLi, text, next) => {
+          fixCount++;
+          return closeLi + '<li>' + text.trim() + '</li>' + next;
+        });
+        return open + newContent + close;
+      });
+      return result;
+    });
+
+    // Fix 2: Convert <ul> or <ol> that contain <div> wrappers around <li> items
+    // Pattern: <ul><div><li>...</li></div></ul> → <ul><li>...</li></ul>
+    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>(\s*)<div[^>]*>([\s\S]*?)<\/div>(\s*)<\/\1>/gi, (m, tag, attrs, ws1, content, ws2) => {
+      if (content.includes('<li')) {
+        fixCount++;
+        return '<' + tag + (attrs || '') + '>' + ws1 + content + ws2 + '</' + tag + '>';
+      }
+      return m;
+    });
+
+    // Fix 3: Remove bare <br> and empty text between <li> elements inside lists
+    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>[\s\S]*?<\/\1>/gi, (listBlock, tag) => {
+      let cleaned = listBlock;
+      // Remove stray <br> directly inside <ul>/<ol> (not inside <li>)
+      cleaned = cleaned.replace(new RegExp('(<' + tag + '(?:\\s[^>]*)?>|<\\/li>)\\s*<br\\s*\\/?>\\s*(?=<li|<\\/' + tag + '>)', 'gi'), (m, before) => {
+        fixCount++;
+        return before;
+      });
+      return cleaned;
+    });
+    warnLog(`[List Fix] Fixed ${fixCount} list-structure issues deterministically`);
     return {
       html: fixed,
       fixCount
@@ -2788,11 +3035,24 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const contrastFix = fixContrastViolations(accessibleHtml);
         if (contrastFix.fixCount > 0) {
           accessibleHtml = contrastFix.html;
-          // Re-run axe to see if contrast is now fixed
-          const reAxe = await runAxeAudit(accessibleHtml);
-          if (reAxe) axeResults = reAxe;
           warnLog(`[PDF Fix] Deterministic contrast fix: ${contrastFix.fixCount} patterns fixed`);
         }
+      }
+
+      // ── Step 4c: Deterministic list-structure fix ──
+      if (axeResults && axeResults.critical.concat(axeResults.serious).some(v => v.id === 'list')) {
+        updateProgress(4, 'Fixing list structure for screen readers...');
+        const listFix = fixListViolations(accessibleHtml);
+        if (listFix.fixCount > 0) {
+          accessibleHtml = listFix.html;
+          warnLog(`[PDF Fix] Deterministic list fix: ${listFix.fixCount} patterns fixed`);
+        }
+      }
+
+      // Re-run axe after all deterministic fixes
+      if (axeResults) {
+        const reAxe = await runAxeAudit(accessibleHtml);
+        if (reAxe) axeResults = reAxe;
       }
 
       // ── Step 5: Self-correcting AI fix loop with regression guard ──

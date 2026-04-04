@@ -12103,7 +12103,8 @@ Return only the corrected version of this exact text:`;
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
-  const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(5);
+  const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(8);
+  const [pdfTargetScore, setPdfTargetScore] = useState(90);
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const [pdfPreviewTheme, setPdfPreviewTheme] = useState('professional');
   const [pdfPreviewFontSize, setPdfPreviewFontSize] = useState(16);
@@ -17974,7 +17975,7 @@ Return ONLY valid JSON:
     selectedFont, responses: studentResponses, history, inputText, gradeLevel,
     studentNickname, isTeacherMode, generatedContent,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
-    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
+    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
     pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
@@ -50271,11 +50272,19 @@ Return only the corrected version of this exact text:`;
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px]">
-                        <span className="font-bold text-slate-600">Auto-fix Loops: {pdfAutoFixPasses}</span>
-                        <span className="text-slate-400">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Standard' : pdfAutoFixPasses <= 5 ? 'Thorough' : 'Aggressive'}</span>
+                        <span className="font-bold text-slate-600">Target Score: {pdfTargetScore}</span>
+                        <span className="text-slate-400">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
                       </div>
-                      <input type="range" min="0" max="10" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Auto-fix loop count" />
-                      <div className="flex justify-between text-[8px] text-slate-400"><span>0 (off)</span><span>5 (default)</span><span>10 (max)</span></div>
+                      <input type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label="Target accessibility score" />
+                      <div className="flex justify-between text-[8px] text-slate-400"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className="font-bold text-slate-600">Max Fix Passes: {pdfAutoFixPasses}</span>
+                        <span className="text-slate-400">{pdfAutoFixPasses === 0 ? 'Disabled' : pdfAutoFixPasses <= 3 ? 'Quick' : pdfAutoFixPasses <= 5 ? 'Standard' : pdfAutoFixPasses <= 8 ? 'Thorough' : 'Maximum'}</span>
+                      </div>
+                      <input type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label="Max fix pass count" />
+                      <div className="flex justify-between text-[8px] text-slate-400"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px]">
