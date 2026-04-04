@@ -7138,26 +7138,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/content_engine_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7172,7 +7172,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8a5504/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9ad4bd/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7257,42 +7257,69 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       });
       }); // end waitForRegistry callback
     }, 600);
-    // ─── Canvas TTS: Load Kokoro + Piper WASM TTS engines ──────────
-    // Guard: React StrictMode runs useEffect twice. Prevent duplicate <script> injection.
-    if (_isCanvasEnv && !window.__kokoroTTSScriptInjected) {
-      window.__kokoroTTSScriptInjected = true; // Synchronous guard — blocks StrictMode duplicate
-      const loadTTSScript = (url) => new Promise((resolve) => {
-        const s = document.createElement('script');
-        s.src = url; s.async = true; s.crossOrigin = 'anonymous';
-        s.onload = () => resolve(true);
-        s.onerror = (e) => { console.warn('[Canvas TTS] Failed to load:', url, e); resolve(false); };
-        document.head.appendChild(s);
-      });
-      // Load scripts, then proactively init Kokoro to avoid first-speak latency
-      (async () => {
+    // ─── TTS Engine Loading Strategy ──────────────────────────────
+    // Canvas: DON'T auto-load Kokoro (40MB, no persistent cache). Load on demand:
+    //   - When user selects Kokoro voice in settings → auto-download with progress
+    //   - When Gemini TTS fails (401/quota) → modal offers Kokoro download
+    //   - Piper loaded lazily when non-English language is selected
+    // Firebase: Auto-load Kokoro at startup (40MB one-time, cached in IndexedDB)
+    if (!window.__kokoroTTSScriptInjected) {
+      window.__kokoroTTSScriptInjected = true;
+      window.__loadKokoroTTS = async (onProgress) => {
+        // Shared loader — used by both auto-load (Firebase) and on-demand (Canvas)
+        if (window._kokoroTTS?.ready) return true;
+        const loadTTSScript = (url) => new Promise((resolve) => {
+          if (document.querySelector(`script[src="${url}"]`)) { resolve(true); return; }
+          const s = document.createElement('script');
+          s.src = url; s.async = true; s.crossOrigin = 'anonymous';
+          s.onload = () => resolve(true);
+          s.onerror = (e) => { console.warn('[TTS] Failed to load:', url, e); resolve(false); };
+          document.head.appendChild(s);
+        });
         await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97e87aa/kokoro_tts_loader.js');
-        loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97e87aa/piper_tts_loader.js');
         if (window._kokoroTTS) {
           try {
             await window._kokoroTTS.init((progress) => {
-              setKokoroLoadState({ loading: true, stage: progress.stage, pct: progress.pct });
+              if (onProgress) onProgress(progress);
+              setKokoroLoadState({ loading: true, stage: progress.stage || (progress.pct < 0.95 ? 'Downloading voice model' : 'Loading into memory'), pct: progress.pct });
             });
-            setKokoroLoadState(null); // Done — hide overlay
-          } catch (e) {
-            console.warn('[Canvas TTS] Kokoro preload failed:', e?.message);
             setKokoroLoadState(null);
+            return true;
+          } catch (e) {
+            console.warn('[TTS] Kokoro init failed:', e?.message);
+            setKokoroLoadState(null);
+            return false;
           }
-        } else {
-          setKokoroLoadState(null);
         }
-      })();
-      console.log('[Canvas TTS] 📦 Loading Kokoro + Piper TTS engines...');
+        setKokoroLoadState(null);
+        return false;
+      };
+      window.__loadPiperTTS = async () => {
+        if (window._piperTTS) return true;
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97e87aa/piper_tts_loader.js';
+        s.async = true; s.crossOrigin = 'anonymous';
+        return new Promise(r => { s.onload = () => r(true); s.onerror = () => r(false); document.head.appendChild(s); });
+      };
+
+      if (_isCanvasEnv) {
+        // Canvas: only load Piper script (tiny) for multilingual fallback, NOT Kokoro
+        console.log('[Canvas TTS] Lazy mode — Kokoro will download on demand');
+        setKokoroLoadState(null); // No loading overlay
+        window.__loadPiperTTS();
+      } else {
+        // Firebase: auto-load Kokoro (one-time 40MB, cached in IndexedDB for future sessions)
+        console.log('[Firebase TTS] Auto-loading Kokoro (cached for future sessions)...');
+        window.__loadKokoroTTS();
+        window.__loadPiperTTS();
+      }
     }
   }, []);
   // NOTE: Piper preload effect moved after leveledTextLanguage declaration (line ~23416)
   const [kokoroLoadState, setKokoroLoadState] = useState(
-    _isCanvasEnv ? { loading: true, stage: 'Preparing voice engine...', pct: 0 } : null
+    !_isCanvasEnv ? { loading: true, stage: 'Preparing voice engine...', pct: 0 } : null
   );
+  const [showKokoroOfferModal, setShowKokoroOfferModal] = useState(false);
   // ─── Poll Kokoro TTS progress (robust fallback for callback) ─────
   React.useEffect(() => {
     if (!_isCanvasEnv) return;
@@ -15769,6 +15796,14 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               console.warn('[Canvas TTS] Gemini rate-limited, using local fallback');
           }
           // Fallback: Kokoro (English) or Piper (multilingual) — works offline
+          // If Kokoro isn't loaded yet (Canvas lazy mode), offer to download it
+          if (!window._kokoroTTS?.ready && !window.__kokoroTTSDownloading) {
+            // Show modal offering Kokoro download (only on first failure per session)
+            if (!window.__kokoroOfferShown) {
+              window.__kokoroOfferShown = true;
+              setShowKokoroOfferModal(true);
+            }
+          }
           // Clean text for local TTS: strip list numbering and formatting that causes pauses
           const localTtsText = text
             .replace(/^\s*\d+\.\s+/gm, '')    // "1. " at start of lines
@@ -31272,6 +31307,44 @@ Return ONLY JSON:
           </div>
         </div>
       )}
+      {showKokoroOfferModal && (
+        <div className="fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowKokoroOfferModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-amber-100 p-3 rounded-full"><span className="text-2xl">🎤</span></div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Cloud Voice Unavailable</h3>
+                <p className="text-xs text-slate-500">Gemini TTS is temporarily unavailable (quota or network issue)</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 mb-4">
+              Would you like to download a free browser-based voice? It's ~40MB and works completely offline — no cloud needed.
+            </p>
+            <p className="text-xs text-slate-400 mb-4">
+              Note: In this environment, the download won't persist between sessions.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => { setShowKokoroOfferModal(false); }} className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">
+                No Thanks
+              </button>
+              <button onClick={() => {
+                setShowKokoroOfferModal(false);
+                if (window.__loadKokoroTTS) {
+                  window.__kokoroTTSDownloading = true;
+                  addToast('Downloading Kokoro voice model (~40MB)...', 'info');
+                  window.__loadKokoroTTS().then(ok => {
+                    window.__kokoroTTSDownloading = false;
+                    if (ok) { addToast('Kokoro voice ready! Switching to offline voice.', 'success'); setSelectedVoice('af_heart'); }
+                    else addToast('Download failed — please try again later', 'error');
+                  });
+                }
+              }} className="flex-1 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors text-sm">
+                Download Voice
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {disableAnimations && (
         <style>{`
           *, *::before, *::after {
@@ -32169,7 +32242,20 @@ Return ONLY JSON:
                                             <div>
                                                 <select aria-label={t('common.selection')}
                                                     value={selectedVoice}
-                                                    onChange={(e) => setSelectedVoice(e.target.value)}
+                                                    onChange={(e) => {
+                                                      const voice = e.target.value;
+                                                      setSelectedVoice(voice);
+                                                      // Canvas: auto-download Kokoro when a Kokoro voice is selected
+                                                      if (_isCanvasEnv && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
+                                                        window.__kokoroTTSDownloading = true;
+                                                        addToast('Downloading Kokoro voice model (~40MB)...', 'info');
+                                                        window.__loadKokoroTTS().then(ok => {
+                                                          window.__kokoroTTSDownloading = false;
+                                                          if (ok) addToast('Kokoro voice ready!', 'success');
+                                                          else addToast('Kokoro download failed — using Gemini TTS', 'error');
+                                                        });
+                                                      }
+                                                    }}
                                                     data-help-key="header_settings_voice_select"
                                                     className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
                                                 >
@@ -32180,9 +32266,9 @@ Return ONLY JSON:
                                                                     <option key={v.id} value={v.id}>{v.label || v.id}</option>
                                                                 ))}
                                                             </optgroup>
-                                                            <optgroup label="🎤 Kokoro (Offline Fallback)">
+                                                            <optgroup label={window._kokoroTTS?.ready ? "🎤 Kokoro (Ready)" : "🎤 Kokoro (tap to download ~40MB)"}>
                                                                 {KOKORO_VOICES.map(v => (
-                                                                    <option key={v.id} value={v.id}>{v.label}</option>
+                                                                    <option key={v.id} value={v.id}>{v.label}{!window._kokoroTTS?.ready ? ' ⬇' : ''}</option>
                                                                 ))}
                                                             </optgroup>
                                                             <optgroup label="🌐 Browser Fallback">
