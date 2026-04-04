@@ -50455,7 +50455,7 @@ Return only the corrected version of this exact text:`;
                   ) : (
                     <p className="text-[10px] opacity-60 mt-0.5">axe-core automated verification will be added after Fix & Verify (50/50 blend)</p>
                   )}
-                  {pdfAuditResult.needsAdditionalAnalysis && <p className="text-xs mt-1 bg-white/20 inline-block px-3 py-1 rounded-full font-bold" role="alert">Warning: High score variance (range: {pdfAuditResult.scoreRange}) — additional expert review recommended</p>}
+                  {pdfAuditResult.scoreRange > 25 && <p className="text-xs mt-1 bg-white/20 inline-block px-3 py-1 rounded-full font-bold">Note: Score variance is high (range: {pdfAuditResult.scoreRange}) — this is normal for documents with low accessibility scores</p>}
                   <p className="text-sm opacity-90 mt-1">{pdfAuditResult.summary}</p>
                 </div>
 

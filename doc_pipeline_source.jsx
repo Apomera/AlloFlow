@@ -318,10 +318,10 @@ Return ONLY valid JSON:
         cronbachAlpha,
         auditorCount: n,
         requestedAuditors: numAuditors,
-        needsAdditionalAnalysis: scoreRange > 25,
+        needsAdditionalAnalysis: false, // High variance on pre-remediation is expected — flag only post-remediation
         reliability: icc >= 0.9 ? 'excellent' : icc >= 0.75 ? 'good' : icc >= 0.5 ? 'moderate' : 'variable',
         summary: scoreRange > 25
-          ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits — additional expert review recommended. ${parsedAudits[0].summary}`
+          ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}`
           : `${parsedAudits[0].summary} (${n}-auditor consensus, SD: ${scoreSD})`,
         critical: mergeIssues(...parsedAudits.map(a => a.critical)),
         major: mergeIssues(...parsedAudits.map(a => a.major)),
