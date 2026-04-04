@@ -7224,6 +7224,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_safety.js',
         'stem_lab/stem_tool_worldbuilder.js',
         'stem_lab/stem_tool_flightsim.js',
+        'stem_lab/stem_tool_atctower.js',
         'stem_lab/stem_tool_geometryworld.js',
         'stem_lab/stem_tool_creative.js',
         'stem_lab/stem_tool_art.js',
@@ -51656,45 +51657,84 @@ Return only the corrected version of this exact text:`;
                       </details>
 
                       {/* ── Plain Language Summary Generator ── */}
-                      <button onClick={async () => {
-                        if (!callGemini || !pdfFixResult?.accessibleHtml) return;
-                        addToast('Generating plain language summary...', 'info');
-                        try {
-                          const text = pdfFixResult.accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim().substring(0, 8000);
-                          const summary = await callGemini(`You are a communication specialist who makes complex documents understandable for everyone.
+                      <details className="group">
+                        <summary className="text-[10px] font-bold text-blue-600 uppercase tracking-widest cursor-pointer hover:text-blue-800 transition-colors flex items-center gap-1">
+                          📖 Plain Language Summary <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                        </summary>
+                        <div className="mt-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 space-y-2">
+                          <p className="text-[10px] text-slate-500">Generate an easy-to-read version for parents, guardians, or community members.</p>
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase">Language</label>
+                              <input id="summary-lang" list="summary-lang-list" className="w-full text-[10px] border border-blue-200 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
+                              <datalist id="summary-lang-list">
+                                <option value="English" /><option value="Spanish" /><option value="French" /><option value="Arabic" /><option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" /><option value="Mandarin Chinese" /><option value="Haitian Creole" /><option value="Russian" />
+                              </datalist>
+                            </div>
+                            <div className="w-20">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase">Level</label>
+                              <select id="summary-level" className="w-full text-[10px] border border-blue-200 rounded-lg px-1 py-1.5 bg-white" defaultValue="5">
+                                <option value="3">3rd</option><option value="5">5th</option><option value="8">8th</option><option value="adult">Adult</option>
+                              </select>
+                            </div>
+                            <div className="w-20">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase">Length</label>
+                              <select id="summary-length" className="w-full text-[10px] border border-blue-200 rounded-lg px-1 py-1.5 bg-white" defaultValue="medium">
+                                <option value="brief">Brief</option><option value="medium">Medium</option><option value="detailed">Detailed</option>
+                              </select>
+                            </div>
+                          </div>
+                          <button onClick={async () => {
+                            if (!callGemini || !pdfFixResult?.accessibleHtml) return;
+                            const lang = document.getElementById('summary-lang')?.value || 'English';
+                            const level = document.getElementById('summary-level')?.value || '5';
+                            const length = document.getElementById('summary-length')?.value || 'medium';
+                            const gradeLabel = level === 'adult' ? 'plain adult language' : `${level}th-grade reading level`;
+                            const wordLimit = length === 'brief' ? 150 : length === 'detailed' ? 500 : 300;
+                            addToast(`Generating ${lang} summary (${gradeLabel})...`, 'info');
+                            try {
+                              const text = pdfFixResult.accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim().substring(0, 10000);
+                              const summary = await callGemini(`You are a communication specialist who makes complex documents understandable for everyone.
 
-Take this document content and create a PLAIN LANGUAGE SUMMARY suitable for parents, guardians, or community members who may not have specialized knowledge.
+Take this document content and create a PLAIN LANGUAGE SUMMARY.
+
+OUTPUT LANGUAGE: ${lang}
+READING LEVEL: ${gradeLabel} (Flesch-Kincaid Grade ${level === 'adult' ? '8-10' : level})
+LENGTH: approximately ${wordLimit} words
 
 RULES:
-- Write at a 5th-grade reading level (Flesch-Kincaid Grade 5)
-- Use short sentences (max 15 words)
-- Replace jargon with everyday words
+- Write entirely in ${lang}
+- Use short sentences appropriate for ${gradeLabel}
+- Replace jargon and technical terms with everyday words
 - Use bullet points for key information
-- Start with "This document is about..."
+- Start with the equivalent of "This document is about..." in ${lang}
 - Include a "What You Need to Know" section
 - Include a "What You Can Do" section if applicable
-- Keep it under 300 words
-- Be warm and respectful — this is for real families
+- Be warm, respectful, and culturally sensitive — this is for real families
+${lang !== 'English' ? '- Include a brief note at the bottom in English: "This summary was translated to ' + lang + ' from the original document."' : ''}
 
 DOCUMENT CONTENT:
 """
 ${text}
 """
 
-Return ONLY the plain language summary.`, false);
-                          if (summary) {
-                            const summaryHtml = summary.replace(/\n\n/g, '</p><p>').replace(/\n- /g, '</p><li>').replace(/\n/g, '<br>');
-                            const win = window.open('', '_blank');
-                            if (win) {
-                              win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Plain Language Summary</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:16px}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-block;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">📖 Plain Language Version</div><h1>Easy-to-Read Summary</h1><p>${summaryHtml}</p><div class="footer"><p>This summary was generated from: ${pendingPdfFile?.name || 'document'}</p><p>Generated ${new Date().toLocaleDateString()} by AlloFlow · <a href="https://prismflow-911fe.web.app">prismflow-911fe.web.app</a></p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">🖨️ Print</button></div></body></html>`);
-                              win.document.close();
-                              addToast('📖 Plain language summary generated!', 'success');
-                            }
-                          }
-                        } catch (e) { addToast('Summary generation failed', 'error'); }
-                      }} className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-xs font-bold text-blue-700 hover:from-blue-100 hover:to-indigo-100 transition-all flex items-center justify-center gap-2">
-                        📖 Generate Plain Language Summary (for parents/families)
-                      </button>
+Return ONLY the plain language summary in ${lang}.`, false);
+                              if (summary) {
+                                const summaryHtml = summary.replace(/\n\n/g, '</p><p>').replace(/\n- /g, '</p><li>').replace(/\n/g, '<br>');
+                                const dir = ['Arabic', 'Hebrew', 'Farsi', 'Persian', 'Urdu', 'Dari'].some(l => lang.includes(l)) ? 'rtl' : 'ltr';
+                                const win = window.open('', '_blank');
+                                if (win) {
+                                  win.document.write(`<!DOCTYPE html><html lang="${lang === 'English' ? 'en' : lang.substring(0,2).toLowerCase()}" dir="${dir}"><head><meta charset="UTF-8"><title>Plain Language Summary — ${lang}</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:${level === '3' ? '18' : '16'}px;direction:${dir}}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-flex;gap:6px;align-items:center;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">📖 ${lang} · ${gradeLabel}</div><h1>${lang === 'English' ? 'Easy-to-Read Summary' : 'Summary'}</h1><p>${summaryHtml}</p><div class="footer"><p>Source: ${pendingPdfFile?.name || 'document'} · Generated ${new Date().toLocaleDateString()} by AlloFlow</p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">🖨️ Print</button></div></body></html>`);
+                                  win.document.close();
+                                  addToast(`📖 ${lang} summary generated!`, 'success');
+                                }
+                              }
+                            } catch (e) { addToast('Summary generation failed', 'error'); }
+                          }} className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2">
+                            📖 Generate Summary
+                          </button>
+                        </div>
+                      </details>
                     </div>
                   )}
                 </div>
