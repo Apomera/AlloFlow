@@ -878,7 +878,7 @@
                   !pwChallengeDone && pwStrength.entropy > 60 && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
                     el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
                     el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your password would take ' + pwStrength.crackTime + ' to crack!'),
-                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); },
+                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); if (announceToSR) announceToSR('Password challenge complete! Plus 5 XP.'); },
                       style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
                   ),
                   // Tips
@@ -965,7 +965,7 @@
                   el('input', { value: cipherChallenge, onChange: function(e) {
                     var val = e.target.value.toUpperCase();
                     upd('cipherChallenge', val);
-                    if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); }
+                    if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); if (announceToSR) announceToSR('Cipher cracked! Plus 5 XP.'); }
                     else { upd('challengeSolved', false); }
                   }, placeholder: 'Type the decoded message...', 'aria-label': 'Cipher challenge answer', disabled: challengeSolved,
                     style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),

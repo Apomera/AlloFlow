@@ -78,6 +78,8 @@
       var callTTS         = props.callTTS;
       var callImagen      = props.callImagen;
       var callGeminiVision = props.callGeminiVision;
+      var onSafetyFlag    = props.onSafetyFlag || null; // connects to main app's handleAiSafetyFlag
+      var studentCodename = props.studentCodename || 'student';
       var t               = props.t || function(k) { return k; };
 
       // Lucide icons from parent
@@ -440,6 +442,8 @@
           callTTS: typeof callTTS === 'function' ? callTTS : null,
           callImagen: typeof callImagen === 'function' ? callImagen : null,
           callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
+          onSafetyFlag: onSafetyFlag,
+          studentCodename: studentCodename,
 
           // ── Icons ──
           icons: {

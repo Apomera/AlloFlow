@@ -1,0 +1,8 @@
+﻿8487|"You're a pro! Testing your spelling now! ðŸ‘ï¸",
+8518|`ðŸš€ LEVEL ${nextLevel}! You're a phonics star! ðŸŒŸ`,
+11636|'rhymes with "',
+12275|"Outstanding work! You're a phonics champion!"
+16441|"You've completed " +
+17458|body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e29
+19838|'Find the missing number: "3 + __ = 7". Measures algebraic thinking and number relationships.',
+20768|'Student reads CVC pseudowords aloud (e.g., "sig", "bim", "tob"). Scored as Correct Letter Sounds (C

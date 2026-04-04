@@ -484,6 +484,7 @@
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: prev, undoStack: stack, redoStack: redo }) });
       });
       if (soundEnabled) sfxUndo();
+      if (announceToSR) announceToSR('Undo. ' + (prev ? prev.length : 0) + ' blocks.');
     };
 
     var doRedo = function () {
@@ -498,6 +499,7 @@
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: next, undoStack: undo, redoStack: stack }) });
       });
       if (soundEnabled) sfxRedo();
+      if (announceToSR) announceToSR('Redo. ' + (next ? next.length : 0) + ' blocks.');
     };
 
     // Clear all (with undo snapshot)
@@ -508,6 +510,7 @@
         var a = Object.assign({}, p.archStudio || {});
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [], undoStack: newUndo, redoStack: [] }) });
       });
+      if (announceToSR) announceToSR('All blocks cleared.');
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -532,6 +535,7 @@
       upd('_galleryRefresh', Date.now());
       if (ctx.addToast) ctx.addToast('\uD83D\uDCBE Build saved: ' + name, 'success');
       if (soundEnabled) sfxSave();
+      if (announceToSR) announceToSR('Build saved: ' + name + '. ' + blocks.length + ' blocks.');
     };
 
     var loadBuild = function (item) {
@@ -542,6 +546,7 @@
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Loaded: ' + item.name, 'info');
       if (soundEnabled) sfxLoad();
+      if (announceToSR) announceToSR('Loaded build: ' + item.name + '. ' + (item.blocks ? item.blocks.length : 0) + ' blocks.');
     };
 
     var deleteBuild = function (id) {
@@ -565,6 +570,7 @@
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCC2 Template loaded: ' + tpl.name, 'info');
       if (soundEnabled) sfxLoad();
+      if (announceToSR) announceToSR('Template loaded: ' + tpl.name + '. ' + newBlocks.length + ' blocks.');
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -869,7 +875,7 @@
       shapes: shapes.map(function (s) { return s.id; }),
       setShape: function (id) { upd('activeShape', id); },
       modes: ['place', 'erase', 'paint'],
-      setMode: function (id) { upd('mode', id); },
+      setMode: function (id) { upd('mode', id); if (announceToSR) announceToSR((id === 'place' ? 'Place' : id === 'erase' ? 'Erase' : 'Paint') + ' mode activated.'); },
       screenshot: takeScreenshot
     };
 

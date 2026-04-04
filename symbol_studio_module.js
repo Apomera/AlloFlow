@@ -25,7 +25,9 @@
     + ' @keyframes ss-garden-bloom{0%{filter:saturate(0.5)}50%{filter:saturate(1.3)}100%{filter:saturate(1)}}'
     + ' .ss-garden-seed{animation:ss-garden-sprout 2s ease-in-out infinite alternate}'
     + ' .ss-garden-mastered{animation:ss-garden-glow 2.5s ease-in-out infinite}'
-    + ' .ss-garden-tapped{animation:ss-garden-tap 0.4s ease-out}';
+    + ' .ss-garden-tapped{animation:ss-garden-tap 0.4s ease-out}'
+    + ' @keyframes ss-garden-levelup{0%{transform:scale(0.95);opacity:0}20%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}'
+    + ' .ss-garden-levelup{animation:ss-garden-levelup 0.6s ease-out}';
     document.head.appendChild(style);
   })();
 
@@ -557,6 +559,9 @@
       { code: 'tl', label: 'Tagalog' },
       { code: 'ru', label: 'Русский' },
       { code: 'sw', label: 'Kiswahili' },
+      { code: 'so', label: 'Soomaali' },
+      { code: 'my', label: 'မြန်မာ' },
+      { code: 'am', label: 'አማርኛ' },
     ];
     var _boardLang = useState(function () { return load(STORAGE_BOARD_LANG, 'en'); });
     var boardLang = _boardLang[0]; var setBoardLang = _boardLang[1];
@@ -715,10 +720,30 @@
     // ── Word Garden state ──
     var _gardenFilter = useState('all'); var gardenFilter = _gardenFilter[0]; var setGardenFilter = _gardenFilter[1];
     var _gardenSearch = useState(''); var gardenSearch = _gardenSearch[0]; var setGardenSearch = _gardenSearch[1];
+    // Wish Seeds — words the student wanted to say but couldn't find
+    var STORAGE_WISHES = 'alloGardenWishSeeds';
+    var _wishSeeds = useState(function () { return load(STORAGE_WISHES, []); });
+    var wishSeeds = _wishSeeds[0]; var setWishSeeds = _wishSeeds[1];
+    var _wishInput = useState(''); var wishInput = _wishInput[0]; var setWishInput = _wishInput[1];
+    var _boardWishOpen = useState(false); var boardWishOpen = _boardWishOpen[0]; var setBoardWishOpen = _boardWishOpen[1];
+    var _boardWishInput = useState(''); var boardWishInput = _boardWishInput[0]; var setBoardWishInput = _boardWishInput[1];
     var _gardenSelectedWord = useState(null); var gardenSelectedWord = _gardenSelectedWord[0]; var setGardenSelectedWord = _gardenSelectedWord[1];
     var _gardenSort = useState('growth'); var gardenSort = _gardenSort[0]; var setGardenSort = _gardenSort[1];
     var _gardenStudentView = useState(false); var gardenStudentView = _gardenStudentView[0]; var setGardenStudentView = _gardenStudentView[1];
     var _gardenBehaviorFn = useState(''); var gardenBehaviorFn = _gardenBehaviorFn[0]; var setGardenBehaviorFn = _gardenBehaviorFn[1];
+    // Bilingual garden — home language translations cached per profile
+    var STORAGE_HOME_LANG = 'alloGardenHomeLang';
+    var _gardenHomeLang = useState(function () { return load(STORAGE_HOME_LANG, ''); });
+    var gardenHomeLang = _gardenHomeLang[0]; var setGardenHomeLang = _gardenHomeLang[1];
+    var _gardenTranslations = useState({}); var gardenTranslations = _gardenTranslations[0]; var setGardenTranslations = _gardenTranslations[1];
+    var _gardenTranslating = useState(false); var gardenTranslating = _gardenTranslating[0]; var setGardenTranslating = _gardenTranslating[1];
+    var _sessionDebrief = useState(null); var sessionDebrief = _sessionDebrief[0]; var setSessionDebrief = _sessionDebrief[1];
+
+    // Growth events — detects and celebrates when words level up
+    var STORAGE_GROWTH_LOG = 'alloGardenGrowthLog';
+    var _growthEvents = useState([]); var growthEvents = _growthEvents[0]; var setGrowthEvents = _growthEvents[1];
+    var _prevGrowthMap = useState(function () { return load(STORAGE_GROWTH_LOG, {}); });
+    var prevGrowthMap = _prevGrowthMap[0]; var setPrevGrowthMap = _prevGrowthMap[1];
 
     // ── Vocabulary Familiarity System ──
     // Tracks every symbol interaction across all tabs to build a learning profile.
@@ -990,7 +1015,7 @@
 
     var exportData = useCallback(function () {
       var data = {
-        version: 6,
+        version: 7,
         exportDate: new Date().toISOString(),
         gallery: gallery,
         boards: savedBoards,
@@ -998,6 +1023,13 @@
         profiles: profiles,
         books: books,
         familiarity: familiarity,
+        usageLog: usageLog,
+        iepGoals: iepGoals,
+        growthLog: prevGrowthMap,
+        customTemplates: customTemplates,
+        gardenTranslations: gardenTranslations,
+        gardenHomeLang: gardenHomeLang,
+        wishSeeds: wishSeeds,
       };
       var json = JSON.stringify(data, null, 2);
       var blob = new Blob([json], { type: 'application/json' });
@@ -1008,7 +1040,7 @@
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
       addToast && addToast('Backup downloaded!', 'success');
-    }, [gallery, savedBoards, savedSchedules, profiles, books, familiarity, addToast]);
+    }, [gallery, savedBoards, savedSchedules, profiles, books, familiarity, usageLog, iepGoals, prevGrowthMap, customTemplates, addToast]);
 
     var importData = useCallback(function (ev) {
       var file = ev.target.files && ev.target.files[0];
@@ -1069,6 +1101,64 @@
             var mergedFam = Object.assign({}, familiarity, data.familiarity);
             setFamiliarity(mergedFam); store(STORAGE_FAMILIARITY, mergedFam);
             summary.push('vocabulary familiarity');
+          }
+          // Import AAC usage log (merge sessions)
+          if (data.usageLog && typeof data.usageLog === 'object') {
+            var mergedUsage = Object.assign({}, usageLog);
+            Object.keys(data.usageLog).forEach(function (pid) {
+              var existing = mergedUsage[pid] || { sessions: [] };
+              var imported = data.usageLog[pid] || { sessions: [] };
+              // Deduplicate by session date
+              var existDates = {};
+              existing.sessions.forEach(function (s) { existDates[s.date] = true; });
+              var newSessions = imported.sessions.filter(function (s) { return !existDates[s.date]; });
+              mergedUsage[pid] = { sessions: existing.sessions.concat(newSessions) };
+            });
+            setUsageLog(mergedUsage); store(STORAGE_USAGE, mergedUsage);
+            summary.push('AAC usage log');
+          }
+          // Import IEP goals (merge by ID)
+          if (Array.isArray(data.iepGoals) && data.iepGoals.length) {
+            var existingGoalIds = {};
+            iepGoals.forEach(function (g) { existingGoalIds[g.id] = true; });
+            var newGoals = data.iepGoals.filter(function (g) { return !existingGoalIds[g.id]; });
+            if (newGoals.length > 0) {
+              var mergedGoals = iepGoals.concat(newGoals);
+              setIepGoals(mergedGoals); store(STORAGE_GOALS, mergedGoals);
+              summary.push(newGoals.length + ' IEP goal(s)');
+            }
+          }
+          // Import growth log snapshot
+          if (data.growthLog && typeof data.growthLog === 'object') {
+            var mergedGrowth = Object.assign({}, prevGrowthMap, data.growthLog);
+            setPrevGrowthMap(mergedGrowth); store(STORAGE_GROWTH_LOG, mergedGrowth);
+            summary.push('growth history');
+          }
+          // Import custom story templates
+          if (Array.isArray(data.customTemplates) && data.customTemplates.length) {
+            var existingTmplIds = {};
+            customTemplates.forEach(function (t) { existingTmplIds[t.id || t.label] = true; });
+            var newTmpls = data.customTemplates.filter(function (t) { return !existingTmplIds[t.id || t.label]; });
+            if (newTmpls.length > 0) {
+              var mergedTmpls = customTemplates.concat(newTmpls);
+              setCustomTemplates(mergedTmpls); store(STORAGE_CUSTOM_TEMPLATES, mergedTmpls);
+              summary.push(newTmpls.length + ' story template(s)');
+            }
+          }
+          // Import garden translations
+          if (data.gardenTranslations && typeof data.gardenTranslations === 'object') {
+            var mergedTrans = Object.assign({}, gardenTranslations, data.gardenTranslations);
+            setGardenTranslations(mergedTrans);
+            summary.push('translations');
+          }
+          if (data.gardenHomeLang && typeof data.gardenHomeLang === 'string') {
+            setGardenHomeLang(data.gardenHomeLang); store(STORAGE_HOME_LANG, data.gardenHomeLang);
+          }
+          // Import wish seeds
+          if (Array.isArray(data.wishSeeds) && data.wishSeeds.length) {
+            var existWishes = {}; wishSeeds.forEach(function (w) { existWishes[w.label.toLowerCase()] = true; });
+            var newWishes = data.wishSeeds.filter(function (w) { return !existWishes[w.label.toLowerCase()]; });
+            if (newWishes.length > 0) { var mw = wishSeeds.concat(newWishes); setWishSeeds(mw); store(STORAGE_WISHES, mw); summary.push(newWishes.length + ' wish seed(s)'); }
           }
           addToast && addToast(summary.length ? 'Imported: ' + summary.join(', ') : 'Nothing found to import', summary.length ? 'success' : 'info');
         } catch (err) {
@@ -1363,6 +1453,13 @@
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
       addToast && addToast('Board saved!' + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
+      // Garden discovery nudge — fires once when gallery + board create cross-context vocabulary
+      if (addToast && gallery.length >= 2 && !load('alloGardenNudgeSeen', false)) {
+        setTimeout(function () {
+          addToast('🌱 Your words are growing! Check the Word Garden tab to see vocabulary across tools.', 'info');
+          store('alloGardenNudgeSeen', true);
+        }, 1500);
+      }
       if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
     }, [boardWords, boardPages, activePageIdx, boardTitle, boardTopic, boardCols, activeProfileId, savedBoards, cloudSync, syncToCloud, commitCurrentPage, addToast]);
 
@@ -2682,7 +2779,7 @@
       mastered: { icon: '🌳', label: 'Mastered',   color: '#b45309', bg: '#fefce8', border: '#facc15', desc: 'Deeply rooted — used spontaneously everywhere' }
     };
     var GROWTH_ORDER = ['seed', 'sprout', 'growing', 'blooming', 'mastered'];
-    var CONTEXT_ICONS = { gallery: '🎨', board: '📋', schedule: '📅', story: '📖', quickboard: '⚡' };
+    var CONTEXT_ICONS = { gallery: '🎨', board: '📋', schedule: '📅', story: '📖', quickboard: '⚡', wish: '💫' };
 
     // Communication functions — maps words to their likely pragmatic purpose
     // Based on AAC clinical practice: SLPs track function distribution in IEP goals
@@ -2741,13 +2838,13 @@
 
     function computeWordBank() {
       var bank = {};
-      function ensure(lbl, cat) { var k = lbl.trim().toLowerCase(); if (!k) return null; if (!bank[k]) bank[k] = { d: lbl.trim(), cat: cat || 'other', cx: [], img: null }; return k; }
+      function ensure(lbl, cat) { var k = lbl.trim().toLowerCase(); if (!k) return null; if (!bank[k]) bank[k] = { d: lbl.trim(), cat: cat || 'other', cx: [], img: null, hasVoice: false }; return k; }
       gallery.forEach(function (s) { var k = ensure(s.label, s.category); if (k) { bank[k].cx.push({ type: 'gallery', source: 'Symbol Gallery' }); if (s.image && !bank[k].img) bank[k].img = s.image; } });
       savedBoards.forEach(function (b) { var t = b.title || 'Board';
-        (b.words || []).forEach(function (w) { var k = ensure(w.label, w.category); if (k) { bank[k].cx.push({ type: 'board', source: t }); if (w.image && !bank[k].img) bank[k].img = w.image; } });
-        (b.pages || []).forEach(function (p) { (p.words || []).forEach(function (w) { var k = ensure(w.label, w.category); if (k) { bank[k].cx.push({ type: 'board', source: t + '/' + (p.title || 'Page') }); if (w.image && !bank[k].img) bank[k].img = w.image; } }); });
+        (b.words || []).forEach(function (w) { var k = ensure(w.label, w.category); if (k) { bank[k].cx.push({ type: 'board', source: t }); if (w.image && !bank[k].img) bank[k].img = w.image; if (w.audioData) bank[k].hasVoice = true; } });
+        (b.pages || []).forEach(function (p) { (p.words || []).forEach(function (w) { var k = ensure(w.label, w.category); if (k) { bank[k].cx.push({ type: 'board', source: t + '/' + (p.title || 'Page') }); if (w.image && !bank[k].img) bank[k].img = w.image; if (w.audioData) bank[k].hasVoice = true; } }); });
       });
-      boardWords.forEach(function (w) { var k = ensure(w.label, w.category); if (k && !bank[k].cx.some(function (c) { return c.type === 'board'; })) { bank[k].cx.push({ type: 'board', source: boardTitle || 'Current Board' }); if (w.image && !bank[k].img) bank[k].img = w.image; } });
+      boardWords.forEach(function (w) { var k = ensure(w.label, w.category); if (k && !bank[k].cx.some(function (c) { return c.type === 'board'; })) { bank[k].cx.push({ type: 'board', source: boardTitle || 'Current Board' }); if (w.image && !bank[k].img) bank[k].img = w.image; } if (k && w.audioData) bank[k].hasVoice = true; });
       savedSchedules.forEach(function (sc) { (sc.items || []).forEach(function (it) { var k = ensure(it.label, 'verb'); if (k) { bank[k].cx.push({ type: 'schedule', source: sc.title || 'Schedule' }); if (it.image && !bank[k].img) bank[k].img = it.image; } }); });
       schedItems.forEach(function (it) { var k = ensure(it.label, 'verb'); if (k && !bank[k].cx.some(function (c) { return c.type === 'schedule'; })) { bank[k].cx.push({ type: 'schedule', source: schedTitle || 'Current Schedule' }); if (it.image && !bank[k].img) bank[k].img = it.image; } });
       storyPages.forEach(function (pg, idx) { if (!pg.text) return; var txt = pg.text.toLowerCase(); Object.keys(bank).forEach(function (k) { if (txt.indexOf(k) !== -1 && !bank[k].cx.some(function (c) { return c.type === 'story'; })) bank[k].cx.push({ type: 'story', source: 'Story p.' + (idx + 1) }); }); });
@@ -2760,6 +2857,12 @@
       var aacCounts = {};
       var profLog = usageLog[pid] || { sessions: [] };
       (profLog.sessions || []).forEach(function (sess) { (sess.entries || []).forEach(function (en) { var k = en.label.trim().toLowerCase(); aacCounts[k] = (aacCounts[k] || 0) + 1; }); });
+      // Add wish seeds — words the student wanted but don't exist yet
+      wishSeeds.forEach(function (wish) {
+        var k = wish.label.trim().toLowerCase();
+        if (!k || bank[k]) return; // skip if already in the bank
+        bank[k] = { d: wish.label.trim(), cat: wish.category || 'other', cx: [{ type: 'wish', source: 'Wish Seed — ' + (wish.note || 'student wanted this word') }], img: null };
+      });
       // Resolve growth levels — merging context breadth with familiarity depth
       return Object.keys(bank).map(function (key) {
         var w = bank[key]; var ctxT = {}; w.cx.forEach(function (c) { ctxT[c.type] = true; });
@@ -2775,7 +2878,7 @@
         return { key: key, displayLabel: w.d, category: w.cat, contexts: w.cx, uniqueContextCount: uc,
           contextTypes: Object.keys(ctxT), image: w.img, aacUses: aac, famScore: fs,
           questCorrect: famEntry.questCorrect || 0, questWrong: famEntry.questWrong || 0,
-          taps: famEntry.taps || 0, growth: growth, isCore: !!CORE_SET[key], commFn: getWordFunction(w.d) };
+          taps: famEntry.taps || 0, growth: growth, isCore: !!CORE_SET[key], commFn: getWordFunction(w.d), hasVoice: !!w.hasVoice };
       });
     }
 
@@ -2798,8 +2901,78 @@
       setGardenStoryLoading(false);
     }, [onCallGemini, gardenStoryLoading]);
 
+    var translateGardenWords = useCallback(async function (bank, langCode) {
+      if (!onCallGemini || !langCode || langCode === 'en' || gardenTranslating) return;
+      setGardenTranslating(true);
+      // Only translate words we don't have yet
+      var toTranslate = bank.map(function (w) { return w.displayLabel; }).filter(function (label) {
+        return !gardenTranslations[label.toLowerCase().trim() + ':' + langCode];
+      });
+      if (toTranslate.length === 0) { setGardenTranslating(false); return; }
+      // Batch in groups of 30
+      var batches = [];
+      for (var i = 0; i < toTranslate.length; i += 30) batches.push(toTranslate.slice(i, i + 30));
+      var langName = (LANG_OPTIONS.find(function (l) { return l.code === langCode; }) || {}).label || langCode;
+      var newTranslations = Object.assign({}, gardenTranslations);
+      for (var bi = 0; bi < batches.length; bi++) {
+        try {
+          var prompt = 'Translate these AAC vocabulary words from English to ' + langName + '. These are simple words used by students in communication boards. Return ONLY a JSON array of objects: [{"en":"english word","tl":"translated word"}]. Keep translations simple and natural — use the most common everyday word.\n\nWords: ' + batches[bi].join(', ');
+          var result = await onCallGemini(prompt, true);
+          var parsed = parseJson(result);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(function (item) {
+              if (item.en && item.tl) newTranslations[item.en.toLowerCase().trim() + ':' + langCode] = item.tl;
+            });
+          }
+        } catch (err) { warnLog('Garden translation batch failed:', err); }
+      }
+      setGardenTranslations(newTranslations);
+      setGardenTranslating(false);
+      addToast && addToast('Translated ' + toTranslate.length + ' words to ' + langName + '!', 'success');
+    }, [onCallGemini, gardenTranslations, gardenTranslating, addToast]);
+
+    function getTranslation(label, langCode) {
+      if (!langCode || langCode === 'en') return null;
+      return gardenTranslations[label.toLowerCase().trim() + ':' + langCode] || null;
+    }
+
+    function detectGrowthEvents(bank) {
+      var events = [];
+      var newMap = {};
+      bank.forEach(function (w) {
+        newMap[w.key] = w.growth;
+        var prev = prevGrowthMap[w.key];
+        if (prev && prev !== w.growth) {
+          var oldIdx = GROWTH_ORDER.indexOf(prev);
+          var newIdx = GROWTH_ORDER.indexOf(w.growth);
+          if (newIdx > oldIdx) {
+            events.push({ word: w.displayLabel, from: prev, to: w.growth, image: w.image, ts: Date.now() });
+          }
+        }
+      });
+      if (events.length > 0) {
+        setPrevGrowthMap(newMap);
+        store(STORAGE_GROWTH_LOG, newMap);
+        setGrowthEvents(function (prev) { return events.concat(prev).slice(0, 20); });
+        // Speak the celebration if TTS available
+        if (onCallTTS && events.length <= 2) {
+          var msg = events.map(function (ev) { return ev.word + ' grew to ' + GROWTH_LEVELS[ev.to].label; }).join('. ');
+          onCallTTS(msg, selectedVoice || 'Kore', 1).then(function (url) { if (url) new Audio(url).play().catch(function () {}); }).catch(function () {});
+        }
+      } else if (Object.keys(prevGrowthMap).length === 0 && bank.length > 0) {
+        // First run — seed the snapshot without events
+        bank.forEach(function (w) { newMap[w.key] = w.growth; });
+        setPrevGrowthMap(newMap);
+        store(STORAGE_GROWTH_LOG, newMap);
+      }
+      return events;
+    }
+
     function gardenSuggestions(word) {
       var sug = []; var has = {}; word.contextTypes.forEach(function (t) { has[t] = true; });
+      // Wish seeds get a special first suggestion
+      if (has.wish && !has.gallery) sug.push({ icon: '💫', text: 'This is a wish seed — the student reached for this word! Create a symbol to make it real.',
+        action: function () { setSymLabel(word.displayLabel); setSymCategory(word.category); setTab('symbols'); } });
       if (!has.board) sug.push({ icon: '📋', text: 'Add "' + word.displayLabel + '" to a communication board',
         action: function () {
           setBoardWords(function (prev) {
@@ -2820,11 +2993,35 @@
       return sug;
     }
 
+    function renderGrowthCelebrations() {
+      if (growthEvents.length === 0) return null;
+      // Show recent events (last 30 seconds)
+      var now = Date.now();
+      var recent = growthEvents.filter(function (ev) { return now - ev.ts < 30000; });
+      if (recent.length === 0) return null;
+      return e('div', { role: 'alert', 'aria-live': 'assertive', style: { margin: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: '6px' } },
+        recent.map(function (ev, i) {
+          var fromGl = GROWTH_LEVELS[ev.from]; var toGl = GROWTH_LEVELS[ev.to];
+          return e('div', { key: i, className: 'ss-garden-levelup', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, ' + toGl.bg + ', ' + toGl.border + '22)', borderRadius: '12px', border: '2px solid ' + toGl.border, boxShadow: '0 4px 16px ' + toGl.border + '44' } },
+            ev.image ? e('img', { src: ev.image, alt: '', style: { width: 36, height: 36, borderRadius: '8px', objectFit: 'contain' } })
+              : e('span', { style: { fontSize: '28px' } }, toGl.icon),
+            e('div', { style: { flex: 1 } },
+              e('div', { style: { fontSize: '14px', fontWeight: 800, color: '#1f2937' } }, '🎉 "' + ev.word + '" grew!'),
+              e('div', { style: { fontSize: '11px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' } },
+                e('span', { style: { color: fromGl.color } }, fromGl.icon + ' ' + fromGl.label),
+                e('span', null, '→'),
+                e('span', { style: { color: toGl.color, fontWeight: 700 } }, toGl.icon + ' ' + toGl.label))),
+            e('button', { onClick: function () { setGrowthEvents(function (prev) { return prev.filter(function (_, j) { return j !== i; }); }); }, 'aria-label': 'Dismiss', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#9ca3af', padding: '4px' } }, '×'));
+        }));
+    }
+
     function renderGardenTab() {
       var bank = computeWordBank();
       var counts = { seed: 0, sprout: 0, growing: 0, blooming: 0, mastered: 0 };
       bank.forEach(function (w) { counts[w.growth] = (counts[w.growth] || 0) + 1; });
       var total = bank.length;
+      // Detect growth events
+      detectGrowthEvents(bank);
       // Empty state
       if (total === 0) {
         return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', padding: '40px', textAlign: 'center' } },
@@ -2866,7 +3063,9 @@
                   style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px', background: 'rgba(255,255,255,0.85)', borderRadius: '14px', border: '3px solid ' + gl.border, cursor: 'pointer', minWidth: '80px', maxWidth: '100px', transition: 'transform 0.2s', boxShadow: level === 'mastered' ? '0 0 12px rgba(250,204,21,0.4)' : '0 2px 6px rgba(0,0,0,0.06)' } },
                   w.image ? e('img', { src: w.image, alt: w.displayLabel, style: { width: '56px', height: '56px', objectFit: 'contain', borderRadius: '10px' } })
                     : e('div', { style: { width: '56px', height: '56px', borderRadius: '10px', background: gl.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' } }, gl.icon),
-                  e('div', { style: { fontSize: '13px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.2 } }, w.displayLabel));
+                  e('div', { style: { fontSize: '13px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.2 } },
+                    w.displayLabel, w.hasVoice && e('span', { style: { marginLeft: '3px', fontSize: '10px' }, title: 'Has a loved one\'s voice' }, '❤️')),
+                  gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#6366f1', textAlign: 'center', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)));
               })));
         };
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'linear-gradient(180deg,#e0f2fe 0%,#f0fdf4 40%,#fefce8 80%,#fef3c7 100%)' } },
@@ -2882,7 +3081,7 @@
               var pid = activeProfileId || '__global__';
               var pLog = usageLog[pid] || { sessions: [] };
               var tw = 0; var uw = {};
-              (pLog.sessions || []).forEach(function (s) { (s.entries || []).forEach(function (en) { tw++; uw[en.label.trim().toLowerCase()] = true; }); });
+              (pLog.sessions || []).forEach(function (s) { (s.entries || []).forEach(function (en) { if (en.label === '__UTTERANCE__') return; tw++; uw[en.label.trim().toLowerCase()] = true; }); });
               if (tw < 10) return null;
               var ld = Object.keys(uw).length / tw;
               if (ld >= 0.5) return e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', padding: '4px 12px', background: '#dbeafe', borderRadius: '16px', border: '1px solid #93c5fd', fontSize: '12px', fontWeight: 600, color: '#1e40af' } }, e('span', null, '🌈'), e('span', null, 'Using lots of different words!'));
@@ -2893,7 +3092,9 @@
             // "Hear My Words" — speaks all mastered words aloud, a celebration of voice
             grouped.mastered.length > 0 && e('button', {
               onClick: function () {
-                var words = grouped.mastered.map(function (w) { return w.displayLabel; });
+                // Start with an introduction, then speak each word
+                var intro = sName + '\'s words:';
+                var words = [intro].concat(grouped.mastered.map(function (w) { return w.displayLabel; }));
                 var idx = 0;
                 var speakNext = function () {
                   if (idx >= words.length || !onCallTTS) return;
@@ -2937,7 +3138,22 @@
               'aria-label': 'Read the garden story aloud',
               style: { padding: '5px 14px', background: '#d1fae5', border: '1px solid #34d399', borderRadius: '16px', fontSize: '12px', fontWeight: 600, color: '#047857', cursor: 'pointer' }
             }, '🔊 Read Aloud')),
+          renderGrowthCelebrations(),
           e('div', { style: { flex: 1, overflowY: 'auto', padding: '0 16px 20px' } },
+            // Wish stars — floating above the garden
+            (function () {
+              var profileWishes = wishSeeds.filter(function (w) {
+                return (w.profileId === (activeProfileId || 'default') || !w.profileId) && !bank.some(function (b) { return b.key === w.label.trim().toLowerCase() && b.uniqueContextCount >= 2; });
+              });
+              if (profileWishes.length === 0) return null;
+              return e('div', { style: { background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)', borderRadius: '16px', padding: '14px 16px', marginBottom: '10px', textAlign: 'center' } },
+                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#c4b5fd', marginBottom: '8px' } }, '💫 Wishes waiting to grow'),
+                e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' } },
+                  profileWishes.map(function (w, i) {
+                    return e('span', { key: i, className: 'ss-garden-seed', style: { padding: '4px 12px', background: 'rgba(196,181,253,0.2)', border: '1px solid #7c3aed', borderRadius: '20px', fontSize: '13px', fontWeight: 600, color: '#e0e7ff' } }, '💫 ' + w.label);
+                  })),
+                e('p', { style: { fontSize: '10px', color: '#818cf8', margin: '8px 0 0', fontStyle: 'italic' } }, 'These words are waiting to become real'));
+            })(),
             ['mastered', 'blooming', 'growing', 'sprout', 'seed'].map(renderBed)));
       }
       // ── Teacher View ──
@@ -2964,11 +3180,13 @@
               : e('div', { style: { width: '80px', height: '80px', borderRadius: '12px', background: '#fff', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#d1d5db' } }, '🖼'),
             e('div', { style: { flex: 1 } },
               e('div', { style: { fontSize: '24px', fontWeight: 800, color: '#1f2937' } }, w.displayLabel),
+              gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '14px', fontWeight: 600, color: '#6366f1', fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
               e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' } },
                 e('span', { style: { padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: catFill[w.category] || '#f3f4f6', color: catBorder[w.category] || '#6b7280', border: '1px solid ' + (catBorder[w.category] || '#d1d5db') } }, w.category),
                 w.commFn && (function () { var cf = COMM_FUNCTIONS[w.commFn]; return e('span', { style: { padding: '2px 8px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, background: cf.color + '15', color: cf.color, border: '1px solid ' + cf.color + '33' } }, cf.icon + ' ' + cf.label); })(),
                 e('span', { style: { fontSize: '20px' } }, gl.icon), e('span', { style: { fontSize: '13px', fontWeight: 700, color: gl.color } }, gl.label)),
-              e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '6px 0 0', fontStyle: 'italic' } }, gl.desc))),
+              e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '6px 0 0', fontStyle: 'italic' } }, gl.desc),
+              w.hasVoice && e('p', { style: { fontSize: '11px', color: '#ec4899', margin: '4px 0 0', fontWeight: 600 } }, '❤️ This word has a loved one\'s recorded voice'))),
           // Stats
           e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
             e('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#059669' } }, w.uniqueContextCount), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'contexts')),
@@ -3065,7 +3283,71 @@
         e('select', { value: gardenSort, onChange: function (ev) { setGardenSort(ev.target.value); }, 'aria-label': 'Sort', style: Object.assign({}, S.input, { width: 'auto', fontSize: '11px' }) },
           e('option', { value: 'growth' }, '↕ Growth'), e('option', { value: 'alpha' }, '↕ A→Z'), e('option', { value: 'contexts' }, '↕ Contexts'), e('option', { value: 'recent' }, '↕ AAC Use')),
         (function () { var wk = bank.filter(function (w) { return (w.growth === 'sprout' || w.growth === 'growing') && w.image; }); if (wk.length < 3) return null;
-          return e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', wk.map(function (w) { return { id: w.key, label: w.displayLabel, image: w.image }; })); addToast && addToast('Practicing ' + wk.length + ' growing words!', 'info'); }, 'aria-label': 'Practice weak words', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '🎮 Practice Weak Words'); })());
+          return e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', wk.map(function (w) { return { id: w.key, label: w.displayLabel, image: w.image }; })); addToast && addToast('Practicing ' + wk.length + ' growing words!', 'info'); }, 'aria-label': 'Practice weak words', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '🎮 Practice Weak Words'); })(),
+        // Generate a board from garden data — mastered core + growing words
+        (function () {
+          var withImages = bank.filter(function (w) { return w.image; });
+          if (withImages.length < 4) return null;
+          return e('button', { onClick: function () {
+            // Build a board from garden intelligence: mastered core first, then growing words
+            var coreReady = withImages.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); });
+            var growingImgs = withImages.filter(function (w) { return (w.growth === 'growing' || w.growth === 'sprout') && !coreReady.some(function (c) { return c.key === w.key; }); });
+            var boardPool = coreReady.concat(growingImgs).slice(0, 12);
+            var newWords = boardPool.map(function (w) { return { id: uid(), label: w.displayLabel, category: w.category, description: '', image: w.image }; });
+            setBoardWords(newWords);
+            setBoardTitle((activeProfile.codename || activeProfile.name || 'Student') + '\'s Garden Board');
+            setBoardCols(Math.min(4, Math.ceil(Math.sqrt(newWords.length))));
+            setTab('board');
+            addToast && addToast('Garden Board created with ' + newWords.length + ' words!', 'success');
+          }, 'aria-label': 'Generate communication board from garden data', style: Object.assign({}, S.btn('#059669', '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '📋 Garden Board');
+        })(),
+        // Phonics Lesson from Garden — bridges to Word Sounds
+        (function () {
+          var phonicsWords = bank.filter(function (w) {
+            return (w.growth === 'mastered' || w.growth === 'blooming' || w.growth === 'growing') && w.image && w.displayLabel.length <= 6 && /^[a-zA-Z]+$/.test(w.displayLabel);
+          });
+          if (phonicsWords.length < 3) return null;
+          return e('button', { onClick: function () {
+            // Sort: mastered first, then growing — student knows the meaning, now learn the sounds
+            var sorted = phonicsWords.sort(function (a, b) {
+              var ag = GROWTH_ORDER.indexOf(a.growth); var bg = GROWTH_ORDER.indexOf(b.growth);
+              return bg - ag;
+            });
+            var wordList = sorted.slice(0, 10).map(function (w) { return w.displayLabel; });
+            // Store to localStorage so Word Sounds can pick it up
+            try { localStorage.setItem('alloGardenPhonicsWords', JSON.stringify(wordList)); } catch (e2) {}
+            // Also expose on GardenBridge
+            if (window.AlloModules && window.AlloModules.GardenBridge) {
+              window.AlloModules.GardenBridge._lastPhonicsLesson = wordList;
+            }
+            addToast && addToast('📖 Phonics lesson ready! Open Word Sounds Studio — ' + wordList.length + ' garden words loaded: ' + wordList.slice(0, 4).join(', ') + (wordList.length > 4 ? '...' : ''), 'success');
+          }, 'aria-label': 'Build phonics lesson from garden vocabulary', style: Object.assign({}, S.btn('#2563eb', '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '📖 Phonics Lesson');
+        })(),
+        // Wish Seed input — plant a word the student wanted but couldn't find
+        e('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', padding: '0 16px', marginBottom: '6px' } },
+          e('span', { style: { fontSize: '12px', flexShrink: 0 }, title: 'Plant a word the student tried to say but couldn\'t find on any board' }, '💫'),
+          e('input', { type: 'text', value: wishInput, onChange: function (ev) { setWishInput(ev.target.value); },
+            onKeyDown: function (ev) {
+              if (ev.key === 'Enter' && wishInput.trim()) {
+                var label = wishInput.trim();
+                var newWish = { label: label, category: 'other', note: 'Student reached for this word', ts: new Date().toISOString(), profileId: activeProfileId || 'default' };
+                var updated = wishSeeds.concat([newWish]);
+                setWishSeeds(updated); store(STORAGE_WISHES, updated);
+                setWishInput('');
+                addToast && addToast('💫 "' + label + '" planted as a wish seed!', 'success');
+              }
+            },
+            placeholder: 'Plant a wish seed — a word the student wanted to say...',
+            'aria-label': 'Plant a wish seed word',
+            style: Object.assign({}, S.input, { flex: 1, fontSize: '11px', borderColor: '#c4b5fd', background: '#faf5ff' }) }),
+          wishInput.trim() && e('button', { onClick: function () {
+            var label = wishInput.trim();
+            var newWish = { label: label, category: 'other', note: 'Student reached for this word', ts: new Date().toISOString(), profileId: activeProfileId || 'default' };
+            var updated = wishSeeds.concat([newWish]);
+            setWishSeeds(updated); store(STORAGE_WISHES, updated);
+            setWishInput('');
+            addToast && addToast('💫 "' + label + '" planted as a wish seed!', 'success');
+          }, 'aria-label': 'Plant wish seed', style: Object.assign({}, S.btn('#7c3aed', '#fff', false), { fontSize: '11px', padding: '5px 10px' }) }, '🌱 Plant')));
       var gridItems = filtered.map(function (w) { var g2 = GROWTH_LEVELS[w.growth];
         return e('button', { key: w.key, onClick: function () { setGardenSelectedWord(w.key); }, 'aria-label': w.displayLabel + ' — ' + g2.label,
           style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', background: '#fff', border: '2px solid ' + g2.border, borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', position: 'relative', overflow: 'hidden' },
@@ -3073,15 +3355,25 @@
           onMouseOut: function (ev) { ev.currentTarget.style.transform = 'translateY(0)'; ev.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; } },
           e('div', { style: { position: 'absolute', top: '3px', right: '5px', fontSize: '14px' } }, g2.icon),
           w.isCore && e('div', { style: { position: 'absolute', top: '3px', left: '5px', fontSize: '7px', background: '#dbeafe', color: '#1d4ed8', padding: '1px 4px', borderRadius: '4px', fontWeight: 700 } }, 'CORE'),
+          w.hasVoice && e('div', { style: { position: 'absolute', bottom: '3px', right: '5px', fontSize: '10px' }, title: 'This word has a parent\'s recorded voice' }, '❤️'),
           w.image ? e('img', { src: w.image, alt: '', style: { width: '48px', height: '48px', objectFit: 'contain', borderRadius: '8px' } }) : e('div', { style: { width: '48px', height: '48px', borderRadius: '8px', background: g2.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' } }, g2.icon),
           e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.2 } }, w.displayLabel),
+          gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '9px', fontWeight: 600, color: '#6366f1', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
           e('div', { style: { display: 'flex', gap: '2px', fontSize: '10px' } }, w.contextTypes.map(function (ct) { return e('span', { key: ct, title: ct, style: { opacity: 0.7 } }, CONTEXT_ICONS[ct] || '📌'); }))); });
       return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' } },
         e('div', { style: { padding: '16px 16px 8px', flexShrink: 0 } },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
             e('span', { style: { fontSize: '22px' } }, '🌱'),
             e('div', { style: { flex: 1 } }, e('h3', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: 0 } }, 'Word Garden'), e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '2px 0 0' } }, 'Tap any word to explore its growth across tools.')),
-            e('button', { onClick: function () { setGardenStudentView(true); }, 'aria-label': 'Student view', style: { padding: '5px 12px', background: '#dcfce7', border: '2px solid #4ade80', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#15803d', cursor: 'pointer', whiteSpace: 'nowrap' } }, '🌱 Student View')),
+            e('button', { onClick: function () { setGardenStudentView(true); }, 'aria-label': 'Student view', style: { padding: '5px 12px', background: '#dcfce7', border: '2px solid #4ade80', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#15803d', cursor: 'pointer', whiteSpace: 'nowrap' } }, '🌱 Student View'),
+            // Home language selector for bilingual garden
+            e('select', { value: gardenHomeLang, onChange: function (ev) {
+              var code = ev.target.value;
+              setGardenHomeLang(code); store(STORAGE_HOME_LANG, code);
+              if (code && code !== 'en') translateGardenWords(computeWordBank(), code);
+            }, 'aria-label': 'Student home language', style: { padding: '3px 6px', fontSize: '10px', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', cursor: 'pointer' } },
+              e('option', { value: '' }, '🌍 Home Lang'),
+              LANG_OPTIONS.filter(function (l) { return l.code !== 'en'; }).map(function (l) { return e('option', { key: l.code, value: l.code }, l.label); }))),
           // Weekly pulse
           (function () {
             var now = Date.now(); var week = 7 * 86400000;
@@ -3181,12 +3473,14 @@
                   missing.slice(0, 5).map(function (pw) { return e('span', { key: pw, style: { padding: '1px 6px', borderRadius: '8px', background: '#fee2e2', fontSize: '10px', fontWeight: 600, color: '#991b1b' } }, pw); }))));
           })(),
           summaryBar, controlsBar),
+        renderGrowthCelebrations(),
         e('div', { style: { flex: 1, overflowY: 'auto', padding: '0 16px 16px' } },
           filtered.length === 0 ? e('div', { style: { textAlign: 'center', padding: '30px', color: '#6b7280' } }, e('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'), e('p', { style: { fontSize: '13px' } }, gardenSearch ? 'No words match "' + gardenSearch + '"' : 'No words at this growth level yet'))
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' } }, gridItems),
           total > 0 && e('div', { style: { display: 'flex', gap: '6px', margin: '8px 0', flexWrap: 'wrap' } },
             e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print clinical report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Clinical Report'),
-            e('button', { onClick: function () { printGardenHomeNote(bank, counts, total); }, 'aria-label': 'Print home note for family', style: Object.assign({}, S.btn('#dcfce7', '#15803d', false), { fontSize: '11px' }) }, '🏠 Home Note'))));
+            e('button', { onClick: function () { printGardenHomeNote(bank, counts, total); }, 'aria-label': 'Print home note for family', style: Object.assign({}, S.btn('#dcfce7', '#15803d', false), { fontSize: '11px' }) }, '🏠 Home Note'),
+            e('button', { onClick: function () { exportGardenCSV(bank, counts, total); }, 'aria-label': 'Export research CSV', style: Object.assign({}, S.btn('#dbeafe', '#1d4ed8', false), { fontSize: '11px' }) }, '🔬 Research CSV'))));
     }
 
     function printGardenReport(bank, counts, total) {
@@ -3286,6 +3580,33 @@
         html += '<div class="word-cloud">';
         earlyWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth]; html += '<span class="word-chip" style="background:' + g.bg + ';color:' + g.color + ';border:1px solid ' + g.border + '">' + g.icon + ' ' + w.displayLabel + '</span>'; });
         html += '</div>';
+      }
+      // Family voices section
+      var voiceWords = rows.filter(function (w) { return w.hasVoice; });
+      if (voiceWords.length > 0) {
+        html += '<h2>❤️ Words With a Loved One\'s Voice</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words have been personally recorded by a family member or caregiver. When ' + name + ' taps these symbols, they hear someone who loves them — not a machine voice.</p>';
+        html += '<div class="word-cloud">';
+        voiceWords.forEach(function (w) { html += '<span class="word-chip" style="background:#fce7f3;color:#be185d;border:1px solid #f9a8d4">❤️ ' + w.displayLabel + '</span>'; });
+        html += '</div>';
+        html += '<p style="font-size:12px;color:#059669;background:#f0fdf4;padding:8px 12px;border-radius:8px;border:1px solid #d1fae5;margin-top:8px"><strong>Family engagement note:</strong> ' + voiceWords.length + ' word' + (voiceWords.length !== 1 ? 's have' : ' has') + ' personal voice recordings. This reflects active family participation in ' + name + '\'s communication development.</p>';
+      }
+      // Wish Seeds section — words the student reached for
+      var activeWishes = wishSeeds.filter(function (w) {
+        return w.profileId === (activeProfileId || 'default') || !w.profileId;
+      });
+      if (activeWishes.length > 0) {
+        html += '<h2>💫 Words ' + name + ' Is Reaching For</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">During communication sessions, ' + name + ' showed intent to express these words but didn\'t have them available. This is evidence of <strong>communicative intent beyond current vocabulary</strong> — one of the strongest indicators of readiness for vocabulary expansion.</p>';
+        html += '<div class="word-cloud">';
+        activeWishes.forEach(function (w) {
+          var dateStr = w.ts ? new Date(w.ts).toLocaleDateString() : '';
+          html += '<span class="word-chip" style="background:#faf5ff;color:#7c3aed;border:1px solid #c4b5fd">💫 ' + w.label + (dateStr ? ' <span style="font-size:9px;opacity:0.7">(' + dateStr + ')</span>' : '') + '</span>';
+        });
+        html += '</div>';
+        if (activeWishes.some(function (w) { return w.note; })) {
+          html += '<p style="font-size:12px;color:#78350f;background:#fffbeb;padding:8px 12px;border-radius:8px;border:1px solid #fef3c7;margin-top:8px"><strong>Recommended action:</strong> Create symbols for these words and add them to ' + name + '\'s communication boards. When a student reaches for a word, they are telling us they are ready to learn it.</p>';
+        }
       }
       // How growth works — for parents
       html += '<h2>🌱 How Words Grow</h2>';
@@ -3394,7 +3715,13 @@
       var codename = prof.codename || '';
       var now = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       // Pick 3-5 words to practice at home: prefer growing/sprout words with images
-      var practiceWords = bank.filter(function (w) { return (w.growth === 'growing' || w.growth === 'sprout') && w.image; }).slice(0, 4);
+      // Prefer weekly focus words (core, near threshold, fewest contexts) for home practice
+      var practiceWords = bank.filter(function (w) { return (w.growth === 'growing' || w.growth === 'sprout') && w.image; })
+        .sort(function (a, b) {
+          var sa = (a.isCore ? 2 : 0) + Math.max(0, 4 - a.uniqueContextCount);
+          var sb = (b.isCore ? 2 : 0) + Math.max(0, 4 - b.uniqueContextCount);
+          return sb - sa;
+        }).slice(0, 4);
       if (practiceWords.length < 2) practiceWords = bank.filter(function (w) { return w.image; }).slice(0, 4);
       var masteredList = bank.filter(function (w) { return w.growth === 'mastered'; }).map(function (w) { return w.displayLabel; });
       var html = '<html><head><title>Home Note — ' + name + '</title><style>'
@@ -3443,10 +3770,31 @@
         html += '<div class="tip"><strong>How to help:</strong> When you see ' + name + ' reaching for something or showing a need, <strong>point to the word</strong> and <strong>say it out loud</strong>. Then wait 3-5 seconds for ' + name + ' to try. Respond to any attempt — a look, a point, a sound — as if they said the word. <em>Every response teaches that words work.</em></div>';
         html += '<div class="tip"><strong>At mealtimes:</strong> Point to "' + practiceWords[0].displayLabel + '" before giving it. <strong>During play:</strong> Model the words naturally: "Oh, you ' + (practiceWords.length > 1 ? practiceWords[1].displayLabel : 'want') + '!" <strong>At bedtime:</strong> Name one thing from the day using a garden word.</div>';
       }
+      // Phonics play section — bridges vocabulary to literacy at home
+      if (practiceWords && practiceWords.length >= 2) {
+        var phonicsExamples = practiceWords.filter(function (w) { return /^[a-zA-Z]+$/.test(w.displayLabel) && w.displayLabel.length <= 6; }).slice(0, 3);
+        if (phonicsExamples.length >= 2) {
+          html += '<div class="section"><h2>🔤 Sound Games at Home</h2>';
+          html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">' + name + ' is learning these words at school. You can help with their <strong>sounds</strong> too — no special training needed!</p>';
+          html += '<div class="tip"><strong>🔗 Blending Game:</strong> Say the sounds in "' + phonicsExamples[0].displayLabel + '" slowly: "' + phonicsExamples[0].displayLabel.split('').join(' ... ') + '" — then ask ' + name + ' to guess the word. Cheer when they get it!</div>';
+          html += '<div class="tip"><strong>📦 Breaking Apart:</strong> Say "' + phonicsExamples[1].displayLabel + '" and clap once for each sound. How many claps? Count together!</div>';
+          if (phonicsExamples.length >= 3) {
+            html += '<div class="tip"><strong>🎵 Rhyme Time:</strong> "What rhymes with ' + phonicsExamples[2].displayLabel + '?" Make up silly words together — even nonsense words count! Rhyming builds the brain\'s sound awareness.</div>';
+          }
+          html += '<p style="font-size:11px;color:#6b7280;margin:8px 0 0;font-style:italic">These games build <strong>phonological awareness</strong> — the ability to hear and manipulate sounds in words. It\'s the #1 predictor of reading success, and it\'s free to practice!</p>';
+          html += '</div>';
+        }
+      }
       html += '<div class="section"><h2>💡 Remember</h2>';
       html += '<p style="font-size:13px">You don\'t need to be a speech therapist to help. Just <strong>use the words naturally</strong> during daily routines. The more places ' + name + ' hears and sees a word, the more it becomes theirs. Even pointing to a picture on the fridge counts!</p>';
       html += '<p style="font-size:13px;margin-top:8px">Words are like plants — they grow with attention, patience, and sunlight. Your voice is the sunlight. 🌱</p>';
       html += '</div>';
+      // Include garden story if one has been generated
+      if (gardenStory) {
+        html += '<div class="section"><h2>📖 ' + name + '\'s Garden Story</h2>';
+        html += '<div style="font-family:Georgia,serif;font-size:14px;color:#374151;line-height:1.8;padding:12px 16px;background:#f0fdf4;border-radius:12px;border:1px solid #d1fae5;font-style:italic">' + gardenStory + '</div>';
+        html += '<p style="font-size:11px;color:#6b7280;margin:6px 0 0">Read this story aloud to ' + name + ' — hearing their vocabulary words in a narrative helps them grow!</p></div>';
+      }
       html += '<div class="footer">';
       html += 'Generated by AlloFlow Word Garden';
       if (codename) html += ' · Tracking ID: ' + codename;
@@ -3454,6 +3802,87 @@
       html += '<strong>Thank you for helping ' + name + '\'s words grow. 🌳</strong>';
       html += '</div></body></html>';
       var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+    }
+
+    function exportGardenCSV(bank) {
+      var prof = profiles.find(function (p) { return p.id === activeProfileId; }) || {};
+      var codename = prof.codename || prof.id || 'unknown';
+      var now = new Date().toISOString().slice(0, 10);
+      // Compute aggregate metrics
+      var pid = activeProfileId || '__global__';
+      var pLog = usageLog[pid] || { sessions: [] };
+      var totalUtterances = 0; var uniqueUtterances = {};
+      (pLog.sessions || []).forEach(function (s) { (s.entries || []).forEach(function (en) { if (en.label === '__UTTERANCE__') return; totalUtterances++; uniqueUtterances[en.label.trim().toLowerCase()] = true; }); });
+      var lexDiv = totalUtterances > 0 ? (Object.keys(uniqueUtterances).length / totalUtterances).toFixed(3) : '';
+      // Communication function counts
+      var fnCounts = {}; bank.forEach(function (w) { if (w.commFn) fnCounts[w.commFn] = (fnCounts[w.commFn] || 0) + 1; });
+      // CSV headers
+      var rows = [];
+      // Sheet 1: Per-word data
+      rows.push('--- WORD-LEVEL DATA ---');
+      rows.push('codename,export_date,word,category,comm_function,growth_level,context_count,context_types,aac_uses,quest_correct,quest_wrong,familiarity_score,is_core,has_image');
+      bank.forEach(function (w) {
+        var esc = function (s) { return '"' + (s || '').replace(/"/g, '""') + '"'; };
+        rows.push([codename, now, esc(w.displayLabel), w.category, w.commFn || '', w.growth, w.uniqueContextCount,
+          esc(w.contextTypes.join('|')), w.aacUses || 0, w.questCorrect || 0, w.questWrong || 0,
+          (w.famScore || 0).toFixed(3), w.isCore ? 1 : 0, w.image ? 1 : 0].join(','));
+      });
+      rows.push('');
+      // Sheet 2: Aggregate metrics
+      rows.push('--- AGGREGATE METRICS ---');
+      rows.push('codename,export_date,total_words,mastered,blooming,growing,sprout,seed,total_utterances,unique_utterances,lexical_diversity,mean_length_utterance,fn_requesting,fn_rejecting,fn_commenting,fn_social,fn_questioning,fn_expressing,iep_goals_active,core_words_total,core_words_strong');
+      var coreTotal = bank.filter(function (w) { return w.isCore; }).length;
+      var coreStrong = bank.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); }).length;
+      // Compute MLU from session data — count utterance boundaries (Speak events have __UTTERANCE__ marker)
+      var uttLengths = []; var tapCount = 0;
+      (pLog.sessions || []).forEach(function (s) {
+        var sessionTaps = 0;
+        (s.entries || []).forEach(function (en) {
+          if (en.label === '__UTTERANCE__') { if (sessionTaps > 0) uttLengths.push(sessionTaps); sessionTaps = 0; }
+          else sessionTaps++;
+        });
+        if (sessionTaps > 0) uttLengths.push(sessionTaps); // last utterance if no Speak
+      });
+      var mluVal = uttLengths.length > 0 ? (uttLengths.reduce(function (a, b) { return a + b; }, 0) / uttLengths.length).toFixed(2) : '';
+      rows.push([codename, now, bank.length,
+        bank.filter(function (w) { return w.growth === 'mastered'; }).length,
+        bank.filter(function (w) { return w.growth === 'blooming'; }).length,
+        bank.filter(function (w) { return w.growth === 'growing'; }).length,
+        bank.filter(function (w) { return w.growth === 'sprout'; }).length,
+        bank.filter(function (w) { return w.growth === 'seed'; }).length,
+        totalUtterances, Object.keys(uniqueUtterances).length, lexDiv, mluVal,
+        fnCounts.requesting || 0, fnCounts.rejecting || 0, fnCounts.commenting || 0,
+        fnCounts.social || 0, fnCounts.questioning || 0, fnCounts.expressing || 0,
+        activeGoals.length, coreTotal, coreStrong].join(','));
+      rows.push('');
+      // Sheet 3: IEP goal trial log
+      if (activeGoals.length > 0) {
+        rows.push('--- IEP GOAL TRIALS ---');
+        rows.push('codename,export_date,goal_id,goal_text,goal_type,target_count,current_count,trial_timestamp,trial_success,trial_context');
+        activeGoals.forEach(function (g) {
+          (g.trials || []).forEach(function (t) {
+            rows.push([codename, now, g.id, '"' + (g.text || '').replace(/"/g, '""') + '"', g.type, g.targetCount, g.currentCount, t.ts, t.success ? 1 : 0, '"' + (t.context || '').replace(/"/g, '""') + '"'].join(','));
+          });
+        });
+      }
+      // Wish seeds log
+      var profileWishes = wishSeeds.filter(function (w) { return w.profileId === (activeProfileId || 'default') || !w.profileId; });
+      if (profileWishes.length > 0) {
+        rows.push('');
+        rows.push('--- WISH SEEDS (Communication Intent) ---');
+        rows.push('codename,export_date,wish_word,wish_note,wish_timestamp,wish_fulfilled');
+        profileWishes.forEach(function (w) {
+          var fulfilled = bank.some(function (b) { return b.key === w.label.trim().toLowerCase() && b.contextTypes.length > 1; }) ? 1 : 0;
+          rows.push([codename, now, '"' + w.label.replace(/"/g, '""') + '"', '"' + (w.note || '').replace(/"/g, '""') + '"', w.ts || '', fulfilled].join(','));
+        });
+      }
+      var csv = rows.join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'garden_' + codename.replace(/\s+/g, '_') + '_' + now + '.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      addToast && addToast('Research CSV exported!', 'success');
     }
 
     // ── Quick Boards tab ───────────────────────────────────────────────────
@@ -4039,6 +4468,49 @@
               return gBank.length + ' words across ' + Object.keys(types).length + ' tool types';
             })()));
         })(),
+        // Weekly Focus — garden-driven vocabulary planner visible from all tabs
+        (function () {
+          var gBank = computeWordBank();
+          if (gBank.length < 5) return null;
+          // Score each word for "focus-worthiness": high = needs attention, near growth threshold
+          var focusCandidates = gBank.filter(function (w) {
+            return w.growth === 'sprout' || w.growth === 'growing';
+          }).map(function (w) {
+            var score = 0;
+            // Words close to leveling up get priority
+            if (w.growth === 'growing' && w.uniqueContextCount >= 2) score += 3; // close to blooming
+            if (w.growth === 'sprout' && w.uniqueContextCount >= 1) score += 2; // close to growing
+            // Core words get priority
+            if (w.isCore) score += 2;
+            // Words with images (can be practiced in Quest) get a small boost
+            if (w.image) score += 1;
+            // Words with fewer contexts have more room to grow
+            score += Math.max(0, 4 - w.uniqueContextCount);
+            return { word: w, score: score };
+          }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
+          if (focusCandidates.length === 0) return null;
+          return e('div', { style: Object.assign({}, S.card, { background: 'linear-gradient(135deg, #eff6ff 0%, #ede9fe 100%)', border: '1px solid #c7d2fe' }) },
+            sectionLabel('🎯 Weekly Focus'),
+            e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0 0 6px' } }, 'Words that would grow most from attention this week:'),
+            e('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
+              focusCandidates.map(function (fc) {
+                var w = fc.word; var gl = GROWTH_LEVELS[w.growth];
+                var missingCtx = [];
+                var has = {}; w.contextTypes.forEach(function (t) { has[t] = true; });
+                if (!has.board) missingCtx.push('board');
+                if (!has.schedule) missingCtx.push('schedule');
+                if (!has.story) missingCtx.push('story');
+                return e('div', { key: w.key, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 8px', background: 'rgba(255,255,255,0.8)', borderRadius: '8px', border: '1px solid ' + gl.border } },
+                  w.image ? e('img', { src: w.image, alt: '', style: { width: 22, height: 22, borderRadius: '4px', objectFit: 'contain' } })
+                    : e('span', { style: { fontSize: '14px' } }, gl.icon),
+                  e('div', { style: { flex: 1, minWidth: 0 } },
+                    e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, w.displayLabel),
+                    missingCtx.length > 0 && e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'Add to: ' + missingCtx.join(', '))
+                  ),
+                  w.isCore && e('span', { style: { fontSize: '7px', background: '#dbeafe', color: '#1d4ed8', padding: '1px 4px', borderRadius: '3px', fontWeight: 700 } }, 'CORE'));
+              })),
+            e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '6px 0 0', fontStyle: 'italic' } }, 'Model each word 5+ times daily across settings'));
+        })(),
         // Backup & Restore
         e('div', { style: S.card },
           sectionLabel('Backup & Restore'),
@@ -4064,6 +4536,7 @@
             allSessions.forEach(function (s) {
               var st = new Date(s.date).getTime();
               (s.entries || []).forEach(function (en) {
+                if (en.label === '__UTTERANCE__') return; // skip MLU markers
                 var lbl = en.label;
                 wordCount[lbl] = (wordCount[lbl] || 0) + 1;
                 if (now - st < weekMs) thisWeekEntries++;
@@ -5184,6 +5657,37 @@
     // ── Main render ────────────────────────────────────────────────────────
 
     // ── Direct-use AAC overlay ────────────────────────────────────────────
+    // Session debrief overlay — shows for 5 seconds after exiting AAC mode
+    if (sessionDebrief && !useBoardId) {
+      var db = sessionDebrief;
+      return e('div', { style: S.overlay, onClick: function () { setSessionDebrief(null); } },
+        e('div', { className: 'ss-garden-levelup', onClick: function (ev) { ev.stopPropagation(); }, style: { background: '#fff', borderRadius: '20px', maxWidth: '420px', width: '100%', padding: '32px', textAlign: 'center', boxShadow: '0 30px 80px rgba(0,0,0,0.4)' } },
+          e('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🌱'),
+          e('h2', { style: { fontSize: '20px', fontWeight: 800, color: '#1f2937', margin: '0 0 4px' } }, 'Session Complete!'),
+          e('p', { style: { fontSize: '13px', color: '#6b7280', margin: '0 0 16px' } }, db.boardTitle),
+          e('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' } },
+            e('div', { style: { background: '#f0fdf4', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#059669' } }, db.totalTaps),
+              e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'taps')),
+            e('div', { style: { background: '#eff6ff', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#2563eb' } }, db.uniqueCount),
+              e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'unique words')),
+            db.newCount > 0 && e('div', { style: { background: '#fef9c3', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#b45309' } }, db.newCount),
+              e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'new!')),
+            db.utteranceCount > 0 && e('div', { style: { background: '#faf5ff', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#7c3aed' } }, (db.mlu || 0).toFixed(1)),
+              e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'MLU'))),
+          db.mostUsed.length > 0 && e('div', { style: { marginBottom: '12px' } },
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '4px' } }, 'Most used:'),
+            e('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center' } },
+              db.mostUsed.map(function (w) { return e('span', { key: w, style: { padding: '3px 12px', background: '#ede9fe', borderRadius: '20px', fontSize: '13px', fontWeight: 700, color: '#7c3aed' } }, w); }))),
+          db.wishCount > 0 && e('div', { style: { marginBottom: '10px', padding: '8px 14px', background: '#faf5ff', borderRadius: '10px', border: '1px solid #c4b5fd' } },
+            e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#7c3aed', marginBottom: '2px' } }, '💫 ' + db.wishCount + ' wish seed' + (db.wishCount !== 1 ? 's' : '') + ' planted'),
+            e('div', { style: { fontSize: '11px', color: '#6b7280' } }, db.wishLabels.join(', ') + ' — you noticed what they were reaching for')),
+          e('p', { style: { fontSize: '12px', color: '#059669', fontWeight: 600, fontStyle: 'italic', margin: 0 } }, db.wishCount > 0 ? 'The reaching is how the growing starts. 💫' : 'Every word waters the garden. 🌱'),
+          e('p', { style: { fontSize: '10px', color: '#9ca3af', marginTop: '12px' } }, 'Tap anywhere to close')));
+    }
     if (useBoardId) {
       var useBoard = savedBoards.find(function (b) { return b.id === useBoardId; });
       var usePages = useBoard && useBoard.pages && useBoard.pages.length > 1 ? useBoard.pages : null;
@@ -5198,7 +5702,7 @@
             date: new Date().toISOString(),
             boardId: useBoardId,
             boardTitle: useBoard ? (useBoard.title || 'Board') : 'Board',
-            entries: commLog.map(function (e) { return { label: e.label, ts: e.ts }; })
+            entries: commLog.map(function (e) { return e.label === '__UTTERANCE__' ? { label: '__UTTERANCE__', length: e.length, ts: e.ts } : { label: e.label, ts: e.ts }; })
           };
           setUsageLog(function (prev) {
             var profLog = prev[pid] || { sessions: [] };
@@ -5208,8 +5712,46 @@
             store(STORAGE_USAGE, updated);
             return updated;
           });
+          // Compute session debrief
+          var wordSet = {}; var wordList = [];
+          var utterances = [];
+          commLog.forEach(function (en) {
+            if (en.label === '__UTTERANCE__') {
+              utterances.push(en.length);
+            } else {
+              var k = en.label.trim().toLowerCase();
+              if (!wordSet[k]) { wordSet[k] = 0; wordList.push(en.label); }
+              wordSet[k]++;
+            }
+          });
+          var uniqueCount = Object.keys(wordSet).length;
+          var totalTaps = commLog.filter(function (en) { return en.label !== '__UTTERANCE__'; }).length;
+          var mostUsed = Object.keys(wordSet).sort(function (a, b) { return wordSet[b] - wordSet[a]; }).slice(0, 3);
+          // MLU — Mean Length of Utterance
+          var mlu = utterances.length > 0 ? (utterances.reduce(function (a, b) { return a + b; }, 0) / utterances.length) : 0;
+          // Check for new words (not in familiarity before this session)
+          var newWords = Object.keys(wordSet).filter(function (k) {
+            var entry = familiarity[k];
+            return !entry || (entry.taps || 0) <= wordSet[k];
+          });
+          // Count wish seeds planted during this session (within last 2 minutes)
+          var recentWishes = wishSeeds.filter(function (w) { return w.ts && (Date.now() - new Date(w.ts).getTime()) < 120000; });
+          setSessionDebrief({
+            totalTaps: totalTaps, uniqueCount: uniqueCount,
+            mostUsed: mostUsed, newCount: Math.min(newWords.length, uniqueCount),
+            mlu: mlu, utteranceCount: utterances.length,
+            wishCount: recentWishes.length,
+            wishLabels: recentWishes.map(function (w) { return w.label; }),
+            boardTitle: useBoard ? (useBoard.title || 'Board') : 'Board'
+          });
+          // Auto-dismiss after 5 seconds
+          setTimeout(function () {
+            setSessionDebrief(null);
+            setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
+          }, 5000);
+        } else {
+          setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
         }
-        setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
       };
       var speakWordFn = function (label, audioData) {
         // Play custom recorded audio if available
@@ -5229,6 +5771,8 @@
       var speakPhraseFn = function (words) {
         var phrase = words.map(function (w) { return w.label; }).join(' ');
         if (!phrase) return;
+        // Record utterance for MLU computation
+        setCommLog(function (log) { return log.concat([{ label: '__UTTERANCE__', length: words.length, phrase: phrase, ts: new Date().toISOString() }]); });
         setStripSpeaking(true);
         var done = function () { setStripSpeaking(false); };
         if (onCallTTS) {
@@ -5249,6 +5793,7 @@
         var newStrip = strip.concat([{ label: cell.label, image: cell.image }]);
         setStrip(newStrip);
         setCommLog(function (log) { return log.concat([{ label: cell.label, image: cell.image, boardTitle: boardTitle, ts: new Date().toISOString() }]); });
+        recordFamiliarity(cell.label, 'aac-tap');
         speakWordFn(cell.label, cell.audioData);
         // IEP: record expressive communication trial
         var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
@@ -5278,10 +5823,54 @@
         e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
           e('span', { style: { color: '#a78bfa', fontSize: '18px' } }, '▶'),
           e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px', marginRight: 'auto' } }, useBoard ? (useBoard.title || 'Communication Board') : 'Communication Board'),
+          // "Model These" hint — shows weekly focus words on this board
+          (function () {
+            var boardLabels = {};
+            useCells.forEach(function (c) { boardLabels[c.label.trim().toLowerCase()] = true; });
+            var focusOnBoard = computeWordBank().filter(function (w) {
+              return boardLabels[w.key] && (w.growth === 'sprout' || w.growth === 'growing') && w.isCore;
+            }).slice(0, 3);
+            if (focusOnBoard.length === 0) {
+              focusOnBoard = computeWordBank().filter(function (w) {
+                return boardLabels[w.key] && (w.growth === 'sprout' || w.growth === 'growing');
+              }).slice(0, 3);
+            }
+            if (focusOnBoard.length === 0) return null;
+            return e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', background: '#1a1a2e', borderRadius: '7px', border: '1px solid #312e81' } },
+              e('span', { style: { color: '#a78bfa', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap' } }, '🌱 Model:'),
+              focusOnBoard.map(function (w) {
+                return e('span', { key: w.key, style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 700 } }, w.displayLabel);
+              }));
+          })(),
+          // 💫 Wish Seed — capture the moment a student reaches for a word that doesn't exist
+          boardWishOpen
+            ? e('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+                e('input', { type: 'text', value: boardWishInput, autoFocus: true,
+                  onChange: function (ev) { setBoardWishInput(ev.target.value); },
+                  onKeyDown: function (ev) {
+                    if (ev.key === 'Enter' && boardWishInput.trim()) {
+                      var label = boardWishInput.trim();
+                      var newWish = { label: label, category: 'other', note: 'Reached for during AAC session on ' + (useBoard ? (useBoard.title || 'board') : 'board'), ts: new Date().toISOString(), profileId: activeProfileId || 'default' };
+                      setWishSeeds(function (prev) { var u = prev.concat([newWish]); store(STORAGE_WISHES, u); return u; });
+                      setBoardWishInput(''); setBoardWishOpen(false);
+                      addToast && addToast('💫 "' + label + '" — wish seed planted!', 'success');
+                    }
+                    if (ev.key === 'Escape') { setBoardWishOpen(false); setBoardWishInput(''); }
+                  },
+                  placeholder: 'What word were they reaching for?',
+                  'aria-label': 'Wish seed word',
+                  style: { width: '180px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #7c3aed', background: '#1e1b4b', color: '#e0e7ff', fontSize: '12px', fontFamily: 'inherit' } }),
+                e('button', { onClick: function () { setBoardWishOpen(false); setBoardWishInput(''); }, style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px' } }, '×'))
+            : e('button', {
+                onClick: function () { setBoardWishOpen(true); },
+                'aria-label': 'Plant a wish seed — record a word the student wanted',
+                title: 'The student is reaching for a word that isn\'t here. Capture it.',
+                style: { background: '#1e1b4b', color: '#c4b5fd', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+              }, '💫'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
             'aria-label': 'Toggle communication log', style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
-          }, '📋 Log (' + commLog.length + ')'),
+          }, '📋 Log (' + commLog.filter(function (c) { return c.label !== '__UTTERANCE__'; }).length + ')'),
           e('button', { onClick: exitUse, 'aria-label': 'Exit AAC mode', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
         ),
         // ── Page tabs (multi-page boards) ──
@@ -5349,6 +5938,17 @@
             useCells.length === 0
               ? e('p', { style: { color: '#475569', gridColumn: '1/-1', textAlign: 'center', paddingTop: '40px' } }, 'No generated symbols yet — go to Board Builder and generate images first.')
               : useCells.map(function (cell, idx) {
+                  // Garden-aware cell: border color reflects vocabulary growth level
+                  var cellKey = cell.label.trim().toLowerCase();
+                  var cellFam = familiarity[cellKey];
+                  var cellGrowthColor = '#334155'; // default: dark neutral
+                  if (cellFam) {
+                    var cScore = ((cellFam.taps || 0) + (cellFam.questCorrect || 0) * 2 + (cellFam.exposures || 0) * 0.3) / 25;
+                    if (cScore >= 0.75) cellGrowthColor = '#facc15'; // mastered — gold
+                    else if (cScore >= 0.45) cellGrowthColor = '#a78bfa'; // blooming — purple
+                    else if (cScore >= 0.15) cellGrowthColor = '#34d399'; // growing — green
+                    else cellGrowthColor = '#4ade80'; // sprout — light green
+                  }
                   return e('div', {
                     key: cell.id || idx,
                     role: 'gridcell',
@@ -5374,7 +5974,7 @@
                       ev.preventDefault();
                       if (ni !== ci) { ev.currentTarget.setAttribute('tabindex', '-1'); cells[ni].setAttribute('tabindex', '0'); cells[ni].focus(); }
                     },
-                    style: { border: '3px solid #334155', borderRadius: '14px', padding: '14px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: '#1e293b', cursor: 'pointer', transition: 'transform 0.1s, background 0.1s', userSelect: 'none' },
+                    style: { border: '3px solid ' + cellGrowthColor, borderRadius: '14px', padding: '14px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: '#1e293b', cursor: 'pointer', transition: 'transform 0.1s, background 0.1s', userSelect: 'none', boxShadow: cellFam && cellGrowthColor === '#facc15' ? '0 0 12px rgba(250,204,21,0.3)' : 'none' },
                     onMouseDown: function (ev) { ev.currentTarget.style.transform = 'scale(0.93)'; ev.currentTarget.style.background = '#293548'; },
                     onMouseUp: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; },
                     onMouseLeave: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; },
@@ -5583,5 +6183,38 @@
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SymbolStudio = SymbolStudio;
+  // GardenBridge — exposes vocabulary data for cross-module integration (e.g., Word Sounds)
+  // Reads from localStorage so it works even when Symbol Studio modal is closed
+  window.AlloModules.GardenBridge = {
+    getVocabulary: function () {
+      try {
+        var gallery = JSON.parse(localStorage.getItem('alloSymbolGallery') || '[]');
+        var boards = JSON.parse(localStorage.getItem('alloSymbolBoards') || '[]');
+        var fam = JSON.parse(localStorage.getItem('alloSymbolFamiliarity') || '{}');
+        var words = {};
+        gallery.forEach(function (s) { var k = s.label.trim().toLowerCase(); if (k) words[k] = { label: s.label.trim(), category: s.category || 'other', image: s.image || null }; });
+        boards.forEach(function (b) { (b.words || []).forEach(function (w) { var k = w.label.trim().toLowerCase(); if (k && !words[k]) words[k] = { label: w.label.trim(), category: w.category || 'other', image: w.image || null }; }); });
+        return Object.keys(words).map(function (k) {
+          var w = words[k]; var f = fam[k] || {};
+          var score = ((f.taps || 0) + (f.questCorrect || 0) * 2 + (f.exposures || 0) * 0.3) / 25;
+          return { label: w.label, category: w.category, image: w.image, familiarityScore: Math.min(1, score), isMastered: score >= 0.75 };
+        });
+      } catch (e) { return []; }
+    },
+    getPhonicsWordList: function (opts) {
+      var vocab = window.AlloModules.GardenBridge.getVocabulary();
+      var maxLen = (opts && opts.maxLength) || 6;
+      var count = (opts && opts.count) || 10;
+      var preferMastered = (opts && opts.preferMastered) !== false;
+      // Filter to phonics-friendly words: short, single-word, alphabetic
+      var candidates = vocab.filter(function (w) { return w.label.length <= maxLen && /^[a-zA-Z]+$/.test(w.label); });
+      // Sort: mastered first (student knows meaning), then by familiarity
+      candidates.sort(function (a, b) {
+        if (preferMastered) { var am = a.isMastered ? 1 : 0; var bm = b.isMastered ? 1 : 0; if (am !== bm) return bm - am; }
+        return b.familiarityScore - a.familiarityScore;
+      });
+      return candidates.slice(0, count).map(function (w) { return w.label; });
+    }
+  };
   console.log("[CDN] Visual Supports Studio (SymbolStudio v2) loaded");
 })();

@@ -91,8 +91,9 @@ window.StemLab = window.StemLab || {
       var props = ctx.props;
 
       // ═══ STATE INIT GUARD ═══
-      var d = (labToolData && labToolData.semiconductor) || null;
-      if (!d) {
+      var d = (labToolData && labToolData.semiconductor) || {};
+      var _semiInitialized = !!(labToolData && labToolData.semiconductor);
+      if (!_semiInitialized) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { semiconductor: {
             // sub-tool selection
@@ -221,7 +222,8 @@ window.StemLab = window.StemLab || {
             xpAwardedKeys: {}
           }});
         });
-        return h('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Semiconductor Lab\u2026');
+        // Don't early-return — hooks below must always execute (Rules of Hooks).
+        // Render a loading placeholder at the end instead.
       }
 
       var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { semiconductor: Object.assign({}, prev.semiconductor, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })()))}); }); };
@@ -3642,6 +3644,9 @@ window.StemLab = window.StemLab || {
         },
         className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full hover:from-cyan-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all'
       }, '\uD83D\uDCF8 Snapshot');
+
+      // Show loading placeholder while state initializes (hooks already called above)
+      if (!_semiInitialized) return h('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Semiconductor Lab\u2026');
 
       return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': 'Semiconductor Lab' },
         backBtn,

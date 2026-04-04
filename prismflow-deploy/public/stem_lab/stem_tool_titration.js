@@ -608,98 +608,825 @@ var liquidH = Math.round(liquidPct * buretteH);
 
 // ── Render ──
 
-// ── Safety Checklist Gate ──
+// ── Immersive Safety Walkthrough Gate ──
 if (!safetyChecked) {
-  return React.createElement("div", { className: "space-y-4 max-w-2xl mx-auto animate-in fade-in duration-300" },
+  var safetyStation = d.safetyStation || 1;
+  var labMapFound = d.labMapFound || {};
+  var chemsReviewed = d.chemsReviewed || {};
+  var drillActive = d.drillActive || false;
+  var drillStartTime = d.drillStartTime || 0;
+  var drillAnswer = d.drillAnswer || null;
+  var drillResult = d.drillResult || null;
+  var mapTooltip = d.mapTooltip || null;
+  var enterAnim = d.enterAnim || false;
+
+  var ppeItems = safetyItems.slice(0, 4);
+  var mapEquip = safetyItems.slice(4);
+  var ppeComplete = ppeItems.every(function(it) { return safetyChecks[it.id]; });
+  var mapComplete = mapEquip.every(function(it) { return labMapFound[it.id]; });
+  var presChems = presetHazardKeys[presetId] || [];
+  var chemsComplete = presChems.length > 0 && presChems.every(function(c) { return chemsReviewed[c]; });
+
+  var drillForPreset = { 'sa_sb':0, 'wa_sb':2, 'sa_wb':3, 'wa_wb':4, 'poly_h3po4':0, 'redox_kmno4':1, 'back_antacid':2 };
+  var drillIdx = drillForPreset[presetId] != null ? drillForPreset[presetId] : 0;
+  var drillScenario = incidentScenarios[drillIdx];
+  var drillComplete = drillResult !== null;
+
+  var drillDuration = 15;
+  var drillTimeLeft = drillDuration;
+  if (drillActive && drillStartTime) {
+    drillTimeLeft = Math.max(0, Math.ceil(drillDuration - (Date.now() - drillStartTime) / 1000));
+    if (drillTimeLeft <= 0 && !drillResult) {
+      setTimeout(function() { updMulti({ drillResult: 'timeout', drillActive: false }); }, 0);
+    }
+    if (!window._titrationDrillTimer && drillTimeLeft > 0) {
+      window._titrationDrillTimer = setInterval(function() { upd('_drillTick', Date.now()); }, 200);
+    }
+  }
+  if ((!drillActive || drillTimeLeft <= 0) && window._titrationDrillTimer) {
+    clearInterval(window._titrationDrillTimer);
+    window._titrationDrillTimer = null;
+  }
+
+  var allStationsComplete = ppeComplete && mapComplete && chemsComplete && drillComplete;
+  var ppeCount = ppeItems.filter(function(it) { return safetyChecks[it.id]; }).length;
+  var mapCount = mapEquip.filter(function(it) { return labMapFound[it.id]; }).length;
+  var chemsCount = presChems.filter(function(c) { return chemsReviewed[c]; }).length;
+
+  var stationDefs = [
+    { id: 1, label: 'Suit Up', icon: '\uD83E\uDDFA', color: '#f59e0b', complete: ppeComplete, progress: ppeCount + '/' + ppeItems.length },
+    { id: 2, label: 'Lab Scan', icon: '\uD83D\uDD2C', color: '#38bdf8', complete: mapComplete, progress: mapCount + '/' + mapEquip.length },
+    { id: 3, label: 'Chemicals', icon: '\u2623\uFE0F', color: '#ef4444', complete: chemsComplete, progress: chemsCount + '/' + presChems.length },
+    { id: 4, label: 'Safety Drill', icon: '\uD83D\uDEA8', color: '#f97316', complete: drillComplete, progress: drillComplete ? '1/1' : '0/1' }
+  ];
+
+  function canGoStation(n) {
+    if (n === 1) return true;
+    return stationDefs[n - 2].complete;
+  }
+
+  // ── PPE consequence data ──
+  var ppeConsequences = {
+    goggles: { risk: 'Chemical splash blindness', detail: 'NaOH causes alkali burns that penetrate the eye within 10 seconds. Without goggles, a single splash can cause permanent vision loss.', severity: 'critical' },
+    gloves: { risk: 'Chemical burns on hands', detail: 'Concentrated HCl dissolves skin on contact. Even dilute acids cause irritation. Your hands are closest to the chemicals.', severity: 'high' },
+    coat: { risk: 'Skin burns and ruined clothing', detail: 'A splash of acid or base will burn through clothing and skin. Lab coats provide a removable barrier layer.', severity: 'high' },
+    shoes: { risk: 'Foot burns from spills', detail: 'A dropped beaker sends glass and chemicals across the floor. Open-toed shoes mean acid on bare feet.', severity: 'medium' }
+  };
+
+  // ── Immersive CSS ──
+  var safetyCSSText = '@keyframes safetyEquipGlow { 0% { opacity:0; transform:scale(0.3) rotate(-10deg); } 60% { opacity:1; transform:scale(1.1) rotate(2deg); } 100% { opacity:1; transform:scale(1) rotate(0); } } ' +
+    '@keyframes safetyPulseRing { 0%,100% { box-shadow:0 0 0 0 rgba(56,189,248,0.6); } 50% { box-shadow:0 0 0 14px rgba(56,189,248,0); } } ' +
+    '@keyframes safetyPulseGlow { 0%,100% { filter:drop-shadow(0 0 4px currentColor); } 50% { filter:drop-shadow(0 0 18px currentColor); } } ' +
+    '@keyframes safetyFlipIn { 0% { transform:perspective(800px) rotateY(90deg); opacity:0; } 100% { transform:perspective(800px) rotateY(0); opacity:1; } } ' +
+    '@keyframes safetyUrgencyPulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.6; transform:scale(1.08); } } ' +
+    '@keyframes safetyShake { 0%,100% { transform:translateX(0); } 10%,30%,50%,70%,90% { transform:translateX(-8px); } 20%,40%,60%,80% { transform:translateX(8px); } } ' +
+    '@keyframes safetyFireGlow { 0%,100% { text-shadow:0 0 8px #ff4500, 0 0 16px #ff4500; } 50% { text-shadow:0 0 16px #ff6700, 0 0 32px #ff4500, 0 0 48px #832; } } ' +
+    '@keyframes safetyScanline { 0% { top:-20%; } 100% { top:120%; } } ' +
+    '@keyframes safetyHeartbeat { 0%,100% { transform:scale(1); } 15% { transform:scale(1.18); } 30% { transform:scale(1); } 45% { transform:scale(1.12); } } ' +
+    '@keyframes safetyDoorOpen { 0% { clip-path:inset(0 50% 0 50%); opacity:0; filter:brightness(3); } 50% { clip-path:inset(0 10% 0 10%); opacity:0.7; filter:brightness(1.5); } 100% { clip-path:inset(0); opacity:1; filter:brightness(1); } } ' +
+    '@keyframes safetyFadeUp { 0% { opacity:0; transform:translateY(24px); } 100% { opacity:1; transform:translateY(0); } } ' +
+    '@keyframes safetyCheckPop { 0% { transform:scale(0); } 50% { transform:scale(1.4); } 100% { transform:scale(1); } } ' +
+    '@keyframes safetyConsequence { 0% { background:rgba(239,68,68,0); } 15% { background:rgba(239,68,68,0.35); } 100% { background:rgba(239,68,68,0); } } ' +
+    '@keyframes safetyTimerWarn { 0%,100% { color:#ef4444; } 50% { color:#fbbf24; } } ' +
+    '@keyframes safetyParticle { 0% { opacity:1; transform:translateY(0) scale(1); } 100% { opacity:0; transform:translateY(-60px) scale(0); } } ' +
+    '@keyframes safetyStationEnter { 0% { opacity:0; transform:translateX(30px); } 100% { opacity:1; transform:translateX(0); } } ' +
+    '@keyframes safetyGaugeShine { 0% { left:-100%; } 100% { left:200%; } } ' +
+    '@keyframes safetyBreathe { 0%,100% { opacity:0.5; transform:scale(1); } 50% { opacity:1; transform:scale(1.02); } } ' +
+    '@keyframes safetyRipple { 0% { box-shadow:0 0 0 0 currentColor; opacity:0.6; } 100% { box-shadow:0 0 0 20px transparent; opacity:0; } } ' +
+    '.ppe-card-unequipped:hover { transform:translateY(-3px) scale(1.02); border-color:rgba(251,191,36,0.5) !important; box-shadow:0 8px 25px rgba(245,158,11,0.2) !important; } ' +
+    '.ppe-card-unequipped { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease !important; } ';
+
+  // ── Station theme backgrounds ──
+  var stationBGs = {
+    1: 'linear-gradient(135deg, #1a0f00 0%, #2d1600 30%, #3d1f00 60%, #291400 100%)',
+    2: 'linear-gradient(135deg, #001a2e 0%, #002240 30%, #001830 60%, #00162e 100%)',
+    3: 'linear-gradient(135deg, #2a0a0a 0%, #3d0f0f 30%, #2e0808 60%, #1f0505 100%)',
+    4: 'linear-gradient(135deg, #2a1500 0%, #3d2000 30%, #2e1800 60%, #1f1000 100%)'
+  };
+  var stationBorders = { 1: 'rgba(251,191,36,0.35)', 2: 'rgba(56,189,248,0.35)', 3: 'rgba(239,68,68,0.35)', 4: 'rgba(249,115,22,0.35)' };
+
+  // ── Enter Lab transition ──
+  if (enterAnim) {
+    var particleEmojis = ['\uD83E\uDDEA', '\u2697\uFE0F', '\uD83D\uDD2C', '\uD83E\uDDEC', '\uD83E\uDD7D', '\uD83E\uDDE4', '\uD83E\uDD7C', '\u269B\uFE0F', '\uD83D\uDCA7', '\u2B50'];
+    return React.createElement("div", {
+      style: { position:'fixed', inset:0, zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center',
+        background:'linear-gradient(135deg, #001a1a 0%, #002e2e 50%, #003838 100%)',
+        animation: 'safetyDoorOpen 1.5s ease-out forwards', overflow:'hidden' }
+    },
+      React.createElement("style", null, safetyCSSText),
+      // Floating particles
+      particleEmojis.map(function(emoji, i) {
+        var xPos = 5 + (i * 9.5);
+        var delay = i * 0.15;
+        var duration = 2 + (i % 3) * 0.5;
+        return React.createElement("div", { key:'p'+i, style: {
+          position:'absolute', left: xPos + '%', bottom:'-20px', fontSize: (16 + (i % 4) * 6) + 'px',
+          animation: 'safetyParticle ' + duration + 's ease ' + delay + 's both', opacity:0.6
+        } }, emoji);
+      }),
+      // Center content
+      React.createElement("div", { style: { textAlign:'center', animation:'safetyFadeUp 0.8s ease 0.5s both', position:'relative', zIndex:1 } },
+        React.createElement("div", { style: { fontSize:'80px', marginBottom:'16px', animation:'safetyHeartbeat 1s ease infinite',
+          filter:'drop-shadow(0 0 20px rgba(52,211,153,0.4))' } }, "\uD83E\uDDEA"),
+        React.createElement("div", { style: { fontSize:'28px', fontWeight:900, color:'#34d399', letterSpacing:'3px', textTransform:'uppercase',
+          textShadow:'0 0 30px rgba(52,211,153,0.3)' } }, "Lab Access Granted"),
+        React.createElement("div", { style: { fontSize:'12px', color:'#6ee7b7', marginTop:'12px', opacity:0.8, letterSpacing:'1px' } },
+          "All safety protocols confirmed"),
+        // PPE status badges
+        React.createElement("div", { style: { display:'flex', gap:'8px', justifyContent:'center', marginTop:'16px', animation:'safetyFadeUp 0.5s ease 1s both' } },
+          ['\uD83E\uDD7D Goggles', '\uD83E\uDDE4 Gloves', '\uD83E\uDD7C Coat', '\uD83D\uDC5F Shoes'].map(function(label, i) {
+            return React.createElement("div", { key:i, style: {
+              padding:'4px 10px', borderRadius:'20px', fontSize:'9px', fontWeight:700, color:'#34d399',
+              background:'rgba(16,185,129,0.15)', border:'1px solid rgba(16,185,129,0.3)',
+              animation:'safetyFadeUp 0.3s ease ' + (1.2 + i * 0.1) + 's both'
+            } }, '\u2714 ' + label);
+          })
+        )
+      )
+    );
+  }
+
+  return React.createElement("div", {
+    className: "space-y-4 max-w-2xl mx-auto",
+    style: { animation: 'safetyFadeUp 0.4s ease' }
+  },
+    React.createElement("style", null, safetyCSSText),
 
     // Back button
     React.createElement("button", { "aria-label": "Back",
-      onClick: function () { setStemLabTool(null); },
+      onClick: function() { setStemLabTool(null); },
       className: "text-xs font-bold text-cyan-400 hover:text-white transition-colors"
     }, "\u2190 Back"),
 
-    // Safety gate card
+    // ── Header ──
     React.createElement("div", {
       className: "rounded-2xl border overflow-hidden",
-      style: { background: 'linear-gradient(135deg, #451a03 0%, #78350f 50%, #92400e 100%)', borderColor: 'rgba(251,191,36,0.4)' }
+      style: { background: stationBGs[safetyStation], borderColor: stationBorders[safetyStation], transition:'background 0.5s ease, border-color 0.5s ease' }
     },
-      // Header
-      React.createElement("div", { className: "px-6 py-4 border-b", style: { borderColor: 'rgba(251,191,36,0.3)', background: 'rgba(0,0,0,0.3)' } },
-        React.createElement("h2", { className: "text-xl font-black text-amber-300 text-center" }, "\u26A0\uFE0F Lab Safety Briefing"),
-        React.createElement("p", { className: "text-xs text-amber-200/70 text-center mt-1" },
-          "You must complete this safety checklist before entering the Virtual Titration Lab")
+      React.createElement("div", {
+        className: "px-6 py-4 text-center",
+        style: { background:'rgba(0,0,0,0.4)', borderBottom:'1px solid ' + stationBorders[safetyStation] }
+      },
+        React.createElement("div", { style: { fontSize:'28px', marginBottom:'4px' } }, "\u26A0\uFE0F"),
+        React.createElement("h2", { className: "text-xl font-black", style: { color: stationDefs[safetyStation-1].color } }, "Lab Safety Briefing"),
+        React.createElement("p", { className: "text-[11px] mt-1", style: { color: 'rgba(255,255,255,0.5)' } },
+          "Complete all 4 safety stations before entering the Virtual " + preset.acidName.split(' ')[0] + " Lab")
       ),
 
-      // Checklist
-      React.createElement("div", { className: "p-5 space-y-2" },
-        safetyItems.map(function (item) {
-          var checked = safetyChecks[item.id] || false;
-          return React.createElement("button", { "aria-label": "Titration action",
-            key: item.id,
-            onClick: function () {
-              var next = Object.assign({}, safetyChecks);
-              next[item.id] = !checked;
-              upd('safetyChecks', next);
+      // ── Progress Stepper ──
+      React.createElement("div", {
+        className: "flex items-center justify-center gap-1 px-4 py-3",
+        style: { background:'rgba(0,0,0,0.25)' }
+      },
+        stationDefs.map(function(st, i) {
+          var isCurrent = safetyStation === st.id;
+          var canAccess = canGoStation(st.id);
+          return React.createElement("div", { key: st.id, className: "flex items-center" },
+            React.createElement("button", {
+              "aria-label": "Go to " + st.label + " station",
+              disabled: !canAccess,
+              onClick: function() { if (canAccess) upd('safetyStation', st.id); },
+              className: "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all " +
+                (isCurrent ? "scale-110" : canAccess ? "opacity-70 hover:opacity-100 cursor-pointer" : "opacity-30 cursor-not-allowed"),
+              style: isCurrent ? { background: st.color + '25', boxShadow: '0 0 20px ' + st.color + '30' } : {}
             },
-            className: "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all " +
-              (checked ? "bg-emerald-900/40 border-2 border-emerald-500/50" : "bg-black/20 border-2 border-amber-800/30 hover:border-amber-500/50")
-          },
-            React.createElement("div", {
-              className: "w-6 h-6 rounded-md flex items-center justify-center text-xs font-black shrink-0 " +
-                (checked ? "bg-emerald-700 text-white" : "bg-amber-900/50 text-amber-600 border border-amber-700")
-            }, checked ? "\u2714" : ""),
-            React.createElement("span", { className: "text-lg" }, item.icon),
-            React.createElement("div", { className: "flex-1 min-w-0" },
-              React.createElement("div", { className: "text-sm font-bold " + (checked ? "text-emerald-300" : "text-amber-200") }, item.label),
-              React.createElement("div", { className: "text-[10px] " + (checked ? "text-emerald-400/60" : "text-amber-300/50") }, item.desc)
-            )
+              React.createElement("div", {
+                style: {
+                  width:'32px', height:'32px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:'14px', fontWeight:900, border: '2px solid ' + (st.complete ? '#10b981' : isCurrent ? st.color : 'rgba(255,255,255,0.2)'),
+                  background: st.complete ? 'rgba(16,185,129,0.2)' : isCurrent ? st.color + '20' : 'rgba(0,0,0,0.3)',
+                  animation: st.complete ? 'safetyCheckPop 0.4s ease' : isCurrent ? 'safetyPulseGlow 2s ease infinite' : 'none',
+                  color: st.complete ? '#10b981' : st.color
+                }
+              }, st.complete ? "\u2714" : st.icon),
+              React.createElement("span", {
+                style: { fontSize:'9px', fontWeight:700, color: isCurrent ? st.color : 'rgba(255,255,255,0.5)', whiteSpace:'nowrap' }
+              }, st.label),
+              React.createElement("span", {
+                style: { fontSize:'8px', color: st.complete ? '#10b981' : 'rgba(255,255,255,0.3)' }
+              }, st.progress)
+            ),
+            i < 3 ? React.createElement("div", {
+              style: { width:'24px', height:'2px', background: stationDefs[i].complete ? '#10b981' : 'rgba(255,255,255,0.1)', borderRadius:'1px', transition:'background 0.3s' }
+            }) : null
           );
         })
       ),
 
-      // Chemical hazards for selected preset
-      React.createElement("div", { className: "px-5 pb-4" },
-        React.createElement("div", { className: "text-[10px] font-bold text-amber-400/70 mb-2 uppercase tracking-wider" }, "Chemicals in this experiment:"),
-        React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
-          (presetHazardKeys[presetId] || []).map(function (chem) {
-            var h = chemHazards[chem];
-            if (!h) return null;
-            return React.createElement("div", {
-              key: chem,
-              className: "rounded-lg p-3 border",
-              style: { background: 'rgba(0,0,0,0.3)', borderColor: h.color + '40' }
+      // ══════════════════════════════════════
+      // STATION 1: SUIT UP (PPE)
+      // ══════════════════════════════════════
+      safetyStation === 1 && React.createElement("div", {
+        className: "p-5 space-y-3",
+        style: { animation: 'safetyStationEnter 0.4s ease' }
+      },
+        React.createElement("div", { className: "text-center mb-2" },
+          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#fbbf24', letterSpacing:'2px', textTransform:'uppercase' } }, "\uD83D\uDEE1\uFE0F Personal Protective Equipment"),
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(251,191,36,0.6)', marginTop:'4px' } }, "Equip each piece of PPE before proceeding. In a real lab, you cannot touch chemicals without full protection.")
+        ),
+
+        // PPE readiness gauge
+        React.createElement("div", { style: { position:'relative', height:'8px', borderRadius:'4px', background:'rgba(0,0,0,0.4)', border:'1px solid rgba(251,191,36,0.2)', overflow:'hidden' } },
+          React.createElement("div", {
+            style: { height:'100%', borderRadius:'4px', transition:'width 0.5s ease',
+              width: (ppeCount / ppeItems.length * 100) + '%',
+              background: ppeComplete ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+              boxShadow: ppeComplete ? '0 0 12px rgba(16,185,129,0.5)' : '0 0 12px rgba(245,158,11,0.3)' }
+          }),
+          React.createElement("div", {
+            style: { position:'absolute', right:'8px', top:'50%', transform:'translateY(-50%)', fontSize:'7px', fontWeight:900,
+              color: ppeComplete ? '#10b981' : '#fbbf24' }
+          }, ppeComplete ? "\u2714 PROTECTED" : ppeCount + '/' + ppeItems.length + ' EQUIPPED')
+        ),
+
+        // PPE Grid (2x2) with consequence warnings
+        React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+          ppeItems.map(function(item, idx) {
+            var checked = safetyChecks[item.id] || false;
+            var consequence = ppeConsequences[item.id];
+            return React.createElement("button", {
+              key: item.id,
+              "aria-label": "Equip " + item.label,
+              onClick: function() {
+                var next = Object.assign({}, safetyChecks);
+                next[item.id] = !checked;
+                upd('safetyChecks', next);
+              },
+              className: "relative text-left p-4 rounded-xl border-2 " + (checked ? '' : 'ppe-card-unequipped'),
+              style: {
+                background: checked ? 'rgba(16,185,129,0.12)' : 'rgba(0,0,0,0.3)',
+                borderColor: checked ? 'rgba(16,185,129,0.5)' : 'rgba(251,191,36,0.2)',
+                boxShadow: checked ? '0 0 20px rgba(16,185,129,0.15), inset 0 0 20px rgba(16,185,129,0.05)' : 'none',
+                animation: checked ? 'safetyEquipGlow 0.5s ease' : 'safetyBreathe 3s ease ' + (idx * 0.5) + 's infinite',
+                cursor: 'pointer'
+              }
             },
-              React.createElement("div", { className: "text-xs font-black mb-1", style: { color: h.color } }, h.name),
-              React.createElement("div", { className: "text-[10px] font-bold text-red-300 mb-1" }, h.ghs.join('  ')),
-              React.createElement("div", { className: "text-[11px] text-amber-200/60" }, "Signal: " + h.signal)
+              // Icon
+              React.createElement("div", { style: { fontSize:'40px', textAlign:'center', marginBottom:'6px',
+                filter: checked ? 'drop-shadow(0 0 10px rgba(16,185,129,0.7))' : 'grayscale(0.4) opacity(0.7)',
+                transition: 'filter 0.4s ease, transform 0.4s ease', transform: checked ? 'scale(1.05)' : 'scale(0.85)' }
+              }, item.icon),
+              // Label
+              React.createElement("div", { style: { fontSize:'13px', fontWeight:800, color: checked ? '#34d399' : '#fbbf24', textAlign:'center', transition:'color 0.3s' } }, item.label),
+              // Description
+              React.createElement("div", { style: { fontSize:'9px', color: checked ? 'rgba(52,211,153,0.7)' : 'rgba(251,191,36,0.45)', textAlign:'center', marginTop:'3px', lineHeight:'1.3' } }, item.desc),
+              // Consequence warning (only when NOT equipped)
+              !checked && consequence && React.createElement("div", {
+                style: { marginTop:'8px', padding:'5px 8px', borderRadius:'6px', textAlign:'center',
+                  background: consequence.severity === 'critical' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.1)',
+                  border: '1px solid ' + (consequence.severity === 'critical' ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.2)') }
+              },
+                React.createElement("div", { style: { fontSize:'8px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.5px',
+                  color: consequence.severity === 'critical' ? '#fca5a5' : '#fcd34d' } },
+                  (consequence.severity === 'critical' ? '\u26A0\uFE0F ' : '') + 'Without this: ' + consequence.risk)
+              ),
+              // Equipped checkmark badge
+              checked && React.createElement("div", {
+                style: { position:'absolute', top:'6px', right:'6px', width:'22px', height:'22px', borderRadius:'50%',
+                  background:'linear-gradient(135deg, #10b981, #059669)', display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:'12px', color:'white', fontWeight:900, animation:'safetyCheckPop 0.3s ease',
+                  boxShadow:'0 0 8px rgba(16,185,129,0.4)' }
+              }, "\u2714"),
+              // Equipped status line
+              checked && React.createElement("div", {
+                style: { marginTop:'8px', padding:'4px', borderRadius:'6px', textAlign:'center',
+                  background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)' }
+              },
+                React.createElement("span", { style: { fontSize:'8px', fontWeight:700, color:'#34d399' } }, "\u2714 EQUIPPED \u2014 Protected")
+              )
             );
           })
+        ),
+
+        // Next station button
+        ppeComplete && React.createElement("button", {
+          "aria-label": "Continue to Lab Scan station",
+          onClick: function() { upd('safetyStation', 2); },
+          className: "w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
+          style: { background:'linear-gradient(90deg, #f59e0b, #d97706)', boxShadow:'0 0 20px rgba(245,158,11,0.3)', animation:'safetyFadeUp 0.4s ease' }
+        }, "\uD83D\uDD2C Continue to Lab Scan \u2192")
+      ),
+
+      // ══════════════════════════════════════
+      // STATION 2: LAB SCAN (Emergency Equipment)
+      // ══════════════════════════════════════
+      safetyStation === 2 && React.createElement("div", {
+        className: "p-5 space-y-3",
+        style: { animation: 'safetyStationEnter 0.4s ease' }
+      },
+        React.createElement("div", { className: "text-center mb-2" },
+          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#38bdf8', letterSpacing:'2px', textTransform:'uppercase' } }, "\uD83D\uDD0D Locate Emergency Equipment"),
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(56,189,248,0.6)', marginTop:'4px' } }, "Find each piece of safety equipment on the lab map. In a real emergency, seconds matter \u2014 you must know where everything is BEFORE you start.")
+        ),
+
+        // Lab Map SVG
+        React.createElement("div", {
+          style: { position:'relative', borderRadius:'12px', border:'2px solid rgba(56,189,248,0.25)', overflow:'hidden', background:'rgba(0,0,0,0.4)' }
+        },
+          React.createElement("svg", { viewBox: "0 0 400 280", className: "w-full", style: { display:'block' } },
+            // Floor
+            React.createElement("rect", { x:0, y:0, width:400, height:280, fill:'#0a1929', rx:8 }),
+
+            // Grid pattern
+            [40,80,120,160,200,240,280,320,360].map(function(x) {
+              return React.createElement("line", { key:'gx'+x, x1:x, y1:0, x2:x, y2:280, stroke:'rgba(56,189,248,0.05)', strokeWidth:0.5 });
+            }),
+            [40,80,120,160,200,240].map(function(y) {
+              return React.createElement("line", { key:'gy'+y, x1:0, y1:y, x2:400, y2:y, stroke:'rgba(56,189,248,0.05)', strokeWidth:0.5 });
+            }),
+
+            // Fume hood (top)
+            React.createElement("rect", { x:20, y:10, width:120, height:35, fill:'rgba(56,189,248,0.08)', stroke:'rgba(56,189,248,0.2)', strokeWidth:1, rx:3 }),
+            React.createElement("text", { x:80, y:32, fill:'rgba(56,189,248,0.4)', fontSize:8, textAnchor:'middle', fontWeight:'bold' }, "FUME HOOD"),
+
+            // Lab benches with equipment
+            React.createElement("rect", { x:40, y:80, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
+            React.createElement("rect", { x:220, y:80, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
+            React.createElement("rect", { x:40, y:150, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
+            React.createElement("rect", { x:220, y:150, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
+            React.createElement("text", { x:110, y:98, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, "Bench 1"),
+            React.createElement("text", { x:290, y:98, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, "Bench 2"),
+            React.createElement("text", { x:110, y:168, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, "Bench 3"),
+
+            // Tiny equipment on benches (beakers, flasks)
+            React.createElement("text", { x:65, y:93, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\u2697\uFE0F"),
+            React.createElement("text", { x:95, y:93, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\uD83E\uDDEA"),
+            React.createElement("text", { x:130, y:93, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\uD83D\uDD2C"),
+            React.createElement("text", { x:245, y:93, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\uD83E\uDDEA"),
+            React.createElement("text", { x:310, y:93, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\u2697\uFE0F"),
+            React.createElement("text", { x:65, y:163, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\uD83D\uDCA7"),
+            React.createElement("text", { x:130, y:163, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\uD83E\uDDEA"),
+
+            // Student position marker ("You are here")
+            React.createElement("circle", { cx:200, cy:210, r:10, fill:'rgba(16,185,129,0.2)', stroke:'#10b981', strokeWidth:1.5 }),
+            React.createElement("circle", { cx:200, cy:210, r:5, fill:'#10b981' }),
+            React.createElement("circle", { cx:200, cy:210, r:16, fill:'transparent', stroke:'rgba(16,185,129,0.3)', strokeWidth:1,
+              style: { animation:'safetyRipple 2s ease infinite' } }),
+            React.createElement("text", { x:200, y:230, fill:'#10b981', fontSize:7, textAnchor:'middle', fontWeight:'bold' }, "YOU ARE HERE"),
+
+            // Safety path lines (connect found equipment to student)
+            labMapFound['eyewash'] && React.createElement("line", { x1:200, y1:210, x2:60, y2:240, stroke:'#10b981', strokeWidth:1, strokeDasharray:'4,3', opacity:0.4 }),
+            labMapFound['extinguisher'] && React.createElement("line", { x1:200, y1:210, x2:370, y2:160, stroke:'#10b981', strokeWidth:1, strokeDasharray:'4,3', opacity:0.4 }),
+            labMapFound['sds'] && React.createElement("line", { x1:200, y1:210, x2:250, y2:30, stroke:'#10b981', strokeWidth:1, strokeDasharray:'4,3', opacity:0.4 }),
+
+            // Door
+            React.createElement("rect", { x:370, y:240, width:25, height:35, fill:'rgba(148,163,184,0.08)', stroke:'rgba(148,163,184,0.25)', strokeWidth:1, rx:2 }),
+            React.createElement("text", { x:382, y:262, fill:'rgba(148,163,184,0.4)', fontSize:7, textAnchor:'middle' }, "EXIT"),
+
+            // Sink
+            React.createElement("rect", { x:330, y:10, width:50, height:25, fill:'rgba(56,189,248,0.05)', stroke:'rgba(56,189,248,0.15)', strokeWidth:1, rx:2 }),
+            React.createElement("text", { x:355, y:26, fill:'rgba(56,189,248,0.3)', fontSize:7, textAnchor:'middle' }, "Sink"),
+
+            // Scanline animation overlay
+            !mapComplete && React.createElement("rect", {
+              x:0, y:0, width:400, height:40, fill:'url(#scanGrad)',
+              style: { animation: 'safetyScanline 3s linear infinite' }
+            }),
+            React.createElement("defs", null,
+              React.createElement("linearGradient", { id:'scanGrad', x1:0, y1:0, x2:0, y2:1 },
+                React.createElement("stop", { offset:'0%', stopColor:'rgba(56,189,248,0)', stopOpacity:0 }),
+                React.createElement("stop", { offset:'50%', stopColor:'rgba(56,189,248,0.08)', stopOpacity:1 }),
+                React.createElement("stop", { offset:'100%', stopColor:'rgba(56,189,248,0)', stopOpacity:0 })
+              )
+            ),
+
+            // Equipment hotspots
+            // Eyewash (bottom-left area, near sink)
+            !labMapFound['eyewash'] && React.createElement("g", null,
+              React.createElement("circle", { cx:60, cy:240, r:16, fill:'transparent', stroke:'#38bdf8', strokeWidth:2, style: { animation:'safetyPulseRing 1.5s ease infinite' } }),
+              React.createElement("circle", { cx:60, cy:240, r:8, fill:'rgba(56,189,248,0.15)', stroke:'rgba(56,189,248,0.4)', strokeWidth:1 }),
+              React.createElement("text", { x:60, y:244, fill:'#38bdf8', fontSize:10, textAnchor:'middle', fontWeight:'bold' }, "?")
+            ),
+            labMapFound['eyewash'] && React.createElement("g", null,
+              React.createElement("circle", { cx:60, cy:240, r:14, fill:'rgba(16,185,129,0.2)', stroke:'#10b981', strokeWidth:2 }),
+              React.createElement("text", { x:60, y:237, fill:'white', fontSize:14, textAnchor:'middle' }, "\uD83D\uDEBF"),
+              React.createElement("text", { x:60, y:254, fill:'#10b981', fontSize:6, textAnchor:'middle', fontWeight:'bold' }, "EYEWASH")
+            ),
+
+            // Fire extinguisher (right side, near door)
+            !labMapFound['extinguisher'] && React.createElement("g", null,
+              React.createElement("circle", { cx:370, cy:160, r:16, fill:'transparent', stroke:'#f97316', strokeWidth:2, style: { animation:'safetyPulseRing 1.5s ease 0.5s infinite' } }),
+              React.createElement("circle", { cx:370, cy:160, r:8, fill:'rgba(249,115,22,0.15)', stroke:'rgba(249,115,22,0.4)', strokeWidth:1 }),
+              React.createElement("text", { x:370, y:164, fill:'#f97316', fontSize:10, textAnchor:'middle', fontWeight:'bold' }, "?")
+            ),
+            labMapFound['extinguisher'] && React.createElement("g", null,
+              React.createElement("circle", { cx:370, cy:160, r:14, fill:'rgba(16,185,129,0.2)', stroke:'#10b981', strokeWidth:2 }),
+              React.createElement("text", { x:370, y:157, fill:'white', fontSize:14, textAnchor:'middle' }, "\uD83E\uDDEF"),
+              React.createElement("text", { x:370, y:174, fill:'#10b981', fontSize:6, textAnchor:'middle', fontWeight:'bold' }, "FIRE EXT.")
+            ),
+
+            // SDS binder (teacher's area, top-right)
+            !labMapFound['sds'] && React.createElement("g", null,
+              React.createElement("circle", { cx:250, cy:30, r:16, fill:'transparent', stroke:'#a78bfa', strokeWidth:2, style: { animation:'safetyPulseRing 1.5s ease 1s infinite' } }),
+              React.createElement("circle", { cx:250, cy:30, r:8, fill:'rgba(167,139,250,0.15)', stroke:'rgba(167,139,250,0.4)', strokeWidth:1 }),
+              React.createElement("text", { x:250, y:34, fill:'#a78bfa', fontSize:10, textAnchor:'middle', fontWeight:'bold' }, "?")
+            ),
+            labMapFound['sds'] && React.createElement("g", null,
+              React.createElement("circle", { cx:250, cy:30, r:14, fill:'rgba(16,185,129,0.2)', stroke:'#10b981', strokeWidth:2 }),
+              React.createElement("text", { x:250, y:27, fill:'white', fontSize:14, textAnchor:'middle' }, "\uD83D\uDCCB"),
+              React.createElement("text", { x:250, y:44, fill:'#10b981', fontSize:6, textAnchor:'middle', fontWeight:'bold' }, "SDS BINDER")
+            )
+          ),
+
+          // Clickable overlay zones (positioned absolutely over SVG)
+          React.createElement("div", { style: { position:'absolute', inset:0 } },
+            // Eyewash click zone
+            React.createElement("button", {
+              "aria-label": "Locate eyewash station",
+              style: { position:'absolute', left:'10%', top:'80%', width:'12%', height:'14%', background:'transparent', border:'none', cursor:'pointer', borderRadius:'50%' },
+              onClick: function() {
+                var next = Object.assign({}, labMapFound);
+                next['eyewash'] = true;
+                upd('labMapFound', next);
+                upd('mapTooltip', 'eyewash');
+                setTimeout(function() { upd('mapTooltip', null); }, 4000);
+              }
+            }),
+            // Fire ext click zone
+            React.createElement("button", {
+              "aria-label": "Locate fire extinguisher",
+              style: { position:'absolute', left:'86%', top:'50%', width:'12%', height:'14%', background:'transparent', border:'none', cursor:'pointer', borderRadius:'50%' },
+              onClick: function() {
+                var next = Object.assign({}, labMapFound);
+                next['extinguisher'] = true;
+                upd('labMapFound', next);
+                upd('mapTooltip', 'extinguisher');
+                setTimeout(function() { upd('mapTooltip', null); }, 4000);
+              }
+            }),
+            // SDS click zone
+            React.createElement("button", {
+              "aria-label": "Locate SDS binder",
+              style: { position:'absolute', left:'57%', top:'4%', width:'12%', height:'14%', background:'transparent', border:'none', cursor:'pointer', borderRadius:'50%' },
+              onClick: function() {
+                var next = Object.assign({}, labMapFound);
+                next['sds'] = true;
+                upd('labMapFound', next);
+                upd('mapTooltip', 'sds');
+                setTimeout(function() { upd('mapTooltip', null); }, 4000);
+              }
+            })
+          )
+        ),
+
+        // Map tooltips
+        mapTooltip === 'eyewash' && React.createElement("div", {
+          className: "rounded-xl p-3 border",
+          style: { background:'rgba(56,189,248,0.1)', borderColor:'rgba(56,189,248,0.3)', animation:'safetyFadeUp 0.3s ease' }
+        },
+          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#38bdf8' } }, "\uD83D\uDEBF Eyewash Station Located!"),
+          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, "THE 10-SECOND RULE: If chemicals splash in your eyes, you have approximately 10 seconds to reach the eyewash before permanent damage begins. Hold eyelids open and rinse for 15+ minutes.")
+        ),
+        mapTooltip === 'extinguisher' && React.createElement("div", {
+          className: "rounded-xl p-3 border",
+          style: { background:'rgba(249,115,22,0.1)', borderColor:'rgba(249,115,22,0.3)', animation:'safetyFadeUp 0.3s ease' }
+        },
+          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#f97316' } }, "\uD83E\uDDEF Fire Extinguisher Located!"),
+          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, "Remember P.A.S.S.: Pull the pin, Aim at base of fire, Squeeze handle, Sweep side to side. Acetic acid and some solvents are flammable \u2014 know this location before you begin.")
+        ),
+        mapTooltip === 'sds' && React.createElement("div", {
+          className: "rounded-xl p-3 border",
+          style: { background:'rgba(167,139,250,0.1)', borderColor:'rgba(167,139,250,0.3)', animation:'safetyFadeUp 0.3s ease' }
+        },
+          React.createElement("div", { style: { fontSize:'11px', fontWeight:800, color:'#a78bfa' } }, "\uD83D\uDCCB Safety Data Sheets Located!"),
+          React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)', marginTop:'4px' } }, "SDS documents list ALL hazards, required PPE, first aid procedures, and emergency contacts for every chemical in the lab. Review them BEFORE handling any substance.")
+        ),
+
+        // Equipment status grid
+        React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+          [
+            { id:'eyewash', icon:'\uD83D\uDEBF', label:'Eyewash', color:'#38bdf8', time:'~3 sec away' },
+            { id:'extinguisher', icon:'\uD83E\uDDEF', label:'Fire Ext.', color:'#f97316', time:'~5 sec away' },
+            { id:'sds', icon:'\uD83D\uDCCB', label:'SDS Binder', color:'#a78bfa', time:'~4 sec away' }
+          ].map(function(eq) {
+            var found = labMapFound[eq.id];
+            return React.createElement("div", {
+              key: eq.id,
+              style: { padding:'8px', borderRadius:'8px', textAlign:'center', transition:'all 0.3s ease',
+                background: found ? 'rgba(16,185,129,0.1)' : 'rgba(0,0,0,0.3)',
+                border: '1px solid ' + (found ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)') }
+            },
+              React.createElement("div", { style: { fontSize:'18px', marginBottom:'2px',
+                filter: found ? 'none' : 'grayscale(1) opacity(0.3)', transition:'filter 0.3s' } }, eq.icon),
+              React.createElement("div", { style: { fontSize:'9px', fontWeight:700, color: found ? '#34d399' : 'rgba(255,255,255,0.3)' } },
+                found ? '\u2714 ' + eq.label : '? ? ?'),
+              found && React.createElement("div", { style: { fontSize:'7px', color:'rgba(16,185,129,0.6)', marginTop:'2px' } }, eq.time)
+            );
+          })
+        ),
+
+        // Map complete celebration
+        mapComplete && React.createElement("div", {
+          style: { textAlign:'center', padding:'12px', borderRadius:'12px',
+            background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)',
+            animation:'safetyFadeUp 0.4s ease' }
+        },
+          React.createElement("div", { style: { fontSize:'13px', fontWeight:900, color:'#34d399' } }, "\uD83D\uDDFA\uFE0F Lab Safety Map Complete!"),
+          React.createElement("div", { style: { fontSize:'10px', color:'rgba(16,185,129,0.6)', marginTop:'4px' } },
+            "You can now locate all emergency equipment from your bench. In an emergency, every second counts \u2014 this knowledge could save a life.")
+        ),
+
+        // Navigation
+        React.createElement("div", { className: "flex gap-2" },
+          React.createElement("button", {
+            "aria-label": "Back to PPE station",
+            onClick: function() { upd('safetyStation', 1); },
+            className: "px-4 py-2 rounded-xl text-[11px] font-bold text-slate-400 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
+          }, "\u2190 PPE"),
+          mapComplete && React.createElement("button", {
+            "aria-label": "Continue to Chemical Briefing",
+            onClick: function() { upd('safetyStation', 3); },
+            className: "flex-1 py-3 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
+            style: { background:'linear-gradient(90deg, #38bdf8, #0ea5e9)', boxShadow:'0 0 20px rgba(56,189,248,0.3)', animation:'safetyFadeUp 0.4s ease' }
+          }, "\u2623\uFE0F Continue to Chemical Briefing \u2192")
         )
       ),
 
-      // Enter button
-      React.createElement("div", { className: "px-5 pb-5" },
-        React.createElement("button", { "aria-label": "Change safety checked",
-          disabled: !allSafetyChecked,
-          onClick: function () { upd('safetyChecked', true); },
-          className: "w-full py-3 rounded-xl text-sm font-black transition-all " +
-            (allSafetyChecked
-              ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02]"
-              : "bg-slate-800 text-slate-500 cursor-not-allowed")
-        }, allSafetyChecked ? "\uD83E\uDDEA Enter Lab \u2014 Safety Confirmed" : "\u26A0\uFE0F Check all " + safetyItems.length + " items to continue (" + Object.keys(safetyChecks).filter(function(k) { return safetyChecks[k]; }).length + "/" + safetyItems.length + ")")
+      // ══════════════════════════════════════
+      // STATION 3: CHEMICAL HAZARD BRIEFING
+      // ══════════════════════════════════════
+      safetyStation === 3 && React.createElement("div", {
+        className: "p-5 space-y-3",
+        style: { animation: 'safetyStationEnter 0.4s ease' }
+      },
+        React.createElement("div", { className: "text-center mb-2" },
+          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#ef4444', letterSpacing:'2px', textTransform:'uppercase' } }, "\u2623\uFE0F Chemical Hazard Briefing"),
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(239,68,68,0.6)', marginTop:'4px' } }, "Review EVERY chemical you will handle today. Tap each card to acknowledge you understand the hazards.")
+        ),
+
+        // Chemical cards
+        React.createElement("div", { className: "space-y-3" },
+          presChems.map(function(chem, ci) {
+            var h = chemHazards[chem];
+            if (!h) return null;
+            var reviewed = chemsReviewed[chem] || false;
+            return React.createElement("div", {
+              key: chem,
+              style: { animation: 'safetyFlipIn 0.4s ease ' + (ci * 0.1) + 's both' }
+            },
+              React.createElement("button", {
+                "aria-label": "Review hazards for " + h.name,
+                onClick: function() {
+                  var next = Object.assign({}, chemsReviewed);
+                  next[chem] = true;
+                  upd('chemsReviewed', next);
+                },
+                className: "w-full text-left rounded-xl border-2 overflow-hidden transition-all",
+                style: {
+                  borderColor: reviewed ? 'rgba(16,185,129,0.5)' : h.color + '50',
+                  background: reviewed ? 'rgba(16,185,129,0.08)' : 'rgba(0,0,0,0.3)',
+                  cursor: reviewed ? 'default' : 'pointer'
+                }
+              },
+                // Card header
+                React.createElement("div", {
+                  className: "flex items-center gap-3 px-4 py-3",
+                  style: { borderBottom: '1px solid ' + (reviewed ? 'rgba(16,185,129,0.2)' : h.color + '20') }
+                },
+                  React.createElement("div", {
+                    style: { width:'40px', height:'40px', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center',
+                      background: h.signal === 'Danger' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)',
+                      border: '2px solid ' + (h.signal === 'Danger' ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.4)'),
+                      fontSize: '11px', fontWeight: 900, color: h.signal === 'Danger' ? '#fca5a5' : '#fcd34d',
+                      animation: !reviewed && h.signal === 'Danger' ? 'safetyUrgencyPulse 1.5s ease infinite' : 'none' }
+                  }, h.signal === 'Danger' ? '\u2620\uFE0F' : '\u26A0\uFE0F'),
+                  React.createElement("div", { className: "flex-1" },
+                    React.createElement("div", { style: { fontSize:'13px', fontWeight:800, color: reviewed ? '#34d399' : h.color } }, h.name),
+                    React.createElement("div", { style: { fontSize:'9px', color:'rgba(255,255,255,0.4)', marginTop:'2px' } }, h.ghs.join('  \u2022  '))
+                  ),
+                  React.createElement("div", {
+                    style: { padding:'4px 10px', borderRadius:'6px', fontSize:'9px', fontWeight:800,
+                      background: h.signal === 'Danger' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)',
+                      color: h.signal === 'Danger' ? '#fca5a5' : '#fcd34d',
+                      animation: !reviewed && h.signal === 'Danger' ? 'safetyUrgencyPulse 2s ease infinite' : 'none' }
+                  }, h.signal.toUpperCase()),
+                  reviewed && React.createElement("div", {
+                    style: { width:'22px', height:'22px', borderRadius:'50%', background:'#10b981', display:'flex', alignItems:'center', justifyContent:'center',
+                      fontSize:'12px', color:'white', fontWeight:900, animation:'safetyCheckPop 0.3s ease' }
+                  }, "\u2714")
+                ),
+                // Card body (hazards + first aid)
+                React.createElement("div", { className: "px-4 py-3 space-y-2" },
+                  React.createElement("div", null,
+                    h.hazards.map(function(hz, hi) {
+                      return React.createElement("div", { key: hi, style: { fontSize:'10px', color:'rgba(255,255,255,0.5)', marginBottom:'2px', paddingLeft:'8px', borderLeft:'2px solid ' + h.color + '30' } }, hz);
+                    })
+                  ),
+                  React.createElement("div", { style: { fontSize:'10px' } },
+                    React.createElement("span", { style: { fontWeight:800, color:'#10b981' } }, "\uD83C\uDFE5 First Aid: "),
+                    React.createElement("span", { style: { color:'rgba(255,255,255,0.5)' } }, h.firstAid)
+                  ),
+                  !reviewed && React.createElement("div", {
+                    style: { textAlign:'center', padding:'6px', borderRadius:'8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)',
+                      fontSize:'10px', fontWeight:700, color:'#fca5a5', marginTop:'4px' }
+                  }, "\u261D Tap to acknowledge you\u2019ve reviewed this chemical")
+                )
+              )
+            );
+          })
+        ),
+
+        // Navigation
+        React.createElement("div", { className: "flex gap-2" },
+          React.createElement("button", {
+            "aria-label": "Back to Lab Scan",
+            onClick: function() { upd('safetyStation', 2); },
+            className: "px-4 py-2 rounded-xl text-[11px] font-bold text-slate-400 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
+          }, "\u2190 Lab Scan"),
+          chemsComplete && React.createElement("button", {
+            "aria-label": "Continue to Safety Drill",
+            onClick: function() { upd('safetyStation', 4); },
+            className: "flex-1 py-3 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
+            style: { background:'linear-gradient(90deg, #ef4444, #dc2626)', boxShadow:'0 0 20px rgba(239,68,68,0.3)', animation:'safetyFadeUp 0.4s ease' }
+          }, "\uD83D\uDEA8 Continue to Safety Drill \u2192")
+        )
+      ),
+
+      // ══════════════════════════════════════
+      // STATION 4: TIMED SAFETY DRILL
+      // ══════════════════════════════════════
+      safetyStation === 4 && React.createElement("div", {
+        className: "p-5 space-y-3",
+        style: { animation: drillResult === 'wrong' ? 'safetyShake 0.5s ease, safetyConsequence 1.5s ease' : 'safetyStationEnter 0.4s ease' }
+      },
+        React.createElement("div", { className: "text-center mb-2" },
+          React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#f97316', letterSpacing:'2px', textTransform:'uppercase',
+            animation: drillActive && drillTimeLeft <= 5 ? 'safetyTimerWarn 0.5s ease infinite' : 'none' } }, "\uD83D\uDEA8 Emergency Response Drill"),
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(249,115,22,0.6)', marginTop:'4px' } },
+            drillResult ? "Drill complete \u2014 review the outcome below." :
+            drillActive ? "MAKE YOUR DECISION! Time is running out!" :
+            "A simulated emergency will test your safety knowledge. You have " + drillDuration + " seconds to respond.")
+        ),
+
+        // Countdown timer (circular SVG)
+        drillActive && !drillResult && React.createElement("div", { style: { display:'flex', justifyContent:'center' } },
+          React.createElement("div", { style: { position:'relative', width:'80px', height:'80px' } },
+            React.createElement("svg", { viewBox:"0 0 100 100", style: { transform:'rotate(-90deg)', width:'100%', height:'100%' } },
+              React.createElement("circle", { cx:50, cy:50, r:45, fill:'none', stroke:'rgba(255,255,255,0.1)', strokeWidth:6 }),
+              React.createElement("circle", { cx:50, cy:50, r:45, fill:'none',
+                stroke: drillTimeLeft <= 5 ? '#ef4444' : drillTimeLeft <= 10 ? '#f59e0b' : '#22c55e',
+                strokeWidth:6, strokeLinecap:'round',
+                strokeDasharray: (2 * Math.PI * 45).toFixed(0),
+                strokeDashoffset: ((1 - drillTimeLeft / drillDuration) * 2 * Math.PI * 45).toFixed(0),
+                style: { transition:'stroke-dashoffset 0.2s linear, stroke 0.3s ease' }
+              })
+            ),
+            React.createElement("div", {
+              style: { position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize:'24px', fontWeight:900, fontFamily:'monospace',
+                color: drillTimeLeft <= 5 ? '#ef4444' : drillTimeLeft <= 10 ? '#f59e0b' : '#22c55e',
+                animation: drillTimeLeft <= 5 ? 'safetyHeartbeat 0.5s ease infinite' : 'none' }
+            }, drillTimeLeft)
+          )
+        ),
+
+        // Scenario
+        !drillActive && !drillResult && React.createElement("button", {
+          "aria-label": "Begin safety drill",
+          onClick: function() { updMulti({ drillActive: true, drillStartTime: Date.now(), drillAnswer: null, drillResult: null }); },
+          className: "w-full py-4 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
+          style: { background:'linear-gradient(90deg, #f97316, #ea580c)', boxShadow:'0 0 25px rgba(249,115,22,0.4)', animation:'safetyUrgencyPulse 2s ease infinite' }
+        }, "\uD83D\uDEA8 Begin Emergency Drill"),
+
+        // Scenario content
+        (drillActive || drillResult) && React.createElement("div", {
+          className: "rounded-xl p-4 border-2",
+          style: {
+            background: drillScenario.urgency === 'critical' ? 'rgba(127,29,29,0.3)' : 'rgba(120,53,15,0.2)',
+            borderColor: drillScenario.urgency === 'critical' ? 'rgba(248,113,113,0.5)' : 'rgba(251,191,36,0.4)',
+            animation: drillActive && !drillResult ? 'safetyUrgencyPulse 3s ease infinite' : 'none'
+          }
+        },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("span", { style: { fontSize:'28px', animation: drillActive && !drillResult ? 'safetyHeartbeat 1s ease infinite' : 'none' } }, drillScenario.icon),
+            React.createElement("div", null,
+              React.createElement("h4", { style: { fontSize:'14px', fontWeight:900, color:'#fca5a5',
+                animation: drillActive && !drillResult && drillScenario.urgency === 'critical' ? 'safetyFireGlow 1s ease infinite' : 'none' } }, drillScenario.title),
+              React.createElement("span", {
+                style: { fontSize:'9px', fontWeight:700, padding:'2px 8px', borderRadius:'4px', textTransform:'uppercase',
+                  background: drillScenario.urgency === 'critical' ? '#dc2626' : '#d97706', color:'white' }
+              }, drillScenario.urgency + " URGENCY")
+            )
+          ),
+          React.createElement("p", { style: { fontSize:'12px', color:'rgba(255,255,255,0.7)', marginBottom:'12px', lineHeight:'1.5' } }, drillScenario.desc),
+
+          // Answer options
+          React.createElement("div", { className: "space-y-2" },
+            drillScenario.options.map(function(opt) {
+              var isSelected = drillAnswer === opt.id;
+              var showResult = drillResult !== null;
+              var bgStyle = {};
+              if (showResult && isSelected && opt.correct) bgStyle = { background:'rgba(16,185,129,0.3)', borderColor:'#10b981' };
+              else if (showResult && isSelected && !opt.correct) bgStyle = { background:'rgba(239,68,68,0.3)', borderColor:'#ef4444' };
+              else if (showResult && opt.correct) bgStyle = { background:'rgba(16,185,129,0.15)', borderColor:'#10b981' };
+              else bgStyle = { background:'rgba(0,0,0,0.3)', borderColor:'rgba(255,255,255,0.15)' };
+              return React.createElement("button", {
+                key: opt.id,
+                "aria-label": "Select response: " + opt.label,
+                disabled: showResult,
+                onClick: function() {
+                  var result = opt.correct ? 'correct' : 'wrong';
+                  updMulti({ drillAnswer: opt.id, drillResult: result, drillActive: false });
+                  if (opt.correct && typeof awardStemXP === 'function') awardStemXP('safety-drill-' + drillScenario.id, 25, 'Safety drill: ' + drillScenario.title);
+                },
+                className: "w-full flex items-start gap-2 px-4 py-3 rounded-xl border-2 text-left transition-all",
+                style: Object.assign({ cursor: showResult ? 'default' : 'pointer' }, bgStyle)
+              },
+                React.createElement("span", { style: { fontSize:'16px', shrink:0 } }, opt.icon),
+                React.createElement("span", { style: { fontSize:'11px', fontWeight:600, color:'rgba(255,255,255,0.8)' } }, opt.label)
+              );
+            })
+          ),
+
+          // Result feedback
+          drillResult && (function() {
+            var selected = drillScenario.options.find(function(o) { return o.id === drillAnswer; });
+            var isTimeout = drillResult === 'timeout';
+            var isCorrect = drillResult === 'correct';
+            return React.createElement("div", {
+              className: "mt-3 p-4 rounded-xl border-2",
+              style: {
+                background: isCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                borderColor: isCorrect ? '#10b981' : '#ef4444',
+                animation: 'safetyFadeUp 0.4s ease'
+              }
+            },
+              React.createElement("div", { style: { fontSize:'13px', fontWeight:900, color: isCorrect ? '#34d399' : '#fca5a5', marginBottom:'8px' } },
+                isCorrect ? "\u2705 CORRECT! You saved the day! +25 XP" :
+                isTimeout ? "\u23F0 TIME\u2019S UP! In a real emergency, hesitation costs lives." :
+                "\u274C WRONG RESPONSE! This could cause serious injury."
+              ),
+              !isTimeout && selected && React.createElement("p", { style: { fontSize:'11px', color:'rgba(255,255,255,0.6)', lineHeight:'1.5' } }, selected.feedback),
+              isTimeout && React.createElement("p", { style: { fontSize:'11px', color:'rgba(255,255,255,0.6)', lineHeight:'1.5' } },
+                "The correct response was: " + drillScenario.options.find(function(o) { return o.correct; }).label),
+              !isCorrect && React.createElement("div", {
+                style: { marginTop:'8px', padding:'8px', borderRadius:'8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)' }
+              },
+                React.createElement("div", { style: { fontSize:'10px', fontWeight:800, color:'#34d399', marginBottom:'4px' } }, "\u2705 Correct response:"),
+                React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)' } },
+                  drillScenario.options.find(function(o) { return o.correct; }).label),
+                React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.5)', marginTop:'4px' } },
+                  drillScenario.options.find(function(o) { return o.correct; }).feedback)
+              )
+            );
+          })()
+        ),
+
+        // Navigation / Enter Lab
+        React.createElement("div", { className: "flex gap-2" },
+          React.createElement("button", {
+            "aria-label": "Back to Chemical Briefing",
+            onClick: function() { upd('safetyStation', 3); },
+            className: "px-4 py-2 rounded-xl text-[11px] font-bold text-slate-400 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
+          }, "\u2190 Chemicals"),
+          drillResult && !allStationsComplete && React.createElement("button", {
+            "aria-label": "Retry drill",
+            onClick: function() { updMulti({ drillActive: false, drillStartTime: 0, drillAnswer: null, drillResult: null }); },
+            className: "px-4 py-2 rounded-xl text-[11px] font-bold text-amber-400 bg-amber-900/30 border border-amber-700 hover:border-amber-500 transition-all"
+          }, "\u21BA Retry Drill")
+        ),
+
+        // ── ENTER THE LAB ──
+        allStationsComplete && React.createElement("button", {
+          "aria-label": "Enter lab \u2014 safety confirmed",
+          onClick: function() {
+            upd('enterAnim', true);
+            var allChecks = {};
+            safetyItems.forEach(function(item) { allChecks[item.id] = true; });
+            setTimeout(function() {
+              updMulti({ safetyChecked: true, safetyChecks: allChecks, enterAnim: false });
+            }, 2000);
+          },
+          className: "w-full py-4 rounded-xl text-base font-black text-white transition-all hover:scale-[1.02]",
+          style: {
+            background: 'linear-gradient(90deg, #10b981, #059669, #0d9488)',
+            boxShadow: '0 0 30px rgba(16,185,129,0.4), 0 0 60px rgba(16,185,129,0.15)',
+            animation: 'safetyFadeUp 0.5s ease, safetyPulseGlow 2s ease infinite',
+            color: '#10b981'
+          }
+        },
+          React.createElement("span", { style: { color:'white' } }, "\uD83E\uDDEA Lab Safety Confirmed \u2014 Enter Virtual Lab")
+        )
       )
     )
   );
 }
 
 // ── Main Lab Render (after safety check passed) ──
-return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-300" },
+return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", style: { animation:'safetyFadeUp 0.4s ease' } },
+
+  // Global lab CSS animations
+  React.createElement("style", null,
+    '@keyframes safetyFadeUp { 0% { opacity:0; transform:translateY(16px); } 100% { opacity:1; transform:translateY(0); } } ' +
+    '@keyframes safetyPulseGlow { 0%,100% { filter:drop-shadow(0 0 4px currentColor); } 50% { filter:drop-shadow(0 0 18px currentColor); } } ' +
+    '@keyframes labGlow { 0%,100% { opacity:0.3; } 50% { opacity:0.6; } } '
+  ),
 
 
   // ── Persistent Safety Banner ──
   React.createElement("div", {
     className: "flex items-center gap-3 px-4 py-2 rounded-xl border",
-    style: { background: 'linear-gradient(90deg, rgba(251,191,36,0.1) 0%, rgba(251,191,36,0.05) 100%)', borderColor: 'rgba(251,191,36,0.25)' }
+    style: { background: 'linear-gradient(90deg, rgba(16,185,129,0.12) 0%, rgba(6,182,212,0.08) 100%)', borderColor: 'rgba(16,185,129,0.3)' }
   },
     React.createElement("div", { className: "flex items-center gap-1 text-base" }, "\uD83E\uDD7D\uD83E\uDDE4\uD83E\uDD7C"),
     React.createElement("span", { className: "text-[10px] font-bold text-amber-400/80 flex-1" }, "PPE Active \u2022 Lab Safety Verified"),
@@ -768,7 +1495,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
   // ── Contextual Safety Tip ──
   activeTip && React.createElement("div", {
     className: "flex items-start gap-3 px-4 py-3 rounded-xl border animate-in fade-in duration-300",
-    style: { background: 'rgba(15,23,42,0.7)', borderColor: activeTip.color + '40' }
+    style: { background: 'rgba(5,30,45,0.75)', borderColor: activeTip.color + '40' }
   },
     React.createElement("span", { className: "text-lg shrink-0" }, activeTip.icon),
     React.createElement("div", null,
@@ -784,7 +1511,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
     className: "rounded-2xl p-5 border",
 
-    style: Object.assign({}, glass, { background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', borderColor: 'rgba(56,189,248,0.2)' })
+    style: Object.assign({}, glass, { background: 'linear-gradient(135deg, #021a2b 0%, #0a2540 50%, #0c1e35 100%)', borderColor: 'rgba(6,182,212,0.25)' })
 
   },
 
@@ -821,7 +1548,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
       { id: 'molarity', label: '\uD83E\uDDEE Dilution Calc', color: '#a78bfa' }
     ].map(function(tab) {
       var active = labTab === tab.id;
-      return React.createElement("button", { "aria-label": "Change lab tab",
+      return React.createElement("button", { "aria-label": "Switch to " + tab.label + " tab",
         key: tab.id,
         role: "tab",
         'aria-selected': active,
@@ -843,7 +1570,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       var active = p.id === presetId;
 
-      return React.createElement("button", { "aria-label": "Update setting",
+      return React.createElement("button", { "aria-label": "Select titration preset: " + p.label,
 
         key: p.id,
 
@@ -879,7 +1606,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       var active = ind.id === indicatorId;
 
-      return React.createElement("button", { "aria-label": "Change indicator",
+      return React.createElement("button", { "aria-label": "Select indicator: " + ind.label,
 
         key: ind.id,
 
@@ -903,7 +1630,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
     className: "rounded-xl p-3 border",
 
-    style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.7)', borderColor: 'rgba(100,116,139,0.3)' })
+    style: Object.assign({}, glass, { background: 'rgba(5,30,45,0.75)', borderColor: 'rgba(100,116,139,0.3)' })
 
   },
 
@@ -937,7 +1664,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       [0.1, 0.5, 1, 5].map(function (amt) {
         var dropIcon = amt <= 0.1 ? '💧' : amt <= 1 ? '💧💧' : '🌊';
-        return React.createElement("button", { "aria-label": "Update setting",
+        return React.createElement("button", { "aria-label": "Add " + amt + " milliliters of titrant",
           key: amt,
           onClick: function () { updMulti({ volumeAdded: Math.min(maxVol, Math.round((volumeAdded + amt) * 10) / 10), _prevVolume: volumeAdded }); },
           className: "px-2 py-1 rounded-lg text-[10px] font-bold text-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-800/40 transition-all hover:scale-105",
@@ -945,7 +1672,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
         }, dropIcon + " +" + amt);
       }),
 
-      React.createElement("button", { "aria-label": "Reset",
+      React.createElement("button", { "aria-label": "Reset titration volume to zero",
         onClick: function () { updMulti({ volumeAdded: 0, _reachedEquiv: false, _prevVolume: 0 }); if (addToast) addToast('♻️ ' + safetyTips.reset.text, 'info'); },
         className: "px-2 py-1 rounded-lg text-[10px] font-bold text-amber-300 bg-amber-900/30 hover:bg-amber-800/50 border border-amber-800/40 transition-all hover:scale-105"
       }, "↺ Reset")
@@ -968,7 +1695,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       className: "rounded-2xl p-4 border flex flex-col items-center",
 
-      style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.8)', borderColor: 'rgba(100,116,139,0.3)' })
+      style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(100,116,139,0.3)' })
 
     },
 
@@ -1145,7 +1872,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       className: "lg:col-span-2 rounded-2xl p-4 border",
 
-      style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.8)', borderColor: 'rgba(100,116,139,0.3)' })
+      style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(100,116,139,0.3)' })
 
     },
 
@@ -1331,7 +2058,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       className: "rounded-xl p-3 border text-center",
 
-      style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.7)', borderColor: 'rgba(56,189,248,0.2)' })
+      style: Object.assign({}, glass, { background: 'rgba(5,30,45,0.75)', borderColor: 'rgba(56,189,248,0.2)' })
 
     },
 
@@ -1367,7 +2094,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       className: "rounded-xl p-3 border text-center",
 
-      style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.7)', borderColor: 'rgba(100,116,139,0.2)' })
+      style: Object.assign({}, glass, { background: 'rgba(5,30,45,0.75)', borderColor: 'rgba(100,116,139,0.2)' })
 
     },
 
@@ -1385,7 +2112,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       className: "rounded-xl p-3 border text-center",
 
-      style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.7)', borderColor: pastEquivalence ? 'rgba(248,113,113,0.3)' : 'rgba(100,116,139,0.2)' })
+      style: Object.assign({}, glass, { background: 'rgba(5,30,45,0.75)', borderColor: pastEquivalence ? 'rgba(248,113,113,0.3)' : 'rgba(100,116,139,0.2)' })
 
     },
 
@@ -1411,7 +2138,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       className: "rounded-xl p-3 border text-center",
 
-      style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.7)', borderColor: 'rgba(100,116,139,0.2)' })
+      style: Object.assign({}, glass, { background: 'rgba(5,30,45,0.75)', borderColor: 'rgba(100,116,139,0.2)' })
 
     },
 
@@ -1441,7 +2168,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
     className: "rounded-xl border overflow-hidden",
 
-    style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.7)', borderColor: 'rgba(100,116,139,0.2)' })
+    style: Object.assign({}, glass, { background: 'rgba(5,30,45,0.75)', borderColor: 'rgba(100,116,139,0.2)' })
 
   },
 
@@ -1560,7 +2287,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
   // ══════════════════════════════════════════════
   labTab === 'challenge' && React.createElement("div", {
     className: "rounded-2xl p-5 border space-y-4",
-    style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.8)', borderColor: 'rgba(245,158,11,0.3)' })
+    style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(245,158,11,0.3)' })
   },
     React.createElement("div", { className: "flex items-center justify-between" },
       React.createElement("h3", { className: "text-sm font-black text-amber-400" }, "\uD83C\uDFC6 Lab Safety & Chemistry Challenge"),
@@ -1591,7 +2318,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             else if (showResult && isSelected && !isCorrect) cls += "bg-red-600 text-white";
             else if (showResult && isCorrect) cls += "bg-emerald-600/20 text-emerald-300 border border-emerald-500";
             else cls += "bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400";
-            return React.createElement("button", { "aria-label": "Select option",
+            return React.createElement("button", { "aria-label": "Select answer: " + opt,
               key: opt, disabled: showResult,
               onClick: function() {
                 var correct = opt === cq.answer;
@@ -1630,7 +2357,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
   // ══════════════════════════════════════════════
   labTab === 'incidents' && React.createElement("div", {
     className: "rounded-2xl p-5 border space-y-4",
-    style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.8)', borderColor: 'rgba(239,68,68,0.3)' })
+    style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(239,68,68,0.3)' })
   },
     React.createElement("div", { className: "flex items-center justify-between" },
       React.createElement("h3", { className: "text-sm font-black text-red-400" }, "\uD83D\uDEA8 Lab Safety Incident Simulator"),
@@ -1647,7 +2374,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
     React.createElement("div", { className: "flex gap-2 justify-center" },
       incidentScenarios.map(function(sc, i) {
         var completed = incidentCompleted[sc.id];
-        return React.createElement("button", { "aria-label": "Update setting",
+        return React.createElement("button", { "aria-label": "Select incident scenario: " + sc.title,
           key: sc.id,
           onClick: function() { updMulti({ incidentIdx: i, incidentAnswer: null }); },
           className: "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all " +
@@ -1685,7 +2412,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
             else if (showResult && isSelected && !opt.correct) cls += "bg-red-600 text-white";
             else if (showResult && opt.correct) cls += "bg-emerald-600/20 text-emerald-300 border border-emerald-500";
             else cls += "bg-slate-800/60 text-slate-200 hover:bg-slate-700/80 border border-slate-600 hover:border-slate-400";
-            return React.createElement("button", { "aria-label": "Titration action",
+            return React.createElement("button", { "aria-label": "Select emergency response: " + opt.label,
               key: opt.id, disabled: showResult,
               onClick: function() {
                 var newCompleted = Object.assign({}, incidentCompleted);
@@ -1729,14 +2456,14 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
   // ══════════════════════════════════════════════
   labTab === 'equipment' && React.createElement("div", {
     className: "rounded-2xl p-5 border space-y-4",
-    style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.8)', borderColor: 'rgba(34,197,94,0.3)' })
+    style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(34,197,94,0.3)' })
   },
     React.createElement("h3", { className: "text-sm font-black text-emerald-400 mb-2" }, "\uD83D\uDD2C Lab Equipment & Proper Technique"),
     React.createElement("p", { className: "text-xs text-slate-400 mb-3" }, "Master the correct technique for each piece of equipment. Good technique = accurate results + safe lab work."),
     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
       labEquipment.map(function(eq) {
         var isSelected = selectedEquip === eq.id;
-        return React.createElement("button", { "aria-label": "Change selected equip",
+        return React.createElement("button", { "aria-label": "View equipment: " + eq.name,
           key: eq.id,
           onClick: function() { upd('selectedEquip', isSelected ? null : eq.id); if (!isSelected && typeof awardStemXP === 'function') awardStemXP('equip-' + eq.id, 5, 'Studied ' + eq.name); },
           className: "text-left p-3 rounded-xl border transition-all " +
@@ -1786,7 +2513,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
   // ══════════════════════════════════════════════
   labTab === 'molarity' && React.createElement("div", {
     className: "rounded-2xl p-5 border space-y-4",
-    style: Object.assign({}, glass, { background: 'rgba(15,23,42,0.8)', borderColor: 'rgba(167,139,250,0.3)' })
+    style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(167,139,250,0.3)' })
   },
     React.createElement("h3", { className: "text-sm font-black text-violet-400 mb-1" }, "\uD83E\uDDEE Dilution & Molarity Calculator"),
     React.createElement("p", { className: "text-xs text-slate-400 mb-3" }, "C\u2081V\u2081 = C\u2082V\u2082 \u2014 Calculate how to dilute a stock solution to a target concentration."),
@@ -1901,7 +2628,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
   React.createElement("div", { className: "flex justify-end" },
 
-    React.createElement("button", { "aria-label": "Action",
+    React.createElement("button", { "aria-label": "Save titration snapshot",
 
       onClick: function () {
 

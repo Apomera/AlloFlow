@@ -149,6 +149,7 @@ window.SelHub = window.SelHub || {
       var announceToSR = ctx.announceToSR;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
       var d = (ctx.toolData && ctx.toolData.friendship) || {};
@@ -181,27 +182,42 @@ window.SelHub = window.SelHub || {
         { id: 'coach',    icon: '\uD83E\uDD16', label: 'Practice' },
       ];
 
+      var exploredTabs = d.exploredTabs || {};
+      if (!exploredTabs[activeTab]) { var ne = Object.assign({}, exploredTabs); ne[activeTab] = true; upd('exploredTabs', ne); }
+      var exploredCount = Object.keys(exploredTabs).length;
+
       var tabBar = h('div', {
-        style: { display: 'flex', gap: '4px', padding: '8px 12px', borderBottom: '1px solid #fde68a', background: AMBER_LIGHT, flexShrink: 0, overflowX: 'auto' },
-        role: 'tablist', 'aria-label': 'Friendship sections'
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #fde68a', background: 'linear-gradient(180deg, #fffbeb, #fef3c7)', flexShrink: 0 }
       },
-        TABS.map(function(t) {
-          var active = activeTab === t.id;
-          return h('button', {
-            key: t.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
-            onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 14px', borderRadius: '8px', border: 'none', background: active ? AMBER : 'transparent', color: active ? '#fff' : '#374151', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', transition: 'all 0.15s', boxShadow: active ? '0 2px 8px rgba(217,119,6,0.3)' : 'none' }
-          }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label);
-        }),
-        h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, 'aria-label': soundEnabled ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+        h('div', { style: { height: '3px', background: '#e2e8f0', position: 'relative', overflow: 'hidden' } },
+          h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + AMBER + ', #f59e0b)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
+        ),
+        h('div', {
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
+          role: 'tablist', 'aria-label': 'Friendship sections'
+        },
+          TABS.map(function(t) {
+            var active = activeTab === t.id;
+            var explored = !!exploredTabs[t.id];
+            return h('button', {
+              key: t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false',
+              onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+              style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, ' + AMBER + ', #b45309)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? '#78350f' : '#6b7280', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+            }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
+              explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#fbbf24', marginLeft: '2px' } }) : null
+            );
+          }),
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: AMBER, fontWeight: 700, whiteSpace: 'nowrap', background: '#fef3c7', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
+          h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+        )
       );
 
       // ── My Style (Friendship Compass) ──
       var compassContent = null;
       if (activeTab === 'compass') {
         compassContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83E\uDDED'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDDED'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'What Kind of Friend Am I?'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Everyone has a friendship style \u2014 the way they naturally show they care. Which one sounds most like you?')
           ),
@@ -238,8 +254,8 @@ window.SelHub = window.SelHub || {
         var starters = STARTERS[band] || STARTERS.elementary;
         var cur = starters[starterIdx % starters.length];
         startContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83D\uDCAC'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83D\uDCAC'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Starting a Friendship'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, band === 'elementary' ? 'The hardest part is the first words. Here\u2019s what to say.' : 'Specific words for specific situations. Practice makes natural.')
           ),
@@ -269,8 +285,8 @@ window.SelHub = window.SelHub || {
           : ['Initiate \u2014 don\u2019t always wait for them to text first', 'Show up for the boring stuff, not just the fun stuff', 'Apologize without "but"', 'Celebrate their wins without comparing', 'Respect their other friendships'];
 
         keepContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83D\uDC9B'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83D\uDC9B'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Keeping Friends'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Friendships need care. Small, consistent actions matter more than grand gestures.')
           ),
@@ -326,8 +342,8 @@ window.SelHub = window.SelHub || {
         var steps = REPAIR_STEPS[band] || REPAIR_STEPS.elementary;
         var curStep = steps[repairIdx % steps.length];
         repairContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83E\uDE79'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDE79'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Friendship Repair'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, band === 'elementary' ? 'When friends hurt each other, here\u2019s how to fix it.' : 'Conflict doesn\u2019t have to mean the end. These steps help you navigate back to each other.')
           ),
@@ -370,8 +386,8 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'endings') {
         var truths = ENDING_TRUTHS[band] || ENDING_TRUTHS.elementary;
         endingsContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDF43'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83C\uDF43'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'When Friendships Change'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Sometimes friendships end or change shape. That\u2019s one of the hardest parts of growing up.')
           ),
@@ -393,11 +409,19 @@ window.SelHub = window.SelHub || {
       // ── AI Practice Coach ──
       var coachContent = null;
       if (activeTab === 'coach') {
+        var hasSafetyLayer = window.SelHub && window.SelHub.hasCoachConsent;
+        var hasConsent = hasSafetyLayer ? window.SelHub.hasCoachConsent() : true;
+        if (hasSafetyLayer && !hasConsent) {
+          coachContent = window.SelHub.renderConsentScreen(h, band, function() {
+            window.SelHub.giveCoachConsent();
+            upd('_consentRefresh', Date.now());
+          });
+        } else {
         coachContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83E\uDD16'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Friendship Practice'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Describe a friendship situation and practice what to say.')
+            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Describe a friendship situation. This space is monitored for your safety.')
           ),
           coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Friendship practice conversation', 'aria-live': 'polite', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
@@ -421,7 +445,11 @@ window.SelHub = window.SelHub || {
                   upd({ coachHistory: newHist, coachInput: '', coachLoading: true });
                   var styleCtx = myStyle ? ' Their friendship style is "' + myStyle + '".' : '';
                   var prompt = 'You are a warm friendship coach for a ' + band + ' school student.' + styleCtx + ' The student said: "' + userMsg + '"\n\nRespond with:\n1. Validate their feeling (1 sentence)\n2. A specific thing they could say or do (give actual words in quotes)\n3. Why it would work (1 sentence)\n\nBe warm, specific, age-appropriate. Max 3-4 sentences. Use "you" not "one."';
-                  callGemini(prompt, true).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
+                  if (window.SelHub && window.SelHub.safeCoach) {
+                    window.SelHub.safeCoach({ studentMessage: userMsg, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
+                  } else {
+                    callGemini(prompt, true).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
+                  }
                 }
               },
               disabled: coachLoading || !callGemini,
@@ -436,7 +464,11 @@ window.SelHub = window.SelHub || {
                 var newHist = (coachHistory || []).concat([{ role: 'user', text: userMsg }]);
                 upd({ coachHistory: newHist, coachInput: '', coachLoading: true });
                 var prompt = 'You are a warm friendship coach for a ' + band + ' school student. The student said: "' + userMsg + '"\nValidate, give specific words they could say, explain why. Max 3-4 sentences.';
-                callGemini(prompt, true).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
+                if (window.SelHub && window.SelHub.safeCoach) {
+                  window.SelHub.safeCoach({ studentMessage: userMsg, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
+                } else {
+                  callGemini(prompt, true).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
+                }
               },
               disabled: coachLoading || !coachInput.trim() || !callGemini,
               style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? AMBER : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
@@ -457,6 +489,7 @@ window.SelHub = window.SelHub || {
             )
           )
         );
+        }
       }
 
       var content = compassContent || startContent || keepContent || repairContent || endingsContent || coachContent;

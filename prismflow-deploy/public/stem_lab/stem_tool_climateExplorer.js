@@ -2,6 +2,19 @@
 // stem_tool_climateExplorer.js — Climate Explorer
 // Carbon calculator, renewables simulator, climate justice, solutions spotlight
 // ═══════════════════════════════════════════
+
+// ═══ Defensive StemLab guard ═══
+window.StemLab = window.StemLab || {
+  _registry: {}, _order: [],
+  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
+  getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
+};
+// ═══ End Guard ═══
+
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplorer'))) {
+
   // ── Sound Effects ──
   var _audioCtx = null;
   function getAudioCtx() { if (!_audioCtx) try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} return _audioCtx; }
@@ -69,6 +82,7 @@
       var gradeLevel = ctx.gradeLevel || '5th Grade';
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── State ──
       var d = (labToolData && labToolData.climateExplorer) || {};
@@ -149,21 +163,7 @@
         { id: 'climateChampion', icon: '\uD83C\uDFC6', label: 'Climate Champion', desc: 'Earn 10+ badges' }
       ];
 
-      // ── Hope Meter milestones ──
-      var HOPE_MILESTONES = [
-        { id: 'started', label: 'Started Exploring', check: function() { return Object.keys(tabsVisited).length > 0; } },
-        { id: 'calculated', label: 'Calculated Footprint', check: function() { return !!badges.firstCalc; } },
-        { id: 'lowCarbon', label: 'Low-Carbon Lifestyle', check: function() { return ct.total < 2000; } },
-        { id: 'designedMix', label: 'Designed Energy Mix', check: function() { return rsSolar + rsWind + rsHydro + rsNuclear > 60; } },
-        { id: 'netZero', label: 'Near Net-Zero Mix', check: function() { return !!badges.netZero; } },
-        { id: 'justiceAware', label: 'Explored Justice', check: function() { return Object.keys(d.regionsViewed || {}).length >= 3; } },
-        { id: 'solutions', label: 'Learned Solutions', check: function() { return Object.keys(solutionsViewed).length >= 4; } },
-        { id: 'action', label: 'Took Action', check: function() { return !!badges.actionPlanner; } },
-        { id: 'quizAce', label: 'Aced the Quiz', check: function() { return quizCorrect >= 5; } },
-        { id: 'allTabs', label: 'Explored Everything', check: function() { return !!badges.allTabs; } }
-      ];
-      var hopePts = HOPE_MILESTONES.filter(function(m) { return m.check(); }).length;
-      var hopePct = Math.round(hopePts / HOPE_MILESTONES.length * 100);
+      // ── Hope Meter milestones (moved after carbonTotal() definition) ──
 
       // ── Badge helper ──
       function earnBadge(id) {
@@ -181,7 +181,7 @@
       // ── Track tab visits ──
       function visitTab(tid) {
         upd('tab', tid);
-        playSound('tab');
+        playSound('tab'); if (announceToSR) announceToSR(t.label + ' section.');
         if (!tabsVisited[tid]) {
           var nv = Object.assign({}, tabsVisited);
           nv[tid] = true;
@@ -241,6 +241,23 @@
       }
 
       var ct = carbonTotal();
+
+      // ── Hope Meter milestones ──
+      var HOPE_MILESTONES = [
+        { id: 'started', label: 'Started Exploring', check: function() { return Object.keys(tabsVisited).length > 0; } },
+        { id: 'calculated', label: 'Calculated Footprint', check: function() { return !!badges.firstCalc; } },
+        { id: 'lowCarbon', label: 'Low-Carbon Lifestyle', check: function() { return ct.total < 2000; } },
+        { id: 'designedMix', label: 'Designed Energy Mix', check: function() { return rsSolar + rsWind + rsHydro + rsNuclear > 60; } },
+        { id: 'netZero', label: 'Near Net-Zero Mix', check: function() { return !!badges.netZero; } },
+        { id: 'justiceAware', label: 'Explored Justice', check: function() { return Object.keys(d.regionsViewed || {}).length >= 3; } },
+        { id: 'solutions', label: 'Learned Solutions', check: function() { return Object.keys(solutionsViewed).length >= 4; } },
+        { id: 'action', label: 'Took Action', check: function() { return !!badges.actionPlanner; } },
+        { id: 'quizAce', label: 'Aced the Quiz', check: function() { return quizCorrect >= 5; } },
+        { id: 'allTabs', label: 'Explored Everything', check: function() { return !!badges.allTabs; } }
+      ];
+      var hopePts = HOPE_MILESTONES.filter(function(m) { return m.check(); }).length;
+      var hopePct = Math.round(hopePts / HOPE_MILESTONES.length * 100);
+
       var scaleMult = ccScale === 'school' ? ccSchoolSize : ccScale === 'city' ? 100000 : 330000000;
       var scaleLabel = ccScale === 'school' ? ccSchoolSize + ' students' : ccScale === 'city' ? '100K city' : 'USA (330M)';
 
@@ -569,7 +586,7 @@
                       upd('quizAnswer', oi);
                       upd('quizTotal', quizTotal + 1);
                       playSound(oi === q.a ? 'correct' : 'wrong');
-                      if (oi === q.a) { upd('quizCorrect', quizCorrect + 1); awardXP(10); }
+                      if (oi === q.a) { upd('quizCorrect', quizCorrect + 1); awardXP(10); if (announceToSR) announceToSR('Correct! Plus 10 XP.'); } else { if (announceToSR) announceToSR('Incorrect. The correct answer was option ' + (q.a + 1) + '.'); }
                       if (quizCorrect + (oi === q.a ? 1 : 0) >= 8) earnBadge('quizChampion');
                     },
                     style: { display: 'block', width: '100%', padding: '10px 14px', marginBottom: 6, borderRadius: 8, textAlign: 'left',

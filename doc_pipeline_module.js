@@ -28,7 +28,7 @@ var createDocPipeline = function (deps) {
     return window.__docPipelineState || {};
   };
   // Re-expose state vars as getters so existing code works unchanged
-  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage, selectedFont, responses, history, inputText, gradeLevel, projectName, studentNickname, isTeacherMode, generatedContent, pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult, pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect, pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns, customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading, setPdfFixStep, setPendingPdfBase64, setPendingPdfFile, setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex, setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle, setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting, setExportAuditLoading, setExportAuditResult;
+  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage, selectedFont, responses, history, inputText, gradeLevel, projectName, studentNickname, isTeacherMode, generatedContent, pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult, pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect, pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns, customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading, setPdfFixStep, setPendingPdfBase64, setPendingPdfFile, setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex, setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle, setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting, setExportAuditLoading, setExportAuditResult, exportAuditResult;
   // Bind all vars from the state bag before each public function call
   var _bindState = function () {
     var s = _s();
@@ -81,6 +81,7 @@ var createDocPipeline = function (deps) {
     setIsExtracting = s.setIsExtracting;
     setExportAuditLoading = s.setExportAuditLoading;
     setExportAuditResult = s.setExportAuditResult;
+    exportAuditResult = s.exportAuditResult;
   };
 
   // ── PDF Accessibility Audit ──

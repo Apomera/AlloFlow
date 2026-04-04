@@ -19,6 +19,46 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+
+  // ── Inject SEL Visual Polish CSS (shared keyframes + effects) ──
+  (function() {
+    if (document.getElementById('sel-visual-polish-css')) return;
+    var style = document.createElement('style');
+    style.id = 'sel-visual-polish-css';
+    style.textContent = [
+      '@keyframes selFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }',
+      '@keyframes selFadeInScale { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }',
+      '@keyframes selPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
+      '@keyframes selShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }',
+      '@keyframes selGlow { 0%, 100% { box-shadow: 0 0 8px rgba(124,58,237,0.2); } 50% { box-shadow: 0 0 20px rgba(124,58,237,0.5); } }',
+      '@keyframes selFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }',
+      '@keyframes selSlideIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }',
+      '@keyframes selBounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { opacity: 1; transform: scale(1.05); } 70% { transform: scale(0.95); } 100% { transform: scale(1); } }',
+      '@keyframes selSparkle { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }',
+      '@keyframes selGrowBar { from { width: 0; } }',
+      '@keyframes selRotateIn { from { opacity: 0; transform: rotate(-10deg) scale(0.9); } to { opacity: 1; transform: rotate(0) scale(1); } }',
+      '.sel-card { animation: selFadeIn 0.35s ease-out both; }',
+      '.sel-card:nth-child(2) { animation-delay: 0.06s; }',
+      '.sel-card:nth-child(3) { animation-delay: 0.12s; }',
+      '.sel-card:nth-child(4) { animation-delay: 0.18s; }',
+      '.sel-card:nth-child(5) { animation-delay: 0.24s; }',
+      '.sel-tab { transition: all 0.2s ease; position: relative; }',
+      '.sel-tab:hover { transform: translateY(-1px); }',
+      '.sel-tab-active { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }',
+      '.sel-hero { animation: selFadeInScale 0.5s ease-out both; }',
+      '.sel-hero-icon { animation: selFloat 3s ease-in-out infinite; display: inline-block; }',
+      '.sel-badge { animation: selBounceIn 0.4s ease-out both; }',
+      '.sel-progress-dot { transition: all 0.3s ease; }',
+      '.sel-progress-dot:hover { transform: scale(1.2); }',
+      '.sel-btn { transition: all 0.2s ease; }',
+      '.sel-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }',
+      '.sel-btn:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }',
+      '.sel-glow { animation: selGlow 2s ease-in-out infinite; }',
+      '.sel-shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.1) 50%, transparent 75%); background-size: 200% 100%; animation: selShimmer 2s linear infinite; }',
+    ].join('\n');
+    document.head.appendChild(style);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-growthmindset')) return;
@@ -188,6 +228,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
       // ── Tool-scoped state ──
@@ -254,33 +295,62 @@ window.SelHub = window.SelHub || {
         { id: 'educator', icon: '\uD83C\uDFEB', label: 'Educator Lens' },
       ];
 
+      // Count explored tabs for progress
+      var exploredTabs = d.exploredTabs || {};
+      if (!exploredTabs[activeTab]) {
+        var newExplored = Object.assign({}, exploredTabs);
+        newExplored[activeTab] = true;
+        upd('exploredTabs', newExplored);
+      }
+      var exploredCount = Object.keys(exploredTabs).length;
+
       var tabBar = h('div', {
-        style: { display: 'flex', gap: '4px', padding: '8px 12px', borderBottom: '1px solid #d1fae5', background: '#f0fdf4', flexShrink: 0, overflowX: 'auto' },
-        role: 'tablist', 'aria-label': 'Growth Mindset sections'
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #d1fae5', background: 'linear-gradient(180deg, #f0fdf4, #ecfdf5)', flexShrink: 0 }
       },
-        TABS.map(function(t) {
-          var active = activeTab === t.id;
-          return h('button', {
-            key: t.id,
-            role: 'tab', 'aria-selected': active ? 'true' : 'false',
-            onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
-            style: {
-              padding: '6px 14px', borderRadius: '8px', border: 'none',
-              background: active ? EMERALD : 'transparent',
-              color: active ? '#fff' : '#374151',
-              fontWeight: active ? 700 : 500, fontSize: '12px',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px',
-              whiteSpace: 'nowrap', transition: 'all 0.15s',
-              boxShadow: active ? '0 2px 8px rgba(5,150,105,0.3)' : 'none'
-            }
-          }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label);
-        }),
-        // Sound toggle
-        h('button', {
-          onClick: function() { upd('soundEnabled', !soundEnabled); },
-          'aria-label': soundEnabled ? 'Mute sounds' : 'Enable sounds',
-          style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 }
-        }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+        // Progress bar
+        h('div', { style: { height: '3px', background: '#e2e8f0', position: 'relative', overflow: 'hidden' } },
+          h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + EMERALD + ', #34d399)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0', animation: 'selGrowBar 0.6s ease-out' } })
+        ),
+        h('div', {
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
+          role: 'tablist', 'aria-label': 'Growth Mindset sections'
+        },
+          TABS.map(function(t, ti) {
+            var active = activeTab === t.id;
+            var explored = !!exploredTabs[t.id];
+            return h('button', {
+              key: t.id,
+              className: 'sel-tab' + (active ? ' sel-tab-active' : ''),
+              role: 'tab', 'aria-selected': active ? 'true' : 'false',
+              onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+              style: {
+                padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#a7f3d0' : 'transparent'),
+                background: active ? 'linear-gradient(135deg, ' + EMERALD + ', #047857)' : explored ? 'rgba(5,150,105,0.08)' : 'transparent',
+                color: active ? '#fff' : explored ? '#065f46' : '#6b7280',
+                fontWeight: active ? 700 : 500, fontSize: '12px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px',
+                whiteSpace: 'nowrap',
+                boxShadow: active ? '0 3px 12px rgba(5,150,105,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
+                position: 'relative'
+              }
+            },
+              h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true', style: { fontSize: active ? '14px' : '12px' } }, t.icon),
+              t.label,
+              explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#34d399', marginLeft: '2px', flexShrink: 0 } }) : null
+            );
+          }),
+          // Progress badge
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: EMERALD, fontWeight: 700, whiteSpace: 'nowrap', background: '#d1fae5', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } },
+            exploredCount + '/' + TABS.length
+          ),
+          // Sound toggle
+          h('button', {
+            onClick: function() { upd('soundEnabled', !soundEnabled); },
+            className: 'sel-btn',
+            'aria-label': soundEnabled ? 'Mute sounds' : 'Enable sounds',
+            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 }
+          }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+        )
       );
 
       // ══════════════════════════════════════════════════════════
@@ -291,43 +361,70 @@ window.SelHub = window.SelHub || {
         var facts = BRAIN_FACTS[band] || BRAIN_FACTS.elementary;
         var currentFact = facts[brainFactIdx % facts.length];
 
-        brainContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          // Title
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83E\uDDE0'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'Your Brain is Amazing'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
+        brainContent = h('div', { className: 'sel-hero', style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
+          // Hero section with visual brain illustration
+          h('div', { style: { textAlign: 'center', marginBottom: '20px', position: 'relative' } },
+            // Decorative neural network dots
+            h('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '200px', height: '80px', pointerEvents: 'none', opacity: 0.3 } },
+              [0,1,2,3,4,5].map(function(i) {
+                return h('div', { key: 'n'+i, style: {
+                  position: 'absolute',
+                  left: (20 + Math.sin(i * 1.2) * 40 + 50) + '%',
+                  top: (10 + Math.cos(i * 0.8) * 30 + 20) + '%',
+                  width: (4 + i % 3 * 2) + 'px', height: (4 + i % 3 * 2) + 'px',
+                  borderRadius: '50%', background: EMERALD,
+                  animation: 'selSparkle ' + (1.5 + i * 0.3) + 's ease-in-out infinite',
+                  animationDelay: (i * 0.2) + 's'
+                }});
+              })
+            ),
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '56px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(5,150,105,0.3))' } }, '\uD83E\uDDE0'),
+            h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'Your Brain is Amazing'),
+            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0, maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto' } },
               band === 'elementary' ? 'Discover how your brain grows stronger every day!'
               : band === 'middle' ? 'The neuroscience behind why effort changes your brain.'
               : 'How mindset research is reshaping our understanding of human potential.')
           ),
-          // Fact card
+          // Fact card with enhanced visuals
           h('div', {
+            className: 'sel-card',
+            key: 'fact-' + brainFactIdx, // Re-triggers animation on change
             style: {
-              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-              borderRadius: '16px', padding: '24px', border: '2px solid #a7f3d0',
-              boxShadow: '0 4px 20px rgba(5,150,105,0.1)', marginBottom: '16px',
-              transition: 'transform 0.2s'
+              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%)',
+              borderRadius: '20px', padding: '28px', border: '2px solid #6ee7b7',
+              boxShadow: '0 8px 32px rgba(5,150,105,0.12), 0 2px 8px rgba(5,150,105,0.08)',
+              marginBottom: '16px', position: 'relative', overflow: 'hidden'
             }
           },
-            h('div', { style: { fontSize: '32px', marginBottom: '8px' } }, currentFact.emoji),
-            h('h4', { style: { fontSize: '16px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 8px' } }, currentFact.title),
-            h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: '#374151', margin: 0 } }, currentFact.text)
+            // Shimmer overlay
+            h('div', { className: 'sel-shimmer', style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: '20px', pointerEvents: 'none' } }),
+            h('div', { style: { position: 'relative', zIndex: 1 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' } },
+                h('div', { style: { fontSize: '36px', background: 'rgba(255,255,255,0.6)', borderRadius: '14px', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' } }, currentFact.emoji),
+                h('div', null,
+                  h('h4', { style: { fontSize: '17px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 2px' } }, currentFact.title),
+                  h('div', { style: { fontSize: '10px', color: EMERALD, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' } }, 'Fact ' + (brainFactIdx % facts.length + 1) + ' of ' + facts.length)
+                )
+              ),
+              h('p', { style: { fontSize: '14px', lineHeight: 1.8, color: '#1f2937', margin: 0 } }, currentFact.text)
+            )
           ),
           // Navigation
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '16px' } },
             h('button', {
+              className: 'sel-btn',
               onClick: function() {
                 var prev = (brainFactIdx - 1 + facts.length) % facts.length;
                 upd({ brainFactIdx: prev, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[prev] = true; return o; })()) });
                 if (soundEnabled) sfxNeuron();
               },
-              style: { padding: '8px 16px', background: '#fff', border: '2px solid #a7f3d0', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: EMERALD }
-            }, '\u2190 Previous'), // a11y: label set via visible text
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6b7280' } },
+              style: { padding: '10px 20px', background: '#fff', border: '2px solid #a7f3d0', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: EMERALD, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }
+            }, '\u2190 Previous'),
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6b7280', fontWeight: 600, background: '#f0fdf4', padding: '4px 12px', borderRadius: '8px' } },
               (brainFactIdx % facts.length + 1) + ' / ' + facts.length
             ),
             h('button', {
+              className: 'sel-btn',
               onClick: function() {
                 var next = (brainFactIdx + 1) % facts.length;
                 upd({ brainFactIdx: next, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[next] = true; return o; })()) });
@@ -336,7 +433,7 @@ window.SelHub = window.SelHub || {
                   if (awardXP) awardXP(15, 'Explored all Brain Science facts!');
                 }
               },
-              style: { padding: '8px 16px', background: EMERALD, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' }
+              style: { padding: '10px 20px', background: 'linear-gradient(135deg, ' + EMERALD + ', #047857)', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: '#fff', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }
             }, 'Next \u2192')
           ),
           // Progress dots
@@ -349,11 +446,12 @@ window.SelHub = window.SelHub || {
                 'aria-label': 'Fact ' + (i + 1) + ' of ' + facts.length + (explored ? ' (explored)' : '') + (current ? ' (current)' : ''),
                 onClick: function() { upd({ brainFactIdx: i, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[i] = true; return o; })()) }); },
                 onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); upd({ brainFactIdx: i, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[i] = true; return o; })()) }); } },
+                className: 'sel-progress-dot',
                 style: {
-                  width: current ? '24px' : '10px', height: '10px',
-                  borderRadius: '5px', cursor: 'pointer',
-                  background: current ? EMERALD : explored ? '#a7f3d0' : '#e5e7eb',
-                  transition: 'all 0.2s'
+                  width: current ? '28px' : explored ? '12px' : '10px', height: current ? '12px' : '10px',
+                  borderRadius: '6px', cursor: 'pointer',
+                  background: current ? 'linear-gradient(135deg, ' + EMERALD + ', #34d399)' : explored ? '#6ee7b7' : '#e5e7eb',
+                  boxShadow: current ? '0 2px 8px rgba(5,150,105,0.4)' : 'none'
                 }
               });
             })
@@ -369,50 +467,69 @@ window.SelHub = window.SelHub || {
         var reframes = REFRAMES[band] || REFRAMES.elementary;
         var current = reframes[reframeIdx % reframes.length];
 
-        reframeContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
+        reframeContent = h('div', { className: 'sel-hero', style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83D\uDD04'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'The Reframe Engine'),
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(5,150,105,0.3))' } }, '\uD83D\uDD04'),
+            h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'The Reframe Engine'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Transform fixed mindset thoughts into growth mindset power.')
           ),
-          // Score
-          reframeTotal > 0 && h('div', { style: { display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '16px' } },
-            h('div', { style: { background: EMERALD_LIGHT, borderRadius: '10px', padding: '6px 14px', textAlign: 'center' } },
-              h('div', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD } }, reframeScore),
-              h('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'reframed')
+          // Score with visual progress ring
+          reframeTotal > 0 && h('div', { className: 'sel-card', style: { display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '20px' } },
+            h('div', { style: { background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', borderRadius: '14px', padding: '10px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(5,150,105,0.1)' } },
+              h('div', { style: { fontSize: '24px', fontWeight: 800, color: EMERALD } }, reframeScore),
+              h('div', { style: { fontSize: '9px', color: '#065f46', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'reframed')
             ),
-            h('div', { style: { background: '#fef3c7', borderRadius: '10px', padding: '6px 14px', textAlign: 'center' } },
-              h('div', { style: { fontSize: '18px', fontWeight: 800, color: AMBER } }, reframeTotal),
-              h('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'attempted')
+            h('div', { style: { display: 'flex', alignItems: 'center', fontSize: '24px', color: '#d1d5db' } }, '/'),
+            h('div', { style: { background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderRadius: '14px', padding: '10px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(217,119,6,0.1)' } },
+              h('div', { style: { fontSize: '24px', fontWeight: 800, color: AMBER } }, reframeTotal),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'attempted')
             )
           ),
-          // Fixed mindset thought (shown as "thought bubble")
-          h('div', { style: { background: '#fef2f2', border: '2px solid #fca5a5', borderRadius: '16px', padding: '20px', marginBottom: '12px', position: 'relative' } },
-            h('div', { style: { position: 'absolute', top: '-12px', left: '20px', background: '#fef2f2', border: '2px solid #fca5a5', borderBottom: 'none', borderRight: 'none', borderRadius: '8px 0 0 0', width: '20px', height: '12px', transform: 'rotate(45deg)' } }),
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '\uD83D\uDED1 Fixed Mindset Thought'),
-            h('p', { style: { fontSize: '16px', fontWeight: 700, color: '#7f1d1d', margin: 0, fontStyle: 'italic' } }, '"' + current.fixed + '"')
+          // Fixed mindset thought — dramatic red card with visual weight
+          h('div', {
+            className: 'sel-card',
+            key: 'fixed-' + reframeIdx,
+            style: {
+              background: 'linear-gradient(135deg, #fef2f2, #fee2e2)', border: '2px solid #fca5a5',
+              borderRadius: '20px', padding: '24px', marginBottom: '14px', position: 'relative',
+              boxShadow: '0 4px 16px rgba(220,38,38,0.1)'
+            }
+          },
+            // Visual "thought cloud" connector
+            h('div', { style: { position: 'absolute', top: '-10px', left: '24px' } },
+              h('div', { style: { width: '20px', height: '20px', borderRadius: '50%', background: '#fef2f2', border: '2px solid #fca5a5' } }),
+              h('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: '#fef2f2', border: '1.5px solid #fca5a5', position: 'absolute', top: '-8px', left: '6px' } })
+            ),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
+              h('div', { style: { fontSize: '20px', background: 'rgba(220,38,38,0.1)', borderRadius: '8px', padding: '4px 8px' } }, '\uD83D\uDED1'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '0.1em' } }, 'Fixed Mindset Thought')
+            ),
+            h('p', { style: { fontSize: '17px', fontWeight: 700, color: '#7f1d1d', margin: 0, fontStyle: 'italic', lineHeight: 1.5 } }, '\u201C' + current.fixed + '\u201D')
           ),
-          // Input area
+          // Transformation arrow
+          !reframeRevealed && h('div', { style: { textAlign: 'center', margin: '4px 0', fontSize: '24px', color: '#d1d5db' } }, '\u2193'),
+          // Input area with enhanced styling
           !reframeRevealed && h('div', { style: { marginBottom: '12px' } },
-            h('label', { style: { fontSize: '12px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '4px' } }, '\u2728 How would you reframe this with a growth mindset?'),
+            h('label', { style: { fontSize: '12px', fontWeight: 700, color: EMERALD_DARK, display: 'block', marginBottom: '6px' } }, '\u2728 How would you reframe this with a growth mindset?'),
             h('textarea', {
               value: reframeInput,
               onChange: function(ev) { upd('reframeInput', ev.target.value); },
               placeholder: 'Type your growth mindset version...',
               'aria-label': 'Reframe the fixed mindset thought',
-              style: { width: '100%', border: '2px solid #a7f3d0', borderRadius: '10px', padding: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', minHeight: '60px', boxSizing: 'border-box' }
+              style: { width: '100%', border: '2px solid #6ee7b7', borderRadius: '14px', padding: '14px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', minHeight: '70px', boxSizing: 'border-box', background: '#f0fdf4', transition: 'border-color 0.2s, box-shadow 0.2s' }
             }),
-            h('div', { style: { display: 'flex', gap: '8px', marginTop: '8px' } },
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', alignItems: 'center' } },
               h('button', {
+                className: 'sel-btn',
                 onClick: function() {
                   upd({ reframeRevealed: true, reframeTotal: reframeTotal + 1, reframeScore: reframeInput.trim() ? reframeScore + 1 : reframeScore });
                   if (soundEnabled) sfxReframe();
                   if (reframeInput.trim() && awardXP) awardXP(10, 'Reframed a fixed mindset thought!');
                   if (announceToSR) announceToSR('Growth mindset reframe revealed');
                 },
-                style: { padding: '8px 20px', background: EMERALD, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
+                style: { padding: '10px 24px', background: 'linear-gradient(135deg, ' + EMERALD + ', #047857)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(5,150,105,0.3)' }
               }, '\u2728 Show Growth Version'),
-              h('p', { style: { fontSize: '11px', color: '#6b7280', margin: 0, display: 'flex', alignItems: 'center' } }, '\uD83D\uDCA1 Hint: ' + current.hint)
+              h('p', { style: { fontSize: '11px', color: '#6b7280', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' } }, '\uD83D\uDCA1 ', h('em', null, current.hint))
             )
           ),
           // Revealed growth mindset version
@@ -606,11 +723,19 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var coachContent = null;
       if (activeTab === 'coach') {
+        var hasSafetyLayer = window.SelHub && window.SelHub.hasCoachConsent;
+        var hasConsent = hasSafetyLayer ? window.SelHub.hasCoachConsent() : true;
+        if (hasSafetyLayer && !hasConsent) {
+          coachContent = window.SelHub.renderConsentScreen(h, band, function() {
+            window.SelHub.giveCoachConsent();
+            upd('_consentRefresh', Date.now());
+          });
+        } else {
         coachContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'AI Growth Coach'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Share a struggle or a fixed mindset thought. Your coach will help you reframe it.')
+            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Share a struggle or a fixed mindset thought. Your coach will help you reframe it. Conversations are monitored for your safety.')
           ),
           // Chat history
           coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Conversation with Growth Coach', 'aria-live': 'polite', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
@@ -649,9 +774,23 @@ window.SelHub = window.SelHub || {
                     + 'Be warm, concise, and age-appropriate. Use "you" not "one." '
                     + 'Reference neuroplasticity naturally. Max 3-4 sentences total.';
 
-                  callGemini(prompt, true).then(function(response) {
+                  var safeSend = (window.SelHub && window.SelHub.safeCoach) ? function() {
+                    return window.SelHub.safeCoach({
+                      studentMessage: userMsg,
+                      coachPrompt: prompt,
+                      toolId: 'growthmindset',
+                      band: band,
+                      callGemini: callGemini,
+                      codename: ctx.studentCodename || 'student',
+                      conversationHistory: newHistory,
+                      onSafetyFlag: onSafetyFlag
+                    });
+                  } : function() {
+                    return callGemini(prompt, true).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                  };
+                  safeSend().then(function(result) {
                     upd({
-                      coachHistory: newHistory.concat([{ role: 'coach', text: response }]),
+                      coachHistory: newHistory.concat([{ role: 'coach', text: result.response }]),
                       coachLoading: false
                     });
                     if (awardXP) awardXP(5, 'Talked with Growth Coach!');
@@ -687,9 +826,23 @@ window.SelHub = window.SelHub || {
                   + 'Be warm, concise, and age-appropriate. Use "you" not "one." '
                   + 'Reference neuroplasticity naturally. Max 3-4 sentences total.';
 
-                callGemini(prompt, true).then(function(response) {
+                var safeSend = (window.SelHub && window.SelHub.safeCoach) ? function() {
+                  return window.SelHub.safeCoach({
+                    studentMessage: userMsg,
+                    coachPrompt: prompt,
+                    toolId: 'growthmindset',
+                    band: band,
+                    callGemini: callGemini,
+                    codename: ctx.studentCodename || 'student',
+                    conversationHistory: newHistory,
+                    onSafetyFlag: onSafetyFlag
+                  });
+                } : function() {
+                  return callGemini(prompt, true).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                };
+                safeSend().then(function(result) {
                   upd({
-                    coachHistory: newHistory.concat([{ role: 'coach', text: response }]),
+                    coachHistory: newHistory.concat([{ role: 'coach', text: result.response }]),
                     coachLoading: false
                   });
                   if (awardXP) awardXP(5, 'Talked with Growth Coach!');
@@ -723,6 +876,7 @@ window.SelHub = window.SelHub || {
             )
           )
         );
+        } // end else (hasConsent)
       }
 
       // ══════════════════════════════════════════════════════════

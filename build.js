@@ -202,6 +202,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_circuit.js',
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
+    'stem_lab/stem_tool_flightsim.js',
     'stem_lab/stem_tool_climateExplorer.js',
     'stem_lab/stem_tool_fireecology.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js

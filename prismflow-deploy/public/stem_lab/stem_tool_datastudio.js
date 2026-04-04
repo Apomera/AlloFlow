@@ -85,10 +85,22 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
+      var isDark = ctx.isDark;
+      var isContrast = ctx.isContrast;
 
       // ── Tool body (dataStudio) ──
       return (function() {
 var d = (labToolData && labToolData._dataStudio) || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('dataStudio', 'init', {
+              first: 'Data Studio loaded. Create charts, analyze datasets, and explore statistics with interactive visualization tools.',
+              repeat: 'Data Studio active.',
+              terse: 'Data Studio.'
+            }, { debounce: 800 });
+          }
 
           var updDS = function (key, val) {
 
@@ -945,7 +957,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2" },
 
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Import CSV data file",
 
                 onClick: function () {
 

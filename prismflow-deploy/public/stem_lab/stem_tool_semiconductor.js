@@ -87,11 +87,13 @@ window.StemLab = window.StemLab || {
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
+      var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
 
       // ═══ STATE INIT GUARD ═══
-      var d = (labToolData && labToolData.semiconductor) || null;
-      if (!d) {
+      var d = (labToolData && labToolData.semiconductor) || {};
+      var _semiInitialized = !!(labToolData && labToolData.semiconductor);
+      if (!_semiInitialized) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { semiconductor: {
             // sub-tool selection
@@ -220,11 +222,19 @@ window.StemLab = window.StemLab || {
             xpAwardedKeys: {}
           }});
         });
-        return h('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Semiconductor Lab\u2026');
+        // Don't early-return — hooks below must always execute (Rules of Hooks).
+        // Render a loading placeholder at the end instead.
       }
 
       var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { semiconductor: Object.assign({}, prev.semiconductor, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })()))}); }); };
       var updMulti = function(obj) { upd(obj); };
+
+      // Canvas Narration: Semiconductor Lab init
+      if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'init', {
+        first: 'Semiconductor Lab loaded. Explore band gaps, doping, P-N junctions, transistors, logic gates, I-V curves, wafer fabrication, LEDs, solar cells, and more. Use the sub-tool navigation to switch topics.',
+        repeat: 'Semiconductor Lab ready.',
+        terse: 'Semiconductor Lab ready.'
+      });
 
       // ═══ GRADE BAND HELPER ═══
       var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
@@ -576,6 +586,7 @@ window.StemLab = window.StemLab || {
               return pill(m.name, d.material === key, function() {
                 upd('material', key);
                 tryAwardXP('mat-' + key, 5, 'Explored ' + m.name);
+                if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'materialSelect', 'Selected ' + m.name + '. Band gap: ' + m.bandGap + ' electron volts. Lattice: ' + m.lattice + '.', { debounce: 500 });
                 if (announceToSR) announceToSR('Selected ' + m.name + ', band gap ' + m.bandGap + ' eV');
               });
             })
@@ -744,6 +755,7 @@ window.StemLab = window.StemLab || {
               return pill(dp.name, d.dopant === key, function() {
                 upd('dopant', key);
                 if (key !== 'none') tryAwardXP('dope-' + key, 8, 'Tried ' + dp.name + ' doping');
+                if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'dopantSelect', dp.name + (dp.type ? ', ' + dp.type + '-type doping. Majority carriers: ' + (dp.type === 'n' ? 'electrons' : 'holes') + '.' : '. Intrinsic silicon, no doping.'), { debounce: 500 });
                 if (announceToSR) announceToSR('Selected dopant: ' + dp.name + (dp.type ? ', ' + dp.type + '-type' : ''));
               });
             })
@@ -3574,6 +3586,7 @@ window.StemLab = window.StemLab || {
         SUBTOOLS.map(function(st) {
           return pill(st.icon + ' ' + st.short, subtool === st.id, function() {
             updMulti({ subtool: st.id, aiExplain: null });
+            if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'subtoolSwitch', 'Switched to ' + st.label + ' simulation.', { debounce: 500 });
             if (announceToSR) announceToSR('Selected ' + st.label + ' tool');
           });
         }),
@@ -3631,6 +3644,9 @@ window.StemLab = window.StemLab || {
         },
         className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full hover:from-cyan-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all'
       }, '\uD83D\uDCF8 Snapshot');
+
+      // Show loading placeholder while state initializes (hooks already called above)
+      if (!_semiInitialized) return h('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Semiconductor Lab\u2026');
 
       return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': 'Semiconductor Lab' },
         backBtn,

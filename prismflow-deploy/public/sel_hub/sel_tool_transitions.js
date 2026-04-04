@@ -138,6 +138,7 @@ window.SelHub = window.SelHub || {
       var announceToSR = ctx.announceToSR;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
       var d = (ctx.toolData && ctx.toolData.transitions) || {};
@@ -190,29 +191,46 @@ window.SelHub = window.SelHub || {
         { id: 'coach',    icon: '\uD83E\uDD16', label: 'AI Support' },
       ];
 
+      // Track explored tabs
+      var exploredTabs = d.exploredTabs || {};
+      if (!exploredTabs[activeTab]) { var ne = Object.assign({}, exploredTabs); ne[activeTab] = true; upd('exploredTabs', ne); }
+      var exploredCount = Object.keys(exploredTabs).length;
+
       var tabBar = h('div', {
-        style: { display: 'flex', gap: '4px', padding: '8px 12px', borderBottom: '1px solid #bae6fd', background: SKY_LIGHT, flexShrink: 0, overflowX: 'auto' },
-        role: 'tablist', 'aria-label': 'Transitions sections'
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #bae6fd', background: 'linear-gradient(180deg, #f0f9ff, #e0f2fe)', flexShrink: 0 }
       },
-        TABS.map(function(t) {
-          var active = activeTab === t.id;
-          return h('button', {
-            key: t.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
-            onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
-            style: {
-              padding: '6px 14px', borderRadius: '8px', border: 'none',
-              background: active ? SKY : 'transparent', color: active ? '#fff' : '#374151',
-              fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap',
-              transition: 'all 0.15s', boxShadow: active ? '0 2px 8px rgba(2,132,199,0.3)' : 'none'
-            }
-          }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label);
-        }),
-        h('button', {
-          onClick: function() { upd('soundEnabled', !soundEnabled); },
-          'aria-label': soundEnabled ? 'Mute sounds' : 'Enable sounds',
-          style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 }
-        }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+        h('div', { style: { height: '3px', background: '#e2e8f0', position: 'relative', overflow: 'hidden' } },
+          h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + SKY + ', #38bdf8)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
+        ),
+        h('div', {
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
+          role: 'tablist', 'aria-label': 'Transitions sections'
+        },
+          TABS.map(function(t) {
+            var active = activeTab === t.id;
+            var explored = !!exploredTabs[t.id];
+            return h('button', {
+              key: t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false',
+              onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+              style: {
+                padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#bae6fd' : 'transparent'),
+                background: active ? 'linear-gradient(135deg, ' + SKY + ', #0369a1)' : explored ? 'rgba(2,132,199,0.06)' : 'transparent',
+                color: active ? '#fff' : explored ? '#0c4a6e' : '#6b7280',
+                fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap',
+                boxShadow: active ? '0 3px 12px rgba(2,132,199,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none'
+              }
+            }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
+              explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#38bdf8', marginLeft: '2px' } }) : null
+            );
+          }),
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: SKY, fontWeight: 700, whiteSpace: 'nowrap', background: '#e0f2fe', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
+          h('button', {
+            onClick: function() { upd('soundEnabled', !soundEnabled); },
+            className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute sounds' : 'Enable sounds',
+            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 }
+          }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+        )
       );
 
       // ══════════════════════════════════════════════════════════
@@ -221,8 +239,8 @@ window.SelHub = window.SelHub || {
       var identifyContent = null;
       if (activeTab === 'identify') {
         identifyContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDF00'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83C\uDF00'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'What\u2019s Changing?'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
               band === 'elementary' ? 'Change is a part of life. Let\u2019s name what\u2019s happening for you.'
@@ -281,8 +299,8 @@ window.SelHub = window.SelHub || {
         var currentPhase = phases[curvePhaseIdx % phases.length];
 
         curveContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83D\uDCC8'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDCC8'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'The Change Curve'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
               band === 'elementary' ? 'Everyone goes through these feelings when things change. You\u2019re not alone.'
@@ -355,8 +373,8 @@ window.SelHub = window.SelHub || {
         var storyType = CHANGE_TYPES.find(function(ct) { return ct.id === currentStory.type; });
 
         storiesContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83D\uDCD6'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDCD6'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'Stories of Change'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Real stories about navigating transitions. You\u2019re not the first to walk this path.')
           ),
@@ -407,8 +425,8 @@ window.SelHub = window.SelHub || {
           : ['A relationship that remains constant', 'A skill or strength that travels with me', 'A value I hold regardless of circumstances', 'A memory that grounds me', 'A routine that gives me stability'];
 
         anchorsContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\u2693'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\u2693'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'My Anchors'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
               band === 'elementary' ? 'When everything is changing, some things stay the same. Let\u2019s find yours.'
@@ -479,8 +497,8 @@ window.SelHub = window.SelHub || {
       var planContent = null;
       if (activeTab === 'plan') {
         planContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83D\uDDFA\uFE0F'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDDFA\uFE0F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'My Change Plan'),
             h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
               band === 'elementary' ? 'Small steps make big changes feel smaller. What\u2019s one thing you can do?'
@@ -549,14 +567,22 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var coachContent = null;
       if (activeTab === 'coach') {
+        var hasSafetyLayer = window.SelHub && window.SelHub.hasCoachConsent;
+        var hasConsent = hasSafetyLayer ? window.SelHub.hasCoachConsent() : true;
+        if (hasSafetyLayer && !hasConsent) {
+          coachContent = window.SelHub.renderConsentScreen(h, band, function() {
+            window.SelHub.giveCoachConsent();
+            upd('_consentRefresh', Date.now());
+          });
+        } else {
         var changeContext = selectedChange ? CHANGE_TYPES.find(function(ct) { return ct.id === selectedChange; }) : null;
         var phaseContext = myPhase != null ? (CHANGE_CURVE[band] || CHANGE_CURVE.elementary)[myPhase] : null;
 
         coachContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83E\uDD16'),
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'AI Support'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Talk about what you\u2019re going through. This is a safe, private space.')
+            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Talk about what you\u2019re going through. This space is monitored for your safety.')
           ),
           // Context summary
           (changeContext || phaseContext) && h('div', { style: { background: SKY_LIGHT, borderRadius: '10px', padding: '8px 12px', marginBottom: '12px', fontSize: '11px', color: SKY_DARK } },
@@ -606,7 +632,10 @@ window.SelHub = window.SelHub || {
                     + '3. One gentle, specific suggestion or coping strategy (1 sentence)\n\n'
                     + 'Be warm, concise, age-appropriate. Never minimize their experience. Max 3-4 sentences.';
 
-                  callGemini(prompt, true).then(function(response) {
+                  var sendSafe = (window.SelHub && window.SelHub.safeCoach)
+                    ? function() { return window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'transitions', band: band, callGemini: callGemini, codename: ctx.studentCodename || 'student', conversationHistory: newHist, onSafetyFlag: onSafetyFlag }); }
+                    : function() { return callGemini(prompt, true); };
+                  sendSafe().then(function(response) {
                     upd({ coachHistory: newHist.concat([{ role: 'coach', text: response }]), coachLoading: false });
                     if (awardXP) awardXP(5, 'Talked with Transition Coach');
                   }).catch(function() {
@@ -632,7 +661,10 @@ window.SelHub = window.SelHub || {
                 if (changeContext) context += 'The student is going through: ' + changeContext.label + '. ';
                 if (phaseContext) context += 'They identify as being in the "' + phaseContext.phase + '" phase. ';
                 var prompt = 'You are a warm, empathetic transition support coach for a ' + band + ' school student. ' + context + 'The student said: "' + userMsg + '"\nValidate, normalize, suggest. Warm, concise, age-appropriate. Max 3-4 sentences.';
-                callGemini(prompt, true).then(function(response) {
+                var sendSafe = (window.SelHub && window.SelHub.safeCoach)
+                  ? function() { return window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'transitions', band: band, callGemini: callGemini, codename: ctx.studentCodename || 'student', conversationHistory: newHist, onSafetyFlag: onSafetyFlag }); }
+                  : function() { return callGemini(prompt, true); };
+                sendSafe().then(function(response) {
                   upd({ coachHistory: newHist.concat([{ role: 'coach', text: response }]), coachLoading: false });
                 }).catch(function() {
                   upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not alone in this, and what you\u2019re feeling makes complete sense.' }]), coachLoading: false });
@@ -658,6 +690,7 @@ window.SelHub = window.SelHub || {
             )
           )
         );
+        } // end else (hasConsent)
       }
 
       // ── Final render ──

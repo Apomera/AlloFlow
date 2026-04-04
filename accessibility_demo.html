@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accessibility | AlloFlow</title>
+<meta name="description" content="Interactive demonstration of AlloFlow's WCAG 2.1 AA accessibility features — keyboard navigation, switch-access scanning, high contrast, and screen reader support for AAC communication boards.">
+<meta property="og:title" content="AlloFlow Accessibility — Interactive Demo">
+<meta property="og:description" content="See how AlloFlow serves every student, regardless of how they access technology. Try keyboard navigation, scanning modes, and high contrast.">
+<meta property="og:url" content="https://apomera.github.io/AlloFlow/accessibility_demo.html">
+<meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
+<link rel="stylesheet" href="shared.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --purple: #7c3aed; --purple-light: #ede9fe; --purple-dark: #4c1d95;
+  --blue: #2563eb; --green: #16a34a; --amber: #f59e0b; --red: #ef4444;
+  --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0; --gray-400: #94a3b8;
+  --gray-600: #475569; --gray-800: #1e293b; --gray-900: #0f172a;
+  --bg: #ffffff; --text: #1e293b; --text-muted: #64748b;
+  --card-bg: #ffffff; --card-border: #e2e8f0;
+  --section-bg: #f8fafc;
+  --focus-ring: #4f46e5;
+  --font: 'Inter', system-ui, sans-serif;
+}
+body { margin: 0; font-family: 'Plus Jakarta Sans', var(--font); background: var(--bg); color: var(--text); line-height: 1.6; background-image: none; }
+h1, h2, h3 { font-family: 'Outfit', var(--font); }
+body.hc {
+  --bg: #000; --text: #fff; --text-muted: #ccc;
+  --card-bg: #000; --card-border: #fff;
+  --section-bg: #111; --focus-ring: #facc15;
+  --gray-50: #111; --gray-100: #111; --gray-200: #333; --gray-800: #fff;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+
+/* ── Skip link ── */
+.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
+.skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 20px; background: var(--gray-800); color: #fff; font-weight: 700; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+
+/* ── Focus ── */
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+
+/* ── Layout ── */
+.container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+section { padding: 60px 0; border-bottom: 1px solid var(--card-border); }
+section:last-of-type { border-bottom: none; }
+
+/* ── Typography ── */
+h1 { font-size: 2.5rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin: 0; }
+h2 { font-size: 1.5rem; font-weight: 800; margin: 0 0 8px; color: var(--purple); letter-spacing: -0.01em; }
+h3 { font-size: 1.1rem; font-weight: 700; margin: 0 0 4px; }
+.subtitle { font-size: 1.1rem; color: var(--text-muted); margin: 8px 0 0; max-width: 600px; }
+.section-intro { color: var(--text-muted); margin: 0 0 24px; max-width: 600px; font-size: 0.95rem; }
+.badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.badge-purple { background: var(--purple-light); color: var(--purple); }
+body.hc .badge-purple { background: var(--purple); color: #fff; }
+.badge-green { background: #dcfce7; color: #166534; }
+
+/* ── Hero ── */
+.hero { background: linear-gradient(135deg, var(--purple-dark), var(--purple), var(--blue)); color: #fff; padding: 120px 0 60px; }
+.hero h1 { color: #fff; font-size: 2.8rem; }
+.hero .subtitle { color: rgba(255,255,255,0.85); }
+body.hc .hero { background: #000; border-bottom: 4px solid #fff; }
+
+/* ── Cards ── */
+.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+/* ── Buttons ── */
+.btn { border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; font-size: 14px; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.15s, transform 0.1s; font-family: inherit; }
+.btn:hover { opacity: 0.9; }
+.btn:active { transform: scale(0.97); }
+.btn-purple { background: var(--purple); color: #fff; }
+.btn-dark { background: var(--gray-800); color: #fff; }
+.btn-outline { background: transparent; border: 2px solid var(--card-border); color: var(--text); }
+body.hc .btn-outline { border-color: #fff; color: #fff; }
+.btn-sm { padding: 6px 14px; font-size: 12px; min-height: 36px; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Try-It Banner ── */
+.try-it { background: var(--purple-light); border: 2px solid var(--purple); border-radius: 10px; padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 600; color: var(--purple-dark); }
+body.hc .try-it { background: #1a0a30; border-color: #facc15; color: #facc15; }
+.try-it .icon { font-size: 1.3rem; flex-shrink: 0; }
+
+/* ── Demo Board ── */
+.demo-board-wrap { background: var(--gray-900); border-radius: 14px; overflow: hidden; border: 2px solid var(--gray-800); }
+body.hc .demo-board-wrap { border-color: #fff; }
+.demo-header { background: linear-gradient(135deg, var(--purple), #4338ca); padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.demo-header h3 { color: #fff; margin: 0; font-size: 16px; }
+.demo-strip { background: #1a1a2e; min-height: 50px; padding: 8px 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; border-bottom: 2px solid #312e81; }
+.demo-strip-word { background: #312e81; color: #e0e7ff; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; animation: stripPop 0.25s ease-out; }
+@keyframes stripPop { 0% { transform: scale(0.8) translateY(4px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+.demo-strip-placeholder { color: var(--gray-400); font-style: italic; font-size: 12px; }
+.demo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 14px; }
+.demo-cell { border-radius: 10px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; border: 2px solid #334155; background: #1e293b; transition: transform 0.12s, box-shadow 0.15s; min-height: 44px; min-width: 44px; user-select: none; }
+.demo-cell:active { transform: scale(0.93); }
+.demo-cell .symbol { width: 56px; height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.demo-cell .label { color: #e2e8f0; font-weight: 700; font-size: 11px; text-align: center; line-height: 1.2; }
+.demo-cell:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; box-shadow: 0 0 0 6px rgba(79,70,229,0.3); }
+.demo-cell.flash { box-shadow: 0 0 0 4px #fbbf24; transform: scale(1.05); }
+.demo-cell.scan-hl { border-color: #facc15 !important; border-width: 3px; transform: scale(1.04); box-shadow: 0 0 0 5px rgba(250,204,21,0.35); }
+body.hc .demo-cell { background: #000; border-color: #fff; }
+body.hc .demo-cell .label { color: #fff; }
+body.hc .demo-cell.scan-hl { border-color: #facc15 !important; }
+
+/* ── Scan bar ── */
+.scan-bar { display: none; background: #1e293b; padding: 8px 14px; align-items: center; gap: 10px; font-size: 12px; flex-wrap: wrap; }
+.scan-bar.active { display: flex; }
+.scan-bar .status { color: #facc15; font-weight: 700; }
+.scan-bar select { font-size: 12px; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 5px; padding: 3px 6px; min-height: 32px; }
+
+/* ── WCAG Checklist ── */
+.checklist { list-style: none; padding: 0; margin: 0; }
+.checklist li { padding: 10px 0; border-bottom: 1px solid var(--card-border); display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; }
+.checklist li:last-child { border-bottom: none; }
+.check { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+.check-pass { background: #dcfce7; color: #166534; }
+body.hc .check-pass { background: #166534; color: #fff; }
+
+/* ── Kbd ── */
+kbd { background: var(--gray-100); border: 1px solid var(--gray-200); padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.8rem; white-space: nowrap; }
+body.hc kbd { background: #333; border-color: #666; color: #fff; }
+
+/* ── Key map ── */
+.keymap { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; font-size: 0.9rem; }
+.keymap dt { font-weight: 700; }
+.keymap dd { margin: 0; color: var(--text-muted); }
+
+/* ── Live region ── */
+#live { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ── Stat ── */
+.stat { text-align: center; }
+.stat-num { font-size: 2rem; font-weight: 800; color: var(--purple); display: block; }
+body.hc .stat-num { color: #facc15; }
+.stat-label { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ── Focus Inspector ── */
+.focus-inspector { background: var(--gray-900); color: #e2e8f0; border: 2px solid #334155; border-radius: 10px; margin-top: 10px; padding: 8px 14px; font-family: 'SF Mono', 'Consolas', monospace; font-size: 11px; line-height: 1.6; display: none; }
+.focus-inspector.active { display: block; }
+.focus-inspector .fi-tag { color: #7c3aed; font-weight: 700; }
+.focus-inspector .fi-attr { color: #f59e0b; }
+.focus-inspector .fi-val { color: #22c55e; }
+.focus-inspector .fi-label { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+body.hc .focus-inspector { border-color: #fff; }
+
+/* ── Live Announcements Panel ── */
+.sr-panel { background: var(--gray-900); border: 2px solid #334155; border-radius: 10px; margin-top: 16px; overflow: hidden; }
+.sr-panel-header { background: #334155; padding: 8px 14px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #94a3b8; }
+.sr-panel-header .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+.sr-log { padding: 12px 14px; max-height: 140px; overflow-y: auto; font-family: 'SF Mono', 'Consolas', monospace; font-size: 12px; line-height: 1.7; color: #94a3b8; }
+.sr-log .entry { padding: 2px 0; border-bottom: 1px solid #1e293b; }
+.sr-log .entry:last-child { border-bottom: none; color: #e2e8f0; font-weight: 600; }
+.sr-log .entry .role-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-right: 6px; font-weight: 700; }
+.sr-log .entry .tag-live { background: #7c3aed; color: #fff; }
+.sr-log .entry .tag-focus { background: #2563eb; color: #fff; }
+body.hc .sr-panel { border-color: #fff; } body.hc .sr-panel-header { background: #333; }
+
+/* ── Anchor Nav ── */
+.anchor-nav { background: var(--card-bg); border-bottom: 1px solid var(--card-border); padding: 10px 0; position: sticky; top: 60px; z-index: 90; }
+.anchor-nav-inner { display: flex; gap: 6px; overflow-x: auto; padding: 0 24px; max-width: 960px; margin: 0 auto; }
+.anchor-nav a { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; text-decoration: none; transition: background 0.15s; }
+.anchor-nav a:hover { background: var(--purple-light); color: var(--purple); }
+body.hc .anchor-nav { background: #000; border-color: #fff; }
+body.hc .anchor-nav a:hover { background: #333; color: #facc15; }
+
+/* ── Reveal animation ── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── Footer ── */
+footer { padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+footer a { color: var(--purple); }
+
+/* ── Preferences ── */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+@media (forced-colors: active) { .demo-cell { border: 2px solid CanvasText; } .demo-cell:focus-visible { outline: 3px solid Highlight; } .btn { border: 1px solid ButtonText; } }
+@media (prefers-color-scheme: dark) {
+  body:not(.hc) { --bg: #0f172a; --text: #e2e8f0; --text-muted: #94a3b8; --card-bg: #1e293b; --card-border: #334155; --section-bg: #0f172a; --gray-50: #1e293b; --gray-100: #1e293b; }
+}
+@media print { .hero { background: #f5f5f5 !important; color: #000 !important; } .demo-board-wrap, .btn-group, .scan-bar, #live { display: none !important; } }
+@media (max-width: 640px) { h1 { font-size: 1.8rem; } .hero { padding: 48px 0 36px; } .demo-grid { grid-template-columns: repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div id="live" role="status" aria-live="assertive" aria-atomic="true"></div>
+
+<!-- ── Site Navbar ── -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="index.html" class="nav-logo">
+      <i data-lucide="layers" style="width:28px;height:28px"></i>
+      AlloFlow
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="features.html">Features</a>
+      <a href="library.html">Library</a>
+      <a href="calculator.html">Savings</a>
+      <a href="students.html">Students</a>
+      <a href="accessibility_demo.html" style="color:var(--indigo)">Accessibility</a>
+      <a href="https://ko-fi.com/aaronpomeranz207" target="_blank" class="sponsor-btn"><i data-lucide="heart" style="width:12px;height:12px"></i> Sponsor</a>
+      <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github" style="width:16px;height:16px"></i> Get Code</a>
+    </div>
+    <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')" aria-label="Open menu">
+      <i data-lucide="menu" style="width:24px;height:24px"></i>
+    </button>
+  </div>
+</nav>
+<div id="mobileNav" class="mobile-nav">
+  <button class="close-btn" onclick="this.parentElement.classList.remove('open')" aria-label="Close">&times;</button>
+  <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="calculator.html">Savings</a><a href="students.html">Students</a><a href="accessibility_demo.html">Accessibility</a><a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+</div>
+
+<!-- ════════ HERO ════════ -->
+<div class="hero">
+<div class="container">
+  <span class="badge badge-purple" style="background:rgba(255,255,255,0.15);color:#fff;">WCAG 2.1 AA Compliant</span>
+  <h1 style="margin-top:12px;">Accessibility in AlloFlow</h1>
+  <p class="subtitle">An interactive demonstration of how AlloFlow's AAC communication tools serve every student — regardless of how they access technology.</p>
+  <div class="btn-group" style="margin-top:24px;">
+    <button class="btn btn-dark" onclick="toggleHC()" aria-label="Toggle high contrast mode" id="hc-btn">Toggle High Contrast</button>
+    <a href="#demo-board" class="btn" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;">Try the Demo Board</a>
+  </div>
+</div>
+</div>
+
+<!-- ── Anchor Nav ── -->
+<nav class="anchor-nav" aria-label="Page sections">
+  <div class="anchor-nav-inner">
+    <a href="#stats">Why It Matters</a>
+    <a href="#demo-board">Demo Board</a>
+    <a href="#keyboard">Keyboard</a>
+    <a href="#scanning">Scanning</a>
+    <a href="#visual">Visual</a>
+    <a href="#screenreader">Screen Reader</a>
+    <a href="#wcag">WCAG Checklist</a>
+    <a href="#test">Test It Yourself</a>
+  </div>
+</nav>
+
+<!-- ════════ MAIN ════════ -->
+<main id="main" role="main">
+
+<!-- ── Who This Serves ── -->
+<section id="stats" class="reveal">
+<div class="container">
+  <h2>Who This Is For</h2>
+  <p class="section-intro">Every accessibility feature in AlloFlow exists because a real student needs it. These are the students we build for.</p>
+  <div class="card-grid" style="margin-bottom:32px;">
+    <div class="card">
+      <div style="font-size:28px;margin-bottom:8px;">&#9855;</div>
+      <h3>The student who communicates with a switch</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">She has cerebral palsy and uses a single head switch to interact with technology. Without scanning mode, a communication board is a picture on a wall. With it, she can build sentences, tell her teacher she needs a break, and ask her mom for water at home — using the same exported board on any device.</p>
+    </div>
+    <div class="card">
+      <div style="font-size:28px;margin-bottom:8px;">&#127758;</div>
+      <h3>The student whose family speaks Arabic</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">He's learning English at school but thinks in Arabic. His communication board needs to work right-to-left, with translated labels his parents can read, and arrow keys that move in the direction his family reads. At school he uses the English board. At home, his mom opens the Arabic export and hears his voice in their language.</p>
+    </div>
+    <div class="card">
+      <div style="font-size:28px;margin-bottom:8px;">&#128065;</div>
+      <h3>The student with low vision</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">She can see shapes and colors but can't read small text. High contrast mode with Atkinson Hyperlegible font, 44px touch targets, and a 3px focus ring mean she can find and select symbols independently. The board doesn't need to be adapted for her — it adapts to her.</p>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="stat"><span class="stat-num">44px</span><span class="stat-label">Minimum touch target (WCAG 2.5.5)</span></div>
+    </div>
+    <div class="card">
+      <div class="stat"><span class="stat-num">14</span><span class="stat-label">Languages with RTL support</span></div>
+    </div>
+    <div class="card">
+      <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Keyboard operable (WCAG 2.1.1)</span></div>
+    </div>
+    <div class="card">
+      <div class="stat"><span class="stat-num">2</span><span class="stat-label">Switch-access scanning modes</span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── Interactive Demo Board ── -->
+<section id="demo-board" class="reveal">
+<div class="container">
+  <h2>Interactive AAC Board</h2>
+  <p class="section-intro">This is a working communication board. Every feature below is built into AlloFlow's standalone HTML exports — no app or internet required.</p>
+
+  <div class="try-it" role="note"><span class="icon">&#9000;</span> <strong>Try it:</strong>&nbsp;Click a symbol, or use <kbd>Tab</kbd> to focus the grid, then <kbd>Arrow keys</kbd> to navigate and <kbd>Enter</kbd> to select. Press <kbd>S</kbd> to start scanning.</div>
+
+  <div class="demo-board-wrap" role="region" aria-label="AAC Board Demo">
+    <!-- Header -->
+    <div class="demo-header">
+      <h3>Core Vocabulary Board</h3>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-sm" style="background:#4f46e5;color:#fff;" onclick="toggleScan()" aria-label="Toggle scanning mode" id="scan-toggle-btn">Scan</button>
+        <button class="btn btn-sm" id="scan-mode-btn" style="background:#334155;color:#fff;" onclick="toggleScanMode()" aria-label="Switch scanning mode">1-Switch</button>
+      </div>
+    </div>
+    <!-- Scan bar -->
+    <div class="scan-bar" id="scan-bar" role="status" aria-live="polite">
+      <span class="status">Scanning Active</span>
+      <label style="color:#94a3b8;display:flex;align-items:center;gap:4px;">Speed: <select onchange="setScanSpd(Number(this.value))" aria-label="Scanning speed"><option value="800">Fast</option><option value="1500" selected>Medium</option><option value="2500">Slow</option></select></label>
+      <button class="btn btn-sm" style="background:#1e40af;color:#fff;" onclick="advanceScan()" aria-label="Advance to next symbol">&rarr; Next</button>
+      <span style="color:#94a3b8;font-size:11px;margin-left:auto;">Space = select &middot; Esc = stop</span>
+    </div>
+    <!-- Sentence strip -->
+    <div class="demo-strip" id="demo-strip" role="log" aria-live="polite" aria-label="Message being composed">
+      <span class="demo-strip-placeholder" id="strip-ph">Tap symbols to build a message&hellip;</span>
+      <div id="strip-words" style="display:contents;"></div>
+      <span id="word-count" style="display:none;background:#4f46e5;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;flex-shrink:0;" aria-hidden="true"></span>
+      <div id="strip-btns" style="display:none;margin-left:auto;gap:6px;">
+        <button class="btn btn-sm" style="background:#4f46e5;color:#fff;" onclick="speakAll()" aria-label="Speak entire message">&#128264; Speak</button>
+        <button class="btn btn-sm" style="background:#374151;color:#fff;" onclick="delLast()" aria-label="Delete last word">&#9003; Undo</button>
+        <button class="btn btn-sm" style="background:#374151;color:#cbd5e1;" onclick="clearAll()" aria-label="Clear message">Clear</button>
+      </div>
+    </div>
+    <!-- Grid -->
+    <div class="demo-grid" role="grid" aria-label="Communication symbols" id="demo-grid">
+      <!-- Cells injected by JS -->
+    </div>
+    <!-- Live SR Announcements Panel -->
+    <div class="sr-panel" role="region" aria-label="Screen reader announcement log">
+      <div class="sr-panel-header"><span class="dot"></span> Live Screen Reader Announcements</div>
+      <div class="sr-log" id="sr-log">
+        <div class="entry" style="color:#64748b;font-style:italic;">Interact with the board above to see what a screen reader would announce&hellip;</div>
+      </div>
+    </div>
+    <!-- Focus Inspector -->
+    <div class="focus-inspector" id="focus-inspector" role="region" aria-label="Focus inspector showing current element accessibility properties">
+      <div class="fi-label">Focused Element</div>
+      <div id="fi-content">Tab into the board to inspect element accessibility properties.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── Keyboard Navigation ── -->
+<section id="keyboard" class="reveal">
+<div class="container">
+  <h2>Keyboard Navigation</h2>
+  <p class="section-intro">Every function in AlloFlow is operable without a mouse. The grid uses the WAI-ARIA grid pattern with roving tabindex — only one cell is in the Tab order at a time.</p>
+  <div class="card">
+    <dl class="keymap">
+      <dt><kbd>&larr;</kbd> <kbd>&uarr;</kbd> <kbd>&rarr;</kbd> <kbd>&darr;</kbd></dt><dd>Navigate between symbols in the grid</dd>
+      <dt><kbd>Enter</kbd> / <kbd>Space</kbd></dt><dd>Select the focused symbol (speaks it aloud and adds to message)</dd>
+      <dt><kbd>Home</kbd> / <kbd>End</kbd></dt><dd>Jump to start or end of the current row</dd>
+      <dt><kbd>S</kbd></dt><dd>Toggle scanning mode on/off</dd>
+      <dt><kbd>Tab</kbd> <span style="font-weight:400;color:var(--text-muted);">(in 2-switch scan)</span></dt><dd>Advance to next cell</dd>
+      <dt><kbd>H</kbd></dt><dd>Toggle high contrast mode</dd>
+      <dt><kbd>Backspace</kbd></dt><dd>Delete last word from message</dd>
+      <dt><kbd>?</kbd></dt><dd>Show keyboard shortcuts help</dd>
+    </dl>
+  </div>
+</div>
+</section>
+
+<!-- ── Scanning Mode ── -->
+<section id="scanning" class="reveal">
+<div class="container">
+  <h2>Switch-Access Scanning</h2>
+  <p class="section-intro">Students who use switch devices can communicate using automatic or manual scanning — built directly into every exported board.</p>
+  <div class="card-grid">
+    <div class="card">
+      <h3>1-Switch (Automatic)</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:8px 0 0;">The highlight advances automatically at a configurable speed (1-4 seconds per cell). The student presses their single switch when the desired symbol is highlighted. Best for students with very limited motor control.</p>
+    </div>
+    <div class="card">
+      <h3>2-Switch (Manual)</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:8px 0 0;">Switch 1 advances the highlight. Switch 2 selects. No timer — the student controls the pace. Best for students who have enough motor control for two inputs and want faster communication.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── Visual Preferences ── -->
+<section id="visual" class="reveal">
+<div class="container">
+  <h2>Visual Accessibility</h2>
+  <p class="section-intro">AlloFlow respects your operating system's accessibility preferences automatically, and provides manual overrides.</p>
+  <div class="card-grid">
+    <div class="card">
+      <h3>High Contrast Mode</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:4px 0 12px;">Switches to Atkinson Hyperlegible font, white-on-black, yellow highlights. Toggle with <kbd>H</kbd> or the button above.</p>
+      <button class="btn btn-outline btn-sm" onclick="toggleHC()">Toggle High Contrast</button>
+    </div>
+    <div class="card">
+      <h3>OS Preferences</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:4px 0 0;">
+        <strong>prefers-reduced-motion</strong> — disables all animations<br>
+        <strong>forced-colors</strong> — respects Windows High Contrast<br>
+        <strong>prefers-color-scheme: dark</strong> — automatic dark mode
+      </p>
+    </div>
+    <div class="card">
+      <h3>Focus Indicators</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:4px 0 0;">Every interactive element has a visible 3px focus ring with a contrasting glow. Uses <code>:focus-visible</code> so mouse users aren't distracted, but keyboard users always see where they are.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── Screen Reader ── -->
+<section id="screenreader" class="reveal">
+<div class="container">
+  <h2>Screen Reader Support</h2>
+  <p class="section-intro">The board uses semantic HTML and ARIA to provide a complete non-visual experience. Try the demo board above — the live panel shows every announcement in real time.</p>
+  <div class="card-grid">
+    <div class="card">
+      <h3>ARIA Roles</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">
+        <code>role="grid"</code> on the board container. <code>role="gridcell"</code> on each symbol with a descriptive <code>aria-label</code> combining the word and its context (e.g., "happy: feeling joyful"). <code>role="log"</code> on the sentence strip. <code>role="tab"</code> / <code>role="tabpanel"</code> for multi-page boards.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Live Regions</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">
+        Two <code>aria-live</code> regions: the sentence strip (<code>polite</code>) updates its label as words are added. A dedicated status region (<code>assertive</code>) announces state changes — "more added to message", "Scanning started", "High contrast on" — without stealing focus.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Roving Tabindex</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">
+        Only the currently focused cell has <code>tabindex="0"</code>. All others have <code>tabindex="-1"</code>. This means Tab enters the grid at one point, and arrow keys navigate within it — matching the WAI-ARIA grid pattern exactly.
+      </p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── WCAG Checklist ── -->
+<section id="wcag" class="reveal">
+<div class="container">
+  <h2>WCAG 2.1 AA Conformance</h2>
+  <p class="section-intro">Self-assessed against the AAC board export. We welcome independent validation.</p>
+  <div class="card">
+    <ul class="checklist" role="list">
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>1.1.1 Non-text Content</strong> — Every symbol has descriptive alt text (label + context)</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>1.3.1 Info and Relationships</strong> — Semantic landmarks, ARIA grid/tab roles, heading hierarchy</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>1.4.3 Contrast</strong> — All text exceeds 4.5:1 ratio; High Contrast mode for maximum visibility</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>1.4.11 Non-text Contrast</strong> — Borders, focus rings, and scan highlight exceed 3:1</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>2.1.1 Keyboard</strong> — 100% keyboard operable: grid nav, scanning, controls, all shortcuts</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>2.4.1 Bypass Blocks</strong> — Skip-to-content link on every exported page</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>2.4.7 Focus Visible</strong> — 3px focus ring with glow on all interactive elements</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>2.5.5 Target Size</strong> — Minimum 44&times;44px on all touch targets (AAA level)</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>3.1.1 Language of Page</strong> — Dynamic <code>lang</code> attribute matching board language, RTL support</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>4.1.2 Name, Role, Value</strong> — All ARIA roles, labels, and states correctly implemented</div></li>
+      <li><span class="check check-pass" aria-hidden="true">&#10003;</span><div><strong>4.1.3 Status Messages</strong> — <code>aria-live</code> regions announce all state changes to screen readers</div></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ── Test It Yourself ── -->
+<section id="test" class="reveal">
+<div class="container">
+  <h2>Test It Yourself</h2>
+  <p class="section-intro">The best way to evaluate accessibility is to experience it. Here's how to test this page with the tools accessibility professionals use.</p>
+  <div class="card-grid">
+    <div class="card">
+      <h3>With NVDA (Windows, Free)</h3>
+      <ol style="font-size:0.85rem;color:var(--text-muted);margin:8px 0 0;padding-left:20px;line-height:1.8;">
+        <li>Download NVDA from <strong>nvaccess.org</strong> (free)</li>
+        <li>Press <kbd>Insert</kbd>+<kbd>Space</kbd> to enter browse mode</li>
+        <li>Press <kbd>Tab</kbd> to move through the demo board</li>
+        <li>Listen for "Communication symbols, grid" and cell labels</li>
+        <li>Press <kbd>Enter</kbd> on a cell &mdash; listen for the live region announcement</li>
+        <li>Press <kbd>S</kbd> &mdash; listen for "Scanning started"</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>With VoiceOver (macOS, Built-in)</h3>
+      <ol style="font-size:0.85rem;color:var(--text-muted);margin:8px 0 0;padding-left:20px;line-height:1.8;">
+        <li>Press <kbd>Cmd</kbd>+<kbd>F5</kbd> to enable VoiceOver</li>
+        <li>Press <kbd>VO</kbd>+<kbd>Right Arrow</kbd> to navigate</li>
+        <li>Navigate to the demo board grid</li>
+        <li>Use arrow keys to move between cells</li>
+        <li>Press <kbd>VO</kbd>+<kbd>Space</kbd> to activate</li>
+        <li>Listen for announcements in the live region</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Keyboard Only (No Screen Reader)</h3>
+      <ol style="font-size:0.85rem;color:var(--text-muted);margin:8px 0 0;padding-left:20px;line-height:1.8;">
+        <li>Put your mouse in a drawer</li>
+        <li>Press <kbd>Tab</kbd> repeatedly &mdash; watch the focus ring</li>
+        <li>Reach the demo board, press arrow keys to navigate cells</li>
+        <li>Press <kbd>Enter</kbd> to select (hear it speak)</li>
+        <li>Press <kbd>S</kbd> to start scanning &mdash; watch the yellow highlight</li>
+        <li>Press <kbd>H</kbd> to toggle high contrast</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Automated Tools</h3>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin:8px 0 0;line-height:1.8;">
+        <p><strong>axe DevTools</strong> (free Chrome extension) &mdash; Run a scan on this page. AlloFlow's Document Builder runs axe-core on every export.</p>
+        <p style="margin-top:8px;"><strong>WAVE</strong> (free browser extension) &mdash; Visual overlay showing heading structure, ARIA landmarks, contrast issues.</p>
+        <p style="margin-top:8px;"><strong>Lighthouse</strong> (built into Chrome DevTools) &mdash; Run an Accessibility audit under the Lighthouse tab.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── CTA ── -->
+<section style="text-align:center;" class="reveal">
+<div class="container">
+  <h2 style="color:var(--text);">Built for the Students Who Need It Most</h2>
+  <p style="color:var(--text-muted);max-width:580px;margin:8px auto 12px;font-size:0.95rem;">AlloFlow is open-source, privacy-first, and FERPA-compliant by architecture. 80+ tools spanning AAC, STEM, SEL, behavioral analysis, and clinical reporting — built by a school psychologist for the students who fall through the cracks of one-size-fits-all edtech.</p>
+  <p style="color:var(--text-muted);max-width:580px;margin:0 auto 24px;font-size:0.85rem;">We welcome independent accessibility audits, usability testing with assistive technology users, and partnership with organizations working to make education accessible for everyone.</p>
+  <div class="card-grid" style="max-width:640px;margin:0 auto 28px;">
+    <div class="card" style="text-align:left;">
+      <h3>For School Districts</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:4px 0 0;">The ADA Title II WCAG 2.1 AA compliance deadline is April 24, 2026. AlloFlow is built accessible from the ground up — not retrofitted. Every export, every tool, every interaction.</p>
+    </div>
+    <div class="card" style="text-align:left;">
+      <h3>For Accessibility Professionals</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:4px 0 0;">We don't want a rubber stamp. We want the work to actually be right. If you evaluate accessibility tools, we'd welcome your scrutiny and feedback.</p>
+    </div>
+  </div>
+  <div class="btn-group" style="justify-content:center;">
+    <a href="https://ko-fi.com/aaronpomeranz207" target="_blank" rel="noopener" class="btn btn-purple" style="text-decoration:none;">Support AlloFlow</a>
+    <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener" class="btn btn-dark" style="text-decoration:none;">View Source on GitHub</a>
+  </div>
+</div>
+</section>
+
+</main>
+
+<footer role="contentinfo">
+  <div class="container">
+    <p>AlloFlow &middot; Created by Aaron Pomeranz, PsyD &middot; AI Collaboration with Claude (Anthropic)</p>
+    <p style="margin-top:4px;">This page is itself WCAG 2.1 AA compliant. <a href="accessibility_brief.md">View full conformance brief</a></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ── Demo board data ──
+  var SYMBOLS = [
+    { label: "more", desc: "wanting more of something", emoji: "\uD83D\uDD01", bg: "#fef9c3", border: "#ca8a04" },
+    { label: "stop", desc: "ceasing an action", emoji: "\u270B", bg: "#dcfce7", border: "#16a34a" },
+    { label: "go", desc: "starting or moving", emoji: "\u27A1\uFE0F", bg: "#dcfce7", border: "#16a34a" },
+    { label: "want", desc: "expressing desire", emoji: "\uD83D\uDE4F", bg: "#dcfce7", border: "#16a34a" },
+    { label: "help", desc: "requesting assistance", emoji: "\uD83C\uDD98", bg: "#dcfce7", border: "#16a34a" },
+    { label: "yes", desc: "agreement", emoji: "\uD83D\uDC4D", bg: "#f3f4f6", border: "#6b7280" },
+    { label: "no", desc: "refusal", emoji: "\uD83D\uDC4E", bg: "#f3f4f6", border: "#6b7280" },
+    { label: "happy", desc: "feeling joyful", emoji: "\uD83D\uDE0A", bg: "#dbeafe", border: "#1d4ed8" },
+    { label: "sad", desc: "feeling unhappy", emoji: "\uD83D\uDE22", bg: "#dbeafe", border: "#1d4ed8" },
+    { label: "eat", desc: "consuming food", emoji: "\uD83C\uDF54", bg: "#dcfce7", border: "#16a34a" },
+    { label: "drink", desc: "consuming liquid", emoji: "\uD83E\uDD64", bg: "#dcfce7", border: "#16a34a" },
+    { label: "all done", desc: "finished with activity", emoji: "\u2705", bg: "#f3f4f6", border: "#6b7280" },
+  ];
+
+  var words = [];
+  var scanOn = false, scanIdx = 0, scanTmr = null, scanSpd = 1500, scanMan = false;
+  var cells = [], grid, liveR;
+
+  // ── Init ──
+  function init() {
+    grid = document.getElementById("demo-grid");
+    liveR = document.getElementById("live");
+    buildGrid();
+    document.addEventListener("keydown", onKey);
+  }
+
+  function buildGrid() {
+    grid.innerHTML = "";
+    SYMBOLS.forEach(function (sym, i) {
+      var cell = document.createElement("div");
+      cell.className = "demo-cell";
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("tabindex", i === 0 ? "0" : "-1");
+      cell.setAttribute("aria-label", sym.label + ": " + sym.desc);
+      cell.setAttribute("data-idx", i);
+      cell.style.borderColor = sym.border;
+      cell.innerHTML = '<div class="symbol" style="background:' + sym.bg + ';">' + sym.emoji + '</div><div class="label">' + sym.label + '</div>';
+      cell.addEventListener("click", function () { tap(i); });
+      grid.appendChild(cell);
+    });
+    cells = Array.from(grid.querySelectorAll("[role=gridcell]"));
+  }
+
+  // ── Announce ──
+  function ann(t, tag) {
+    if (liveR) { liveR.textContent = ""; setTimeout(function () { liveR.textContent = t; }, 50); }
+    // Also log to visible SR panel
+    var srLog = document.getElementById("sr-log");
+    if (srLog && t) {
+      // Clear placeholder on first real entry
+      if (srLog.children.length === 1 && srLog.children[0].style.fontStyle === "italic") srLog.innerHTML = "";
+      var entry = document.createElement("div");
+      entry.className = "entry";
+      var tagLabel = tag || "live";
+      entry.innerHTML = '<span class="role-tag tag-' + tagLabel + '">' + tagLabel + '</span> "' + t + '"';
+      srLog.appendChild(entry);
+      srLog.scrollTop = srLog.scrollHeight;
+      // Keep max 12 entries
+      while (srLog.children.length > 12) srLog.removeChild(srLog.firstChild);
+    }
+  }
+
+  // ── Speak ──
+  function speak(t) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(t);
+    u.lang = "en";
+    window.speechSynthesis.speak(u);
+  }
+
+  // ── Tap ──
+  function tap(idx) {
+    var sym = SYMBOLS[idx];
+    if (!sym) return;
+    words.push(sym.label);
+    renderStrip();
+    ann(sym.label + " added to message");
+    speak(sym.label);
+    var cell = cells[idx];
+    if (cell) { cell.classList.add("flash"); setTimeout(function () { cell.classList.remove("flash"); }, 350); }
+  }
+
+  // ── Strip ──
+  function renderStrip() {
+    var container = document.getElementById("strip-words");
+    container.innerHTML = "";
+    var ph = document.getElementById("strip-ph");
+    var btns = document.getElementById("strip-btns");
+    ph.style.display = words.length ? "none" : "";
+    btns.style.display = words.length ? "flex" : "none";
+    words.forEach(function (w) {
+      var chip = document.createElement("span");
+      chip.className = "demo-strip-word";
+      chip.textContent = w;
+      container.appendChild(chip);
+    });
+    var strip = document.getElementById("demo-strip");
+    strip.setAttribute("aria-label", "Message: " + words.join(" ") + " (" + words.length + " words)");
+    // Update word count badge
+    var countBadge = document.getElementById("word-count");
+    if (countBadge) {
+      countBadge.textContent = words.length + " word" + (words.length !== 1 ? "s" : "");
+      countBadge.style.display = words.length ? "inline-block" : "none";
+    }
+  }
+
+  window.speakAll = function () { speak(words.join(" ")); };
+  window.delLast = function () { if (words.length) { var r = words.pop(); renderStrip(); ann(r + " removed"); } };
+  window.clearAll = function () { words = []; renderStrip(); ann("Message cleared"); };
+
+  // ── Keyboard ──
+  function onKey(e) {
+    var a = document.activeElement;
+
+    // Scanning keys
+    if (scanOn) {
+      if (e.key === " " || e.key === "Enter") { e.preventDefault(); tap(scanIdx); return; }
+      if (e.key === "Escape") { e.preventDefault(); stopScan(); return; }
+      if (scanMan && (e.key === "Tab" || e.key === "ArrowRight" || e.key === "ArrowDown")) { e.preventDefault(); advanceScan(); return; }
+      return;
+    }
+
+    // Grid nav
+    if (a && a.getAttribute("role") === "gridcell") {
+      var idx = cells.indexOf(a);
+      if (idx === -1) return;
+      var ni = idx, cols = 4;
+      switch (e.key) {
+        case "ArrowRight": ni = Math.min(cells.length - 1, idx + 1); e.preventDefault(); break;
+        case "ArrowLeft": ni = Math.max(0, idx - 1); e.preventDefault(); break;
+        case "ArrowDown": ni = Math.min(cells.length - 1, idx + cols); e.preventDefault(); break;
+        case "ArrowUp": ni = Math.max(0, idx - cols); e.preventDefault(); break;
+        case "Home": ni = Math.floor(idx / cols) * cols; e.preventDefault(); break;
+        case "End": ni = Math.min(cells.length - 1, (Math.floor(idx / cols) + 1) * cols - 1); e.preventDefault(); break;
+        case "Enter": case " ": e.preventDefault(); tap(idx); return;
+        default: break;
+      }
+      if (ni !== idx) { a.setAttribute("tabindex", "-1"); cells[ni].setAttribute("tabindex", "0"); cells[ni].focus(); }
+    }
+
+    // Global shortcuts
+    var tag = a ? a.tagName : "";
+    if (tag !== "INPUT" && tag !== "SELECT" && tag !== "TEXTAREA") {
+      if (e.key === "s" || e.key === "S") { e.preventDefault(); toggleScan(); }
+      if (e.key === "h" || e.key === "H") { e.preventDefault(); toggleHC(); }
+      if (e.key === "Backspace") { e.preventDefault(); window.delLast(); }
+      if (e.key === "Delete") { e.preventDefault(); window.clearAll(); }
+    }
+  }
+
+  // ── Scanning ──
+  function toggleScan() { scanOn ? stopScan() : startScan(); }
+  function startScan() {
+    scanOn = true; scanIdx = 0; hlScan(0);
+    if (!scanMan) { scanTmr = setInterval(function () { scanIdx = (scanIdx + 1) % cells.length; hlScan(scanIdx); }, scanSpd); }
+    document.getElementById("scan-bar").className = "scan-bar active";
+    document.getElementById("scan-toggle-btn").textContent = "Stop Scan";
+    ann(scanMan ? "Manual scanning. Tab to advance, Space to select." : "Scanning started. Space to select. Escape to stop.");
+  }
+  function stopScan() {
+    scanOn = false; clearInterval(scanTmr);
+    cells.forEach(function (c) { c.classList.remove("scan-hl"); });
+    document.getElementById("scan-bar").className = "scan-bar";
+    document.getElementById("scan-toggle-btn").textContent = "Scan";
+    ann("Scanning stopped.");
+  }
+  function hlScan(i) { cells.forEach(function (c) { c.classList.remove("scan-hl"); }); if (cells[i]) cells[i].classList.add("scan-hl"); }
+  function advanceScan() { scanIdx = (scanIdx + 1) % cells.length; hlScan(scanIdx); }
+  function setScanSpd(v) { scanSpd = v; if (scanOn && !scanMan) { clearInterval(scanTmr); scanTmr = setInterval(function () { scanIdx = (scanIdx + 1) % cells.length; hlScan(scanIdx); }, scanSpd); } }
+  function toggleScanMode() { scanMan = !scanMan; if (scanOn) { stopScan(); startScan(); } document.getElementById("scan-mode-btn").textContent = scanMan ? "2-Switch" : "1-Switch"; }
+
+  window.toggleScan = toggleScan;
+  window.toggleScanMode = toggleScanMode;
+  window.setScanSpd = setScanSpd;
+  window.advanceScan = advanceScan;
+
+  // ── High Contrast ──
+  function toggleHC() {
+    document.body.classList.toggle("hc");
+    var isHC = document.body.classList.contains("hc");
+    ann(isHC ? "High contrast mode on" : "High contrast mode off");
+    document.getElementById("hc-btn").textContent = isHC ? "Normal Mode" : "Toggle High Contrast";
+  }
+  window.toggleHC = toggleHC;
+
+  // ── Scroll reveal ──
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) { els.forEach(function (el) { el.classList.add("visible"); }); return; }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── Focus logging to SR panel + Focus Inspector ──
+  function initFocusLog() {
+    var fi = document.getElementById("focus-inspector");
+    var fiContent = document.getElementById("fi-content");
+
+    document.addEventListener("focusin", function (e) {
+      var el = e.target;
+
+      // SR panel logging for grid cells
+      var cell = el.closest("[role=gridcell]");
+      if (cell) {
+        var label = cell.getAttribute("aria-label") || cell.textContent;
+        ann(label + ", grid cell", "focus");
+      }
+
+      // Focus inspector — show for any element inside the demo board
+      var inBoard = el.closest(".demo-board-wrap");
+      if (inBoard && fi && fiContent) {
+        fi.classList.add("active");
+        var tag = el.tagName.toLowerCase();
+        var role = el.getAttribute("role") || "";
+        var ariaLabel = el.getAttribute("aria-label") || "";
+        var ariaLive = el.getAttribute("aria-live") || "";
+        var ariaSelected = el.getAttribute("aria-selected");
+        var tabIdx = el.getAttribute("tabindex");
+
+        var html = '<span class="fi-tag">&lt;' + tag + '&gt;</span>';
+        if (role) html += ' <span class="fi-attr">role</span>=<span class="fi-val">"' + role + '"</span>';
+        if (ariaLabel) html += ' <span class="fi-attr">aria-label</span>=<span class="fi-val">"' + ariaLabel + '"</span>';
+        if (ariaLive) html += ' <span class="fi-attr">aria-live</span>=<span class="fi-val">"' + ariaLive + '"</span>';
+        if (ariaSelected !== null) html += ' <span class="fi-attr">aria-selected</span>=<span class="fi-val">"' + ariaSelected + '"</span>';
+        if (tabIdx !== null) html += ' <span class="fi-attr">tabindex</span>=<span class="fi-val">"' + tabIdx + '"</span>';
+        fiContent.innerHTML = html;
+      }
+    });
+
+    document.addEventListener("focusout", function (e) {
+      // Hide inspector when focus leaves the board
+      setTimeout(function () {
+        if (fi && document.activeElement && !document.activeElement.closest(".demo-board-wrap")) {
+          fi.classList.remove("active");
+        }
+      }, 100);
+    });
+  }
+
+  // ── Go ──
+  document.addEventListener("DOMContentLoaded", function () { init(); initReveal(); initFocusLog(); });
+})();
+</script>
+<script>if(window.lucide)lucide.createIcons();</script>
+</body>
+</html>

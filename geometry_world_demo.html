@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlloFlow Geometry World — 3D Block-Based Math Explorer</title>
+<meta name="description" content="AI-powered 3D voxel geometry lessons. Build, measure, and explore volume in an immersive block world. VR-ready.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;background:#000;font-family:'Inter',system-ui,sans-serif;color:#fff}
+#blocker{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:20px;padding:24px;text-align:center}
+#blocker h1{font-size:28px;font-weight:800;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#blocker p{max-width:500px;color:#94a3b8;font-size:14px;line-height:1.6}
+#blocker .start-btn{padding:14px 36px;background:#7c3aed;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.15s}
+#blocker .start-btn:hover{background:#6d28d9;transform:scale(1.05)}
+#hud{position:fixed;top:0;left:0;right:0;pointer-events:none;z-index:50;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start}
+#crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;pointer-events:none;font-size:24px;color:rgba(255,255,255,0.6)}
+.hud-panel{background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);border-radius:10px;padding:10px 14px;font-size:12px;pointer-events:auto}
+.hud-panel h3{font-size:11px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
+#toolbar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:4px;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);border-radius:12px;padding:6px}
+.tool-slot{width:44px;height:44px;border-radius:8px;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.1s;font-size:10px;font-weight:700}
+.tool-slot.active{border-color:#7c3aed;background:rgba(124,58,237,0.3);box-shadow:0 0 12px rgba(124,58,237,0.4)}
+.tool-slot:hover{border-color:rgba(255,255,255,0.3)}
+#npc-dialog{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(15,23,42,0.95);backdrop-filter:blur(16px);border:1px solid #334155;border-radius:16px;padding:20px;max-width:480px;width:90%;display:none}
+#npc-dialog .npc-name{font-size:14px;font-weight:800;color:#a78bfa;margin-bottom:6px}
+#npc-dialog .npc-text{font-size:13px;color:#cbd5e1;line-height:1.6;margin-bottom:12px}
+#npc-dialog .choices{display:flex;flex-direction:column;gap:6px}
+#npc-dialog .choice-btn{padding:8px 14px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:12px;cursor:pointer;text-align:left;transition:all 0.1s;font-family:inherit}
+#npc-dialog .choice-btn:hover{background:#334155;border-color:#7c3aed}
+#npc-dialog .choice-btn.correct{background:#14532d;border-color:#22c55e;color:#4ade80}
+#npc-dialog .choice-btn.wrong{background:#7f1d1d;border-color:#ef4444;color:#fca5a5}
+#npc-dialog .close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#6b7280;font-size:18px;cursor:pointer}
+#measure-display{position:fixed;top:50%;right:16px;transform:translateY(-50%);z-index:50;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);border-radius:10px;padding:12px 16px;font-size:12px;display:none}
+#vr-btn{position:fixed;bottom:16px;right:16px;z-index:50;padding:10px 20px;background:#7c3aed;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;display:none}
+#instructions{position:fixed;bottom:70px;right:16px;z-index:50;background:rgba(0,0,0,0.5);border-radius:8px;padding:8px 12px;font-size:10px;color:#64748b;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- Start screen -->
+<div id="blocker">
+  <div style="font-size:64px">🧱</div>
+  <h1>AlloFlow Geometry World</h1>
+  <p>A 3D block-based math explorer. Build rectangular prisms, measure volume, and solve geometry problems in an immersive world.</p>
+  <p style="font-size:12px;color:#64748b">WASD to move · Mouse to look · Left click to break · Right click to place · E to interact with NPCs · 1-7 to select blocks</p>
+  <button class="start-btn" id="start-btn">🎮 Enter the World</button>
+  <p style="font-size:11px;color:#475569;margin-top:8px">Built by AlloFlow · VR-Ready with WebXR</p>
+</div>
+
+<!-- HUD -->
+<div id="crosshair">+</div>
+<div id="hud">
+  <div class="hud-panel" id="objective-panel">
+    <h3>📋 Objectives</h3>
+    <div id="objectives">Loading lesson...</div>
+  </div>
+  <div class="hud-panel" id="score-panel">
+    <h3>⭐ Progress</h3>
+    <div id="score">0 / 0</div>
+  </div>
+</div>
+
+<!-- Block toolbar -->
+<div id="toolbar"></div>
+
+<!-- NPC Dialog -->
+<div id="npc-dialog">
+  <button class="close-btn" onclick="closeDialog()">×</button>
+  <div class="npc-name" id="dialog-name"></div>
+  <div class="npc-text" id="dialog-text"></div>
+  <div class="choices" id="dialog-choices"></div>
+</div>
+
+<!-- Measurement display -->
+<div id="measure-display">
+  <h3 style="font-size:11px;font-weight:700;color:#4ade80;margin-bottom:4px">📐 Measurement</h3>
+  <div id="measure-info"></div>
+</div>
+
+<!-- Controls help -->
+<div id="instructions">
+  WASD move · Mouse look · LClick break<br>
+  RClick place · E interact · M measure · 1-7 blocks
+</div>
+
+<!-- VR button -->
+<button id="vr-btn" onclick="enterVR()">🥽 Enter VR</button>
+
+<!-- Three.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// AlloFlow Geometry World — Voxel Engine + Lesson System
+// A proof-of-concept 3D block-based math environment
+// ════════════════════════════════════════════════════════════
+
+// ── Constants ──
+const BLOCK_SIZE = 1;
+const WORLD_SIZE = 64;
+const GRAVITY = -9.8;
+const JUMP_FORCE = 5;
+const MOVE_SPEED = 5;
+const MOUSE_SENSITIVITY = 0.002;
+
+// Block types with colors
+const BLOCK_TYPES = [
+  { id: 'stone',   name: 'Stone',   color: 0x808080, emoji: '🪨' },
+  { id: 'grass',   name: 'Grass',   color: 0x4CAF50, emoji: '🌿' },
+  { id: 'wood',    name: 'Wood',    color: 0x8D6E63, emoji: '🪵' },
+  { id: 'diamond', name: 'Diamond', color: 0x00BCD4, emoji: '💎' },
+  { id: 'gold',    name: 'Gold',    color: 0xFFD700, emoji: '🥇' },
+  { id: 'sand',    name: 'Sand',    color: 0xF5DEB3, emoji: '🏖️' },
+  { id: 'glass',   name: 'Glass',   color: 0xE3F2FD, emoji: '🔲' },
+];
+
+// ── State ──
+let scene, camera, renderer, raycaster, clock;
+let blocks = {}; // key: "x,y,z" → mesh
+let npcs = [];
+let playerVelocity = new THREE.Vector3();
+let playerOnGround = false;
+let moveState = { forward: false, backward: false, left: false, right: false };
+let selectedBlockType = 0;
+let isPointerLocked = false;
+let score = 0;
+let totalQuestions = 0;
+let currentDialog = null;
+let measureMode = false;
+let vrSession = null;
+
+// Euler for camera rotation
+let euler = new THREE.Euler(0, 0, 0, 'YXZ');
+
+// ── World Format (JSON-loadable) ──
+const SAMPLE_LESSON = {
+  title: "Volume Explorer — Rectangular Prisms",
+  description: "Learn to measure and calculate the volume of 3D shapes by exploring, building, and counting blocks.",
+  spawnPoint: [2, 2, 2],
+  objectives: [
+    "Find the volume of the blue rectangular prism",
+    "Fill the empty pool with blocks and count them",
+    "Build a rectangular prism with dimensions 3×4×2",
+    "Calculate the volume of the L-block"
+  ],
+  // Ground plane
+  ground: { xMin: -8, xMax: 24, zMin: -8, zMax: 24, y: 0, type: 'grass' },
+  // Pre-built structures
+  structures: [
+    // Teaching area - platform
+    { type: 'fill', x1: 0, y1: 0, z1: 0, x2: 8, y2: 0, z2: 8, block: 'stone' },
+    // Rectangular prism to measure (5 x 3 x 4)
+    { type: 'fill', x1: 10, y1: 1, z1: 2, x2: 14, y2: 4, z2: 4, block: 'diamond' },
+    // Empty pool to fill (4 x 3 x 2) — walls only
+    { type: 'fill', x1: 2, y1: 1, z1: 12, x2: 6, y2: 1, z2: 15, block: 'stone' }, // floor
+    { type: 'fill', x1: 2, y1: 2, z1: 12, x2: 2, y2: 3, z2: 15, block: 'stone' }, // wall left
+    { type: 'fill', x1: 6, y1: 2, z1: 12, x2: 6, y2: 3, z2: 15, block: 'stone' }, // wall right
+    { type: 'fill', x1: 2, y1: 2, z1: 12, x2: 6, y2: 3, z2: 12, block: 'stone' }, // wall front
+    { type: 'fill', x1: 2, y1: 2, z1: 15, x2: 6, y2: 3, z2: 15, block: 'stone' }, // wall back
+    // L-block for advanced measurement
+    { type: 'fill', x1: 16, y1: 1, z1: 10, x2: 20, y2: 3, z2: 12, block: 'gold' },
+    { type: 'fill', x1: 16, y1: 1, z1: 13, x2: 18, y2: 3, z2: 15, block: 'gold' },
+    // Display wall with sign
+    { type: 'fill', x1: 0, y1: 1, z1: 0, x2: 0, y2: 4, z2: 8, block: 'wood' },
+  ],
+  npcs: [
+    {
+      position: [4, 1, 4],
+      name: "Professor Block",
+      color: 0x7c3aed,
+      dialogue: "Welcome to Geometry World! Your mission is to explore rectangular prisms and learn about volume. Volume = Length × Width × Height. Walk around, measure structures, and solve problems!",
+      question: null
+    },
+    {
+      position: [12, 5, 3],
+      name: "Quiz Master",
+      color: 0x2563eb,
+      dialogue: "Look at the blue diamond rectangular prism below me. It is 5 blocks long, 3 blocks wide, and 4 blocks tall. What is its volume?",
+      question: {
+        text: "What is the volume of this rectangular prism? (L=5, W=3, H=4)",
+        choices: ["60 cubic units", "12 cubic units", "35 cubic units", "20 cubic units"],
+        correct: 0
+      }
+    },
+    {
+      position: [4, 1, 11],
+      name: "Builder Bot",
+      color: 0x16a34a,
+      dialogue: "See the empty pool behind me? Fill it completely with blocks! The inside is 3 blocks long, 3 blocks wide, and 2 blocks tall. How many blocks will you need?",
+      question: {
+        text: "How many blocks are needed to fill this pool? (3×3×2)",
+        choices: ["18 blocks", "8 blocks", "12 blocks", "24 blocks"],
+        correct: 0
+      }
+    },
+    {
+      position: [18, 4, 12],
+      name: "L-Block Sage",
+      color: 0xf59e0b,
+      dialogue: "This golden L-block is made of TWO rectangular prisms joined together. Find the volume of each part, then ADD them to get the total volume!",
+      question: {
+        text: "Prism A is 5×3×3=45. Prism B is 3×3×3=27. What is the total volume?",
+        choices: ["72 cubic units", "45 cubic units", "135 cubic units", "54 cubic units"],
+        correct: 0
+      }
+    }
+  ]
+};
+
+// ════════════════════════════════════════════════════════════
+// ── Three.js Setup ──
+// ════════════════════════════════════════════════════════════
+
+function init() {
+  // Scene
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87CEEB); // Sky blue
+  scene.fog = new THREE.Fog(0x87CEEB, 30, 80);
+
+  // Camera
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
+  camera.position.set(2, 3, 2);
+
+  // Renderer
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.xr.enabled = true; // WebXR!
+  document.body.appendChild(renderer.domElement);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+
+  const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  sunLight.position.set(20, 40, 20);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.width = 2048;
+  sunLight.shadow.mapSize.height = 2048;
+  sunLight.shadow.camera.near = 0.5;
+  sunLight.shadow.camera.far = 100;
+  sunLight.shadow.camera.left = -30;
+  sunLight.shadow.camera.right = 30;
+  sunLight.shadow.camera.top = 30;
+  sunLight.shadow.camera.bottom = -30;
+  scene.add(sunLight);
+
+  // Hemisphere light for nice sky color
+  const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x4CAF50, 0.3);
+  scene.add(hemiLight);
+
+  // Raycaster
+  raycaster = new THREE.Raycaster();
+  raycaster.far = 8;
+
+  // Clock
+  clock = new THREE.Clock();
+
+  // Build toolbar
+  buildToolbar();
+
+  // Load world
+  loadWorld(SAMPLE_LESSON);
+
+  // Check WebXR
+  if ('xr' in navigator) {
+    navigator.xr.isSessionSupported('immersive-vr').then(function(supported) {
+      if (supported) document.getElementById('vr-btn').style.display = 'block';
+    });
+  }
+
+  // Events
+  window.addEventListener('resize', onResize);
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('keyup', onKeyUp);
+  document.addEventListener('mousedown', onMouseDown);
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+  // Start button
+  document.getElementById('start-btn').addEventListener('click', function() {
+    document.getElementById('blocker').style.display = 'none';
+    renderer.domElement.requestPointerLock();
+  });
+
+  document.addEventListener('pointerlockchange', function() {
+    isPointerLocked = !!document.pointerLockElement;
+  });
+
+  // Animate
+  renderer.setAnimationLoop(animate);
+}
+
+// ════════════════════════════════════════════════════════════
+// ── World Building ──
+// ════════════════════════════════════════════════════════════
+
+function getBlockColor(type) {
+  var bt = BLOCK_TYPES.find(function(b) { return b.id === type; });
+  return bt ? bt.color : 0x808080;
+}
+
+function placeBlock(x, y, z, type) {
+  var key = x + ',' + y + ',' + z;
+  if (blocks[key]) return; // already exists
+
+  var color = getBlockColor(type);
+  var geometry = new THREE.BoxGeometry(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+  var material = new THREE.MeshLambertMaterial({ color: color });
+  if (type === 'glass') {
+    material.transparent = true;
+    material.opacity = 0.4;
+  }
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x + 0.5, y + 0.5, z + 0.5);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z } };
+  scene.add(mesh);
+  blocks[key] = mesh;
+}
+
+function removeBlock(x, y, z) {
+  var key = x + ',' + y + ',' + z;
+  var mesh = blocks[key];
+  if (mesh) {
+    scene.remove(mesh);
+    if (mesh.geometry) mesh.geometry.dispose();
+    if (mesh.material) mesh.material.dispose();
+    delete blocks[key];
+  }
+}
+
+function fillBlocks(x1, y1, z1, x2, y2, z2, type) {
+  var minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+  var minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+  var minZ = Math.min(z1, z2), maxZ = Math.max(z1, z2);
+  for (var x = minX; x <= maxX; x++) {
+    for (var y = minY; y <= maxY; y++) {
+      for (var z = minZ; z <= maxZ; z++) {
+        placeBlock(x, y, z, type);
+      }
+    }
+  }
+}
+
+function loadWorld(lesson) {
+  // Clear existing
+  Object.keys(blocks).forEach(function(key) {
+    var mesh = blocks[key];
+    scene.remove(mesh);
+    mesh.geometry.dispose();
+    mesh.material.dispose();
+  });
+  blocks = {};
+  npcs.forEach(function(npc) { scene.remove(npc.mesh); if (npc.label) scene.remove(npc.label); });
+  npcs = [];
+
+  // Ground
+  if (lesson.ground) {
+    var g = lesson.ground;
+    fillBlocks(g.xMin, g.y, g.zMin, g.xMax, g.y, g.zMax, g.type || 'grass');
+  }
+
+  // Structures
+  if (lesson.structures) {
+    lesson.structures.forEach(function(s) {
+      if (s.type === 'fill') {
+        fillBlocks(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2, s.block);
+      }
+    });
+  }
+
+  // NPCs
+  if (lesson.npcs) {
+    lesson.npcs.forEach(function(npcData) {
+      createNPC(npcData);
+    });
+    totalQuestions = lesson.npcs.filter(function(n) { return n.question; }).length;
+  }
+
+  // Spawn
+  if (lesson.spawnPoint) {
+    camera.position.set(lesson.spawnPoint[0], lesson.spawnPoint[1], lesson.spawnPoint[2]);
+  }
+
+  // Objectives
+  if (lesson.objectives) {
+    var html = lesson.objectives.map(function(obj, i) {
+      return '<div style="margin:2px 0;color:#cbd5e1">☐ ' + obj + '</div>';
+    }).join('');
+    document.getElementById('objectives').innerHTML = html;
+  }
+
+  updateScore();
+}
+
+// ════════════════════════════════════════════════════════════
+// ── NPCs ──
+// ════════════════════════════════════════════════════════════
+
+function createNPC(data) {
+  // NPC body — a colored cylinder
+  var bodyGeo = new THREE.CylinderGeometry(0.3, 0.3, 1.5, 8);
+  var bodyMat = new THREE.MeshLambertMaterial({ color: data.color || 0x7c3aed });
+  var body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.set(data.position[0] + 0.5, data.position[1] + 0.75, data.position[2] + 0.5);
+  body.castShadow = true;
+  scene.add(body);
+
+  // NPC head — a sphere
+  var headGeo = new THREE.SphereGeometry(0.25, 8, 8);
+  var headMat = new THREE.MeshLambertMaterial({ color: 0xFFDBB4 });
+  var head = new THREE.Mesh(headGeo, headMat);
+  head.position.set(data.position[0] + 0.5, data.position[1] + 1.7, data.position[2] + 0.5);
+  scene.add(head);
+
+  // Name tag — sprite
+  var canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 64;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.roundRect(0, 0, 256, 64, 8);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 24px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(data.name, 128, 40);
+  var texture = new THREE.CanvasTexture(canvas);
+  var spriteMat = new THREE.SpriteMaterial({ map: texture });
+  var sprite = new THREE.Sprite(spriteMat);
+  sprite.scale.set(2, 0.5, 1);
+  sprite.position.set(data.position[0] + 0.5, data.position[1] + 2.3, data.position[2] + 0.5);
+  scene.add(sprite);
+
+  var npc = {
+    mesh: body,
+    head: head,
+    label: sprite,
+    data: data,
+    answered: false
+  };
+  body.userData.isNPC = true;
+  body.userData.npcIndex = npcs.length;
+  head.userData.isNPC = true;
+  head.userData.npcIndex = npcs.length;
+  npcs.push(npc);
+}
+
+function interactWithNearestNPC() {
+  var minDist = 4;
+  var nearest = null;
+  npcs.forEach(function(npc) {
+    var dist = camera.position.distanceTo(npc.mesh.position);
+    if (dist < minDist) {
+      minDist = dist;
+      nearest = npc;
+    }
+  });
+  if (nearest) showDialog(nearest);
+}
+
+function showDialog(npc) {
+  currentDialog = npc;
+  var dialog = document.getElementById('npc-dialog');
+  document.getElementById('dialog-name').textContent = npc.data.name;
+  document.getElementById('dialog-text').textContent = npc.data.dialogue;
+
+  var choicesDiv = document.getElementById('dialog-choices');
+  choicesDiv.innerHTML = '';
+
+  if (npc.data.question && !npc.answered) {
+    var q = npc.data.question;
+    var qText = document.createElement('div');
+    qText.style.cssText = 'font-size:12px;color:#a78bfa;font-weight:700;margin-bottom:8px';
+    qText.textContent = q.text;
+    choicesDiv.appendChild(qText);
+
+    q.choices.forEach(function(choice, i) {
+      var btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = choice;
+      btn.onclick = function() {
+        if (i === q.correct) {
+          btn.className = 'choice-btn correct';
+          btn.textContent = '✅ ' + choice + ' — Correct!';
+          if (!npc.answered) {
+            npc.answered = true;
+            score++;
+            updateScore();
+          }
+        } else {
+          btn.className = 'choice-btn wrong';
+          btn.textContent = '❌ ' + choice;
+        }
+      };
+      choicesDiv.appendChild(btn);
+    });
+  } else if (npc.answered) {
+    var done = document.createElement('div');
+    done.style.cssText = 'color:#4ade80;font-weight:700;font-size:13px';
+    done.textContent = '✅ Already answered correctly!';
+    choicesDiv.appendChild(done);
+  }
+
+  dialog.style.display = 'block';
+  document.exitPointerLock();
+}
+
+function closeDialog() {
+  document.getElementById('npc-dialog').style.display = 'none';
+  currentDialog = null;
+  renderer.domElement.requestPointerLock();
+}
+
+function updateScore() {
+  document.getElementById('score').textContent = score + ' / ' + totalQuestions + ' correct';
+}
+
+// ════════════════════════════════════════════════════════════
+// ── Player Controls ──
+// ════════════════════════════════════════════════════════════
+
+function onKeyDown(e) {
+  switch (e.code) {
+    case 'KeyW': case 'ArrowUp': moveState.forward = true; break;
+    case 'KeyS': case 'ArrowDown': moveState.backward = true; break;
+    case 'KeyA': case 'ArrowLeft': moveState.left = true; break;
+    case 'KeyD': case 'ArrowRight': moveState.right = true; break;
+    case 'Space':
+      if (playerOnGround) playerVelocity.y = JUMP_FORCE;
+      break;
+    case 'KeyE': interactWithNearestNPC(); break;
+    case 'KeyM':
+      measureMode = !measureMode;
+      document.getElementById('measure-display').style.display = measureMode ? 'block' : 'none';
+      break;
+    case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4':
+    case 'Digit5': case 'Digit6': case 'Digit7':
+      selectedBlockType = parseInt(e.code.charAt(5)) - 1;
+      updateToolbar();
+      break;
+  }
+}
+
+function onKeyUp(e) {
+  switch (e.code) {
+    case 'KeyW': case 'ArrowUp': moveState.forward = false; break;
+    case 'KeyS': case 'ArrowDown': moveState.backward = false; break;
+    case 'KeyA': case 'ArrowLeft': moveState.left = false; break;
+    case 'KeyD': case 'ArrowRight': moveState.right = false; break;
+  }
+}
+
+function onMouseMove(e) {
+  if (!isPointerLocked) return;
+  euler.setFromQuaternion(camera.quaternion);
+  euler.y -= e.movementX * MOUSE_SENSITIVITY;
+  euler.x -= e.movementY * MOUSE_SENSITIVITY;
+  euler.x = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, euler.x));
+  camera.quaternion.setFromEuler(euler);
+}
+
+function onMouseDown(e) {
+  if (!isPointerLocked) return;
+  if (document.getElementById('npc-dialog').style.display === 'block') return;
+
+  // Raycast from center of screen
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  var allMeshes = Object.values(blocks).concat(npcs.map(function(n) { return n.mesh; }));
+  var intersects = raycaster.intersectObjects(allMeshes);
+
+  if (intersects.length > 0) {
+    var hit = intersects[0];
+
+    if (hit.object.userData.isNPC) {
+      var npc = npcs[hit.object.userData.npcIndex];
+      showDialog(npc);
+      return;
+    }
+
+    if (e.button === 0) {
+      // Left click — break block
+      var pos = hit.object.userData.gridPos;
+      if (pos) removeBlock(pos.x, pos.y, pos.z);
+    } else if (e.button === 2) {
+      // Right click — place block
+      var normal = hit.face.normal;
+      var pos = hit.object.userData.gridPos;
+      if (pos) {
+        var nx = pos.x + Math.round(normal.x);
+        var ny = pos.y + Math.round(normal.y);
+        var nz = pos.z + Math.round(normal.z);
+        placeBlock(nx, ny, nz, BLOCK_TYPES[selectedBlockType].id);
+      }
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// ── Physics & Movement ──
+// ════════════════════════════════════════════════════════════
+
+function updatePlayer(dt) {
+  if (!isPointerLocked) return;
+
+  // Movement direction
+  var direction = new THREE.Vector3();
+  var forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+  forward.normalize();
+
+  var right = new THREE.Vector3();
+  right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+  if (moveState.forward) direction.add(forward);
+  if (moveState.backward) direction.sub(forward);
+  if (moveState.right) direction.add(right);
+  if (moveState.left) direction.sub(right);
+
+  if (direction.length() > 0) direction.normalize();
+
+  // Apply movement
+  camera.position.x += direction.x * MOVE_SPEED * dt;
+  camera.position.z += direction.z * MOVE_SPEED * dt;
+
+  // Gravity
+  playerVelocity.y += GRAVITY * dt;
+  camera.position.y += playerVelocity.y * dt;
+
+  // Simple ground collision
+  var groundY = getGroundHeight(Math.floor(camera.position.x), Math.floor(camera.position.z));
+  var playerFeetY = groundY + 1.7; // eye height
+
+  if (camera.position.y < playerFeetY) {
+    camera.position.y = playerFeetY;
+    playerVelocity.y = 0;
+    playerOnGround = true;
+  } else {
+    playerOnGround = false;
+  }
+
+  // Measure mode
+  if (measureMode) updateMeasurement();
+}
+
+function getGroundHeight(x, z) {
+  for (var y = 20; y >= 0; y--) {
+    if (blocks[x + ',' + y + ',' + z]) return y + 1;
+  }
+  return 0;
+}
+
+// ════════════════════════════════════════════════════════════
+// ── Measurement Tool ──
+// ════════════════════════════════════════════════════════════
+
+function updateMeasurement() {
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  var meshes = Object.values(blocks);
+  var intersects = raycaster.intersectObjects(meshes);
+
+  if (intersects.length > 0) {
+    var hit = intersects[0];
+    var pos = hit.object.userData.gridPos;
+    if (!pos) return;
+    var blockType = hit.object.userData.blockType;
+
+    // Find connected blocks of same type to measure structure
+    var structure = floodFill(pos.x, pos.y, pos.z, blockType);
+    if (structure.length > 0) {
+      var minX = Infinity, maxX = -Infinity;
+      var minY = Infinity, maxY = -Infinity;
+      var minZ = Infinity, maxZ = -Infinity;
+      structure.forEach(function(b) {
+        minX = Math.min(minX, b.x); maxX = Math.max(maxX, b.x);
+        minY = Math.min(minY, b.y); maxY = Math.max(maxY, b.y);
+        minZ = Math.min(minZ, b.z); maxZ = Math.max(maxZ, b.z);
+      });
+      var L = maxX - minX + 1;
+      var W = maxZ - minZ + 1;
+      var H = maxY - minY + 1;
+      var boundingVolume = L * W * H;
+      var actualBlocks = structure.length;
+
+      var info = document.getElementById('measure-info');
+      info.innerHTML = '<div style="color:#e2e8f0">Block count: <b>' + actualBlocks + '</b></div>'
+        + '<div style="color:#e2e8f0">Bounding: <b>' + L + ' × ' + W + ' × ' + H + '</b></div>'
+        + '<div style="color:#4ade80;font-weight:700;margin-top:4px">Bounding Volume: ' + boundingVolume + ' cubic units</div>'
+        + (actualBlocks !== boundingVolume ? '<div style="color:#fbbf24;font-size:11px">⚠️ Non-rectangular (' + actualBlocks + ' blocks)</div>' : '');
+    }
+  }
+}
+
+function floodFill(startX, startY, startZ, blockType) {
+  var visited = {};
+  var result = [];
+  var queue = [{ x: startX, y: startY, z: startZ }];
+  var maxBlocks = 500; // safety limit
+
+  while (queue.length > 0 && result.length < maxBlocks) {
+    var pos = queue.shift();
+    var key = pos.x + ',' + pos.y + ',' + pos.z;
+    if (visited[key]) continue;
+    visited[key] = true;
+
+    var mesh = blocks[key];
+    if (!mesh || mesh.userData.blockType !== blockType) continue;
+
+    result.push(pos);
+
+    // Check 6 neighbors
+    var dirs = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+    dirs.forEach(function(d) {
+      var nk = (pos.x+d[0]) + ',' + (pos.y+d[1]) + ',' + (pos.z+d[2]);
+      if (!visited[nk]) queue.push({ x: pos.x+d[0], y: pos.y+d[1], z: pos.z+d[2] });
+    });
+  }
+  return result;
+}
+
+// ════════════════════════════════════════════════════════════
+// ── Toolbar ──
+// ════════════════════════════════════════════════════════════
+
+function buildToolbar() {
+  var toolbar = document.getElementById('toolbar');
+  BLOCK_TYPES.forEach(function(bt, i) {
+    var slot = document.createElement('div');
+    slot.className = 'tool-slot' + (i === selectedBlockType ? ' active' : '');
+    slot.innerHTML = '<div>' + bt.emoji + '<br><span style="font-size:8px;color:#94a3b8">' + (i+1) + '</span></div>';
+    slot.onclick = function() { selectedBlockType = i; updateToolbar(); };
+    slot.title = bt.name;
+    toolbar.appendChild(slot);
+  });
+  // Measure tool
+  var measureSlot = document.createElement('div');
+  measureSlot.className = 'tool-slot';
+  measureSlot.innerHTML = '<div>📐<br><span style="font-size:8px;color:#94a3b8">M</span></div>';
+  measureSlot.onclick = function() {
+    measureMode = !measureMode;
+    document.getElementById('measure-display').style.display = measureMode ? 'block' : 'none';
+    measureSlot.classList.toggle('active');
+  };
+  measureSlot.title = 'Measurement Tool';
+  toolbar.appendChild(measureSlot);
+}
+
+function updateToolbar() {
+  var slots = document.getElementById('toolbar').children;
+  for (var i = 0; i < BLOCK_TYPES.length; i++) {
+    slots[i].className = 'tool-slot' + (i === selectedBlockType ? ' active' : '');
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// ── VR ──
+// ════════════════════════════════════════════════════════════
+
+async function enterVR() {
+  if (!navigator.xr) return;
+  try {
+    vrSession = await navigator.xr.requestSession('immersive-vr', {
+      optionalFeatures: ['local-floor', 'bounded-floor']
+    });
+    renderer.xr.setSession(vrSession);
+    document.getElementById('vr-btn').textContent = '🥽 In VR';
+    vrSession.addEventListener('end', function() {
+      vrSession = null;
+      document.getElementById('vr-btn').textContent = '🥽 Enter VR';
+    });
+  } catch (e) {
+    console.warn('VR not available:', e);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// ── Animation Loop ──
+// ════════════════════════════════════════════════════════════
+
+function animate() {
+  var dt = Math.min(clock.getDelta(), 0.1);
+  updatePlayer(dt);
+
+  // Animate NPCs (gentle bob)
+  var time = clock.getElapsedTime();
+  npcs.forEach(function(npc, i) {
+    var baseY = npc.data.position[1] + 0.75;
+    npc.mesh.position.y = baseY + Math.sin(time * 2 + i) * 0.1;
+    npc.head.position.y = npc.data.position[1] + 1.7 + Math.sin(time * 2 + i) * 0.1;
+    npc.mesh.rotation.y += dt * 0.5;
+  });
+
+  renderer.render(scene, camera);
+}
+
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// ── Start ──
+init();
+</script>
+</body>
+</html>

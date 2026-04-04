@@ -86,6 +86,8 @@ window.StemLab = window.StemLab || {
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
+      var isDark = ctx.isDark;
+      var isContrast = ctx.isContrast;
 
       // ── Tool body (dataStudio) ──
       return (function() {

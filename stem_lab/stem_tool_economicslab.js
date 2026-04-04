@@ -1801,9 +1801,11 @@ var d = labToolData || {};
                             upd('econStreak', ns);
                             if (ns > econBestStreak) upd('econBestStreak', ns);
                             if (addToast) addToast('\u2705 Correct! +1 streak', 'success');
+                            if (announceToSR) announceToSR('Correct! Streak is now ' + ns + '.');
                           } else {
                             upd('econStreak', 0);
                             if (addToast) addToast('\u274C Read the explanation!', 'info');
+                            if (announceToSR) announceToSR('Incorrect. Read the explanation below.');
                           }
                         },
                         className: 'w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all ' + cls,
@@ -2667,6 +2669,7 @@ var d = labToolData || {};
                       upd('sdTax', d.sdScenario.tax || 0);
 
                       if (addToast) addToast('\u2705 Scenario applied to graph!', 'success');
+                      if (announceToSR) announceToSR('Economic scenario applied. Supply and demand graph updated.');
 
                       if (d.sdScenario && d.sdScenario.lesson) {
 
@@ -3177,6 +3180,7 @@ var d = labToolData || {};
                         upd('smLoading', false);
 
                         if (addToast) addToast('\uD83D\uDCC8 Market open! 5 companies generated. Start trading!', 'success');
+                        if (announceToSR) announceToSR('Stock market simulation open. 5 companies generated.');
 
                       } catch (err) { upd('smLoading', false); if (addToast) addToast('Failed to generate market. Try again!', 'error'); console.error('[StockSim]', err); }
 

@@ -218,7 +218,6 @@ var createContentEngine = function(deps) {
   const handleGenerateSource = async (overrides = {}, switchView = true) => {
     // Guard: if called from onClick, first arg is an event — ignore it
     if (overrides && overrides.nativeEvent) { overrides = {}; }
-    console.error('[CE-TRACE] handleGenerateSource called. sourceTopic:', sourceTopic, 'inputText.length:', (inputText || '').length, 'callGemini:', typeof callGemini);
     const effTopic = (overrides && typeof overrides.topic === 'string') ? overrides.topic : sourceTopic;
     const effGrade = (overrides && typeof overrides.grade === 'string') ? overrides.grade : sourceLevel;
     const effStandards = (overrides && typeof overrides.standards === 'string') ? overrides.standards : standardsPromptString;
@@ -229,8 +228,7 @@ var createContentEngine = function(deps) {
     const effVocabulary = (overrides && overrides.vocabulary) ? overrides.vocabulary : sourceVocabulary;
     const effCustomInstructions = (overrides && overrides.customInstructions) ? overrides.customInstructions : sourceCustomInstructions;
     const effectiveLanguage = leveledTextLanguage;
-    console.error('[CE-TRACE] effTopic:', JSON.stringify(effTopic), 'effStandards:', JSON.stringify(effStandards), 'effectiveLanguage:', effectiveLanguage);
-    if (!effTopic.trim() && (!effStandards || effStandards.length === 0)) { console.error('[CE-TRACE] EARLY RETURN: no topic and no standards'); return; }
+    if (!effTopic.trim() && (!effStandards || effStandards.length === 0)) return;
     const dialectInstruction = effectiveLanguage !== 'English'
         ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions."
         : "";

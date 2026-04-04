@@ -87,10 +87,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // â”€â”€ Tool body (economicsLab) â”€â”€
       return (function() {
 var d = labToolData || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('economicsLab', 'init', {
+              first: 'Economics Lab loaded. Explore supply and demand, market simulations, and economic concepts with interactive models.',
+              repeat: 'Economics Lab active.',
+              terse: 'Economics.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
 
@@ -1791,9 +1801,11 @@ var d = labToolData || {};
                             upd('econStreak', ns);
                             if (ns > econBestStreak) upd('econBestStreak', ns);
                             if (addToast) addToast('\u2705 Correct! +1 streak', 'success');
+                            if (announceToSR) announceToSR('Correct! Streak is now ' + ns + '.');
                           } else {
                             upd('econStreak', 0);
                             if (addToast) addToast('\u274C Read the explanation!', 'info');
+                            if (announceToSR) announceToSR('Incorrect. Read the explanation below.');
                           }
                         },
                         className: 'w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all ' + cls,
@@ -2657,6 +2669,7 @@ var d = labToolData || {};
                       upd('sdTax', d.sdScenario.tax || 0);
 
                       if (addToast) addToast('\u2705 Scenario applied to graph!', 'success');
+                      if (announceToSR) announceToSR('Economic scenario applied. Supply and demand graph updated.');
 
                       if (d.sdScenario && d.sdScenario.lesson) {
 
@@ -3167,6 +3180,7 @@ var d = labToolData || {};
                         upd('smLoading', false);
 
                         if (addToast) addToast('\uD83D\uDCC8 Market open! 5 companies generated. Start trading!', 'success');
+                        if (announceToSR) announceToSR('Stock market simulation open. 5 companies generated.');
 
                       } catch (err) { upd('smLoading', false); if (addToast) addToast('Failed to generate market. Try again!', 'error'); console.error('[StockSim]', err); }
 

@@ -1,0 +1,14 @@
+﻿L21: function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.
+L75: } catch (e) { }
+L3097: } catch (e) { }
+L3525: } catch (e) { }
+L7137: try { audio.pause(); } catch (e) { }
+L7800: try { window.dispatchEvent(new Event('wordSoundsInstructionDone')); } catch(e) {
+L13710: } catch (e) { }
+L15089: } catch (e) { }
+L15448: } catch (e) { }
+L16151: } catch (e) { }
+L16183: } catch (e) { }
+L16206: } catch (e) { }
+L16396: } catch (e) { }
+L16929: } catch (e) { }
