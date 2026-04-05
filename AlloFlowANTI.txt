@@ -25631,7 +25631,7 @@ Return ONLY JSON.`;
         const existingBlock = existingResources.length > 0
             ? `ALREADY GENERATED: ${existingResources.join(', ')}`
             : "ALREADY GENERATED: None";
-        const VALID_TOOLS_LIST = "analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, lesson-plan, persona, gemini-bridge";
+        const VALID_TOOLS_LIST = "analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, persona, dbq";
         let countConstraint = "";
         let allowDuplicates = false;
         if (targetCount === 'All') {
@@ -25658,7 +25658,20 @@ Return ONLY JSON.`;
             --- 2. THE SOURCE MATERIAL ---
             "${text.substring(0, 3000)}...",
             STEP 1: DIAGNOSE THE CONTENT TOPOLOGY
-            Determine the best tools to teach this specific content.
+            Determine the best tools to teach this specific content. Available tools and when to use them:
+            - **analysis**: Analyze source text for key ideas, vocabulary, structure. ALWAYS include as first resource.
+            - **simplified**: Adapt text to a specific reading level. Good for differentiation.
+            - **glossary**: Key vocabulary with definitions, examples, images. Essential for content-heavy texts.
+            - **outline**: Visual organizer (Venn Diagram, Flow Chart, Structured Outline). Match to content topology.
+            - **image**: AI-generated illustration of a key concept. Good for visual learners.
+            - **quiz**: Assessment questions testing comprehension. Include after content resources.
+            - **sentence-frames**: Scaffolded writing prompts. Good for ELL students or structured responses.
+            - **brainstorm**: Open-ended idea generation around a topic.
+            - **timeline**: Chronological sequence of events. Use for historical or procedural content.
+            - **concept-sort**: Categorization activity — students sort terms into groups. Good for vocabulary/classification.
+            - **adventure**: Interactive choose-your-own-adventure narrative. Good for engagement and decision-making.
+            - **persona**: Interview historical figures, scientists, or literary characters AS IF they were real. Students ask questions and the character responds in-character with historically/textually accurate answers. EXCELLENT for history, literature, biography, social studies. Use when the text involves notable people, historical events, or characters with distinct perspectives. HIGHLY RECOMMENDED — do not overlook this tool.
+            - **dbq**: Document-Based Question activity with primary sources, HAPP sourcing framework, corroboration analysis, synthesis essay, and rubric. Use for social studies, history, civics, or any text with multiple perspectives or viewpoints.
             STEP 2: IDENTIFY THE "GOLDEN THREAD"
             - What is the ONE main learning objective?
             - Pick 5 specific vocabulary terms that are critical to this objective.
