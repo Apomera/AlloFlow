@@ -75,24 +75,13 @@
     "indicator_title": "Guided Mode",
       "step_of": "Step {current} of {total}",
         "back": "\u2190 Back",
-        "skip": "Skip this step \u2192",
+        "skip": "Next Step \u2192",
           "all_done": "\ud83c\udf89 All Done! View All Tools",
             "about": "About",
               "source_prompt": "Paste or enter source text to begin",
                 "history_hint": "\ud83d\udca1 Your generated resources are saved in the History tab \u2014 you can revisit and export them anytime!",
                   "about_prefix": "\ud83d\udcd6",
                     "exit": "Exit"
-  },
-  "guided": {
-    "indicator_title": "Guided Mode",
-      "step_of": "Step {current} of {total}",
-        "back": "\u2190 Back",
-        "skip": "Skip this step \u2192",
-          "all_done": "\ud83c\udf89 All Done! View All Tools",
-            "about": "About",
-              "source_prompt": "Paste or enter source text to begin",
-                "history_hint": "\ud83d\udca1 Your generated resources are saved in the History tab \u2014 you can revisit and export them anytime!",
-                  "about_prefix": "\ud83d\udcd6"
   },
   "word_sounds": {
     "title": "Word Sounds Studio",

@@ -1374,6 +1374,7 @@ var ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, on
     ))), deckItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "shrink-0 w-[160px]" }, renderCard(item))), deckItems.length === 0 && !isWon && /* @__PURE__ */ React.createElement("div", { className: "text-slate-500 italic font-bold text-sm mt-4 text-center w-full" }, t("concept_sort.word_bank_empty"))))
   ), /* @__PURE__ */ React.createElement("div", { ref: menuRef, className: "sr-only" })));
 });
+var BOTH_TRANSLATIONS = { English: 'Both', Spanish: 'Ambos', French: 'Les deux', Arabic: 'كلاهما', Chinese: '两者', Japanese: '両方', Korean: '둘 다', Portuguese: 'Ambos', German: 'Beide', Italian: 'Entrambi', Russian: 'Оба', Hindi: 'दोनों', Turkish: 'Her ikisi', Vietnamese: 'Cả hai', Thai: 'ทั้งสอง', Hebrew: 'שניהם', Swahili: 'Zote mbili', Dutch: 'Beide', Polish: 'Oba', Ukrainian: 'Обидва' };
 var VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { setA: { text: "Set A" }, setB: { text: "Set B" } }, primaryLanguage = "English" }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
@@ -1512,7 +1513,9 @@ var VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComp
     if (gameLang === "english" && item.translation) return item.translation;
     return item.text;
   };
+  const bothLabel = BOTH_TRANSLATIONS[primaryLanguage] || BOTH_TRANSLATIONS.English;
   const getTitle = (key) => {
+    if (key === "shared") return titles.shared ? (typeof titles.shared === "string" ? titles.shared : titles.shared.text || bothLabel) : bothLabel;
     const t2 = titles[key];
     if (!t2) return "";
     if (typeof t2 === "string") return t2;

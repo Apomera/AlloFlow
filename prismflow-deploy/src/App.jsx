@@ -17210,7 +17210,17 @@ Return ONLY valid JSON:
   const closeDefinition = _ceFn('closeDefinition');
   const closePhonics = _ceFn('closePhonics');
   const handleDefineSelection = _ceFn('handleDefineSelection', async () => {});
-  const stopPlayback = _ceFn('stopPlayback');
+  const _ceStopPlayback = _ceFn('stopPlayback');
+  const stopPlayback = function() {
+    _ceStopPlayback();
+    // Ensure cleanup happens even if content engine throws
+    // (fixes stale CDN module where playbackTimeoutRef is not resolved)
+    if (playbackTimeoutRef.current) { clearTimeout(playbackTimeoutRef.current); playbackTimeoutRef.current = null; }
+    setIsPlaying(false); setIsPaused(false); setPlayingContentId(null);
+    setPlaybackState({ sentences: [], currentIdx: -1 });
+    isPlayingRef.current = false; isSystemAudioActiveRef.current = false;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  };
   const togglePause = useCallback((e) => {
       if (e) e.stopPropagation();
       if (audioRef.current) {
@@ -25821,8 +25831,8 @@ Return ONLY JSON.`;
                 addToast(`Generated ${gradesToGen.length} differentiated versions!`, "success");
                 if (guidedMode) {
                   const currentIdx = GUIDED_STEPS.findIndex(s => s.id === 'simplified');
-                  if (currentIdx >= 0 && currentIdx === guidedStep && guidedStep < GUIDED_STEPS.length - 1) {
-                    setTimeout(() => setGuidedStep(prev => prev + 1), 1200);
+                  if (currentIdx >= 0) {
+                    setTimeout(() => setGuidedStep(prev => prev === currentIdx && prev < GUIDED_STEPS.length - 1 ? prev + 1 : prev), 1200);
                     setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
                   }
                 }
@@ -27819,9 +27829,17 @@ Return ONLY JSON:
         const typeToGuidedId = { 'analysis': 'analysis', 'glossary': 'glossary', 'simplified': 'simplified', 'outline': 'outline', 'image': 'image', 'faq': 'faq', 'sentence-frames': 'sentence-frames', 'brainstorm': 'brainstorm', 'persona': 'persona', 'timeline': 'timeline', 'concept-sort': 'concept-sort', 'quiz': 'quiz', 'lesson-plan': 'lesson-plan', 'alignment-report': '_final' };
         const matchedId = typeToGuidedId[type];
         if (matchedId) {
-          const currentIdx = GUIDED_STEPS.findIndex(s => s.id === matchedId);
-          if (currentIdx >= 0 && currentIdx === guidedStep && guidedStep < GUIDED_STEPS.length - 1) {
-            setTimeout(() => setGuidedStep(prev => prev + 1), 1200);
+          const stepIdx = GUIDED_STEPS.findIndex(s => s.id === matchedId);
+          // Use setGuidedStep callback to read CURRENT value (avoids stale closure)
+          if (stepIdx >= 0) {
+            setTimeout(() => {
+              setGuidedStep(prev => {
+                if (prev === stepIdx && prev < GUIDED_STEPS.length - 1) {
+                  return prev + 1;
+                }
+                return prev; // don't advance if user already moved past this step
+              });
+            }, 1200);
             setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
           }
         }
