@@ -47,6 +47,7 @@
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
   var isGlobalMuted = window.__alloIsGlobalMuted || function() { return false; };
+  var useFocusTrap = (window.__alloHooks && window.__alloHooks.useFocusTrap) || function() {};
 
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
