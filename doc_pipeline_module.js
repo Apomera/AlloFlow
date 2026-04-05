@@ -1523,9 +1523,9 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       total: queue.length,
       succeeded: done.length,
       failed: failed.length,
-      avgBefore: done.length ? Math.round(done.reduce((s, q) => s + (q.result?.beforeScore || 0), 0) / done.length) : 0,
-      avgAfter: done.length ? Math.round(done.reduce((s, q) => s + (q.result?.afterScore || 0), 0) / done.length) : 0,
-      avgImprovement: done.length ? Math.round(done.reduce((s, q) => s + ((q.result?.afterScore || 0) - (q.result?.beforeScore || 0)), 0) / done.length) : 0,
+      avgBefore: (function() { var valid = done.filter(q => q.result?.beforeScore != null); return valid.length ? Math.round(valid.reduce((s, q) => s + q.result.beforeScore, 0) / valid.length) : null; })(),
+      avgAfter: (function() { var valid = done.filter(q => q.result?.afterScore != null); return valid.length ? Math.round(valid.reduce((s, q) => s + q.result.afterScore, 0) / valid.length) : null; })(),
+      avgImprovement: (function() { var valid = done.filter(q => q.result?.afterScore != null && q.result?.beforeScore != null); return valid.length ? Math.round(valid.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / valid.length) : null; })(),
       above90: done.filter(q => (q.result?.afterScore || 0) >= 90).length,
       needsExpert: done.filter(q => q.result?.needsExpertReview).length,
       totalElapsed
@@ -3647,16 +3647,37 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch (finalAuditErr) {
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
       }
-      const finalAfterScore = verification ? verification.score : afterScore;
+      // ── Post-AI safety-net: re-run deterministic fixers in case AI introduced new issues ──
+      if (autoFixPasses > 0) {
+        const safetyContrast = fixContrastViolations(accessibleHtml);
+        if (safetyContrast.fixCount > 0) {
+          accessibleHtml = safetyContrast.html;
+          warnLog(`[PDF Fix] Safety-net contrast fix: ${safetyContrast.fixCount} patterns fixed after AI loop`);
+        }
+        const safetyList = fixListViolations(accessibleHtml);
+        if (safetyList.fixCount > 0) {
+          accessibleHtml = safetyList.html;
+          warnLog(`[PDF Fix] Safety-net list fix: ${safetyList.fixCount} patterns fixed after AI loop`);
+        }
+        const safetyAxe = await runAxeAudit(accessibleHtml);
+        if (safetyAxe) axeResults = safetyAxe;
+      }
+
+      let finalAfterScore = verification ? verification.score : afterScore;
+      const axeScoreAvailable = axeResults && typeof axeResults.score === 'number';
+      if (finalAfterScore !== null && axeScoreAvailable) {
+        const blendedFinal = Math.round((finalAfterScore + axeResults.score) / 2);
+        warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + axe ${axeResults.score} = ${blendedFinal}`);
+        finalAfterScore = blendedFinal;
+      } else if (!axeScoreAvailable) {
+        warnLog(`[PDF Fix] WARNING: axe-core score unavailable — final score is AI-only (${finalAfterScore})`);
+      }
 
       // ── Triage: flag documents that need expert remediation ──
-      // Only recommend expert review if problems persist AFTER remediation attempts,
-      // not on initial high-variance Gemini audit. Specifically Knowbility referral
-      // triggers only when: (a) score is still poor after auto-fix, or (b) critical
-      // axe-core violations remain after auto-fix passes.
       const axeViolations = axeResults ? axeResults.totalViolations : 0;
       const axeCritical = axeResults ? axeResults.critical.length : 0;
-      const needsExpertReview = autoFixPasses > 0 && (finalAfterScore !== null && finalAfterScore < 70 || axeCritical > 0);
+      const axeFailed = !axeResults || typeof axeResults.score !== 'number';
+      const needsExpertReview = axeFailed || (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 70) || axeCritical > 0));
 
       // ── Store results ──
       const _result = {

@@ -908,6 +908,7 @@ var d = labToolData || {};
             if (isTargetAction) {
 
               upd('blLevelScore', blLevelScore + 1);
+              if (announceToSR) announceToSR('Reinforced! Score: ' + (blLevelScore + 1) + ' of ' + (currentLevel ? currentLevel.goal : '?'));
 
             }
 
@@ -957,7 +958,8 @@ var d = labToolData || {};
 
           // ── Action dwell times (ticks an action persists) ──
 
-          var ACTION_DWELL = { explore: 4, groom: 5, sniff: 3, approachLever: 4, pressLever: 3, turnLeft: 3, turnRight: 3, halfTurn: 4, rearUp: 3, freeze: 5, spin: 4, touchWall: 3 };
+          // Action dwell times (ticks an action persists) — increased for smoother observation
+          var ACTION_DWELL = { explore: 5, groom: 6, sniff: 4, approachLever: 5, pressLever: 4, turnLeft: 4, turnRight: 4, halfTurn: 5, rearUp: 4, freeze: 6, spin: 5, touchWall: 4 };
 
 
 
@@ -1420,6 +1422,7 @@ var d = labToolData || {};
               if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level ' + blLevel + ': ' + currentLevel.title);
 
               if (addToast) addToast('\uD83C\uDF89 Level ' + blLevel + ' Complete! ' + currentLevel.concept + ' mastered!', 'success');
+              if (announceToSR) announceToSR('Congratulations! Level ' + blLevel + ' complete. ' + currentLevel.concept + ' mastered.');
 
               var newCompleted = blCompletedLevels.indexOf(blLevel) < 0 ? blCompletedLevels.concat([blLevel]) : blCompletedLevels;
 
@@ -1444,6 +1447,7 @@ var d = labToolData || {};
                 if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level 3: Observed extinction burst');
 
                 if (addToast) addToast('\uD83C\uDF89 Level 3 Complete! You observed the extinction burst!', 'success');
+                if (announceToSR) announceToSR('Level 3 complete! You observed the extinction burst.');
 
                 var newCompleted3 = blCompletedLevels.indexOf(3) < 0 ? blCompletedLevels.concat([3]) : blCompletedLevels;
 
@@ -1501,9 +1505,13 @@ var d = labToolData || {};
 
             var ctx = canvas.getContext('2d');
 
-            var W = canvas.width = canvas.offsetWidth || 420;
-
-            var H = canvas.height = 280;
+            // Only resize canvas if dimensions changed (prevents flicker)
+            var targetW = canvas.offsetWidth || 420;
+            var targetH = 280;
+            if (canvas.width !== targetW) canvas.width = targetW;
+            if (canvas.height !== targetH) canvas.height = targetH;
+            var W = targetW;
+            var H = targetH;
 
 
 
@@ -2513,6 +2521,18 @@ var d = labToolData || {};
 
 
 
+          // ── Keyboard shortcut: Spacebar to deliver food ──
+          if (!window._blKeyHandler) {
+            window._blKeyHandler = function (e) {
+              if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                if (typeof window._blReinforceFn === 'function') window._blReinforceFn();
+              }
+            };
+            document.addEventListener('keydown', window._blKeyHandler);
+          }
+          window._blReinforceFn = (blLastAction && blPhase === 'running' && blLevel !== 8 && blLevel !== 9) ? reinforceAction : null;
+
           // ── Render canvases via setTimeout (no hooks in conditional IIFE) ──
 
           setTimeout(function () {
@@ -2527,13 +2547,13 @@ var d = labToolData || {};
 
             // ── Smooth mouse interpolation (async to avoid render-phase setState) ──
 
-            var _lerpRate = 0.15;
+            var _lerpRate = 0.08; // Smoother: 8% per frame (was 15% — too jumpy)
 
             var _dxLerp = (d.blTargetX || 200) - (d.blMouseX || 200);
 
             var _dyLerp = (d.blTargetY || 150) - (d.blMouseY || 150);
 
-            if (Math.abs(_dxLerp) > 2 || Math.abs(_dyLerp) > 2) {
+            if (Math.abs(_dxLerp) > 1 || Math.abs(_dyLerp) > 1) {
 
               upd('blMouseX', (d.blMouseX || 200) + _dxLerp * _lerpRate);
 
@@ -2542,8 +2562,8 @@ var d = labToolData || {};
             }
 
             // ── Auto-advance timer (speed-adjusted, async) ──
-
-            var _tickDelay = (d.blSpeed || 1) === 3 ? 1200 : (d.blSpeed || 1) === 2 ? 2200 : 3200;
+            // Slowed down all speeds for smoother, more observable behavior
+            var _tickDelay = (d.blSpeed || 1) === 3 ? 2000 : (d.blSpeed || 1) === 2 ? 3500 : 5000;
 
             if ((d.blPhase || 'intro') === 'running' && !d.blPaused) {
 
@@ -2811,7 +2831,7 @@ var d = labToolData || {};
 
                 [1, 2, 3].map(function (sp) {
 
-                  return React.createElement("button", { "aria-label": "Change bl speed",
+                  return React.createElement("button", { "aria-label": "Set speed to " + (sp === 1 ? 'Slow' : sp === 2 ? 'Medium' : 'Fast'),
 
                     key: sp,
 
@@ -2843,9 +2863,9 @@ var d = labToolData || {};
 
               // ── Pause button ──
 
-              React.createElement("button", { "aria-label": "Change bl paused",
+              React.createElement("button", { "aria-label": blPaused ? "Resume simulation" : "Pause simulation",
 
-                onClick: function () { upd('blPaused', !blPaused); },
+                onClick: function () { upd('blPaused', !blPaused); if (announceToSR) announceToSR(blPaused ? 'Simulation resumed' : 'Simulation paused'); },
 
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
 
@@ -2857,7 +2877,7 @@ var d = labToolData || {};
 
             // ── Level progress bar ──
 
-            currentLevel.goal > 0 && React.createElement("div", { className: "relative", style: { height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(99,102,241,0.15)' } },
+            currentLevel.goal > 0 && React.createElement("div", { className: "relative", role: "progressbar", "aria-valuenow": blLevelScore, "aria-valuemin": 0, "aria-valuemax": currentLevel.goal, "aria-label": "Level progress: " + blLevelScore + " of " + currentLevel.goal, style: { height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(99,102,241,0.15)' } },
 
               React.createElement("div", {
 
@@ -2890,12 +2910,12 @@ var d = labToolData || {};
             // ── Contextual hint banner ──
 
             blHint && React.createElement("div", {
-
-              style: Object.assign({ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 12, padding: '8px 14px' }, glass)
+              role: "status", "aria-live": "polite",
+              style: Object.assign({ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 12, padding: '10px 14px' }, glass)
 
             },
 
-              React.createElement("p", { className: "text-xs text-indigo-200 font-medium", style: { margin: 0 } }, blHint)
+              React.createElement("p", { className: "text-sm font-semibold", style: { margin: 0, color: '#c7d2fe', lineHeight: 1.5 } }, blHint)
 
             ),
 
@@ -3144,6 +3164,8 @@ var d = labToolData || {};
               React.createElement("canvas", {
 
                 id: "bl-chamber-canvas",
+                role: "img",
+                'aria-label': 'Behavior lab chamber showing a mouse. Current action: ' + (d.blAction || 'exploring') + '. Tick: ' + (d.blTick || 0),
 
                 style: { width: '100%', height: 280, display: 'block', cursor: 'crosshair' }
 
@@ -3166,16 +3188,20 @@ var d = labToolData || {};
               React.createElement("div", { className: "flex gap-1 items-center flex-wrap" },
 
                 blRecentActions.map(function (act, ai) {
-
+                  var isLast = ai === blRecentActions.length - 1;
                   return React.createElement("div", {
 
                     key: ai,
 
                     title: ACTION_LABELS[act] || act,
+                    'aria-label': (ACTION_LABELS[act] || act) + (act === (currentLevel.target || 'pressLever') ? ' (target behavior)' : ''),
 
                     style: {
 
-                      width: 14, height: 14, borderRadius: '50%',
+                      width: isLast ? 'auto' : 14, height: isLast ? 'auto' : 14, borderRadius: isLast ? '8px' : '50%',
+                      padding: isLast ? '2px 8px' : 0,
+                      display: isLast ? 'flex' : 'block', alignItems: 'center', gap: '3px',
+                      fontSize: isLast ? '10px' : 0, fontWeight: 700, color: '#fff',
 
                       backgroundColor: ACTION_COLORS[act] || '#475569',
 
@@ -3189,7 +3215,7 @@ var d = labToolData || {};
 
                     }
 
-                  });
+                  }, isLast ? (ACTION_LABELS[act] || act) : null);
 
                 })
 
@@ -3253,7 +3279,7 @@ var d = labToolData || {};
 
                   style: pulseStyle
 
-                }, "\uD83C\uDF55 Deliver Food" + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '')),
+                }, "\uD83C\uDF55 Deliver Food" + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '') + '  [Space]'),
 
               // Level 3: extinction trigger
 
@@ -3898,6 +3924,8 @@ var d = labToolData || {};
               React.createElement("canvas", {
 
                 id: "bl-cumrecord-canvas",
+                role: "img",
+                'aria-label': 'Cumulative response record chart. Score: ' + (d.blLevelScore || 0) + ' of ' + (currentLevel ? currentLevel.goal : 0),
 
                 style: { width: '100%', height: 130, display: 'block' }
 

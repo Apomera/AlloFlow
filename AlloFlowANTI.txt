@@ -4764,6 +4764,7 @@ const optimizeImage = (base64Str, maxWidth = 800, quality = 0.9) => {
 };
 const uploadSessionAssets = async (appId, resources) => {
     console.log("[SESSION DEBUG] uploadSessionAssets called, resources:", resources?.length);
+    if (!resources || !Array.isArray(resources)) return;
     try {
         resources.forEach((r, i) => {
             try {
@@ -15839,7 +15840,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           } else {
               try {
                   if (window._piperTTS && window._piperTTS.supportsLanguage(ttsLang)) {
-                      const url = await window._piperTTS.speak(text, ttsLang, speed);
+                      const url = await window._piperTTS.speak(localTtsText, ttsLang, speed);
                       if (url) return url;
                   }
               } catch (e) { console.warn('[Canvas TTS] Piper', ttsLang, 'fallback failed:', e?.message); }
@@ -16364,6 +16365,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       });
       teacherGridHtml += '</div>';
       const win = window.open('', '', 'height=700,width=900');
+      if (!win) { addToast('Pop-up blocked — please allow pop-ups for this site to print', 'error'); return; }
       const pageTitle = t('glossary.print_puzzle_title');
       const answerKeyTitle = t('glossary.print_answer_key');
       const teacherCopySubtitle = t('glossary.print_teacher_copy');

@@ -45,6 +45,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     document.body.appendChild(lr);
   })();
 
+  // Inject phase transition animation
+  if (!document.getElementById('moon-mission-anim')) {
+    var _mmStyle = document.createElement('style');
+    _mmStyle.id = 'moon-mission-anim';
+    _mmStyle.textContent = '@keyframes mmFadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }';
+    document.head.appendChild(_mmStyle);
+  }
+
   window.StemLab.registerTool('moonMission', {
     icon: '\uD83D\uDE80',
     label: 'moonMission',
@@ -318,7 +326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 0: MISSION BRIEFING ═══
-        phase === 0 && h('div', { className: 'space-y-3' },
+        phase === 0 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF15'),
@@ -395,7 +403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 1: LAUNCH ═══
-        phase === 1 && h('div', { className: 'space-y-3' },
+        phase === 1 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             // Launch canvas
             h('div', { className: 'relative', style: { height: '400px' } },
@@ -648,7 +656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 2: EARTH ORBIT ═══
-        phase === 2 && h('div', { className: 'space-y-3' },
+        phase === 2 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
@@ -690,7 +698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 3: TRANS-LUNAR COAST (Animated Canvas) ═══
-        phase === 3 && h('div', { className: 'space-y-3' },
+        phase === 3 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '280px' } },
               h('canvas', {
@@ -820,7 +828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 4: LUNAR ORBIT (Animated Canvas) ═══
-        phase === 4 && h('div', { className: 'space-y-3' },
+        phase === 4 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '240px' } },
               h('canvas', {
@@ -932,7 +940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 5: POWERED DESCENT ═══
-        phase === 5 && h('div', { className: 'space-y-3' },
+        phase === 5 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           // Onboarding overlay (before game starts)
           !d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
             h('div', { className: 'text-4xl mb-3' }, '\u2B07\uFE0F'),
@@ -1211,7 +1219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 6: MOONWALK EVA (3D) ═══
-        phase === 6 && h('div', { className: 'space-y-3' },
+        phase === 6 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '70vh', minHeight: '400px', maxHeight: '700px' } },
               h('canvas', {
@@ -1753,7 +1761,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASES 7-9: RETURN JOURNEY ═══
-        (phase === 7 || phase === 8) && h('div', { className: 'space-y-3' },
+        (phase === 7 || phase === 8) && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, phase === 7 ? '\u2B06\uFE0F' : '\uD83C\uDF0D'),
@@ -1792,7 +1800,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 9: RE-ENTRY & SPLASHDOWN (Animated Canvas) ═══
-        phase === 9 && h('div', { className: 'space-y-3' },
+        phase === 9 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-orange-950 to-slate-900 rounded-xl overflow-hidden border border-orange-900/50' },
             h('div', { className: 'relative', style: { height: '320px' } },
               h('canvas', {
@@ -1977,7 +1985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ═══ PHASE 10: MISSION COMPLETE ═══
-        phase >= 10 && h('div', { className: 'space-y-3' },
+        phase >= 10 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 rounded-xl p-5 text-white text-center' },
             h('div', { className: 'text-5xl mb-2' }, '\uD83C\uDF1F'),
             h('h4', { className: 'text-xl font-black tracking-wide mb-1' }, 'MISSION COMPLETE'),

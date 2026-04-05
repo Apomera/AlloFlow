@@ -3501,8 +3501,19 @@
               var _cm = _toolColorMap[tool.color] || _toolColorMap.slate;
               return /*#__PURE__*/React.createElement("button", { "aria-label": tool.label + ': ' + (tool.desc || 'STEM tool'),
                 key: tool.id,
-                onClick: function () { if (tool.ready === false) { if (addToast) addToast(tool.label + ' is coming soon!', 'info'); return; } setStemLabTool(tool.id); _setStemToolSearch(''); },
-                className: 'p-5 rounded-2xl border-2 text-left transition-all duration-200 hover:scale-[1.04] hover:-translate-y-0.5 hover:shadow-xl ' + _cm.bg + ' ' + _cm.border + ' ' + _cm.hoverBorder,
+                onClick: function () {
+                  if (tool.ready === false) { if (addToast) addToast(tool.label + ' is coming soon!', 'info'); return; }
+                  setStemLabTool(tool.id);
+                  _setStemToolSearch('');
+                  // Scroll to top of content area smoothly
+                  setTimeout(function() {
+                    var contentArea = document.querySelector('.stem-lab-modal .overflow-y-auto');
+                    if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+                  }, 50);
+                  if (typeof announceToSR === 'function') announceToSR('Opening ' + tool.label);
+                },
+                title: tool.desc || tool.label,
+                className: 'group p-5 rounded-2xl border-2 text-left transition-all duration-200 hover:scale-[1.04] hover:-translate-y-0.5 hover:shadow-xl ' + _cm.bg + ' ' + _cm.border + ' ' + _cm.hoverBorder,
                 style: _reduceMotion ? {} : { animation: 'stemCardIn 0.35s ease-out both', animationDelay: (_ci * 40) + 'ms' }
               }, /*#__PURE__*/React.createElement("div", {
                 className: "text-3xl mb-2"

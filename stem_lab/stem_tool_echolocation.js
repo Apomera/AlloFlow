@@ -119,7 +119,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
     ]
   };
 
-  var SCENES = [SCENE_CAVE, SCENE_FOREST, SCENE_URBAN];
+  // ── TROPICAL SCENE (for frugivore) ──
+  var SCENE_TROPICAL = {
+    name: 'Tropical Canopy',
+    desc: 'A lush fruit-filled tropical forest at night.',
+    bg: '#050f08',
+    objects: [
+      // Large trees with spreading canopies
+      { type: 'tree', id: 'tt1', x: 100, y: 150, width: 60, height: 250, material: 'wood', reflectivity: 0.6 },
+      { type: 'tree', id: 'tt2', x: 350, y: 120, width: 70, height: 280, material: 'wood', reflectivity: 0.6 },
+      { type: 'tree', id: 'tt3', x: 600, y: 160, width: 55, height: 240, material: 'wood', reflectivity: 0.6 },
+      // Fruit hanging from trees
+      { type: 'fruit', id: 'f1', x: 130, y: 180, radius: 10, material: 'organic', reflectivity: 0.45, fruitType: 'mango', color: '#fbbf24' },
+      { type: 'fruit', id: 'f2', x: 80, y: 220, radius: 8, material: 'organic', reflectivity: 0.45, fruitType: 'fig', color: '#7c3aed' },
+      { type: 'fruit', id: 'f3', x: 380, y: 160, radius: 12, material: 'organic', reflectivity: 0.45, fruitType: 'banana', color: '#facc15' },
+      { type: 'fruit', id: 'f4', x: 320, y: 200, radius: 9, material: 'organic', reflectivity: 0.45, fruitType: 'papaya', color: '#fb923c' },
+      { type: 'fruit', id: 'f5', x: 630, y: 190, radius: 11, material: 'organic', reflectivity: 0.45, fruitType: 'guava', color: '#86efac' },
+      { type: 'fruit', id: 'f6', x: 570, y: 230, radius: 8, material: 'organic', reflectivity: 0.45, fruitType: 'fig', color: '#7c3aed' },
+      { type: 'fruit', id: 'f7', x: 450, y: 300, radius: 10, material: 'organic', reflectivity: 0.45, fruitType: 'mango', color: '#fbbf24' },
+      { type: 'fruit', id: 'f8', x: 200, y: 350, radius: 9, material: 'organic', reflectivity: 0.45, fruitType: 'papaya', color: '#fb923c' },
+      // Water source
+      { type: 'water', id: 'tw1', x: 250, y: 450, width: 200, height: 50, material: 'water', reflectivity: 0.4 },
+      // Vines (thin horizontal obstacles)
+      { type: 'vine', id: 'v1', x: 150, y: 280, width: 120, height: 5, material: 'organic', reflectivity: 0.3 },
+      { type: 'vine', id: 'v2', x: 450, y: 250, width: 100, height: 5, material: 'organic', reflectivity: 0.3 },
+      // Ground
+      { type: 'wall', id: 'tg', segments: [{x:0,y:500},{x:800,y:500}], material: 'earth', reflectivity: 0.5 }
+    ]
+  };
+
+  var SCENES = [SCENE_CAVE, SCENE_FOREST, SCENE_URBAN, SCENE_TROPICAL];
+
+  // ── PLAYABLE BAT SPECIES ──
+  var PLAYABLE_SPECIES = [
+    { id: 'insectivore', name: 'Little Brown Bat', emoji: '\uD83E\uDD87',
+      subtitle: 'Insect Hunter',
+      desc: 'A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.',
+      diet: 'insects',
+      sonarType: 'Frequency-modulated sweeps (40-80 kHz)',
+      sonarRange: 250,
+      sonarWidth: Math.PI * 0.8,
+      pulseRate: 'fast',
+      pulseCooldown: 8,
+      speed: 4,
+      energyDrain: 0.15,
+      size: 8,
+      color: '#92400e',
+      preyType: 'moth',
+      preyLabel: 'Moths',
+      preyEmoji: '\uD83E\uDD8B',
+      catchRadius: 20,
+      catchVerb: 'caught',
+      huntingTip: 'Use rapid pulses to track moths. They move erratically \u2014 predict their path! Listen for the "buzz phase" when you get close.',
+      scienceFact: 'Little brown bats use frequency-modulated (FM) sweeps \u2014 each pulse sweeps from high to low frequency in milliseconds. This gives them incredibly detailed spatial information, like switching from a blurry photo to a high-res scan.' },
+    { id: 'frugivore', name: 'Egyptian Fruit Bat', emoji: '\uD83E\uDD87',
+      subtitle: 'Fruit Forager',
+      desc: 'A larger fruit bat that uses tongue-click echolocation and excellent night vision. Your sonar is weaker but you can see ripe fruit glowing faintly.',
+      diet: 'fruit',
+      sonarType: 'Tongue clicks (low intensity)',
+      sonarRange: 150,
+      sonarWidth: Math.PI * 1.2,
+      pulseRate: 'slow',
+      pulseCooldown: 20,
+      speed: 3,
+      energyDrain: 0.08,
+      size: 14,
+      color: '#78350f',
+      preyType: 'fruit',
+      preyLabel: 'Fruits',
+      preyEmoji: '\uD83C\uDF4C',
+      catchRadius: 25,
+      catchVerb: 'collected',
+      huntingTip: 'Fruit doesn\'t run away, but you need to find it! Look for the faint warm glow of ripe fruit. Your wider sonar beam covers more area but has less range.',
+      scienceFact: 'Egyptian fruit bats are unique among fruit bats \u2014 most fruit bats don\'t echolocate at all! They use tongue clicks instead of laryngeal calls, producing lower-intensity pulses. They also have excellent night vision, unlike most echolocating bats.' }
+  ];
+
+  // ── FRUIT TYPES ──
+  var FRUIT_TYPES = {
+    mango:  { emoji: '\uD83E\uDD6D', color: '#fbbf24', name: 'Mango' },
+    fig:    { emoji: '\uD83C\uDF52', color: '#7c3aed', name: 'Fig' },
+    banana: { emoji: '\uD83C\uDF4C', color: '#facc15', name: 'Banana' },
+    papaya: { emoji: '\uD83C\uDF51', color: '#fb923c', name: 'Papaya' },
+    guava:  { emoji: '\uD83C\uDF4F', color: '#86efac', name: 'Guava' }
+  };
+
+  // ── MOTH TYPES (for insectivore) ──
+  var MOTH_TYPES = {
+    regular:  { label: 'Moth', emoji: '\uD83E\uDD8B', color: 'rgba(200,180,160,0.8)', speed: 1, evasionChance: 0.4, energyValue: 15, size: 1 },
+    tiger:    { label: 'Tiger Moth', emoji: '\uD83E\uDD8B', color: 'rgba(255,160,60,0.85)', speed: 0.8, evasionChance: 0.3, energyValue: 15, size: 1, jams: true },
+    luna:     { label: 'Luna Moth', emoji: '\uD83E\uDD8B', color: 'rgba(140,230,180,0.85)', speed: 0.6, evasionChance: 0.2, energyValue: 25, size: 1.5 },
+    mosquito: { label: 'Mosquito Swarm', emoji: '\uD83E\uDD9F', color: 'rgba(180,180,200,0.6)', speed: 1.2, evasionChance: 0.15, energyValue: 10, size: 0.5, swarm: true }
+  };
+
+  // ── BAT FLIGHT PHYSICS CONSTANTS ──
+  var GRAVITY = 0.08;
+  var FLAP_IMPULSE = -1.8;
+  var MAX_FALL_SPEED = 3;
+  var AIR_FRICTION = 0.98;
+  var PERCH_REGEN = 0.5;
+  var ENERGY_MAX = 100;
+  var ENERGY_CATCH_BONUS = 15;
 
   // ── BAT ANATOMY DATA ──
   var BAT_ANATOMY = [
@@ -350,6 +449,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
     c.restore();
   }
 
+  function drawFruit(c, x, y, radius, fruitType, glowAlpha) {
+    c.save();
+    c.translate(x, y);
+    var ft = FRUIT_TYPES[fruitType] || FRUIT_TYPES.mango;
+    // Warm glow for frugivore night vision
+    if (glowAlpha > 0) {
+      var grad = c.createRadialGradient(0, 0, 0, 0, 0, radius * 3);
+      grad.addColorStop(0, 'rgba(255,200,80,' + (glowAlpha * 0.25) + ')');
+      grad.addColorStop(1, 'rgba(255,200,80,0)');
+      c.fillStyle = grad;
+      c.beginPath();
+      c.arc(0, 0, radius * 3, 0, Math.PI * 2);
+      c.fill();
+    }
+    // Fruit body
+    c.fillStyle = ft.color;
+    c.beginPath();
+    c.arc(0, 0, radius, 0, Math.PI * 2);
+    c.fill();
+    // Highlight
+    c.fillStyle = 'rgba(255,255,255,0.3)';
+    c.beginPath();
+    c.arc(-radius * 0.25, -radius * 0.25, radius * 0.35, 0, Math.PI * 2);
+    c.fill();
+    // Stem
+    c.strokeStyle = '#4a3728';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(0, -radius);
+    c.lineTo(2, -radius - 5);
+    c.stroke();
+    c.restore();
+  }
+
+  function drawSpiderWeb(c, x, y, width, height, alpha) {
+    c.save();
+    c.globalAlpha = alpha;
+    c.strokeStyle = 'rgba(200,200,220,0.4)';
+    c.lineWidth = 0.5;
+    // Horizontal thread
+    c.beginPath();
+    c.moveTo(x, y + height / 2);
+    c.lineTo(x + width, y + height / 2);
+    c.stroke();
+    // Droop lines
+    var segs = 5;
+    for (var i = 0; i <= segs; i++) {
+      var px = x + (width / segs) * i;
+      var sag = Math.sin((i / segs) * Math.PI) * height * 0.4;
+      c.beginPath();
+      c.moveTo(px, y + height / 2);
+      c.lineTo(px, y + height / 2 + sag);
+      c.stroke();
+    }
+    // Cross threads
+    c.beginPath();
+    for (var j = 0; j <= segs; j++) {
+      var cx1 = x + (width / segs) * j;
+      var s1 = Math.sin((j / segs) * Math.PI) * height * 0.4;
+      if (j === 0) c.moveTo(cx1, y + height / 2 + s1);
+      else c.lineTo(cx1, y + height / 2 + s1);
+    }
+    c.stroke();
+    c.restore();
+  }
+
   // ── INTERSECTION HELPERS ──
   function pointInRect(px, py, rx, ry, rw, rh) {
     return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
@@ -485,6 +650,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       // ═════════════════════════════════════════
       // TAB 1: SONAR VISION SIMULATOR
       // ═════════════════════════════════════════
+      // ── Species selection state ──
+      var selectedPlayableSpecies = d.playableSpecies || null; // 'insectivore' | 'frugivore' | null
+      var currentSpeciesData = selectedPlayableSpecies ? PLAYABLE_SPECIES.find(function(s) { return s.id === selectedPlayableSpecies; }) : null;
+
       var sonarCanvasRef = useRef(null);
       var sonarBufferRef = useRef(null);
       var sonarAnimRef = useRef(null);
@@ -494,17 +663,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         flapPhase: 0, pulses: [], time: 0,
         discoveredIds: {}, discoveredCount: 0, totalObjects: 0,
         pulseCount: 0, nearestDist: 999, scene: 0,
-        mothsCaught: 0, clarity: 0
+        mothsCaught: 0, fruitCollected: 0, clarity: 0,
+        energy: ENERGY_MAX, perching: false, pulseCooldownTimer: 0,
+        mothEvasionMsg: '', mothEvasionTimer: 0, sonarJammed: false, sonarJamTimer: 0,
+        drips: [], hiddenChamberFound: false
       });
 
       var sceneIdx = d.sonarScene || 0;
       var customObjects = d.customObjects || [];
 
       function getActiveScene() {
-        if (sceneIdx === 3) {
+        if (sceneIdx === 4) {
           return { name: 'Custom', desc: 'Place your own objects and explore.', bg: '#0a0a1a', objects: customObjects };
         }
-        return SCENES[sceneIdx] || SCENES[0];
+        var base = SCENES[sceneIdx] || SCENES[0];
+        // Enrich cave scene with extra objects
+        if (sceneIdx === 0 && !base._enriched) {
+          base._enriched = true;
+          // Spider webs
+          base.objects.push({ type: 'web', id: 'web1', x: 150, y: 100, width: 80, height: 30, material: 'silk', reflectivity: 0.1 });
+          base.objects.push({ type: 'web', id: 'web2', x: 500, y: 120, width: 60, height: 25, material: 'silk', reflectivity: 0.1 });
+          // Bat colony on ceiling
+          base.objects.push({ type: 'colony', id: 'col1', x: 280, y: 15, width: 100, height: 30, material: 'soft', reflectivity: 0.35 });
+          // Hidden chamber entrance (narrow passage)
+          base.objects.push({ type: 'passage', id: 'pass1', x: 740, y: 380, width: 15, height: 50, material: 'air', reflectivity: 0.05 });
+          // Rare golden moth in hidden chamber area
+          base.objects.push({ type: 'moth', id: 'mgold', x: 770, y: 400, radius: 10, material: 'soft', reflectivity: 0.5, moving: true, mothType: 'luna' });
+        }
+        // Assign moth types to existing moths if not set
+        if (base.objects) {
+          base.objects.forEach(function(obj) {
+            if (obj.type === 'moth' && !obj.mothType) {
+              var roll = Math.random();
+              if (roll < 0.1) obj.mothType = 'tiger';
+              else if (roll < 0.2) obj.mothType = 'luna';
+              else if (roll < 0.25) obj.mothType = 'mosquito';
+              else obj.mothType = 'regular';
+            }
+          });
+        }
+        return base;
+      }
+
+      // ── Species Selection Screen ──
+      function renderSpeciesSelection() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center' },
+            h('div', { className: 'text-2xl mb-1' }, '\uD83E\uDD87'),
+            h('div', { className: 'text-lg font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, 'Choose Your Bat Species'),
+            h('p', { className: 'text-xs mt-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
+              'Each species has unique echolocation abilities and hunting strategies. Your choice changes how the sonar simulator works.')
+          ),
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4', role: 'radiogroup', 'aria-label': 'Select bat species' },
+            PLAYABLE_SPECIES.map(function(sp) {
+              var isSelected = selectedPlayableSpecies === sp.id;
+              // Stat bar helper
+              function statBar(label, value, max, barColor) {
+                var pct = Math.round((value / max) * 100);
+                return h('div', { className: 'mb-1' },
+                  h('div', { className: 'flex justify-between text-[9px] ' + (isDark ? 'text-slate-400' : 'text-slate-500') },
+                    h('span', null, label),
+                    h('span', null, Math.round(value))),
+                  h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
+                    h('div', { style: { width: pct + '%', background: barColor }, className: 'h-full rounded-full transition-all' }))
+                );
+              }
+              return h('div', {
+                key: sp.id,
+                role: 'radio',
+                'aria-checked': isSelected ? 'true' : 'false',
+                'aria-label': sp.name + ', ' + sp.subtitle + '. ' + sp.desc,
+                tabIndex: 0,
+                onClick: function() { upd('playableSpecies', sp.id); },
+                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('playableSpecies', sp.id); } },
+                className: 'rounded-xl p-4 cursor-pointer transition-all border-2 ' +
+                  (isSelected
+                    ? (isDark ? 'bg-indigo-900/60 border-indigo-400 ring-2 ring-indigo-400/40 shadow-lg shadow-indigo-500/20' : 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-300 shadow-lg')
+                    : (isDark ? 'bg-slate-800/60 border-slate-700 hover:border-indigo-600 hover:bg-slate-800' : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md'))
+              },
+                h('div', { className: 'text-center mb-3' },
+                  h('div', { className: 'text-3xl mb-1' }, sp.emoji),
+                  h('div', { className: 'text-sm font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, sp.name),
+                  h('div', { className: 'text-[10px] font-bold ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') }, sp.subtitle)),
+                h('p', { className: 'text-[10px] mb-3 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, sp.desc),
+                // Stats visualization
+                h('div', { className: 'space-y-0.5 mb-3' },
+                  statBar('Sonar Range', sp.sonarRange, 300, '#6366f1'),
+                  statBar('Beam Width', (sp.sonarWidth / Math.PI) * 100, 150, '#8b5cf6'),
+                  statBar('Pulse Speed', (25 - sp.pulseCooldown), 20, '#06b6d4'),
+                  statBar('Flight Speed', sp.speed, 5, '#10b981'),
+                  statBar('Energy Efficiency', (1 - sp.energyDrain) * 100, 100, '#f59e0b')
+                ),
+                h('div', { className: 'text-[9px] ' + (isDark ? 'text-slate-500' : 'text-slate-400') },
+                  h('div', null, '\uD83C\uDF1F Prey: ' + sp.preyEmoji + ' ' + sp.preyLabel),
+                  h('div', null, '\uD83D\uDD0A Sonar: ' + sp.sonarType)),
+                // Select button
+                h('button', {
+                  'aria-label': 'Select ' + sp.name,
+                  onClick: function(e) { e.stopPropagation(); upd('playableSpecies', sp.id); },
+                  className: 'w-full mt-3 px-4 py-2 rounded-lg text-xs font-bold transition-all ' +
+                    (isSelected ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'))
+                }, isSelected ? '\u2713 Selected' : 'Select ' + sp.name)
+              );
+            })
+          ),
+          // Science comparison
+          selectedPlayableSpecies ? h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
+            h('div', { className: 'text-xs font-bold mb-1 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDDEC Science Note'),
+            h('p', { className: 'text-[10px] ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') },
+              currentSpeciesData ? currentSpeciesData.scienceFact : ''),
+            h('div', { className: 'mt-2 text-[10px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
+              currentSpeciesData ? currentSpeciesData.huntingTip : '')
+          ) : null,
+          // Start playing button (visible once species selected)
+          selectedPlayableSpecies ? h('div', { className: 'text-center' },
+            h('div', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') },
+              'Species selected! The sonar simulator below is now configured for your bat.'),
+            h('div', { className: 'text-[9px] ' + (isDark ? 'text-slate-500' : 'text-slate-400') },
+              'You can change species anytime using the toggle in the game HUD.')
+          ) : null
+        );
       }
 
       function renderSonarTab() {
@@ -524,19 +802,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           style: { width: '100%', maxWidth: '800px', height: 'auto', borderRadius: '12px', display: 'block', border: '2px solid ' + (isDark ? '#312e81' : '#4338ca'), cursor: 'crosshair', background: '#0a0a1a' }
         });
 
+        // Show species selection if not yet chosen
+        if (!selectedPlayableSpecies) {
+          return h('div', { className: 'space-y-3' }, renderSpeciesSelection());
+        }
+
+        var speciesData = currentSpeciesData || PLAYABLE_SPECIES[0];
+        var isFrugivore = speciesData.diet === 'fruit';
+        var sceneNames = isFrugivore
+          ? ['Tropical Canopy', 'Night Forest', 'Urban Night', 'Custom']
+          : ['Cave Exploration', 'Night Forest', 'Urban Night', 'Custom'];
+        var sceneIndices = isFrugivore ? [3, 1, 2, 4] : [0, 1, 2, 4];
+
         return h('div', { className: 'space-y-3' },
+          // Species toggle + energy bar
+          h('div', { className: 'flex flex-wrap gap-2 items-center justify-between' },
+            h('div', { className: 'flex items-center gap-2' },
+              h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') },
+                speciesData.emoji + ' ' + speciesData.name + ' (' + speciesData.subtitle + ')'),
+              h('button', {
+                'aria-label': 'Change bat species',
+                onClick: function() { upd('playableSpecies', null); },
+                className: 'px-2 py-0.5 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-600 hover:bg-slate-300')
+              }, 'Change Species')
+            ),
+            // Energy bar
+            h('div', { className: 'flex items-center gap-2' },
+              h('span', { className: 'text-[9px] font-bold ' + (isDark ? 'text-amber-400' : 'text-amber-600') }, '\u26A1 Energy'),
+              h('div', { className: 'w-24 h-3 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200'), 'aria-label': 'Energy: ' + Math.round(sonarStateRef.current.energy) + '%' },
+                h('div', {
+                  style: { width: Math.round(sonarStateRef.current.energy) + '%', background: sonarStateRef.current.energy > 30 ? '#f59e0b' : '#ef4444', transition: 'width 0.2s' },
+                  className: 'h-full rounded-full'
+                })),
+              h('span', { className: 'text-[9px] font-mono ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, Math.round(sonarStateRef.current.energy) + '%')
+            )
+          ),
           // Scene selector
           h('div', { className: 'flex flex-wrap gap-2 items-center' },
             h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Scene:'),
-            ['Cave Exploration', 'Night Forest', 'Urban Night', 'Custom'].map(function(name, i) {
-              var active = sceneIdx === i;
+            sceneNames.map(function(name, i) {
+              var realIdx = sceneIndices[i];
+              var active = sceneIdx === realIdx;
               return h('button', {
                 key: i,
                 'aria-label': name + ' scene' + (active ? ', selected' : ''),
                 'aria-pressed': active ? 'true' : 'false',
                 onClick: function() {
-                  upd('sonarScene', i);
-                  resetSonarState(i);
+                  upd('sonarScene', realIdx);
+                  resetSonarState(realIdx);
                 },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
                   ? 'bg-indigo-600 text-white shadow-md'
@@ -544,7 +857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               }, name);
             }),
             // Custom scene: add object button
-            sceneIdx === 3 ? h('button', {
+            sceneIdx === 4 ? h('button', {
               'aria-label': 'Add object to custom scene',
               onClick: function() { addCustomObject(); },
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500'
@@ -552,8 +865,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
           // Controls hint
           h('div', { className: 'flex flex-wrap gap-4 text-[10px] ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-            h('span', null, '\u2B05\uFE0F\u27A1\uFE0F\u2B06\uFE0F\u2B07\uFE0F or WASD: Move bat'),
+            h('span', null, '\u2B05\uFE0F\u27A1\uFE0F A/D: Steer'),
+            h('span', null, '\u2B06\uFE0F W: Flap wings (thrust up)'),
+            h('span', null, '\u2B07\uFE0F S: Dive'),
             h('span', null, 'SPACE: Emit sonar pulse'),
+            h('span', null, 'Touch ceiling/wall: Perch & rest'),
             h('button', {
               'aria-label': 'Emit sonar pulse',
               onClick: function() { emitSonarPulse(); },
@@ -570,10 +886,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             renderHudStat('Nearest', sonarStateRef.current.nearestDist < 900 ? Math.round(sonarStateRef.current.nearestDist) + 'px' : '\u2014', '\uD83D\uDCCF'),
             renderHudStat('Frequency', '45 kHz', '\uD83C\uDFB5')
           ),
-          // Moths caught readout
+          // Prey caught readout
           h('div', { className: 'text-xs ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') },
-            '\uD83E\uDD8B Moths caught: ' + (d.mothsCaught || 0) + '/10' +
-            (d.caveMapped ? ' | \uD83D\uDDFA\uFE0F Cave mapped!' : '')),
+            isFrugivore
+              ? ('\uD83C\uDF4C Fruit collected: ' + (d.fruitCollected || 0) + '/10')
+              : ('\uD83E\uDD8B Moths caught: ' + (d.mothsCaught || 0) + '/10'),
+            (d.caveMapped ? ' | \uD83D\uDDFA\uFE0F Cave mapped!' : ''),
+            sonarStateRef.current.perching ? ' | \uD83E\uDD87 Perching (resting)' : '',
+            sonarStateRef.current.energy <= 0 ? ' | \u26A0\uFE0F No energy! Gliding only.' : ''),
+          // Moth evasion tooltip
+          sonarStateRef.current.mothEvasionTimer > 0 ? h('div', {
+            className: 'text-[10px] p-2 rounded-lg animate-pulse ' + (isDark ? 'bg-amber-900/40 text-amber-200 border border-amber-700/40' : 'bg-amber-50 text-amber-800 border border-amber-200'),
+            role: 'alert'
+          }, sonarStateRef.current.mothEvasionMsg) : null,
+          // Sonar jammed warning
+          sonarStateRef.current.sonarJamTimer > 0 ? h('div', {
+            className: 'text-[10px] p-2 rounded-lg animate-pulse ' + (isDark ? 'bg-red-900/40 text-red-200 border border-red-700/40' : 'bg-red-50 text-red-800 border border-red-200'),
+            role: 'alert'
+          }, '\uD83D\uDD07 Tiger moth jamming your sonar! These moths produce ultrasonic clicks that interfere with bat echolocation \u2014 a real anti-predator defense!') : null,
 
           // How to Play / Educational Info Panel
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
@@ -586,10 +916,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', null,
                 h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, 'Tips for each scene:'),
                 h('ul', { className: 'list-disc pl-4 space-y-1' },
-                  h('li', null, h('strong', null, 'Cave: '), 'Use rapid pulses near walls to build up a detailed image. Find the exit (barely visible \u2014 it\'s open air with almost no echo).'),
+                  h('li', null, h('strong', null, 'Cave: '), 'Use rapid pulses near walls to build up a detailed image. Find the exit (barely visible \u2014 it\'s open air with almost no echo). Watch for hidden passages!'),
                   h('li', null, h('strong', null, 'Forest: '), 'Trees give strong woody echoes. Water pools reflect dimly. Moths flit erratically \u2014 they\'re hard to track!'),
                   h('li', null, h('strong', null, 'Urban: '), 'Buildings give rock-hard echoes. Streetlights create confusing bright spots. Moths cluster around lights.'),
-                  h('li', null, h('strong', null, 'Custom: '), 'Place your own objects and try to identify them by echo alone.')))
+                  h('li', null, h('strong', null, 'Tropical: '), 'Fruit glows faintly in night vision. Trees are large obstacles. Watch for vines!'),
+                  h('li', null, h('strong', null, 'Custom: '), 'Place your own objects and try to identify them by echo alone.'),
+                  h('li', null, h('strong', null, 'Flight tips: '), 'Press W to flap \u2014 gravity pulls you down! Perch on surfaces to rest and recharge energy. Catching prey restores +15 energy.')))
             ),
             h('div', { className: 'mt-2 text-[9px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
               'Fun fact: Real bats process all this information in milliseconds using a brain the size of a peanut. They can catch 10-14 insects per minute in total darkness!')
@@ -604,6 +936,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 { material: 'Wood/Tree', reflectivity: '50-70%', color: '#b48c64', desc: 'Moderate, diffuse echoes' },
                 { material: 'Water', reflectivity: '30-40%', color: '#60a5fa', desc: 'Dim, rippling echoes' },
                 { material: 'Moth/Insect', reflectivity: '20-30%', color: '#fbbf24', desc: 'Faint flickering echoes' },
+                { material: 'Fruit/Organic', reflectivity: '40-50%', color: '#fbbf24', desc: 'Moderate soft echoes, warm glow for fruit bats' },
+                { material: 'Spider Web', reflectivity: '5-10%', color: '#94a3b8', desc: 'Nearly invisible! Very faint thin lines' },
                 { material: 'Open Air', reflectivity: '1-5%', color: '#334155', desc: 'Almost invisible (no echo)' }
               ].map(function(m, mi) {
                 return h('div', { key: mi, className: 'flex items-center gap-2' },
@@ -627,7 +961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       }
 
       function resetSonarState(idx) {
-        var scene = idx === 3 ? { objects: customObjects } : (SCENES[idx] || SCENES[0]);
+        var scene = idx === 4 ? { objects: customObjects } : (SCENES[idx] || SCENES[0]);
         var totalObj = 0;
         scene.objects.forEach(function(o) {
           if (o.type !== 'wall') totalObj++;
@@ -637,7 +971,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           flapPhase: 0, pulses: [], time: 0,
           discoveredIds: {}, discoveredCount: 0, totalObjects: totalObj,
           pulseCount: 0, nearestDist: 999, scene: idx,
-          mothsCaught: d.mothsCaught || 0, clarity: 0
+          mothsCaught: d.mothsCaught || 0, fruitCollected: d.fruitCollected || 0, clarity: 0,
+          energy: ENERGY_MAX, perching: false, pulseCooldownTimer: 0,
+          mothEvasionMsg: '', mothEvasionTimer: 0, sonarJammed: false, sonarJamTimer: 0,
+          drips: [], hiddenChamberFound: false
         };
         // Clear sonar buffer
         if (sonarBufferRef.current) {
@@ -648,11 +985,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
       function emitSonarPulse() {
         var st = sonarStateRef.current;
-        st.pulses.push({ x: st.batX, y: st.batY, radius: 5, maxRadius: 400 });
+        var sp = currentSpeciesData || PLAYABLE_SPECIES[0];
+        // Enforce cooldown
+        if (st.pulseCooldownTimer > 0) return;
+        st.pulseCooldownTimer = sp.pulseCooldown;
+        var maxR = sp.sonarRange ? sp.sonarRange * 1.6 : 400;
+        st.pulses.push({ x: st.batX, y: st.batY, radius: 5, maxRadius: maxR, width: sp.sonarWidth || Math.PI * 2 });
         st.pulseCount++;
-        // Audio chirp
+        // Audio chirp — frugivore uses tongue click
         if (typeof beep === 'function') {
-          try { beep(2000, 0.03, 0.15); } catch(e) {}
+          try {
+            if (sp.diet === 'fruit') { beep(800, 0.02, 0.1); }
+            else { beep(2000, 0.03, 0.15); }
+          } catch(e) {}
         }
         srAnnounce('Sonar pulse emitted');
       }
@@ -671,16 +1016,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         };
         var updated = (d.customObjects || []).concat([newObj]);
         updMulti({ customObjects: updated });
-        resetSonarState(3);
+        resetSonarState(4);
         if (addToast) addToast('\uD83C\uDFA8 Added ' + tp + ' to custom scene!', 'info');
       }
 
       // ── Sonar canvas animation loop ──
       useEffect(function() {
         if (tab !== 'sonar') return;
+        if (!selectedPlayableSpecies) return;
         var canvas = sonarCanvasRef.current;
         if (!canvas) return;
         var gfx = canvas.getContext('2d');
+        var sp = currentSpeciesData || PLAYABLE_SPECIES[0];
+        var isFrug = sp.diet === 'fruit';
 
         // Create offscreen sonar buffer
         if (!sonarBufferRef.current) {
@@ -694,6 +1042,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var st = sonarStateRef.current;
         st.totalObjects = 0;
         scene.objects.forEach(function(o) { if (o.type !== 'wall') st.totalObjects++; });
+
+        // Initialize drips for stalactites
+        if (st.drips.length === 0) {
+          scene.objects.forEach(function(obj) {
+            if (obj.type === 'stalactite') {
+              st.drips.push({ x: obj.x + obj.width / 2, y: obj.y + obj.height, vy: 0, active: false, timer: 2 + Math.random() * 5, ripple: 0 });
+            }
+          });
+        }
 
         // Key listeners
         var onKey = function(e) {
@@ -710,31 +1067,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var lastTime = performance.now();
 
         function objectBounds(obj) {
-          if (obj.type === 'moth' || obj.type === 'light') {
+          if (obj.type === 'moth' || obj.type === 'light' || obj.type === 'fruit') {
             return { cx: obj.x, cy: obj.y, r: obj.radius || 8 };
           }
-          if (obj.type === 'wall' && obj.segments) return null; // handled differently
+          if (obj.type === 'wall' && obj.segments) return null;
           return { x: obj.x || 0, y: obj.y || 0, w: obj.width || 30, h: obj.height || 30 };
         }
 
         function moveMoth(obj, dt) {
           if (!obj.moving) return;
-          if (!obj._vx) { obj._vx = (Math.random() - 0.5) * 60; obj._vy = (Math.random() - 0.5) * 60; obj._timer = Math.random() * 3; }
-          obj._timer -= dt;
-          if (obj._timer <= 0) {
-            obj._vx = (Math.random() - 0.5) * 80;
-            obj._vy = (Math.random() - 0.5) * 80;
-            obj._timer = 1 + Math.random() * 3;
+          var mtype = MOTH_TYPES[obj.mothType] || MOTH_TYPES.regular;
+          var spdMul = mtype.speed || 1;
+          if (!obj._vx) {
+            obj._vx = (Math.random() - 0.5) * 60 * spdMul;
+            obj._vy = (Math.random() - 0.5) * 60 * spdMul;
+            obj._timer = Math.random() * 3;
+            obj._sinPhase = Math.random() * Math.PI * 2;
           }
-          obj.x = clamp(obj.x + obj._vx * dt, 40, 760);
-          obj.y = clamp(obj.y + obj._vy * dt, 40, 460);
+          obj._timer -= dt;
+          obj._sinPhase += dt * 3;
+          // Erratic sinusoidal + random perturbation
+          if (obj._timer <= 0) {
+            obj._vx = (Math.random() - 0.5) * 80 * spdMul;
+            obj._vy = (Math.random() - 0.5) * 80 * spdMul;
+            obj._timer = 0.8 + Math.random() * 2.5;
+          }
+          // Sinusoidal wobble
+          var wobbleX = Math.sin(obj._sinPhase) * 15 * spdMul;
+          var wobbleY = Math.cos(obj._sinPhase * 0.7) * 10 * spdMul;
+          obj.x = clamp(obj.x + (obj._vx + wobbleX) * dt, 40, 760);
+          obj.y = clamp(obj.y + (obj._vy + wobbleY) * dt, 40, 460);
+        }
+
+        function mothEvade(obj) {
+          // Sonar evasion: moth heard the pulse
+          var mtype = MOTH_TYPES[obj.mothType] || MOTH_TYPES.regular;
+          if (Math.random() < (mtype.evasionChance || 0.4)) {
+            // Sudden direction change
+            obj._vx = (Math.random() - 0.5) * 200;
+            obj._vy = Math.abs(obj._vy) > 0 ? -obj._vy * 2 : (Math.random() - 0.5) * 200;
+            obj._timer = 0.3;
+            st.mothEvasionMsg = 'That moth heard your sonar! Many moths have evolved tympanic organs that detect bat echolocation, triggering evasive dives.';
+            st.mothEvasionTimer = 180; // frames
+            return true;
+          }
+          // Tiger moth jamming
+          if (mtype.jams && Math.random() < 0.5) {
+            st.sonarJammed = true;
+            st.sonarJamTimer = 60;
+            return true;
+          }
+          return false;
         }
 
         function checkPulseHits(pulse) {
           var hits = [];
           scene.objects.forEach(function(obj) {
             if (obj.type === 'wall' && obj.segments) {
-              // Check wall segments
               for (var i = 0; i < obj.segments.length - 1; i++) {
                 var sa = obj.segments[i];
                 var sb = obj.segments[i + 1];
@@ -756,12 +1145,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               hit = circleRectIntersect(pulse.x, pulse.y, pulse.radius, bounds.x, bounds.y, bounds.w, bounds.h);
             }
             if (hit) {
-              var cx = bounds.cx !== undefined ? bounds.cx : bounds.x + bounds.w / 2;
-              var cy = bounds.cy !== undefined ? bounds.cy : bounds.y + bounds.h / 2;
-              hits.push({ x: cx, y: cy, reflectivity: obj.reflectivity, id: obj.id, type: obj.type, material: obj.material, obj: obj });
+              var cx2 = bounds.cx !== undefined ? bounds.cx : bounds.x + bounds.w / 2;
+              var cy2 = bounds.cy !== undefined ? bounds.cy : bounds.y + bounds.h / 2;
+              hits.push({ x: cx2, y: cy2, reflectivity: obj.reflectivity, id: obj.id, type: obj.type, material: obj.material, obj: obj });
             }
           });
           return hits;
+        }
+
+        // Check if bat is touching a surface (for perching)
+        function checkPerch(bx, by) {
+          if (by <= 35) return true; // ceiling
+          if (bx <= 35 || bx >= 765) return true; // walls
+          // Check stalactites / buildings
+          var perched = false;
+          scene.objects.forEach(function(obj) {
+            if (perched) return;
+            if (obj.type === 'wall' && obj.segments) return;
+            var b = objectBounds(obj);
+            if (!b) return;
+            if (b.r !== undefined) return;
+            if (circleRectIntersect(bx, by, 12, b.x, b.y, b.w, b.h)) {
+              perched = true;
+            }
+          });
+          return perched;
         }
 
         function animate(now) {
@@ -771,22 +1179,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           st.time += dt;
 
           var keys = sonarKeysRef.current;
-          // Bat movement
-          var accel = 300;
-          var friction = 0.92;
-          if (keys['arrowleft'] || keys['a']) { st.batVx -= accel * dt; st.facing = -1; }
-          if (keys['arrowright'] || keys['d']) { st.batVx += accel * dt; st.facing = 1; }
-          if (keys['arrowup'] || keys['w']) st.batVy -= accel * dt;
-          if (keys['arrowdown'] || keys['s']) st.batVy += accel * dt;
-          st.batVx *= friction;
-          st.batVy *= friction;
-          st.batX = clamp(st.batX + st.batVx * dt, 30, 770);
-          st.batY = clamp(st.batY + st.batVy * dt, 30, 470);
-          st.flapPhase += dt * 8;
 
-          // Move moths
+          // ── BAT FLIGHT PHYSICS ──
+          var isFlapping = keys['arrowup'] || keys['w'];
+          var isDiving = keys['arrowdown'] || keys['s'];
+          var goLeft = keys['arrowleft'] || keys['a'];
+          var goRight = keys['arrowright'] || keys['d'];
+
+          // Check perching
+          var onSurface = checkPerch(st.batX, st.batY);
+          if (onSurface && !isFlapping && !isDiving && !goLeft && !goRight && Math.abs(st.batVx) < 0.5 && Math.abs(st.batVy) < 0.5) {
+            st.perching = true;
+            st.batVx = 0;
+            st.batVy = 0;
+            // Regenerate energy while perching
+            st.energy = Math.min(ENERGY_MAX, st.energy + PERCH_REGEN);
+          } else {
+            st.perching = false;
+          }
+
+          if (!st.perching) {
+            // Gravity
+            st.batVy += GRAVITY;
+            if (st.batVy > MAX_FALL_SPEED) st.batVy = MAX_FALL_SPEED;
+
+            // Horizontal movement
+            var hAccel = sp.speed * 60;
+            if (goLeft) { st.batVx -= hAccel * dt; st.facing = -1; }
+            if (goRight) { st.batVx += hAccel * dt; st.facing = 1; }
+
+            // Flap thrust (only if energy > 0)
+            if (isFlapping && st.energy > 0) {
+              st.batVy += FLAP_IMPULSE * dt * 60;
+              st.energy -= sp.energyDrain;
+              st.flapPhase += dt * 20; // fast wing flap
+            } else if (isDiving) {
+              st.batVy += 2 * dt * 60;
+              st.flapPhase += dt * 2; // wings folded
+            } else {
+              st.flapPhase += dt * 4; // gentle glide
+            }
+
+            // Energy drain from flight
+            if (Math.abs(st.batVx) > 1 || Math.abs(st.batVy) > 1) {
+              st.energy -= sp.energyDrain * 0.3;
+            }
+            st.energy = Math.max(0, st.energy);
+
+            // Air friction
+            st.batVx *= AIR_FRICTION;
+            st.batVy *= AIR_FRICTION;
+
+            // If no energy, can only glide down
+            if (st.energy <= 0) {
+              if (st.batVy < 0) st.batVy *= 0.5; // can't flap up
+            }
+
+            st.batX = clamp(st.batX + st.batVx * dt, 30, 770);
+            st.batY = clamp(st.batY + st.batVy * dt, 30, 470);
+          }
+
+          // Pulse cooldown timer
+          if (st.pulseCooldownTimer > 0) st.pulseCooldownTimer--;
+          // Moth evasion message timer
+          if (st.mothEvasionTimer > 0) st.mothEvasionTimer--;
+          // Sonar jam timer
+          if (st.sonarJamTimer > 0) st.sonarJamTimer--;
+          if (st.sonarJamTimer <= 0) st.sonarJammed = false;
+
+          // Move moths (with improved AI)
           scene.objects.forEach(function(obj) {
-            if (obj.moving) moveMoth(obj, dt);
+            if (obj.type === 'moth' && obj.moving) moveMoth(obj, dt);
+          });
+
+          // Update stalactite drips
+          st.drips.forEach(function(drip) {
+            if (!drip.active) {
+              drip.timer -= dt;
+              if (drip.timer <= 0) {
+                drip.active = true;
+                drip.vy = 0;
+                drip.currentY = drip.y;
+              }
+            } else {
+              drip.vy += 2;
+              drip.currentY += drip.vy * dt;
+              if (drip.currentY > 480) {
+                drip.active = false;
+                drip.timer = 3 + Math.random() * 6;
+                drip.ripple = 8;
+                drip.rippleX = drip.x;
+                drip.rippleY = 480;
+              }
+            }
+            if (drip.ripple > 0) drip.ripple -= dt * 8;
           });
 
           // Update pulses & check hits
@@ -798,11 +1284,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               st.pulses.splice(pi, 1);
               continue;
             }
+            // If sonar is jammed, add static noise instead of clean echoes
+            if (st.sonarJammed) {
+              for (var jj = 0; jj < 3; jj++) {
+                var jx = st.batX + (Math.random() - 0.5) * pulse.radius * 2;
+                var jy = st.batY + (Math.random() - 0.5) * pulse.radius * 2;
+                bufCtx.fillStyle = 'rgba(255,100,100,' + (Math.random() * 0.3) + ')';
+                bufCtx.beginPath();
+                bufCtx.arc(jx, jy, 2 + Math.random() * 3, 0, Math.PI * 2);
+                bufCtx.fill();
+              }
+            }
             var hits = checkPulseHits(pulse);
             hits.forEach(function(hit) {
               var dist = Math.sqrt((hit.x - st.batX) * (hit.x - st.batX) + (hit.y - st.batY) * (hit.y - st.batY));
               if (dist < nearestDist) nearestDist = dist;
               var brightness = Math.min(1, hit.reflectivity / (1 + dist * dist / 40000));
+              if (st.sonarJammed) brightness *= 0.3;
 
               // Draw echo on sonar buffer
               var echoColor;
@@ -816,21 +1314,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 echoColor = 'rgba(180,140,100,' + (brightness * 0.7) + ')';
               } else if (hit.material === 'light') {
                 echoColor = 'rgba(255,255,200,' + (brightness * 0.3) + ')';
+              } else if (hit.material === 'organic') {
+                echoColor = 'rgba(200,180,120,' + (brightness * 0.5) + ')';
+              } else if (hit.material === 'silk') {
+                echoColor = 'rgba(200,200,220,' + (brightness * 0.15) + ')';
               } else {
                 echoColor = 'rgba(200,200,200,' + (brightness * 0.2) + ')';
               }
 
               bufCtx.fillStyle = echoColor;
-              var dotSize = hit.material === 'soft' ? 3 : 5;
-              // Draw at the hit point
+              // Draw at the hit point based on type
               if (hit.obj && hit.obj.type === 'moth') {
+                bufCtx.beginPath();
+                bufCtx.arc(hit.x, hit.y, hit.obj.radius + 2, 0, Math.PI * 2);
+                bufCtx.fill();
+                // Moth evasion
+                mothEvade(hit.obj);
+              } else if (hit.obj && hit.obj.type === 'fruit') {
                 bufCtx.beginPath();
                 bufCtx.arc(hit.x, hit.y, hit.obj.radius + 2, 0, Math.PI * 2);
                 bufCtx.fill();
               } else if (hit.obj && (hit.obj.type === 'building' || hit.obj.type === 'rock' || hit.obj.type === 'tree')) {
                 bufCtx.fillRect(hit.obj.x, hit.obj.y, hit.obj.width, hit.obj.height);
               } else if (hit.obj && (hit.obj.type === 'stalactite' || hit.obj.type === 'stalagmite')) {
-                // Triangle shape
                 bufCtx.beginPath();
                 if (hit.obj.type === 'stalactite') {
                   bufCtx.moveTo(hit.obj.x, hit.obj.y);
@@ -844,9 +1350,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 bufCtx.fill();
               } else if (hit.obj && hit.obj.type === 'water') {
                 bufCtx.fillRect(hit.obj.x, hit.obj.y, hit.obj.width, hit.obj.height);
+              } else if (hit.obj && hit.obj.type === 'web') {
+                // Very faint web echo
+                drawSpiderWeb(bufCtx, hit.obj.x, hit.obj.y, hit.obj.width, hit.obj.height, brightness * 0.3);
+              } else if (hit.obj && hit.obj.type === 'colony') {
+                // Bat colony cluster
+                bufCtx.fillStyle = 'rgba(251,191,36,' + (brightness * 0.4) + ')';
+                for (var bc = 0; bc < 8; bc++) {
+                  var bcx = hit.obj.x + Math.random() * hit.obj.width;
+                  var bcy = hit.obj.y + Math.random() * hit.obj.height;
+                  bufCtx.beginPath();
+                  bufCtx.arc(bcx, bcy, 3, 0, Math.PI * 2);
+                  bufCtx.fill();
+                }
+              } else if (hit.obj && hit.obj.type === 'vine') {
+                bufCtx.fillRect(hit.obj.x, hit.obj.y, hit.obj.width, hit.obj.height);
               } else {
                 bufCtx.beginPath();
-                bufCtx.arc(hit.x, hit.y, dotSize, 0, Math.PI * 2);
+                bufCtx.arc(hit.x, hit.y, 5, 0, Math.PI * 2);
                 bufCtx.fill();
               }
 
@@ -854,24 +1375,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               if (hit.id && !st.discoveredIds[hit.id]) {
                 st.discoveredIds[hit.id] = true;
                 st.discoveredCount++;
-                srAnnounce('Object discovered: ' + (hit.type || 'unknown') + ' at distance ' + Math.round(dist) + ' pixels');
+                var typeLabel = hit.type || 'unknown';
+                if (hit.type === 'colony') typeLabel = 'bat colony';
+                if (hit.type === 'passage') typeLabel = 'hidden passage';
+                if (hit.type === 'web') typeLabel = 'spider web';
+                srAnnounce('Object discovered: ' + typeLabel + ' at distance ' + Math.round(dist) + ' pixels');
                 if (typeof beep === 'function') {
                   try { beep(1200, 0.05, 0.1); } catch(e) {}
                 }
+                // Hidden chamber discovery
+                if (hit.type === 'passage' && !st.hiddenChamberFound) {
+                  st.hiddenChamberFound = true;
+                  if (addToast) addToast('\uD83D\uDD73\uFE0F Hidden passage discovered! A narrow gap leads to a secret chamber...', 'success');
+                  if (typeof awardXP === 'function') awardXP(15);
+                }
               }
 
-              // Moth catching (proximity)
-              if (hit.type === 'moth' && dist < 40) {
+              // Prey catching
+              var catchR = sp.catchRadius || 20;
+              if (hit.type === 'moth' && !isFrug && dist < catchR) {
+                var mtype = MOTH_TYPES[hit.obj.mothType] || MOTH_TYPES.regular;
                 st.mothsCaught++;
+                st.energy = Math.min(ENERGY_MAX, st.energy + (mtype.energyValue || ENERGY_CATCH_BONUS));
                 var mObj = hit.obj;
                 mObj.x = 100 + Math.random() * 600;
                 mObj.y = 80 + Math.random() * 340;
                 var newCount = (d.mothsCaught || 0) + 1;
                 upd('mothsCaught', newCount);
-                if (addToast) addToast('\uD83E\uDD8B Moth caught! (' + newCount + '/10)', 'success');
+                var mtLabel = mtype.label || 'Moth';
+                if (addToast) addToast('\uD83E\uDD8B ' + mtLabel + ' ' + sp.catchVerb + '! (' + newCount + '/10) +' + (mtype.energyValue || 15) + ' energy', 'success');
                 if (typeof awardXP === 'function') awardXP(5);
                 if (newCount >= 10 && typeof celebrate === 'function') celebrate();
-                srAnnounce('Moth caught! Total: ' + newCount);
+                srAnnounce(mtLabel + ' caught! Total: ' + newCount);
+              }
+              if (hit.type === 'fruit' && isFrug && dist < catchR) {
+                st.fruitCollected++;
+                st.energy = Math.min(ENERGY_MAX, st.energy + ENERGY_CATCH_BONUS);
+                var fObj = hit.obj;
+                var ftName = (FRUIT_TYPES[fObj.fruitType] || FRUIT_TYPES.mango).name;
+                fObj.x = 100 + Math.random() * 600;
+                fObj.y = 80 + Math.random() * 340;
+                var newFCount = (d.fruitCollected || 0) + 1;
+                upd('fruitCollected', newFCount);
+                if (addToast) addToast('\uD83C\uDF4C ' + ftName + ' ' + sp.catchVerb + '! (' + newFCount + '/10) +15 energy', 'success');
+                if (typeof awardXP === 'function') awardXP(5);
+                if (newFCount >= 10 && typeof celebrate === 'function') celebrate();
+                srAnnounce(ftName + ' collected! Total: ' + newFCount);
               }
             });
           }
@@ -896,7 +1445,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           bufCtx.fillRect(0, 0, 800, 500);
 
           // ── RENDER ──
-          // Clear main canvas
           gfx.fillStyle = scene.bg || '#0a0a1a';
           gfx.fillRect(0, 0, 800, 500);
 
@@ -913,6 +1461,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             }
           });
 
+          // Draw fruit glow for frugivore (night vision)
+          if (isFrug) {
+            scene.objects.forEach(function(obj) {
+              if (obj.type === 'fruit') {
+                drawFruit(gfx, obj.x, obj.y, obj.radius, obj.fruitType, 0.6);
+              }
+            });
+          }
+
+          // Draw stalactite drips
+          st.drips.forEach(function(drip) {
+            if (drip.active) {
+              gfx.fillStyle = 'rgba(100,160,255,0.5)';
+              gfx.beginPath();
+              gfx.arc(drip.x, drip.currentY, 2, 0, Math.PI * 2);
+              gfx.fill();
+            }
+            if (drip.ripple > 0) {
+              var ripAlpha = drip.ripple / 8;
+              gfx.strokeStyle = 'rgba(100,160,255,' + (ripAlpha * 0.4) + ')';
+              gfx.lineWidth = 1;
+              gfx.beginPath();
+              gfx.arc(drip.rippleX, drip.rippleY, (8 - drip.ripple) * 3, 0, Math.PI * 2);
+              gfx.stroke();
+            }
+          });
+
           // Draw sonar buffer (the persistent echo image)
           gfx.drawImage(sonarBufferRef.current, 0, 0);
 
@@ -921,8 +1496,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             drawSonarPulse(gfx, p.x, p.y, p.radius, p.maxRadius, true);
           });
 
-          // Draw bat
-          drawBat(gfx, st.batX, st.batY, 18, st.flapPhase, st.facing, true);
+          // Draw bat with species-appropriate size and color
+          var batSize = sp.size ? sp.size * 2 : 18;
+          drawBat(gfx, st.batX, st.batY, batSize, st.flapPhase, st.facing, true);
+
+          // Perching indicator
+          if (st.perching) {
+            gfx.fillStyle = 'rgba(250,204,21,0.4)';
+            gfx.font = '8px system-ui';
+            gfx.textAlign = 'center';
+            gfx.fillText('Perching... \u26A1+' + PERCH_REGEN + '/frame', st.batX, st.batY + batSize + 10);
+          }
 
           // Bat glow effect
           var batGrad = gfx.createRadialGradient(st.batX, st.batY, 0, st.batX, st.batY, 25);
@@ -932,6 +1516,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           gfx.beginPath();
           gfx.arc(st.batX, st.batY, 25, 0, Math.PI * 2);
           gfx.fill();
+
+          // Energy bar on canvas HUD
+          gfx.fillStyle = 'rgba(0,0,0,0.5)';
+          gfx.fillRect(10, 10, 104, 12);
+          var eColor = st.energy > 30 ? '#f59e0b' : '#ef4444';
+          gfx.fillStyle = eColor;
+          gfx.fillRect(12, 12, st.energy, 8);
+          gfx.fillStyle = 'rgba(255,255,255,0.7)';
+          gfx.font = '8px system-ui';
+          gfx.textAlign = 'left';
+          gfx.fillText('\u26A1 ' + Math.round(st.energy) + '%', 14, 19);
+
+          // Species label
+          gfx.fillStyle = 'rgba(255,255,255,0.4)';
+          gfx.font = '8px system-ui';
+          gfx.textAlign = 'right';
+          gfx.fillText(sp.emoji + ' ' + sp.name, 790, 19);
 
           sonarAnimRef.current = requestAnimationFrame(animate);
         }
@@ -944,7 +1545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           window.removeEventListener('keydown', onKey);
           window.removeEventListener('keyup', onKey);
         };
-      }, [tab, sceneIdx]);
+      }, [tab, sceneIdx, selectedPlayableSpecies]);
 
 
       // ═════════════════════════════════════════
