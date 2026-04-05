@@ -1,32 +1,44 @@
 const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
 // ── TTS utility for read-aloud accessibility ──
-// Prefers Kokoro WASM TTS (high quality, offline) → browser TTS fallback
+// TTS priority: Gemini (selected voice) → Kokoro → Browser fallback
 let _speakAudio = null;
 const speakText = (text) => {
   if (!text) return;
   const str = String(text);
   try {
-    // Stop any current playback
     if (_speakAudio) { try { _speakAudio.pause(); _speakAudio = null; } catch(e) {} }
     if (window.speechSynthesis) window.speechSynthesis.cancel();
 
-    // ── Try Kokoro first ──
-    if (window._kokoroTTS && typeof window._kokoroTTS.speak === 'function') {
-      window._kokoroTTS.speak(str, 'af_heart', 1).then((url) => {
+    // ── Priority 1: Gemini TTS (uses selected voice from app settings) ──
+    if (window.__alloCallTTS && typeof window.__alloCallTTS === 'function') {
+      const voice = window.__alloSelectedVoice || 'Kore';
+      window.__alloCallTTS(str, voice, 1).then((url) => {
         if (url) {
           _speakAudio = new Audio(url);
           _speakAudio.playbackRate = 0.95;
           _speakAudio.play().catch(() => {});
-        } else {
-          _browserTTSFallback(str);
-        }
-      }).catch(() => _browserTTSFallback(str));
+        } else { _kokoroFallback(str); }
+      }).catch(() => _kokoroFallback(str));
       return;
     }
-    // ── Browser TTS fallback ──
-    _browserTTSFallback(str);
+    // ── Priority 2: Kokoro ──
+    _kokoroFallback(str);
   } catch (e) { console.warn('TTS failed', e); }
+};
+const _kokoroFallback = (str) => {
+  if (window._kokoroTTS && typeof window._kokoroTTS.speak === 'function') {
+    const voice = window.__alloSelectedVoice || 'af_heart';
+    window._kokoroTTS.speak(str, voice, 1).then((url) => {
+      if (url) {
+        _speakAudio = new Audio(url);
+        _speakAudio.playbackRate = 0.95;
+        _speakAudio.play().catch(() => {});
+      } else { _browserTTSFallback(str); }
+    }).catch(() => _browserTTSFallback(str));
+    return;
+  }
+  _browserTTSFallback(str);
 };
 const _browserTTSFallback = (text) => {
   if (window.speechSynthesis) {

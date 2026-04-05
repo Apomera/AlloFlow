@@ -98,30 +98,40 @@ const speakText = (text) => {
   const str = String(text);
   try {
     if (_speakAudio) {
-      try {
-        _speakAudio.pause();
-        _speakAudio = null;
-      } catch (e) {
-      }
+      try { _speakAudio.pause(); _speakAudio = null; } catch (e) {}
     }
     if (window.speechSynthesis) window.speechSynthesis.cancel();
-    if (window._kokoroTTS && typeof window._kokoroTTS.speak === "function") {
-      window._kokoroTTS.speak(str, "af_heart", 1).then((url) => {
+    // Priority 1: Gemini TTS (uses currently selected voice from app settings)
+    if (window.__alloCallTTS && typeof window.__alloCallTTS === 'function') {
+      var voice = window.__alloSelectedVoice || 'Kore';
+      window.__alloCallTTS(str, voice, 1).then(function(url) {
         if (url) {
           _speakAudio = new Audio(url);
           _speakAudio.playbackRate = 0.95;
-          _speakAudio.play().catch(() => {
-          });
-        } else {
-          _browserTTSFallback(str);
-        }
-      }).catch(() => _browserTTSFallback(str));
+          _speakAudio.play().catch(function() {});
+        } else { _kokoroFallback(str); }
+      }).catch(function() { _kokoroFallback(str); });
       return;
     }
-    _browserTTSFallback(str);
+    // Priority 2: Kokoro TTS
+    _kokoroFallback(str);
   } catch (e) {
     console.warn("TTS failed", e);
   }
+};
+const _kokoroFallback = (str) => {
+  if (window._kokoroTTS && typeof window._kokoroTTS.speak === "function") {
+    var voice = window.__alloSelectedVoice || 'af_heart';
+    window._kokoroTTS.speak(str, voice, 1).then(function(url) {
+      if (url) {
+        _speakAudio = new Audio(url);
+        _speakAudio.playbackRate = 0.95;
+        _speakAudio.play().catch(function() {});
+      } else { _browserTTSFallback(str); }
+    }).catch(function() { _browserTTSFallback(str); });
+    return;
+  }
+  _browserTTSFallback(str);
 };
 const _browserTTSFallback = (text) => {
   if (window.speechSynthesis) {

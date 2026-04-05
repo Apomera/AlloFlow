@@ -7171,27 +7171,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/content_engine_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7207,7 +7207,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -17197,6 +17197,9 @@ Return ONLY valid JSON:
     return finalLines.join('\n');
   };
   // ── Content Engine delegated to content_engine_module.js ──
+  // Expose callTTS globally for CDN modules (games, etc.) that need it
+  window.__alloCallTTS = callTTS;
+  window.__alloSelectedVoice = selectedVoice;
   window.__contentEngineState = {
     inputText, gradeLevel, sourceTopic, generatedContent,
     leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
@@ -17386,12 +17389,23 @@ Return ONLY valid JSON:
                textToSpeak = textToSpeak.replace(/^(\*+)?([A-Za-z]+)(\*+)?:\s*/, '');
           }
           if (mode === 'persona' && activeSpeaker && activeSpeaker !== selectedVoice) {
-              // Only add character voice prompt if Gemini TTS is likely to handle it
-              // (Kokoro/Piper ignore this tag but it doesn't break them — it just gets read literally)
-              // So we wrap it in a way that Gemini TTS interprets but local engines skip
+              // Build a voice profile instruction for consistent accent/tone across all TTS calls
               const geminiAvailable = !_isCanvasEnv || (Date.now() >= globalTtsRateLimitedUntil);
               if (geminiAvailable) {
-                  textToSpeak = `[speak in character as ${activeSpeaker}] ${textToSpeak}`;
+                  // Find the character's voice profile for consistent accent instructions
+                  let voiceInstruction = `[speak in character as ${activeSpeaker}]`;
+                  const isPanelMode = personaState.selectedCharacters && personaState.selectedCharacters.length > 0;
+                  const speakingChar = isPanelMode
+                    ? personaState.selectedCharacters.find(c => c.voice === activeSpeaker || c.name === currentMsg?.speakerName)
+                    : personaState.selectedCharacter;
+                  if (speakingChar && speakingChar.voiceProfile) {
+                    // Use the detailed voice profile for consistent accent/tone
+                    voiceInstruction = `[Voice direction: ${speakingChar.voiceProfile}. Maintain this exact accent and speaking style consistently throughout.]`;
+                  } else if (speakingChar && speakingChar.name) {
+                    // Fallback: use character name + role for basic voice guidance
+                    voiceInstruction = `[Speak as ${speakingChar.name}${speakingChar.role ? ', ' + speakingChar.role : ''}${speakingChar.year ? ' from ' + speakingChar.year : ''}. Stay in character with a consistent accent and tone.]`;
+                  }
+                  textToSpeak = voiceInstruction + ' ' + textToSpeak;
               }
           }
            // Strip markdown formatting before TTS (prevents reading # * _ etc.)
@@ -24448,6 +24462,8 @@ Return ONLY JSON.`;
              "Zephyr" (Light/Younger Male),
              "Aoede" (Standard Female)
             ]
+            VOICE PROFILE:
+            For each character, write a "voiceProfile" string describing EXACTLY how they should sound aloud. Include their accent/dialect (e.g., "British Received Pronunciation", "Southern American drawl"), speaking pace, emotional tone, and any speech mannerisms. This must be specific and consistent. Example: "Speaks with a refined British accent, measured pace, warm but authoritative tone, uses deliberate pauses between key points."
             Return ONLY a JSON array of objects with this exact structure:
             [
                 {
@@ -24459,6 +24475,7 @@ Return ONLY JSON.`;
                     "artStyle": "The specific art style string selected based on era",
                     "greeting": "A short, engaging starting message from this character to the student.",
                     "voice": "SelectedVoiceName",
+                    "voiceProfile": "Detailed description of how this character sounds: accent, pace, tone, mannerisms",
                     "initialRapport": 10,
                     "quests": [
                         { "id": "q1", "text": "Objective text...", "difficulty": 20, "isCompleted": false },
@@ -27604,12 +27621,14 @@ Create a complete DBQ activity packet with these components:
 
 1. HISTORICAL CONTEXT: A brief (2-3 sentence) introduction that sets the stage for students.${isElementary ? ' Use simple, engaging language.' : ''}
 
-2. DOCUMENTS: Extract or create ${isElementary ? '3' : '4-5'} document excerpts from the source material. Each document should be:
+2. DOCUMENTS: Extract or create ${isElementary ? '3' : isMiddle ? '4' : '5-6'} document excerpts from the source material. Each document MUST be:
+   - A SUBSTANTIAL passage — ${isElementary ? 'at least 50-100 words each. Students need enough text to practice reading and finding evidence.' : isMiddle ? 'at least 100-200 words each. Include enough detail for students to analyze author perspective and identify key evidence.' : 'at least 200-400 words each. AP/high school documents must be long enough for deep textual analysis, sourcing, and corroboration.'}
    - A distinct passage, quote, data point, or perspective from the text
    - Labeled (Document A, Document B, etc.)
    - Accompanied by a source citation (author, date, context)
-   - Adapted to ${gradeLevel} reading level
+   - Adapted to ${gradeLevel} reading level — ${isElementary ? 'use simple vocabulary and short sentences' : isMiddle ? 'use grade-appropriate vocabulary with context clues for harder terms' : 'maintain original complexity and academic vocabulary'}
    - Include a "documentType" field: one of "primary", "secondary", "data", "visual", "testimony"
+   - IMPORTANT: Do NOT truncate or over-summarize. Real DBQ documents are meaty — give students something substantial to work with.
 
 3. HAPP SOURCING FRAMEWORK: For each document, provide structured HAPP (Historical context, Audience, Purpose, Point of view) scaffolding:
    - "happPrompts": An object with guiding questions for each HAPP dimension
@@ -32786,21 +32805,22 @@ Return ONLY JSON:
                                 <CharacterColumn character={personaState.selectedCharacters[0]} side="left" onRetryPortrait={handleRetryPortraitGeneration} />
                             </div>
                             <div className="flex-1 flex flex-col bg-slate-50/50 relative min-w-[320px]">
-                                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" ref={personaScrollRef}>
+                                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-label="Interview conversation">
                                     {personaState.chatHistory.map((msg, idx) => {
                                         const isUser = msg.role === 'user';
                                         const isCharB = !isUser && msg.speakerName === personaState.selectedCharacters[1]?.name;
+                                        const speakerLabel = isUser ? 'You' : msg.speakerName;
                                         return (
-                                            <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`}>
+                                            <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`} aria-label={speakerLabel + ' said: ' + msg.text.substring(0, 100)}>
                                                  <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border ${
-                                                    isUser ? 'bg-indigo-50 text-indigo-900 border-indigo-200 rounded-br-none' :
+                                                    isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' :
                                                     isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' :
                                                     'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'
                                                  }`}>
                                                     {msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')}
                                                  </div>
-                                                 <span className="text-[10px] text-slate-500 mt-1 px-1 font-bold uppercase tracking-wider">
-                                                    {isUser ? 'You' : msg.speakerName}
+                                                 <span className="text-[9px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider">
+                                                    {speakerLabel}
                                                  </span>
                                             </div>
                                         );
@@ -32898,7 +32918,8 @@ Return ONLY JSON:
                                                 disabled={personaState.isLoading}
                                             />
                                             <button
-                                                aria-label={t('common.refresh')}
+                                                aria-label={personaState.isLoading ? 'Waiting for response...' : 'Send message to interview subject'}
+                                                aria-busy={personaState.isLoading ? 'true' : 'false'}
                                                 onClick={() => handlePanelChatSubmit(personaInput)}
                                                 disabled={!personaInput.trim() || personaState.isLoading}
                                                 className="bg-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -33220,7 +33241,7 @@ Return ONLY JSON:
                         </button>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef}>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-label="Interview conversation with character">
                         {(!personaState.chatHistory || personaState.chatHistory.length === 0) && (
                             <div className="text-center py-10 text-slate-500 italic">
                                 {t('persona.empty_chat_instruction')}
@@ -33350,11 +33371,13 @@ Return ONLY JSON:
                                     disabled={personaState.isLoading}
                                 />
                                 <button
+                                    aria-label={personaState.isLoading ? 'Waiting for response...' : 'Send question to ' + (personaState.selectedCharacter?.name || 'character')}
+                                    aria-busy={personaState.isLoading ? 'true' : 'false'}
                                     onClick={() => handlePersonaChatSubmit()}
                                     disabled={!personaInput.trim() || personaState.isLoading}
-                                    className="bg-yellow-500 hover:bg-yellow-600 text-indigo-900 font-bold p-3 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transform active:scale-95 disabled:active:scale-100 disabled:cursor-not-allowed"
+                                    className="bg-yellow-500 hover:bg-yellow-600 text-indigo-900 font-bold p-3 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center active:scale-95"
                                 >
-                                    <Send size={20}/>
+                                    {personaState.isLoading ? <RefreshCw size={20} className="animate-spin"/> : <Send size={20}/>}
                                 </button>
                             </div>
                         )}
