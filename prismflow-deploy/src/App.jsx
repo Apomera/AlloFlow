@@ -7115,27 +7115,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    loadModule('StoryForge', './story_forge_module.js');
-    loadModule('LitLab', './story_stage_module.js');
-    loadModule('VisualPanelModule', './visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
-    loadModule('AdventureModule', './adventure_module.js');
-    loadModule('StudentInteractionModule', './student_interaction_module.js');
-    loadModule('UIModalsModule', './ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
-    loadModule('PersonaUIModule', './persona_ui_module.js');
-    loadModule('DocPipelineModule', './doc_pipeline_module.js');
-    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7151,7 +7151,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4afbf29/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -49606,29 +49606,80 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   </div>
                 </details>
-                {/* Style preference for remediation output */}
+                {/* Style & Branding for remediation output */}
                 <details className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden mb-3">
                   <summary className="px-3 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
-                    ✨ Output Style (optional)
+                    ✨ Output Style & Branding (optional)
                   </summary>
-                  <div className="px-3 pb-3 pt-1">
-                    <p className="text-[9px] text-slate-400 mb-2">Choose a visual style for the remediated document. Applied during generation — no extra processing time.</p>
-                    <div className="flex flex-wrap gap-1">
-                      {[
-                        { id: '', label: '📄 Default', desc: 'Clean, professional' },
-                        { id: 'academic', label: '🏫 Academic', desc: 'Serif, navy/gold' },
-                        { id: 'elementary', label: '🌈 Kid-Friendly', desc: 'Bright, playful' },
-                        { id: 'dark', label: '🌙 Dark Mode', desc: 'Dark, easy on eyes' },
-                        { id: 'magazine', label: '📰 Magazine', desc: 'Editorial layout' },
-                        { id: 'minimal', label: '🧊 Minimal', desc: 'Clean whitespace' },
-                      ].map(s => (
-                        <button key={s.id} onClick={() => { window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); if (s.id) document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); else document.querySelector('[data-style-pref=""]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
-                          data-style-pref={s.id}
-                          className={`px-2 py-1.5 rounded-lg border text-left transition-all ${!s.id ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
-                          <div className="text-[9px] font-bold text-slate-700">{s.label}</div>
-                          <div className="text-[8px] text-slate-400">{s.desc}</div>
+                  <div className="px-3 pb-3 pt-1 space-y-3">
+                    {/* Branding source */}
+                    <div>
+                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Brand Colors</div>
+                      <div className="flex flex-wrap gap-1">
+                        <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
+                          data-brand-mode="auto"
+                          className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200">
+                          <div className="text-[9px] font-bold text-slate-700">🎨 Match Original</div>
+                          <div className="text-[8px] text-slate-400">Extract colors from this PDF</div>
                         </button>
-                      ))}
+                        <label data-brand-mode="upload"
+                          className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 cursor-pointer">
+                          <div className="text-[9px] font-bold text-slate-700">📎 Upload Brand Guide</div>
+                          <div className="text-[8px] text-slate-400">Use a different doc/logo</div>
+                          <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
+                            const file = e.target.files?.[0]; if (!file || !callGeminiVision) return;
+                            addToast('🎨 Extracting brand colors...', 'info');
+                            const reader = new FileReader();
+                            reader.onload = async (ev) => {
+                              try {
+                                const base64 = ev.target.result.split(',')[1];
+                                const mime = file.type.includes('pdf') ? 'application/pdf' : file.type || 'image/png';
+                                const result = await callGeminiVision(
+                                  `Analyze this document/image and extract the brand color scheme and typography.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex","bgColor":"hex","headerBg":"hex","headerText":"hex","tableBg":"hex","tableBorder":"hex","bodyFont":"CSS font-family","headingFont":"CSS font-family"}`,
+                                  base64, mime
+                                );
+                                let cleaned = result.trim();
+                                if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+                                window.__pdfBrandOverride = JSON.parse(cleaned);
+                                window.__pdfBrandMode = 'upload';
+                                document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'));
+                                document.querySelector('[data-brand-mode="upload"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50');
+                                addToast('🎨 Brand colors extracted from ' + file.name, 'success');
+                              } catch(err) { addToast('Could not extract brand colors', 'error'); }
+                            };
+                            reader.readAsDataURL(file);
+                            e.target.value = '';
+                          }} />
+                        </label>
+                        <button onClick={() => { window.__pdfBrandMode = 'none'; window.__pdfBrandOverride = null; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="none"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
+                          data-brand-mode="none"
+                          className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
+                          <div className="text-[9px] font-bold text-slate-700">⬜ No Branding</div>
+                          <div className="text-[8px] text-slate-400">Use default palette</div>
+                        </button>
+                      </div>
+                    </div>
+                    {/* Visual style presets */}
+                    <div>
+                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Visual Style</div>
+                      <p className="text-[8px] text-slate-400 mb-1.5">Applied during generation — no extra processing time.</p>
+                      <div className="flex flex-wrap gap-1">
+                        {[
+                          { id: '', label: '📄 Default', desc: 'Clean, professional' },
+                          { id: 'academic', label: '🏫 Academic', desc: 'Serif, navy/gold' },
+                          { id: 'elementary', label: '🌈 Kid-Friendly', desc: 'Bright, playful' },
+                          { id: 'dark', label: '🌙 Dark Mode', desc: 'Dark, easy on eyes' },
+                          { id: 'magazine', label: '📰 Magazine', desc: 'Editorial layout' },
+                          { id: 'minimal', label: '🧊 Minimal', desc: 'Clean whitespace' },
+                        ].map(s => (
+                          <button key={s.id} onClick={() => { window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); if (s.id) document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); else document.querySelector('[data-style-pref=""]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
+                            data-style-pref={s.id}
+                            className={`px-2 py-1.5 rounded-lg border text-left transition-all ${!s.id ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
+                            <div className="text-[9px] font-bold text-slate-700">{s.label}</div>
+                            <div className="text-[8px] text-slate-400">{s.desc}</div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </details>
