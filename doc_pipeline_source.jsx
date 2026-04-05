@@ -3389,11 +3389,21 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
           html += `<div style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:12px;text-align:center;margin:0.5rem 0"><div style="font-weight:bold;color:#16a34a">Zero WCAG violations detected by axe-core</div></div>`;
         }
         if (axe.critical?.length || axe.serious?.length || axe.moderate?.length) {
+          html += `<h3 style="color:#dc2626;margin-top:1rem">Remaining Violations</h3>`;
           html += `<table><thead><tr><th>Rule</th><th>Impact</th><th>Description</th><th>Elements</th></tr></thead><tbody>`;
           [...(axe.critical || []), ...(axe.serious || []), ...(axe.moderate || [])].forEach(v => {
             html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px;font-family:monospace">${v.id}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px;font-weight:bold;color:${v.impact === 'critical' ? '#dc2626' : v.impact === 'serious' ? '#ea580c' : '#d97706'}">${v.impact}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px">${v.description}</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:center">${v.nodes}</td></tr>`;
           });
           html += `</tbody></table>`;
+        }
+        // ── Passed Checks Detail ──
+        if (axe.passes?.length > 0) {
+          html += `<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:bold;color:#16a34a;font-size:14px">✅ ${axe.passes.length} Checks Passed (click to expand)</summary>`;
+          html += `<table style="margin-top:8px"><thead><tr><th>Rule</th><th>Description</th><th>WCAG</th><th>Elements Checked</th></tr></thead><tbody>`;
+          axe.passes.forEach(p => {
+            html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px;font-family:monospace;color:#16a34a">${p.id}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px">${p.description}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px;color:#64748b">${p.wcag || '—'}</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-size:12px">${p.nodes}</td></tr>`;
+          });
+          html += `</tbody></table></details>`;
         }
       }
     }
