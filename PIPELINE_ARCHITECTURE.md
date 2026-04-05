@@ -307,15 +307,23 @@ Gemini's vision capabilities can evaluate the visual design of remediated docume
 
 ---
 
+## How the Output Works
+
+The pipeline uses HTML as its working format internally because HTML provides full semantic control over accessibility features (landmarks, ARIA attributes, heading hierarchy, table structure) that the original PDF format lacks. However, from the user's perspective:
+
+- **PDF in → PDF out.** The user uploads a PDF and can save the remediated version as a PDF via the built-in print-to-PDF function. The output PDF is a tagged, accessible PDF generated from the semantically correct HTML.
+- **Multiple output formats available.** The same remediated document can also be downloaded as ePub (e-readers), Electronic Braille (BRF), Plain Text, Markdown, or kept as HTML.
+- **The original PDF is not modified.** The pipeline creates a new, accessible version rather than editing the original file. This preserves the original for reference.
+
+---
+
 ## Current Limitations
 
-1. **Fix source PDFs** — The pipeline converts PDFs to accessible HTML. It does not modify the original PDF file. The remediated HTML is the accessible version.
+1. **Guarantee 100% compliance** — No automated tool can guarantee full WCAG compliance. The pipeline typically achieves 80-95% of the way there, with remaining issues clearly documented in the audit report for expert review. This is why the Knowbility referral exists for high-stakes documents.
 
-2. **Guarantee 100% compliance** — No automated tool can guarantee full WCAG compliance. The pipeline typically achieves 80-95% of the way there, with remaining issues clearly documented in the audit report for expert review. This is why the Knowbility referral exists for high-stakes documents.
+2. **Complex interactive content** — Forms with complex validation logic, embedded multimedia players, and JavaScript-dependent widgets may need manual remediation.
 
-3. **Complex interactive content** — Forms with complex validation logic, embedded multimedia players, and JavaScript-dependent widgets may need manual remediation.
-
-4. **Scanned image-only PDFs** — PDFs that are purely scanned images (no text layer) require OCR first. The pipeline detects this and can extract text via Gemini Vision, but OCR accuracy depends on scan quality.
+3. **Scanned image-only PDFs** — PDFs that are purely scanned images (no text layer) require OCR first. The pipeline detects this and can extract text via Gemini Vision, but OCR accuracy depends on scan quality.
 
 ---
 
