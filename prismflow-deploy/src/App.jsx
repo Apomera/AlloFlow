@@ -17149,7 +17149,7 @@ Return ONLY valid JSON:
     standardsPromptString: targetStandards.join('; '),
     ai, webSearchProvider: WebSearchProvider,
     alloBotRef, isBotVisible, isPlayingRef, isSystemAudioActiveRef,
-    audioRef, playbackTimeoutRef,
+    audioRef, playbackTimeoutRef, playbackSessionRef, activeBlobUrlsRef,
     setActiveView, setConceptInput, setError, setGeneratedContent,
     setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource,
     setLanguageInput, setLeveledTextLanguage, setSelectedConcepts,
