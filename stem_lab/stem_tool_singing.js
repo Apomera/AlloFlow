@@ -887,6 +887,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   ];
 
   // ═══════════════════════════════════════════
+  // Vocal anatomy region definitions
+  // ═══════════════════════════════════════════
+
+  var ANATOMY_REGIONS = [
+    { id: 'lungs', label: 'Lungs & Diaphragm', color: '#60a5fa',
+      what: 'Your lungs are like two spongy bags that hold air. The diaphragm is a big dome-shaped muscle underneath them.',
+      singing: 'The diaphragm is your engine! When it contracts, it pulls air into your lungs. Good breath support means using your diaphragm to control a steady stream of air.',
+      funFact: 'Your diaphragm moves about 1 inch when you breathe quietly, but up to 4 inches when you sing!',
+      tryThis: 'Put your hand on your belly. Breathe in deeply \u2014 your belly should push OUT (that\'s your diaphragm contracting). This is called diaphragmatic breathing.' },
+    { id: 'larynx', label: 'Larynx & Vocal Folds', color: '#f472b6',
+      what: 'Your larynx (voice box) sits in your throat and contains two small bands of muscle called vocal folds (or vocal cords).',
+      singing: 'When air from your lungs passes through your vocal folds, they vibrate hundreds of times per second to create sound. Faster vibrations = higher pitch!',
+      funFact: 'Your vocal folds are only about 15\u201320mm long (smaller than a penny!) but they can vibrate over 1,000 times per second for high notes.',
+      tryThis: 'Gently place your fingers on the front of your throat and hum. You can feel the vibrations of your vocal folds!' },
+    { id: 'pharynx', label: 'Pharynx (Throat)', color: '#a78bfa',
+      what: 'The pharynx is the tube-shaped passage behind your mouth and nose that connects to your larynx.',
+      singing: 'Think of the pharynx as a resonating chamber \u2014 like the body of a guitar. A relaxed, open throat creates a richer, fuller sound.',
+      funFact: 'Opera singers learn to "open their throat" to create more resonance space, which is why they can project over an orchestra without a microphone!',
+      tryThis: 'Yawn gently and notice how your throat opens up. Try to sing a note with that open feeling.' },
+    { id: 'mouth', label: 'Oral Cavity', color: '#34d399',
+      what: 'Your mouth contains your tongue, teeth, hard palate (roof of mouth), and lips \u2014 all of which shape the sound.',
+      singing: 'Your tongue is the most important articulator! Its position determines which vowel sound you make. Lips also help shape "OO" and "OH" sounds.',
+      funFact: 'Your tongue has 8 muscles and is one of the most flexible parts of your body. Singers spend years learning precise tongue control!',
+      tryThis: 'Say "EE-AH-OO" slowly and notice how your tongue moves: high-front for EE, low-back for AH, high-back for OO.' },
+    { id: 'nasal', label: 'Nasal Cavity', color: '#fbbf24',
+      what: 'The nasal cavity is the air-filled space above the roof of your mouth, inside your nose.',
+      singing: 'When the soft palate is lowered, sound vibrates through your nasal cavity, creating nasal resonance (like humming or "ng" sounds).',
+      funFact: 'The French language uses nasal vowels (like in "bon") where air flows through both the mouth AND nose at the same time!',
+      tryThis: 'Pinch your nose and say "mama." Notice how it sounds different? That\'s because M and N need nasal airflow!' },
+    { id: 'velum', label: 'Soft Palate (Velum)', color: '#fb923c',
+      what: 'The soft palate is the fleshy, moveable tissue at the back of the roof of your mouth.',
+      singing: 'The soft palate acts like a gate between your mouth and nose. Raising it directs all sound through your mouth (oral sounds). Lowering it lets sound into your nose (nasal sounds).',
+      funFact: 'When you gag, your soft palate automatically raises \u2014 that\'s the same lifting motion singers use for clear, non-nasal tone!',
+      tryThis: 'Say "AH" with your mouth wide open. Now say "NG" (like the end of "sing"). Feel how your soft palate moves between those two sounds?' }
+  ];
+
+  var VOWEL_SHAPES = [
+    { id: 'ah', label: 'AH (\u0251)', tongueX: 0.4, tongueY: 0.8, mouthOpen: 0.9, lipRound: 0.1 },
+    { id: 'ee', label: 'EE (i)', tongueX: 0.8, tongueY: 0.3, mouthOpen: 0.3, lipRound: 0.0 },
+    { id: 'oo', label: 'OO (u)', tongueX: 0.3, tongueY: 0.3, mouthOpen: 0.3, lipRound: 0.9 },
+    { id: 'eh', label: 'EH (\u025B)', tongueX: 0.7, tongueY: 0.5, mouthOpen: 0.6, lipRound: 0.1 },
+    { id: 'oh', label: 'OH (o)', tongueX: 0.35, tongueY: 0.5, mouthOpen: 0.5, lipRound: 0.7 }
+  ];
+
+  // ═══════════════════════════════════════════
   // Reference tone grid notes
   // ═══════════════════════════════════════════
 
@@ -1181,6 +1226,649 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   }
 
   // ═══════════════════════════════════════════
+  // Vocal Anatomy Canvas Drawing
+  // ═══════════════════════════════════════════
+
+  /**
+   * Draw interactive sagittal cross-section of the vocal tract.
+   * @param {HTMLCanvasElement} canvas
+   * @param {string|null} activeRegion - id of highlighted region
+   * @param {number} animFrame - current animation frame counter
+   * @param {boolean} isDark - dark mode flag
+   * @param {string} animMode - 'none'|'breathing'|'phonation'|'vowel'
+   * @param {object} opts - { breathPhase, pitchHigh, vowelShape }
+   */
+  function drawVocalAnatomy(canvas, activeRegion, animFrame, isDark, animMode, opts) {
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    var W = canvas.width;
+    var H = canvas.height;
+    var dpr = window.devicePixelRatio || 1;
+
+    // HiDPI setup
+    if (canvas.getAttribute('data-dpr') !== String(dpr)) {
+      canvas.width = 500 * dpr;
+      canvas.height = 400 * dpr;
+      canvas.style.width = '500px';
+      canvas.style.height = '400px';
+      canvas.setAttribute('data-dpr', String(dpr));
+      W = canvas.width;
+      H = canvas.height;
+      ctx.scale(dpr, dpr);
+    }
+
+    // Work in logical pixels
+    var LW = 500;
+    var LH = 400;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    ctx.fillRect(0, 0, W, H);
+
+    var o = opts || {};
+    var breathPhase = o.breathPhase || 0; // 0..1 cycle
+    var pitchHigh = o.pitchHigh || false;
+    var vowelShape = o.vowelShape || null; // { tongueX, tongueY, mouthOpen, lipRound }
+
+    // Animation offsets
+    var breathOffset = 0;
+    var foldOpen = 0.5; // 0=closed, 1=fully open
+    var foldWave = 0;
+    if (animMode === 'breathing') {
+      // 0..0.5 = inhale (diaphragm down, lungs expand)
+      // 0.5..1 = exhale (diaphragm up, lungs compress)
+      breathOffset = Math.sin(breathPhase * Math.PI * 2) * 8;
+      foldOpen = 0.8; // mostly open during breathing
+    } else if (animMode === 'phonation') {
+      var vibSpeed = pitchHigh ? 0.3 : 0.15;
+      foldOpen = 0.1 + Math.abs(Math.sin(animFrame * vibSpeed)) * 0.35;
+      foldWave = Math.sin(animFrame * vibSpeed * 0.7) * 2;
+    } else if (animMode === 'vowel') {
+      foldOpen = 0.3; // slightly open for phonation
+    } else {
+      foldOpen = 0.5; // neutral resting
+    }
+
+    // Region alpha helper
+    function regionAlpha(id) {
+      if (!activeRegion) return 1.0;
+      return id === activeRegion ? 1.0 : 0.3;
+    }
+    function regionColor(id, baseColor) {
+      var a = regionAlpha(id);
+      // Parse hex color and apply alpha
+      var r = parseInt(baseColor.slice(1, 3), 16);
+      var g = parseInt(baseColor.slice(3, 5), 16);
+      var b = parseInt(baseColor.slice(5, 7), 16);
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    }
+    function regionStroke(id, baseColor) {
+      var a = regionAlpha(id);
+      var r = parseInt(baseColor.slice(1, 3), 16);
+      var g = parseInt(baseColor.slice(3, 5), 16);
+      var b = parseInt(baseColor.slice(5, 7), 16);
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + Math.min(1, a + 0.2) + ')';
+    }
+    function fillAlpha(id) {
+      return regionAlpha(id) * 0.35;
+    }
+    function regionFill(id, baseColor) {
+      var a = fillAlpha(id);
+      var r = parseInt(baseColor.slice(1, 3), 16);
+      var g = parseInt(baseColor.slice(3, 5), 16);
+      var b = parseInt(baseColor.slice(5, 7), 16);
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    }
+
+    // === COORDINATE SYSTEM ===
+    // Sagittal view: left = front of body, right = back (spine side)
+    // We draw: lungs/diaphragm at bottom, trachea going up, larynx, pharynx, mouth/nose at top
+    // The tract curves forward from the throat to the mouth
+
+    // ── 1. LUNGS & DIAPHRAGM (bottom) ──
+    var lungColor = '#60a5fa';
+    var lungScale = animMode === 'breathing' ? (1 + breathOffset * 0.01) : 1;
+
+    ctx.save();
+    // Left lung
+    ctx.beginPath();
+    ctx.moveTo(120, 355 - breathOffset * 0.5);
+    ctx.bezierCurveTo(80, 340 - breathOffset, 75, 300 * lungScale, 110, 290);
+    ctx.bezierCurveTo(130, 280, 155, 300, 155, 320);
+    ctx.bezierCurveTo(155, 340, 140, 355 - breathOffset * 0.5, 120, 355 - breathOffset * 0.5);
+    ctx.fillStyle = regionFill('lungs', lungColor);
+    ctx.strokeStyle = regionStroke('lungs', lungColor);
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // Right lung
+    ctx.beginPath();
+    ctx.moveTo(230, 355 - breathOffset * 0.5);
+    ctx.bezierCurveTo(250, 340 - breathOffset, 255, 300 * lungScale, 240, 290);
+    ctx.bezierCurveTo(220, 280, 195, 300, 195, 320);
+    ctx.bezierCurveTo(195, 340, 210, 355 - breathOffset * 0.5, 230, 355 - breathOffset * 0.5);
+    ctx.fillStyle = regionFill('lungs', lungColor);
+    ctx.strokeStyle = regionStroke('lungs', lungColor);
+    ctx.fill();
+    ctx.stroke();
+
+    // Diaphragm muscle (curved line below lungs)
+    var diaY = 365 + breathOffset;
+    ctx.beginPath();
+    ctx.moveTo(65, diaY);
+    ctx.bezierCurveTo(120, diaY - 15 + breathOffset * 0.5, 230, diaY - 15 + breathOffset * 0.5, 285, diaY);
+    ctx.strokeStyle = regionStroke('lungs', lungColor);
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Diaphragm label hash marks
+    ctx.setLineDash([3, 3]);
+    ctx.lineWidth = 1;
+    for (var di = 0; di < 5; di++) {
+      var dx = 90 + di * 40;
+      ctx.beginPath();
+      ctx.moveTo(dx, diaY - 5);
+      ctx.lineTo(dx + 8, diaY + 8);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    // ── 2. TRACHEA (windpipe) ──
+    var tracheaTop = 220;
+    var tracheaBottom = 285;
+    var tracheaX = 175;
+    var tracheaW = 24;
+
+    ctx.fillStyle = regionFill('lungs', lungColor);
+    ctx.strokeStyle = regionStroke('lungs', lungColor);
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(tracheaX - tracheaW / 2, tracheaTop, tracheaW, tracheaBottom - tracheaTop);
+    ctx.strokeRect(tracheaX - tracheaW / 2, tracheaTop, tracheaW, tracheaBottom - tracheaTop);
+
+    // Cartilage rings on trachea
+    ctx.strokeStyle = regionStroke('lungs', lungColor);
+    ctx.lineWidth = 1;
+    for (var ri = 0; ri < 6; ri++) {
+      var ry = tracheaTop + 8 + ri * 10;
+      ctx.beginPath();
+      ctx.moveTo(tracheaX - tracheaW / 2 + 2, ry);
+      ctx.bezierCurveTo(tracheaX - 4, ry - 3, tracheaX + 4, ry - 3, tracheaX + tracheaW / 2 - 2, ry);
+      ctx.stroke();
+    }
+
+    // ── 3. LARYNX (voice box) ──
+    var larynxColor = '#f472b6';
+    var larynxTop = 190;
+    var larynxBottom = 222;
+    var larynxX = 175;
+    var larynxW = 38;
+
+    // Thyroid cartilage (shield shape)
+    ctx.beginPath();
+    ctx.moveTo(larynxX - larynxW / 2, larynxTop + 5);
+    ctx.lineTo(larynxX - larynxW / 2 - 5, larynxTop + 16);
+    ctx.lineTo(larynxX - larynxW / 2, larynxBottom);
+    ctx.lineTo(larynxX + larynxW / 2, larynxBottom);
+    ctx.lineTo(larynxX + larynxW / 2 + 5, larynxTop + 16);
+    ctx.lineTo(larynxX + larynxW / 2, larynxTop + 5);
+    ctx.closePath();
+    ctx.fillStyle = regionFill('larynx', larynxColor);
+    ctx.strokeStyle = regionStroke('larynx', larynxColor);
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // Cricoid cartilage (ring below thyroid)
+    ctx.beginPath();
+    ctx.ellipse(larynxX, larynxBottom + 3, larynxW / 2 - 2, 5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = regionFill('larynx', larynxColor);
+    ctx.strokeStyle = regionStroke('larynx', larynxColor);
+    ctx.fill();
+    ctx.stroke();
+
+    // Vocal folds inside larynx
+    var foldY = larynxTop + 18;
+    var foldGap = foldOpen * 8;
+    // Left fold
+    ctx.beginPath();
+    ctx.moveTo(larynxX - larynxW / 2 + 5, foldY);
+    ctx.bezierCurveTo(
+      larynxX - 8, foldY - 2 + foldWave,
+      larynxX - 4, foldY - 1 + foldWave,
+      larynxX - foldGap / 2, foldY
+    );
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = activeRegion === 'larynx'
+      ? (isDark ? '#f9a8d4' : '#ec4899')
+      : regionStroke('larynx', '#ec4899');
+    ctx.stroke();
+
+    // Right fold
+    ctx.beginPath();
+    ctx.moveTo(larynxX + larynxW / 2 - 5, foldY);
+    ctx.bezierCurveTo(
+      larynxX + 8, foldY - 2 - foldWave,
+      larynxX + 4, foldY - 1 - foldWave,
+      larynxX + foldGap / 2, foldY
+    );
+    ctx.stroke();
+
+    // Arytenoid cartilages (small triangles at back of folds)
+    ctx.fillStyle = regionStroke('larynx', larynxColor);
+    // Left arytenoid
+    ctx.beginPath();
+    ctx.moveTo(larynxX + larynxW / 2 - 6, foldY - 4);
+    ctx.lineTo(larynxX + larynxW / 2 - 2, foldY + 2);
+    ctx.lineTo(larynxX + larynxW / 2 - 10, foldY + 2);
+    ctx.closePath();
+    ctx.fill();
+    // Right arytenoid
+    ctx.beginPath();
+    ctx.moveTo(larynxX - larynxW / 2 + 6, foldY - 4);
+    ctx.lineTo(larynxX - larynxW / 2 + 2, foldY + 2);
+    ctx.lineTo(larynxX - larynxW / 2 + 10, foldY + 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Phonation: sound waves emanating upward from folds
+    if (animMode === 'phonation' && foldOpen < 0.4) {
+      ctx.save();
+      var waveAlpha = 0.15 + Math.abs(Math.sin(animFrame * 0.1)) * 0.3;
+      ctx.strokeStyle = 'rgba(244,114,182,' + waveAlpha + ')';
+      ctx.lineWidth = 1;
+      for (var wi = 0; wi < 4; wi++) {
+        var wy = foldY - 10 - wi * 12;
+        var wAmp = 4 + wi * 2;
+        ctx.beginPath();
+        for (var wx = -15; wx <= 15; wx++) {
+          var sy = wy + Math.sin((wx + animFrame * 3) * 0.3) * wAmp;
+          if (wx === -15) ctx.moveTo(larynxX + wx, sy);
+          else ctx.lineTo(larynxX + wx, sy);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // ── 4. EPIGLOTTIS (leaf flap above larynx) ──
+    ctx.beginPath();
+    ctx.moveTo(larynxX - 6, larynxTop);
+    ctx.bezierCurveTo(larynxX - 10, larynxTop - 12, larynxX - 5, larynxTop - 20, larynxX, larynxTop - 18);
+    ctx.bezierCurveTo(larynxX + 5, larynxTop - 20, larynxX + 10, larynxTop - 12, larynxX + 6, larynxTop);
+    ctx.fillStyle = regionFill('larynx', '#e879a0');
+    ctx.strokeStyle = regionStroke('larynx', '#e879a0');
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // ── 5. PHARYNX (throat tube above larynx) ──
+    var pharynxColor = '#a78bfa';
+    var pharynxTop = 115;
+    var pharynxBottom = larynxTop - 16;
+    var pharynxX = 175;
+    var pharynxW = 30;
+
+    ctx.beginPath();
+    ctx.moveTo(pharynxX - pharynxW / 2, pharynxBottom);
+    ctx.bezierCurveTo(
+      pharynxX - pharynxW / 2 - 3, (pharynxTop + pharynxBottom) / 2,
+      pharynxX - pharynxW / 2 + 2, pharynxTop + 10,
+      pharynxX - pharynxW / 2 + 5, pharynxTop
+    );
+    ctx.lineTo(pharynxX + pharynxW / 2 - 5, pharynxTop);
+    ctx.bezierCurveTo(
+      pharynxX + pharynxW / 2 - 2, pharynxTop + 10,
+      pharynxX + pharynxW / 2 + 3, (pharynxTop + pharynxBottom) / 2,
+      pharynxX + pharynxW / 2, pharynxBottom
+    );
+    ctx.closePath();
+    ctx.fillStyle = regionFill('pharynx', pharynxColor);
+    ctx.strokeStyle = regionStroke('pharynx', pharynxColor);
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // ── 6. ORAL CAVITY (mouth) ──
+    var mouthColor = '#34d399';
+    // The oral cavity curves forward from the pharynx top
+    var mouthOpen = vowelShape ? vowelShape.mouthOpen : 0.6;
+    var lipRound = vowelShape ? vowelShape.lipRound : 0.2;
+    var tongueX = vowelShape ? vowelShape.tongueX : 0.5;
+    var tongueY = vowelShape ? vowelShape.tongueY : 0.6;
+
+    // Hard palate (roof of mouth) — curved arch from pharynx forward
+    var palateStartX = pharynxX - pharynxW / 2 + 5;
+    var palateStartY = pharynxTop;
+    var palateEndX = 75;
+    var palateEndY = 90 + (1 - mouthOpen) * 5;
+
+    ctx.beginPath();
+    ctx.moveTo(palateStartX, palateStartY);
+    ctx.bezierCurveTo(
+      140, 75,
+      110, 70,
+      palateEndX, palateEndY
+    );
+    ctx.strokeStyle = regionStroke('mouth', mouthColor);
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Teeth (small rectangles at front)
+    var teethX = palateEndX - 2;
+    var teethY = palateEndY;
+    ctx.fillStyle = regionColor('mouth', isDark ? '#e2e8f0' : '#f1f5f9');
+    ctx.strokeStyle = regionStroke('mouth', isDark ? '#cbd5e1' : '#94a3b8');
+    ctx.lineWidth = 1;
+    // Upper teeth
+    ctx.fillRect(teethX - 5, teethY, 8, 6);
+    ctx.strokeRect(teethX - 5, teethY, 8, 6);
+    // Lower teeth
+    var lowerTeethY = teethY + 20 + mouthOpen * 15;
+    ctx.fillRect(teethX - 4, lowerTeethY, 7, 5);
+    ctx.strokeRect(teethX - 4, lowerTeethY, 7, 5);
+
+    // Lips
+    var lipX = teethX - 8;
+    var upperLipY = teethY - 2;
+    var lowerLipY = lowerTeethY + 5;
+    var lipW = lipRound * 4 + 4;
+
+    ctx.beginPath();
+    ctx.moveTo(lipX, upperLipY);
+    ctx.bezierCurveTo(lipX - lipW, upperLipY - 3, lipX - lipW, upperLipY + 3, lipX, upperLipY + 4);
+    ctx.fillStyle = regionFill('mouth', '#fb7185');
+    ctx.strokeStyle = regionStroke('mouth', '#fb7185');
+    ctx.lineWidth = 2;
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(lipX, lowerLipY);
+    ctx.bezierCurveTo(lipX - lipW, lowerLipY - 3, lipX - lipW, lowerLipY + 3, lipX, lowerLipY + 4);
+    ctx.fill();
+    ctx.stroke();
+
+    // Lower jaw line (floor of mouth)
+    ctx.beginPath();
+    ctx.moveTo(palateStartX + 10, pharynxTop + 40);
+    ctx.bezierCurveTo(
+      130, 140 + mouthOpen * 10,
+      100, 130 + mouthOpen * 12,
+      lipX, lowerLipY
+    );
+    ctx.strokeStyle = regionStroke('mouth', mouthColor);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Tongue (curved shape inside mouth)
+    var tBaseX = palateStartX;
+    var tBaseY = pharynxTop + 30;
+    // tongueX: 0=back, 1=front; tongueY: 0=high, 1=low
+    var tTipX = tBaseX - 60 + (1 - tongueX) * 20;
+    var tTipY = tBaseY - 20 + tongueY * 25;
+    var tPeakX = tBaseX - 30 - tongueX * 25;
+    var tPeakY = tBaseY - 10 + tongueY * 15 - (1 - tongueY) * 18;
+
+    ctx.beginPath();
+    ctx.moveTo(tBaseX, tBaseY);
+    ctx.bezierCurveTo(
+      tBaseX - 15, tBaseY - 5,
+      tPeakX + 15, tPeakY + 10,
+      tPeakX, tPeakY
+    );
+    ctx.bezierCurveTo(
+      tPeakX - 10, tPeakY - 3,
+      tTipX + 10, tTipY + 2,
+      tTipX, tTipY
+    );
+    ctx.bezierCurveTo(
+      tTipX - 5, tTipY + 8,
+      tTipX + 5, tTipY + 15,
+      tBaseX - 30, tBaseY + 10
+    );
+    ctx.lineTo(tBaseX, tBaseY);
+    ctx.fillStyle = regionFill('mouth', '#f87171');
+    ctx.strokeStyle = regionStroke('mouth', '#f87171');
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // ── 7. SOFT PALATE (velum) ──
+    var velumColor = '#fb923c';
+    // Connects at the back of the hard palate, hangs down
+    var velumStartX = palateStartX + 2;
+    var velumStartY = palateStartY + 2;
+    // When lowered, opens nasal passage; when raised, closes it
+    var velumDrop = (animMode === 'breathing') ? 8 : 3;
+
+    ctx.beginPath();
+    ctx.moveTo(velumStartX, velumStartY);
+    ctx.bezierCurveTo(
+      velumStartX - 8, velumStartY + 5,
+      velumStartX - 12, velumStartY + 12 + velumDrop,
+      velumStartX - 8, velumStartY + 18 + velumDrop
+    );
+    ctx.bezierCurveTo(
+      velumStartX - 4, velumStartY + 22 + velumDrop,
+      velumStartX + 2, velumStartY + 18 + velumDrop,
+      velumStartX + 3, velumStartY + 10
+    );
+    ctx.fillStyle = regionFill('velum', velumColor);
+    ctx.strokeStyle = regionStroke('velum', velumColor);
+    ctx.lineWidth = 2;
+    ctx.fill();
+    ctx.stroke();
+
+    // ── 8. NASAL CAVITY ──
+    var nasalColor = '#fbbf24';
+    // Above hard palate
+    ctx.beginPath();
+    ctx.moveTo(palateEndX, palateEndY - 8);
+    ctx.bezierCurveTo(
+      95, 55,
+      130, 45,
+      velumStartX, velumStartY - 10
+    );
+    ctx.lineTo(velumStartX + 5, velumStartY - 25);
+    ctx.bezierCurveTo(
+      130, 30,
+      95, 35,
+      palateEndX - 5, palateEndY - 22
+    );
+    ctx.closePath();
+    ctx.fillStyle = regionFill('nasal', nasalColor);
+    ctx.strokeStyle = regionStroke('nasal', nasalColor);
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // Turbinates (wavy ridges inside nasal cavity)
+    ctx.strokeStyle = regionStroke('nasal', nasalColor);
+    ctx.lineWidth = 1;
+    for (var ti = 0; ti < 3; ti++) {
+      var tx = palateEndX + 15 + ti * 25;
+      var ty = 50 + ti * 3;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.bezierCurveTo(tx + 5, ty - 6, tx + 10, ty - 6, tx + 15, ty);
+      ctx.stroke();
+    }
+
+    // Nostril opening at front
+    ctx.beginPath();
+    ctx.ellipse(palateEndX - 8, palateEndY - 18, 4, 6, -0.3, 0, Math.PI * 2);
+    ctx.fillStyle = regionFill('nasal', nasalColor);
+    ctx.strokeStyle = regionStroke('nasal', nasalColor);
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // ── 9. SPINE (reference line on the right) ──
+    ctx.save();
+    ctx.strokeStyle = isDark ? 'rgba(100,116,139,0.3)' : 'rgba(148,163,184,0.25)';
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(220, 50);
+    ctx.bezierCurveTo(225, 120, 225, 200, 220, 280);
+    ctx.stroke();
+    // Vertebrae marks
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = isDark ? 'rgba(100,116,139,0.4)' : 'rgba(148,163,184,0.3)';
+    for (var vi = 0; vi < 12; vi++) {
+      var vy = 55 + vi * 20;
+      ctx.beginPath();
+      ctx.moveTo(216, vy);
+      ctx.lineTo(224, vy);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // ── AIR FLOW PARTICLES (breathing animation) ──
+    if (animMode === 'breathing') {
+      ctx.save();
+      var isInhale = breathPhase < 0.5;
+      var particleColor = isInhale ? 'rgba(96,165,250,' : 'rgba(96,165,250,';
+      // Draw particles along the airway
+      var particleCount = 8;
+      for (var pi = 0; pi < particleCount; pi++) {
+        var pPhase = ((breathPhase * 2 + pi / particleCount) % 1);
+        var pAlpha = 0.3 + Math.sin(pPhase * Math.PI) * 0.5;
+        var pSize = 2 + Math.sin(pPhase * Math.PI) * 1.5;
+        ctx.fillStyle = particleColor + pAlpha + ')';
+
+        // Path: from diaphragm up through trachea, larynx, pharynx, out mouth
+        var py, px;
+        if (isInhale) {
+          // Particles move inward: mouth → lungs
+          var t = pPhase;
+          if (t < 0.3) {
+            // In the mouth/pharynx area
+            px = 75 + t * 300;
+            py = 90 + t * 150;
+          } else if (t < 0.6) {
+            // Through pharynx/larynx
+            px = tracheaX + (Math.random() - 0.5) * 8;
+            py = pharynxTop + (t - 0.3) * 400;
+          } else {
+            // Into lungs
+            px = tracheaX + (Math.random() - 0.5) * 40;
+            py = 280 + (t - 0.6) * 200;
+          }
+        } else {
+          // Particles move outward: lungs → mouth
+          var t2 = pPhase;
+          if (t2 < 0.3) {
+            px = tracheaX + (Math.random() - 0.5) * 30;
+            py = 330 - t2 * 200;
+          } else if (t2 < 0.6) {
+            px = tracheaX + (Math.random() - 0.5) * 8;
+            py = 220 - (t2 - 0.3) * 300;
+          } else {
+            px = 175 - (t2 - 0.6) * 250;
+            py = 120 - (t2 - 0.6) * 80;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(px, py, pSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // INHALE / EXHALE label
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = isInhale
+        ? (isDark ? '#93c5fd' : '#3b82f6')
+        : (isDark ? '#fca5a5' : '#ef4444');
+      ctx.fillText(isInhale ? 'INHALE' : 'EXHALE', 340, 360);
+
+      // Arrow
+      ctx.beginPath();
+      if (isInhale) {
+        ctx.moveTo(340, 370);
+        ctx.lineTo(340, 385);
+        ctx.moveTo(335, 380);
+        ctx.lineTo(340, 385);
+        ctx.lineTo(345, 380);
+      } else {
+        ctx.moveTo(340, 385);
+        ctx.lineTo(340, 370);
+        ctx.moveTo(335, 375);
+        ctx.lineTo(340, 370);
+        ctx.lineTo(345, 375);
+      }
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // ── LABELS WITH LEADER LINES ──
+    ctx.save();
+    var labelFont = '10px sans-serif';
+    var labelBold = 'bold 10px sans-serif';
+    ctx.textAlign = 'left';
+
+    var labels = [
+      { id: 'nasal', text: 'Nasal Cavity', x: 270, y: 45, anchorX: 140, anchorY: 50 },
+      { id: 'velum', text: 'Soft Palate', x: 270, y: 110, anchorX: velumStartX - 5, anchorY: velumStartY + 12 },
+      { id: 'mouth', text: 'Oral Cavity', x: 10, y: 130, anchorX: 110, anchorY: 115 },
+      { id: 'pharynx', text: 'Pharynx', x: 270, y: 155, anchorX: pharynxX + pharynxW / 2 + 3, anchorY: (pharynxTop + pharynxBottom) / 2 },
+      { id: 'larynx', text: 'Larynx', x: 270, y: 200, anchorX: larynxX + larynxW / 2 + 3, anchorY: (larynxTop + larynxBottom) / 2 },
+      { id: 'larynx', text: 'Vocal Folds', x: 270, y: 215, anchorX: larynxX + larynxW / 2 + 3, anchorY: foldY },
+      { id: 'lungs', text: 'Trachea', x: 270, y: 260, anchorX: tracheaX + tracheaW / 2 + 3, anchorY: (tracheaTop + tracheaBottom) / 2 },
+      { id: 'lungs', text: 'Lungs', x: 270, y: 320, anchorX: 240, anchorY: 320 },
+      { id: 'lungs', text: 'Diaphragm', x: 270, y: 375, anchorX: 260, anchorY: diaY }
+    ];
+
+    labels.forEach(function(lbl) {
+      var a = regionAlpha(lbl.id);
+      var region = ANATOMY_REGIONS.find(function(r) { return r.id === lbl.id; });
+      var color = region ? region.color : '#94a3b8';
+
+      // Leader line
+      ctx.beginPath();
+      ctx.moveTo(lbl.anchorX, lbl.anchorY);
+      ctx.lineTo(lbl.x - 2, lbl.y - 3);
+      ctx.strokeStyle = isDark
+        ? 'rgba(148,163,184,' + (a * 0.4) + ')'
+        : 'rgba(100,116,139,' + (a * 0.35) + ')';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Small dot at anchor
+      ctx.beginPath();
+      ctx.arc(lbl.anchorX, lbl.anchorY, 2, 0, Math.PI * 2);
+      ctx.fillStyle = regionColor(lbl.id, color);
+      ctx.fill();
+
+      // Label text
+      if (activeRegion === lbl.id) {
+        ctx.font = labelBold;
+        ctx.fillStyle = isDark ? '#f1f5f9' : '#0f172a';
+      } else {
+        ctx.font = labelFont;
+        ctx.fillStyle = isDark
+          ? 'rgba(203,213,225,' + a + ')'
+          : 'rgba(51,65,85,' + a + ')';
+      }
+      ctx.fillText(lbl.text, lbl.x, lbl.y);
+    });
+    ctx.restore();
+
+    // ── TITLE ──
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+    ctx.textAlign = 'center';
+    ctx.fillText('Sagittal Cross-Section of the Vocal Tract', LW / 2, 18);
+  }
+
+  // ═══════════════════════════════════════════
   // Tool Registration
   // ═══════════════════════════════════════════
 
@@ -1388,6 +2076,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         var warmupTimerRefId = React.useRef(null);
         var warmupPlayingRef = React.useRef(false);
+
+        // ── Vocal anatomy state ──
+        var anatomyOpenState = React.useState(false);
+        var anatomyOpen = anatomyOpenState[0];
+        var setAnatomyOpen = anatomyOpenState[1];
+
+        var anatomyRegionState = React.useState(null);
+        var anatomyRegion = anatomyRegionState[0];
+        var setAnatomyRegion = anatomyRegionState[1];
+
+        var anatomyAnimState = React.useState('none'); // 'none'|'breathing'|'phonation'|'vowel'
+        var anatomyAnim = anatomyAnimState[0];
+        var setAnatomyAnim = anatomyAnimState[1];
+
+        var anatomyPitchHighState = React.useState(false);
+        var anatomyPitchHigh = anatomyPitchHighState[0];
+        var setAnatomyPitchHigh = anatomyPitchHighState[1];
+
+        var anatomyVowelIdxState = React.useState(0);
+        var anatomyVowelIdx = anatomyVowelIdxState[0];
+        var setAnatomyVowelIdx = anatomyVowelIdxState[1];
+
+        var anatomyCanvasRef = React.useRef(null);
+        var anatomyAnimFrameRef = React.useRef(0);
+        var anatomyRafRef = React.useRef(null);
+        var anatomyBreathPhaseRef = React.useRef(0);
 
         // ── Vocal health tips state ──
         var healthTipsState = React.useState(null);
@@ -1623,6 +2337,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             );
           }
         }, [srNotes, srCurrentIdx, srResults, currentNote, isDark, srMode]);
+
+        // Vocal anatomy animation loop
+        React.useEffect(function() {
+          if (anatomyAnim === 'none') {
+            // Static draw
+            var vowel = (anatomyAnim === 'vowel') ? VOWEL_SHAPES[anatomyVowelIdx] : null;
+            drawVocalAnatomy(anatomyCanvasRef.current, anatomyRegion, 0, isDark, 'none', {
+              breathPhase: 0,
+              pitchHigh: anatomyPitchHigh,
+              vowelShape: vowel
+            });
+            return;
+          }
+
+          var running = true;
+          var lastTime = 0;
+          var BREATH_CYCLE_MS = 3000; // 3 second breathing cycle
+
+          function tick(timestamp) {
+            if (!running) return;
+            anatomyAnimFrameRef.current++;
+            var frame = anatomyAnimFrameRef.current;
+
+            var breathPhase = 0;
+            if (anatomyAnim === 'breathing') {
+              anatomyBreathPhaseRef.current = (timestamp % BREATH_CYCLE_MS) / BREATH_CYCLE_MS;
+              breathPhase = anatomyBreathPhaseRef.current;
+            }
+
+            var vowelShape = null;
+            if (anatomyAnim === 'vowel') {
+              // Cycle through vowels every 2 seconds, or use selected
+              var cycleIdx = Math.floor((timestamp / 2000) % VOWEL_SHAPES.length);
+              vowelShape = VOWEL_SHAPES[anatomyVowelIdx !== undefined ? anatomyVowelIdx : cycleIdx];
+            }
+
+            drawVocalAnatomy(anatomyCanvasRef.current, anatomyRegion, frame, isDark, anatomyAnim, {
+              breathPhase: breathPhase,
+              pitchHigh: anatomyPitchHigh,
+              vowelShape: vowelShape
+            });
+
+            anatomyRafRef.current = requestAnimationFrame(tick);
+          }
+
+          anatomyAnimFrameRef.current = 0;
+          anatomyRafRef.current = requestAnimationFrame(tick);
+
+          return function() {
+            running = false;
+            if (anatomyRafRef.current) {
+              cancelAnimationFrame(anatomyRafRef.current);
+              anatomyRafRef.current = null;
+            }
+          };
+        }, [anatomyAnim, anatomyRegion, isDark, anatomyPitchHigh, anatomyVowelIdx]);
+
+        // Static redraw when region changes and no animation is active
+        React.useEffect(function() {
+          if (anatomyAnim !== 'none') return;
+          drawVocalAnatomy(anatomyCanvasRef.current, anatomyRegion, 0, isDark, 'none', {});
+        }, [anatomyRegion, isDark, anatomyAnim]);
 
         // Sight reading pitch detection logic
         React.useEffect(function() {
@@ -2608,6 +3384,170 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
           return h('div', { className: 'space-y-4' },
             renderMicToggle(),
+
+            // ── Interactive Vocal Anatomy ──
+            h('div', { className: cardClass },
+              h('button', {
+                className: 'w-full flex items-center justify-between text-left',
+                onClick: function() { setAnatomyOpen(!anatomyOpen); },
+                'aria-expanded': anatomyOpen ? 'true' : 'false',
+                'aria-controls': 'anatomy-panel'
+              },
+                h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
+                  '\uD83E\uDEC1', 'Vocal Anatomy Explorer'),
+                h('span', { className: subTextClass + ' text-lg transition-transform ' + (anatomyOpen ? 'rotate-180' : '') },
+                  '\u25BC')),
+
+              anatomyOpen && h('div', {
+                id: 'anatomy-panel',
+                className: 'mt-4 space-y-4'
+              },
+                h('p', { className: subTextClass + ' mb-2' },
+                  'Explore how your body makes sound. Click a region to learn about it, or turn on animations to see it in action.'),
+
+                // Canvas diagram
+                h('div', { className: 'flex justify-center' },
+                  h('canvas', {
+                    ref: anatomyCanvasRef,
+                    width: 500,
+                    height: 400,
+                    role: 'img',
+                    'aria-label': 'Sagittal cross-section diagram of the human vocal tract showing lungs, diaphragm, trachea, larynx with vocal folds, pharynx, oral cavity with tongue and palate, nasal cavity, and soft palate',
+                    className: 'rounded-lg border ' + (isDark ? 'border-slate-600' : 'border-slate-200'),
+                    style: { maxWidth: '100%', height: 'auto', cursor: 'pointer' },
+                    onClick: function(e) {
+                      // Click-to-select region based on canvas position
+                      var rect = e.target.getBoundingClientRect();
+                      var x = (e.clientX - rect.left) / rect.width * 500;
+                      var y = (e.clientY - rect.top) / rect.height * 400;
+                      // Hit test regions by approximate bounding boxes
+                      var hit = null;
+                      if (y > 280 && y < 395) hit = 'lungs';
+                      else if (y > 185 && y < 230) hit = 'larynx';
+                      else if (y > 110 && y < 185 && x > 150) hit = 'pharynx';
+                      else if (y < 70 && x < 200) hit = 'nasal';
+                      else if (y > 70 && y < 140 && x < 170) hit = 'mouth';
+                      else if (y > 95 && y < 130 && x > 150 && x < 190) hit = 'velum';
+                      setAnatomyRegion(hit === anatomyRegion ? null : hit);
+                    }
+                  })
+                ),
+
+                // Animation controls
+                h('div', { className: 'space-y-2' },
+                  h('div', { className: headingClass + ' text-xs mb-1' }, 'Animations'),
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    ['none', 'breathing', 'phonation', 'vowel'].map(function(mode) {
+                      var labels = { none: 'None', breathing: 'Breathing', phonation: 'Phonation', vowel: 'Vowel Shaping' };
+                      var icons = { none: '\u23F9', breathing: '\uD83C\uDF2C\uFE0F', phonation: '\uD83C\uDFB5', vowel: '\uD83D\uDDE3\uFE0F' };
+                      var isActive = anatomyAnim === mode;
+                      return h('button', {
+                        key: mode,
+                        className: 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ' +
+                          (isActive
+                            ? (isDark ? 'bg-rose-600 border-rose-500 text-white' : 'bg-rose-600 border-rose-500 text-white')
+                            : (isDark ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100')),
+                        onClick: function() { setAnatomyAnim(mode); }
+                      }, icons[mode] + ' ' + labels[mode]);
+                    })
+                  ),
+
+                  // Phonation sub-controls: pitch toggle
+                  anatomyAnim === 'phonation' && h('div', { className: 'flex items-center gap-3 mt-2 pl-1' },
+                    h('span', { className: subTextClass }, 'Pitch:'),
+                    h('button', {
+                      className: 'px-3 py-1 rounded text-xs font-semibold transition-colors ' +
+                        (!anatomyPitchHigh
+                          ? (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white')
+                          : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
+                      onClick: function() { setAnatomyPitchHigh(false); }
+                    }, 'Low Pitch (slow vibration)'),
+                    h('button', {
+                      className: 'px-3 py-1 rounded text-xs font-semibold transition-colors ' +
+                        (anatomyPitchHigh
+                          ? (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white')
+                          : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
+                      onClick: function() { setAnatomyPitchHigh(true); }
+                    }, 'High Pitch (fast vibration)')
+                  ),
+
+                  // Vowel sub-controls: vowel selector
+                  anatomyAnim === 'vowel' && h('div', { className: 'flex items-center gap-2 mt-2 pl-1 flex-wrap' },
+                    h('span', { className: subTextClass }, 'Vowel:'),
+                    VOWEL_SHAPES.map(function(v, vi) {
+                      var isActive = anatomyVowelIdx === vi;
+                      return h('button', {
+                        key: v.id,
+                        className: 'px-3 py-1 rounded text-xs font-semibold transition-colors ' +
+                          (isActive
+                            ? (isDark ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white')
+                            : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
+                        onClick: function() { setAnatomyVowelIdx(vi); }
+                      }, v.label);
+                    })
+                  )
+                ),
+
+                // Region selector buttons
+                h('div', { className: 'space-y-2' },
+                  h('div', { className: headingClass + ' text-xs mb-1' }, 'Explore a Region'),
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    ANATOMY_REGIONS.map(function(region) {
+                      var isActive = anatomyRegion === region.id;
+                      return h('button', {
+                        key: region.id,
+                        className: 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border-2 ' +
+                          (isActive
+                            ? 'text-white shadow-md'
+                            : (isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900')),
+                        style: isActive
+                          ? { backgroundColor: region.color, borderColor: region.color }
+                          : { borderColor: region.color + '60', backgroundColor: 'transparent' },
+                        onClick: function() {
+                          setAnatomyRegion(isActive ? null : region.id);
+                        }
+                      }, region.label);
+                    })
+                  )
+                ),
+
+                // Region explanation panel
+                anatomyRegion && (function() {
+                  var region = ANATOMY_REGIONS.find(function(r) { return r.id === anatomyRegion; });
+                  if (!region) return null;
+                  return h('div', {
+                    className: 'p-4 rounded-lg border-l-4 ' +
+                      (isDark ? 'bg-slate-700/50' : 'bg-slate-50'),
+                    style: { borderLeftColor: region.color },
+                    role: 'region',
+                    'aria-label': region.label + ' information'
+                  },
+                    h('h4', {
+                      className: headingClass + ' text-sm mb-2',
+                      style: { color: region.color }
+                    }, region.label),
+                    h('div', { className: 'space-y-2 text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                      h('div', null,
+                        h('span', { className: 'font-bold' }, 'What is it? '),
+                        region.what),
+                      h('div', null,
+                        h('span', { className: 'font-bold' }, 'Role in singing: '),
+                        region.singing),
+                      h('div', {
+                        className: 'p-2 rounded ' + (isDark ? 'bg-amber-900/30' : 'bg-amber-50')
+                      },
+                        h('span', { className: 'font-bold' }, '\u2728 Fun fact: '),
+                        region.funFact),
+                      h('div', {
+                        className: 'p-2 rounded ' + (isDark ? 'bg-green-900/30' : 'bg-green-50')
+                      },
+                        h('span', { className: 'font-bold' }, '\uD83C\uDFAF Try this: '),
+                        region.tryThis)
+                    )
+                  );
+                })()
+              )
+            ),
 
             // Warm-up exercises
             h('div', { className: cardClass },
