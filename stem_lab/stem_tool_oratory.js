@@ -488,6 +488,632 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillText('Ideal pause ratio: 20-30%', 68, H - 4);
   }
 
+  // ═══════════════════════════════════════════
+  // Formant detection — ported from Rachel's tools
+  // FFT peak detection in 200-3000 Hz range
+  // ═══════════════════════════════════════════
+  function findFormants(freqData, sampleRate) {
+    var binSize = sampleRate / (freqData.length * 2);
+    var peaks = [];
+    var startBin = Math.floor(200 / binSize);
+    var endBin = Math.min(Math.floor(3000 / binSize), freqData.length - 2);
+    for (var i = startBin + 1; i < endBin; i++) {
+      if (freqData[i] > freqData[i - 1] && freqData[i] > freqData[i + 1] && freqData[i] > -50) {
+        peaks.push({ bin: i, freq: i * binSize, mag: freqData[i] });
+      }
+    }
+    peaks.sort(function(a, b) { return b.mag - a.mag; });
+    var f1 = null, f2 = null;
+    for (var j = 0; j < peaks.length; j++) {
+      var p = peaks[j];
+      if (!f1 && p.freq >= 200 && p.freq <= 1000) f1 = p.freq;
+      else if (!f2 && p.freq > 800 && p.freq <= 3000 && (!f1 || Math.abs(p.freq - f1) > 200)) f2 = p.freq;
+      if (f1 && f2) break;
+    }
+    return { f1: f1 || 0, f2: f2 || 0 };
+  }
+
+  // ═══════════════════════════════════════════
+  // Vowel space maps for multi-language support
+  // Each vowel: { symbol, f1, f2 } — approximate formant targets
+  // ═══════════════════════════════════════════
+  var VOWEL_MAPS = {
+    en: {
+      name: 'English',
+      vowels: [
+        { symbol: 'i:', f1: 270, f2: 2290 },
+        { symbol: '\u026A', f1: 390, f2: 1990 },
+        { symbol: 'e', f1: 530, f2: 1840 },
+        { symbol: '\u00E6', f1: 660, f2: 1720 },
+        { symbol: '\u0251:', f1: 730, f2: 1090 },
+        { symbol: '\u0254:', f1: 570, f2: 840 },
+        { symbol: '\u028A', f1: 440, f2: 1020 },
+        { symbol: 'u:', f1: 300, f2: 870 },
+        { symbol: '\u028C', f1: 640, f2: 1190 },
+        { symbol: '\u0259', f1: 500, f2: 1500 },
+        { symbol: '\u025C:', f1: 480, f2: 1380 }
+      ]
+    },
+    es: {
+      name: 'Spanish',
+      vowels: [
+        { symbol: 'i', f1: 280, f2: 2250 },
+        { symbol: 'e', f1: 450, f2: 1900 },
+        { symbol: 'a', f1: 700, f2: 1400 },
+        { symbol: 'o', f1: 500, f2: 900 },
+        { symbol: 'u', f1: 300, f2: 800 }
+      ]
+    },
+    fr: {
+      name: 'French',
+      vowels: [
+        { symbol: 'i', f1: 280, f2: 2300 },
+        { symbol: 'e', f1: 370, f2: 2100 },
+        { symbol: '\u025B', f1: 550, f2: 1770 },
+        { symbol: 'a', f1: 700, f2: 1400 },
+        { symbol: '\u0254', f1: 550, f2: 900 },
+        { symbol: 'o', f1: 380, f2: 750 },
+        { symbol: 'u', f1: 300, f2: 750 },
+        { symbol: 'y', f1: 280, f2: 1850 },
+        { symbol: '\u00F8', f1: 370, f2: 1500 },
+        { symbol: '\u0153', f1: 530, f2: 1370 },
+        { symbol: '\u0259', f1: 470, f2: 1400 },
+        { symbol: '\u0251\u0303', f1: 680, f2: 1200 }
+      ]
+    },
+    ja: {
+      name: 'Japanese',
+      vowels: [
+        { symbol: 'i', f1: 300, f2: 2200 },
+        { symbol: 'e', f1: 450, f2: 1900 },
+        { symbol: 'a', f1: 700, f2: 1300 },
+        { symbol: 'o', f1: 500, f2: 850 },
+        { symbol: 'u', f1: 320, f2: 1200 }
+      ]
+    },
+    ar: {
+      name: 'Arabic',
+      vowels: [
+        { symbol: 'i', f1: 300, f2: 2200 },
+        { symbol: 'a', f1: 700, f2: 1300 },
+        { symbol: 'u', f1: 300, f2: 800 }
+      ]
+    }
+  };
+
+  /**
+   * Draw the vowel space scatterplot — IPA vowel quadrilateral.
+   * f1Range: y-axis (low to high, top to bottom)
+   * f2Range: x-axis (high to low, left to right — linguist convention)
+   */
+  function drawVowelSpace(canvas, vowelMap, currentF1, currentF2, vowelTrail, isDark) {
+    if (!canvas) return;
+    var ctx2d = canvas.getContext('2d');
+    var W = canvas.width;
+    var H = canvas.height;
+    ctx2d.clearRect(0, 0, W, H);
+
+    ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    ctx2d.fillRect(0, 0, W, H);
+
+    var pad = 40;
+    var plotW = W - pad * 2;
+    var plotH = H - pad * 2;
+
+    // Axis ranges
+    var f1Min = 200, f1Max = 800;
+    var f2Min = 600, f2Max = 2500;
+
+    // Helper: map formant to canvas coords
+    function f2x(f2) { return pad + (1 - (f2 - f2Min) / (f2Max - f2Min)) * plotW; }
+    function f1y(f1) { return pad + ((f1 - f1Min) / (f1Max - f1Min)) * plotH; }
+
+    // Draw axes
+    ctx2d.strokeStyle = isDark ? '#475569' : '#cbd5e1';
+    ctx2d.lineWidth = 1;
+    ctx2d.beginPath();
+    ctx2d.moveTo(pad, pad);
+    ctx2d.lineTo(pad, H - pad);
+    ctx2d.lineTo(W - pad, H - pad);
+    ctx2d.stroke();
+
+    // Axis labels
+    ctx2d.font = '10px sans-serif';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.textAlign = 'center';
+    ctx2d.fillText('F2 (Hz) — High \u2190 \u2192 Low', W / 2, H - 5);
+    ctx2d.save();
+    ctx2d.translate(12, H / 2);
+    ctx2d.rotate(-Math.PI / 2);
+    ctx2d.fillText('F1 (Hz) — Close \u2190 \u2192 Open', 0, 0);
+    ctx2d.restore();
+
+    // Axis ticks
+    ctx2d.font = '8px sans-serif';
+    ctx2d.textAlign = 'center';
+    for (var f2t = 800; f2t <= 2400; f2t += 400) {
+      var tx = f2x(f2t);
+      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillText(f2t.toString(), tx, H - pad + 12);
+      ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+      ctx2d.beginPath();
+      ctx2d.moveTo(tx, pad);
+      ctx2d.lineTo(tx, H - pad);
+      ctx2d.stroke();
+    }
+    ctx2d.textAlign = 'right';
+    for (var f1t = 300; f1t <= 700; f1t += 100) {
+      var ty = f1y(f1t);
+      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillText(f1t.toString(), pad - 5, ty + 3);
+      ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+      ctx2d.beginPath();
+      ctx2d.moveTo(pad, ty);
+      ctx2d.lineTo(W - pad, ty);
+      ctx2d.stroke();
+    }
+
+    // Draw vowel targets
+    var vowels = vowelMap ? vowelMap.vowels : VOWEL_MAPS.en.vowels;
+    for (var vi = 0; vi < vowels.length; vi++) {
+      var v = vowels[vi];
+      var vx = f2x(v.f2);
+      var vy = f1y(v.f1);
+      // Target region circle
+      ctx2d.beginPath();
+      ctx2d.arc(vx, vy, 18, 0, 2 * Math.PI);
+      ctx2d.fillStyle = isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.12)';
+      ctx2d.fill();
+      ctx2d.strokeStyle = isDark ? 'rgba(34, 197, 94, 0.4)' : 'rgba(34, 197, 94, 0.35)';
+      ctx2d.lineWidth = 1;
+      ctx2d.stroke();
+      // Label
+      ctx2d.font = 'bold 11px sans-serif';
+      ctx2d.fillStyle = isDark ? '#4ade80' : '#16a34a';
+      ctx2d.textAlign = 'center';
+      ctx2d.fillText(v.symbol, vx, vy + 4);
+    }
+
+    // Draw trail (fading dots)
+    if (vowelTrail && vowelTrail.length > 0) {
+      for (var ti = 0; ti < vowelTrail.length; ti++) {
+        var tp = vowelTrail[ti];
+        if (tp.f1 <= 0 || tp.f2 <= 0) continue;
+        var ttx = f2x(tp.f2);
+        var tty = f1y(tp.f1);
+        var alpha = 0.15 + 0.6 * (ti / vowelTrail.length);
+        ctx2d.beginPath();
+        ctx2d.arc(ttx, tty, 4, 0, 2 * Math.PI);
+        ctx2d.fillStyle = 'rgba(168, 85, 247, ' + alpha.toFixed(2) + ')';
+        ctx2d.fill();
+      }
+      // Draw connecting lines for trail (shows diphthongs)
+      if (vowelTrail.length > 1) {
+        ctx2d.beginPath();
+        ctx2d.strokeStyle = isDark ? 'rgba(168, 85, 247, 0.3)' : 'rgba(124, 58, 237, 0.25)';
+        ctx2d.lineWidth = 1.5;
+        var trailStarted = false;
+        for (var tli = 0; tli < vowelTrail.length; tli++) {
+          var tlp = vowelTrail[tli];
+          if (tlp.f1 <= 0 || tlp.f2 <= 0) { trailStarted = false; continue; }
+          var tlx = f2x(tlp.f2);
+          var tly = f1y(tlp.f1);
+          if (!trailStarted) { ctx2d.moveTo(tlx, tly); trailStarted = true; }
+          else ctx2d.lineTo(tlx, tly);
+        }
+        ctx2d.stroke();
+      }
+    }
+
+    // Draw current position dot
+    if (currentF1 > 0 && currentF2 > 0) {
+      var cx2 = f2x(currentF2);
+      var cy2 = f1y(currentF1);
+      // Outer glow
+      ctx2d.beginPath();
+      ctx2d.arc(cx2, cy2, 10, 0, 2 * Math.PI);
+      ctx2d.fillStyle = isDark ? 'rgba(249, 115, 22, 0.25)' : 'rgba(249, 115, 22, 0.2)';
+      ctx2d.fill();
+      // Inner dot
+      ctx2d.beginPath();
+      ctx2d.arc(cx2, cy2, 6, 0, 2 * Math.PI);
+      ctx2d.fillStyle = '#f97316';
+      ctx2d.fill();
+      ctx2d.strokeStyle = '#fff';
+      ctx2d.lineWidth = 1.5;
+      ctx2d.stroke();
+      // Readout
+      ctx2d.font = '9px sans-serif';
+      ctx2d.fillStyle = isDark ? '#fdba74' : '#ea580c';
+      ctx2d.textAlign = 'left';
+      ctx2d.fillText('F1:' + Math.round(currentF1) + '  F2:' + Math.round(currentF2), cx2 + 12, cy2 - 4);
+    }
+  }
+
+  /**
+   * Draw intonation pattern template — target zone + optional student overlay.
+   */
+  function drawIntonationPattern(canvas, patternPoints, studentCurve, isDark) {
+    if (!canvas) return;
+    var ctx2d = canvas.getContext('2d');
+    var W = canvas.width;
+    var H = canvas.height;
+    ctx2d.clearRect(0, 0, W, H);
+
+    ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    ctx2d.fillRect(0, 0, W, H);
+
+    if (!patternPoints || patternPoints.length < 2) return;
+
+    var pad = 10;
+    var plotW = W - pad * 2;
+    var plotH = H - pad * 2;
+
+    // Draw target zone (shaded green region)
+    var tolerance = 0.12; // ±12% of height as "target zone"
+    ctx2d.beginPath();
+    for (var i = 0; i < patternPoints.length; i++) {
+      var x = pad + (i / (patternPoints.length - 1)) * plotW;
+      var yTop = pad + (1 - Math.min(1, patternPoints[i] + tolerance)) * plotH;
+      if (i === 0) ctx2d.moveTo(x, yTop);
+      else ctx2d.lineTo(x, yTop);
+    }
+    for (var i = patternPoints.length - 1; i >= 0; i--) {
+      var x = pad + (i / (patternPoints.length - 1)) * plotW;
+      var yBot = pad + (1 - Math.max(0, patternPoints[i] - tolerance)) * plotH;
+      ctx2d.lineTo(x, yBot);
+    }
+    ctx2d.closePath();
+    ctx2d.fillStyle = isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.12)';
+    ctx2d.fill();
+
+    // Draw center line of pattern
+    ctx2d.beginPath();
+    ctx2d.strokeStyle = isDark ? 'rgba(34, 197, 94, 0.6)' : 'rgba(22, 163, 74, 0.5)';
+    ctx2d.lineWidth = 2;
+    ctx2d.setLineDash([6, 4]);
+    for (var i = 0; i < patternPoints.length; i++) {
+      var x = pad + (i / (patternPoints.length - 1)) * plotW;
+      var y = pad + (1 - patternPoints[i]) * plotH;
+      if (i === 0) ctx2d.moveTo(x, y);
+      else ctx2d.lineTo(x, y);
+    }
+    ctx2d.stroke();
+    ctx2d.setLineDash([]);
+
+    // Draw student curve overlay if present
+    if (studentCurve && studentCurve.length > 1) {
+      // Normalize student curve to 0-1
+      var sMin = 9999, sMax = -9999;
+      for (var si = 0; si < studentCurve.length; si++) {
+        if (studentCurve[si] > 0) {
+          if (studentCurve[si] < sMin) sMin = studentCurve[si];
+          if (studentCurve[si] > sMax) sMax = studentCurve[si];
+        }
+      }
+      var sRange = sMax - sMin || 1;
+
+      ctx2d.beginPath();
+      ctx2d.strokeStyle = isDark ? '#f97316' : '#ea580c';
+      ctx2d.lineWidth = 2.5;
+      var sStarted = false;
+      for (var si = 0; si < studentCurve.length; si++) {
+        var sx = pad + (si / (studentCurve.length - 1)) * plotW;
+        if (studentCurve[si] <= 0) { sStarted = false; continue; }
+        var sNorm = (studentCurve[si] - sMin) / sRange;
+        var sy = pad + (1 - sNorm) * plotH;
+        if (!sStarted) { ctx2d.moveTo(sx, sy); sStarted = true; }
+        else ctx2d.lineTo(sx, sy);
+      }
+      ctx2d.stroke();
+
+      // Legend
+      ctx2d.font = '9px sans-serif';
+      ctx2d.textAlign = 'left';
+      ctx2d.fillStyle = isDark ? '#4ade80' : '#16a34a';
+      ctx2d.fillText('Target', pad + 4, pad + 10);
+      ctx2d.fillStyle = isDark ? '#f97316' : '#ea580c';
+      ctx2d.fillText('Your pitch', pad + 4, pad + 22);
+    }
+  }
+
+  /**
+   * Draw playback prosody curve — synchronized with audio playback position.
+   */
+  function drawPlaybackProsody(canvas, pitchData, volumeData, playbackProgress, isDark) {
+    if (!canvas) return;
+    var ctx2d = canvas.getContext('2d');
+    var W = canvas.width;
+    var H = canvas.height;
+    ctx2d.clearRect(0, 0, W, H);
+
+    ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    ctx2d.fillRect(0, 0, W, H);
+
+    if (!pitchData || pitchData.length < 2) {
+      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.textAlign = 'center';
+      ctx2d.font = '12px sans-serif';
+      ctx2d.fillText('No recording data', W / 2, H / 2);
+      return;
+    }
+
+    var minHz = 80, maxHz = 400;
+
+    // Draw grid
+    ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+    ctx2d.lineWidth = 0.5;
+    ctx2d.setLineDash([2, 4]);
+    var gridHz = [130, 220, 320];
+    for (var gi = 0; gi < gridHz.length; gi++) {
+      var gy = H - ((gridHz[gi] - minHz) / (maxHz - minHz)) * H;
+      ctx2d.beginPath();
+      ctx2d.moveTo(0, gy);
+      ctx2d.lineTo(W, gy);
+      ctx2d.stroke();
+    }
+    ctx2d.setLineDash([]);
+
+    // Draw full pitch curve (dimmed)
+    ctx2d.beginPath();
+    ctx2d.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.3)' : 'rgba(148, 163, 184, 0.25)';
+    ctx2d.lineWidth = 1.5;
+    var started = false;
+    for (var i = 0; i < pitchData.length; i++) {
+      var x = (i / (pitchData.length - 1)) * W;
+      if (pitchData[i] <= 0) { started = false; continue; }
+      var y = H - ((Math.min(Math.max(pitchData[i], minHz), maxHz) - minHz) / (maxHz - minHz)) * H;
+      if (!started) { ctx2d.moveTo(x, y); started = true; }
+      else ctx2d.lineTo(x, y);
+    }
+    ctx2d.stroke();
+
+    // Draw highlighted portion up to playback position
+    var progressIdx = Math.floor(playbackProgress * pitchData.length);
+    if (progressIdx > 1) {
+      ctx2d.beginPath();
+      ctx2d.lineWidth = 2.5;
+      started = false;
+      for (var i = 0; i < progressIdx; i++) {
+        var x = (i / (pitchData.length - 1)) * W;
+        if (pitchData[i] <= 0) { started = false; continue; }
+        var y = H - ((Math.min(Math.max(pitchData[i], minHz), maxHz) - minHz) / (maxHz - minHz)) * H;
+        var pz = pitchZone(pitchData[i]);
+        if (!started) {
+          ctx2d.stroke();
+          ctx2d.beginPath();
+          ctx2d.strokeStyle = pz.color;
+          ctx2d.moveTo(x, y);
+          started = true;
+        } else {
+          ctx2d.strokeStyle = pz.color;
+          ctx2d.lineTo(x, y);
+        }
+      }
+      ctx2d.stroke();
+    }
+
+    // Draw playhead line
+    var playX = playbackProgress * W;
+    ctx2d.strokeStyle = isDark ? '#e2e8f0' : '#1e293b';
+    ctx2d.lineWidth = 1.5;
+    ctx2d.setLineDash([3, 3]);
+    ctx2d.beginPath();
+    ctx2d.moveTo(playX, 0);
+    ctx2d.lineTo(playX, H);
+    ctx2d.stroke();
+    ctx2d.setLineDash([]);
+
+    // Volume bar at bottom (small)
+    if (volumeData && volumeData.length > 1) {
+      var volH = 12;
+      var volY = H - volH;
+      for (var vi = 0; vi < volumeData.length; vi++) {
+        var vx = (vi / (volumeData.length - 1)) * W;
+        var vDb = volumeData[vi];
+        var vNorm = Math.max(0, Math.min(1, (vDb + 60) / 60));
+        var vAlpha = vi < progressIdx ? 0.6 : 0.15;
+        ctx2d.fillStyle = 'rgba(59, 130, 246, ' + vAlpha.toFixed(2) + ')';
+        ctx2d.fillRect(vx, volY + volH * (1 - vNorm), 2, volH * vNorm);
+      }
+    }
+  }
+
+  /**
+   * Draw prosody comparison — two recordings side by side.
+   */
+  function drawProsodyComparison(canvas, pitchData1, pitchData2, isDark) {
+    if (!canvas) return;
+    var ctx2d = canvas.getContext('2d');
+    var W = canvas.width;
+    var H = canvas.height;
+    ctx2d.clearRect(0, 0, W, H);
+
+    ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    ctx2d.fillRect(0, 0, W, H);
+
+    var minHz = 80, maxHz = 400;
+
+    // Grid
+    ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+    ctx2d.lineWidth = 0.5;
+    ctx2d.setLineDash([2, 4]);
+    var gridHz = [130, 220, 320];
+    for (var gi = 0; gi < gridHz.length; gi++) {
+      var gy = H - ((gridHz[gi] - minHz) / (maxHz - minHz)) * H;
+      ctx2d.beginPath();
+      ctx2d.moveTo(0, gy);
+      ctx2d.lineTo(W, gy);
+      ctx2d.stroke();
+    }
+    ctx2d.setLineDash([]);
+
+    function drawCurve(data, color, width) {
+      if (!data || data.length < 2) return;
+      ctx2d.beginPath();
+      ctx2d.strokeStyle = color;
+      ctx2d.lineWidth = width;
+      var s = false;
+      for (var i = 0; i < data.length; i++) {
+        var x = (i / (data.length - 1)) * W;
+        if (data[i] <= 0) { s = false; continue; }
+        var y = H - ((Math.min(Math.max(data[i], minHz), maxHz) - minHz) / (maxHz - minHz)) * H;
+        if (!s) { ctx2d.moveTo(x, y); s = true; }
+        else ctx2d.lineTo(x, y);
+      }
+      ctx2d.stroke();
+    }
+
+    drawCurve(pitchData1, isDark ? '#3b82f6' : '#2563eb', 2.5);
+    drawCurve(pitchData2, isDark ? '#f97316' : '#ea580c', 2.5);
+
+    // Legend
+    ctx2d.font = 'bold 10px sans-serif';
+    ctx2d.textAlign = 'left';
+    ctx2d.fillStyle = isDark ? '#3b82f6' : '#2563eb';
+    ctx2d.fillText('Recording 1', 6, 14);
+    ctx2d.fillStyle = isDark ? '#f97316' : '#ea580c';
+    ctx2d.fillText('Recording 2', 6, 26);
+
+    if (!pitchData1 && !pitchData2) {
+      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.textAlign = 'center';
+      ctx2d.font = '12px sans-serif';
+      ctx2d.fillText('Select two recordings to compare', W / 2, H / 2);
+    }
+  }
+
+  /**
+   * Draw fluency session comparison bar chart.
+   */
+  function drawFluencyBarChart(canvas, sessions, isDark) {
+    if (!canvas) return;
+    var ctx2d = canvas.getContext('2d');
+    var W = canvas.width;
+    var H = canvas.height;
+    ctx2d.clearRect(0, 0, W, H);
+
+    ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    ctx2d.fillRect(0, 0, W, H);
+
+    if (!sessions || sessions.length === 0) {
+      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.textAlign = 'center';
+      ctx2d.font = '11px sans-serif';
+      ctx2d.fillText('No fluency sessions yet', W / 2, H / 2);
+      return;
+    }
+
+    var pad = 30;
+    var plotW = W - pad * 2;
+    var plotH = H - pad - 20;
+    var barCount = Math.min(sessions.length, 10);
+    var barGap = 6;
+    var barW = Math.max(12, (plotW - barGap * (barCount - 1)) / barCount);
+
+    // Y-axis (0-5 stars)
+    ctx2d.font = '8px sans-serif';
+    ctx2d.textAlign = 'right';
+    ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+    for (var si = 0; si <= 5; si++) {
+      var sy = pad + plotH - (si / 5) * plotH;
+      ctx2d.fillText(si.toString(), pad - 4, sy + 3);
+      ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+      ctx2d.lineWidth = 0.5;
+      ctx2d.beginPath();
+      ctx2d.moveTo(pad, sy);
+      ctx2d.lineTo(W - 10, sy);
+      ctx2d.stroke();
+    }
+
+    // Bars
+    var startIdx = Math.max(0, sessions.length - barCount);
+    for (var bi = 0; bi < barCount; bi++) {
+      var session = sessions[startIdx + bi];
+      var score = session.fluencyStars || 0;
+      var bx = pad + bi * (barW + barGap);
+      var bh = (score / 5) * plotH;
+      var by = pad + plotH - bh;
+
+      // Bar color based on score
+      var bColor = score >= 4 ? '#22c55e' : score >= 3 ? '#eab308' : score >= 2 ? '#f97316' : '#ef4444';
+      ctx2d.fillStyle = bColor;
+      ctx2d.fillRect(bx, by, barW, bh);
+
+      // Score label
+      ctx2d.font = 'bold 9px sans-serif';
+      ctx2d.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+      ctx2d.textAlign = 'center';
+      ctx2d.fillText(score.toFixed(1), bx + barW / 2, by - 4);
+
+      // Session label
+      ctx2d.font = '7px sans-serif';
+      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillText('#' + (startIdx + bi + 1), bx + barW / 2, pad + plotH + 12);
+    }
+
+    // Title
+    ctx2d.font = 'bold 10px sans-serif';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.textAlign = 'center';
+    ctx2d.fillText('Fluency Score History', W / 2, 12);
+  }
+
+  /**
+   * Pattern matching: compare student curve to template.
+   * Both are normalized to 0-1. Returns score 0-100.
+   */
+  function computePatternMatchScore(templatePoints, studentPitchHistory) {
+    if (!templatePoints || !studentPitchHistory || studentPitchHistory.length < 5) return 0;
+
+    // Filter out zero/negative pitch values
+    var validPitch = [];
+    for (var i = 0; i < studentPitchHistory.length; i++) {
+      if (studentPitchHistory[i] > 0) validPitch.push(studentPitchHistory[i]);
+    }
+    if (validPitch.length < 5) return 0;
+
+    // Normalize student pitch to 0-1
+    var sMin = validPitch[0], sMax = validPitch[0];
+    for (var i = 1; i < validPitch.length; i++) {
+      if (validPitch[i] < sMin) sMin = validPitch[i];
+      if (validPitch[i] > sMax) sMax = validPitch[i];
+    }
+    var sRange = sMax - sMin || 1;
+    var normalizedStudent = [];
+    for (var i = 0; i < validPitch.length; i++) {
+      normalizedStudent.push((validPitch[i] - sMin) / sRange);
+    }
+
+    // Resample both to same length (50 points)
+    var resampleLen = 50;
+    function resample(arr, targetLen) {
+      var result = [];
+      for (var i = 0; i < targetLen; i++) {
+        var srcIdx = (i / (targetLen - 1)) * (arr.length - 1);
+        var lo = Math.floor(srcIdx);
+        var hi = Math.min(lo + 1, arr.length - 1);
+        var frac = srcIdx - lo;
+        result.push(arr[lo] * (1 - frac) + arr[hi] * frac);
+      }
+      return result;
+    }
+
+    var tResampled = resample(templatePoints, resampleLen);
+    var sResampled = resample(normalizedStudent, resampleLen);
+
+    // Calculate mean absolute error
+    var mae = 0;
+    for (var i = 0; i < resampleLen; i++) {
+      mae += Math.abs(tResampled[i] - sResampled[i]);
+    }
+    mae /= resampleLen;
+
+    // Score: 100 - MAE * scaling_factor
+    var score = Math.max(0, Math.min(100, Math.round(100 - mae * 250)));
+    return score;
+  }
+
 
   // ═══════════════════════════════════════════
   // Languages supported for multilingual mode
@@ -518,7 +1144,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     { id: 'question', icon: '\u2753', label: 'Question vs Statement', desc: 'Practice rising vs falling intonation.' },
     { id: 'emphasis', icon: '\uD83D\uDCAA', label: 'Emphasis Drill', desc: 'Shift word stress to change meaning.' },
     { id: 'pacing', icon: '\u23F1\uFE0F', label: 'Pacing Challenge', desc: 'Read a passage at a target speed.' },
-    { id: 'volume', icon: '\uD83D\uDD0A', label: 'Volume Projection', desc: 'Speak at a steady volume for 10 seconds.' }
+    { id: 'volume', icon: '\uD83D\uDD0A', label: 'Volume Projection', desc: 'Speak at a steady volume for 10 seconds.' },
+    { id: 'intonation', icon: '\uD83C\uDFB6', label: 'Intonation Patterns', desc: 'Match clinical prosody target patterns used by SLPs.' }
   ];
 
   // Default starter exercises (before AI generation)
@@ -551,6 +1178,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       { text: 'Say the alphabet at a comfortable volume, keeping the loudness even throughout.', duration: 10 }
     ]
   };
+
+  // ═══════════════════════════════════════════
+  // Intonation Pattern Templates (Clinical)
+  // Each pattern: normalized 0-1 pitch points
+  // ═══════════════════════════════════════════
+  var INTONATION_PATTERNS = [
+    {
+      id: 'declarative',
+      label: 'Declarative',
+      icon: '.',
+      desc: 'Flat then falling pitch at the end.',
+      phrase: 'The cat is sleeping on the couch.',
+      points: [0.5, 0.52, 0.55, 0.55, 0.56, 0.55, 0.54, 0.55, 0.53, 0.50, 0.48, 0.45, 0.40, 0.35, 0.28, 0.20]
+    },
+    {
+      id: 'yesno',
+      label: 'Yes/No Question',
+      icon: '?',
+      desc: 'Rising pitch at the end.',
+      phrase: 'Is the cat sleeping on the couch?',
+      points: [0.4, 0.42, 0.44, 0.45, 0.45, 0.44, 0.45, 0.46, 0.48, 0.52, 0.58, 0.65, 0.72, 0.80, 0.87, 0.92]
+    },
+    {
+      id: 'wh_question',
+      label: 'Wh-Question',
+      icon: '?',
+      desc: 'Slight rise then fall.',
+      phrase: 'Where is the cat sleeping?',
+      points: [0.55, 0.62, 0.70, 0.75, 0.73, 0.68, 0.62, 0.56, 0.50, 0.46, 0.42, 0.38, 0.34, 0.30, 0.26, 0.22]
+    },
+    {
+      id: 'listing',
+      label: 'Listing/Enumeration',
+      icon: '#',
+      desc: 'Stepped rises with final fall.',
+      phrase: 'I need apples, bananas, oranges, and grapes.',
+      points: [0.35, 0.45, 0.55, 0.40, 0.50, 0.62, 0.45, 0.55, 0.68, 0.50, 0.60, 0.72, 0.55, 0.45, 0.32, 0.20]
+    },
+    {
+      id: 'exclamation',
+      label: 'Exclamation',
+      icon: '!',
+      desc: 'High peak then rapid fall.',
+      phrase: 'Wow, that is amazing!',
+      points: [0.60, 0.78, 0.92, 0.98, 0.95, 0.85, 0.72, 0.58, 0.45, 0.36, 0.30, 0.26, 0.23, 0.21, 0.20, 0.19]
+    },
+    {
+      id: 'contrast',
+      label: 'Contrast/Emphasis',
+      icon: '*',
+      desc: 'Dip-peak-dip on stressed word.',
+      phrase: 'I said the BLUE one, not the red one.',
+      points: [0.45, 0.42, 0.38, 0.35, 0.32, 0.38, 0.55, 0.78, 0.90, 0.78, 0.55, 0.42, 0.38, 0.35, 0.30, 0.25]
+    },
+    {
+      id: 'surprised',
+      label: 'Surprised',
+      icon: '!?',
+      desc: 'Sharp upward jump.',
+      phrase: 'You got a puppy?!',
+      points: [0.30, 0.30, 0.32, 0.35, 0.40, 0.50, 0.65, 0.82, 0.92, 0.96, 0.98, 0.95, 0.88, 0.80, 0.72, 0.65]
+    },
+    {
+      id: 'sarcasm',
+      label: 'Sarcasm',
+      icon: '~',
+      desc: 'Flat/monotone (deliberately reduced prosody).',
+      phrase: 'Oh great, another test.',
+      points: [0.50, 0.50, 0.49, 0.50, 0.51, 0.50, 0.49, 0.50, 0.50, 0.49, 0.50, 0.49, 0.48, 0.48, 0.47, 0.47]
+    }
+  ];
 
   // Warm-up exercises
   var WARMUPS = [
@@ -633,6 +1331,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         var sessionWpmReadings = d.sessionWpmReadings || [];
         var sessionPitchRange = d.sessionPitchRange || { min: 9999, max: 0 };
         var sessionTimeSpent = d.sessionTimeSpent || 0;
+        var fluencySessions = d.fluencySessions || [];
 
         // ── Ephemeral state (local React state) ──
         var tabState = React.useState('visualizer');
@@ -794,9 +1493,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
         var volumeTimerRefId = React.useRef(null);
 
-        // ════════════════════════════════════
+        // ════════════════════════════════════════
+        // Enhancement 1: Recording Playback State
+        // ════════════════════════════════════════
+        var mediaRecorderRef = React.useRef(null);
+        var recordedChunksRef = React.useRef([]);
+
+        var savedRecordingsState = React.useState([]); // [{blobUrl, timestamp, duration, pitchData, volumeData}]
+        var savedRecordings = savedRecordingsState[0];
+        var setSavedRecordings = savedRecordingsState[1];
+
+        var playbackAudioRef = React.useRef(null);
+
+        var playbackState = React.useState('stopped'); // 'stopped' | 'playing' | 'paused'
+        var playbackStatus = playbackState[0];
+        var setPlaybackStatus = playbackState[1];
+
+        var playbackProgressState = React.useState(0);
+        var playbackProgress = playbackProgressState[0];
+        var setPlaybackProgress = playbackProgressState[1];
+
+        var playbackIdxState = React.useState(-1); // which recording is currently being played
+        var playbackIdx = playbackIdxState[0];
+        var setPlaybackIdx = playbackIdxState[1];
+
+        var playbackCanvasRef = React.useRef(null);
+        var playbackRafRef = React.useRef(null);
+
+        // Compare mode
+        var compareState = React.useState(false);
+        var compareMode = compareState[0];
+        var setCompareMode = compareState[1];
+
+        var compareIdx1State = React.useState(0);
+        var compareIdx1 = compareIdx1State[0];
+        var setCompareIdx1 = compareIdx1State[1];
+
+        var compareIdx2State = React.useState(1);
+        var compareIdx2 = compareIdx2State[0];
+        var setCompareIdx2 = compareIdx2State[1];
+
+        var compareCanvasRef = React.useRef(null);
+
+        // ════════════════════════════════════════
+        // Enhancement 2: Intonation Pattern State
+        // ════════════════════════════════════════
+        var selectedPatternState = React.useState(null);
+        var selectedPattern = selectedPatternState[0];
+        var setSelectedPattern = selectedPatternState[1];
+
+        var patternPracticeState = React.useState(false);
+        var patternPracticing = patternPracticeState[0];
+        var setPatternPracticing = patternPracticeState[1];
+
+        var patternScoreState = React.useState(null);
+        var patternScore = patternScoreState[0];
+        var setPatternScore = patternScoreState[1];
+
+        var patternStudentCurveState = React.useState(null);
+        var patternStudentCurve = patternStudentCurveState[0];
+        var setPatternStudentCurve = patternStudentCurveState[1];
+
+        var patternCanvasRef = React.useRef(null);
+
+        // ════════════════════════════════════════
+        // Enhancement 3: Vowel Lab State
+        // ════════════════════════════════════════
+        var vowelLabOpenState = React.useState(false);
+        var vowelLabOpen = vowelLabOpenState[0];
+        var setVowelLabOpen = vowelLabOpenState[1];
+
+        var vowelLangState = React.useState('en');
+        var vowelLang = vowelLangState[0];
+        var setVowelLang = vowelLangState[1];
+
+        var currentF1State = React.useState(0);
+        var currentF1 = currentF1State[0];
+        var setCurrentF1 = currentF1State[1];
+
+        var currentF2State = React.useState(0);
+        var currentF2 = currentF2State[0];
+        var setCurrentF2 = currentF2State[1];
+
+        var vowelTrailState = React.useState([]);
+        var vowelTrail = vowelTrailState[0];
+        var setVowelTrail = vowelTrailState[1];
+
+        var vowelCanvasRef = React.useRef(null);
+
+        // ════════════════════════════════════════
+        // Enhancement 4: Fluency Tracker State
+        // ════════════════════════════════════════
+        var fluencyOpenState = React.useState(false);
+        var fluencyOpen = fluencyOpenState[0];
+        var setFluencyOpen = fluencyOpenState[1];
+
+        // Pause classification accumulator
+        var pauseEventsRef = React.useRef([]); // [{type: 'normal'|'extended'|'block', duration: secs}]
+        var syllableIntervalsRef = React.useRef([]); // inter-syllable intervals in ms
+
+        var fluencyScoreState = React.useState(null);
+        var fluencyScore = fluencyScoreState[0];
+        var setFluencyScore = fluencyScoreState[1];
+
+        var fluencyStarsState = React.useState(0);
+        var fluencyStars = fluencyStarsState[0];
+        var setFluencyStars = fluencyStarsState[1];
+
+        var fluencyDetailsState = React.useState(null);
+        var fluencyDetails = fluencyDetailsState[0];
+        var setFluencyDetails = fluencyDetailsState[1];
+
+        var fluencyChartCanvasRef = React.useRef(null);
+
+        // ════════════════════════════════════════
         // Audio Engine: Start / Stop
-        // ════════════════════════════════════
+        // ════════════════════════════════════════
 
         var startRecording = React.useCallback(function() {
           if (isRecording) return;
@@ -814,6 +1626,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               source.connect(analyser);
               analyserRef.current = analyser;
 
+              // Enhancement 1: MediaRecorder integration
+              try {
+                var mimeType = 'audio/webm';
+                if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported) {
+                  if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                    mimeType = 'audio/webm;codecs=opus';
+                  } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    mimeType = 'audio/webm';
+                  } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    mimeType = 'audio/mp4';
+                  }
+                }
+                var mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+                recordedChunksRef.current = [];
+                mediaRecorder.ondataavailable = function(e) {
+                  if (e.data && e.data.size > 0) {
+                    recordedChunksRef.current.push(e.data);
+                  }
+                };
+                mediaRecorder.start(100); // collect in 100ms chunks
+                mediaRecorderRef.current = mediaRecorder;
+              } catch(mrErr) {
+                console.warn('[Oratory] MediaRecorder not available:', mrErr);
+                mediaRecorderRef.current = null;
+              }
+
               setIsRecording(true);
               recordingStartRef.current = Date.now();
               syllableCountRef.current = 0;
@@ -822,6 +1660,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               pauseStartRef.current = null;
               totalPauseTimeRef.current = 0;
               totalSpeechTimeRef.current = 0;
+              pauseEventsRef.current = [];
+              syllableIntervalsRef.current = [];
 
               if (!sessionStartTime) {
                 upd('sessionStartTime', Date.now());
@@ -832,15 +1672,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               // Start the analysis loop
               var bufLen = analyser.fftSize;
               var buf = new Float32Array(bufLen);
+              var freqBuf = new Float32Array(analyser.frequencyBinCount);
               var sampleRate = audioCtx.sampleRate;
               var pauseThresholdMs = 300; // 300ms of silence = a pause
               var wasSpeaking = false;
+              var lastSyllableTs = 0;
 
               function analyzeLoop() {
                 analyser.getFloatTimeDomainData(buf);
                 var rms = calculateRMS(buf);
                 var db = rmsToDb(rms);
                 var pitch = autoCorrelate(buf, sampleRate);
+
+                // Enhancement 3: Formant detection for vowel lab
+                analyser.getFloatFrequencyData(freqBuf);
+                var formants = findFormants(freqBuf, sampleRate);
+                if (formants.f1 > 0 && formants.f2 > 0 && rms > 0.02) {
+                  setCurrentF1(formants.f1);
+                  setCurrentF2(formants.f2);
+                  setVowelTrail(function(prev) {
+                    var next = prev.concat([{ f1: formants.f1, f2: formants.f2 }]);
+                    if (next.length > 80) next = next.slice(-80);
+                    return next;
+                  });
+                }
 
                 setCurrentPitch(pitch);
                 setCurrentDb(db);
@@ -864,7 +1719,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 // Detect rising edge through threshold — approximate syllable onset
                 if (currentAmplitude > syllableThreshold && prevAmp <= syllableThreshold) {
                   syllableCountRef.current += 1;
-                  syllableTimestampsRef.current.push(Date.now());
+                  var syllTs = Date.now();
+                  syllableTimestampsRef.current.push(syllTs);
+                  // Enhancement 4: track inter-syllable intervals
+                  if (lastSyllableTs > 0) {
+                    syllableIntervalsRef.current.push(syllTs - lastSyllableTs);
+                  }
+                  lastSyllableTs = syllTs;
                 }
                 lastAmplitudeRef.current = currentAmplitude;
 
@@ -891,8 +1752,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   }
                 } else {
                   if (!wasSpeaking && pauseStartRef.current) {
-                    // Was pausing, now speaking again
+                    // Was pausing, now speaking again — classify the pause
+                    var pDur = (now - pauseStartRef.current) / 1000;
                     totalPauseTimeRef.current += (now - pauseStartRef.current);
+                    // Enhancement 4: classify pause
+                    if (pDur >= 0.3) {
+                      var pType = 'normal';
+                      if (pDur > 2.0) pType = 'block';
+                      else if (pDur > 0.5) pType = 'extended';
+                      pauseEventsRef.current.push({ type: pType, duration: pDur });
+                    }
                     pauseStartRef.current = null;
                   }
                   wasSpeaking = true;
@@ -925,6 +1794,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             cancelAnimationFrame(animFrameRef.current);
             animFrameRef.current = null;
           }
+
+          // Enhancement 1: Stop MediaRecorder and save recording
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            try {
+              mediaRecorderRef.current.stop();
+            } catch(e) { /* ignore */ }
+            // Save recording after a short delay to allow final data
+            setTimeout(function() {
+              var chunks = recordedChunksRef.current;
+              if (chunks && chunks.length > 0) {
+                var blob = new Blob(chunks, { type: chunks[0].type || 'audio/webm' });
+                var blobUrl = URL.createObjectURL(blob);
+                var duration = recordingStartRef.current ? Math.round((Date.now() - recordingStartRef.current) / 1000) : 0;
+                var newRecording = {
+                  blobUrl: blobUrl,
+                  timestamp: Date.now(),
+                  duration: duration,
+                  pitchData: pitchHistory.slice(),
+                  volumeData: volumeHistory.slice()
+                };
+                setSavedRecordings(function(prev) {
+                  var next = prev.concat([newRecording]);
+                  // Keep only last 3
+                  if (next.length > 3) {
+                    // Revoke oldest blob URL
+                    URL.revokeObjectURL(next[0].blobUrl);
+                    next = next.slice(-3);
+                  }
+                  return next;
+                });
+              }
+              recordedChunksRef.current = [];
+            }, 200);
+            mediaRecorderRef.current = null;
+          }
+
           if (streamRef.current) {
             streamRef.current.getTracks().forEach(function(track) { track.stop(); });
             streamRef.current = null;
@@ -947,7 +1852,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           }
 
           if (announceToSR) announceToSR('Microphone stopped.');
-        }, [sessionTimeSpent]);
+        }, [sessionTimeSpent, pitchHistory, volumeHistory]);
 
         // Cleanup on unmount
         React.useEffect(function() {
@@ -960,6 +1865,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               audioCtxRef.current.close().catch(function() {});
             }
             if (volumeTimerRefId.current) clearInterval(volumeTimerRefId.current);
+            if (playbackRafRef.current) cancelAnimationFrame(playbackRafRef.current);
+            if (playbackAudioRef.current) {
+              playbackAudioRef.current.pause();
+              playbackAudioRef.current = null;
+            }
+            // Revoke saved recording URLs
+            savedRecordings.forEach(function(rec) {
+              if (rec.blobUrl) URL.revokeObjectURL(rec.blobUrl);
+            });
           };
         }, []);
 
@@ -971,6 +1885,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             drawPacingGauge(pacingCanvasRef.current, currentWpm, gradeLevel, isDark);
             var volResult = drawVolumeMeter(volumeCanvasRef.current, currentDb, volumeHistory, isDark);
             drawPauseIndicator(pauseCanvasRef.current, isPaused, pauseDuration, pauseRatio, isDark);
+
+            // Enhancement 3: Vowel space rendering
+            if (vowelLabOpen) {
+              var vMap = VOWEL_MAPS[vowelLang] || VOWEL_MAPS.en;
+              drawVowelSpace(vowelCanvasRef.current, vMap, currentF1, currentF2, vowelTrail, isDark);
+            }
 
             // Track pitch range for session report
             if (currentPitch > 0) {
@@ -998,12 +1918,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             drawPacingGauge(pacingCanvasRef.current, currentWpm, gradeLevel, isDark);
             drawVolumeMeter(volumeCanvasRef.current, currentDb, volumeHistory, isDark);
             drawPauseIndicator(pauseCanvasRef.current, isPaused, pauseDuration, pauseRatio, isDark);
+            if (vowelLabOpen) {
+              var vMap = VOWEL_MAPS[vowelLang] || VOWEL_MAPS.en;
+              drawVowelSpace(vowelCanvasRef.current, vMap, currentF1, currentF2, vowelTrail, isDark);
+            }
           }
 
           return function() {
             if (rafId) cancelAnimationFrame(rafId);
           };
-        }, [isRecording, pitchHistory, currentWpm, currentDb, volumeHistory, isPaused, pauseDuration, pauseRatio, isDark, modelCurve, currentPitch]);
+        }, [isRecording, pitchHistory, currentWpm, currentDb, volumeHistory, isPaused, pauseDuration, pauseRatio, isDark, modelCurve, currentPitch, vowelLabOpen, vowelLang, currentF1, currentF2, vowelTrail]);
 
         // ════════════════════════════════════
         // Helper: Reset all ephemeral data
@@ -1019,6 +1943,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           setPauseDuration(0);
           setPauseRatio(0);
           setModelCurve(null);
+          setVowelTrail([]);
+          setCurrentF1(0);
+          setCurrentF2(0);
+          setFluencyScore(null);
+          setFluencyStars(0);
+          setFluencyDetails(null);
+          pauseEventsRef.current = [];
+          syllableIntervalsRef.current = [];
           syllableCountRef.current = 0;
           syllableTimestampsRef.current = [];
           if (addToast) addToast('Session reset.', 'info');
@@ -1205,6 +2137,214 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         }
 
         // ════════════════════════════════════
+        // Enhancement 1: Playback Controls
+        // ════════════════════════════════════
+        function startPlayback(idx) {
+          var rec = savedRecordings[idx];
+          if (!rec) return;
+
+          // Stop any current playback
+          stopPlayback();
+
+          var audio = new Audio(rec.blobUrl);
+          playbackAudioRef.current = audio;
+          setPlaybackIdx(idx);
+          setPlaybackStatus('playing');
+          setPlaybackProgress(0);
+
+          audio.onended = function() {
+            setPlaybackStatus('stopped');
+            setPlaybackProgress(1);
+            if (playbackRafRef.current) cancelAnimationFrame(playbackRafRef.current);
+          };
+
+          audio.play().catch(function(e) {
+            console.warn('[Oratory] Playback error:', e);
+            setPlaybackStatus('stopped');
+          });
+
+          // Animate playback progress
+          function updateProgress() {
+            if (audio && audio.duration && !isNaN(audio.duration)) {
+              setPlaybackProgress(audio.currentTime / audio.duration);
+            }
+            // Redraw playback canvas
+            drawPlaybackProsody(
+              playbackCanvasRef.current,
+              rec.pitchData,
+              rec.volumeData,
+              audio && audio.duration ? (audio.currentTime / audio.duration) : 0,
+              isDark
+            );
+            if (audio && !audio.paused && !audio.ended) {
+              playbackRafRef.current = requestAnimationFrame(updateProgress);
+            }
+          }
+          playbackRafRef.current = requestAnimationFrame(updateProgress);
+        }
+
+        function pausePlayback() {
+          if (playbackAudioRef.current && !playbackAudioRef.current.paused) {
+            playbackAudioRef.current.pause();
+            setPlaybackStatus('paused');
+            if (playbackRafRef.current) cancelAnimationFrame(playbackRafRef.current);
+          }
+        }
+
+        function resumePlayback() {
+          if (playbackAudioRef.current && playbackAudioRef.current.paused) {
+            playbackAudioRef.current.play().catch(function() {});
+            setPlaybackStatus('playing');
+            var rec = savedRecordings[playbackIdx];
+            function updateProgress() {
+              var audio = playbackAudioRef.current;
+              if (audio && audio.duration && !isNaN(audio.duration)) {
+                setPlaybackProgress(audio.currentTime / audio.duration);
+              }
+              if (rec) {
+                drawPlaybackProsody(
+                  playbackCanvasRef.current,
+                  rec.pitchData,
+                  rec.volumeData,
+                  audio && audio.duration ? (audio.currentTime / audio.duration) : 0,
+                  isDark
+                );
+              }
+              if (audio && !audio.paused && !audio.ended) {
+                playbackRafRef.current = requestAnimationFrame(updateProgress);
+              }
+            }
+            playbackRafRef.current = requestAnimationFrame(updateProgress);
+          }
+        }
+
+        function stopPlayback() {
+          if (playbackAudioRef.current) {
+            playbackAudioRef.current.pause();
+            playbackAudioRef.current.currentTime = 0;
+            playbackAudioRef.current = null;
+          }
+          if (playbackRafRef.current) cancelAnimationFrame(playbackRafRef.current);
+          setPlaybackStatus('stopped');
+          setPlaybackProgress(0);
+          setPlaybackIdx(-1);
+        }
+
+        // ════════════════════════════════════
+        // Enhancement 4: Compute Fluency Score
+        // ════════════════════════════════════
+        function computeFluencyScore() {
+          var pauseEvents = pauseEventsRef.current;
+          var syllIntervals = syllableIntervalsRef.current;
+          var volHist = volumeHistory.slice();
+
+          // 1. Pause regularity score (0-100)
+          var normalPauses = 0, extendedPauses = 0, blocks = 0;
+          for (var pi = 0; pi < pauseEvents.length; pi++) {
+            if (pauseEvents[pi].type === 'normal') normalPauses++;
+            else if (pauseEvents[pi].type === 'extended') extendedPauses++;
+            else if (pauseEvents[pi].type === 'block') blocks++;
+          }
+          var totalPauses = pauseEvents.length || 1;
+          var pauseScore = Math.max(0, 100 - (extendedPauses * 15) - (blocks * 30));
+          pauseScore = Math.min(100, pauseScore);
+
+          // 2. Syllable rate consistency (CV)
+          var syllCV = 0;
+          if (syllIntervals.length > 3) {
+            var sMean = 0;
+            for (var si = 0; si < syllIntervals.length; si++) sMean += syllIntervals[si];
+            sMean /= syllIntervals.length;
+            var sVar = 0;
+            for (var si2 = 0; si2 < syllIntervals.length; si2++) sVar += (syllIntervals[si2] - sMean) * (syllIntervals[si2] - sMean);
+            sVar /= syllIntervals.length;
+            var sStd = Math.sqrt(sVar);
+            syllCV = sMean > 0 ? sStd / sMean : 1;
+          }
+          // Lower CV = better. CV < 0.3 = smooth, CV > 0.6 = cluttered
+          var rhythmScore = Math.max(0, Math.min(100, Math.round((1 - Math.min(syllCV, 1)) * 100)));
+
+          // 3. Volume steadiness (reuse from volume meter)
+          var volScore = 50;
+          if (volHist.length > 10) {
+            var vRecent = volHist.slice(-90);
+            var vMean = 0;
+            for (var vi = 0; vi < vRecent.length; vi++) vMean += vRecent[vi];
+            vMean /= vRecent.length;
+            var vVariance = 0;
+            for (var vi2 = 0; vi2 < vRecent.length; vi2++) vVariance += (vRecent[vi2] - vMean) * (vRecent[vi2] - vMean);
+            vVariance /= vRecent.length;
+            var vStd = Math.sqrt(vVariance);
+            var vCV = vMean !== 0 ? vStd / Math.abs(vMean) : 0;
+            volScore = Math.max(0, Math.min(100, Math.round((1 - Math.min(vCV, 1)) * 100)));
+          }
+
+          // Composite: weighted average
+          var composite = Math.round(pauseScore * 0.35 + rhythmScore * 0.4 + volScore * 0.25);
+
+          // Star rating: 1-5
+          var stars = 1;
+          if (composite >= 85) stars = 5;
+          else if (composite >= 70) stars = 4;
+          else if (composite >= 55) stars = 3;
+          else if (composite >= 40) stars = 2;
+
+          var starLabels = ['', 'Needs Support', 'Developing', 'Making Progress', 'Proficient', 'Fluent Speaker'];
+
+          setFluencyScore(composite);
+          setFluencyStars(stars);
+          setFluencyDetails({
+            pauseScore: pauseScore,
+            rhythmScore: rhythmScore,
+            volScore: volScore,
+            normalPauses: normalPauses,
+            extendedPauses: extendedPauses,
+            blocks: blocks,
+            syllCV: syllCV,
+            starLabel: starLabels[stars] || ''
+          });
+
+          // Save to persisted fluency sessions
+          var newSession = {
+            timestamp: Date.now(),
+            fluencyStars: stars,
+            composite: composite,
+            pauseScore: pauseScore,
+            rhythmScore: rhythmScore,
+            volScore: volScore
+          };
+          var sessions = (fluencySessions || []).concat([newSession]);
+          if (sessions.length > 20) sessions = sessions.slice(-20);
+          upd('fluencySessions', sessions);
+
+          if (announceToSR) announceToSR('Fluency score calculated: ' + composite + ' percent, ' + stars + ' stars, ' + starLabels[stars]);
+          if (addToast) addToast('Fluency analyzed: ' + stars + ' stars - ' + starLabels[stars], 'success');
+        }
+
+        // Draw fluency chart when sessions change
+        React.useEffect(function() {
+          if (fluencyOpen && fluencyChartCanvasRef.current) {
+            drawFluencyBarChart(fluencyChartCanvasRef.current, fluencySessions, isDark);
+          }
+        }, [fluencyOpen, fluencySessions, isDark, fluencyScore]);
+
+        // Draw compare canvas when in compare mode
+        React.useEffect(function() {
+          if (compareMode && compareCanvasRef.current && savedRecordings.length >= 2) {
+            var d1 = savedRecordings[compareIdx1] ? savedRecordings[compareIdx1].pitchData : null;
+            var d2 = savedRecordings[compareIdx2] ? savedRecordings[compareIdx2].pitchData : null;
+            drawProsodyComparison(compareCanvasRef.current, d1, d2, isDark);
+          }
+        }, [compareMode, compareIdx1, compareIdx2, savedRecordings, isDark]);
+
+        // Draw intonation pattern canvas
+        React.useEffect(function() {
+          if (selectedPattern && patternCanvasRef.current) {
+            drawIntonationPattern(patternCanvasRef.current, selectedPattern.points, patternStudentCurve, isDark);
+          }
+        }, [selectedPattern, patternStudentCurve, isDark]);
+
+        // ════════════════════════════════════
         // Generate Session Report
         // ════════════════════════════════════
         function generateReport() {
@@ -1222,6 +2362,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
           var timeMin = Math.round((sessionTimeSpent || 0) / 60);
 
+          // Enhancement 4: Include fluency metrics
+          var fluencyLine = 'Fluency score: N/A';
+          if (fluencyScore !== null) {
+            fluencyLine = 'Fluency score: ' + fluencyScore + '/100 (' + fluencyStars + ' stars)';
+          }
+          var fluencyDetailLines = '';
+          if (fluencyDetails) {
+            fluencyDetailLines = '\n  Pause regularity: ' + fluencyDetails.pauseScore + '/100' +
+              '\n  Rhythm consistency: ' + fluencyDetails.rhythmScore + '/100' +
+              '\n  Volume steadiness: ' + fluencyDetails.volScore + '/100' +
+              '\n  Normal pauses: ' + fluencyDetails.normalPauses +
+              ', Extended pauses: ' + fluencyDetails.extendedPauses +
+              ', Blocks: ' + fluencyDetails.blocks;
+          }
+          var fluencyHistoryLine = '';
+          if (fluencySessions && fluencySessions.length > 1) {
+            var firstScore = fluencySessions[0].fluencyStars;
+            var lastScore = fluencySessions[fluencySessions.length - 1].fluencyStars;
+            fluencyHistoryLine = '\nFluency trend: ' + fluencySessions.length + ' sessions tracked (' +
+              firstScore + ' stars first session -> ' + lastScore + ' stars latest)';
+          }
+
           var lines = [
             '=== Oratory Lab Session Report ===',
             'Date: ' + new Date().toLocaleDateString(),
@@ -1234,10 +2396,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             'Time spent: ~' + (timeMin > 0 ? timeMin + ' minutes' : 'less than 1 minute'),
             'Smooth pacing achieved: ' + (achievedSmoothPacing ? 'Yes' : 'Not yet'),
             '',
+            '--- Fluency Assessment ---',
+            fluencyLine,
+            fluencyDetailLines,
+            fluencyHistoryLine,
+            '',
             '--- Notes for SLP ---',
             'This student used the Oratory & Prosody Communication Lab for real-time',
             'speech visualization practice. The tool provides visual feedback on pitch',
-            'contour, speaking rate, volume consistency, and pause patterns.',
+            'contour, speaking rate, volume consistency, pause patterns, and fluency.',
+            'Fluency metrics track pause classification (normal/extended/block),',
+            'syllable rate consistency (CV), and volume steadiness.',
             '',
             'Generated by AlloFlow Oratory Lab'
           ];
@@ -1467,6 +2636,255 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   : 'Pause indicator. Speaking. Pause ratio: ' + Math.round(pauseRatio * 100) + ' percent.'
               })),
 
+            // ═══════════════════════════════════════
+            // Enhancement 4: Fluency / Disfluency Tracker (accordion)
+            // ═══════════════════════════════════════
+            h('div', { className: cardClass },
+              h('button', {
+                className: 'w-full flex items-center justify-between',
+                onClick: function() { setFluencyOpen(!fluencyOpen); },
+                'aria-expanded': fluencyOpen ? 'true' : 'false',
+                'aria-controls': 'oratory-fluency-section'
+              },
+                h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
+                  h('span', null, '\uD83D\uDCCA'), 'Fluency / Disfluency Tracker'),
+                h('span', { className: subTextClass + ' text-lg' }, fluencyOpen ? '\u25B2' : '\u25BC')),
+
+              fluencyOpen && h('div', { id: 'oratory-fluency-section', className: 'mt-4 space-y-4' },
+                h('p', { className: subTextClass + ' mb-2' },
+                  'Analyzes pause patterns, syllable rate consistency, and volume steadiness to generate a fluency score. Record at least 10 seconds of speech, then click "Analyze Fluency."'),
+
+                // Analyze button
+                h('div', { className: 'flex items-center gap-3 flex-wrap' },
+                  h('button', {
+                    className: btnPrimary,
+                    onClick: computeFluencyScore,
+                    disabled: pitchHistory.length < 30,
+                    'aria-label': 'Analyze fluency from current recording data'
+                  }, '\uD83D\uDCCA Analyze Fluency'),
+                  pitchHistory.length < 30 && h('span', { className: subTextClass + ' italic' }, 'Record more speech first...')),
+
+                // Results
+                fluencyScore !== null && h('div', { className: 'space-y-3' },
+                  // Star rating
+                  h('div', { className: 'text-center p-4 rounded-lg ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
+                    h('div', { className: 'text-3xl mb-1', 'aria-label': fluencyStars + ' out of 5 stars' },
+                      Array.apply(null, Array(5)).map(function(_, si) {
+                        return h('span', { key: si, style: { opacity: si < fluencyStars ? 1 : 0.2 } }, '\u2B50');
+                      })
+                    ),
+                    h('div', { className: headingClass + ' text-lg' }, fluencyDetails ? fluencyDetails.starLabel : ''),
+                    h('div', { className: subTextClass + ' mt-1' }, 'Overall: ' + fluencyScore + '/100')),
+
+                  // Detail breakdown
+                  fluencyDetails && h('div', { className: 'grid grid-cols-3 gap-3 text-center text-xs' },
+                    h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-slate-50') },
+                      h('div', { className: headingClass + ' text-sm' }, fluencyDetails.pauseScore + '%'),
+                      h('div', { className: subTextClass }, 'Pause Regularity')),
+                    h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-slate-50') },
+                      h('div', { className: headingClass + ' text-sm' }, fluencyDetails.rhythmScore + '%'),
+                      h('div', { className: subTextClass }, 'Rhythm')),
+                    h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-slate-50') },
+                      h('div', { className: headingClass + ' text-sm' }, fluencyDetails.volScore + '%'),
+                      h('div', { className: subTextClass }, 'Volume Steadiness'))),
+
+                  // Pause details
+                  fluencyDetails && h('div', { className: subTextClass },
+                    'Pauses: ' + fluencyDetails.normalPauses + ' normal, ' +
+                    fluencyDetails.extendedPauses + ' extended (0.5-2s), ' +
+                    fluencyDetails.blocks + ' blocks (>2s). ' +
+                    'Syllable CV: ' + fluencyDetails.syllCV.toFixed(2) + ' (lower = smoother).')),
+
+                // Session comparison chart
+                fluencySessions.length > 0 && h('div', { className: 'mt-3' },
+                  h('h4', { className: headingClass + ' text-xs mb-2' }, 'Session History'),
+                  h('canvas', {
+                    ref: fluencyChartCanvasRef,
+                    width: 500,
+                    height: 150,
+                    className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
+                    role: 'img',
+                    'aria-label': 'Fluency score bar chart showing ' + fluencySessions.length + ' sessions'
+                  }))
+              )
+            ),
+
+            // ═══════════════════════════════════════
+            // Enhancement 3: Vowel Lab (accordion within Tab 1)
+            // ═══════════════════════════════════════
+            h('div', { className: cardClass },
+              h('button', {
+                className: 'w-full flex items-center justify-between',
+                onClick: function() { setVowelLabOpen(!vowelLabOpen); },
+                'aria-expanded': vowelLabOpen ? 'true' : 'false',
+                'aria-controls': 'oratory-vowel-lab'
+              },
+                h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
+                  h('span', null, '\uD83D\uDDE3\uFE0F'), 'Formant Vowel Space Lab'),
+                h('span', { className: subTextClass + ' text-lg' }, vowelLabOpen ? '\u25B2' : '\u25BC')),
+
+              vowelLabOpen && h('div', { id: 'oratory-vowel-lab', className: 'mt-4 space-y-3' },
+                h('p', { className: subTextClass + ' mb-2' },
+                  'Visualizes your vowel sounds on an IPA vowel quadrilateral using formant analysis (F1/F2). Speak a vowel sound and watch the dot move to show where your vowel falls. Trail mode shows diphthong transitions!'),
+
+                // Language selector for vowel map
+                h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'radiogroup', 'aria-label': 'Vowel map language' },
+                  Object.keys(VOWEL_MAPS).map(function(langKey) {
+                    var isActive = vowelLang === langKey;
+                    return h('button', {
+                      key: langKey,
+                      role: 'radio',
+                      'aria-checked': isActive ? 'true' : 'false',
+                      className: (isActive
+                        ? 'px-3 py-1 rounded-full text-xs font-bold bg-violet-600 text-white ring-2 ring-violet-400'
+                        : btnSecondary + ' px-3 py-1 rounded-full') + ' transition-all',
+                      onClick: function() { setVowelLang(langKey); setVowelTrail([]); }
+                    }, VOWEL_MAPS[langKey].name + ' (' + VOWEL_MAPS[langKey].vowels.length + ' vowels)');
+                  })
+                ),
+
+                // Vowel space canvas
+                h('canvas', {
+                  ref: vowelCanvasRef,
+                  width: 500,
+                  height: 400,
+                  className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
+                  role: 'img',
+                  'aria-label': 'Vowel space scatterplot showing F1 and F2 formant positions. Current F1: ' +
+                    Math.round(currentF1) + ' Hz, F2: ' + Math.round(currentF2) + ' Hz. ' +
+                    'Using ' + (VOWEL_MAPS[vowelLang] || VOWEL_MAPS.en).name + ' vowel map.'
+                }),
+
+                // Readout
+                h('div', { className: 'flex items-center justify-between text-xs' },
+                  h('span', { className: isDark ? 'text-slate-300' : 'text-slate-600' },
+                    'F1: ' + (currentF1 > 0 ? Math.round(currentF1) + ' Hz' : '--') +
+                    '  |  F2: ' + (currentF2 > 0 ? Math.round(currentF2) + ' Hz' : '--')),
+                  h('button', {
+                    className: btnSecondary,
+                    onClick: function() { setVowelTrail([]); },
+                    'aria-label': 'Clear vowel trail'
+                  }, 'Clear Trail')),
+
+                h('p', { className: subTextClass + ' italic mt-1' },
+                  'Green circles = target vowel positions. Orange dot = your current vowel. Purple trail = recent vowel transitions.')
+              )
+            ),
+
+            // ═══════════════════════════════════════
+            // Enhancement 1: Recording Playback Section
+            // ═══════════════════════════════════════
+            h('div', { className: cardClass },
+              h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
+                h('span', null, '\uD83D\uDD01'), 'Recording Playback'),
+              h('p', { className: subTextClass + ' mb-3' },
+                'Recordings are automatically saved when you stop the microphone. Play back with synchronized prosody annotation. Last 3 recordings kept.'),
+
+              savedRecordings.length === 0
+                ? h('p', { className: subTextClass + ' italic text-center py-3' }, 'No recordings yet. Start and stop the microphone to save a recording.')
+                : h('div', { className: 'space-y-3' },
+                    // Recording list
+                    savedRecordings.map(function(rec, ri) {
+                      var isPlaying = playbackIdx === ri && playbackStatus === 'playing';
+                      var isPausing = playbackIdx === ri && playbackStatus === 'paused';
+                      var dateStr = new Date(rec.timestamp).toLocaleTimeString();
+                      var durStr = rec.duration + 's';
+
+                      return h('div', {
+                        key: rec.timestamp,
+                        className: 'flex items-center gap-3 p-2 rounded-lg ' +
+                          (playbackIdx === ri ? (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') : (isDark ? 'bg-slate-700/50' : 'bg-slate-50'))
+                      },
+                        // Play/Pause button
+                        h('button', {
+                          className: 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ' +
+                            (isDark ? 'bg-violet-600 text-white hover:bg-violet-500' : 'bg-violet-600 text-white hover:bg-violet-700'),
+                          onClick: function() {
+                            if (isPlaying) pausePlayback();
+                            else if (isPausing) resumePlayback();
+                            else startPlayback(ri);
+                          },
+                          'aria-label': isPlaying ? 'Pause recording ' + (ri + 1) : 'Play recording ' + (ri + 1)
+                        }, isPlaying ? '\u23F8' : '\u25B6'),
+
+                        // Info
+                        h('div', { className: 'flex-1' },
+                          h('div', { className: headingClass + ' text-xs' }, 'Recording ' + (ri + 1)),
+                          h('div', { className: subTextClass }, dateStr + ' \u2022 ' + durStr)),
+
+                        // Progress bar (when this recording is selected)
+                        playbackIdx === ri && h('div', {
+                          className: 'flex-1 h-2 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-600' : 'bg-slate-200'),
+                          role: 'progressbar',
+                          'aria-valuenow': Math.round(playbackProgress * 100),
+                          'aria-valuemin': '0',
+                          'aria-valuemax': '100'
+                        },
+                          h('div', {
+                            className: 'h-full rounded-full bg-violet-500 transition-all',
+                            style: { width: Math.round(playbackProgress * 100) + '%' }
+                          }))
+                      );
+                    }),
+
+                    // Playback prosody canvas
+                    playbackIdx >= 0 && savedRecordings[playbackIdx] && h('div', { className: 'mt-2' },
+                      h('canvas', {
+                        ref: playbackCanvasRef,
+                        width: 600,
+                        height: 120,
+                        className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
+                        role: 'img',
+                        'aria-label': 'Playback prosody visualization showing pitch and volume for recording ' + (playbackIdx + 1)
+                      })),
+
+                    // Compare recordings button
+                    savedRecordings.length >= 2 && h('div', { className: 'mt-2' },
+                      h('button', {
+                        className: btnSecondary + (compareMode ? ' ring-2 ring-violet-400' : ''),
+                        onClick: function() { setCompareMode(!compareMode); },
+                        'aria-pressed': compareMode ? 'true' : 'false',
+                        'aria-label': compareMode ? 'Close comparison view' : 'Compare two recordings side by side'
+                      }, compareMode ? 'Close Comparison' : '\uD83D\uDD0D Compare Recordings'),
+
+                      // Comparison view
+                      compareMode && h('div', { className: 'mt-3 space-y-2' },
+                        h('div', { className: 'flex items-center gap-2 text-xs' },
+                          h('label', { className: isDark ? 'text-slate-300' : 'text-slate-600' }, 'Recording 1:'),
+                          h('select', {
+                            value: compareIdx1,
+                            onChange: function(e) { setCompareIdx1(parseInt(e.target.value, 10)); },
+                            className: 'px-2 py-1 rounded text-xs ' + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-900 border-slate-300') + ' border',
+                            'aria-label': 'Select first recording to compare'
+                          },
+                            savedRecordings.map(function(r, ri) {
+                              return h('option', { key: ri, value: ri }, '#' + (ri + 1) + ' (' + new Date(r.timestamp).toLocaleTimeString() + ')');
+                            })
+                          ),
+                          h('label', { className: isDark ? 'text-slate-300' : 'text-slate-600' }, 'vs Recording 2:'),
+                          h('select', {
+                            value: compareIdx2,
+                            onChange: function(e) { setCompareIdx2(parseInt(e.target.value, 10)); },
+                            className: 'px-2 py-1 rounded text-xs ' + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-900 border-slate-300') + ' border',
+                            'aria-label': 'Select second recording to compare'
+                          },
+                            savedRecordings.map(function(r, ri) {
+                              return h('option', { key: ri, value: ri }, '#' + (ri + 1) + ' (' + new Date(r.timestamp).toLocaleTimeString() + ')');
+                            })
+                          )
+                        ),
+                        h('canvas', {
+                          ref: compareCanvasRef,
+                          width: 600,
+                          height: 150,
+                          className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
+                          role: 'img',
+                          'aria-label': 'Side by side prosody comparison of recording ' + (compareIdx1 + 1) + ' and recording ' + (compareIdx2 + 1)
+                        })
+                      ))
+                  )
+            ),
+
             // Screen reader live summary (hidden visually)
             isRecording && h('div', {
               className: 'sr-only',
@@ -1503,8 +2921,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       setEmphasisWord(0);
                       setEmotionIndex(0);
                       setExerciseActive(false);
-                      // Try to load cached or generate new
-                      if (!cachedExercises || !cachedExercises[et.id]) {
+                      setSelectedPattern(null);
+                      setPatternPracticing(false);
+                      setPatternScore(null);
+                      setPatternStudentCurve(null);
+                      // Try to load cached or generate new (skip for intonation)
+                      if (et.id !== 'intonation' && (!cachedExercises || !cachedExercises[et.id])) {
                         generateExercises(et.id);
                       }
                     },
@@ -1520,6 +2942,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('div', { className: subTextClass + ' text-center mt-2 italic' },
                 'Exercises are personalized for ' + (gradeLevel ? 'grade ' + gradeLevel : 'your grade level') + ' using AI.')
             );
+          }
+
+          // ═══════════════════════════════════════
+          // Enhancement 2: Intonation Pattern Exercises
+          // ═══════════════════════════════════════
+          if (exerciseType === 'intonation') {
+            return renderIntonationPatterns();
           }
 
           var exercises = getExercises(exerciseType);
@@ -1734,6 +3163,157 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         }
 
         // ═══════════════════════════════════════
+        // Enhancement 2: Intonation Pattern Exercises Renderer
+        // ═══════════════════════════════════════
+        function renderIntonationPatterns() {
+          // Back button
+          var backBtn = h('div', { className: 'mb-4' },
+            h('button', {
+              className: btnSecondary + ' flex items-center gap-1',
+              onClick: function() { setExerciseType(null); setSelectedPattern(null); setPatternPracticing(false); setPatternScore(null); setPatternStudentCurve(null); },
+              'aria-label': 'Back to exercise type selection'
+            }, '\u2190 Back'));
+
+          // If a pattern is selected for practice
+          if (selectedPattern) {
+            return h('div', { className: 'space-y-4' },
+              backBtn,
+              h('div', { className: cardClass },
+                h('div', { className: 'flex items-center justify-between mb-3' },
+                  h('h3', { className: headingClass + ' text-sm flex items-center gap-2' },
+                    h('span', { className: 'text-lg' }, selectedPattern.icon),
+                    selectedPattern.label),
+                  h('button', {
+                    className: btnSecondary,
+                    onClick: function() { setSelectedPattern(null); setPatternPracticing(false); setPatternScore(null); setPatternStudentCurve(null); },
+                    'aria-label': 'Choose a different pattern'
+                  }, 'Change Pattern')),
+                h('p', { className: subTextClass + ' mb-2' }, selectedPattern.desc),
+
+                // Sample phrase
+                h('div', { className: 'text-center p-3 rounded-lg mb-3 ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
+                  h('div', { className: subTextClass + ' text-xs mb-1' }, 'Sample Phrase:'),
+                  h('div', { className: headingClass + ' text-lg' }, '"' + selectedPattern.phrase + '"')),
+
+                // Target pattern canvas
+                h('div', { className: 'mb-3' },
+                  h('div', { className: subTextClass + ' mb-1' }, 'Target pitch pattern (green zone = target, orange = your pitch):'),
+                  h('canvas', {
+                    ref: patternCanvasRef,
+                    width: 500,
+                    height: 120,
+                    className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
+                    role: 'img',
+                    'aria-label': 'Intonation pattern target for ' + selectedPattern.label + '. ' + selectedPattern.desc
+                  })),
+
+                // Practice button
+                !patternPracticing
+                  ? h('div', { className: 'flex items-center gap-3 justify-center' },
+                      h('button', {
+                        className: btnPrimary,
+                        onClick: function() {
+                          setPatternPracticing(true);
+                          setPatternScore(null);
+                          setPatternStudentCurve(null);
+                          setPitchHistory([]);
+                          if (!isRecording) startRecording();
+                        },
+                        'aria-label': 'Start practicing this intonation pattern'
+                      }, '\uD83C\uDFA4 Practice This Pattern'))
+                  : h('div', { className: 'space-y-3' },
+                      h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') },
+                        h('p', { className: (isDark ? 'text-green-300' : 'text-green-700') + ' font-bold text-sm animate-pulse' },
+                          'Say the phrase now! Try to match the green target zone.')),
+                      h('div', { className: 'flex items-center gap-3 justify-center' },
+                        h('button', {
+                          className: btnPrimary,
+                          onClick: function() {
+                            // Capture pitch data and compute score
+                            var studentData = pitchHistory.slice();
+                            setPatternStudentCurve(studentData);
+                            var score = computePatternMatchScore(selectedPattern.points, studentData);
+                            setPatternScore(score);
+                            setPatternPracticing(false);
+                            recordPhraseCompletion();
+                            if (score >= 70 && stemCelebrate) stemCelebrate();
+                            if (announceToSR) announceToSR('Pattern match score: ' + score + ' percent.');
+                          },
+                          'aria-label': 'Stop and score my attempt'
+                        }, '\u2713 Score My Attempt'),
+                        h('button', {
+                          className: btnSecondary,
+                          onClick: function() {
+                            setPatternPracticing(false);
+                            setPatternScore(null);
+                            setPatternStudentCurve(null);
+                          },
+                          'aria-label': 'Cancel practice attempt'
+                        }, 'Cancel'))),
+
+                // Score display
+                patternScore !== null && h('div', { className: 'text-center p-4 mt-3 rounded-lg ' +
+                    (patternScore >= 70 ? (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') :
+                     patternScore >= 40 ? (isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200') :
+                     (isDark ? 'bg-red-900/30 border border-red-700' : 'bg-red-50 border border-red-200')) },
+                  h('div', { className: 'text-4xl font-bold mb-1 ' +
+                    (patternScore >= 70 ? 'text-green-500' : patternScore >= 40 ? 'text-yellow-500' : 'text-red-500') },
+                    patternScore + '%'),
+                  h('div', { className: headingClass + ' text-sm' },
+                    patternScore >= 85 ? 'Excellent match!' :
+                    patternScore >= 70 ? 'Good match!' :
+                    patternScore >= 50 ? 'Getting closer!' :
+                    patternScore >= 30 ? 'Keep practicing!' :
+                    'Try to follow the green zone more closely.'),
+                  h('button', {
+                    className: btnPrimary + ' mt-3',
+                    onClick: function() {
+                      setPatternScore(null);
+                      setPatternStudentCurve(null);
+                      setPatternPracticing(true);
+                      setPitchHistory([]);
+                    },
+                    'aria-label': 'Try this pattern again'
+                  }, '\uD83D\uDD01 Try Again'))),
+
+              // Mini controls
+              patternPracticing && renderMiniControls()
+            );
+          }
+
+          // Pattern selection grid
+          return h('div', { className: 'space-y-4' },
+            backBtn,
+            h('div', { className: cardClass },
+              h('h3', { className: headingClass + ' text-base mb-1 flex items-center gap-2' },
+                h('span', null, '\uD83C\uDFB6'), 'Intonation Pattern Templates'),
+              h('p', { className: subTextClass + ' mb-4' },
+                'SLPs use specific prosody patterns as clinical targets. Select a pattern to see the target pitch contour and practice matching it.')),
+
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+              INTONATION_PATTERNS.map(function(pat) {
+                return h('button', {
+                  key: pat.id,
+                  className: cardClass + ' text-left hover:ring-2 hover:ring-violet-400 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500',
+                  onClick: function() {
+                    setSelectedPattern(pat);
+                    setPatternPracticing(false);
+                    setPatternScore(null);
+                    setPatternStudentCurve(null);
+                  },
+                  'aria-label': pat.label + ': ' + pat.desc + '. Sample phrase: ' + pat.phrase
+                },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('div', { className: 'text-2xl font-mono w-8 text-center flex-shrink-0 ' + (isDark ? 'text-violet-400' : 'text-violet-600') }, pat.icon),
+                    h('div', null,
+                      h('div', { className: headingClass + ' text-sm' }, pat.label),
+                      h('div', { className: subTextClass + ' mb-1' }, pat.desc),
+                      h('div', { className: 'text-xs italic ' + (isDark ? 'text-slate-500' : 'text-slate-400') }, '"' + pat.phrase + '"'))));
+              }))
+          );
+        }
+
+        // ═══════════════════════════════════════
         // Mini controls for exercises (mic + pitch canvas)
         // ═══════════════════════════════════════
         function renderMiniControls() {
@@ -1906,6 +3486,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               renderStatCard('\uD83C\uDFB6', 'Pitch Range', pitchMin > 0 ? pitchMin + '-' + pitchMax + ' Hz' : 'N/A'),
               renderStatCard('\u23F0', 'Time Spent', timeMin > 0 ? '~' + timeMin + ' min' : '<1 min')),
 
+            // Fluency summary in report
+            fluencySessions.length > 0 && h('div', { className: cardClass },
+              h('h4', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' },
+                h('span', null, '\uD83D\uDCCA'), 'Fluency Scores'),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
+                renderStatCard('\u2B50', 'Latest Score',
+                  fluencySessions[fluencySessions.length - 1].fluencyStars + ' stars'),
+                renderStatCard('\uD83D\uDCCA', 'Sessions Tracked',
+                  fluencySessions.length.toString()),
+                fluencySessions.length > 1 && renderStatCard('\uD83D\uDCC8', 'Trend',
+                  fluencySessions[fluencySessions.length - 1].fluencyStars >= fluencySessions[0].fluencyStars ? 'Improving' : 'Practicing')
+              )
+            ),
+
             // Achievements
             h('div', { className: cardClass },
               h('h4', { className: headingClass + ' text-sm mb-3' }, 'Achievements'),
@@ -1955,7 +3549,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     sessionPitchRange: { min: 9999, max: 0 },
                     sessionTimeSpent: 0,
                     sessionStartTime: null,
-                    cachedExercises: null
+                    cachedExercises: null,
+                    fluencySessions: []
                   });
                   setReportText(null);
                   if (addToast) addToast('Session data cleared.', 'info');
