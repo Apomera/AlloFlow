@@ -67,6 +67,10 @@ var createDocPipeline = function(deps) {
   // ── PDF Accessibility Audit ──
   const runPdfAccessibilityAudit = async (base64Data) => {
     setPdfAuditLoading(true);
+    // Estimate audit time based on data size (rough proxy for page count before we know it)
+    const dataSizeKB = base64Data ? Math.round(base64Data.length * 0.75 / 1024) : 0;
+    const estTime = dataSizeKB < 200 ? '15-30 seconds' : dataSizeKB < 1000 ? '30-90 seconds' : dataSizeKB < 5000 ? '2-5 minutes' : '5-10 minutes';
+    addToast && addToast(`♿ Auditing document (${dataSizeKB > 1024 ? (dataSizeKB / 1024).toFixed(1) + 'MB' : dataSizeKB + 'KB'}) — typically ${estTime}`, 'info');
     try {
       // ── Triangulated scoring: run 2 independent audits, average scores, flag discrepancies ──
       const auditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.
@@ -2244,15 +2248,21 @@ ${currentHtml.substring(0, 20000)}
     const beforeScore = (_auditResult?.score) || 0;
     const pageCount = (_auditResult?.pageCount) || 1;
     const totalSteps = 4;
+    // Dynamic time estimates based on document length
+    const isShort = pageCount <= 5;
+    const isMedium = pageCount > 5 && pageCount <= 20;
+    // isLong = pageCount > 20
+    const timeLabel = (short, med, long) => isShort ? short : isMedium ? med : long;
     const STEP_LABELS = {
-      1: { emoji: '📄', name: 'Reading Document', est: '~15-30s' },
-      2: { emoji: '🏗️', name: 'Building Accessible Version', est: '~20-60s' },
-      3: { emoji: '🔍', name: 'Auditing Accessibility', est: '~10-20s' },
-      4: { emoji: '🔧', name: 'Fixing Remaining Issues', est: '~15-45s' },
+      1: { emoji: '📄', name: 'Reading Document', est: timeLabel('~10-20s', '~30-60s', '~1-3 min') },
+      2: { emoji: '🏗️', name: 'Building Accessible Version', est: timeLabel('~15-30s', '~45-90s', '~2-5 min') },
+      3: { emoji: '🔍', name: 'Auditing Accessibility', est: timeLabel('~10-15s', '~15-30s', '~30-60s') },
+      4: { emoji: '🔧', name: 'Fixing Remaining Issues', est: timeLabel('~15-30s per pass', '~30-60s per pass', '~1-2 min per pass') },
     };
     const updateProgress = (step, detail) => {
       const label = STEP_LABELS[step] || { emoji: '⏳', name: 'Processing', est: '' };
-      const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name} — ${detail}${label.est ? '  (typically ' + label.est + ')' : ''}`;
+      const pageNote = pageCount > 1 ? ` (${pageCount} pages)` : '';
+      const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  (typically ${label.est})`;
       if (_isBatch) { _onProgress?.(step, msg); } else { setPdfFixStep(msg); }
     };
 

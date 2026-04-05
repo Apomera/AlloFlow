@@ -122,11 +122,11 @@ var d = labToolData || {};
 
               termDef: 'Positive Reinforcement (SR+): Adding a stimulus after a behavior that increases the future probability of that behavior.',
 
-              funFact: 'ðŸ§ª B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning â€” the project was called "Project Pigeon"!',
+              funFact: '🧪 B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning â€” the project was called "Project Pigeon"!',
 
               vocab: ['SR+ (Positive Reinforcement)', 'Operant Behavior', 'Consequence'],
 
-              contingency: { a: 'Chamber present', b: 'Presses lever', c: 'ðŸ• Food delivered (+SR)' }
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: 'ð• Food delivered (+SR)' }
 
             },
 
@@ -134,15 +134,15 @@ var d = labToolData || {};
 
               id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
 
-              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (â†ªï¸) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (â†©ï¸â†ªï¸) and reinforce those. (3) Finally, wait for full "Spinning" (ðŸŒ€) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
+              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (â†ªï¸) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (â†©ï¸â†ªï¸) and reinforce those. (3) Finally, wait for full "Spinning" (ð€) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
 
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
 
-              funFact: 'ðŸ¬ Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips â€” they start by reinforcing any upward movement!',
+              funFact: '🐬 Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips â€” they start by reinforcing any upward movement!',
 
               vocab: ['Successive Approximations', 'Terminal Behavior', 'Differential Reinforcement'],
 
-              contingency: { a: 'Trainer present', b: 'Closer to spin', c: 'ðŸ• Food (reinforce!)' }
+              contingency: { a: 'Trainer present', b: 'Closer to spin', c: 'ð• Food (reinforce!)' }
 
             },
 
@@ -154,11 +154,11 @@ var d = labToolData || {};
 
               termDef: 'Extinction Burst: A temporary increase in frequency/intensity of a previously reinforced behavior when reinforcement is discontinued.',
 
-              funFact: 'ðŸ›— Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
+              funFact: 'ð›— Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
 
               vocab: ['Extinction', 'Extinction Burst', 'Spontaneous Recovery'],
 
-              contingency: { a: 'Chamber present', b: 'Presses lever', c: 'âŒ No food (extinction)' }
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: '❌ No food (extinction)' }
 
             },
 
@@ -170,11 +170,11 @@ var d = labToolData || {};
 
               termDef: 'Fixed Ratio (FR): A schedule where reinforcement is delivered after a fixed number of responses.',
 
-              funFact: 'ðŸŽ° Slot machines use Variable Ratio (VR) schedules â€” the most resistant to extinction â€” which is why they\'re so addictive!',
+              funFact: '🎰 Slot machines use Variable Ratio (VR) schedules â€” the most resistant to extinction â€” which is why they\'re so addictive!',
 
               vocab: ['Fixed Ratio (FR)', 'Continuous Reinforcement (CRF)', 'Intermittent Reinforcement'],
 
-              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: 'ðŸ• Food (FR-3)' }
+              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: 'ð• Food (FR-3)' }
 
             },
 
@@ -186,11 +186,11 @@ var d = labToolData || {};
 
               termDef: 'SD (Discriminative Stimulus): A stimulus that signals reinforcement is available for a specific behavior.',
 
-              funFact: 'ðŸš¦ Traffic lights work as discriminative stimuli for drivers â€” green (SD) signals "go" and red (S-delta) signals "stop"!',
+              funFact: '🚦 Traffic lights work as discriminative stimuli for drivers â€” green (SD) signals "go" and red (S-delta) signals "stop"!',
 
               vocab: ['SD (Discriminative Stimulus)', 'S-delta (Sâˆ†)', 'Stimulus Control'],
 
-              contingency: { a: 'ðŸŸ¢ Green light (SD)', b: 'Presses lever', c: 'ðŸ• Food delivered' }
+              contingency: { a: '🟢 Green light (SD)', b: 'Presses lever', c: 'ð• Food delivered' }
 
             },
 
@@ -202,7 +202,7 @@ var d = labToolData || {};
 
               termDef: 'Applied Behavior Analysis (ABA): The science of applying behavioral principles to improve socially significant behavior.',
 
-              funFact: 'ðŸŒ ABA principles are used everywhere â€” from teaching children with autism to training service dogs, to designing better apps!',
+              funFact: '🌍 ABA principles are used everywhere â€” from teaching children with autism to training service dogs, to designing better apps!',
 
               vocab: ['Behavior Chain', 'Generalization', 'Maintenance'],
 
@@ -214,15 +214,15 @@ var d = labToolData || {};
 
               id: 7, title: 'Chain Reaction', concept: 'Behavior Chaining', target: 'pressLever', goal: 3,
 
-              intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff âžœ Rear Up âžœ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
+              intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff ➜ Rear Up ➜ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
 
               termDef: 'Behavior Chain: A sequence of responses where each response produces the discriminative stimulus (SD) for the next response, and the last response is followed by a reinforcer.',
 
-              funFact: 'ðŸ• Service dogs learn behavior chains of 20+ steps â€” like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
+              funFact: 'ð• Service dogs learn behavior chains of 20+ steps â€” like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
 
               vocab: ['Behavior Chain', 'Forward Chaining', 'Task Analysis', 'Terminal Reinforcer'],
 
-              contingency: { a: 'Chain cue', b: 'Sniffâ†’Rearâ†’Lever', c: 'ðŸ• Food (chain complete!)' }
+              contingency: { a: 'Chain cue', b: 'Sniffâ†’Rearâ†’Lever', c: 'ð• Food (chain complete!)' }
 
             },
 
@@ -234,11 +234,11 @@ var d = labToolData || {};
 
               termDef: 'DRO (Differential Reinforcement of Other Behavior): Reinforcement is delivered when a specified behavior does NOT occur for a predetermined interval of time.',
 
-              funFact: 'ðŸ« Teachers use DRO all the time â€” "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
+              funFact: '🏫 Teachers use DRO all the time â€” "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
 
               vocab: ['DRO', 'Differential Reinforcement', 'Interval', 'Target Behavior Reduction'],
 
-              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: 'ðŸ• Food (DRO interval met!)' }
+              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: 'ð• Food (DRO interval met!)' }
 
             },
 
@@ -250,11 +250,11 @@ var d = labToolData || {};
 
               termDef: 'Classical Conditioning: A learning process where a neutral stimulus (CS) is repeatedly paired with an unconditioned stimulus (US) until the CS alone elicits a conditioned response (CR).',
 
-              funFact: 'ðŸ¶ Ivan Pavlov discovered classical conditioning accidentally while studying dog digestion in the 1890s. The dogs began salivating at the sight of lab coats because they associated them with food!',
+              funFact: '🐶 Ivan Pavlov discovered classical conditioning accidentally while studying dog digestion in the 1890s. The dogs began salivating at the sight of lab coats because they associated them with food!',
 
               vocab: ['US (Unconditioned Stimulus)', 'UR (Unconditioned Response)', 'CS (Conditioned Stimulus)', 'CR (Conditioned Response)', 'Acquisition', 'Extinction'],
 
-              contingency: { a: 'ðŸ”” Bell (CS)', b: 'Paired with food (US)', c: 'ðŸ¤¤ Salivation (CR)' }
+              contingency: { a: 'ð”” Bell (CS)', b: 'Paired with food (US)', c: '🤤 Salivation (CR)' }
 
             }
 
@@ -615,7 +615,7 @@ var d = labToolData || {};
 
           var blChainHistory = d.blChainHistory || [];
 
-          var blMoodEmoji = d.blMoodEmoji || 'ðŸ˜';
+          var blMoodEmoji = d.blMoodEmoji || 'ð˜';
 
           var blMoodTimer = d.blMoodTimer || 0;
 
@@ -757,11 +757,11 @@ var d = labToolData || {};
 
           var ACTION_LABELS = {
 
-            explore: 'ðŸ” Exploring', groom: 'ðŸ§¹ Grooming', sniff: 'ðŸ‘ƒ Sniffing',
+            explore: 'ð” Exploring', groom: '🧹 Grooming', sniff: 'ð‘ƒ Sniffing',
 
-            pressLever: 'âš¡ Pressing Lever!', turnLeft: 'â†©ï¸ Turning Left', turnRight: 'â†ªï¸ Turning Right',
+            pressLever: '⚡ Pressing Lever!', turnLeft: 'â†©ï¸ Turning Left', turnRight: 'â†ªï¸ Turning Right',
 
-            rearUp: 'ðŸ­ Rearing Up', freeze: 'ðŸ§Š Frozen', spin: 'ðŸŒ€ Spinning!', touchWall: 'ðŸ§± Touching Wall'
+            rearUp: '🐭 Rearing Up', freeze: '🧊 Frozen', spin: 'ð€ Spinning!', touchWall: '🧱 Touching Wall'
 
           };
 
@@ -853,7 +853,7 @@ var d = labToolData || {};
 
               if (blChainStep < CHAIN_SEQ.length || actionToReinforce !== 'pressLever') {
 
-                if (addToast) addToast('\u26A0\uFE0F Wait for the full chain: Sniff âžœ Rear Up âžœ Lever!', 'warning');
+                if (addToast) addToast('\u26A0\uFE0F Wait for the full chain: Sniff ➜ Rear Up ➜ Lever!', 'warning');
 
                 return;
 
@@ -879,7 +879,7 @@ var d = labToolData || {};
 
             // Mood update â€” happy!
 
-            upd('blMoodEmoji', 'ðŸ˜Š');
+            upd('blMoodEmoji', 'ð˜Š');
 
             upd('blMoodTimer', Date.now());
 
@@ -1229,7 +1229,7 @@ var d = labToolData || {};
 
             if (blMoodTimer > 0 && (Date.now() - blMoodTimer) > 5000) {
 
-              upd('blMoodEmoji', blReinforcements > 3 ? 'ðŸ¤”' : 'ðŸ˜');
+              upd('blMoodEmoji', blReinforcements > 3 ? 'ð¤”' : 'ð˜');
 
               upd('blMoodTimer', 0);
 
@@ -1317,7 +1317,7 @@ var d = labToolData || {};
 
                 var droResetLog = blAbcLog.slice();
 
-                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: 'âš¡ Pressing Lever!', c: 'ðŸ”„ Timer reset (target occurred)', t: Date.now() });
+                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: '⚡ Pressing Lever!', c: 'ð”„ Timer reset (target occurred)', t: Date.now() });
 
                 upd('blAbcLog', droResetLog.slice(0, 50));
 
@@ -1343,7 +1343,7 @@ var d = labToolData || {};
 
                   upd('blLevelScore', blLevelScore + 1);
 
-                  upd('blMoodEmoji', 'ðŸ˜Š');
+                  upd('blMoodEmoji', 'ð˜Š');
 
                   upd('blMoodTimer', Date.now());
 
@@ -1353,13 +1353,13 @@ var d = labToolData || {};
 
                   var droSuccessLog = blAbcLog.slice();
 
-                  droSuccessLog.unshift({ tick: newTick, a: 'DRO interval complete', b: 'No lever press for ' + blDroInterval + ' ticks', c: 'ðŸ• Food delivered (DRO success!)', t: Date.now() });
+                  droSuccessLog.unshift({ tick: newTick, a: 'DRO interval complete', b: 'No lever press for ' + blDroInterval + ' ticks', c: 'ð• Food delivered (DRO success!)', t: Date.now() });
 
                   upd('blAbcLog', droSuccessLog.slice(0, 50));
 
                   if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 2, 'DRO interval success');
 
-                  if (addToast) addToast('ðŸ• DRO interval met! Food delivered.', 'success');
+                  if (addToast) addToast('ð• DRO interval met! Food delivered.', 'success');
 
                 } else {
 
@@ -2119,7 +2119,7 @@ var d = labToolData || {};
 
             var tailWag = Math.sin(Date.now() / tailBaseFreq) * 6;
 
-            var isHappy = blMoodEmoji === 'ðŸ˜Š';
+            var isHappy = blMoodEmoji === 'ð˜Š';
 
             var recentFood = blFoodVisible || (blFoodTime && (Date.now() - blFoodTime) < 2000);
 
@@ -2919,7 +2919,7 @@ var d = labToolData || {};
 
                 return React.createElement("p", { className: "text-2xl text-center mb-1", style: { letterSpacing: 4, textShadow: '0 0 12px rgba(251,191,36,0.5)' } },
 
-                  'â­'.repeat(stars) + 'â˜†'.repeat(3 - stars)
+                  '⭐'.repeat(stars) + 'â˜†'.repeat(3 - stars)
 
                 );
 
@@ -2993,7 +2993,7 @@ var d = labToolData || {};
 
               QUIZ_BANK[blLevel] && React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/30 rounded-xl p-4 border border-indigo-500/30" },
 
-                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "ðŸ§  Knowledge Check"),
+                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "🧠 Knowledge Check"),
 
                 React.createElement("p", { className: "text-sm text-slate-200 font-semibold mb-3" }, QUIZ_BANK[blLevel].q),
 
@@ -3037,11 +3037,11 @@ var d = labToolData || {};
 
                           if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 5, 'Quiz correct: Level ' + blLevel);
 
-                          if (addToast) addToast('âœ… Correct! +5 XP bonus!', 'success');
+                          if (addToast) addToast('â… Correct! +5 XP bonus!', 'success');
 
                         } else {
 
-                          if (addToast) addToast('âŒ Not quite â€” read the explanation below.', 'error');
+                          if (addToast) addToast('❌ Not quite â€” read the explanation below.', 'error');
 
                         }
 
@@ -3061,7 +3061,7 @@ var d = labToolData || {};
 
                 },
 
-                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? 'âœ… Correct!' : 'âŒ Incorrect'),
+                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? 'â… Correct!' : '❌ Incorrect'),
 
                   React.createElement("p", null, QUIZ_BANK[blLevel].explain)
 
@@ -3327,7 +3327,7 @@ var d = labToolData || {};
 
                   var isCurrent = si === blChainStep;
 
-                  var stepLabel = step === 'sniff' ? 'ðŸ‘ƒ Sniff' : step === 'rearUp' ? 'ðŸ­ Rear Up' : 'âš¡ Press Lever';
+                  var stepLabel = step === 'sniff' ? 'ð‘ƒ Sniff' : step === 'rearUp' ? '🐭 Rear Up' : '⚡ Press Lever';
 
                   return React.createElement(React.Fragment, { key: si },
 
@@ -3335,7 +3335,7 @@ var d = labToolData || {};
 
                       className: "text-sm font-bold " + (isDone ? 'text-emerald-400' : 'text-slate-600')
 
-                    }, "âžœ"),
+                    }, "➜"),
 
                     React.createElement("div", {
 
@@ -3347,7 +3347,7 @@ var d = labToolData || {};
 
                             'bg-slate-800/60 text-slate-500 border border-slate-700/40')
 
-                    }, (isDone ? 'âœ… ' : isCurrent ? 'â³ ' : '') + stepLabel)
+                    }, (isDone ? 'â… ' : isCurrent ? '⏳ ' : '') + stepLabel)
 
                   );
 
@@ -3357,7 +3357,7 @@ var d = labToolData || {};
 
                   className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse shadow-lg shadow-amber-500/30"
 
-                }, "ðŸ• REINFORCE NOW!")
+                }, "ð• REINFORCE NOW!")
 
               ),
 

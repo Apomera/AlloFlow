@@ -1936,6 +1936,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               })(),
               !selectedAnatomyPart && h('div', { className: 'mt-2 text-[10px] italic text-center ' + (isDark ? 'text-slate-500' : 'text-slate-400') },
                 'Click or tap a part of the bat to explore it. Use arrow keys for keyboard navigation.')
+            ),
+
+            // Bat vs Bird Flight Comparison
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD87 vs \uD83D\uDC26 Bat Wings vs Bird Wings'),
+              h('p', { className: 'text-[10px] mb-3 ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
+                'Both bats and birds fly, but their wings evolved completely independently. The differences reveal how evolution solves the same problem in different ways:'),
+              h('div', { className: 'grid grid-cols-2 gap-3' },
+                h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
+                  h('div', { className: 'text-center mb-2' },
+                    h('span', { className: 'text-2xl' }, '\uD83E\uDD87'),
+                    h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, 'Bat Wing')),
+                  h('div', { className: 'space-y-1 text-[9px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
+                    h('p', null, '\u2022 Membrane stretched between elongated FINGER bones'),
+                    h('p', null, '\u2022 Can change wing shape dramatically (high maneuverability)'),
+                    h('p', null, '\u2022 Thinner, more flexible \u2014 generates less lift per area'),
+                    h('p', null, '\u2022 Cannot fold flat \u2014 bats must hang upside down to rest'),
+                    h('p', null, '\u2022 Excellent for slow, agile flight and hovering'),
+                    h('p', null, '\u2022 Wing loading: 5-15 N/m\u00B2 (very light)'),
+                    h('p', null, '\u2022 Can make tighter turns than any bird'))),
+                h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-amber-900/30 border border-amber-800/30' : 'bg-amber-50 border border-amber-200') },
+                  h('div', { className: 'text-center mb-2' },
+                    h('span', { className: 'text-2xl' }, '\uD83D\uDC26'),
+                    h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, 'Bird Wing')),
+                  h('div', { className: 'space-y-1 text-[9px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
+                    h('p', null, '\u2022 Feathers attached to fused ARM bones'),
+                    h('p', null, '\u2022 More rigid shape \u2014 better for sustained flight'),
+                    h('p', null, '\u2022 Thicker airfoil \u2014 generates more lift per area'),
+                    h('p', null, '\u2022 Can fold flat against body \u2014 birds can perch and walk'),
+                    h('p', null, '\u2022 Excellent for fast, efficient long-distance flight'),
+                    h('p', null, '\u2022 Wing loading: 10-200 N/m\u00B2 (varies by species)'),
+                    h('p', null, '\u2022 Better at soaring and gliding')))
+              ),
+              h('div', { className: 'mt-2 text-[10px] text-center ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
+                'Key insight: Bat wings are essentially hands with webbing. Each "finger" can be controlled independently, giving bats unparalleled maneuverability \u2014 essential for catching insects in mid-air using echolocation.')
+            ),
+
+            // Bat Senses Beyond Sonar
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDC40 Beyond Echolocation \u2014 Bat Superpowers'),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+                [
+                  { icon: '\uD83D\uDC41\uFE0F', title: 'Vision', desc: 'Despite the myth, all bats can see. Fruit bats have large eyes with excellent night vision. Even echolocating bats use vision for long-range navigation \u2014 they use landmarks and the sunset glow to orient during migration.' },
+                  { icon: '\uD83E\uDDED', title: 'Magnetic Sense', desc: 'Some bat species can detect Earth\'s magnetic field and use it as an internal compass. Scientists discovered this by putting tiny magnets on bats\' heads \u2014 the bats became disoriented!' },
+                  { icon: '\uD83C\uDF21\uFE0F', title: 'Heat Detection', desc: 'Vampire bats have infrared-sensing pits on their nose that detect blood vessels under skin from inches away. This is convergent evolution with pit vipers!' },
+                  { icon: '\uD83D\uDC43', title: 'Smell', desc: 'Fruit bats locate ripe fruit using an acute sense of smell. Some flower-visiting bats can smell the difference between flowers that still have nectar and those already depleted by other bats.' }
+                ].map(function(sense, si) {
+                  return h('div', { key: si, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-200') },
+                    h('div', { className: 'flex items-center gap-2 mb-1' },
+                      h('span', { className: 'text-lg' }, sense.icon),
+                      h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, sense.title)),
+                    h('p', { className: 'text-[10px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, sense.desc));
+                })
+              )
             )
           ),
 
