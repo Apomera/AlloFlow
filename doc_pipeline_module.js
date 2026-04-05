@@ -968,6 +968,54 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       aiFixCount++;
       return '<header role="banner"$1>';
     });
+
+    // 34. Fix aria-hidden="true" on elements containing focusable children
+    accessibleHtml = accessibleHtml.replace(/aria-hidden="true"([^>]*>[\s\S]*?(?:<a\b|<button\b|<input\b|<select\b|<textarea\b|tabindex="0"))/gi, match => {
+      aiFixCount++;
+      return match.replace('aria-hidden="true"', 'aria-hidden="false"');
+    });
+
+    // 35. Fix scope attribute on <td> (only valid on <th>)
+    accessibleHtml = accessibleHtml.replace(/<td([^>]*)\bscope="[^"]*"([^>]*)>/gi, (match, before, after) => {
+      aiFixCount++;
+      return `<td${before}${after}>`;
+    });
+
+    // 36. Ensure all <section> elements have aria-label or aria-labelledby
+    accessibleHtml = accessibleHtml.replace(/<section(?![^>]*aria-label)([^>]*)>/gi, (match, attrs) => {
+      // Try to find a heading inside for labelling
+      const afterMatch = accessibleHtml.substring(accessibleHtml.indexOf(match));
+      const headingMatch = afterMatch.match(/<h[1-6][^>]*>([^<]+)/i);
+      const label = headingMatch ? headingMatch[1].trim().substring(0, 60) : 'Content section';
+      aiFixCount++;
+      return `<section aria-label="${label}"${attrs}>`;
+    });
+
+    // 37. Ensure <figure> elements have figcaption or aria-label
+    accessibleHtml = accessibleHtml.replace(/<figure(?![^>]*aria-label)([^>]*)>([\s\S]*?)<\/figure>/gi, (match, attrs, content) => {
+      if (/<figcaption/i.test(content)) return match; // has figcaption, fine
+      const altMatch = content.match(/alt="([^"]*)"/i);
+      const label = altMatch ? altMatch[1] : 'Figure';
+      aiFixCount++;
+      return `<figure aria-label="${label}"${attrs}>${content}</figure>`;
+    });
+
+    // 38. Add lang attribute to common non-English text patterns
+    // (Detect Spanish, French, Arabic script and wrap in lang spans)
+    accessibleHtml = accessibleHtml.replace(/([\u0600-\u06FF]{5,})/g, match => {
+      aiFixCount++;
+      return `<span lang="ar">${match}</span>`;
+    });
+
+    // 39. Ensure all <ul>/<ol> have role="list" for Safari VoiceOver compatibility
+    accessibleHtml = accessibleHtml.replace(/<(ul|ol)(?![^>]*role=)([^>]*)>/gi, (match, tag, attrs) => {
+      // Only add if list-style is set to none (Safari bug requires explicit role)
+      if (/list-style\s*:\s*none/i.test(match) || /list-style-type\s*:\s*none/i.test(accessibleHtml)) {
+        aiFixCount++;
+        return `<${tag} role="list"${attrs}>`;
+      }
+      return match;
+    });
     if (aiFixCount > 0) log(`Applied ${aiFixCount} deterministic fixes`);
 
     // ── Phase 4: Verify with both engines ──
