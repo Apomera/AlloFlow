@@ -2918,11 +2918,15 @@ Return ONLY the polished HTML body content.`, true);
         }
       }
 
-      // Clean any code fences or JSON wrappers from the HTML output
+      // Clean any code fences, JSON wrappers, or literal escape sequences from the HTML output
       if (bodyContent) {
         bodyContent = bodyContent.trim()
           .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
-          .replace(/^[\s\S]*?(<[a-zA-Z])/m, '$1'); // strip any preamble before first HTML tag
+          .replace(/^[\s\S]*?(<[a-zA-Z])/m, '$1') // strip any preamble before first HTML tag
+          .replace(/\\n\\n/g, '</p><p>') // literal \n\n → paragraph break
+          .replace(/\\n/g, ' ') // literal \n → space
+          .replace(/\\t/g, ' ') // literal \t → space
+          .replace(/(<p>\s*<\/p>)+/g, ''); // remove empty paragraphs created by cleanup
       }
 
       // ── Insert extracted images into placeholders ──
