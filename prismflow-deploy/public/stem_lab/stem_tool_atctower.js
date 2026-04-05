@@ -441,6 +441,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 announce(ac.callsign + ' emergency aircraft landed safely. Bonus ' + emergBonus + ' points. ' + ac.emergency.lesson);
               }
               game.messages.unshift({ text: '✅ ' + ac.callsign + ' landed RWY ' + (ac.assignedRunway ? ac.assignedRunway.hdg : '?') + '°', time: game.time, color: '#4ade80' });
+              // Touchdown visual effect
+              if (!game.touchdowns) game.touchdowns = [];
+              game.touchdowns.push({ x: ac.x, y: ac.y, time: game.time, color: ac.type.color });
               playATCSound('land');
               announce(ac.callsign + ' landed. Score: ' + game.score + '. Streak: ' + game.streak);
               if (ac.type.cat === 'Heavy' || ac.type.cat === 'Super') game.landedHeavy = true;
@@ -490,9 +493,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             conflict: hc ? '#ff0000' : '#ef4444',
           };
 
-          // Background
-          gfx.fillStyle = colors.bg;
+          // Background — dark radar scope with subtle radial gradient
+          var bgGrad = gfx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+          bgGrad.addColorStop(0, hc ? '#0a0a0a' : '#0d1f0d');
+          bgGrad.addColorStop(0.5, hc ? '#050505' : '#081408');
+          bgGrad.addColorStop(1, hc ? '#000000' : '#030a03');
+          gfx.fillStyle = bgGrad;
           gfx.fillRect(0, 0, W, H);
+
+          // Subtle scanline effect (CRT phosphor look)
+          if (!reducedMotion.current && !hc) {
+            gfx.fillStyle = 'rgba(0,0,0,0.03)';
+            for (var sl = 0; sl < H; sl += 3) { gfx.fillRect(0, sl, W, 1); }
+          }
+
+          // Outer scope ring (bezel)
+          if (!hc) {
+            var scopeR = Math.min(W, H) * 0.48;
+            gfx.strokeStyle = 'rgba(34,197,94,0.06)'; gfx.lineWidth = 2;
+            gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR, 0, Math.PI * 2); gfx.stroke();
+            gfx.strokeStyle = 'rgba(34,197,94,0.03)'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR + 3, 0, Math.PI * 2); gfx.stroke();
+          }
 
           // Focus ring on canvas (WCAG 2.4.7)
           if (document.activeElement === canvas) {
@@ -513,31 +535,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             return;
           }
 
-          // Radar sweep effect (skip if reduced motion)
+          // Radar sweep effect — realistic rotating beam with phosphor decay
           if (!reducedMotion.current) {
             var sweepAngle = (game.time * 0.5) % (Math.PI * 2);
             var sweepGrad = gfx.createConicGradient(sweepAngle, W / 2, H / 2);
-            sweepGrad.addColorStop(0, colors.radar + '0.08)');
-            sweepGrad.addColorStop(0.05, colors.radar + '0.02)');
-            sweepGrad.addColorStop(0.1, colors.radar + '0)');
-          } else {
-            var sweepGrad = colors.bg;
+            sweepGrad.addColorStop(0, colors.radar + '0.12)');
+            sweepGrad.addColorStop(0.02, colors.radar + '0.08)');
+            sweepGrad.addColorStop(0.06, colors.radar + '0.03)');
+            sweepGrad.addColorStop(0.15, colors.radar + '0)');
+            sweepGrad.addColorStop(1, 'rgba(34,197,94,0)');
+            gfx.fillStyle = sweepGrad;
+            gfx.fillRect(0, 0, W, H);
+            // Sweep line (bright leading edge)
+            gfx.save();
+            gfx.translate(W / 2, H / 2);
+            gfx.rotate(sweepAngle);
+            var sweepLen = Math.max(W, H) * 0.7;
+            var lineGrad = gfx.createLinearGradient(0, 0, 0, -sweepLen);
+            lineGrad.addColorStop(0, colors.radar + '0.4)');
+            lineGrad.addColorStop(0.3, colors.radar + '0.15)');
+            lineGrad.addColorStop(1, colors.radar + '0)');
+            gfx.strokeStyle = lineGrad; gfx.lineWidth = 1.5;
+            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, -sweepLen); gfx.stroke();
+            gfx.restore();
           }
-          sweepGrad.addColorStop(1, 'rgba(34,197,94,0)');
-          gfx.fillStyle = sweepGrad;
-          gfx.fillRect(0, 0, W, H);
 
-          // Range rings
-          gfx.strokeStyle = 'rgba(34,197,94,0.12)'; gfx.lineWidth = 0.5;
-          [60, 120, 180].forEach(function(r2) {
+          // Range rings — with intermediate dotted rings
+          [40, 60, 80, 120, 160, 180].forEach(function(r2) {
             var rPx = r2 * scale;
+            var isMajor = r2 % 60 === 0;
+            gfx.strokeStyle = isMajor ? (colors.radar + '0.15)') : (colors.radar + '0.05)');
+            gfx.lineWidth = isMajor ? 0.8 : 0.4;
+            if (!isMajor) { gfx.setLineDash([2, 4]); }
             gfx.beginPath(); gfx.arc(W / 2, H / 2, rPx, 0, Math.PI * 2); gfx.stroke();
+            if (!isMajor) { gfx.setLineDash([]); }
           });
           // Range ring labels
-          gfx.fillStyle = 'rgba(34,197,94,0.2)'; gfx.font = '7px monospace'; gfx.textAlign = 'left';
+          gfx.fillStyle = colors.radar + '0.25)'; gfx.font = '7px monospace'; gfx.textAlign = 'left';
           [60, 120, 180].forEach(function(r2) {
-            gfx.fillText(r2 / 3 + 'nm', W / 2 + r2 * scale + 3, H / 2 - 2);
+            gfx.fillText(Math.round(r2 / 3) + 'nm', W / 2 + r2 * scale + 3, H / 2 - 2);
           });
+          // Center crosshair
+          gfx.strokeStyle = colors.radar + '0.08)'; gfx.lineWidth = 0.5;
+          gfx.beginPath(); gfx.moveTo(W / 2 - 6, H / 2); gfx.lineTo(W / 2 + 6, H / 2); gfx.stroke();
+          gfx.beginPath(); gfx.moveTo(W / 2, H / 2 - 6); gfx.lineTo(W / 2, H / 2 + 6); gfx.stroke();
 
           // Compass cardinals + intercardinals
           gfx.fillStyle = 'rgba(34,197,94,0.4)'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'center';
@@ -561,42 +602,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.stroke();
           }
 
-          // Terrain shading (simplified — water areas darker)
-          gfx.fillStyle = 'rgba(10,40,80,0.06)';
-          gfx.beginPath(); gfx.ellipse(W * 0.7, H * 0.3, 60 * scale, 40 * scale, 0.3, 0, Math.PI * 2); gfx.fill();
-          gfx.beginPath(); gfx.ellipse(W * 0.2, H * 0.7, 45 * scale, 30 * scale, -0.2, 0, Math.PI * 2); gfx.fill();
+          // Terrain shading — water bodies with depth gradient
+          if (!hc) {
+            var water1Grad = gfx.createRadialGradient(W * 0.7, H * 0.3, 0, W * 0.7, H * 0.3, 60 * scale);
+            water1Grad.addColorStop(0, 'rgba(10,40,90,0.08)');
+            water1Grad.addColorStop(1, 'rgba(10,40,90,0)');
+            gfx.fillStyle = water1Grad;
+            gfx.beginPath(); gfx.ellipse(W * 0.7, H * 0.3, 60 * scale, 40 * scale, 0.3, 0, Math.PI * 2); gfx.fill();
+            // Lake label
+            gfx.fillStyle = 'rgba(59,130,246,0.12)'; gfx.font = '6px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('Lake', W * 0.7, H * 0.3 + 2);
+            var water2Grad = gfx.createRadialGradient(W * 0.2, H * 0.7, 0, W * 0.2, H * 0.7, 45 * scale);
+            water2Grad.addColorStop(0, 'rgba(10,40,90,0.08)');
+            water2Grad.addColorStop(1, 'rgba(10,40,90,0)');
+            gfx.fillStyle = water2Grad;
+            gfx.beginPath(); gfx.ellipse(W * 0.2, H * 0.7, 45 * scale, 30 * scale, -0.2, 0, Math.PI * 2); gfx.fill();
+            // City area (subtle urban texture)
+            gfx.fillStyle = 'rgba(255,200,50,0.02)';
+            gfx.beginPath(); gfx.ellipse(W * 0.35, H * 0.35, 50 * scale, 35 * scale, 0, 0, Math.PI * 2); gfx.fill();
+            gfx.fillStyle = 'rgba(255,200,50,0.06)'; gfx.font = '6px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('City', W * 0.35, H * 0.35 + 2);
+          }
 
-          // Wind sock (bottom-left corner)
-          var wsX = 40; var wsY = H - 50;
+          // Wind sock (bottom-left corner) — animated with multi-stripe pattern
+          var wsX = 40; var wsY = H - 55;
           gfx.save();
           gfx.translate(wsX, wsY);
-          // Pole
-          gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 2;
-          gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, -20); gfx.stroke();
-          // Sock (blows in wind direction)
+          // Pole with ball top
+          gfx.strokeStyle = 'rgba(255,255,255,0.4)'; gfx.lineWidth = 2;
+          gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, -24); gfx.stroke();
+          gfx.fillStyle = 'rgba(255,255,255,0.3)';
+          gfx.beginPath(); gfx.arc(0, -24, 2, 0, Math.PI * 2); gfx.fill();
+          // Sock segments (alternating red/white, drooping with wind)
           var windRad = toRad(game.wind.dir);
-          var sockLen = Math.min(25, game.wind.speed * 0.8);
+          var sockLen = Math.min(28, game.wind.speed * 0.9);
           var sockWave = Math.sin(game.time * 4) * 2;
-          gfx.strokeStyle = game.wind.speed > 20 ? '#ef4444' : game.wind.speed > 10 ? '#fbbf24' : '#4ade80';
-          gfx.lineWidth = 4;
-          gfx.beginPath();
-          gfx.moveTo(0, -20);
-          gfx.quadraticCurveTo(
-            Math.sin(windRad) * sockLen * 0.5 + sockWave, -20 - Math.cos(windRad) * sockLen * 0.5,
-            Math.sin(windRad) * sockLen, -20 - Math.cos(windRad) * sockLen
-          );
-          gfx.stroke();
-          // Stripes on sock
-          gfx.strokeStyle = '#fff'; gfx.lineWidth = 3;
-          for (var ss = 0.2; ss <= 0.8; ss += 0.3) {
-            var spx = Math.sin(windRad) * sockLen * ss;
-            var spy = -20 - Math.cos(windRad) * sockLen * ss;
-            gfx.beginPath(); gfx.moveTo(spx - 2, spy - 1); gfx.lineTo(spx + 2, spy + 1); gfx.stroke();
+          var sockWave2 = Math.sin(game.time * 3 + 1) * 1.5;
+          var segCount = 5;
+          for (var sg = 0; sg < segCount; sg++) {
+            var t1 = sg / segCount; var t2 = (sg + 1) / segCount;
+            var sx1 = Math.sin(windRad) * sockLen * t1 + sockWave * t1;
+            var sy1 = -24 - Math.cos(windRad) * sockLen * t1 + sockWave2 * t1 * t1;
+            var sx2 = Math.sin(windRad) * sockLen * t2 + sockWave * t2;
+            var sy2 = -24 - Math.cos(windRad) * sockLen * t2 + sockWave2 * t2 * t2;
+            gfx.strokeStyle = sg % 2 === 0 ? (game.wind.speed > 20 ? '#ef4444' : game.wind.speed > 10 ? '#f97316' : '#ef4444') : '#ffffff';
+            gfx.lineWidth = 4 - sg * 0.5;
+            gfx.beginPath(); gfx.moveTo(sx1, sy1); gfx.lineTo(sx2, sy2); gfx.stroke();
           }
           gfx.restore();
           // Wind info text
-          gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = '8px monospace'; gfx.textAlign = 'center';
-          gfx.fillText(String(game.wind.dir).padStart(3, '0') + '°/' + game.wind.speed + 'kt', wsX, H - 28);
+          gfx.fillStyle = 'rgba(255,255,255,0.35)'; gfx.font = 'bold 8px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(String(game.wind.dir).padStart(3, '0') + '°/' + game.wind.speed + 'kt', wsX, H - 32);
 
           // Restricted areas / no-fly zones (decorative)
           gfx.strokeStyle = 'rgba(239,68,68,0.1)'; gfx.lineWidth = 1; gfx.setLineDash([3, 3]);
@@ -605,22 +661,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           gfx.fillStyle = 'rgba(239,68,68,0.15)'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('R-001', W * 0.8, H * 0.2 + 3);
 
-          // Runways
+          // Runways — enhanced with approach lights, threshold, taxiway stubs
           airport.runways.forEach(function(rwy) {
             var rx = rwy.x * scale; var ry = rwy.y * scale;
             var rwyRad = toRad(rwy.hdg);
             var dx = Math.sin(rwyRad) * rwy.len * scale / 2;
             var dy = -Math.cos(rwyRad) * rwy.len * scale / 2;
-            gfx.strokeStyle = '#4ade80'; gfx.lineWidth = 4 * scale;
+            // Runway surface (darker base)
+            gfx.strokeStyle = 'rgba(100,100,100,0.4)'; gfx.lineWidth = 6 * scale;
             gfx.beginPath(); gfx.moveTo(rx - dx, ry + dy); gfx.lineTo(rx + dx, ry - dy); gfx.stroke();
-            // Runway label
-            gfx.fillStyle = '#4ade80'; gfx.font = 'bold ' + (9 * scale) + 'px monospace'; gfx.textAlign = 'center';
-            gfx.fillText(Math.round(rwy.hdg / 10), rx, ry + 15 * scale);
-            // ILS centerline extension
-            gfx.strokeStyle = 'rgba(34,197,94,0.15)'; gfx.lineWidth = 1; gfx.setLineDash([4, 4]);
-            var extLen = 100 * scale;
-            gfx.beginPath(); gfx.moveTo(rx - dx, ry + dy); gfx.lineTo(rx - dx - Math.sin(rwyRad) * extLen, ry + dy + Math.cos(rwyRad) * extLen); gfx.stroke();
+            // Runway centerline
+            gfx.strokeStyle = colors.rwy; gfx.lineWidth = 1.5 * scale;
+            gfx.setLineDash([4 * scale, 3 * scale]);
+            gfx.beginPath(); gfx.moveTo(rx - dx, ry + dy); gfx.lineTo(rx + dx, ry - dy); gfx.stroke();
             gfx.setLineDash([]);
+            // Runway edge lights
+            gfx.strokeStyle = colors.rwy + (hc ? '' : '80'); gfx.lineWidth = 0.5;
+            var perpX = Math.cos(rwyRad) * 3 * scale; var perpY = Math.sin(rwyRad) * 3 * scale;
+            gfx.beginPath(); gfx.moveTo(rx - dx + perpX, ry + dy + perpY); gfx.lineTo(rx + dx + perpX, ry - dy + perpY); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(rx - dx - perpX, ry + dy - perpY); gfx.lineTo(rx + dx - perpX, ry - dy - perpY); gfx.stroke();
+            // Threshold bars
+            for (var tb = -2; tb <= 2; tb++) {
+              var tbOff = tb * 1.2 * scale;
+              var tbPx = perpX * (tb / 2.5); var tbPy = perpY * (tb / 2.5);
+              gfx.fillStyle = colors.rwy;
+              gfx.fillRect(rx + dx + tbPx - 1, ry - dy + tbPy - 1, 2, 2);
+            }
+            // Runway label
+            gfx.fillStyle = colors.rwy; gfx.font = 'bold ' + (9 * scale) + 'px monospace'; gfx.textAlign = 'center';
+            var rwyNum = String(Math.round(rwy.hdg / 10)).padStart(2, '0');
+            gfx.fillText(rwyNum, rx, ry + 16 * scale);
+            // ILS localizer cone (approach path visualization)
+            gfx.save();
+            gfx.translate(rx - dx, ry + dy);
+            gfx.rotate(rwyRad + Math.PI);
+            var coneLen = 120 * scale;
+            var coneGrad = gfx.createLinearGradient(0, 0, 0, coneLen);
+            coneGrad.addColorStop(0, colors.radar + '0.08)');
+            coneGrad.addColorStop(1, colors.radar + '0)');
+            gfx.fillStyle = coneGrad;
+            gfx.beginPath(); gfx.moveTo(0, 0);
+            gfx.lineTo(-15 * scale, coneLen);
+            gfx.lineTo(15 * scale, coneLen);
+            gfx.closePath(); gfx.fill();
+            // ILS centerline
+            gfx.strokeStyle = colors.radar + '0.12)'; gfx.lineWidth = 0.8; gfx.setLineDash([4, 6]);
+            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, coneLen); gfx.stroke();
+            gfx.setLineDash([]);
+            // Approach lights (series of dots along centerline)
+            for (var al = 1; al <= 5; al++) {
+              var alY = al * 12 * scale;
+              var alAlpha = 0.4 - al * 0.06;
+              gfx.fillStyle = 'rgba(255,200,50,' + alAlpha + ')';
+              gfx.beginPath(); gfx.arc(0, alY, 1.5, 0, Math.PI * 2); gfx.fill();
+              // Side lights
+              gfx.beginPath(); gfx.arc(-5 * scale, alY, 1, 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(5 * scale, alY, 1, 0, Math.PI * 2); gfx.fill();
+            }
+            gfx.restore();
+            // Taxiway stubs (short lines perpendicular to runway ends)
+            gfx.strokeStyle = 'rgba(59,130,246,0.15)'; gfx.lineWidth = 2 * scale;
+            gfx.beginPath(); gfx.moveTo(rx + dx, ry - dy); gfx.lineTo(rx + dx + perpX * 4, ry - dy + perpY * 4); gfx.stroke();
           });
 
           // Aircraft
@@ -656,30 +757,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.beginPath(); gfx.arc(trX, trY, (2 + (6 - tr) * 0.3) * scale, 0, Math.PI * 2); gfx.fill();
             }
 
-            // Radar blip glow (bloom effect)
-            var glowSize = ac.type.size * scale * 1.5;
+            // Radar blip glow (bloom effect) — brighter for selected/emergency
+            var glowMult = isSelected ? 2.2 : ac.emergency ? 2.0 : 1.5;
+            var glowSize = ac.type.size * scale * glowMult;
             var glowGrad = gfx.createRadialGradient(ax, ay, 0, ax, ay, glowSize);
-            glowGrad.addColorStop(0, blipColor + '40');
+            glowGrad.addColorStop(0, blipColor + (isSelected ? '60' : '40'));
+            glowGrad.addColorStop(0.5, blipColor + '15');
             glowGrad.addColorStop(1, blipColor + '00');
             gfx.fillStyle = glowGrad;
             gfx.fillRect(ax - glowSize, ay - glowSize, glowSize * 2, glowSize * 2);
 
-            // Aircraft blip (enhanced with type-specific shape)
+            // Aircraft blip (detailed silhouette with altitude-scaled size)
+            var altScale = 0.7 + Math.min(ac.altitude, 10000) / 10000 * 0.6; // bigger at higher altitude
             gfx.fillStyle = blipColor;
             gfx.save(); gfx.translate(ax, ay); gfx.rotate(toRad(ac.heading));
-            var sz = ac.type.size * scale;
+            var sz = ac.type.size * scale * altScale;
             if (ac.type.cat === 'Heavy' || ac.type.cat === 'Super') {
-              // Wide-body shape
-              gfx.beginPath(); gfx.moveTo(0, -sz * 0.7); gfx.lineTo(-sz * 0.4, sz * 0.3); gfx.lineTo(-sz * 0.15, sz * 0.5); gfx.lineTo(sz * 0.15, sz * 0.5); gfx.lineTo(sz * 0.4, sz * 0.3); gfx.fill();
-              // Wings
-              gfx.strokeStyle = blipColor; gfx.lineWidth = 1.5;
-              gfx.beginPath(); gfx.moveTo(-sz * 0.6, sz * 0.1); gfx.lineTo(sz * 0.6, sz * 0.1); gfx.stroke();
+              // Wide-body — fuselage + swept wings + tail
+              gfx.beginPath(); gfx.moveTo(0, -sz * 0.8); gfx.lineTo(-sz * 0.12, -sz * 0.2);
+              gfx.lineTo(-sz * 0.6, sz * 0.05); gfx.lineTo(-sz * 0.55, sz * 0.15);
+              gfx.lineTo(-sz * 0.12, sz * 0.1); gfx.lineTo(-sz * 0.12, sz * 0.5);
+              gfx.lineTo(-sz * 0.3, sz * 0.65); gfx.lineTo(-sz * 0.25, sz * 0.7);
+              gfx.lineTo(0, sz * 0.55);
+              gfx.lineTo(sz * 0.25, sz * 0.7); gfx.lineTo(sz * 0.3, sz * 0.65);
+              gfx.lineTo(sz * 0.12, sz * 0.5); gfx.lineTo(sz * 0.12, sz * 0.1);
+              gfx.lineTo(sz * 0.55, sz * 0.15); gfx.lineTo(sz * 0.6, sz * 0.05);
+              gfx.lineTo(sz * 0.12, -sz * 0.2); gfx.closePath(); gfx.fill();
             } else if (ac.type.cat === 'Light') {
-              // Small aircraft
-              gfx.beginPath(); gfx.moveTo(0, -sz * 0.5); gfx.lineTo(-sz * 0.2, sz * 0.3); gfx.lineTo(sz * 0.2, sz * 0.3); gfx.fill();
+              // Small prop — simple shape with high wing
+              gfx.beginPath(); gfx.moveTo(0, -sz * 0.6);
+              gfx.lineTo(-sz * 0.08, -sz * 0.1); gfx.lineTo(-sz * 0.45, -sz * 0.05);
+              gfx.lineTo(-sz * 0.4, sz * 0.05); gfx.lineTo(-sz * 0.08, sz * 0.1);
+              gfx.lineTo(-sz * 0.08, sz * 0.4); gfx.lineTo(-sz * 0.2, sz * 0.5);
+              gfx.lineTo(sz * 0.2, sz * 0.5); gfx.lineTo(sz * 0.08, sz * 0.4);
+              gfx.lineTo(sz * 0.08, sz * 0.1); gfx.lineTo(sz * 0.4, sz * 0.05);
+              gfx.lineTo(sz * 0.45, -sz * 0.05); gfx.lineTo(sz * 0.08, -sz * 0.1);
+              gfx.closePath(); gfx.fill();
             } else {
-              // Standard narrow-body
-              gfx.beginPath(); gfx.moveTo(0, -sz * 0.6); gfx.lineTo(-sz * 0.3, sz * 0.4); gfx.lineTo(sz * 0.3, sz * 0.4); gfx.fill();
+              // Narrow-body — B737/A320 shape
+              gfx.beginPath(); gfx.moveTo(0, -sz * 0.7);
+              gfx.lineTo(-sz * 0.1, -sz * 0.15); gfx.lineTo(-sz * 0.5, sz * 0.05);
+              gfx.lineTo(-sz * 0.45, sz * 0.12); gfx.lineTo(-sz * 0.1, sz * 0.08);
+              gfx.lineTo(-sz * 0.1, sz * 0.45); gfx.lineTo(-sz * 0.22, sz * 0.55);
+              gfx.lineTo(-sz * 0.18, sz * 0.6);
+              gfx.lineTo(0, sz * 0.48);
+              gfx.lineTo(sz * 0.18, sz * 0.6); gfx.lineTo(sz * 0.22, sz * 0.55);
+              gfx.lineTo(sz * 0.1, sz * 0.45); gfx.lineTo(sz * 0.1, sz * 0.08);
+              gfx.lineTo(sz * 0.45, sz * 0.12); gfx.lineTo(sz * 0.5, sz * 0.05);
+              gfx.lineTo(sz * 0.1, -sz * 0.15); gfx.closePath(); gfx.fill();
+            }
+            // Anti-collision strobe (white flash at wing tips)
+            if (!reducedMotion.current && Math.floor(game.time * 1.5) % 2 === 0) {
+              gfx.fillStyle = 'rgba(255,255,255,0.7)';
+              var wingW = (ac.type.cat === 'Heavy' || ac.type.cat === 'Super') ? sz * 0.6 : ac.type.cat === 'Light' ? sz * 0.4 : sz * 0.5;
+              gfx.beginPath(); gfx.arc(-wingW, 0, 1.2, 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(wingW, 0, 1.2, 0, Math.PI * 2); gfx.fill();
+            }
+            // Navigation lights (red left, green right)
+            if (!hc) {
+              var navW = (ac.type.cat === 'Heavy' || ac.type.cat === 'Super') ? sz * 0.58 : ac.type.cat === 'Light' ? sz * 0.38 : sz * 0.48;
+              gfx.fillStyle = 'rgba(239,68,68,0.6)'; gfx.beginPath(); gfx.arc(-navW, 0, 0.8, 0, Math.PI * 2); gfx.fill();
+              gfx.fillStyle = 'rgba(34,197,94,0.6)'; gfx.beginPath(); gfx.arc(navW, 0, 0.8, 0, Math.PI * 2); gfx.fill();
             }
             gfx.restore();
 
@@ -726,50 +864,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               });
             }
 
-            // Data tag with background box
-            var tagX = ax + 10 * scale; var tagY = ay - 8 * scale;
+            // Data tag — professional radar display format
+            var tagX = ax + 12 * scale; var tagY = ay - 10 * scale;
             var csShort = ac.callsign.split(' ')[0].substring(0, 3) + ac.callsign.split(' ')[1];
+            var altHundreds = Math.round(ac.altitude / 100);
+            var altTrend = ac.targetAltitude ? (ac.targetAltitude > ac.altitude ? '↑' : ac.targetAltitude < ac.altitude ? '↓' : '') : '';
+            var catPrefix = ac.type.cat === 'Heavy' ? 'H/' : ac.type.cat === 'Super' ? 'J/' : '';
             var line1 = csShort;
-            var line2 = ac.type.id + ' ' + (ac.type.cat === 'Heavy' ? 'H/' : ac.type.cat === 'Super' ? 'J/' : '') + Math.round(ac.altitude / 100);
+            var line2 = ac.type.id + ' ' + catPrefix + altHundreds + altTrend;
             var line3 = Math.round(ac.speed) + 'kt ' + String(Math.round(ac.heading)).padStart(3, '0') + '°';
-            // Tag background
-            gfx.fillStyle = isSelected ? 'rgba(50,40,0,0.7)' : 'rgba(0,20,0,0.6)';
-            var tagW = Math.max(gfx.measureText(line1).width, gfx.measureText(line2).width, gfx.measureText(line3).width) + 8;
             gfx.font = (8 * scale) + 'px monospace';
-            gfx.beginPath(); gfx.roundRect(tagX - 3, tagY - 8, tagW + 6, 32 * scale, 3); gfx.fill();
+            var tagW = Math.max(gfx.measureText(line1).width, gfx.measureText(line2).width, gfx.measureText(line3).width) + 14;
+            var tagH = 34 * scale;
+            // Tag background with subtle border
+            gfx.fillStyle = isSelected ? 'rgba(50,40,0,0.8)' : 'rgba(0,18,0,0.75)';
+            gfx.beginPath(); gfx.roundRect(tagX - 4, tagY - 10, tagW + 6, tagH, 4); gfx.fill();
+            gfx.strokeStyle = isSelected ? 'rgba(251,191,36,0.4)' : blipColor + '30';
+            gfx.lineWidth = 0.5;
+            gfx.beginPath(); gfx.roundRect(tagX - 4, tagY - 10, tagW + 6, tagH, 4); gfx.stroke();
+            // Left accent bar (aircraft category color)
+            gfx.fillStyle = blipColor;
+            gfx.fillRect(tagX - 4, tagY - 6, 2, tagH - 8);
             // Leader line from blip to tag
-            gfx.strokeStyle = blipColor + '40'; gfx.lineWidth = 0.5;
+            gfx.strokeStyle = blipColor + '30'; gfx.lineWidth = 0.5;
             gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(tagX, tagY + 4); gfx.stroke();
             // Tag text
             gfx.fillStyle = isSelected ? '#fbbf24' : blipColor;
             gfx.font = 'bold ' + (8 * scale) + 'px monospace'; gfx.textAlign = 'left';
-            gfx.fillText(line1, tagX, tagY);
+            gfx.fillText(line1, tagX + 1, tagY);
             gfx.font = (7 * scale) + 'px monospace';
-            gfx.fillStyle = isSelected ? '#fde68a' : 'rgba(255,255,255,0.5)';
-            gfx.fillText(line2, tagX, tagY + 10 * scale);
-            gfx.fillText(line3, tagX, tagY + 19 * scale);
-            // State indicator
-            if (ac.state === 'approach') {
-              gfx.fillStyle = '#4ade80'; gfx.font = 'bold ' + (7 * scale) + 'px system-ui';
-              gfx.fillText('ILS', tagX + tagW - 8, tagY);
+            gfx.fillStyle = isSelected ? '#fde68a' : 'rgba(255,255,255,0.55)';
+            gfx.fillText(line2, tagX + 1, tagY + 10 * scale);
+            gfx.fillText(line3, tagX + 1, tagY + 19 * scale);
+            // State badge (approach / holding / inbound)
+            var stBadge = ac.state === 'approach' ? 'ILS' : ac.state === 'holding' ? 'HLD' : ac.state === 'goAround' ? 'GA' : null;
+            var stColor = ac.state === 'approach' ? '#4ade80' : ac.state === 'holding' ? '#a78bfa' : ac.state === 'goAround' ? '#f97316' : null;
+            if (stBadge) {
+              gfx.fillStyle = stColor + '30';
+              gfx.beginPath(); gfx.roundRect(tagX + tagW - 22, tagY - 8, 20, 10, 2); gfx.fill();
+              gfx.fillStyle = stColor; gfx.font = 'bold ' + (6 * scale) + 'px system-ui'; gfx.textAlign = 'center';
+              gfx.fillText(stBadge, tagX + tagW - 12, tagY - 1);
+              gfx.textAlign = 'left';
             }
+            // Fuel warning
             if (ac.fuel < 10) {
-              gfx.fillStyle = '#ef4444'; gfx.font = 'bold ' + (7 * scale) + 'px system-ui';
-              gfx.fillText('⛽' + Math.round(ac.fuel) + 'm', tagX, tagY + 27 * scale);
+              gfx.fillStyle = ac.fuel < 5 ? '#ef4444' : '#f97316'; gfx.font = 'bold ' + (7 * scale) + 'px system-ui';
+              gfx.fillText('⛽' + Math.round(ac.fuel) + 'm', tagX + 1, tagY + 27 * scale);
             }
+            // Assigned runway
             if (ac.assignedRunway && ac.state === 'inbound') {
               gfx.fillStyle = '#a78bfa'; gfx.font = (7 * scale) + 'px monospace';
-              gfx.fillText('RWY' + ac.assignedRunway.hdg, tagX, tagY + 27 * scale);
+              gfx.fillText('→R' + String(Math.round(ac.assignedRunway.hdg / 10)).padStart(2, '0'), tagX + 1, tagY + 27 * scale);
             }
           });
 
-          // ── Top Status Bar ──
-          gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(0, 0, W, 28);
-          gfx.fillStyle = '#4ade80'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'left';
-          gfx.fillText('🗼 ' + airport.code + '  |  Score: ' + game.score + '  |  Landed: ' + game.landed + '  |  Streak: ' + game.streak + '  |  Traffic: ' + game.aircraft.filter(function(a) { return a.state !== 'landed' && a.state !== 'departed'; }).length + '/' + airport.maxTraffic, 8, 19);
+          // ── Touchdown Effects (expanding rings on landing) ──
+          if (game.touchdowns) {
+            game.touchdowns = game.touchdowns.filter(function(td) { return game.time - td.time < 3; });
+            game.touchdowns.forEach(function(td) {
+              var age = game.time - td.time;
+              var alpha = Math.max(0, 1 - age / 3);
+              var radius = age * 25 * scale;
+              // Expanding ring
+              gfx.strokeStyle = td.color + Math.round(alpha * 60).toString(16).padStart(2, '0');
+              gfx.lineWidth = 2 * (1 - age / 3);
+              gfx.beginPath(); gfx.arc(td.x * scale, td.y * scale, radius, 0, Math.PI * 2); gfx.stroke();
+              // Inner glow
+              if (age < 1) {
+                var tdGlow = gfx.createRadialGradient(td.x * scale, td.y * scale, 0, td.x * scale, td.y * scale, radius * 0.6);
+                tdGlow.addColorStop(0, td.color + Math.round(alpha * 30).toString(16).padStart(2, '0'));
+                tdGlow.addColorStop(1, td.color + '00');
+                gfx.fillStyle = tdGlow;
+                gfx.beginPath(); gfx.arc(td.x * scale, td.y * scale, radius * 0.6, 0, Math.PI * 2); gfx.fill();
+              }
+              // Checkmark flash
+              if (age < 0.8) {
+                gfx.fillStyle = 'rgba(255,255,255,' + (alpha * 0.8) + ')';
+                gfx.font = 'bold ' + Math.round(14 * scale * (1 + age * 0.5)) + 'px system-ui'; gfx.textAlign = 'center';
+                gfx.fillText('✓', td.x * scale, td.y * scale - radius - 5);
+              }
+            });
+          }
+
+          // ── Top Status Bar — segmented professional display ──
+          var activeTraffic = game.aircraft.filter(function(a) { return a.state !== 'landed' && a.state !== 'departed'; }).length;
+          // Bar background with subtle gradient
+          var barGrad = gfx.createLinearGradient(0, 0, 0, 30);
+          barGrad.addColorStop(0, 'rgba(0,0,0,0.85)');
+          barGrad.addColorStop(1, 'rgba(0,10,0,0.7)');
+          gfx.fillStyle = barGrad; gfx.fillRect(0, 0, W, 30);
+          gfx.strokeStyle = colors.radar + '0.15)'; gfx.lineWidth = 0.5;
+          gfx.beginPath(); gfx.moveTo(0, 30); gfx.lineTo(W, 30); gfx.stroke();
+          // Airport identifier
+          gfx.fillStyle = colors.text; gfx.font = 'bold 13px monospace'; gfx.textAlign = 'left';
+          gfx.fillText('🗼 ' + airport.code, 8, 20);
+          // Segmented stats
+          var statsX = 80;
+          var statItems = [
+            { label: 'SCORE', value: String(game.score), color: '#4ade80' },
+            { label: 'LANDED', value: String(game.landed), color: '#60a5fa' },
+            { label: 'STREAK', value: String(game.streak), color: game.streak >= 5 ? '#fbbf24' : '#94a3b8' },
+            { label: 'TRAFFIC', value: activeTraffic + '/' + airport.maxTraffic, color: activeTraffic >= airport.maxTraffic - 1 ? '#ef4444' : '#4ade80' },
+          ];
+          statItems.forEach(function(st) {
+            gfx.fillStyle = 'rgba(255,255,255,0.2)'; gfx.font = '7px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText(st.label, statsX, 11);
+            gfx.fillStyle = st.color; gfx.font = 'bold 11px monospace';
+            gfx.fillText(st.value, statsX, 24);
+            statsX += Math.max(55, gfx.measureText(st.value).width + 30);
+          });
+          // Wind on right
           gfx.textAlign = 'right';
-          gfx.fillStyle = game.wind.speed > 20 ? '#fbbf24' : '#4ade80';
-          gfx.fillText('Wind: ' + String(game.wind.dir).padStart(3, '0') + '° / ' + game.wind.speed + 'kt', W - 8, 19);
+          gfx.fillStyle = 'rgba(255,255,255,0.2)'; gfx.font = '7px system-ui';
+          gfx.fillText('WIND', W - 8, 11);
+          gfx.fillStyle = game.wind.speed > 20 ? '#ef4444' : game.wind.speed > 12 ? '#fbbf24' : '#4ade80';
+          gfx.font = 'bold 11px monospace';
+          gfx.fillText(String(game.wind.dir).padStart(3, '0') + '° / ' + game.wind.speed + 'kt', W - 8, 24);
 
           // Conflict warning bar
           if (conflicts.length > 0) {
@@ -994,15 +1204,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             playATCSound('conflict');
           }
 
-          // ── Game Over ──
+          // ── Game Over — dramatic cinematic overlay ──
           if (game.gameOver) {
-            gfx.fillStyle = 'rgba(0,0,0,0.8)'; gfx.fillRect(0, 0, W, H);
-            gfx.fillStyle = '#ef4444'; gfx.font = 'bold 24px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('TOWER CLOSED', W / 2, H * 0.35);
-            gfx.fillStyle = '#fff'; gfx.font = '14px system-ui';
-            gfx.fillText('Too many separation conflicts! Final score: ' + game.score + ' | Aircraft landed: ' + game.landed, W / 2, H * 0.45);
+            gfx.fillStyle = 'rgba(0,0,0,0.85)'; gfx.fillRect(0, 0, W, H);
+            // Red scan lines
+            gfx.fillStyle = 'rgba(239,68,68,0.03)';
+            for (var goSl = 0; goSl < H; goSl += 4) { gfx.fillRect(0, goSl, W, 2); }
+            // Warning border
+            var goFlash = 0.3 + Math.sin(game.time * 3) * 0.15;
+            gfx.strokeStyle = 'rgba(239,68,68,' + goFlash + ')'; gfx.lineWidth = 4;
+            gfx.strokeRect(4, 4, W - 8, H - 8);
+            // Title
+            gfx.fillStyle = '#ef4444'; gfx.font = 'bold 28px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('⚠ TOWER CLOSED', W / 2, H * 0.3);
+            gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = '12px system-ui';
+            gfx.fillText('Too many separation conflicts — airspace unsafe', W / 2, H * 0.37);
+            // Stats panel
+            var goY = H * 0.42;
+            gfx.fillStyle = 'rgba(0,0,0,0.5)';
+            gfx.beginPath(); gfx.roundRect(W * 0.25, goY, W * 0.5, 85, 8); gfx.fill();
+            gfx.strokeStyle = 'rgba(255,255,255,0.1)'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.roundRect(W * 0.25, goY, W * 0.5, 85, 8); gfx.stroke();
+            var goStats = [
+              ['Final Score', String(game.score), '#fbbf24'],
+              ['Aircraft Landed', String(game.landed), '#4ade80'],
+              ['Best Streak', String(game.streak), '#60a5fa'],
+              ['Time on Duty', Math.floor(game.time / 60) + ':' + String(Math.floor(game.time % 60)).padStart(2, '0'), '#94a3b8'],
+            ];
+            goStats.forEach(function(st, idx) {
+              var stX = W * 0.25 + (idx + 0.5) * (W * 0.5 / 4);
+              gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+              gfx.fillText(st[0], stX, goY + 20);
+              gfx.fillStyle = st[2]; gfx.font = 'bold 18px monospace';
+              gfx.fillText(st[1], stX, goY + 42);
+            });
+            // Efficiency rating
+            var goEff = game.landed > 0 ? Math.max(0, 100 - Math.round(game.conflicts / game.landed * 20)) : 0;
+            var goRating = goEff >= 90 ? 'A+ — Outstanding' : goEff >= 80 ? 'A — Excellent' : goEff >= 70 ? 'B — Good' : goEff >= 50 ? 'C — Needs Work' : 'D — Keep Practicing';
+            gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = '8px system-ui';
+            gfx.fillText('Efficiency Rating', W / 2, goY + 60);
+            gfx.fillStyle = goEff >= 80 ? '#4ade80' : goEff >= 50 ? '#fbbf24' : '#ef4444';
+            gfx.font = 'bold 14px system-ui';
+            gfx.fillText(goRating + ' (' + goEff + '%)', W / 2, goY + 76);
+            // Return prompt
             gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
-            gfx.fillText('Press ESC to return to menu', W / 2, H * 0.55);
+            gfx.fillText('Press ESC to return to tower', W / 2, H * 0.82);
           }
 
           // ── Help Overlay (press ?) ──

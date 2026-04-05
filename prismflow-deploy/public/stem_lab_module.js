@@ -3558,8 +3558,9 @@
 
         // ═══════════════════════════════════════════════════════
 
-        (function _musicSynth() { var _isMusicSynth = stemLabTab === 'explore' && stemLabTool === 'musicSynth'; if (!_isMusicSynth) {
-            // Placeholder hooks — must match exact active-path sequence (verified L19411–19953)
+        // musicSynth hook stubs — MUST run every render to maintain React hook count
+        // (active rendering handled by external stem_tool_music.js via plugin bridge)
+        (function _musicSynthHookStubs() {
             React.useEffect(function(){}, []);  // 1 – waveform draw loop
             React.useEffect(function(){}, []);  // 2 – sequencer playback
             React.useRef(null);                 // 3 – beat-painter FX ref
@@ -3576,8 +3577,6 @@
             React.useEffect(function(){}, []);  // 14 – arpeggiator
             React.useEffect(function(){}, []);  // 15 – particle cleanup
             return null;
-          }
-          // musicSynth: 3,120 lines removed — see stem_tool_music.js
         })(),
 
         // ═══════════════════════════════════════════════════════

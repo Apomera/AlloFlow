@@ -74,11 +74,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var gradeLevel = ctx.gradeLevel;
 
       // ── State Management ──
-      var d = labToolData || {};
+      var d = (labToolData && labToolData.moonMission) || {};
       function upd(key, val) {
-        var next = Object.assign({}, labToolData || {});
-        next[key] = val;
-        setLabToolData(next);
+        var patch = {};
+        patch[key] = val;
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { moonMission: Object.assign({}, (prev && prev.moonMission) || {}, patch) });
+        });
       }
 
       var phase = d.missionPhase || 0;
