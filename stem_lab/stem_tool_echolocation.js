@@ -2987,7 +2987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'mt-2 text-[10px] ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') },
                 h('strong', null, 'Maine\'s 8 bat species: '),
                 'Little brown bat, Big brown bat, Northern long-eared bat (endangered), Eastern small-footed bat, Tri-colored bat, Silver-haired bat, Hoary bat, Red bat. The cave-hibernating species (first 4) are most affected by white-nose syndrome.')
-              ),
+              )),
 
             // Bat Box Project
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-emerald-900/20 border border-emerald-800/30' : 'bg-emerald-50 border border-emerald-200') },

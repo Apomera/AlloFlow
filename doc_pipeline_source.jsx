@@ -3367,6 +3367,35 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             break;
           }
 
+          // Deterministic cleanup after each AI fix pass — catches AI-introduced errors
+          const _postListFix = fixListViolations(accessibleHtml);
+          if (_postListFix.fixCount > 0) { accessibleHtml = _postListFix.html; warnLog(`  Deterministic: fixed ${_postListFix.fixCount} list issues`); }
+          const _postContrastFix = fixContrastViolations(accessibleHtml);
+          if (_postContrastFix.fixCount > 0) { accessibleHtml = _postContrastFix.html; warnLog(`  Deterministic: fixed ${_postContrastFix.fixCount} contrast issues`); }
+          // Fix invalid ARIA roles
+          const __validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
+          const __roleCorrections = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
+          let __roleFixCount = 0;
+          accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (m, role) => {
+            const lower = role.toLowerCase().trim();
+            if (__validRoles.includes(lower)) return `role="${lower}"`;
+            if (__roleCorrections[lower]) { __roleFixCount++; return `role="${__roleCorrections[lower]}"`; }
+            __roleFixCount++; return '';
+          });
+          if (__roleFixCount > 0) warnLog(`  Deterministic: fixed ${__roleFixCount} invalid ARIA roles`);
+          // Fix invalid lang attribute
+          accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
+            const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
+            const validLang = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+            if (!trimmed || !validLang.test(trimmed)) {
+              const langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar' };
+              const fixed = langMap[trimmed] || 'en';
+              warnLog(`  Deterministic: fixed invalid lang="${langVal}" → "${fixed}"`);
+              return `<html${before}lang="${fixed}"`;
+            }
+            return m;
+          });
+
           // Re-audit with 3 AI engines + axe-core for statistical reliability
           updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
           const [reVerify1, reVerify2, reVerify3, reAxe] = await Promise.all([

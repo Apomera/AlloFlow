@@ -12036,17 +12036,10 @@ Return only the corrected version of this exact text:`;
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [glossarySearchTerm, setGlossarySearchTerm] = useState('');
   const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
-  // ─── Proactive Piper preload when content language changes ─────
-  useEffect(() => {
-    if (!_isCanvasEnv) return;
-    const ttsLang = languageToTTSCode(leveledTextLanguage || 'English');
-    if (ttsLang === 'en') return; // Kokoro handles English
-    if (window._piperTTS && window._piperTTS.supportsLanguage(ttsLang)) {
-      window._piperTTS.preloadLanguage(ttsLang).catch(e => {
-        console.warn('[Canvas TTS] Piper preload failed for', ttsLang, ':', e?.message);
-      });
-    }
-  }, [leveledTextLanguage]);
+  // ─── Piper language preload removed (was causing fatal crash) ─────
+  // Piper is now on-demand only: downloads when a Piper voice is selected
+  // or when Gemini TTS fails for a language Piper supports but Kokoro doesn't.
+  // See callTTS fallback chain for the lazy-load logic.
   const [showSourceGen, setShowSourceGen] = useState(false);
   const [sourceTopic, setSourceTopic] = useState('');
   const [sourceTone, setSourceTone] = useState('Informative');
