@@ -201,11 +201,24 @@ var createContentEngine = function (deps) {
     });
     return repairedText;
   };
+  var _rejectSourceUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
+  var _rejectSourceTitle = [/official\s*(music\s*)?video/i, /\(official\s*video\)/i, /\blyrics?\b/i, /\bremaster(ed)?\b/i, /\bmovie\s*trailer\b/i, /\bfull\s*movie\b/i];
+  var filterSources = function(chunks) {
+    if (!chunks || !Array.isArray(chunks)) return chunks;
+    return chunks.filter(function(c) {
+      var uri = (c && c.web && c.web.uri) || '';
+      var title = (c && c.web && c.web.title) || '';
+      for (var i = 0; i < _rejectSourceUrl.length; i++) { if (_rejectSourceUrl[i].test(uri)) return false; }
+      for (var j = 0; j < _rejectSourceTitle.length; j++) { if (_rejectSourceTitle[j].test(title)) return false; }
+      return true;
+    });
+  };
   var generateBibliographyString = function (metadata, citationStyle, title) {
     citationStyle = citationStyle || 'Links Only';
     title = title || 'Verified Sources';
     if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
-    var chunks = metadata.groundingChunks;
+    var chunks = filterSources(metadata.groundingChunks);
+    if (chunks.length === 0) return "";
     var bib = '\n\n### ' + title + '\n\n';
     chunks.forEach(function (chunk, i) {
       var t = chunk.web && chunk.web.title || "Unknown Source";
