@@ -17156,7 +17156,7 @@ Return ONLY valid JSON:
     setSelectedLanguages, setShowSourceGen, setStudentInterests,
     setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen,
     setPhonicsData, setRevisionData, setSelectionMenu,
-    setPlayingContentId, setPlaybackState,
+    setPlayingContentId, setPlaybackState, setIsPlaying, setIsPaused,
   };
   // Content engine: lazy factory — CDN module may not be loaded on first render.
   // Each function creates the engine on first call if needed, then caches it.

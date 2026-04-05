@@ -1309,17 +1309,19 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     // Cancel any browser speechSynthesis
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     // Clear any pending playback timeout
-    var _timeoutRef = _state.playbackTimeoutRef || (typeof playbackTimeoutRef !== 'undefined' ? playbackTimeoutRef : null);
+    var _timeoutRef = _state.playbackTimeoutRef || null;
     if (_timeoutRef && _timeoutRef.current) {
         clearTimeout(_timeoutRef.current);
         _timeoutRef.current = null;
     }
-    setIsPlaying(false);
-    setIsPaused(false);
-    setPlayingContentId(null);
-    setPlaybackState({ sentences: [], currentIdx: -1 });
-    isPlayingRef.current = false;
-    isSystemAudioActiveRef.current = false;
+    if (typeof setIsPlaying === 'function') setIsPlaying(false);
+    else if (_state.setIsPlaying) _state.setIsPlaying(false);
+    if (typeof setIsPaused === 'function') setIsPaused(false);
+    else if (_state.setIsPaused) _state.setIsPaused(false);
+    if (typeof setPlayingContentId === 'function') setPlayingContentId(null);
+    if (typeof setPlaybackState === 'function') setPlaybackState({ sentences: [], currentIdx: -1 });
+    if (isPlayingRef) isPlayingRef.current = false;
+    if (isSystemAudioActiveRef) isSystemAudioActiveRef.current = false;
   };
 
   var _wrap = function(fn) { return function() { _bindState(); return fn.apply(this, arguments); }; };
