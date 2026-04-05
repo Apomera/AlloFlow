@@ -459,7 +459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-[9px] font-mono text-purple-300 text-center mb-1' }, 'Key compounds:'),
                   h('div', { className: 'flex flex-wrap gap-1 justify-center' },
                     ['9-ODA (queen substance)', '9-HDA', 'HVA (homovanillyl alcohol)', 'Methyl oleate', '4-hydroxy-3-methoxyphenylethanol'].map(function(c, i) {
-                      return h('span', { key: i, className: 'bg-purple-700/40 text-purple-200 px-2 py-0.5 rounded text-[8px]' }, c);
+                      return h('span', { key: i, className: 'bg-purple-700/40 text-purple-200 px-2 py-0.5 rounded text-[9px]' }, c);
                     }))),
                 h('div', { className: 'text-[9px] text-purple-100/70 space-y-1' },
                   h('p', null, '• Suppresses worker ovary development — only the queen reproduces'),
@@ -863,7 +863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             gardenBonus > 0 && h('span', { className: 'bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full' }, '🌱 Garden +' + gardenBonus + '%')),
 
           // Colony Dashboard
-          h('div', { className: 'bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4', role: 'region', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('div', { className: 'text-sm font-bold text-amber-900' }, '🐝 Colony Status'),
               h('div', { className: 'text-sm font-black ' + ratingColor }, colonyRating + ' (' + colonyHealth + ')')),
@@ -920,9 +920,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var emptyColor = frame.type === 'honey' ? 'bg-amber-200' : frame.type === 'pollen' ? 'bg-yellow-200' : frame.type === 'brood' ? 'bg-orange-100' : 'bg-purple-200';
                 return h('div', { key: i, className: 'flex flex-col justify-end flex-1 rounded-sm overflow-hidden ' + emptyColor, title: frame.label + ' ' + Math.round(frame.pct) + '% full' },
                   h('div', { style: { height: Math.round(frame.pct) + '%' }, className: bgColor + ' transition-all duration-500 flex items-end justify-center' },
-                    h('span', { className: 'text-[8px]' }, frame.pct > 20 ? frame.label : '')));
+                    h('span', { className: 'text-[9px]' }, frame.pct > 20 ? frame.label : '')));
               })),
-            h('div', { className: 'flex justify-between mt-1 text-[8px] text-amber-700' },
+            h('div', { className: 'flex justify-between mt-1 text-[9px] text-amber-700' },
               h('span', null, '← Honey stores'),
               h('span', { className: 'font-bold' }, 'Brood nest (center)'),
               h('span', null, 'Honey stores →')),
@@ -983,19 +983,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'grid grid-cols-5 gap-1.5' },
               h('button', { onClick: treatVarroa, 'aria-label': 'Treat varroa mites', disabled: varroaLevel < 10, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl text-center transition-all ' + (varroaLevel >= 10 ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' : 'bg-slate-50 text-slate-300 border border-slate-100') },
                 h('span', { className: 'text-lg' }, '\uD83E\uDDEA'),
-                h('span', { className: 'text-[8px] font-bold' }, 'Treat')),
+                h('span', { className: 'text-[9px] font-bold' }, 'Treat')),
               h('button', { onClick: addSuper, 'aria-label': 'Add honey super', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-all' },
                 h('span', { className: 'text-lg' }, '\uD83D\uDCE6'),
-                h('span', { className: 'text-[8px] font-bold' }, 'Super')),
+                h('span', { className: 'text-[9px] font-bold' }, 'Super')),
               h('button', { onClick: harvestHoney, 'aria-label': 'Harvest honey', disabled: honey < 15, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all ' + (honey >= 15 ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200' : 'bg-slate-50 text-slate-300 border border-slate-100') },
                 h('span', { className: 'text-lg' }, '\uD83C\uDF6F'),
-                h('span', { className: 'text-[8px] font-bold' }, 'Harvest')),
+                h('span', { className: 'text-[9px] font-bold' }, 'Harvest')),
               h('button', { onClick: feedBees, 'aria-label': 'Feed bees', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all' },
                 h('span', { className: 'text-lg' }, '\uD83E\uDED9'),
-                h('span', { className: 'text-[8px] font-bold' }, 'Feed')),
+                h('span', { className: 'text-[9px] font-bold' }, 'Feed')),
               h('button', { onClick: function() { upd('showInspect', true); }, 'aria-label': 'Inspect hive', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-all' },
                 h('span', { className: 'text-lg' }, '\uD83D\uDD2C'),
-                h('span', { className: 'text-[8px] font-bold' }, 'Inspect'))),
+                h('span', { className: 'text-[9px] font-bold' }, 'Inspect'))),
 
             // Conservation Actions
             h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
@@ -1021,7 +1021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center gap-1' },
                       h('span', null, action.emoji),
                       h('span', { className: 'text-[9px] font-bold text-slate-800' }, action.label)),
-                    h('div', { className: 'text-[8px] text-slate-500 mt-0.5' }, action.cost + ' AP · ' + action.desc));
+                    h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, action.cost + ' AP · ' + action.desc));
                 })))),
 
           // Hive Inspection (full view replacement)

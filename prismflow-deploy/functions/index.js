@@ -305,9 +305,9 @@ exports.ltiLaunch = onRequest(
       const alloFlowUrl = new URL(`https://${projectId}.web.app`);
       alloFlowUrl.searchParams.set("lti", "1");
       alloFlowUrl.searchParams.set("session", sessionToken);
-      alloFlowUrl.searchParams.set("course", ltiClaims.context.title || "Course");
+      alloFlowUrl.searchParams.set("course", ltiClaims.context?.title || "Course");
       alloFlowUrl.searchParams.set("role", isInstructor ? "teacher" : "student");
-      alloFlowUrl.searchParams.set("user", ltiClaims.name);
+      alloFlowUrl.searchParams.set("user", ltiClaims.name || "User");
 
       res.redirect(alloFlowUrl.toString());
     } catch (err) {
@@ -344,13 +344,13 @@ exports.ltiSession = onRequest(
     }
 
     res.status(200).json({
-      user: session.claims.name,
-      email: session.claims.email,
-      course: session.claims.context.title,
-      courseId: session.claims.context.id,
-      isInstructor: session.isInstructor,
-      platformUrl: session.claims.platformUrl,
-      roles: session.claims.roles,
+      user: session.claims?.name || "User",
+      email: session.claims?.email || null,
+      course: session.claims?.context?.title || "Course",
+      courseId: session.claims?.context?.id || null,
+      isInstructor: session.isInstructor || false,
+      platformUrl: session.claims?.platformUrl || null,
+      roles: session.claims?.roles || [],
     });
   }
 );

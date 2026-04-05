@@ -1,5 +1,5 @@
-"use strict";
-
+(function(){"use strict";
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -87,12 +87,7 @@ var createDocPipeline = function (deps) {
   // ── PDF Accessibility Audit ──
   const runPdfAccessibilityAudit = async base64Data => {
     setPdfAuditLoading(true);
-    // Estimate audit time based on data size (rough proxy for page count before we know it)
-    const dataSizeKB = base64Data ? Math.round(base64Data.length * 0.75 / 1024) : 0;
-    const estTime = dataSizeKB < 200 ? '15-30 seconds' : dataSizeKB < 1000 ? '30-90 seconds' : dataSizeKB < 5000 ? '2-5 minutes' : '5-10 minutes';
-    addToast && addToast(`♿ Auditing document (${dataSizeKB > 1024 ? (dataSizeKB / 1024).toFixed(1) + 'MB' : dataSizeKB + 'KB'}) — typically ${estTime}`, 'info');
     try {
-      var _parsedAudits$find;
       // ── Triangulated scoring: run 2 independent audits, average scores, flag discrepancies ──
       const auditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.
 
@@ -110,9 +105,8 @@ Check for these specific issues:
 
 SCORING RUBRIC — Start at 100, deduct points for each unique violation:
   CRITICAL (-15 each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1, no searchable text layer
-  SERIOUS (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
-  MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
-  MINOR (-2 each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
+  MAJOR (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
+  MINOR (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists, missing document metadata
 
 IMPORTANT FORMATTING RULES for the "issue" field:
 - Write each issue as ONE complete sentence. Do NOT split sentences across fields.
@@ -127,8 +121,7 @@ Return ONLY valid JSON:
   "confidence": "<your confidence in this score: 'high' if document is straightforward, 'medium' if some elements are ambiguous, 'low' if you had to guess about key aspects>",
   "summary": "One sentence overall assessment",
   "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
-  "serious": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
-  "moderate": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
+  "major": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "minor": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "passes": ["Things the document does well"],
   "pageCount": N,
@@ -208,16 +201,15 @@ Return ONLY valid JSON:
       // Recalculate from issue counts using the rubric to reduce variance
       parsedAudits.forEach(a => {
         const critCount = (a.critical || []).length;
-        const seriousCount = (a.serious || a.major || []).length;
-        const modCount = (a.moderate || []).length;
+        const majCount = (a.major || []).length;
         const minCount = (a.minor || []).length;
         const passCount = (a.passes || []).length;
-        const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-        const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
+        const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
+        const pf = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
         const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
         // If Gemini's score diverges significantly from the rubric calculation, override it
         if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) {
-          warnLog(`[PDF Audit] Auditor score ${a.score} overridden to ${calculatedScore} (${critCount}C/${seriousCount}S/${modCount}M/${minCount}m, ${passCount} passes)`);
+          warnLog(`[PDF Audit] Auditor score ${a.score} overridden to ${calculatedScore} (${critCount}C/${majCount}M/${minCount}m, ${passCount} passes)`);
           a.score = calculatedScore;
         }
       });
@@ -242,12 +234,11 @@ Return ONLY valid JSON:
         }).filter(Boolean);
         extraParsed.forEach(a => {
           const critCount = (a.critical || []).length;
-          const seriousCount = (a.serious || a.major || []).length;
-          const modCount = (a.moderate || []).length;
+          const majCount = (a.major || []).length;
           const minCount = (a.minor || []).length;
           const passCount = (a.passes || []).length;
-          const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-          const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
+          const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
+          const pf = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
           const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
           if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) a.score = calculatedScore;
         });
@@ -354,7 +345,7 @@ Return ONLY valid JSON:
       // Issue agreement: count how many auditors flagged each issue
       const issueFrequency = {};
       parsedAudits.forEach(a => {
-        [...(a.critical || []), ...(a.serious || a.major || []), ...(a.moderate || []), ...(a.minor || [])].forEach(issue => {
+        [...(a.critical || []), ...(a.major || []), ...(a.minor || [])].forEach(issue => {
           const key = (issue.issue || '').toLowerCase().substring(0, 40);
           issueFrequency[key] = (issueFrequency[key] || 0) + 1;
         });
@@ -375,12 +366,11 @@ Return ONLY valid JSON:
         reliability: icc >= 0.9 ? 'excellent' : icc >= 0.75 ? 'good' : icc >= 0.5 ? 'moderate' : 'variable',
         summary: scoreRange > 25 ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}` : `${parsedAudits[0].summary} (${n}-auditor consensus, SD: ${scoreSD})`,
         critical: mergeIssues(...parsedAudits.map(a => a.critical)),
-        serious: mergeIssues(...parsedAudits.map(a => a.serious || a.major)),
-        moderate: mergeIssues(...parsedAudits.map(a => a.moderate)),
+        major: mergeIssues(...parsedAudits.map(a => a.major)),
         minor: mergeIssues(...parsedAudits.map(a => a.minor)),
         issueFrequency,
         passes: [...new Set(parsedAudits.flatMap(a => a.passes || []))],
-        pageCount: (_parsedAudits$find = parsedAudits.find(a => a.pageCount)) === null || _parsedAudits$find === void 0 ? void 0 : _parsedAudits$find.pageCount,
+        pageCount: parsedAudits.find(a => a.pageCount)?.pageCount,
         hasSearchableText: parsedAudits.some(a => a.hasSearchableText !== undefined) ? parsedAudits.some(a => a.hasSearchableText) : undefined,
         hasImages: parsedAudits.some(a => a.hasImages),
         hasTables: parsedAudits.some(a => a.hasTables),
@@ -449,8 +439,7 @@ Return ONLY valid JSON:
         score: -1,
         summary: 'Audit could not be completed — proceeding to transformation.',
         critical: [],
-        serious: [],
-        moderate: [],
+        major: [],
         minor: [],
         passes: []
       });
@@ -464,7 +453,6 @@ Return ONLY valid JSON:
   // ═══════════════════════════════════════════════════════════════════
 
   const processSinglePdfForBatch = async (base64Data, fileName, onProgress) => {
-    var _batchParsedAudits$fi;
     const log = msg => {
       warnLog(`[Batch/${fileName}] ${msg}`);
       if (onProgress) onProgress(msg);
@@ -489,11 +477,10 @@ Check for these specific issues:
 
 SCORING RUBRIC — Start at 100, deduct points for each unique violation:
   CRITICAL (-15 each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1, no searchable text layer
-  SERIOUS (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
-  MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
-  MINOR (-2 each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
+  MAJOR (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
+  MINOR (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists, missing document metadata
 
-Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"serious":[{"issue":"...","wcag":"..."}],"moderate":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false}`;
+Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"major":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false}`;
     const batchAllVariants = [batchAuditPrompt, batchAuditPrompt.replace('accessibility auditor', 'document remediation specialist'), batchAuditPrompt.replace('Analyze this PDF', 'Perform a deep-dive accessibility review of this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'As a strict WCAG compliance officer, audit this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'From the perspective of a screen reader user, assess this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'As a disability rights advocate, critically review this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'Using Section 508 federal standards, evaluate this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'As a university Title II compliance officer, assess this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'As an assistive technology expert, test this PDF'), batchAuditPrompt.replace('Analyze this PDF', 'Conduct an independent accessibility evaluation of this PDF')];
     const batchNumAuditors = Math.min(pdfAuditorCount, batchAllVariants.length);
     const batchAuditVariants = batchAllVariants.slice(0, batchNumAuditors);
@@ -537,12 +524,11 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
     // Recalculate scores from issue counts
     batchParsedAudits.forEach(a => {
       const critCount = (a.critical || []).length;
-      const seriousCount = (a.serious || a.major || []).length;
-      const modCount = (a.moderate || []).length;
+      const majCount = (a.major || []).length;
       const minCount = (a.minor || []).length;
       const passCount = (a.passes || []).length;
-      const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-      const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
+      const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
+      const pf = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
       const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
       if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) {
         a.score = calculatedScore;
@@ -550,18 +536,17 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
     });
     const batchScores = batchParsedAudits.map(a => Number(a.score)).filter(s => !isNaN(s));
     const beforeScore = batchScores.length > 0 ? Math.round(batchScores.reduce((a, b) => a + b, 0) / batchScores.length) : 0;
-    const pageCount = ((_batchParsedAudits$fi = batchParsedAudits.find(a => a.pageCount)) === null || _batchParsedAudits$fi === void 0 ? void 0 : _batchParsedAudits$fi.pageCount) || 1;
+    const pageCount = batchParsedAudits.find(a => a.pageCount)?.pageCount || 1;
 
-    // Merge issues (4-tier: critical/serious/moderate/minor)
+    // Merge issues
     const allCrit = [...new Map(batchParsedAudits.flatMap(a => (a.critical || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
-    const allSer = [...new Map(batchParsedAudits.flatMap(a => (a.serious || a.major || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
-    const allMod = [...new Map(batchParsedAudits.flatMap(a => (a.moderate || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
+    const allMaj = [...new Map(batchParsedAudits.flatMap(a => (a.major || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
     const allMin = [...new Map(batchParsedAudits.flatMap(a => (a.minor || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
-    log(`Audit: score ${beforeScore}/100 (${batchParsedAudits.length} auditors, ${allCrit.length}C/${allSer.length}S/${allMod.length}M/${allMin.length}m)`);
+    log(`Audit: score ${beforeScore}/100 (${batchParsedAudits.length} auditors, ${allCrit.length}C/${allMaj.length}M/${allMin.length}m)`);
 
     // ── Phase 2: Extract text ──
     log('Phase 2: Extracting text...');
-    const batchIssueList = [].concat(allCrit.map(i => '\ud83d\udd34 ' + i.issue)).concat(allSer.map(i => '\ud83d\udfe0 ' + i.issue)).concat(allMod.map(i => '\ud83d\udfe1 ' + i.issue)).concat(allMin.map(i => '\u26aa ' + i.issue)).slice(0, 25).join('\n');
+    const batchIssueList = [].concat(allCrit.map(i => '\ud83d\udd34 ' + i.issue)).concat(allMaj.map(i => '\ud83d\udfe0 ' + i.issue)).concat(allMin.map(i => '\ud83d\udfe1 ' + i.issue)).slice(0, 20).join('\n');
     let extractedText = '';
     const BATCH_PAGES_PER_CHUNK = 5;
     const batchChunks = Math.max(1, Math.ceil(pageCount / BATCH_PAGES_PER_CHUNK));
@@ -1309,7 +1294,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         }
       }
     } catch (surgErr) {
-      warnLog('[Surgical] Diagnosis failed (non-blocking):', surgErr === null || surgErr === void 0 ? void 0 : surgErr.message);
+      warnLog('[Surgical] Diagnosis failed (non-blocking):', surgErr?.message);
     }
 
     // ── Phase 4: Verify with both engines ──
@@ -1432,14 +1417,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     } catch (batchFinalErr) {
       log('Final audit failed (using loop result): ' + batchFinalErr.message);
     }
-
-    // Blend final score with axe-core (same 50/50 method as initial audit for consistent comparison)
-    let finalScore = curVerification ? curVerification.score : afterScore;
-    if (finalScore !== null && curAxeResults && typeof curAxeResults.score === 'number') {
-      const blendedFinal = Math.round((finalScore + curAxeResults.score) / 2);
-      warnLog(`[Batch] Final blended score: AI ${finalScore} + axe ${curAxeResults.score} = ${blendedFinal}`);
-      finalScore = blendedFinal;
-    }
+    const finalScore = curVerification ? curVerification.score : afterScore;
     const needsExpertReview = finalScore !== null && finalScore < 70 || (curAxeResults ? curAxeResults.critical.length : 0) > 0;
     const elapsed = Math.round((Date.now() - beforeStartTime) / 1000);
     log(`Done in ${elapsed}s: ${beforeScore}\u2192${finalScore} (+${(finalScore || 0) - beforeScore}) | ${autoFixPasses} fix passes`);
@@ -1545,38 +1523,19 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       total: queue.length,
       succeeded: done.length,
       failed: failed.length,
-      avgBefore: done.length ? Math.round(done.reduce((s, q) => {
-        var _q$result;
-        return s + (((_q$result = q.result) === null || _q$result === void 0 ? void 0 : _q$result.beforeScore) || 0);
-      }, 0) / done.length) : 0,
-      avgAfter: done.length ? Math.round(done.reduce((s, q) => {
-        var _q$result2;
-        return s + (((_q$result2 = q.result) === null || _q$result2 === void 0 ? void 0 : _q$result2.afterScore) || 0);
-      }, 0) / done.length) : 0,
-      avgImprovement: done.length ? Math.round(done.reduce((s, q) => {
-        var _q$result3, _q$result4;
-        return s + ((((_q$result3 = q.result) === null || _q$result3 === void 0 ? void 0 : _q$result3.afterScore) || 0) - (((_q$result4 = q.result) === null || _q$result4 === void 0 ? void 0 : _q$result4.beforeScore) || 0));
-      }, 0) / done.length) : 0,
-      above90: done.filter(q => {
-        var _q$result5;
-        return (((_q$result5 = q.result) === null || _q$result5 === void 0 ? void 0 : _q$result5.afterScore) || 0) >= 90;
-      }).length,
-      needsExpert: done.filter(q => {
-        var _q$result6;
-        return (_q$result6 = q.result) === null || _q$result6 === void 0 ? void 0 : _q$result6.needsExpertReview;
-      }).length,
+      avgBefore: done.length ? Math.round(done.reduce((s, q) => s + (q.result?.beforeScore || 0), 0) / done.length) : 0,
+      avgAfter: done.length ? Math.round(done.reduce((s, q) => s + (q.result?.afterScore || 0), 0) / done.length) : 0,
+      avgImprovement: done.length ? Math.round(done.reduce((s, q) => s + ((q.result?.afterScore || 0) - (q.result?.beforeScore || 0)), 0) / done.length) : 0,
+      above90: done.filter(q => (q.result?.afterScore || 0) >= 90).length,
+      needsExpert: done.filter(q => q.result?.needsExpertReview).length,
       totalElapsed
     });
     setPdfBatchProcessing(false);
     setPdfBatchCurrentIndex(-1);
     setPdfBatchStep('');
-    addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${done.length ? Math.round(done.reduce((s, q) => {
-      var _q$result7, _q$result8;
-      return s + ((((_q$result7 = q.result) === null || _q$result7 === void 0 ? void 0 : _q$result7.afterScore) || 0) - (((_q$result8 = q.result) === null || _q$result8 === void 0 ? void 0 : _q$result8.beforeScore) || 0));
-    }, 0) / done.length) : 0} points)`, 'success');
+    addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${done.length ? Math.round(done.reduce((s, q) => s + ((q.result?.afterScore || 0) - (q.result?.beforeScore || 0)), 0) / done.length) : 0} points)`, 'success');
   };
   const downloadBatchResults = async () => {
-    var _pdfBatchSummary, _pdfBatchSummary2, _pdfBatchSummary3;
     if (!window.JSZip) {
       addToast('ZIP library not loaded', 'error');
       return;
@@ -1590,7 +1549,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,Time (s),Expert Review,Status'];
     pdfBatchQueue.forEach(f => {
       const r = f.result;
-      csvRows.push(`"${f.fileName}",${(r === null || r === void 0 ? void 0 : r.beforeScore) || ''},${(r === null || r === void 0 ? void 0 : r.afterScore) || ''},${r ? r.afterScore - r.beforeScore : ''},${(r === null || r === void 0 ? void 0 : r.autoFixPasses) || ''},${(r === null || r === void 0 ? void 0 : r.axeViolations) ?? ''},${(r === null || r === void 0 ? void 0 : r.elapsed) || ''},${r !== null && r !== void 0 && r.needsExpertReview ? 'Yes' : 'No'},${f.status}`);
+      csvRows.push(`"${f.fileName}",${r?.beforeScore || ''},${r?.afterScore || ''},${r ? r.afterScore - r.beforeScore : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},${f.status}`);
     });
     zip.file('batch_accessibility_report.csv', csvRows.join('\n'));
 
@@ -1627,11 +1586,11 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    })}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${((_pdfBatchSummary = pdfBatchSummary) === null || _pdfBatchSummary === void 0 ? void 0 : _pdfBatchSummary.avgBefore) || '?'}\u2192${((_pdfBatchSummary2 = pdfBatchSummary) === null || _pdfBatchSummary2 === void 0 ? void 0 : _pdfBatchSummary2.avgAfter) || '?'}</span><span class="stat">${((_pdfBatchSummary3 = pdfBatchSummary) === null || _pdfBatchSummary3 === void 0 ? void 0 : _pdfBatchSummary3.above90) || 0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f, i) => {
+    })}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore || '?'}\u2192${pdfBatchSummary?.avgAfter || '?'}</span><span class="stat">${pdfBatchSummary?.above90 || 0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f, i) => {
       const r = f.result;
-      const s = (r === null || r === void 0 ? void 0 : r.afterScore) || 0;
+      const s = r?.afterScore || 0;
       const c = s >= 90 ? 'pass' : s >= 70 ? 'warn' : 'fail';
-      return '<tr><td>' + (i + 1) + '</td><td>' + f.fileName + '</td><td>' + ((r === null || r === void 0 ? void 0 : r.beforeScore) ?? '\u2014') + '</td><td class="' + c + '">' + ((r === null || r === void 0 ? void 0 : r.afterScore) ?? '\u2014') + '</td><td>+' + (r ? r.afterScore - r.beforeScore : '\u2014') + '</td><td>' + ((r === null || r === void 0 ? void 0 : r.autoFixPasses) ?? '\u2014') + '</td><td>' + (r !== null && r !== void 0 && r.elapsed ? r.elapsed + 's' : '\u2014') + '</td><td>' + (f.status === 'done' ? '\u2705' : '\u274c ' + (f.error || '')) + '</td></tr>';
+      return '<tr><td>' + (i + 1) + '</td><td>' + f.fileName + '</td><td>' + (r?.beforeScore ?? '\u2014') + '</td><td class="' + c + '">' + (r?.afterScore ?? '\u2014') + '</td><td>+' + (r ? r.afterScore - r.beforeScore : '\u2014') + '</td><td>' + (r?.autoFixPasses ?? '\u2014') + '</td><td>' + (r?.elapsed ? r.elapsed + 's' : '\u2014') + '</td><td>' + (f.status === 'done' ? '\u2705' : '\u274c ' + (f.error || '')) + '</td></tr>';
     }).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
     const blob = await zip.generateAsync({
@@ -1738,7 +1697,7 @@ Return ONLY the extracted text.`;
             const chunkText = await callGeminiVision(sectionPrompts[i], pendingPdfBase64, 'application/pdf');
             if (chunkText && chunkText.trim().length > 20) chunks.push(chunkText);
           } catch (chunkErr) {
-            warnLog(`[PDF Chunk ${i + 1}] Failed:`, chunkErr === null || chunkErr === void 0 ? void 0 : chunkErr.message);
+            warnLog(`[PDF Chunk ${i + 1}] Failed:`, chunkErr?.message);
             if (i === 0) throw chunkErr;
           }
         }
@@ -1774,7 +1733,7 @@ Return ONLY JSON: {"quality": N, "issues": "description or null", "missingConten
             }
           } catch (parseErr) {/* verification parsing failed — non-critical */}
         } catch (verifyErr) {
-          warnLog('[PDF Verify] Verification failed (non-critical):', verifyErr === null || verifyErr === void 0 ? void 0 : verifyErr.message);
+          warnLog('[PDF Verify] Verification failed (non-critical):', verifyErr?.message);
         }
       }
 
@@ -1807,7 +1766,7 @@ If there are no significant images, return: {"images": [], "totalImages": 0}`, p
             }
           } catch (imgParseErr) {/* image extraction parsing failed — non-critical */}
         } catch (imgErr) {
-          warnLog('[PDF Images] Image detection failed (non-critical):', imgErr === null || imgErr === void 0 ? void 0 : imgErr.message);
+          warnLog('[PDF Images] Image detection failed (non-critical):', imgErr?.message);
         }
       }
       setInputText(extractedText);
@@ -1867,7 +1826,6 @@ Return ONLY JSON:
   const auditOutputAccessibility = async (htmlContent, quickMode = false) => {
     if (!callGemini || !htmlContent) return null;
     try {
-      var _chunkResults$;
       const CHUNK_SIZE = 8000;
       const OVERLAP = 400;
       // For short documents or quick mode, single audit pass on representative sample
@@ -1880,7 +1838,7 @@ Return ONLY JSON:
           const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0), 0);
           // Pass credit: strengths mitigate weaknesses
           const pc = (parsed.passes || []).length;
-          const pf = pc > 0 ? Math.max(0.85, 1 / (1 + pc * 0.05)) : 1;
+          const pf = pc > 0 ? 1 / (1 + pc * 0.05) : 1;
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions * pf));
           if (Math.abs((parsed.score || 0) - calculatedScore) > 10) parsed.score = calculatedScore;
         }
@@ -1942,12 +1900,12 @@ HTML section ${chunkNum}/${chunks.length}:
       // Length normalization: longer documents get softer penalty curve
       const lengthFactor = htmlContent.length > 20000 ? 1 / (1 + Math.log2(htmlContent.length / 20000)) : 1;
       // Pass credit: each pass reduces effective deductions (strengths mitigate weaknesses)
-      // Capped at 0.85 (max 15% reduction) to prevent passes from masking real violations
-      const passFactor = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
+      // Formula: passFactor = 1 / (1 + passCount * 0.05) — 10 passes = 33% reduction
+      const passFactor = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
       const adjustedDeductions = Math.round(rawDeductions * lengthFactor * passFactor);
       const mergedScore = Math.max(0, 100 - adjustedDeductions);
       // Summary from first chunk (has the global perspective)
-      const summary = ((_chunkResults$ = chunkResults[0]) === null || _chunkResults$ === void 0 ? void 0 : _chunkResults$.summary) || `Audited ${chunks.length} sections of ${htmlContent.length.toLocaleString()} chars.`;
+      const summary = chunkResults[0]?.summary || `Audited ${chunks.length} sections of ${htmlContent.length.toLocaleString()} chars.`;
       warnLog(`[Output Audit] Chunked: ${chunks.length} sections, ${mergedIssues.length} unique issues, raw deductions ${rawDeductions}, length factor ${lengthFactor.toFixed(2)}, adjusted score ${mergedScore}`);
       return {
         score: mergedScore,
@@ -1966,7 +1924,6 @@ HTML section ${chunkNum}/${chunks.length}:
   // ── axe-core Accessibility Checker (lazy-loaded from CDN) ──
   const runAxeAudit = async htmlContent => {
     try {
-      var _results$testEngine;
       // Lazy-load axe-core from CDN if not already loaded
       if (!window.axe) {
         await new Promise((resolve, reject) => {
@@ -2038,7 +1995,7 @@ HTML section ${chunkNum}/${chunks.length}:
       const minor = results.violations.filter(v => v.impact === 'minor');
       return {
         engine: 'axe-core',
-        version: ((_results$testEngine = results.testEngine) === null || _results$testEngine === void 0 ? void 0 : _results$testEngine.version) || '4.10.3',
+        version: results.testEngine?.version || '4.10.3',
         totalViolations: results.violations.length,
         totalPasses: results.passes.length,
         totalIncomplete: (results.incomplete || []).length,
@@ -2515,14 +2472,13 @@ ${currentHtml.substring(0, 20000)}
 
   // ── PDF Fix & Verify: Audit → Extract → Transform → Verify → axe-core → Auto-fix ──
   const fixAndVerifyPdf = async (batchOverrides = null) => {
-    var _pendingPdfFile;
     // ── Unified pipeline: supports both single-file UI and batch mode ──
     const _isBatch = !!batchOverrides;
-    const _base64 = (batchOverrides === null || batchOverrides === void 0 ? void 0 : batchOverrides.base64) || pendingPdfBase64;
-    const _fileName = (batchOverrides === null || batchOverrides === void 0 ? void 0 : batchOverrides.fileName) || ((_pendingPdfFile = pendingPdfFile) === null || _pendingPdfFile === void 0 ? void 0 : _pendingPdfFile.name) || 'document.pdf';
+    const _base64 = batchOverrides?.base64 || pendingPdfBase64;
+    const _fileName = batchOverrides?.fileName || pendingPdfFile?.name || 'document.pdf';
     const _mimeType = _fileName.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : _fileName.endsWith('.pptx') ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
-    const _auditResult = (batchOverrides === null || batchOverrides === void 0 ? void 0 : batchOverrides.auditResult) || pdfAuditResult;
-    const _onProgress = (batchOverrides === null || batchOverrides === void 0 ? void 0 : batchOverrides.onProgress) || null;
+    const _auditResult = batchOverrides?.auditResult || pdfAuditResult;
+    const _onProgress = batchOverrides?.onProgress || null;
     const _startTime = Date.now();
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
     if (!_base64) {
@@ -2537,34 +2493,29 @@ ${currentHtml.substring(0, 20000)}
       setPdfFixLoading(true);
       setPdfFixResult(null);
     }
-    const beforeScore = (_auditResult === null || _auditResult === void 0 ? void 0 : _auditResult.score) || 0;
-    const pageCount = (_auditResult === null || _auditResult === void 0 ? void 0 : _auditResult.pageCount) || 1;
+    const beforeScore = _auditResult?.score || 0;
+    const pageCount = _auditResult?.pageCount || 1;
     const totalSteps = 4;
-    // Dynamic time estimates based on document length
-    const isShort = pageCount <= 5;
-    const isMedium = pageCount > 5 && pageCount <= 20;
-    // isLong = pageCount > 20
-    const timeLabel = (short, med, long) => isShort ? short : isMedium ? med : long;
     const STEP_LABELS = {
       1: {
         emoji: '📄',
         name: 'Reading Document',
-        est: timeLabel('~10-20s', '~30-60s', '~1-3 min')
+        est: '~15-30s'
       },
       2: {
         emoji: '🏗️',
         name: 'Building Accessible Version',
-        est: timeLabel('~15-30s', '~45-90s', '~2-5 min')
+        est: '~20-60s'
       },
       3: {
         emoji: '🔍',
         name: 'Auditing Accessibility',
-        est: timeLabel('~10-15s', '~15-30s', '~30-60s')
+        est: '~10-20s'
       },
       4: {
         emoji: '🔧',
         name: 'Fixing Remaining Issues',
-        est: timeLabel('~15-30s per pass', '~30-60s per pass', '~1-2 min per pass')
+        est: '~15-45s'
       }
     };
     const updateProgress = (step, detail) => {
@@ -2573,16 +2524,15 @@ ${currentHtml.substring(0, 20000)}
         name: 'Processing',
         est: ''
       };
-      const pageNote = pageCount > 1 ? ` (${pageCount} pages)` : '';
-      const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  (typically ${label.est})`;
+      const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name} — ${detail}${label.est ? '  (typically ' + label.est + ')' : ''}`;
       if (_isBatch) {
-        _onProgress === null || _onProgress === void 0 || _onProgress(step, msg);
+        _onProgress?.(step, msg);
       } else {
         setPdfFixStep(msg);
       }
     };
     try {
-      const issueList = [].concat(((_auditResult === null || _auditResult === void 0 ? void 0 : _auditResult.critical) || []).map(i => '🔴 ' + i.issue)).concat(((_auditResult === null || _auditResult === void 0 ? void 0 : _auditResult.serious) || (_auditResult === null || _auditResult === void 0 ? void 0 : _auditResult.major) || []).map(i => '🟠 ' + i.issue)).concat(((_auditResult === null || _auditResult === void 0 ? void 0 : _auditResult.moderate) || []).map(i => '🟡 ' + i.issue)).concat(((_auditResult === null || _auditResult === void 0 ? void 0 : _auditResult.minor) || []).map(i => '⚪ ' + i.issue)).slice(0, 25).join('\n');
+      const issueList = [].concat((_auditResult?.critical || []).map(i => '🔴 ' + i.issue)).concat((_auditResult?.major || []).map(i => '🟠 ' + i.issue)).concat((_auditResult?.minor || []).map(i => '🟡 ' + i.issue)).slice(0, 20).join('\n');
 
       // ── Step 1: Extract ALL text content from PDF (chunked for long docs) ──
       updateProgress(1, 'Reading document content...');
@@ -2814,7 +2764,7 @@ ${currentHtml.substring(0, 20000)}
                 }
               }
             } catch (pdfJsErr) {
-              warnLog('[PDF Fix] PDF.js extraction failed, trying Imagen fallback:', pdfJsErr === null || pdfJsErr === void 0 ? void 0 : pdfJsErr.message);
+              warnLog('[PDF Fix] PDF.js extraction failed, trying Imagen fallback:', pdfJsErr?.message);
               // Fallback: use Imagen to regenerate from descriptions
               if (callImagen && extractedImages.length <= 5) {
                 for (let imgI = 0; imgI < extractedImages.length; imgI++) {
@@ -3668,9 +3618,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
           // If BOTH engines are satisfied, stop
-          const targetScore = pdfTargetScore || 90;
-          if (newAxeViolations === 0 && newAiScore >= targetScore) {
-            warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
+          if (newAxeViolations === 0 && newAiScore >= 90) {
+            warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 — stopping`);
             break;
           }
 
@@ -3698,14 +3647,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch (finalAuditErr) {
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
       }
-
-      // Blend final score with axe-core (same 50/50 method as initial audit for consistent comparison)
-      let finalAfterScore = verification ? verification.score : afterScore;
-      if (finalAfterScore !== null && axeResults && typeof axeResults.score === 'number') {
-        const blendedFinal = Math.round((finalAfterScore + axeResults.score) / 2);
-        warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + axe ${axeResults.score} = ${blendedFinal}`);
-        finalAfterScore = blendedFinal;
-      }
+      const finalAfterScore = verification ? verification.score : afterScore;
 
       // ── Triage: flag documents that need expert remediation ──
       // Only recommend expert review if problems persist AFTER remediation attempts,
@@ -3733,7 +3675,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         imageCount: extractedImages.length,
         extractedChars: extractedLength,
         htmlChars: accessibleHtml.length,
-        issuesFixed: (_auditResult.critical || []).length + (_auditResult.serious || _auditResult.major || []).length + (_auditResult.moderate || []).length + (_auditResult.minor || []).length,
+        issuesFixed: (_auditResult.critical || []).length + (_auditResult.major || []).length + (_auditResult.minor || []).length,
         remainingIssues: verification ? (verification.issues || []).length : null,
         elapsed: Math.round((Date.now() - _startTime) / 1000)
       };
@@ -3765,7 +3707,6 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
   // ── Generate formatted audit report (human-readable HTML) ──
   const generateAuditReportHtml = (auditData, fileName, isBeforeAfter = false) => {
-    var _d$after, _d$before, _d$before2, _d$before3, _d$before4, _issueSource$critical, _issueSource$moderate, _issueSource$minor, _issueSource$passes;
     const d = auditData;
     const date = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
@@ -3773,7 +3714,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       day: 'numeric'
     });
     const scoreColor = s => s >= 80 ? '#16a34a' : s >= 50 ? '#d97706' : '#dc2626';
-    const severityBadge = (sev, count) => `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;color:white;background:${sev === 'critical' ? '#dc2626' : sev === 'serious' ? '#ea580c' : sev === 'moderate' ? '#d97706' : sev === 'minor' ? '#2563eb' : '#16a34a'}">${sev.toUpperCase()} (${count})</span>`;
+    const severityBadge = (sev, count) => `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;color:white;background:${sev === 'critical' ? '#dc2626' : sev === 'major' ? '#ea580c' : sev === 'minor' ? '#2563eb' : '#16a34a'}">${sev.toUpperCase()} (${count})</span>`;
     const issueRows = (issues, severity) => (issues || []).map(i => {
       // Issues are already normalized by normalizeIssue() upstream; this is the safety net
       let wcag = i.wcag || '';
@@ -3815,8 +3756,8 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
 <p style="color:#64748b;font-size:13px">Document: <strong>${fileName}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: AI multi-auditor triangulation + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
-    const score = isBeforeAfter ? ((_d$after = d.after) === null || _d$after === void 0 ? void 0 : _d$after.score) ?? d.afterScore ?? '?' : d.score ?? '?';
-    const beforeScore = isBeforeAfter ? ((_d$before = d.before) === null || _d$before === void 0 ? void 0 : _d$before.score) ?? d.beforeScore ?? null : null;
+    const score = isBeforeAfter ? d.after?.score ?? d.afterScore ?? '?' : d.score ?? '?';
+    const beforeScore = isBeforeAfter ? d.before?.score ?? d.beforeScore ?? null : null;
     html += `<div class="score-box" style="background:${typeof score === 'number' ? scoreColor(score) + '15' : '#f8fafc'}">`;
     if (beforeScore !== null) {
       html += `<div style="display:flex;align-items:center;justify-content:center;gap:24px">
@@ -3828,10 +3769,10 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
     } else {
       html += `<div class="score-num" style="color:${typeof score === 'number' ? scoreColor(score) : '#64748b'}">${score}<span style="font-size:1.2rem;opacity:0.6">/100</span></div>`;
     }
-    html += `<div style="font-size:14px;margin-top:8px;color:#475569">${d.summary || ((_d$before2 = d.before) === null || _d$before2 === void 0 || (_d$before2 = _d$before2.audit) === null || _d$before2 === void 0 ? void 0 : _d$before2.summary) || ''}</div></div>`;
+    html += `<div style="font-size:14px;margin-top:8px;color:#475569">${d.summary || d.before?.audit?.summary || ''}</div></div>`;
 
     // Reliability metrics
-    const audit = isBeforeAfter ? ((_d$before3 = d.before) === null || _d$before3 === void 0 ? void 0 : _d$before3.audit) || d : d;
+    const audit = isBeforeAfter ? d.before?.audit || d : d;
     if (audit.scores && audit.scores.length > 1) {
       html += `<h2>Reliability Metrics</h2><div class="meta-grid">
         <div class="meta-card"><div class="meta-val">${audit.ci95 ? audit.ci95[0] + '&ndash;' + audit.ci95[1] : 'N/A'}</div><div class="meta-label">95% Confidence Interval</div></div>
@@ -3852,26 +3793,21 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
     </div>`;
 
     // Issues — for before/after reports, show BOTH before issues AND after remaining issues
-    const issueSource = isBeforeAfter ? ((_d$before4 = d.before) === null || _d$before4 === void 0 ? void 0 : _d$before4.audit) || d : d;
+    const issueSource = isBeforeAfter ? d.before?.audit || d : d;
     const sectionLabel = isBeforeAfter ? ' (Before Remediation)' : '';
-    if ((_issueSource$critical = issueSource.critical) !== null && _issueSource$critical !== void 0 && _issueSource$critical.length) {
+    if (issueSource.critical?.length) {
       html += `<h2>${severityBadge('critical', issueSource.critical.length)} Critical Issues${sectionLabel}</h2>
       <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.critical, 'critical')}</tbody></table>`;
     }
-    const seriousIssues = issueSource.serious || issueSource.major || [];
-    if (seriousIssues.length) {
-      html += `<h2>${severityBadge('serious', seriousIssues.length)} Serious Issues${sectionLabel}</h2>
-      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(seriousIssues, 'serious')}</tbody></table>`;
+    if (issueSource.major?.length) {
+      html += `<h2>${severityBadge('major', issueSource.major.length)} Major Issues${sectionLabel}</h2>
+      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.major, 'major')}</tbody></table>`;
     }
-    if ((_issueSource$moderate = issueSource.moderate) !== null && _issueSource$moderate !== void 0 && _issueSource$moderate.length) {
-      html += `<h2>${severityBadge('moderate', issueSource.moderate.length)} Moderate Issues${sectionLabel}</h2>
-      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.moderate, 'moderate')}</tbody></table>`;
-    }
-    if ((_issueSource$minor = issueSource.minor) !== null && _issueSource$minor !== void 0 && _issueSource$minor.length) {
+    if (issueSource.minor?.length) {
       html += `<h2>${severityBadge('minor', issueSource.minor.length)} Minor Issues${sectionLabel}</h2>
       <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.minor, 'minor')}</tbody></table>`;
     }
-    if ((_issueSource$passes = issueSource.passes) !== null && _issueSource$passes !== void 0 && _issueSource$passes.length) {
+    if (issueSource.passes?.length) {
       html += `<h2 style="color:#16a34a">&#10003; Passing (${issueSource.passes.length})</h2>`;
       issueSource.passes.forEach(p => {
         const text = typeof p === 'string' ? p : p.description || p.id || '';
@@ -3883,10 +3819,9 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
 
     // After-remediation results (for before/after reports)
     if (isBeforeAfter) {
-      var _d$after2, _d$after3;
       html += `<h2 style="margin-top:2rem;border-bottom:3px solid #16a34a;padding-bottom:0.5rem">After Remediation</h2>`;
       // AI verification remaining issues
-      const afterAiAudit = (_d$after2 = d.after) === null || _d$after2 === void 0 ? void 0 : _d$after2.aiAudit;
+      const afterAiAudit = d.after?.aiAudit;
       if (afterAiAudit) {
         const remainingIssues = afterAiAudit.issues || [];
         if (remainingIssues.length > 0) {
@@ -3917,8 +3852,7 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
         }
       }
       // axe-core automated verification
-      if ((_d$after3 = d.after) !== null && _d$after3 !== void 0 && _d$after3.axeCoreAudit) {
-        var _axe$critical, _axe$serious, _axe$moderate, _axe$passes;
+      if (d.after?.axeCoreAudit) {
         const axe = d.after.axeCoreAudit;
         html += `<h2>axe-core Automated Verification</h2>
         <div class="meta-grid">
@@ -3929,7 +3863,7 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
         if (axe.totalViolations === 0) {
           html += `<div style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:12px;text-align:center;margin:0.5rem 0"><div style="font-weight:bold;color:#16a34a">Zero WCAG violations detected by axe-core</div></div>`;
         }
-        if ((_axe$critical = axe.critical) !== null && _axe$critical !== void 0 && _axe$critical.length || (_axe$serious = axe.serious) !== null && _axe$serious !== void 0 && _axe$serious.length || (_axe$moderate = axe.moderate) !== null && _axe$moderate !== void 0 && _axe$moderate.length) {
+        if (axe.critical?.length || axe.serious?.length || axe.moderate?.length) {
           html += `<h3 style="color:#dc2626;margin-top:1rem">Remaining Violations</h3>`;
           html += `<table><thead><tr><th>Rule</th><th>Impact</th><th>Description</th><th>Elements</th></tr></thead><tbody>`;
           [...(axe.critical || []), ...(axe.serious || []), ...(axe.moderate || [])].forEach(v => {
@@ -3938,7 +3872,7 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
           html += `</tbody></table>`;
         }
         // ── Passed Checks Detail ──
-        if (((_axe$passes = axe.passes) === null || _axe$passes === void 0 ? void 0 : _axe$passes.length) > 0) {
+        if (axe.passes?.length > 0) {
           html += `<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:bold;color:#16a34a;font-size:14px">✅ ${axe.passes.length} Checks Passed (click to expand)</summary>`;
           html += `<table style="margin-top:8px"><thead><tr><th>Rule</th><th>Description</th><th>WCAG</th><th>Elements Checked</th></tr></thead><tbody>`;
           axe.passes.forEach(p => {
@@ -3953,13 +3887,12 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
       <thead><tr style="background:#f8fafc"><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Severity</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:center">Deduction</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Examples</th></tr></thead>
       <tbody>
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#dc2626">Critical</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-15</td><td style="padding:8px;border:1px solid #e2e8f0">Missing lang attribute, no page title, images without alt text, no main landmark, contrast below 3:1</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#ea580c">Serious</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-10</td><td style="padding:8px;border:1px solid #e2e8f0">No h1 heading, heading level skips, data tables without th/scope, form inputs without labels, contrast below 4.5:1</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#d97706">Moderate</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-5</td><td style="padding:8px;border:1px solid #e2e8f0">Missing skip-to-content link, missing landmarks, non-descriptive links, bullet characters instead of lists</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#2563eb">Minor</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-2</td><td style="padding:8px;border:1px solid #e2e8f0">Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Mitigate</td><td style="padding:8px;border:1px solid #e2e8f0">Each passed check reduces deduction impact up to 15% (strengths offset weaknesses, capped)</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#ea580c">Major</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-10</td><td style="padding:8px;border:1px solid #e2e8f0">No h1 heading, heading level skips, data tables without th/scope, form inputs without labels</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#2563eb">Minor</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-5</td><td style="padding:8px;border:1px solid #e2e8f0">Missing skip-to-content link, missing landmarks, non-descriptive links, bullet characters instead of lists</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Mitigate</td><td style="padding:8px;border:1px solid #e2e8f0">Each passed accessibility check reduces the impact of remaining deductions (strengths offset weaknesses)</td></tr>
       </tbody>
     </table>
-    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passes reduce effective deductions (capped at 15%). Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
+    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation type (counted once regardless of frequency). Passes reduce effective deductions. Longer documents receive length normalization. After remediation, the displayed score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
     html += `<div class="footer">
       <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI triangulation with adaptive confidence scoring, statistical reliability analysis (ICC, SEM, CV), and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
       <p><strong>Standards:</strong> WCAG 2.1 Level AA | ADA Title II (28 CFR Part 35 Subpart H) | Section 508 | EN 301 549</p>
@@ -3997,10 +3930,9 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
 
   // ── PDF Preview: Apply theme to accessible HTML ──
   const applyThemeToPdfHtml = (html, themeName, fontSize) => {
-    var _pdfFixResult;
     // If using default "professional" theme AND we have the document's extracted style, use it
     // This auto-matches the original document's branding without user input
-    const extractedStyle = (_pdfFixResult = pdfFixResult) === null || _pdfFixResult === void 0 ? void 0 : _pdfFixResult.docStyle;
+    const extractedStyle = pdfFixResult?.docStyle;
     const useExtracted = themeName === 'professional' && extractedStyle && extractedStyle.headingColor !== '#1e3a5f';
     const theme = useExtracted ? {
       bodyFont: extractedStyle.bodyFont || 'system-ui, sans-serif',
@@ -4029,14 +3961,13 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
   // ── PDF Preview: Update iframe content ──
   // Accept overrides to avoid stale closure — state may not have updated yet when called from setTimeout
   const updatePdfPreview = (overrideTheme, overrideFontSize, overrideA11y) => {
-    var _pdfFixResult2, _iframe$contentWindow;
-    if (!pdfPreviewRef.current || !((_pdfFixResult2 = pdfFixResult) !== null && _pdfFixResult2 !== void 0 && _pdfFixResult2.accessibleHtml)) return;
+    if (!pdfPreviewRef.current || !pdfFixResult?.accessibleHtml) return;
     const iframe = pdfPreviewRef.current;
     const useTheme = overrideTheme !== undefined ? overrideTheme : pdfPreviewTheme;
     const useFontSize = overrideFontSize !== undefined ? overrideFontSize : pdfPreviewFontSize;
     const useA11y = overrideA11y !== undefined ? overrideA11y : pdfPreviewA11yInspect;
     const themed = applyThemeToPdfHtml(pdfFixResult.accessibleHtml, useTheme, useFontSize);
-    const doc = iframe.contentDocument || ((_iframe$contentWindow = iframe.contentWindow) === null || _iframe$contentWindow === void 0 ? void 0 : _iframe$contentWindow.document);
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
     doc.open();
     doc.write(themed);
@@ -4097,10 +4028,9 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
 
   // ── PDF Preview: Get current edited HTML from iframe ──
   const getPdfPreviewHtml = () => {
-    var _pdfFixResult3, _pdfPreviewRef$curren, _pdfFixResult4;
-    if (!pdfPreviewRef.current) return ((_pdfFixResult3 = pdfFixResult) === null || _pdfFixResult3 === void 0 ? void 0 : _pdfFixResult3.accessibleHtml) || '';
-    const doc = pdfPreviewRef.current.contentDocument || ((_pdfPreviewRef$curren = pdfPreviewRef.current.contentWindow) === null || _pdfPreviewRef$curren === void 0 ? void 0 : _pdfPreviewRef$curren.document);
-    if (!doc) return ((_pdfFixResult4 = pdfFixResult) === null || _pdfFixResult4 === void 0 ? void 0 : _pdfFixResult4.accessibleHtml) || '';
+    if (!pdfPreviewRef.current) return pdfFixResult?.accessibleHtml || '';
+    const doc = pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document;
+    if (!doc) return pdfFixResult?.accessibleHtml || '';
     // Remove inspect CSS before export
     const inspectEl = doc.getElementById('a11y-inspect-css');
     if (inspectEl) inspectEl.remove();
@@ -4500,7 +4430,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           items: []
         };
         const renderList = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => `<li style="margin-bottom: 6px; font-size: 10pt; line-height: 1.3;">
-                       &bull; ${it} ${items_en !== null && items_en !== void 0 && items_en[i] ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;">(${items_en[i]})</span>` : ''}
+                       &bull; ${it} ${items_en?.[i] ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;">(${items_en[i]})</span>` : ''}
                     </li>`).join('');
         innerContent = `
                   <div style="text-align:center; margin-bottom: 40px;">
@@ -4557,42 +4487,29 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <div style="background: white; color: #1e293b; padding: 15px 40px; border-radius: 50px; text-align: center; border: 2px solid #cbd5e1; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.2em; font-weight: 800;">${main}</h3>${main_en ? `<div style="font-size:0.8em; color:#64748b; font-weight: normal; margin-top:4px;">(${main_en})</div>` : ''}</div>
                       <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                       ${branches.map(b => {
-          var _b$items_en2;
           const isDecision = b.title.includes("?") || b.title.toLowerCase().includes("decision");
           const hasBranches = b.items && b.items.length > 1;
           return `<div style="height: 32px; width: 2px; background: #94a3b8;"></div><div aria-hidden="true" style="color: #94a3b8; font-size: 16px; line-height: 1; margin-top: -4px; margin-bottom: 4px;">&#9660;</div>
                               <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                   ${isDecision ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">` + `<div style="position: absolute; inset: 0; top:0; left:0; right:0; bottom:0; background: #fefce8; border: 2px solid #facc15; transform: rotate(45deg); border-radius: 4px; z-index: 1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>` + `<div style="position: relative; z-index: 2; text-align: center; width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center;">` + `<span style="font-weight: bold; font-size: 0.75rem; color: #713f12; line-height: 1.25; word-wrap: break-word;">${b.title}</span>` + `${b.title_en ? `<span style="font-size: 0.65rem; color: #a16207; line-height: 1.25; margin-top: 4px;">(${b.title_en})</span>` : ''}` + `</div></div>` : `<div style="background: white; border: 2px solid #3b82f6; border-radius: 8px; padding: 16px; text-align: center; width: 256px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` + `<span style="font-weight: bold; font-size: 0.875rem; color: #1e3a8a;">${b.title}</span>` + `${b.title_en ? `<span style="font-size: 0.75rem; color: #3b82f6; margin-top: 4px;">(${b.title_en})</span>` : ''}` + `</div>`}
                                   ${hasBranches ? `<div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px; width: 100%; position: relative; align-items: stretch;"><div style="position: absolute; top: 0; left: 40px; right: 40px; height: 16px; border-top: 2px solid #cbd5e1; border-left: 2px solid #cbd5e1; border-right: 2px solid #cbd5e1; border-radius: 12px 12px 0 0;"></div>
-                                      ${b.items.map((item, k) => {
-            var _b$items_en;
-            return `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; flex: 1; max-width: 150px;"><div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: #334155; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">${item}${(_b$items_en = b.items_en) !== null && _b$items_en !== void 0 && _b$items_en[k] ? `<div style="font-size: 0.65rem; color: #64748b; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`;
-          }).join('')}</div>` : `
-                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: #eff6ff; color: #1e40af; font-size: 0.75rem; padding: 4px 12px; border-radius: 9999px; border: 1px solid #dbeafe;">${b.items[0]} ${(_b$items_en2 = b.items_en) !== null && _b$items_en2 !== void 0 && _b$items_en2[0] ? `<span style="opacity: 0.7;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
+                                      ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; flex: 1; max-width: 150px;"><div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: #334155; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">${item}${b.items_en?.[k] ? `<div style="font-size: 0.65rem; color: #64748b; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`).join('')}</div>` : `
+                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: #eff6ff; color: #1e40af; font-size: 0.75rem; padding: 4px 12px; border-radius: 9999px; border: 1px solid #dbeafe;">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.7;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
                               </div>`;
         }).join('')}
                       <div style="height: 32px; width: 2px; background: #94a3b8;"></div><div style="background: #1e293b; color: white; font-size: 0.8em; font-weight: bold; padding: 8px 24px; border-radius: 9999px; border: 2px solid #475569;">${t('organizer.labels.end')}</div></div></div>`;
       } else {
         if (type === 'Cause and Effect') {
-          innerContent = `<div style="text-align:center; margin-bottom: 30px;"><h3 style="margin:0;">${main}</h3></div>` + `<div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto;">` + `${branches.map(b => {
-            var _b$items_en3;
-            return `<div style="display: flex; align-items: center; gap: 20px;">` + `<div style="flex: 1; background: #fef2f2; border: 1px solid #fee2e2; padding: 20px; border-radius: 8px; text-align: center;">` + `<div style="color: #991b1b; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.cause')}</div>` + `<div style="color: #7f1d1d; font-weight: bold;">${b.title}</div>` + `${b.title_en ? `<div style="font-size:0.8em; color:#ef4444;">(${b.title_en})</div>` : ''}</div>` + `<div aria-hidden="true" style="font-size: 30px; color: #cbd5e1;">&#8594;</div>` + `<div style="flex: 1; background: #eff6ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 8px; text-align: center;">` + `<div style="color: #1e40af; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.effect')}</div>` + `<div style="color: #1e3a8a; font-weight: bold;">${b.items[0] || ''}</div>` + `${(_b$items_en3 = b.items_en) !== null && _b$items_en3 !== void 0 && _b$items_en3[0] ? `<div style="font-size:0.8em; color:#3b82f6;">(${b.items_en[0]})</div>` : ''}</div>` + `</div>`;
-          }).join('')}</div>`;
+          innerContent = `<div style="text-align:center; margin-bottom: 30px;"><h3 style="margin:0;">${main}</h3></div>` + `<div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto;">` + `${branches.map(b => `<div style="display: flex; align-items: center; gap: 20px;">` + `<div style="flex: 1; background: #fef2f2; border: 1px solid #fee2e2; padding: 20px; border-radius: 8px; text-align: center;">` + `<div style="color: #991b1b; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.cause')}</div>` + `<div style="color: #7f1d1d; font-weight: bold;">${b.title}</div>` + `${b.title_en ? `<div style="font-size:0.8em; color:#ef4444;">(${b.title_en})</div>` : ''}</div>` + `<div aria-hidden="true" style="font-size: 30px; color: #cbd5e1;">&#8594;</div>` + `<div style="flex: 1; background: #eff6ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 8px; text-align: center;">` + `<div style="color: #1e40af; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.effect')}</div>` + `<div style="color: #1e3a8a; font-weight: bold;">${b.items[0] || ''}</div>` + `${b.items_en?.[0] ? `<div style="font-size:0.8em; color:#3b82f6;">(${b.items_en[0]})</div>` : ''}</div>` + `</div>`).join('')}</div>`;
         } else if (type === 'Problem Solution') {
-          innerContent = `<div style="max-width: 800px; margin: 0 auto;">` + `<div style="background: #fef2f2; border-left: 5px solid #ef4444; padding: 20px; margin-bottom: 40px; border-radius: 0 8px 8px 0;">` + `<div style="color: #ef4444; font-weight: bold; font-size: 0.8em; text-transform: uppercase;">${t('organizer.labels.problem_label')}</div>` + `<h3 style="margin: 10px 0; color: #7f1d1d;">${main}</h3>` + `${main_en ? `<div style="color: #991b1b; font-style: italic;">(${main_en})</div>` : ''}</div>` + `<div aria-hidden="true" style="text-align: center; font-size: 30px; color: #cbd5e1; margin-bottom: 20px;">&#8595;</div>` + `<h4 style="text-align: center; color: #166534; margin-bottom: 20px;">${t('organizer.labels.solutions')}</h4>` + `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">` + `${branches.map(b => `<div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 20px; border-radius: 8px;">` + `<h4 style="color: #166534; margin: 0 0 10px 0;">${b.title}</h4>` + `${b.title_en ? `<div style="color: #22c55e; font-size: 0.8em; margin-bottom: 10px;">(${b.title_en})</div>` : ''}` + `<ul style="margin: 0; padding-left: 20px; color: #15803d;">` + `${b.items.map((it, i) => {
-            var _b$items_en4;
-            return `<li style="margin-bottom: 5px;">${it} ${(_b$items_en4 = b.items_en) !== null && _b$items_en4 !== void 0 && _b$items_en4[i] ? `<span style="opacity: 0.7; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`;
-          }).join('')}` + `</ul></div>`).join('')}</div></div>`;
+          innerContent = `<div style="max-width: 800px; margin: 0 auto;">` + `<div style="background: #fef2f2; border-left: 5px solid #ef4444; padding: 20px; margin-bottom: 40px; border-radius: 0 8px 8px 0;">` + `<div style="color: #ef4444; font-weight: bold; font-size: 0.8em; text-transform: uppercase;">${t('organizer.labels.problem_label')}</div>` + `<h3 style="margin: 10px 0; color: #7f1d1d;">${main}</h3>` + `${main_en ? `<div style="color: #991b1b; font-style: italic;">(${main_en})</div>` : ''}</div>` + `<div aria-hidden="true" style="text-align: center; font-size: 30px; color: #cbd5e1; margin-bottom: 20px;">&#8595;</div>` + `<h4 style="text-align: center; color: #166534; margin-bottom: 20px;">${t('organizer.labels.solutions')}</h4>` + `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">` + `${branches.map(b => `<div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 20px; border-radius: 8px;">` + `<h4 style="color: #166534; margin: 0 0 10px 0;">${b.title}</h4>` + `${b.title_en ? `<div style="color: #22c55e; font-size: 0.8em; margin-bottom: 10px;">(${b.title_en})</div>` : ''}` + `<ul style="margin: 0; padding-left: 20px; color: #15803d;">` + `${b.items.map((it, i) => `<li style="margin-bottom: 5px;">${it} ${b.items_en?.[i] ? `<span style="opacity: 0.7; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`).join('')}` + `</ul></div>`).join('')}</div></div>`;
         } else if (type === 'Mind Map') {
           const half = Math.ceil(branches.length / 2);
           const leftBranches = branches.slice(0, half);
           const rightBranches = branches.slice(half);
           innerContent = `<div role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; margin: 0 auto; padding: 20px;">` + `<div style="display: flex; flex-direction: column; gap: 30px; align-items: flex-end; flex: 1;">` + `${leftBranches.map(b => `<div style="background: white; border: 3px solid #e9d5ff; padding: 15px; border-radius: 20px; text-align: center; min-width: 150px; position: relative;">` + `<div style="color: #581c87; font-weight: bold;">${b.title}</div>` + `${b.title_en ? `<div style="font-size: 0.8em; color: #a855f7;">(${b.title_en})</div>` : ''}` + `<div style="position: absolute; top: 50%; right: -43px; width: 40px; height: 2px; background: #e9d5ff;"></div></div>`).join('')}</div>` + `<div style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 5px solid #f3e8ff; z-index: 2;">` + `<h3 style="margin: 0; font-size: 1.2em;">${main}</h3>` + `${main_en ? `<div style="font-size: 0.8em; opacity: 0.8; margin-top: 5px;">(${main_en})</div>` : ''}</div>` + `<div style="display: flex; flex-direction: column; gap: 30px; align-items: flex-start; flex: 1;">` + `${rightBranches.map(b => `<div style="background: white; border: 3px solid #e9d5ff; padding: 15px; border-radius: 20px; text-align: center; min-width: 150px; position: relative;">` + `<div style="color: #581c87; font-weight: bold;">${b.title}</div>` + `${b.title_en ? `<div style="font-size: 0.8em; color: #a855f7;">(${b.title_en})</div>` : ''}` + `<div style="position: absolute; top: 50%; left: -43px; width: 40px; height: 2px; background: #e9d5ff;"></div></div>`).join('')}</div></div>`;
         } else {
-          innerContent = `<div style="max-width: 800px; margin: 0 auto; text-align: center;">` + `<div style="background: #4f46e5; color: white; padding: 20px 40px; border-radius: 15px; display: inline-block; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` + `<h3 style="margin: 0;">${main}</h3>` + `${main_en ? `<div style="opacity: 0.8; font-size: 0.9em;">(${main_en})</div>` : ''}</div>` + `<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">` + `${branches.map(b => `<div style="flex: 1; min-width: 200px; max-width: 300px; background: white; border: 2px solid #e0e7ff; border-radius: 10px; overflow: hidden; text-align: left;">` + `<div style="background: #eef2ff; padding: 10px; font-weight: bold; color: #3730a3; text-align: center; border-bottom: 2px solid #e0e7ff;">` + `${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: 0.8em; color: #6366f1;">(${b.title_en})</div>` : ''}</div>` + `<ul style="padding: 15px 25px; margin: 0; color: #475569;">` + `${b.items.map((it, i) => {
-            var _b$items_en5;
-            return `<li style="margin-bottom: 5px;">${it} ${(_b$items_en5 = b.items_en) !== null && _b$items_en5 !== void 0 && _b$items_en5[i] ? `<span style="color: #94a3b8; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`;
-          }).join('')}` + `</ul></div>`).join('')}</div></div>`;
+          innerContent = `<div style="max-width: 800px; margin: 0 auto; text-align: center;">` + `<div style="background: #4f46e5; color: white; padding: 20px 40px; border-radius: 15px; display: inline-block; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` + `<h3 style="margin: 0;">${main}</h3>` + `${main_en ? `<div style="opacity: 0.8; font-size: 0.9em;">(${main_en})</div>` : ''}</div>` + `<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">` + `${branches.map(b => `<div style="flex: 1; min-width: 200px; max-width: 300px; background: white; border: 2px solid #e0e7ff; border-radius: 10px; overflow: hidden; text-align: left;">` + `<div style="background: #eef2ff; padding: 10px; font-weight: bold; color: #3730a3; text-align: center; border-bottom: 2px solid #e0e7ff;">` + `${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: 0.8em; color: #6366f1;">(${b.title_en})</div>` : ''}</div>` + `<ul style="padding: 15px 25px; margin: 0; color: #475569;">` + `${b.items.map((it, i) => `<li style="margin-bottom: 5px;">${it} ${b.items_en?.[i] ? `<span style="color: #94a3b8; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`).join('')}` + `</ul></div>`).join('')}</div></div>`;
         }
       }
       return `
@@ -4656,9 +4573,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
     } else if (item.type === 'analysis') {
-      var _item$data$accuracy;
       const readingLevelDisplay = typeof item.data.readingLevel === 'object' ? `<strong>${item.data.readingLevel.range}</strong><br/><em style="color:#666; font-size:0.9em;">${item.data.readingLevel.explanation}</em>` : item.data.readingLevel;
-      const citationsHtml = (_item$data$accuracy = item.data.accuracy) !== null && _item$data$accuracy !== void 0 && _item$data$accuracy.citations ? `<div style="margin-top:20px; padding-top:15px; border-top:1px solid #e2e8f0; font-size:0.85em; color:#64748b;">
+      const citationsHtml = item.data.accuracy?.citations ? `<div style="margin-top:20px; padding-top:15px; border-top:1px solid #e2e8f0; font-size:0.85em; color:#64748b;">
                  ${parseMarkdownToHTML(item.data.accuracy.citations)}
                </div>` : '';
       return `
@@ -4729,8 +4645,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       let contentHtml = '';
       if (mode === 'list') {
         contentHtml = `<ul style="list-style:none;padding:0;">${items.map((i, idx) => {
-          var _responses$item$id;
-          const savedVal = ((_responses$item$id = responses[item.id]) === null || _responses$item$id === void 0 ? void 0 : _responses$item$id[idx]) || '';
+          const savedVal = responses[item.id]?.[idx] || '';
           return `
                   <li style="margin-bottom:15px; font-size: 1.1em;">
                       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:5px;">
@@ -4746,8 +4661,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else {
         let pIdx = 0;
         const filledText = text.replace(/\[.*?\]/g, match => {
-          var _responses$item$id2;
-          const savedVal = ((_responses$item$id2 = responses[item.id]) === null || _responses$item$id2 === void 0 ? void 0 : _responses$item$id2[`paragraph-${pIdx}`]) || '';
+          const savedVal = responses[item.id]?.[`paragraph-${pIdx}`] || '';
           pIdx++;
           return `<input aria-label="___________" type="text" class="interactive-blank" placeholder="___________" value="${savedVal}">`;
         });
@@ -4882,9 +4796,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${item.data.historicalContext ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;"><strong>Historical Context:</strong><br/>${item.data.historicalContext}</div>` : ''}
-                  ${docs.map(doc => {
-        var _doc$sourcingQuestion, _doc$analysisQuestion;
-        return `
+                  ${docs.map(doc => `
                       <div style="border:2px solid #e2e8f0;border-radius:8px;margin-bottom:20px;overflow:hidden;">
                           <div style="background:#f8fafc;padding:12px;border-bottom:1px solid #e2e8f0;">
                               <strong style="font-size:1.1em;">${doc.title || 'Document ' + doc.id}</strong>
@@ -4892,12 +4804,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                           <div style="padding:16px;">
                               <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${doc.excerpt || ''}</div>
-                              ${((_doc$sourcingQuestion = doc.sourcingQuestions) === null || _doc$sourcingQuestion === void 0 ? void 0 : _doc$sourcingQuestion.length) > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;">${q}</li>`).join('')}</ol></div>` : ''}
-                              ${((_doc$analysisQuestion = doc.analysisQuestions) === null || _doc$analysisQuestion === void 0 ? void 0 : _doc$analysisQuestion.length) > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;">${q}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;">${q}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;">${q}</li>`).join('')}</ol></div>` : ''}
                           </div>
                       </div>
-                  `;
-      }).join('')}
+                  `).join('')}
                   ${item.data.synthesisPrompt ? `<div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p></div>` : ''}
                   ${rubric.length > 0 ? `<div style="margin-top:20px;"><strong>Rubric:</strong><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${r.criteria}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['1'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['2'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['3'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['4'] || ''}</td></tr>`).join('')}</table></div>` : ''}
                   ${item.data.teacherNotes ? `<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${item.data.teacherNotes}</div>` : ''}
@@ -5131,9 +5042,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       return `
               <div class="section" id="${item.id}">
                   <div class="resource-header">${title} (${item.meta})</div>
-                  ${reports.map(report => {
-        var _report$analysis$acti, _report$analysis$acti2;
-        return `
+                  ${reports.map(report => `
                       <div style="margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
                           <div style="background: ${report.overallDetermination === 'Pass' ? '#f0fdf4' : '#fef2f2'}; padding: 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
                               <div>
@@ -5155,8 +5064,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <div style="margin-bottom: 15px;">
                                   <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${t('alignment.activities_header')}</h4>
                                   <div style="background: #f8fafc; padding: 10px; border-radius: 4px; font-size: 0.9em; border: 1px solid #e2e8f0;">
-                                      <strong>Status:</strong> ${((_report$analysis$acti = report.analysis.activityAlignment) === null || _report$analysis$acti === void 0 ? void 0 : _report$analysis$acti.status) || "N/A"}<br/>
-                                      <strong>Evidence:</strong> "<em>${((_report$analysis$acti2 = report.analysis.activityAlignment) === null || _report$analysis$acti2 === void 0 ? void 0 : _report$analysis$acti2.evidence) || t('alignment.no_activities')}</em>"
+                                      <strong>Status:</strong> ${report.analysis.activityAlignment?.status || "N/A"}<br/>
+                                      <strong>Evidence:</strong> "<em>${report.analysis.activityAlignment?.evidence || t('alignment.no_activities')}</em>"
                                   </div>
                               </div>
                               <div style="margin-bottom: 15px;">
@@ -5172,8 +5081,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               </div>
                           </div>
                       </div>
-                  `;
-      }).join('')}
+                  `).join('')}
               </div>
           `;
     }
@@ -5272,7 +5180,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // Font: honor user's app font if toggled, otherwise use theme font
     const appFontEntry = FONT_OPTIONS.find(f => f.id === selectedFont);
     const exportFontFamily = cfg.useAppFont && appFontEntry ? `'${appFontEntry.label}', ${theme.bodyFont}` : theme.bodyFont;
-    const exportFontImport = cfg.useAppFont && appFontEntry !== null && appFontEntry !== void 0 && appFontEntry.googleFont ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');` : '';
+    const exportFontImport = cfg.useAppFont && appFontEntry?.googleFont ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');` : '';
     const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';
     const studentTitlePrefix = isWorksheet ? '' : t('export.student_copy');
     const lessonTopic = topic || t('export.default_lesson_title');
@@ -5521,3 +5429,4 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
+})();

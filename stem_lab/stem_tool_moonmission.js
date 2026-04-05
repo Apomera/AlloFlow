@@ -310,7 +310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               });
             })
           ),
-          h('div', { className: 'flex justify-between text-[8px] text-slate-400' },
+          h('div', { className: 'flex justify-between text-[9px] text-slate-400' },
             h('span', null, 'Launch'),
             h('span', null, 'Phase ' + (phase + 1) + '/10'),
             h('span', null, 'Splashdown')
@@ -2016,7 +2016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                 BADGES.map(function(b) {
                   var earned = !!(d.earnedBadges || {})[b.id];
-                  return h('div', { key: b.id, className: 'flex items-center gap-1 px-2 py-1 rounded-full text-[8px] ' + (earned ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-white/5 text-slate-600 border border-white/5'), title: b.desc },
+                  return h('div', { key: b.id, className: 'flex items-center gap-1 px-2 py-1 rounded-full text-[9px] ' + (earned ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-white/5 text-slate-600 border border-white/5'), title: b.desc },
                     h('span', null, earned ? b.icon : '\uD83D\uDD12'),
                     h('span', null, b.name)
                   );
@@ -2032,17 +2032,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         h('span', { className: 'text-lg' }, s.icon),
                         h('div', null,
                           h('p', { className: 'text-[10px] font-bold text-white' }, s.name),
-                          h('p', { className: 'text-[8px] text-indigo-300' }, s.type)
+                          h('p', { className: 'text-[9px] text-indigo-300' }, s.type)
                         )
                       ),
-                      h('p', { className: 'text-[8px] text-slate-400 leading-relaxed' }, s.fact)
+                      h('p', { className: 'text-[9px] text-slate-400 leading-relaxed' }, s.fact)
                     );
                   })
                 ),
                 // Collection completeness
                 (d.lunarSamples || []).length >= LUNAR_SAMPLES_DATA.length && h('div', { className: 'mt-2 bg-amber-500/10 rounded-lg p-2 border border-amber-500/20 text-center' },
                   h('p', { className: 'text-[10px] font-bold text-amber-300' }, '\uD83C\uDFC6 COMPLETE COLLECTION! All ' + LUNAR_SAMPLES_DATA.length + ' samples recovered.'),
-                  h('p', { className: 'text-[8px] text-amber-400' }, 'These samples will be studied by scientists for decades to come.')
+                  h('p', { className: 'text-[9px] text-amber-400' }, 'These samples will be studied by scientists for decades to come.')
                 )
               )
             ),

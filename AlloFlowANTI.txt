@@ -1420,7 +1420,9 @@ PHONEME_AUDIO_BANK['p'] = getAudio('phonemes', 'p');
 PHONEME_AUDIO_BANK['th'] = getAudio('phonemes', 'th');
 PHONEME_AUDIO_BANK['ue'] = getAudio('phonemes', 'ue');
 PHONEME_AUDIO_BANK['zh'] = getAudio('phonemes', 'zh');
-if (!PHONEME_AUDIO_BANK['ch']) PHONEME_AUDIO_BANK['ch'] = PHONEME_AUDIO_BANK['sh'];
+PHONEME_AUDIO_BANK['sh'] = getAudio('phonemes', 'sh');
+PHONEME_AUDIO_BANK['ch'] = getAudio('phonemes', 'ch');
+if (!PHONEME_AUDIO_BANK['ch'] && PHONEME_AUDIO_BANK['sh']) PHONEME_AUDIO_BANK['ch'] = PHONEME_AUDIO_BANK['sh'];
 if (typeof PHONEME_AUDIO_BANK !== 'undefined') {
     if (PHONEME_AUDIO_BANK['or'] && !PHONEME_AUDIO_BANK['orr']) PHONEME_AUDIO_BANK['orr'] = PHONEME_AUDIO_BANK['or'];
     if (PHONEME_AUDIO_BANK['ar'] && !PHONEME_AUDIO_BANK['ahrr']) PHONEME_AUDIO_BANK['ahrr'] = PHONEME_AUDIO_BANK['ar'];

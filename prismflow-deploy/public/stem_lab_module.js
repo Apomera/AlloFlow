@@ -2850,8 +2850,10 @@
                 'aria-label': 'Filter by ' + (cat.label || 'all categories'),
                 'aria-pressed': isActive ? 'true' : 'false',
                 onClick: function() {
-                  upd('_categoryFilter', cat.id === d._categoryFilter ? '' : cat.id);
+                  var newFilter = cat.id === d._categoryFilter ? '' : cat.id;
+                  upd('_categoryFilter', newFilter);
                   _setStemToolSearch('');
+                  if (typeof announceToSR === 'function') announceToSR(newFilter ? 'Showing ' + cat.label + ' tools' : 'Showing all tools');
                 },
                 className: "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all border " +
                   (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600')
@@ -2948,7 +2950,7 @@
                         React.createElement("span", { className: "text-[11px] font-bold truncate " + (disp.done ? 'text-green-700' : 'text-slate-700') },
                           (disp.done ? "\u2705 " : (qtDef.icon || "\u2B1C") + " ") + quest.label
                         ),
-                        !disp.done && React.createElement("span", { className: "text-[7px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
+                        !disp.done && React.createElement("span", { className: "text-[9px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
                       ),
                       React.createElement("span", { className: "text-[9px] font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
                     ),
@@ -2963,7 +2965,7 @@
                         React.createElement("span", { className: "text-[9px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
                           (isActive ? '\u25CF ' : '\u25CB ') + min + ':' + sec.toString().padStart(2, '0') + ' / ' + (quest.params.minutes || 5) + ':00'
                         ),
-                        isActive && React.createElement("span", { className: "text-[7px] text-green-500 animate-pulse" }, 'timing...')
+                        isActive && React.createElement("span", { className: "text-[9px] text-green-500 animate-pulse" }, 'timing...')
                       );
                     })(),
                     // Progress bar
@@ -3189,7 +3191,7 @@
                       },
                         React.createElement("div", { className: "text-lg" }, preset.icon),
                         React.createElement("div", { className: "text-[9px] font-bold text-amber-800" }, preset.name),
-                        React.createElement("div", { className: "text-[8px] text-amber-500" }, preset.desc)
+                        React.createElement("div", { className: "text-[9px] text-amber-600" }, preset.desc)
                       );
                     })
                   )
@@ -3242,7 +3244,7 @@
                           React.createElement("span", { className: "text-sm shrink-0" }, ah.hook.icon || '\uD83C\uDFC6'),
                           React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement("div", { className: "font-bold text-purple-800 truncate" }, ah.hook.label),
-                            React.createElement("div", { className: "text-[8px] text-purple-400" }, toolLabel)
+                            React.createElement("div", { className: "text-[9px] text-purple-500" }, toolLabel)
                           ),
                           React.createElement("span", { className: "text-purple-400 text-xs shrink-0" }, "+")
                         );
@@ -3781,7 +3783,8 @@
                 React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" }),
                 React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" })
               ),
-              React.createElement("p", { className: "text-center text-xs text-slate-400" }, "\uD83D\uDD2C Loading " + stemLabTool + "...")
+              React.createElement("p", { className: "text-center text-xs text-slate-400", role: 'status', 'aria-live': 'polite' }, "\uD83D\uDD2C Loading " + stemLabTool + "..."),
+              React.createElement("p", { className: "text-center text-[10px] text-slate-500 mt-1" }, "The tool plugin is being downloaded. This usually takes 1\u20132 seconds.")
             );
           }
 

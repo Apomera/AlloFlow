@@ -7187,6 +7187,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_oratory.js',
         'stem_lab/stem_tool_singing.js',
         'stem_lab/stem_tool_migration.js',
+        'stem_lab/stem_tool_echolocation.js',
         'stem_lab/stem_tool_beehive.js',
         'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_music.js',
