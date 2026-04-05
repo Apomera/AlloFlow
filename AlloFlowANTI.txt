@@ -5073,6 +5073,7 @@ const analyzeFluencyWithGemini = async (audioBase64, mimeType, referenceText) =>
     });
     const data = await response.json();
     const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!resultText) return null;
     return JSON.parse(resultText);
   } catch (error) {
     warnLog("Gemini Audio Analysis Failed:", error);

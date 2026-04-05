@@ -979,13 +979,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               )
             ),
             // Restart button
-            h('div', { className: 'text-center' },
-              h('button', {
-                'aria-label': 'Start a new colony from scratch',
-                onClick: function() { updAll({ day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100, honey: 20, pollen: 15, wax: 5, varroaLevel: 5, morale: 80, foragingEfficiency: 70, score: 0, colonySurvived: true, pesticideExposure: 0, habitat: 50, actionPoints: 3, totalHoney: 0, eventsHandled: 0, eventLog: [] }); if (addToast) addToast('\uD83D\uDC1D New colony established! Apply what you learned.', 'success'); },
-                className: 'px-6 py-2.5 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 shadow-md transition-all hover:scale-[1.02]'
-              }, '\uD83D\uDD04 Start New Colony \u2014 Apply What You Learned')
-            )
+            h('button', {
+              'aria-label': 'Start a new colony from scratch',
+              onClick: function() { updAll({ day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100, honey: 20, pollen: 15, wax: 5, varroaLevel: 5, morale: 80, foragingEfficiency: 70, score: 0, colonySurvived: true, pesticideExposure: 0, habitat: 50, actionPoints: 3, totalHoney: 0, eventsHandled: 0, eventLog: [] }); if (addToast) addToast('\uD83D\uDC1D New colony established! Apply what you learned.', 'success'); },
+              className: 'w-full px-6 py-2.5 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 shadow-md transition-all hover:scale-[1.02]'
+            }, '\uD83D\uDD04 Start New Colony \u2014 Apply What You Learned')
           ),
 
           // Seasonal goals
@@ -1081,8 +1079,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, 'Nectar is 80% water. Bees convert it to honey (18% water) through enzymatic processing (invertase breaks sucrose into glucose + fructose) and evaporative concentration (bees fan their wings to dehydrate the nectar). Once the moisture content drops below 18.6%, they cap the cell with beeswax. Honey never spoils — edible honey has been found in 3,000-year-old Egyptian tombs.')),
             h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
               h('h4', { className: 'text-xs font-bold text-slate-800 mb-1' }, '⚠️ Colony Collapse Disorder'),
-              h('div', { className: 'text-[10px] text-slate-600 leading-relaxed' }, 'Since 2006, beekeepers have reported losing 30-50% of colonies annually. CCD involves workers abandoning the hive, leaving the queen and brood behind. Causes include: varroa mites + viruses they transmit, neonicotinoid pesticides, habitat loss reducing forage diversity, and nutritional stress from monoculture agriculture. Your garden\'s pollinator plants directly combat the habitat loss component.')))
-        );
+              h('div', { className: 'text-[10px] text-slate-600 leading-relaxed' }, 'Since 2006, beekeepers have reported losing 30-50% of colonies annually. CCD involves workers abandoning the hive, leaving the queen and brood behind. Causes include: varroa mites + viruses they transmit, neonicotinoid pesticides, habitat loss reducing forage diversity, and nutritional stress from monoculture agriculture. Your garden\'s pollinator plants directly combat the habitat loss component.'))
+        )
       })();
     }
   });
