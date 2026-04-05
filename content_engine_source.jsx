@@ -1308,9 +1308,11 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     }
     // Cancel any browser speechSynthesis
     if (window.speechSynthesis) window.speechSynthesis.cancel();
-    if (playbackTimeoutRef.current) {
-        clearTimeout(playbackTimeoutRef.current);
-        playbackTimeoutRef.current = null;
+    // Clear any pending playback timeout
+    var _timeoutRef = _state.playbackTimeoutRef || (typeof playbackTimeoutRef !== 'undefined' ? playbackTimeoutRef : null);
+    if (_timeoutRef && _timeoutRef.current) {
+        clearTimeout(_timeoutRef.current);
+        _timeoutRef.current = null;
     }
     setIsPlaying(false);
     setIsPaused(false);

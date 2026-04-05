@@ -631,7 +631,7 @@
       onClose,
       wordSoundsActivity,
       setWordSoundsActivity,
-      wordSoundsScore,
+      wordSoundsScore = { correct: 0, total: 0, streak: 0 },
       setWordSoundsScore,
       currentWordSoundsWord,
       setCurrentWordSoundsWord,

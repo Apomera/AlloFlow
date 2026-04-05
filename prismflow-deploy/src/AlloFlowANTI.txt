@@ -509,7 +509,7 @@ const LargeFileTranscriptionModal = React.memo(({
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-200"
+                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200"
                 role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}
             >
                 <button
@@ -7115,27 +7115,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/content_engine_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7151,7 +7151,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b3ed03/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -30703,7 +30703,7 @@ Return ONLY JSON:
       </div>
       {showSessionModal && activeSessionCode && (
         <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowSessionModalToFalse}>
-            <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full relative transform scale-100 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('session.live_title')}>
+            <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full relative animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('session.live_title')}>
                 <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24}/></button>
                 <div className="flex justify-center mb-4">
                     <div className="bg-green-100 p-4 rounded-full shadow-inner">
@@ -30918,7 +30918,7 @@ Return ONLY JSON:
         };
         return (
         <div className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowGroupModalToFalse} data-help-key="group_modal_container">
-            <div className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative transform scale-100 animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('groups.modal_title')}>
+            <div className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('groups.modal_title')}>
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="bg-purple-600 p-3 rounded-xl shadow-md">
@@ -32394,7 +32394,7 @@ Return ONLY JSON:
       )}
       {showXPModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowXPModalToFalse} role="presentation">
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-yellow-400 transform transition-all animate-in zoom-in-95" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="xp-modal-title">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-yellow-400 transition-all animate-in zoom-in-95" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="xp-modal-title">
                 <button onClick={handleSetShowXPModalToFalse} className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
                 <div className="text-center mb-6 relative">
                     <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-indigo-900 shadow-lg relative">
@@ -42314,7 +42314,7 @@ Return only the corrected version of this exact text:`;
                       )}
                       {showLedger && (
                         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetShowLedgerToFalse}>
-                            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transform transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+                            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                                 <button onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center mb-4">
                                     <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-2">
@@ -43554,7 +43554,7 @@ Return only the corrected version of this exact text:`;
                     </div>
                     {selectedInventoryItem && (
                         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetSelectedInventoryItemToNull}>
-                            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transform transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+                            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                                 <button onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center">
                                     <div className="w-24 h-24 bg-indigo-50 rounded-xl border-2 border-indigo-100 flex items-center justify-center mb-4 shadow-inner relative overflow-hidden group">
@@ -49049,7 +49049,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       />
       {showSaveModal && (
         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowSaveModalToFalse}>
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <button
                     aria-label={t('common.close_save_dialog')}
                     onClick={handleSetShowSaveModalToFalse}
@@ -49095,7 +49095,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       )}
       {isTranslateModalOpen && (
         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <button onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
                 <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
                     <div className="bg-indigo-100 p-2 rounded-full text-indigo-600"><Languages size={20}/></div>
@@ -49135,7 +49135,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       )}
       {showCloudWarning && (
         <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowCloudWarningToFalse}>
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border-4 border-amber-300 overflow-hidden transform transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border-4 border-amber-300 overflow-hidden transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <div className="p-6 text-center">
                     <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600 shadow-sm">
                         <Cloud size={32} />
@@ -53212,7 +53212,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
         >
             {showTimerConfetti && <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center"><ConfettiExplosion /></div>}
             <div
-                className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-200"
+                className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200"
                 role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}
             >
                 <button
