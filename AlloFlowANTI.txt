@@ -4068,6 +4068,26 @@ const getBilingualPromptInstruction = (targetLang) => {
     - Even for Dialogue or Scripts, finish the ENTIRE ${targetLang} script before starting the English script.
     `;
 };
+
+// Extract the English portion from bilingual content (or return full text if not bilingual)
+// Also returns metadata about what was found
+const extractSourceTextForProcessing = (text, preferEnglish = true) => {
+    if (!text) return { text: '', isBilingual: false, targetLangBlock: '', englishBlock: '' };
+    const delimiter = '--- ENGLISH TRANSLATION ---';
+    const idx = text.indexOf(delimiter);
+    if (idx === -1) {
+        // Not bilingual — return as-is
+        return { text: text, isBilingual: false, targetLangBlock: text, englishBlock: text };
+    }
+    const targetLangBlock = text.substring(0, idx).trim();
+    const englishBlock = text.substring(idx + delimiter.length).trim();
+    return {
+        text: preferEnglish ? englishBlock : targetLangBlock,
+        isBilingual: true,
+        targetLangBlock: targetLangBlock,
+        englishBlock: englishBlock
+    };
+};
 const MAX_OFFLINE_ITEMS = 50;
 const LENGTH_THRESHOLDS = {
     MIN_VARIANCE: 0.6,
@@ -17400,10 +17420,12 @@ Return ONLY valid JSON:
                     : personaState.selectedCharacter;
                   if (speakingChar && speakingChar.voiceProfile) {
                     // Use the detailed voice profile for consistent accent/tone
-                    voiceInstruction = `[Voice direction: ${speakingChar.voiceProfile}. Maintain this exact accent and speaking style consistently throughout.]`;
+                    const nationalityHint = speakingChar.nationality ? ` This person is ${speakingChar.nationality} — their accent MUST reflect this nationality throughout.` : '';
+                    voiceInstruction = `[CRITICAL VOICE DIRECTION: ${speakingChar.voiceProfile}.${nationalityHint} You MUST speak with this exact accent consistently for every word. Do NOT default to a neutral American accent.]`;
                   } else if (speakingChar && speakingChar.name) {
-                    // Fallback: use character name + role for basic voice guidance
-                    voiceInstruction = `[Speak as ${speakingChar.name}${speakingChar.role ? ', ' + speakingChar.role : ''}${speakingChar.year ? ' from ' + speakingChar.year : ''}. Stay in character with a consistent accent and tone.]`;
+                    // Fallback: use character name + nationality for accent guidance
+                    const natHint = speakingChar.nationality ? ` Speak with a ${speakingChar.nationality} accent.` : '';
+                    voiceInstruction = `[Speak as ${speakingChar.name}${speakingChar.role ? ', ' + speakingChar.role : ''}${speakingChar.year ? ' from ' + speakingChar.year : ''}.${natHint} Stay in character with a consistent accent and tone.]`;
                   }
                   textToSpeak = voiceInstruction + ' ' + textToSpeak;
               }
@@ -24490,6 +24512,7 @@ Return ONLY JSON.`;
                     "name": "Name",
                     "role": "Short Description",
                     "year": "Relevant Year or Era",
+                    "nationality": "Country/region of origin (e.g., Austrian, British, American-Southern)",
                     "context": "Why they are relevant",
                     "visualDescription": "A highly detailed physical description for an image generator (e.g., 'Oil painting of [Name], [details], neutral background').",
                     "artStyle": "The specific art style string selected based on era",
