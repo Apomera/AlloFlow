@@ -818,6 +818,63 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     // 24. Ensure <nav> elements have aria-label
     accessibleHtml = accessibleHtml.replace(/<nav(?![^>]*aria-label)([^>]*)>/gi, () => { aiFixCount++; return '<nav aria-label="Navigation"$1>'; });
 
+    // 25. Strip user-scalable=no and maximum-scale=1 (prevents pinch-to-zoom — WCAG 1.4.4)
+    accessibleHtml = accessibleHtml.replace(/user-scalable\s*=\s*no/gi, () => { aiFixCount++; return 'user-scalable=yes'; });
+    accessibleHtml = accessibleHtml.replace(/maximum-scale\s*=\s*1(\.0)?/gi, () => { aiFixCount++; return 'maximum-scale=5'; });
+
+    // 26. Fix invalid ARIA roles (strip unknown roles rather than leave broken ones)
+    const validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
+    accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (match, role) => {
+      if (validRoles.includes(role.toLowerCase())) return match;
+      aiFixCount++;
+      warnLog('[Det Fix] Removed invalid ARIA role: ' + role);
+      return '';
+    });
+
+    // 27. Fix <select> elements without accessible names
+    accessibleHtml = accessibleHtml.replace(/<select(?![^>]*aria-label)(?![^>]*id="([^"]*)")([^>]*)>/gi, (match, id, attrs) => {
+      if (/aria-label/.test(match)) return match;
+      const name = (match.match(/name="([^"]*)"/i) || [])[1] || 'Selection';
+      aiFixCount++;
+      return `<select aria-label="${name}"${attrs}>`;
+    });
+
+    // 28. Fix <object> and <embed> without alt/aria-label
+    accessibleHtml = accessibleHtml.replace(/<(object|embed)(?![^>]*aria-label)(?![^>]*alt=)([^>]*)>/gi, (match, tag, attrs) => {
+      aiFixCount++;
+      return `<${tag} aria-label="Embedded content"${attrs}>`;
+    });
+
+    // 29. Ensure <aside> elements have aria-label
+    accessibleHtml = accessibleHtml.replace(/<aside(?![^>]*aria-label)([^>]*)>/gi, () => { aiFixCount++; return '<aside aria-label="Supplementary content"$1>'; });
+
+    // 30. Fix definition lists: ensure <dt>/<dd> are inside <dl>
+    accessibleHtml = accessibleHtml.replace(/<(dt|dd)([^>]*)>/gi, (match, tag, attrs, offset) => {
+      const before = accessibleHtml.substring(Math.max(0, offset - 300), offset);
+      const lastDl = before.lastIndexOf('<dl');
+      const lastCloseDl = before.lastIndexOf('</dl');
+      if (lastDl > lastCloseDl) return match; // already inside dl
+      aiFixCount++;
+      return '<dl>' + match;
+    });
+
+    // 31. Add role="presentation" to layout tables (tables without th/thead)
+    accessibleHtml = accessibleHtml.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, (match, attrs, content) => {
+      if (/<th[\s>]/i.test(content) || /<thead/i.test(content) || /role=/.test(attrs)) return match;
+      // No headers = likely a layout table
+      if (/<td[\s>]/i.test(content)) {
+        aiFixCount++;
+        return `<table role="presentation"${attrs}>${content}</table>`;
+      }
+      return match;
+    });
+
+    // 32. Ensure <footer> has role="contentinfo" if it doesn't have a role
+    accessibleHtml = accessibleHtml.replace(/<footer(?![^>]*role=)([^>]*)>/gi, () => { aiFixCount++; return '<footer role="contentinfo"$1>'; });
+
+    // 33. Ensure <header> has role="banner" if it doesn't have a role
+    accessibleHtml = accessibleHtml.replace(/<header(?![^>]*role=)([^>]*)>/gi, () => { aiFixCount++; return '<header role="banner"$1>'; });
+
     if (aiFixCount > 0) log(`Applied ${aiFixCount} deterministic fixes`);
 
     // ── Phase 4: Verify with both engines ──
