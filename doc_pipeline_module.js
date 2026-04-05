@@ -1074,6 +1074,95 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       fix_lang: function (html, p) {
         if (!p.lang) return html;
         return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"').replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
+      },
+      // Add scope to a specific table header
+      fix_th_scope: function (html, p) {
+        var scope = p.scope || 'col';
+        let idx = 0;
+        return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function (m, attrs) {
+          if (p.index !== undefined && idx++ !== p.index) return m;
+          return '<th scope="' + scope + '"' + attrs + '>';
+        });
+      },
+      // Remove an empty heading by index
+      fix_remove_empty_heading: function (html, p) {
+        let idx = 0;
+        return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function (m) {
+          if (p.index !== undefined && idx++ !== p.index) return m;
+          return '';
+        });
+      },
+      // Add label to a form input by index
+      fix_input_label: function (html, p) {
+        if (!p.label) return html;
+        let idx = 0;
+        return html.replace(/<input([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+          return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      // Add accessible name to a button by index
+      fix_button_name: function (html, p) {
+        if (!p.label) return html;
+        let idx = 0;
+        return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function (m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (content.trim()) return m; // has content, leave it
+          return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
+        });
+      },
+      // Add title to an iframe by index
+      fix_iframe_title: function (html, p) {
+        if (!p.title) return html;
+        let idx = 0;
+        return html.replace(/<iframe([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
+          return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      // Wrap orphaned content in a landmark
+      fix_add_landmark: function (html, p) {
+        var tag = p.tag || 'section';
+        var label = p.label || 'Content';
+        var selector = p.selector || 'body';
+        // Simple: wrap first non-landmarked block of content
+        if (selector === 'body' && !html.includes('<main')) {
+          return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
+        }
+        return html;
+      },
+      // Fix duplicate ID by appending suffix
+      fix_duplicate_id: function (html, p) {
+        if (!p.id) return html;
+        let count = 0;
+        return html.replace(new RegExp('id="' + p.id + '"', 'g'), function (m) {
+          count++;
+          if (count === 1) return m;
+          return 'id="' + p.id + '-' + count + '"';
+        });
+      },
+      // Add figcaption to a figure by index
+      fix_figcaption: function (html, p) {
+        if (!p.caption) return html;
+        let idx = 0;
+        return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function (m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/<figcaption/i.test(content)) return m; // already has one
+          return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
+        });
+      },
+      // Set document title
+      fix_title: function (html, p) {
+        if (!p.title) return html;
+        if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
+        return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
+      },
+      // Wrap text in a lang span for multilingual content
+      fix_lang_span: function (html, p) {
+        if (!p.text || !p.lang) return html;
+        return html.replace(p.text, '<span lang="' + p.lang + '">' + p.text + '</span>');
       }
     };
 
@@ -1088,7 +1177,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         })).concat((preAxe.moderate || []).map(function (v) {
           return 'MODERATE: ' + v.description + ' (' + v.id + ')';
         })).slice(0, 12).join('\n');
-        var surgDiagnosis = await callGemini('You are an accessibility remediation expert. Analyze these axe-core violations and prescribe SPECIFIC targeted fixes.\n\n' + 'VIOLATIONS:\n' + surgViolations + '\n\n' + 'HTML (first 6000 chars for context):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\n' + 'Prescribe fixes using these tools (return ONLY a JSON array):\n' + '- fix_alt_text: { "tool": "fix_alt_text", "index": <img number 0-based>, "alt": "descriptive text" }\n' + '- fix_heading: { "tool": "fix_heading", "index": <heading number 0-based>, "newLevel": <1-6> }\n' + '- fix_link_text: { "tool": "fix_link_text", "index": <link number 0-based>, "newText": "descriptive text" }\n' + '- fix_table_caption: { "tool": "fix_table_caption", "index": <table number 0-based>, "caption": "description" }\n' + '- fix_aria_label: { "tool": "fix_aria_label", "tag": "element", "index": <0-based>, "label": "description" }\n' + '- fix_lang: { "tool": "fix_lang", "lang": "language code" }\n\n' + 'Be specific. Use the actual content to write good alt text and link descriptions.\n' + 'Return ONLY valid JSON array, no explanation.', true);
+        var surgDiagnosis = await callGemini('You are an accessibility remediation expert. Analyze these axe-core violations and prescribe SPECIFIC targeted fixes.\n\n' + 'VIOLATIONS:\n' + surgViolations + '\n\n' + 'HTML (first 6000 chars for context):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\n' + 'Prescribe fixes using these tools (return ONLY a JSON array):\n\n' + 'CONTENT FIXES:\n' + '- fix_alt_text: { "tool": "fix_alt_text", "index": <img# 0-based>, "alt": "descriptive text" }\n' + '- fix_heading: { "tool": "fix_heading", "index": <heading# 0-based>, "newLevel": <1-6> }\n' + '- fix_link_text: { "tool": "fix_link_text", "index": <link# 0-based>, "newText": "descriptive text" }\n' + '- fix_figcaption: { "tool": "fix_figcaption", "index": <figure# 0-based>, "caption": "description" }\n' + '- fix_title: { "tool": "fix_title", "title": "document title" }\n' + '- fix_lang: { "tool": "fix_lang", "lang": "language code" }\n' + '- fix_lang_span: { "tool": "fix_lang_span", "text": "foreign text to wrap", "lang": "code" }\n\n' + 'TABLE FIXES:\n' + '- fix_table_caption: { "tool": "fix_table_caption", "index": <table# 0-based>, "caption": "description" }\n' + '- fix_th_scope: { "tool": "fix_th_scope", "index": <th# 0-based or omit for ALL>, "scope": "col" or "row" }\n\n' + 'FORM/INTERACTIVE FIXES:\n' + '- fix_input_label: { "tool": "fix_input_label", "index": <input# 0-based>, "label": "description" }\n' + '- fix_button_name: { "tool": "fix_button_name", "index": <button# 0-based>, "label": "description" }\n' + '- fix_iframe_title: { "tool": "fix_iframe_title", "index": <iframe# 0-based>, "title": "description" }\n\n' + 'STRUCTURE FIXES:\n' + '- fix_aria_label: { "tool": "fix_aria_label", "tag": "element", "index": <0-based>, "label": "description" }\n' + '- fix_add_landmark: { "tool": "fix_add_landmark", "tag": "main", "label": "Main content" }\n' + '- fix_remove_empty_heading: { "tool": "fix_remove_empty_heading", "index": <empty heading# 0-based> }\n' + '- fix_duplicate_id: { "tool": "fix_duplicate_id", "id": "the-duplicate-id" }\n\n' + 'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' + 'Return ONLY a valid JSON array, no explanation or markdown.', true);
         var surgFixes = [];
         try {
           surgFixes = JSON.parse(surgDiagnosis);
