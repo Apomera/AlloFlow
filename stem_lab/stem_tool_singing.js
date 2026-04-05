@@ -895,32 +895,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       what: 'Your lungs are like two spongy bags that hold air. The diaphragm is a big dome-shaped muscle underneath them.',
       singing: 'The diaphragm is your engine! When it contracts, it pulls air into your lungs. Good breath support means using your diaphragm to control a steady stream of air.',
       funFact: 'Your diaphragm moves about 1 inch when you breathe quietly, but up to 4 inches when you sing!',
-      tryThis: 'Put your hand on your belly. Breathe in deeply \u2014 your belly should push OUT (that\'s your diaphragm contracting). This is called diaphragmatic breathing.' },
+      tryThis: 'Put your hand on your belly. Breathe in deeply \u2014 your belly should push OUT (that\'s your diaphragm contracting). This is called diaphragmatic breathing.',
+      injuries: 'Shallow "chest breathing" (not using the diaphragm) forces the throat muscles to compensate, leading to vocal strain and fatigue. Chronic tension in the shoulders and upper chest can also restrict lung capacity.',
+      prevention: 'Practice diaphragmatic breathing daily. Lie on your back with a book on your belly \u2014 it should rise when you inhale. Before singing, do 10 slow belly breaths to activate the diaphragm.' },
     { id: 'larynx', label: 'Larynx & Vocal Folds', color: '#f472b6',
       what: 'Your larynx (voice box) sits in your throat and contains two small bands of muscle called vocal folds (or vocal cords).',
       singing: 'When air from your lungs passes through your vocal folds, they vibrate hundreds of times per second to create sound. Faster vibrations = higher pitch!',
       funFact: 'Your vocal folds are only about 15\u201320mm long (smaller than a penny!) but they can vibrate over 1,000 times per second for high notes.',
-      tryThis: 'Gently place your fingers on the front of your throat and hum. You can feel the vibrations of your vocal folds!' },
+      tryThis: 'Gently place your fingers on the front of your throat and hum. You can feel the vibrations of your vocal folds!',
+      injuries: 'The vocal folds are the most vulnerable part of the voice. Common injuries include: vocal nodules (callous-like bumps from chronic overuse), polyps (fluid-filled swellings, often from a single traumatic event like screaming), hemorrhage (bleeding from burst blood vessels), and contact ulcers (sores from forceful fold collision). These cause hoarseness, breathiness, reduced range, and vocal fatigue.',
+      prevention: 'Always warm up before singing or extended speaking. Never sing through pain or hoarseness. Stay hydrated (vocal folds need moisture to vibrate freely). Avoid whispering (it actually increases fold tension). Take vocal rest days, especially after heavy use. Stop singing immediately if you feel pain, scratchiness, or sudden voice loss.' },
     { id: 'pharynx', label: 'Pharynx (Throat)', color: '#a78bfa',
       what: 'The pharynx is the tube-shaped passage behind your mouth and nose that connects to your larynx.',
       singing: 'Think of the pharynx as a resonating chamber \u2014 like the body of a guitar. A relaxed, open throat creates a richer, fuller sound.',
       funFact: 'Opera singers learn to "open their throat" to create more resonance space, which is why they can project over an orchestra without a microphone!',
-      tryThis: 'Yawn gently and notice how your throat opens up. Try to sing a note with that open feeling.' },
+      tryThis: 'Yawn gently and notice how your throat opens up. Try to sing a note with that open feeling.',
+      injuries: 'Chronic throat tension (called muscle tension dysphonia) is extremely common in teachers, singers, and people who use their voice professionally. It causes the muscles around the larynx to squeeze, constricting the sound and leading to pain, fatigue, and a strained quality.',
+      prevention: 'Keep the throat relaxed while singing \u2014 the "inner smile" or "beginning of a yawn" feeling helps. Avoid pushing or straining for high notes; instead, use proper breath support. Gentle massage of the neck and jaw muscles before and after singing can release tension.' },
     { id: 'mouth', label: 'Oral Cavity', color: '#34d399',
       what: 'Your mouth contains your tongue, teeth, hard palate (roof of mouth), and lips \u2014 all of which shape the sound.',
       singing: 'Your tongue is the most important articulator! Its position determines which vowel sound you make. Lips also help shape "OO" and "OH" sounds.',
       funFact: 'Your tongue has 8 muscles and is one of the most flexible parts of your body. Singers spend years learning precise tongue control!',
-      tryThis: 'Say "EE-AH-OO" slowly and notice how your tongue moves: high-front for EE, low-back for AH, high-back for OO.' },
+      tryThis: 'Say "EE-AH-OO" slowly and notice how your tongue moves: high-front for EE, low-back for AH, high-back for OO.',
+      injuries: 'Jaw tension (TMJ/TMD) is common in singers who clench while singing or sleeping. A tight jaw restricts mouth opening, muffles sound, and can cause clicking, pain, and headaches. Tongue tension \u2014 where the tongue bunches at the root \u2014 constricts the throat and affects tone quality.',
+      prevention: 'Practice singing with a relaxed, dropped jaw. Massage the jaw joints (in front of your ears) before practice. Avoid chewing gum excessively. Do tongue stretches: stick your tongue out, move it side to side, and practice keeping the back of the tongue relaxed while singing.' },
     { id: 'nasal', label: 'Nasal Cavity', color: '#fbbf24',
       what: 'The nasal cavity is the air-filled space above the roof of your mouth, inside your nose.',
       singing: 'When the soft palate is lowered, sound vibrates through your nasal cavity, creating nasal resonance (like humming or "ng" sounds).',
       funFact: 'The French language uses nasal vowels (like in "bon") where air flows through both the mouth AND nose at the same time!',
-      tryThis: 'Pinch your nose and say "mama." Notice how it sounds different? That\'s because M and N need nasal airflow!' },
+      tryThis: 'Pinch your nose and say "mama." Notice how it sounds different? That\'s because M and N need nasal airflow!',
+      injuries: 'Chronic nasal congestion from allergies, sinusitis, or environmental irritants can block resonance and force mouth breathing, which dries out the vocal folds. Post-nasal drip irritates the larynx and causes frequent throat clearing \u2014 which slams the vocal folds together and can cause swelling.',
+      prevention: 'Treat allergies proactively. Use a humidifier, especially in dry Maine winters. Stay hydrated. Avoid throat clearing \u2014 instead, swallow or take a sip of water. Use saline nasal rinses to keep passages clear.' },
     { id: 'velum', label: 'Soft Palate (Velum)', color: '#fb923c',
       what: 'The soft palate is the fleshy, moveable tissue at the back of the roof of your mouth.',
       singing: 'The soft palate acts like a gate between your mouth and nose. Raising it directs all sound through your mouth (oral sounds). Lowering it lets sound into your nose (nasal sounds).',
       funFact: 'When you gag, your soft palate automatically raises \u2014 that\'s the same lifting motion singers use for clear, non-nasal tone!',
-      tryThis: 'Say "AH" with your mouth wide open. Now say "NG" (like the end of "sing"). Feel how your soft palate moves between those two sounds?' }
+      tryThis: 'Say "AH" with your mouth wide open. Now say "NG" (like the end of "sing"). Feel how your soft palate moves between those two sounds?',
+      injuries: 'An overly tense soft palate blocks nasal resonance entirely, creating a "tight" or "pinched" quality. Conversely, insufficient palate lift causes excessive nasality on non-nasal sounds. Neither causes tissue injury per se, but both contribute to compensatory strain elsewhere.',
+      prevention: 'Practice alternating between nasal ("ng") and oral ("ah") sounds to develop palate awareness and control. Gentle humming warms up the palate. Avoid forcing the palate up by tensing the throat \u2014 it should rise naturally with an open, lifted feeling.' }
+  ];
+
+  // ── Common Vocal Injuries Reference ──
+  var VOCAL_INJURIES = [
+    { name: 'Vocal Nodules', emoji: '\u26A0\uFE0F', severity: 'moderate',
+      what: 'Small, callous-like growths on both vocal folds, usually at the midpoint where they collide hardest.',
+      causes: 'Chronic voice overuse or misuse: yelling, talking loudly in noisy environments, singing without proper technique, excessive throat clearing.',
+      symptoms: 'Hoarseness, breathiness, reduced vocal range (especially high notes), voice fatigue, feeling of "something in the throat."',
+      treatment: 'Voice therapy with an SLP is the primary treatment. Surgery is rarely needed. Rest, hydration, and correcting the abusive vocal behaviors that caused them.',
+      whoGetsIt: 'Very common in teachers, singers, coaches, cheerleaders, and children who yell frequently. Sometimes called "singer\'s nodes."' },
+    { name: 'Vocal Polyps', emoji: '\uD83D\uDCA7', severity: 'moderate',
+      what: 'Fluid-filled or blood-filled swelling on one vocal fold, usually larger and softer than nodules.',
+      causes: 'Often caused by a single episode of vocal trauma (screaming at a concert, intense coughing) or chronic irritation from smoking, reflux, or allergies.',
+      symptoms: 'Similar to nodules but often more sudden onset. Hoarseness, a "split" sound in the voice, reduced range, vocal fatigue.',
+      treatment: 'Small polyps may resolve with voice therapy. Larger ones often require microsurgery followed by voice therapy. Excellent prognosis with proper treatment.',
+      whoGetsIt: 'Adults more than children. Associated with smoking, gastric reflux (GERD/LPR), and sudden vocal strain.' },
+    { name: 'Vocal Hemorrhage', emoji: '\uD83D\uDEA8', severity: 'serious',
+      what: 'A burst blood vessel on the vocal fold surface, causing sudden voice loss. This is a vocal emergency.',
+      causes: 'Singing or shouting with extreme force, heavy coughing or sneezing, use of blood-thinning medications, singing while sick.',
+      symptoms: 'Sudden voice loss or dramatic voice change during or immediately after vocal effort. The voice may cut out mid-sentence.',
+      treatment: 'Immediate and complete vocal rest (no talking, no whispering). See an ENT (otolaryngologist) urgently. Usually heals in 1\u20132 weeks with strict rest. Singing too soon risks permanent scarring.',
+      whoGetsIt: 'Can happen to anyone during intense vocal effort. Higher risk during illness, menstruation (hormonal changes affect fold vascularity), or when taking aspirin/ibuprofen.' },
+    { name: 'Laryngitis', emoji: '\uD83E\uDD27', severity: 'mild',
+      what: 'Inflammation and swelling of the vocal folds, usually from infection or overuse. The most common voice problem.',
+      causes: 'Upper respiratory infections (colds, flu), voice overuse, exposure to irritants (smoke, dry air, pollution), acid reflux.',
+      symptoms: 'Hoarseness, weak or lost voice, scratchy throat, dry cough, sore throat.',
+      treatment: 'Vocal rest, hydration, warm (not hot) liquids, steam inhalation, humidifier. Acute laryngitis usually resolves in 1\u20132 weeks. If hoarseness lasts more than 2\u20133 weeks, see a doctor.',
+      whoGetsIt: 'Extremely common \u2014 nearly everyone experiences it. More frequent in winter, in dry climates, and among heavy voice users.' },
+    { name: 'Muscle Tension Dysphonia (MTD)', emoji: '\uD83D\uDCAA', severity: 'moderate',
+      what: 'Excessive tension in the muscles around the larynx that constricts the voice. No structural damage to the folds themselves.',
+      causes: 'Stress, poor vocal technique, talking over background noise, compensating for another voice problem (like laryngitis \u2014 the tension "sticks" even after the original problem heals).',
+      symptoms: 'Strained or effortful voice, neck/jaw pain while speaking, voice fatigue by end of day, feeling like you\'re "pushing" to talk.',
+      treatment: 'Voice therapy with an SLP is highly effective. Laryngeal massage, relaxation techniques, breath support training. Stress management. Usually resolves with therapy.',
+      whoGetsIt: 'Very common in teachers, call center workers, and anyone under vocal or emotional stress. Often misdiagnosed or overlooked.' },
+    { name: 'Acid Reflux (LPR)', emoji: '\uD83D\uDD25', severity: 'mild',
+      what: 'Stomach acid travels up to the throat and irritates the vocal folds. Called LPR (Laryngopharyngeal Reflux) when it reaches the voice box.',
+      causes: 'Eating close to bedtime, spicy/acidic/fatty foods, caffeine, alcohol, obesity, stress. Unlike typical heartburn, LPR often has no chest burning.',
+      symptoms: 'Morning hoarseness, chronic throat clearing, sensation of mucus in the throat, bitter taste, chronic cough, voice worse after meals.',
+      treatment: 'Dietary changes (avoid triggers 3+ hours before bed), elevate head of bed, antacid medications, smaller meals. Voice therapy can help break the throat-clearing habit.',
+      whoGetsIt: 'Extremely common and often undiagnosed. Affects singers significantly because acid damages the delicate vocal fold lining.' }
+  ];
+
+  var PREVENTION_TIPS = [
+    { icon: '\uD83D\uDCA7', title: 'Stay Hydrated', tip: 'Drink 6\u20138 glasses of water daily. Your vocal folds need a thin layer of mucus to vibrate smoothly. Caffeine and alcohol are dehydrating \u2014 drink extra water to compensate.', priority: 'essential' },
+    { icon: '\uD83C\uDFB5', title: 'Always Warm Up', tip: 'Never sing "cold." Start with gentle humming, lip trills, or sirens for 5\u201310 minutes before any singing. This increases blood flow to the vocal folds and reduces injury risk.', priority: 'essential' },
+    { icon: '\uD83E\uDD2B', title: 'Rest Your Voice', tip: 'After heavy vocal use (concerts, long rehearsals, teaching all day), give your voice recovery time. Aim for 10 minutes of silence for every 1 hour of heavy use. Complete vocal rest days are important.', priority: 'essential' },
+    { icon: '\u26D4', title: 'Never Sing Through Pain', tip: 'Pain is your body\'s alarm system. If singing hurts, stop immediately. Pushing through pain causes real tissue damage. Hoarseness lasting more than 2 weeks needs medical evaluation.', priority: 'critical' },
+    { icon: '\uD83D\uDE45', title: 'Avoid Vocal Abuse', tip: 'Yelling, screaming, excessive throat clearing, loud whispering, and talking over noise all slam the vocal folds together with damaging force. Find alternatives: clap for attention, use a microphone, sip water instead of clearing.', priority: 'essential' },
+    { icon: '\uD83C\uDF2C\uFE0F', title: 'Humidify Your Space', tip: 'Dry air dries out vocal folds. Use a humidifier (especially in winter), avoid air conditioning drafts, and breathe through your nose (it warms and humidifies air before it reaches the throat).', priority: 'helpful' },
+    { icon: '\uD83C\uDF4E', title: 'Watch Your Diet', tip: 'Acid reflux is a hidden voice killer. Avoid eating 2\u20133 hours before bed. Limit spicy, acidic, and fried foods. Caffeine and chocolate relax the stomach valve, increasing reflux risk.', priority: 'helpful' },
+    { icon: '\uD83D\uDE34', title: 'Get Enough Sleep', tip: 'Vocal folds heal during sleep. 7\u20139 hours is ideal. Sleep deprivation leads to increased muscle tension and reduced vocal stamina. Elevate your head slightly if you have reflux.', priority: 'helpful' },
+    { icon: '\uD83E\uDDD8', title: 'Manage Stress', tip: 'Stress directly increases laryngeal muscle tension. Practice deep breathing, progressive relaxation, or mindfulness before performances. Physical exercise also helps release tension.', priority: 'helpful' },
+    { icon: '\uD83D\uDC68\u200D\u2695\uFE0F', title: 'See an ENT if Concerned', tip: 'An otolaryngologist (ENT doctor) can examine your vocal folds with a tiny camera. Get checked if you have hoarseness lasting 2+ weeks, pain while singing, sudden voice changes, or persistent throat clearing.', priority: 'critical' }
   ];
 
   var VOWEL_SHAPES = [
@@ -3542,10 +3607,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         className: 'p-2 rounded ' + (isDark ? 'bg-green-900/30' : 'bg-green-50')
                       },
                         h('span', { className: 'font-bold' }, '\uD83C\uDFAF Try this: '),
-                        region.tryThis)
+                        region.tryThis),
+                      region.injuries && h('div', {
+                        className: 'p-2 rounded mt-1 ' + (isDark ? 'bg-red-900/30 border border-red-800/50' : 'bg-red-50 border border-red-200')
+                      },
+                        h('span', { className: 'font-bold ' + (isDark ? 'text-red-300' : 'text-red-700') }, '\u26A0\uFE0F Common injuries: '),
+                        region.injuries),
+                      region.prevention && h('div', {
+                        className: 'p-2 rounded mt-1 ' + (isDark ? 'bg-blue-900/30 border border-blue-800/50' : 'bg-blue-50 border border-blue-200')
+                      },
+                        h('span', { className: 'font-bold ' + (isDark ? 'text-blue-300' : 'text-blue-700') }, '\uD83D\uDEE1\uFE0F Prevention: '),
+                        region.prevention)
                     )
                   );
                 })()
+              )
+            ),
+
+            // Vocal Injuries & Prevention
+            h('div', { className: cardClass },
+              h('button', {
+                className: 'w-full flex items-center justify-between text-left ' + headingClass + ' text-sm',
+                'aria-expanded': d.injuriesOpen || false,
+                onClick: function() { upd('injuriesOpen', !(d.injuriesOpen || false)); }
+              },
+                h('span', { className: 'flex items-center gap-2' }, '\uD83C\uDFE5', 'Vocal Injuries & Prevention'),
+                h('span', { className: 'text-lg' }, (d.injuriesOpen ? '\u25B2' : '\u25BC'))),
+              (d.injuriesOpen || false) && h('div', { className: 'mt-4 space-y-4' },
+                // Prevention tips grid
+                h('div', null,
+                  h('h4', { className: headingClass + ' text-xs mb-2 flex items-center gap-2' },
+                    '\uD83D\uDEE1\uFE0F', 'Top Prevention Tips'),
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                    PREVENTION_TIPS.map(function(tip) {
+                      var priorityColor = tip.priority === 'critical'
+                        ? (isDark ? 'border-red-500 bg-red-900/20' : 'border-red-300 bg-red-50')
+                        : tip.priority === 'essential'
+                          ? (isDark ? 'border-amber-500 bg-amber-900/20' : 'border-amber-300 bg-amber-50')
+                          : (isDark ? 'border-slate-600 bg-slate-700/30' : 'border-slate-200 bg-slate-50');
+                      return h('div', {
+                        key: tip.title,
+                        className: 'p-3 rounded-lg border ' + priorityColor
+                      },
+                        h('div', { className: 'flex items-center gap-2 mb-1' },
+                          h('span', { className: 'text-lg' }, tip.icon),
+                          h('span', { className: 'font-bold text-xs ' + (isDark ? 'text-white' : 'text-slate-800') }, tip.title),
+                          tip.priority === 'critical' && h('span', {
+                            className: 'text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ' +
+                              (isDark ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700')
+                          }, 'Critical')),
+                        h('p', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, tip.tip));
+                    }))),
+                // Common injuries reference
+                h('div', { className: 'mt-3' },
+                  h('h4', { className: headingClass + ' text-xs mb-2 flex items-center gap-2' },
+                    '\u26A0\uFE0F', 'Common Vocal Injuries'),
+                  h('p', { className: subTextClass + ' text-[11px] mb-2 italic' },
+                    'Understanding these conditions helps you recognize warning signs early. If you experience persistent symptoms, see a doctor.'),
+                  h('div', { className: 'space-y-2' },
+                    VOCAL_INJURIES.map(function(injury) {
+                      var isExpanded = d.expandedInjury === injury.name;
+                      var sevColor = injury.severity === 'serious'
+                        ? (isDark ? 'text-red-400' : 'text-red-600')
+                        : injury.severity === 'moderate'
+                          ? (isDark ? 'text-amber-400' : 'text-amber-600')
+                          : (isDark ? 'text-blue-400' : 'text-blue-600');
+                      return h('div', {
+                        key: injury.name,
+                        className: 'rounded-lg border ' + (isDark ? 'border-slate-600 bg-slate-700/30' : 'border-slate-200 bg-white')
+                      },
+                        h('button', {
+                          className: 'w-full p-3 flex items-center justify-between text-left',
+                          'aria-expanded': isExpanded,
+                          onClick: function() { upd('expandedInjury', isExpanded ? null : injury.name); }
+                        },
+                          h('span', { className: 'flex items-center gap-2' },
+                            h('span', { className: 'text-lg' }, injury.emoji),
+                            h('span', { className: 'font-bold text-xs ' + (isDark ? 'text-white' : 'text-slate-800') }, injury.name),
+                            h('span', {
+                              className: 'text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ml-1 ' +
+                                (injury.severity === 'serious' ? (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700')
+                                  : injury.severity === 'moderate' ? (isDark ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700')
+                                    : (isDark ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'))
+                            }, injury.severity)),
+                          h('span', { className: 'text-xs' }, isExpanded ? '\u25B2' : '\u25BC')),
+                        isExpanded && h('div', {
+                          className: 'px-3 pb-3 space-y-2 text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600')
+                        },
+                          h('div', null, h('span', { className: 'font-bold' }, 'What is it? '), injury.what),
+                          h('div', null, h('span', { className: 'font-bold' }, 'Causes: '), injury.causes),
+                          h('div', null, h('span', { className: 'font-bold' }, 'Symptoms: '), injury.symptoms),
+                          h('div', null, h('span', { className: 'font-bold' }, 'Who gets it? '), injury.whoGetsIt),
+                          h('div', {
+                            className: 'p-2 rounded ' + (isDark ? 'bg-green-900/30 border border-green-800/50' : 'bg-green-50 border border-green-200')
+                          },
+                            h('span', { className: 'font-bold ' + (isDark ? 'text-green-300' : 'text-green-700') }, '\uD83D\uDC8A Treatment: '),
+                            injury.treatment)));
+                    })),
+                  h('div', {
+                    className: 'mt-3 p-3 rounded-lg text-center text-xs italic ' +
+                      (isDark ? 'bg-violet-900/30 text-violet-300 border border-violet-700' : 'bg-violet-50 text-violet-700 border border-violet-200')
+                  },
+                    '\uD83D\uDC68\u200D\u2695\uFE0F This information is educational only. It is not medical advice. If you have concerns about your voice, see an otolaryngologist (ENT doctor) or speech-language pathologist.'))
               )
             ),
 
