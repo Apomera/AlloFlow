@@ -2659,7 +2659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
           : 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
-        var subTextClass = isDark ? 'text-slate-400 text-xs' : 'text-slate-500 text-xs';
+        var subTextClass = isDark ? 'text-slate-400 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
           (isDark ? 'bg-rose-600 hover:bg-rose-500 text-white focus:ring-rose-400' : 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500');
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
@@ -2762,7 +2762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 height: 200,
                 className: 'w-full rounded border ' + (isDark ? 'border-slate-600' : 'border-slate-200'),
                 role: 'img',
-                'aria-label': 'Piano roll showing pitch history over time'
+                'aria-label': 'Piano roll showing pitch history. Green line indicates on-pitch singing (within 10 cents), yellow indicates close (within 25 cents), red indicates off-pitch (beyond 25 cents).'
               })
             ),
 
@@ -2839,6 +2839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   'Sing this note and hold it within 10 cents for 1 second'),
                 h('button', {
                   className: btnSecondary,
+                  'aria-label': 'Cancel pitch match game',
                   onClick: function() {
                     stopRefTone();
                     setRefTonePlaying(null);
@@ -2920,6 +2921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 h('button', {
                   className: btnSecondary,
+                  'aria-label': 'Cancel vocal range test',
                   onClick: function() { setRangeStep(0); }
                 }, 'Cancel')
               ),
@@ -2941,6 +2943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 h('button', {
                   className: btnSecondary,
+                  'aria-label': 'Cancel vocal range test',
                   onClick: function() { setRangeStep(0); }
                 }, 'Cancel')
               ),
@@ -2975,6 +2978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 h('button', {
                   className: btnPrimary + ' mt-2',
+                  'aria-label': 'Restart vocal range test',
                   onClick: function() { setRangeStep(0); }
                 }, '\uD83D\uDD01 Test Again')
               )
@@ -2992,9 +2996,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ref: rangeKeyboardCanvasRef,
                 width: 600,
                 height: 80,
-                className: 'w-full rounded border ' + (isDark ? 'border-slate-600' : 'border-slate-200'),
+                tabIndex: 0,
+                className: 'w-full rounded border ' + (isDark ? 'border-slate-600' : 'border-slate-200') + ' focus:outline-none focus:ring-2 focus:ring-rose-400',
                 role: 'img',
-                'aria-label': 'Piano keyboard showing vocal range',
+                'aria-label': 'Piano keyboard showing vocal range. Use Left/Right arrows to navigate notes, Enter or Space to play.',
                 onClick: function(e) {
                   var cvs = rangeKeyboardCanvasRef.current;
                   if (!cvs || !cvs._keyRects) return;
@@ -3016,6 +3021,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     playMidiNote(clicked.midi, 1.5, 0.12);
                     setRefTonePlaying(clicked.midi);
                     setTimeout(function() { setRefTonePlaying(null); }, 1600);
+                  }
+                },
+                onKeyDown: function(e) {
+                  var cvs = rangeKeyboardCanvasRef.current;
+                  if (!cvs || !cvs._keyRects || cvs._keyRects.length === 0) return;
+                  // Initialize focused key index if not set
+                  if (typeof cvs._focusedKeyIdx !== 'number') cvs._focusedKeyIdx = 0;
+                  if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    cvs._focusedKeyIdx = Math.min(cvs._focusedKeyIdx + 1, cvs._keyRects.length - 1);
+                    var kr = cvs._keyRects[cvs._focusedKeyIdx];
+                    if (announceToSR) announceToSR(midiToNoteName(kr.midi).str);
+                  } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    cvs._focusedKeyIdx = Math.max(cvs._focusedKeyIdx - 1, 0);
+                    var kr = cvs._keyRects[cvs._focusedKeyIdx];
+                    if (announceToSR) announceToSR(midiToNoteName(kr.midi).str);
+                  } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    var kr = cvs._keyRects[cvs._focusedKeyIdx];
+                    if (kr) {
+                      playMidiNote(kr.midi, 1.5, 0.12);
+                      setRefTonePlaying(kr.midi);
+                      setTimeout(function() { setRefTonePlaying(null); }, 1600);
+                    }
                   }
                 }
               })
@@ -3124,6 +3154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   var isActive = vibratoExercise === ex.id;
                   return h('button', {
                     key: ex.id,
+                    'aria-label': 'Vibrato exercise: ' + ex.label + ' — ' + ex.desc,
                     className: 'text-left p-3 rounded-lg border transition-colors ' +
                       (isActive
                         ? (isDark ? 'border-rose-500 bg-rose-900/30' : 'border-rose-400 bg-rose-50')
@@ -3206,7 +3237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         className: 'w-8 h-8 rounded-lg text-xs font-bold transition-colors ' +
                           (intervalLevel >= lvl
                             ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-500 text-white')
-                            : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')),
+                            : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-600')),
                         onClick: function() { setIntervalLevel(lvl); },
                         'aria-label': 'Set level to ' + lvl
                       }, lvl.toString());
@@ -3221,14 +3252,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                         (intervalDirection === 'up'
                           ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                          : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')),
+                          : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-600')),
+                      'aria-label': 'Set interval direction to up',
                       onClick: function() { setIntervalDirection('up'); }
                     }, '\u2B06 UP'),
                     h('button', {
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                         (intervalDirection === 'down'
                           ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                          : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')),
+                          : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-600')),
+                      'aria-label': 'Set interval direction to down',
                       onClick: function() { setIntervalDirection('down'); }
                     }, '\u2B07 DOWN')
                   )
@@ -3304,6 +3337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   }, '\uD83D\uDCA1 Hear Target'),
                   h('button', {
                     className: btnSecondary,
+                    'aria-label': 'Skip this interval',
                     onClick: function() {
                       stopRefTone();
                       setRefTonePlaying(null);
@@ -3476,9 +3510,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     ref: anatomyCanvasRef,
                     width: 500,
                     height: 400,
+                    tabIndex: 0,
                     role: 'img',
-                    'aria-label': 'Sagittal cross-section diagram of the human vocal tract showing lungs, diaphragm, trachea, larynx with vocal folds, pharynx, oral cavity with tongue and palate, nasal cavity, and soft palate',
-                    className: 'rounded-lg border ' + (isDark ? 'border-slate-600' : 'border-slate-200'),
+                    'aria-label': 'Sagittal cross-section diagram of the human vocal tract. Use Left/Right arrows to cycle regions, Enter or Space to select.',
+                    className: 'rounded-lg border ' + (isDark ? 'border-slate-600' : 'border-slate-200') + ' focus:outline-none focus:ring-2 focus:ring-rose-400',
                     style: { maxWidth: '100%', height: 'auto', cursor: 'pointer' },
                     onClick: function(e) {
                       // Click-to-select region based on canvas position
@@ -3494,6 +3529,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       else if (y > 70 && y < 140 && x < 170) hit = 'mouth';
                       else if (y > 95 && y < 130 && x > 150 && x < 190) hit = 'velum';
                       setAnatomyRegion(hit === anatomyRegion ? null : hit);
+                    },
+                    onKeyDown: function(e) {
+                      var regionIds = ANATOMY_REGIONS.map(function(r) { return r.id; });
+                      var currentIdx = anatomyRegion ? regionIds.indexOf(anatomyRegion) : -1;
+                      if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        var nextIdx = (currentIdx + 1) % regionIds.length;
+                        setAnatomyRegion(regionIds[nextIdx]);
+                        if (announceToSR) announceToSR(ANATOMY_REGIONS[nextIdx].label);
+                      } else if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        var prevIdx = (currentIdx - 1 + regionIds.length) % regionIds.length;
+                        setAnatomyRegion(regionIds[prevIdx]);
+                        if (announceToSR) announceToSR(ANATOMY_REGIONS[prevIdx].label);
+                      } else if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (currentIdx >= 0) {
+                          // Toggle current region off/on
+                          setAnatomyRegion(null);
+                        } else {
+                          setAnatomyRegion(regionIds[0]);
+                          if (announceToSR) announceToSR(ANATOMY_REGIONS[0].label);
+                        }
+                      }
                     }
                   })
                 ),
@@ -3757,6 +3816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   }, '\uD83D\uDD01 Replay Tones'),
                   h('button', {
                     className: btnSecondary,
+                    'aria-label': 'Cancel warm-up exercise',
                     onClick: cancelWarmup
                   }, 'Cancel'))
               ),
@@ -4391,7 +4451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-rose-400 ' +
                   (isActive
                     ? (isDark ? 'bg-rose-600 text-white shadow-sm' : 'bg-white text-rose-700 shadow-sm')
-                    : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')),
+                    : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
                   var tabIds = TABS.map(function(t) { return t.id; });
