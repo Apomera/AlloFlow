@@ -49591,6 +49591,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   </div>
                 </details>
+                {/* Style preference for remediation output */}
+                <details className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden mb-3">
+                  <summary className="px-3 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
+                    ✨ Output Style (optional)
+                  </summary>
+                  <div className="px-3 pb-3 pt-1">
+                    <p className="text-[9px] text-slate-400 mb-2">Choose a visual style for the remediated document. Applied during generation — no extra processing time.</p>
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        { id: '', label: '📄 Default', desc: 'Clean, professional' },
+                        { id: 'academic', label: '🏫 Academic', desc: 'Serif, navy/gold' },
+                        { id: 'elementary', label: '🌈 Kid-Friendly', desc: 'Bright, playful' },
+                        { id: 'dark', label: '🌙 Dark Mode', desc: 'Dark, easy on eyes' },
+                        { id: 'magazine', label: '📰 Magazine', desc: 'Editorial layout' },
+                        { id: 'minimal', label: '🧊 Minimal', desc: 'Clean whitespace' },
+                      ].map(s => (
+                        <button key={s.id} onClick={() => { window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); if (s.id) document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); else document.querySelector('[data-style-pref=""]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
+                          data-style-pref={s.id}
+                          className={`px-2 py-1.5 rounded-lg border text-left transition-all ${!s.id ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
+                          <div className="text-[9px] font-bold text-slate-700">{s.label}</div>
+                          <div className="text-[8px] text-slate-400">{s.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </details>
                 <div className="flex gap-3 justify-center">
                   <button onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ Audit & Remediate
@@ -51445,9 +51471,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     { label: '🌙 Dark', prompt: 'Elegant dark mode: dark charcoal background, soft white text, indigo accents, subtle borders, beautiful contrast for screen reading.' },
                     { label: '🧊 Minimal', prompt: 'Ultra-minimal: whitespace, thin sans-serif, muted grays, one accent color, hairline borders, understated elegance.' },
                   ].map(preset => (
-                    <button key={preset.label} onClick={async () => {
+                    <button key={preset.label} disabled={isGeneratingStyle} onClick={async () => {
                       if (!callGemini) return;
-                      addToast('Applying AI style...', 'info');
+                      setIsGeneratingStyle(true);
+                      addToast('✨ Generating ' + preset.label.replace(/[^\w\s]/g, '').trim() + ' style...', 'info');
                       try {
                         const css = await callGemini(`You are a CSS expert. Create a beautiful, accessible stylesheet.\n\nThe user wants: "${preset.prompt}"\n\nTarget these elements: body, h1, h2, h3, h4, p, main, section, table, th, td, a, blockquote, figure, figcaption, header, footer, nav, ul, ol, li, img, code, pre.\n\nRequirements:\n- WCAG AA contrast (4.5:1 for text)\n- Min 12px font size\n- Include @import for Google Fonts if used\n- Include print styles (@media print)\n\nReturn ONLY CSS — no explanation, no markdown fences.`, true);
                         if (css && pdfPreviewRef.current?.contentDocument) {
@@ -51457,12 +51484,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           style.id = 'ai-restyle';
                           style.textContent = css.replace(/```[\s\S]*?```/g, '').replace(/^```\w*\n?/gm, '').replace(/\n?```$/gm, '').trim();
                           doc.head.appendChild(style);
-                          addToast('✨ AI style applied!', 'success');
+                          addToast('✨ Style applied!', 'success');
                         }
                       } catch(err) { addToast('Style failed — try again', 'error'); }
+                      setIsGeneratingStyle(false);
                     }}
-                      className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[9px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors"
-                    >{preset.label}</button>
+                      className={`px-2 py-1 rounded-md text-[9px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700'}`}
+                    >{isGeneratingStyle ? '⏳ Styling...' : preset.label}</button>
                   ))}
                   {pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle') && (
                     <button onClick={() => {
@@ -53951,6 +53979,75 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       title={exportPreviewMode === 'slides' && !pptxLoaded ? 'Slides library still loading...' : ''}
                     ><Download size={14} /> {exportPreviewMode === 'worksheet' ? 'Print Worksheet' : exportPreviewMode === 'html' ? 'Download HTML' : exportPreviewMode === 'slides' ? (pptxLoaded ? 'Export Slides' : 'Loading...') : 'Download PDF'}</button>
+                    {/* Alternative format exports */}
+                    <details className="relative">
+                      <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">
+                        ♿ Alt Formats <span className="text-[8px] text-slate-400">▾</span>
+                      </summary>
+                      <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl p-2 z-50 w-48 space-y-1">
+                        <button onClick={() => {
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          if (!doc) return;
+                          const html = doc.documentElement.outerHTML;
+                          const text = html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+                          const blob = new Blob([text], { type: 'text/plain' });
+                          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.txt'; a.click(); URL.revokeObjectURL(a.href);
+                          addToast('Plain text downloaded', 'success');
+                        }} className="w-full text-left px-2 py-1.5 text-[10px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📄 Plain Text (.txt)</button>
+                        <button onClick={() => {
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          if (!doc) return;
+                          const html = doc.documentElement.outerHTML;
+                          let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
+                            .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+                            .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+                            .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+                            .replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
+                          const blob = new Blob([md], { type: 'text/markdown' });
+                          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.md'; a.click(); URL.revokeObjectURL(a.href);
+                          addToast('Markdown downloaded', 'success');
+                        }} className="w-full text-left px-2 py-1.5 text-[10px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📝 Markdown (.md)</button>
+                        <button onClick={() => {
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          if (!doc || !window.JSZip) { addToast('ePub library loading...', 'info'); return; }
+                          const html = doc.documentElement.outerHTML;
+                          const title = 'AlloFlow Document';
+                          const xmlTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+                          const zip = new window.JSZip();
+                          zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+                          zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>en</dc:language></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
+                          let xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+                          if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
+                          zip.file('OEBPS/content.xhtml', xhtml);
+                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">Document</a></li></ol></nav></body></html>`);
+                          zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' }).then(blob => {
+                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '.epub'; a.click(); URL.revokeObjectURL(a.href);
+                            addToast('ePub downloaded', 'success');
+                          });
+                        }} className="w-full text-left px-2 py-1.5 text-[10px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📚 ePub (e-readers)</button>
+                        <button onClick={() => {
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          if (!doc) return;
+                          const text = doc.body.innerText || doc.body.textContent || '';
+                          const brailleMap = {'a':'1','b':'12','c':'14','d':'145','e':'15','f':'124','g':'1245','h':'125','i':'24','j':'245','k':'13','l':'123','m':'134','n':'1345','o':'135','p':'1234','q':'12345','r':'1235','s':'234','t':'2345','u':'136','v':'1236','w':'2456','x':'1346','y':'13456','z':'1356',' ':' ','1':'1','2':'12','3':'14','4':'145','5':'15','6':'124','7':'1245','8':'125','9':'24','0':'245','.':'256',',':'2','?':'236','!':'235',':':'25',';':'23','-':'36',"'":"3"};
+                          const dotToAscii = (dots) => String.fromCharCode(0x2800 + dots.split('').reduce((s, d) => s + (1 << (parseInt(d) - 1)), 0));
+                          let brf = '';
+                          text.split('\n').forEach(line => {
+                            let bl = ''; const lower = line.toLowerCase();
+                            for (let i = 0; i < lower.length; i++) {
+                              if (line[i] !== lower[i]) bl += dotToAscii('6');
+                              if (/[0-9]/.test(lower[i]) && (i === 0 || !/[0-9]/.test(lower[i-1]))) bl += dotToAscii('3456');
+                              bl += brailleMap[lower[i]] ? dotToAscii(brailleMap[lower[i]]) : lower[i];
+                            }
+                            brf += bl + '\n';
+                          });
+                          const blob = new Blob([brf], { type: 'text/plain' });
+                          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.brf'; a.click(); URL.revokeObjectURL(a.href);
+                          addToast('Electronic Braille (BRF) downloaded', 'success');
+                        }} className="w-full text-left px-2 py-1.5 text-[10px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">⠿ Electronic Braille (.brf)</button>
+                      </div>
+                    </details>
                   </div>
                 </div>
                 {/* Formatting toolbar */}

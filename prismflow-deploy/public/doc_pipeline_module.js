@@ -624,7 +624,11 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
         };
       }
     } catch (e) {}
-    const batchTransformPrompt = `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.
+
+    // Check for user style preference (set via UI before remediation)
+    const _stylePref = typeof window !== 'undefined' ? window.__pdfStylePreference : '';
+    const _styleInstructions = _stylePref === 'academic' ? '\nSTYLE PREFERENCE: Academic — use serif fonts (Georgia), navy (#1b3a5c) and gold (#b8860b) color scheme, formal spacing, scholarly appearance.' : _stylePref === 'elementary' ? '\nSTYLE PREFERENCE: Kid-friendly — use rounded corners (border-radius: 12px), bright cheerful colors (teal, coral, purple), larger fonts (16px base), playful section cards with soft shadows.' : _stylePref === 'dark' ? '\nSTYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), soft white text (#e2e8f0), indigo accents (#818cf8), subtle borders, excellent contrast.' : _stylePref === 'magazine' ? '\nSTYLE PREFERENCE: Magazine editorial — large hero headings, pull quotes with colored left borders, serif body text (Georgia), elegant professional feel.' : _stylePref === 'minimal' ? '\nSTYLE PREFERENCE: Minimalist — lots of whitespace, thin sans-serif font, muted grays, one accent color (#6366f1), hairline borders, understated elegance.' : '';
+    const batchTransformPrompt = `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.${_styleInstructions}
 
 ORIGINAL ACCESSIBILITY ISSUES FOUND:
 ${batchIssueList}

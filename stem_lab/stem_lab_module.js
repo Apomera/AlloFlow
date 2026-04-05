@@ -3777,6 +3777,7 @@
             atcTower: true,
             musicSynth: true,
             beehive: true,
+            echolocation: true,
             oratory: true,
             singing: true
           };

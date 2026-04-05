@@ -224,6 +224,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_geosandbox.js',
     'stem_lab/stem_tool_inequality.js',
     'stem_lab/stem_tool_lifeskills.js',
+    'stem_lab/stem_tool_echolocation.js',
     'stem_lab/stem_tool_multtable.js',
     'stem_lab/stem_tool_numberline.js',
     'stem_lab/stem_tool_platetectonics.js',
