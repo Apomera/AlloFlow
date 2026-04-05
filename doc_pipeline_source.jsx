@@ -1084,7 +1084,9 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       // Wrap text in a lang span for multilingual content
       fix_lang_span: function(html, p) {
         if (!p.text || !p.lang) return html;
-        return html.replace(p.text, '<span lang="' + p.lang + '">' + p.text + '</span>');
+        // Escape regex special chars in text to prevent crash on content like "Dr. Smith (PhD)"
+        var escaped = p.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return html.replace(new RegExp(escaped), '<span lang="' + p.lang + '">' + p.text + '</span>');
       },
       // Change a specific element's text color for contrast compliance
       fix_contrast: function(html, p) {
@@ -1729,9 +1731,16 @@ Return ONLY JSON:
         return parsed;
       }
       // For long documents, chunk into overlapping sections and audit each
+      // Ensure chunks don't split mid-HTML-tag by adjusting boundaries to nearest '>'
       const chunks = [];
       for (let i = 0; i < htmlContent.length; i += CHUNK_SIZE - OVERLAP) {
-        chunks.push(htmlContent.substring(i, i + CHUNK_SIZE));
+        let end = Math.min(i + CHUNK_SIZE, htmlContent.length);
+        // If we're not at the end, find the nearest '>' to avoid splitting tags
+        if (end < htmlContent.length) {
+          const closeTag = htmlContent.indexOf('>', end);
+          if (closeTag !== -1 && closeTag - end < 200) end = closeTag + 1;
+        }
+        chunks.push(htmlContent.substring(i, end));
       }
       // Always include the <head> section in chunk 0 for global checks (lang, title)
       // Audit chunks in parallel (max 4 concurrent to avoid rate limits)

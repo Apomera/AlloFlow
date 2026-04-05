@@ -927,6 +927,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               'Fun fact: Real bats process all this information in milliseconds using a brain the size of a peanut. They can catch 10-14 insects per minute in total darkness!')
           ),
 
+          // Species Comparison Table
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
+            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD87 Species Comparison \u2014 Insectivore vs Frugivore'),
+            h('div', { className: 'overflow-x-auto' },
+              h('table', { className: 'w-full text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-600'), role: 'table', 'aria-label': 'Species comparison table' },
+                h('thead', null,
+                  h('tr', { className: isDark ? 'bg-slate-700/50' : 'bg-slate-100' },
+                    ['Feature', 'Little Brown Bat', 'Egyptian Fruit Bat'].map(function(hdr) {
+                      return h('th', { key: hdr, className: 'px-2 py-1.5 text-left font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, hdr);
+                    })
+                  )
+                ),
+                h('tbody', null,
+                  [
+                    { feat: 'Sonar Range', ins: 'Long (250px)', fru: 'Short (150px)' },
+                    { feat: 'Beam Width', ins: 'Narrow (focused)', fru: 'Wide (broad)' },
+                    { feat: 'Pulse Rate', ins: 'Fast (8 frame cooldown)', fru: 'Slow (20 frame cooldown)' },
+                    { feat: 'Speed', ins: 'Fast (4 px/frame)', fru: 'Slower (3 px/frame)' },
+                    { feat: 'Prey', ins: 'Moths (moving, erratic)', fru: 'Fruit (stationary, glowing)' },
+                    { feat: 'Catch Difficulty', ins: 'Hard (moths evade)', fru: 'Medium (must find hidden fruit)' },
+                    { feat: 'Energy Drain', ins: 'Higher (active hunting)', fru: 'Lower (efficient glider)' },
+                    { feat: 'Night Vision', ins: 'None (pure sonar)', fru: 'Partial (fruit glows faintly)' },
+                    { feat: 'Sonar Type', ins: 'FM sweeps (laryngeal)', fru: 'Tongue clicks' }
+                  ].map(function(row, ri) {
+                    return h('tr', { key: ri, className: ri % 2 === 0 ? (isDark ? 'bg-slate-800/30' : 'bg-slate-50/50') : '' },
+                      h('td', { className: 'px-2 py-1 font-bold' }, row.feat),
+                      h('td', { className: 'px-2 py-1' }, row.ins),
+                      h('td', { className: 'px-2 py-1' }, row.fru)
+                    );
+                  })
+                )
+              )
+            ),
+            h('div', { className: 'mt-2 text-[9px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
+              'Both strategies are real! Insectivorous bats evolved high-powered laryngeal echolocation for active hunting. Most fruit bats rely on vision and smell, but Egyptian fruit bats are the exception \u2014 they developed tongue-click echolocation independently.')
+          ),
+
+          // Game Mechanics Panel
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/40 border border-slate-700/30' : 'bg-white border border-slate-200') },
+            h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDFAE Flight & Energy Mechanics'),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
+              h('div', null,
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, '\uD83E\uDD87 Flight Physics'),
+                h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                  h('li', null, 'Gravity pulls the bat downward constantly'),
+                  h('li', null, 'Press W/Up to flap wings (upward thrust impulse)'),
+                  h('li', null, 'Momentum builds gradually \u2014 no instant stops'),
+                  h('li', null, 'Air friction slows you down over time'),
+                  h('li', null, 'Terminal velocity limits fall speed'))),
+              h('div', null,
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, '\u26A1 Energy System'),
+                h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                  h('li', null, 'Energy starts at 100% and drains while flying'),
+                  h('li', null, 'Catching prey/fruit restores +15 energy'),
+                  h('li', null, 'Perching on surfaces regenerates energy slowly'),
+                  h('li', null, 'At 0% energy, you can only glide downward'),
+                  h('li', null, 'Frugivores drain energy slower (efficient gliders)'))),
+              h('div', null,
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, '\uD83E\uDD8B Moth Behavior'),
+                h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                  h('li', null, 'Moths move erratically (sinusoidal + random)'),
+                  h('li', null, '40% chance to evade when sonar hits them'),
+                  h('li', null, 'Tiger moths JAM your sonar with ultrasonic clicks!'),
+                  h('li', null, 'Luna moths are bigger, slower, worth more energy'),
+                  h('li', null, 'Mosquito swarms are tiny and fast'))),
+              h('div', null,
+                h('div', { className: 'font-bold mb-1 ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, '\uD83D\uDDFA\uFE0F Cave Secrets'),
+                h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                  h('li', null, 'Stalactites drip water \u2014 watch for ripples'),
+                  h('li', null, 'A bat colony hangs on the ceiling'),
+                  h('li', null, 'Find the hidden passage to a secret chamber'),
+                  h('li', null, 'Spider webs are nearly invisible to sonar'),
+                  h('li', null, 'A rare Luna Moth hides in the hidden chamber')))
+            )
+          ),
+
           // Material echo guide
           h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-slate-800/40 border border-slate-700/30' : 'bg-white border border-slate-200') },
             h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDDF1 Echo Materials Guide'),
@@ -2315,6 +2391,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
             h('div', { className: 'mt-3 text-[10px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
               'Moth counter-strategies: Some moths have ears that detect bat sonar and trigger evasive dives. Others (tiger moths) emit their own ultrasonic clicks that "jam" bat sonar \u2014 acoustic warfare in the night sky!')
+          ),
+
+          // Moth Types & Anti-Predator Adaptations
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-amber-900/20 border border-amber-800/30' : 'bg-amber-50 border border-amber-200') },
+            h('div', { className: 'flex items-center gap-2 mb-3' },
+              h('span', { className: 'text-xl' }, '\uD83E\uDD8B'),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-800') }, 'Moth Types & Anti-Predator Adaptations')),
+            h('p', { className: 'text-[10px] mb-3 ' + (isDark ? 'text-amber-200' : 'text-amber-700') },
+              'The evolutionary arms race between bats and moths has produced remarkable adaptations on both sides. In the simulator, you encounter four moth types, each based on real species:'),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+              [
+                { type: 'Regular Moth', emoji: '\uD83E\uDD8B', color: isDark ? 'bg-slate-700/40' : 'bg-white',
+                  desc: 'Standard moths with basic flight patterns. Some have evolved tympanic organs (ears) on their thorax that detect bat ultrasound, triggering evasive dives and loops.',
+                  stat: '40% evasion chance | Normal speed | +15 energy' },
+                { type: 'Tiger Moth', emoji: '\uD83E\uDD8B', color: isDark ? 'bg-orange-900/30' : 'bg-orange-50',
+                  desc: 'Tiger moths produce their own ultrasonic clicks that JAM bat sonar! They emit rapid trains of clicks that interfere with the bat\'s ability to process echoes \u2014 like a biological radar jammer. Some species also use these clicks to warn bats that they taste bad (aposematism).',
+                  stat: '30% evasion + 50% sonar jamming | Slower | +15 energy' },
+                { type: 'Luna Moth', emoji: '\uD83E\uDD8B', color: isDark ? 'bg-emerald-900/30' : 'bg-emerald-50',
+                  desc: 'Luna moths are large, beautiful moths with long tail streamers. Research shows these tails confuse bat sonar by creating echo signatures that misdirect the bat\'s attack \u2014 the bat strikes the tail instead of the body. They are worth more energy when caught.',
+                  stat: '20% evasion | Slow & large | +25 energy' },
+                { type: 'Mosquito Swarm', emoji: '\uD83E\uDD9F', color: isDark ? 'bg-slate-700/40' : 'bg-slate-100',
+                  desc: 'Tiny, fast-moving targets that cluster together. While individual mosquitoes are hard to echolocate due to their small size, bats use a rapid-fire "buzz phase" approach to track them. Little brown bats can catch 1,000 mosquitoes per hour!',
+                  stat: '15% evasion | Fast & tiny | +10 energy' }
+              ].map(function(m, mi) {
+                return h('div', { key: mi, className: 'p-3 rounded-lg border ' + m.color + ' ' + (isDark ? 'border-slate-600/30' : 'border-slate-200') },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'text-lg' }, m.emoji),
+                    h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, m.type)),
+                  h('p', { className: 'text-[10px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, m.desc),
+                  h('div', { className: 'mt-1 text-[9px] font-mono ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') }, m.stat)
+                );
+              })
+            ),
+            h('div', { className: 'mt-3 p-2 rounded-lg ' + (isDark ? 'bg-amber-900/30' : 'bg-amber-100') },
+              h('div', { className: 'text-[10px] font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, '\uD83E\uDDEC Evolutionary Arms Race'),
+              h('p', { className: 'text-[9px] ' + (isDark ? 'text-amber-200' : 'text-amber-800') },
+                'This bat-moth conflict has been raging for 65+ million years. As bats evolved better sonar, moths evolved ears. As moths evolved ears, some bats evolved "stealth" echolocation (quieter calls). As some bats went quiet, tiger moths evolved sonar jamming. The arms race continues! This is a textbook example of co-evolution driven by predator-prey dynamics.')
+            )
+          ),
+
+          // Fruit Foraging Biology (for frugivore context)
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-emerald-900/20 border border-emerald-800/30' : 'bg-emerald-50 border border-emerald-200') },
+            h('div', { className: 'flex items-center gap-2 mb-3' },
+              h('span', { className: 'text-xl' }, '\uD83C\uDF4C'),
+              h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, 'Fruit Bat Foraging \u2014 A Different Strategy')),
+            h('p', { className: 'text-[10px] mb-3 ' + (isDark ? 'text-emerald-200' : 'text-emerald-700') },
+              'While insectivorous bats are aerial hunters, fruit bats use a completely different foraging strategy. In the simulator\'s frugivore mode, you experience how Egyptian fruit bats navigate:'),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+              h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
+                h('div', { className: 'text-[10px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDC41\uFE0F Night Vision'),
+                h('p', { className: 'text-[9px] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
+                  'Fruit bats have large eyes with a high density of rod cells, giving them excellent low-light vision. In the simulator, ripe fruit glows faintly even without sonar pulses \u2014 simulating this visual advantage.')),
+              h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
+                h('div', { className: 'text-[10px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDC43 Smell'),
+                h('p', { className: 'text-[9px] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
+                  'In reality, fruit bats locate ripe fruit primarily through smell. Ripe mangoes, figs, and guavas emit strong volatile compounds that bats can detect from hundreds of meters away.')),
+              h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
+                h('div', { className: 'text-[10px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDD0A Tongue Clicks'),
+                h('p', { className: 'text-[9px] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
+                  'Egyptian fruit bats produce echolocation clicks with their tongue, not their larynx. These clicks are lower intensity and broader beam than insectivore sonar \u2014 good for obstacle avoidance but not precise enough for catching insects.')),
+              h('div', { className: 'p-3 rounded-lg ' + (isDark ? 'bg-emerald-900/30' : 'bg-emerald-100') },
+                h('div', { className: 'text-[10px] font-bold mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83C\uDF31 Seed Dispersal'),
+                h('p', { className: 'text-[9px] ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') },
+                  'Fruit bats are critical for tropical ecosystems. They eat fruit and deposit seeds far from the parent tree. A single fruit bat can disperse thousands of seeds per night, making them essential for forest regeneration.'))
+            ),
+            h('div', { className: 'mt-2 text-[9px] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
+              'Over 500 plant species depend on bat pollination or seed dispersal, including mangoes, bananas, agave (tequila!), and durian. Without fruit bats, many tropical foods would not exist.')
           ),
 
           // Doppler Math Explainer

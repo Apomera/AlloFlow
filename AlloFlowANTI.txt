@@ -50881,6 +50881,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (!html) return;
                             const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
                             const textContent = html.replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim();
+                            // XML-escape title for OPF metadata
+                            const xmlTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                             // Build minimal ePub (ZIP containing XHTML + OPF + NCX)
                             if (!window.JSZip) { addToast('ZIP library loading...', 'info'); return; }
                             const zip = new window.JSZip();
@@ -50890,7 +50892,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier>
-    <dc:title>${title}</dc:title>
+    <dc:title>${xmlTitle}</dc:title>
     <dc:language>en</dc:language>
     <dc:creator>AlloFlow Document Pipeline</dc:creator>
     <dc:date>${new Date().toISOString().split('T')[0]}</dc:date>
