@@ -265,21 +265,75 @@
           : isMid
           ? 'Use grade-appropriate vocabulary for ' + gl + ' students. Include descriptive language and character development.'
           : 'Use rich, literary language appropriate for ' + gl + '. Include at least one literary device (metaphor, foreshadowing, irony).';
-        var prompt = 'You are a talented fiction writer for ' + gl + ' students.\n\n'
+        // Determine if we need multi-pass generation
+        // Gemini max output ≈ 8000 chars ≈ ~1200 words. Chunk at 800 words for safety.
+        var CHUNK_WORDS = 800;
+        var targetWords = genLength === 'custom' ? parseInt(customWordCount || '600', 10) : (genLength === 'short' ? 300 : genLength === 'long' ? 1200 : 650);
+        var numChunks = Math.ceil(targetWords / CHUNK_WORDS);
+        var needsChunking = numChunks > 1;
+        var chunkTarget = Math.ceil(targetWords / numChunks);
+
+        var basePrompt = 'You are a talented fiction writer for ' + gl + ' students.\n\n'
           + 'Write a ' + genreObj.label + ' story'
           + (genPrompt.trim() ? ' with these instructions: "' + genPrompt.trim() + '"' : '') + '.\n\n'
           + 'Requirements:\n'
           + '- Include ' + genCharCount + ' distinct characters with dialogue\n'
-          + '- ' + vocabGuide + ' Target length: ' + wordRange + ' words.\n'
-          + '- Include a clear beginning, middle, and end\n'
+          + '- ' + vocabGuide + '\n'
           + '- Use dialogue tags ("said", "whispered", "exclaimed") so characters are clearly identified\n'
-          + '- Include sensory details and setting description\n\n'
-          + 'Return ONLY the story text — no title header, no commentary.';
-        var result = await onCallGemini(prompt, false);
-        if (result && result.trim().length > 50) {
-          setSourceText(result.trim());
+          + '- Include sensory details and setting description\n';
+
+        var fullStory = '';
+
+        if (needsChunking) {
+          // Multi-pass: generate story in chunks of ~800 words each
+          // Pass 1: Beginning (do NOT resolve)
+          var p1 = basePrompt + '- Target length: approximately ' + chunkTarget + ' words.\n'
+            + '- Write the BEGINNING of the story. Introduce characters, setting, and the central conflict.\n'
+            + '- End at a compelling moment — do NOT resolve the story yet.\n\n'
+            + 'Return ONLY the story text — no title, no commentary.';
+          var part1 = await onCallGemini(p1, false);
+          if (!part1 || part1.trim().length < 50) throw new Error('Story generation failed');
+          fullStory = part1.trim();
+
+          // Middle passes (if 3+ chunks needed)
+          for (var ci = 1; ci < numChunks - 1; ci++) {
+            setLoadingMsg('Writing part ' + (ci + 1) + ' of ' + numChunks + '...');
+            await new Promise(function (r) { setTimeout(r, 1500); });
+            var pMid = 'You are continuing a ' + genreObj.label + ' story for ' + gl + ' students.\n\n'
+              + 'Story so far (ending):\n"""\n' + fullStory.substring(fullStory.length - 1500) + '\n"""\n\n'
+              + 'Requirements:\n'
+              + '- Write the next ~' + chunkTarget + ' words, developing the plot further.\n'
+              + '- Do NOT end the story yet — more parts are coming.\n'
+              + '- Maintain the same characters, tone, and style. ' + vocabGuide + '\n\n'
+              + 'Return ONLY the continuation — no headers, no commentary. Start exactly where the previous part left off.';
+            var midResult = await onCallGemini(pMid, false);
+            if (midResult && midResult.trim().length > 30) fullStory += '\n\n' + midResult.trim();
+          }
+
+          // Final pass: Climax and ending
+          setLoadingMsg('Writing the ending...');
+          await new Promise(function (r) { setTimeout(r, 1500); });
+          var pEnd = 'You are writing the FINAL part of a ' + genreObj.label + ' story for ' + gl + ' students.\n\n'
+            + 'Story so far (ending):\n"""\n' + fullStory.substring(fullStory.length - 1500) + '\n"""\n\n'
+            + 'Requirements:\n'
+            + '- Write approximately ' + chunkTarget + ' more words.\n'
+            + '- Bring the story to a satisfying CLIMAX and CONCLUSION. Resolve all plot threads.\n'
+            + '- Maintain the same characters, tone, and style. ' + vocabGuide + '\n\n'
+            + 'Return ONLY the conclusion — no headers, no commentary.';
+          var endResult = await onCallGemini(pEnd, false);
+          if (endResult && endResult.trim().length > 30) fullStory += '\n\n' + endResult.trim();
+        } else {
+          // Single-pass generation for shorter stories
+          var prompt = basePrompt + '- Target length: ' + wordRange + ' words.\n'
+            + '- Include a clear beginning, middle, and end\n\n'
+            + 'Return ONLY the story text — no title header, no commentary.';
+          fullStory = await onCallGemini(prompt, false);
+        }
+
+        if (fullStory && fullStory.trim().length > 50) {
+          setSourceText(fullStory.trim());
           setInputMode('paste');
-          addToast && addToast('Story generated! Review it, then click "Create Script" to continue.', 'success');
+          addToast && addToast('Story generated! ' + fullStory.trim().split(/\s+/).length + ' words. Review it, then click "Create Script".', 'success');
         } else {
           addToast && addToast('Generation returned too little text. Try again.', 'error');
         }

@@ -503,35 +503,124 @@ exports.dashboardData = onRequest(
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Helper: Get Brightspace OAuth2 token
+ * Helper: Get Brightspace OAuth2 token using stored refresh token
+ * Initial consent is done via /api/lmsAuth (browser redirect flow).
+ * After that, this function refreshes the token automatically.
  */
 async function getBrightspaceToken(platformUrl) {
-  const tokenUrl = `${platformUrl}/d2l/auth/oauth2/token`;
+  // Check for stored refresh token in Firestore
+  const configRef = db.collection("config").doc("lmsAuth");
+  const configSnap = await configRef.get();
+  if (!configSnap.exists || !configSnap.data().refreshToken) {
+    throw new Error("No LMS refresh token. An admin must authorize via /api/lmsAuth first.");
+  }
+
+  const tokenUrl = `${platformUrl}/d2l/lp/auth/oauth2/token`;
   const resp = await fetch(tokenUrl, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      grant_type: "client_credentials",
+      grant_type: "refresh_token",
+      refresh_token: configSnap.data().refreshToken,
       client_id: LMS_CLIENT_ID.value(),
       client_secret: LMS_CLIENT_SECRET.value(),
-      scope: "core:*:* content:*:*",
     }),
   });
-  if (!resp.ok) throw new Error(`OAuth2 token failed: ${resp.status}`);
+  if (!resp.ok) throw new Error(`OAuth2 token refresh failed: ${resp.status}. Admin may need to re-authorize via /api/lmsAuth.`);
   const data = await resp.json();
+
+  // Store new refresh token (they rotate)
+  if (data.refresh_token) {
+    await configRef.update({ refreshToken: data.refresh_token, lastRefresh: new Date().toISOString() });
+  }
+
   return data.access_token;
 }
 
 /**
- * Helper: Fetch Brightspace API with auth
+ * Helper: Fetch Brightspace API with auth + rate limit handling
  */
 async function brightspaceApi(platformUrl, token, path) {
   const resp = await fetch(`${platformUrl}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  if (resp.status === 429) {
+    const retryAfter = parseInt(resp.headers.get("Retry-After") || "5");
+    await new Promise(r => setTimeout(r, retryAfter * 1000));
+    return brightspaceApi(platformUrl, token, path); // retry once
+  }
   if (!resp.ok) return null;
   return resp.json();
 }
+
+/**
+ * LMS OAuth2 Authorization — admin visits this URL to grant Brightspace access
+ * Step 1: GET /api/lmsAuth → redirects to Brightspace consent page
+ * Step 2: Brightspace redirects back with ?code= → exchanges for tokens → stores refresh token
+ */
+exports.lmsAuth = onRequest(
+  {
+    region: "us-central1",
+    memory: "256MiB",
+    invoker: "public",
+    secrets: [LMS_CLIENT_ID, LMS_CLIENT_SECRET, LTI_PLATFORM_URL],
+  },
+  async (req, res) => {
+    const platformUrl = LTI_PLATFORM_URL.value();
+    const clientId = LMS_CLIENT_ID.value();
+    const clientSecret = LMS_CLIENT_SECRET.value();
+    if (!platformUrl || !clientId) {
+      res.status(400).send("LMS credentials not configured. Set LMS_CLIENT_ID, LMS_CLIENT_SECRET, LTI_PLATFORM_URL in Firebase secrets.");
+      return;
+    }
+
+    const redirectUri = `https://${req.headers.host}/lmsAuth`;
+
+    // Step 2: Exchange code for tokens
+    if (req.query.code) {
+      try {
+        const tokenResp = await fetch(`${platformUrl}/d2l/lp/auth/oauth2/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            grant_type: "authorization_code",
+            code: req.query.code,
+            redirect_uri: redirectUri,
+            client_id: clientId,
+            client_secret: clientSecret,
+          }),
+        });
+        if (!tokenResp.ok) throw new Error(`Token exchange failed: ${tokenResp.status}`);
+        const tokens = await tokenResp.json();
+
+        // Store refresh token in Firestore
+        await db.collection("config").doc("lmsAuth").set({
+          refreshToken: tokens.refresh_token,
+          authorized: true,
+          authorizedAt: new Date().toISOString(),
+          platformUrl,
+        });
+
+        res.status(200).send(`<html><body style="font-family:system-ui;max-width:500px;margin:80px auto;text-align:center">
+<h1 style="color:#16a34a">LMS Authorization Successful</h1>
+<p>AlloFlow is now connected to Brightspace. The scheduled LMS scan will run weekly, or you can trigger a scan manually.</p>
+<p><a href="/">Return to AlloFlow</a></p></body></html>`);
+      } catch (err) {
+        res.status(500).send("Authorization failed: " + err.message);
+      }
+      return;
+    }
+
+    // Step 1: Redirect to Brightspace consent page
+    const authUrl = `${platformUrl}/d2l/lp/auth/oauth2/authorize?` + new URLSearchParams({
+      response_type: "code",
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: "core:*:* content:modules:read content:topics:read organizations:orgunit:read",
+    }).toString();
+    res.redirect(authUrl);
+  }
+);
 
 /**
  * Scheduled LMS Scan — runs weekly, crawls active courses for documents

@@ -40,6 +40,10 @@
                 "function": "storeRemediated"
             },
             {
+                "source": "/api/lmsAuth",
+                "function": "lmsAuth"
+            },
+            {
                 "source": "**",
                 "destination": "/index.html"
             }
