@@ -7099,6 +7099,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_a11yauditor.js',
         'stem_lab/stem_tool_aquarium.js',
         'stem_lab/stem_tool_ecosystem.js',
+        'stem_lab/stem_tool_epidemic.js',
         'stem_lab/stem_tool_molecule.js',
         'stem_lab/stem_tool_solarsystem.js',
         'stem_lab/stem_tool_universe.js',
@@ -49954,9 +49955,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (pass > 0) break; // two consecutive non-improvements — stop
                               }
                             }
-                            const finalScore = (bestAi?.issues?.length === 0 && bestAxe?.totalViolations === 0) ? 100 : bestAi?.score;
+                            // Run 2 AI audits at the end and average for reliable scoring
+                            // (single auditor scores vary too much — causes score paradox)
+                            setPdfFixStep('Final verification (averaging 2 audits)...');
+                            const [endAi1, endAi2, endAxe] = await Promise.all([
+                              auditOutputAccessibility(bestHtml),
+                              auditOutputAccessibility(bestHtml),
+                              runAxeAudit(bestHtml)
+                            ]);
+                            const endScores = [endAi1, endAi2].map(a => a?.score).filter(s => typeof s === 'number');
+                            // If scores diverge > 15 points, add tiebreaker
+                            let avgScore;
+                            if (endScores.length === 2 && Math.abs(endScores[0] - endScores[1]) > 15) {
+                              const tiebreaker = await auditOutputAccessibility(bestHtml);
+                              if (tiebreaker?.score != null) endScores.push(tiebreaker.score);
+                              warnLog('[Fix Remaining] Score divergence (' + endScores.join(', ') + ') — added tiebreaker');
+                            }
+                            avgScore = endScores.length > 0 ? Math.round(endScores.reduce((a,b) => a+b, 0) / endScores.length) : bestAi?.score;
+                            const finalAxeResult = endAxe || bestAxe;
+                            const finalAiResult = endAi1 || bestAi;
+                            if (finalAiResult) finalAiResult.score = avgScore;
+                            const finalScore = ((finalAiResult?.issues?.length || 0) === 0 && (finalAxeResult?.totalViolations || 0) === 0) ? 100 : avgScore;
                             const startCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
-                            setPdfFixResult(p => ({...p, accessibleHtml: bestHtml, verificationAudit: bestAi, axeAudit: bestAxe, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0) + totalPasses, htmlChars: bestHtml.length}));
+                            setPdfFixResult(p => ({...p, accessibleHtml: bestHtml, verificationAudit: finalAiResult, axeAudit: finalAxeResult, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0) + totalPasses, htmlChars: bestHtml.length}));
                             addToast(bestIssueCount < startCount ? `Fixed! ${startCount} → ${bestIssueCount} issues (${totalPasses} passes).` : `${totalPasses} passes completed. ${bestIssueCount} issues may need manual remediation.`, bestIssueCount < startCount ? 'success' : 'info');
                           } catch(e) { warnLog('Fix remaining failed:', e); addToast('Fix remaining issues failed', 'error'); }
                           setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = '';
