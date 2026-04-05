@@ -216,7 +216,7 @@ Return ONLY valid JSON:
         const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
         const issueCount = critCount + seriousCount + modCount + minCount;
         const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
-        const pf = 1 - passRatio * 0.3;
+        const pf = 1 - passRatio * 0.4;
         const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
         // If Gemini's score diverges significantly from the rubric calculation, override it
         if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
@@ -252,7 +252,7 @@ Return ONLY valid JSON:
           const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
           const issueCount = critCount + seriousCount + modCount + minCount;
           const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
-          const pf = 1 - passRatio * 0.3;
+          const pf = 1 - passRatio * 0.4;
           const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
           if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) a.score = calculatedScore;
         });
@@ -549,7 +549,7 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
       const issueCount = critCount + seriousCount + modCount + minCount;
       const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
-      const pf = 1 - passRatio * 0.3;
+      const pf = 1 - passRatio * 0.4;
       const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
       if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
         a.score = calculatedScore;
@@ -1538,7 +1538,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     // ── Final authoritative audit: full audit (not quickMode) for accurate scoring ──
     // quickMode only samples head+tail of long docs, missing violations in the middle
     try {
-      const batchFinalAudit = await auditOutputAccessibility(accessibleHtml, false);
+      const batchFinalAudit = await auditOutputAccessibility(accessibleHtml);
       if (batchFinalAudit) {
         curVerification = batchFinalAudit;
         log(`Final audit: score ${batchFinalAudit.score}, ${(batchFinalAudit.issues || []).length} remaining issues, ${(batchFinalAudit.passes || []).length} passes`);
@@ -1988,18 +1988,17 @@ Return ONLY JSON:
     }
     return JSON.parse(cleaned);
   };
-  // quickMode: audit only a representative sample (head + middle + tail) for fast mid-pipeline checks
-  // Full mode: audit every chunk for final verification
-  const auditOutputAccessibility = async (htmlContent, quickMode = false) => {
+  // Audit HTML for WCAG 2.1 AA compliance
+  // Short docs (≤8KB): single Gemini call. Long docs: chunked with deduplication.
+  const auditOutputAccessibility = async htmlContent => {
     if (!callGemini || !htmlContent) return null;
     try {
       var _chunkResults$;
       const CHUNK_SIZE = 8000;
       const OVERLAP = 400;
-      // For short documents or quick mode, single audit pass on representative sample
-      if (htmlContent.length <= CHUNK_SIZE || quickMode) {
-        // In quick mode for long docs, sample: first 5K (head/structure) + last 3K (tail/tables)
-        const sampleHtml = quickMode && htmlContent.length > CHUNK_SIZE ? htmlContent.substring(0, 5000) + '\n<!-- ... middle of document omitted for speed ... -->\n' + htmlContent.substring(htmlContent.length - 3000) : htmlContent;
+      // Short documents: single audit pass
+      if (htmlContent.length <= CHUNK_SIZE) {
+        const sampleHtml = htmlContent;
         const result = await callGemini(`You are a WCAG 2.1 AA accessibility auditor. Audit this HTML document for accessibility compliance.\n\n${AUDIT_RUBRIC_PROMPT}\n\nHTML to audit:\n"""${sampleHtml}"""`, true);
         const parsed = parseAuditJson(result);
         if (parsed.issues && Array.isArray(parsed.issues)) {
@@ -2008,7 +2007,7 @@ Return ONLY JSON:
           const pc = (parsed.passes || []).length;
           const ic = parsed.issues.length;
           const passRatio = pc > 0 ? pc / (pc + ic) : 0;
-          const pf = 1 - passRatio * 0.3;
+          const pf = 1 - passRatio * 0.4;
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions * pf));
           if (Math.abs((parsed.score || 0) - calculatedScore) > 12) parsed.score = calculatedScore;
         }
@@ -2089,7 +2088,7 @@ HTML section ${chunkNum}/${chunks.length}:
       // Pass credit: ratio of passes to total checks — proportional to document quality
       const issueCount = mergedIssues.length;
       const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
-      const passFactor = 1 - passRatio * 0.3;
+      const passFactor = 1 - passRatio * 0.4;
       const adjustedDeductions = Math.round(rawDeductions * passFactor);
       const mergedScore = Math.max(0, 100 - adjustedDeductions);
       // Summary from first chunk (has the global perspective)
@@ -3579,7 +3578,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // ── Steps 3+4: Run quick AI verification + axe-core IN PARALLEL ──
       // Uses quick mode (sample-based) for speed — full chunked audit runs at the end
       updateProgress(3, 'Running quick verification...');
-      let [verification, axeResultsRaw] = await Promise.all([auditOutputAccessibility(accessibleHtml, true), runAxeAudit(accessibleHtml)]);
+      let [verification, axeResultsRaw] = await Promise.all([auditOutputAccessibility(accessibleHtml), runAxeAudit(accessibleHtml)]);
       const afterScore = verification ? verification.score : null;
       let axeResults = axeResultsRaw;
 
@@ -3873,8 +3872,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // The verification from the fix loop may have stale issues from an earlier pass.
       // This ensures the issues list matches what the user actually gets.
       try {
-        // Full audit (not quickMode) for final score — quickMode misses mid-document violations
-        const finalAudit = await auditOutputAccessibility(accessibleHtml, false);
+        // Full chunked audit for accurate final scoring
+        const finalAudit = await auditOutputAccessibility(accessibleHtml);
         if (finalAudit) {
           verification = finalAudit;
           warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes`);
@@ -4171,7 +4170,7 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Mitigate</td><td style="padding:8px;border:1px solid #e2e8f0">Each passed check reduces deduction impact up to 15% (strengths offset weaknesses, capped)</td></tr>
       </tbody>
     </table>
-    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passing checks proportionally offset deductions — a document that passes 90% of checks receives up to 27% reduction in effective deductions, reflecting that the violations represent a small proportion of the overall content. Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
+    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passing checks proportionally offset deductions — a document that passes 90% of checks receives up to 36% reduction in effective deductions, reflecting that remaining violations represent a small proportion of the overall content. Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
     html += `<div class="footer">
       <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI triangulation with adaptive confidence scoring, statistical reliability analysis (ICC, SEM, CV), and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
       <p><strong>Standards:</strong> WCAG 2.1 Level AA | ADA Title II (28 CFR Part 35 Subpart H) | Section 508 | EN 301 549</p>

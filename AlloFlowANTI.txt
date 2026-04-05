@@ -50003,7 +50003,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const rawDed = critC * 15 + serC * 10 + modC * 5 + minC * 2;
                     const ic = critC + serC + modC + minC;
                     const passRatio = pc > 0 ? pc / (pc + ic) : 0;
-                    const pf = 1 - (passRatio * 0.3);
+                    const pf = 1 - (passRatio * 0.4);
                     const saved = rawDed - Math.round(rawDed * pf);
                     return (
                     <section aria-label={`${pc} accessibility checks passed`}>
