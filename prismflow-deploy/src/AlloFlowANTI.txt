@@ -7143,6 +7143,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_transitions.js',
         'sel_hub/sel_tool_upstander.js',
         'sel_hub/sel_tool_voicedetective.js',
+        'sel_hub/sel_tool_sociallab.js',
       ];
       // Wait for StemLab registry to be available before loading plugins
       var waitForRegistry = function(cb) {
@@ -50498,6 +50499,152 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                           }} />
                         </label>
                       </div>
+
+                      {/* Alternative Formats (matching Anthology Ally feature set) */}
+                      <details className="group">
+                        <summary className="text-[10px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
+                          📑 Alternative Formats <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                        </summary>
+                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-3 space-y-1.5">
+                          <p className="text-[9px] text-slate-500">Download the remediated document in accessible alternative formats</p>
+
+                          {/* ePub */}
+                          <button onClick={() => {
+                            const html = pdfFixResult?.accessibleHtml;
+                            if (!html) return;
+                            const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
+                            const textContent = html.replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim();
+                            // Build minimal ePub (ZIP containing XHTML + OPF + NCX)
+                            if (!window.JSZip) { addToast('ZIP library loading...', 'info'); return; }
+                            const zip = new window.JSZip();
+                            zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+                            zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+                            const opf = `<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier>
+    <dc:title>${title}</dc:title>
+    <dc:language>en</dc:language>
+    <dc:creator>AlloFlow Document Pipeline</dc:creator>
+    <dc:date>${new Date().toISOString().split('T')[0]}</dc:date>
+    <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z/, 'Z')}</meta>
+  </metadata>
+  <manifest>
+    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>
+    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine><itemref idref="content"/></spine>
+</package>`;
+                            zip.file('OEBPS/content.opf', opf);
+                            // Clean HTML for XHTML compliance
+                            let xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+                            if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
+                            zip.file('OEBPS/content.xhtml', xhtml);
+                            // Navigation document
+                            const headings = [...html.matchAll(/<h([1-3])[^>]*id="([^"]*)"[^>]*>([^<]+)/gi)];
+                            const navItems = headings.length > 0
+                              ? headings.map(m => `<li><a href="content.xhtml#${m[2]}">${m[3].trim()}</a></li>`).join('\n')
+                              : '<li><a href="content.xhtml">Document</a></li>';
+                            zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head><title>Navigation</title></head>
+<body><nav epub:type="toc"><h1>Table of Contents</h1><ol>${navItems}</ol></nav></body>
+</html>`);
+                            zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' }).then(blob => {
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a'); a.href = url; a.download = title + '.epub';
+                              document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                              addToast('📚 ePub downloaded — open in any e-reader', 'success');
+                            });
+                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                            📚 ePub (e-readers, mobile, Kindle)
+                          </button>
+
+                          {/* Braille BRF */}
+                          <button onClick={() => {
+                            const html = pdfFixResult?.accessibleHtml;
+                            if (!html) return;
+                            const text = html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+                            // ASCII Braille mapping (Grade 1 — letter-by-letter)
+                            const brailleMap = {'a':'1','b':'12','c':'14','d':'145','e':'15','f':'124','g':'1245','h':'125','i':'24','j':'245','k':'13','l':'123','m':'134','n':'1345','o':'135','p':'1234','q':'12345','r':'1235','s':'234','t':'2345','u':'136','v':'1236','w':'2456','x':'1346','y':'13456','z':'1356',' ':' ','1':'1','2':'12','3':'14','4':'145','5':'15','6':'124','7':'1245','8':'125','9':'24','0':'245','.':'256',',':'2','?':'236','!':'235',':':'25',';':'23','-':'36',"'":"3"};
+                            const dotToAscii = (dots) => {
+                              const val = dots.split('').reduce((s, d) => s + (1 << (parseInt(d) - 1)), 0);
+                              return String.fromCharCode(0x2800 + val);
+                            };
+                            let brf = '';
+                            const lines = text.split('\n');
+                            for (const line of lines) {
+                              let brailleLine = '';
+                              const lower = line.toLowerCase();
+                              for (let i = 0; i < lower.length; i++) {
+                                const ch = lower[i];
+                                if (brailleMap[ch]) {
+                                  // Add capital indicator before uppercase
+                                  if (line[i] !== lower[i]) brailleLine += dotToAscii('6');
+                                  // Add number indicator before digits
+                                  if (/[0-9]/.test(ch) && (i === 0 || !/[0-9]/.test(lower[i-1]))) brailleLine += dotToAscii('3456');
+                                  brailleLine += dotToAscii(brailleMap[ch]);
+                                } else {
+                                  brailleLine += ch;
+                                }
+                              }
+                              brf += brailleLine + '\n';
+                            }
+                            const blob = new Blob([brf], { type: 'text/plain;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); a.href = url;
+                            a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            addToast('⠃⠗⠇ Braille file downloaded (Grade 1 BRF)', 'success');
+                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                            ⠃⠗⠇ Electronic Braille (BRF)
+                          </button>
+
+                          {/* Plain text */}
+                          <button onClick={() => {
+                            const html = pdfFixResult?.accessibleHtml;
+                            if (!html) return;
+                            const text = html.replace(/<h([1-6])[^>]*>/gi, (m, l) => '\n' + '#'.repeat(parseInt(l)) + ' ')
+                              .replace(/<\/h[1-6]>/gi, '\n').replace(/<li[^>]*>/gi, '  • ').replace(/<\/li>/gi, '\n')
+                              .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]*>/g, '')
+                              .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+                              .replace(/&#160;/g, ' ').replace(/\n{4,}/g, '\n\n\n').trim();
+                            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); a.href = url;
+                            a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.txt';
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            addToast('📝 Plain text downloaded', 'success');
+                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                            📝 Plain Text (screen readers, large print)
+                          </button>
+
+                          {/* Markdown */}
+                          <button onClick={() => {
+                            const html = pdfFixResult?.accessibleHtml;
+                            if (!html) return;
+                            let md = html.replace(/<h1[^>]*>/gi, '# ').replace(/<\/h1>/gi, '\n\n')
+                              .replace(/<h2[^>]*>/gi, '## ').replace(/<\/h2>/gi, '\n\n')
+                              .replace(/<h3[^>]*>/gi, '### ').replace(/<\/h3>/gi, '\n\n')
+                              .replace(/<h4[^>]*>/gi, '#### ').replace(/<\/h4>/gi, '\n\n')
+                              .replace(/<strong[^>]*>/gi, '**').replace(/<\/strong>/gi, '**')
+                              .replace(/<em[^>]*>/gi, '*').replace(/<\/em>/gi, '*')
+                              .replace(/<a[^>]*href="([^"]*)"[^>]*>/gi, '[').replace(/<\/a>/gi, (m, o, s) => { const href = s.substring(0, o).match(/href="([^"]*)"/); return '](' + (href ? href[1] : '') + ')'; })
+                              .replace(/<li[^>]*>/gi, '- ').replace(/<\/li>/gi, '\n')
+                              .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n')
+                              .replace(/<img[^>]*alt="([^"]*)"[^>]*>/gi, '![$1](image)')
+                              .replace(/<[^>]*>/g, '').replace(/\n{4,}/g, '\n\n\n').trim();
+                            const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); a.href = url;
+                            a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.md';
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            addToast('📋 Markdown downloaded', 'success');
+                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                            📋 Markdown (LMS, wiki, docs)
+                          </button>
+                        </div>
+                      </details>
 
                       {/* Differentiation Tools */}
                       <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-3 space-y-2">
