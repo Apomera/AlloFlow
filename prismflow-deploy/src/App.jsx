@@ -7096,27 +7096,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/story_forge_module.js');
     loadModule('LitLab', 'story_stage_module.js');
-    loadModule('VisualPanelModule', './visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
-    loadModule('AdventureModule', './adventure_module.js');
-    loadModule('StudentInteractionModule', './student_interaction_module.js');
-    loadModule('UIModalsModule', './ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
-    loadModule('PersonaUIModule', './persona_ui_module.js');
-    loadModule('DocPipelineModule', './doc_pipeline_module.js');
-    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7132,7 +7132,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7170,6 +7170,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_circuit.js',
         'stem_lab/stem_tool_climateExplorer.js',
         'stem_lab/stem_tool_fireecology.js',
+        'stem_lab/stem_tool_lifeskills.js',
+        'stem_lab/stem_tool_spacecolony.js',
         'sel_hub/sel_tool_perspective.js',
         'sel_hub/sel_tool_decisions.js',
         'sel_hub/sel_tool_conflict.js',
@@ -49812,10 +49814,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {/* Scoring Breakdown — transparent methodology with live calculation */}
                   {(() => {
                     const critCount = (pdfAuditResult.critical || []).length;
-                    const majCount = (pdfAuditResult.major || []).length;
+                    const seriousCount = (pdfAuditResult.serious || pdfAuditResult.major || []).length;
+                    const modCount = (pdfAuditResult.moderate || []).length;
                     const minCount = (pdfAuditResult.minor || []).length;
                     const passCount = (pdfAuditResult.passes || []).length;
-                    const totalIssues = critCount + majCount + minCount;
+                    const totalIssues = critCount + seriousCount + modCount + minCount;
                     const totalChecks = totalIssues + passCount;
                     const passRate = totalChecks > 0 ? Math.round((passCount / totalChecks) * 100) : 0;
                     const aiScore = pdfAuditResult._aiOnlyScore ?? pdfAuditResult.score;
@@ -49823,7 +49826,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const axeAudit = pdfAuditResult._baselineAxeAudit;
                     const isBlended = pdfAuditResult._scoreIsBlended && axeScore !== undefined;
                     const displayedScore = pdfAuditResult.score;
-                    const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
+                    const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
                     const scoreWithoutPasses = Math.max(0, 100 - rawDed);
                     const passBenefit = Math.max(0, aiScore - scoreWithoutPasses);
                     return (
@@ -49838,7 +49841,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
                         <div className="flex justify-between text-red-700 font-bold"><span>Issues found</span><span>{totalIssues}</span></div>
                         {totalIssues > 0 && (
-                          <div className="text-[9px] text-slate-500 pl-2">{critCount > 0 ? `${critCount} critical` : ''}{critCount > 0 && majCount > 0 ? ', ' : ''}{majCount > 0 ? `${majCount} major` : ''}{(critCount > 0 || majCount > 0) && minCount > 0 ? ', ' : ''}{minCount > 0 ? `${minCount} minor` : ''}</div>
+                          <div className="text-[9px] text-slate-500 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
                         )}
                       </div>
                       {/* Two-engine scores side by side */}
@@ -49926,14 +49929,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </ul>
                     </section>
                   )}
-                  {pdfAuditResult.major?.length > 0 && (
-                    <section aria-label={`${pdfAuditResult.major.length} major accessibility issues`}>
-                      <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">Major Issues ({pdfAuditResult.major.length})</h4>
+                  {(pdfAuditResult.serious || pdfAuditResult.major || []).length > 0 && (
+                    <section aria-label={`${(pdfAuditResult.serious || pdfAuditResult.major).length} serious accessibility issues`}>
+                      <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">Serious Issues ({(pdfAuditResult.serious || pdfAuditResult.major).length})</h4>
                       <ul className="list-none space-y-1.5">
-                      {pdfAuditResult.major.map((issue, i) => (
+                      {(pdfAuditResult.serious || pdfAuditResult.major).map((issue, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-amber-50 p-2 rounded-lg border border-amber-100">
                           <span className="text-amber-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
                           <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-amber-500 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}</div>
+                        </li>
+                      ))}
+                      </ul>
+                    </section>
+                  )}
+                  {(pdfAuditResult.moderate || []).length > 0 && (
+                    <section aria-label={`${pdfAuditResult.moderate.length} moderate accessibility issues`}>
+                      <h4 className="text-xs font-bold text-yellow-600 uppercase tracking-widest mb-2">Moderate Issues ({pdfAuditResult.moderate.length})</h4>
+                      <ul className="list-none space-y-1.5">
+                      {pdfAuditResult.moderate.map((issue, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-yellow-50 p-2 rounded-lg border border-yellow-100">
+                          <span className="text-yellow-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
+                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-yellow-600 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}</div>
                         </li>
                       ))}
                       </ul>
@@ -49952,10 +49968,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {pdfAuditResult.passes?.length > 0 && (() => {
                     const pc = pdfAuditResult.passes.length;
                     const critC = (pdfAuditResult.critical || []).length;
-                    const majC = (pdfAuditResult.major || []).length;
+                    const serC = (pdfAuditResult.serious || pdfAuditResult.major || []).length;
+                    const modC = (pdfAuditResult.moderate || []).length;
                     const minC = (pdfAuditResult.minor || []).length;
-                    const rawDed = critC * 15 + majC * 10 + minC * 5;
-                    const pf = pc > 0 ? 1 / (1 + pc * 0.05) : 1;
+                    const rawDed = critC * 15 + serC * 10 + modC * 5 + minC * 2;
+                    const pf = pc > 0 ? Math.max(0.85, 1 / (1 + pc * 0.05)) : 1;
                     const saved = rawDed - Math.round(rawDed * pf);
                     return (
                     <section aria-label={`${pc} accessibility checks passed`}>
