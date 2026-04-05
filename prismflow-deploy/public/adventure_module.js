@@ -9,6 +9,8 @@
  */
 (function() {
   'use strict';
+  // Pixelated image rendering style (used for adventure pixel art)
+  var STYLE_IMAGE_PIXELATED = { imageRendering: 'pixelated' };
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-adventure')) return;

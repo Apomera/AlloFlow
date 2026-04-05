@@ -27599,12 +27599,50 @@ Return ONLY JSON.`;
          const _dbqFocusTopic = document.getElementById('dbq-focus-topic')?.value || '';
          const _dbqCustomDocs = document.getElementById('dbq-custom-docs')?.value || '';
          const _dbqCustomEssayFocus = document.getElementById('dbq-custom-essay-focus')?.value || '';
+         const _dbqTeacherLinks = document.getElementById('dbq-teacher-links')?.value || '';
+         // ── Web search for real primary sources (search + links modes) ──
+         let _dbqSearchResults = '';
+         if ((_dbqMode === 'search' || _dbqMode === 'links') && (window._webSearch || window._aiBackend?.webSearch)) {
+           try {
+             setGenerationStep('Searching for primary sources...');
+             const searcher = window._webSearch || window._aiBackend?.webSearch;
+             const topic = _dbqFocusTopic || textToProcess.substring(0, 200);
+             let allResults = [];
+             if (_dbqMode === 'links' && _dbqTeacherLinks.trim()) {
+               // Teacher provided URLs — search for title/context of each
+               const urls = _dbqTeacherLinks.trim().split('\n').filter(u => u.trim().startsWith('http'));
+               for (const url of urls.slice(0, 6)) {
+                 try {
+                   const domain = new URL(url.trim()).hostname;
+                   const siteResults = await searcher.search(`site:${domain} ${topic}`, 1);
+                   allResults.push({ url: url.trim(), title: siteResults[0]?.title || domain, snippet: siteResults[0]?.snippet || 'Teacher-provided source' });
+                 } catch(e) { allResults.push({ url: url.trim(), title: url.trim().split('/').pop(), snippet: 'Teacher-provided document' }); }
+               }
+             } else {
+               // Search for real primary sources from trusted archives
+               const [archiveResults, generalResults] = await Promise.all([
+                 searcher.search(`${topic} primary source document site:loc.gov OR site:archives.gov OR site:avalon.law.yale.edu OR site:founders.archives.gov`, 5).catch(() => []),
+                 searcher.search(`${topic} primary source historical document`, 5).catch(() => [])
+               ]);
+               // Merge and deduplicate
+               const seen = new Set();
+               [...archiveResults, ...generalResults].forEach(r => {
+                 if (r.url && !seen.has(r.url)) { seen.add(r.url); allResults.push(r); }
+               });
+             }
+             if (allResults.length > 0) {
+               _dbqSearchResults = '\n\nREAL WEB SOURCES FOUND (use these URLs and information to build document excerpts):\n' +
+                 allResults.slice(0, 8).map((r, i) => `${i + 1}. "${r.title}" — ${r.url}\n   Preview: ${r.snippet || 'No preview available'}`).join('\n') +
+                 '\n\nINSTRUCTIONS FOR WEB SOURCES:\n- Use the actual URLs above in the "sourceUrl" field for each document\n- Use the title and snippet as the basis for the document excerpt, then EXPAND it to a substantial passage\n- Set documentType to "linked" for documents from web sources\n- Students will be able to click through to read the full original source\n';
+             }
+           } catch(searchErr) { console.warn('[DBQ] Web search failed:', searchErr?.message); }
+         }
          const _dbqModeInstructions = _dbqMode === 'perspectives'
            ? `\n\nSPECIAL MODE — COMPETING PERSPECTIVES:\nYou MUST structure this DBQ around two or more clearly opposing viewpoints or interpretations.${_dbqFocusTopic ? ' Focus on: ' + _dbqFocusTopic + '.' : ''}\n- At least 2 documents should represent each major perspective\n- Label each document's perspective in a "perspective" field (e.g., "Federalist", "Anti-Federalist", "Pro-expansion", "Indigenous resistance")\n- The corroborationClaims MUST include at least one claim where documents directly contradict each other\n- The synthesis essay prompt MUST require students to evaluate BOTH perspectives and take a position\n- Include a "perspectives" array in the JSON root: [{"label": "Perspective A Name", "description": "Brief description", "docIds": ["A","C"]}, {"label": "Perspective B Name", "description": "Brief description", "docIds": ["B","D"]}]\n`
-           : _dbqMode === 'search'
-           ? `\n\nSPECIAL MODE — WEB-ENHANCED SOURCES:\nIn addition to extracting documents from the provided source text, you should GENERATE additional document excerpts that represent real historical primary sources relevant to this topic.${_dbqFocusTopic ? ' Search focus: ' + _dbqFocusTopic + '.' : ''}\n- Create realistic excerpts attributed to real historical figures, organizations, or publications (with accurate dates and contexts)\n- Include a mix of document types: speeches, letters, newspaper editorials, government records, testimony, data/statistics\n- Mark AI-generated historical sources with "documentType": "reconstructed" so teachers know they are illustrative, not verbatim\n- Aim for 5-6 total documents (2-3 from source text + 2-3 reconstructed historical sources)\n- Each reconstructed source must include accurate historical context in the "source" field\n`
+           : (_dbqMode === 'search' || _dbqMode === 'links')
+           ? `\n\nSPECIAL MODE — WEB-ENHANCED SOURCES WITH REAL LINKS:\n${_dbqFocusTopic ? 'Topic focus: ' + _dbqFocusTopic + '.\n' : ''}Use the real web sources provided below to build document excerpts. Each document MUST include a "sourceUrl" field linking to the original source.\n- For each web source, create a substantial excerpt based on the title and snippet, expanded with historically accurate content\n- Include a mix of document types: speeches, letters, newspaper editorials, government records, testimony, data/statistics\n- Set "documentType" to "linked" for documents sourced from web search\n- Also include 1-2 documents extracted from the provided source text (documentType: "primary" or "secondary")\n- Aim for ${isElementary ? '3-4' : '5-6'} total documents\n- Each document's "sourceUrl" field MUST contain the actual URL from the web search results${_dbqSearchResults}\n`
            : _dbqMode === 'custom' && _dbqCustomDocs.trim()
-           ? `\n\nSPECIAL MODE — TEACHER-PROVIDED DOCUMENTS:\nThe teacher has provided specific documents below. You MUST use EXACTLY these documents as the document excerpts. Do NOT generate, modify, or replace them. Your job is to:\n- Preserve each document's exact text as the "excerpt"\n- Parse any "Title:" and "Source:" lines the teacher provided for each document\n- Add appropriate "documentType" classification (primary, secondary, data, visual, testimony)\n- Generate HAPP prompts, sourcing questions, analysis questions, and sentence starters for each document\n- Create corroboration claims that connect across the teacher's documents\n- Write a synthesis essay prompt${_dbqCustomEssayFocus ? ' focused on: ' + _dbqCustomEssayFocus : ''}\n- Build the rubric appropriate to the grade level\n\nTEACHER-PROVIDED DOCUMENTS (separated by ---):\n"""\n${_dbqCustomDocs}\n"""\n`
+           ? `\n\nSPECIAL MODE — TEACHER-PROVIDED DOCUMENTS:\nThe teacher has provided specific documents below. You MUST use EXACTLY these documents as the document excerpts. Do NOT generate, modify, or replace them. Your job is to:\n- Preserve each document's exact text as the "excerpt"\n- Parse any "Title:" and "Source:" lines the teacher provided for each document\n- If a line starts with http, use it as the "sourceUrl" for that document\n- Add appropriate "documentType" classification (primary, secondary, data, visual, testimony, linked)\n- Generate HAPP prompts, sourcing questions, analysis questions, and sentence starters for each document\n- Create corroboration claims that connect across the teacher's documents\n- Write a synthesis essay prompt${_dbqCustomEssayFocus ? ' focused on: ' + _dbqCustomEssayFocus : ''}\n- Build the rubric appropriate to the grade level\n\nTEACHER-PROVIDED DOCUMENTS (separated by ---):\n"""\n${_dbqCustomDocs}\n"""\n`
            : '';
          const dbqPrompt = `You are an expert social studies and ELA curriculum designer creating a Document-Based Question (DBQ) activity.
 
@@ -27660,6 +27698,7 @@ Return ONLY JSON:
       "title": "Document A: Title",
       "documentType": "primary",
       "source": "Author, Date, Context",
+      "sourceUrl": "https://... (REQUIRED for linked documents, optional for others)",
       "excerpt": "The document text...",
       "happPrompts": {
         "historical": "What was happening when this was created?",
@@ -35551,8 +35590,9 @@ Return ONLY JSON:
                             <div className="flex gap-1">
                                 {[['standard', '📄 Standard DBQ', 'Extract documents from your source text'],
                                   ['perspectives', '⚔️ Competing Perspectives', 'AI finds 2+ viewpoints that agree and disagree'],
-                                  ['search', '🔍 Web-Enhanced', 'AI searches for real primary sources on your topic'],
-                                  ['custom', '✏️ Teacher Documents', 'Paste your own documents — AI builds the scaffolding around them']
+                                  ['search', '🔍 Web-Enhanced', 'Find real primary sources from archives (LOC, NARA, etc.)'],
+                                  ['links', '🔗 Teacher Links', 'Paste URLs to articles — AI builds DBQ around them'],
+                                  ['custom', '✏️ Teacher Docs', 'Paste your own document text directly']
                                 ].map(([mode, label, desc]) => (
                                     <button key={mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
                                         className={`flex-1 text-left p-2 rounded-lg text-[10px] font-bold transition-all border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-500 hover:bg-rose-50'}`}>
@@ -35562,16 +35602,28 @@ Return ONLY JSON:
                                 ))}
                             </div>
                         </div>
-                        {/* Optional: Focus topic for search/perspectives modes */}
-                        {(window._dbqMode === 'search' || window._dbqMode === 'perspectives') && (
+                        {/* Optional: Focus topic for search/perspectives/links modes */}
+                        {(window._dbqMode === 'search' || window._dbqMode === 'perspectives' || window._dbqMode === 'links') && (
                             <div>
                                 <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
-                                    {window._dbqMode === 'search' ? 'Search Topic (optional — refines source hunting)' : 'Perspectives to Compare (optional)'}
+                                    {window._dbqMode === 'search' ? 'Search Topic (optional — refines source hunting)' : window._dbqMode === 'links' ? 'Topic Context (helps AI understand the links)' : 'Perspectives to Compare (optional)'}
                                 </label>
-                                <input type="text" placeholder={window._dbqMode === 'search' ? 'e.g. "Japanese internment primary sources"' : 'e.g. "Federalists vs Anti-Federalists"'}
+                                <input type="text" placeholder={window._dbqMode === 'search' ? 'e.g. "Japanese internment primary sources"' : window._dbqMode === 'links' ? 'e.g. "Civil Rights Movement"' : 'e.g. "Federalists vs Anti-Federalists"'}
                                     className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
                                     aria-label="DBQ focus topic"
                                     id="dbq-focus-topic" />
+                            </div>
+                        )}
+                        {/* Teacher Links mode — paste URLs */}
+                        {window._dbqMode === 'links' && (
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Document URLs (one per line)</label>
+                                <textarea
+                                    id="dbq-teacher-links"
+                                    placeholder={"https://www.loc.gov/item/example-document/\nhttps://founders.archives.gov/documents/...\nhttps://www.archives.gov/milestone-documents/..."}
+                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none h-20 font-mono"
+                                    aria-label="Document URLs for DBQ" />
+                                <p className="text-[9px] text-slate-400 mt-1">Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.</p>
                             </div>
                         )}
                         {/* Teacher Documents mode — paste your own documents */}
@@ -45297,8 +45349,8 @@ Return only the corrected version of this exact text:`;
                         border: 'none', borderRadius: '8px 8px 0 0', transition: 'all 0.2s'
                     });
                     const docTypeBadge = (type) => {
-                        const colors = { primary: '#dc2626', secondary: '#2563eb', data: '#059669', visual: '#d97706', testimony: '#7c3aed', reconstructed: '#0891b2' };
-                        return <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: (colors[type] || '#64748b') + '20', color: colors[type] || '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{type || 'source'}</span>;
+                        const colors = { primary: '#dc2626', secondary: '#2563eb', data: '#059669', visual: '#d97706', testimony: '#7c3aed', reconstructed: '#0891b2', linked: '#4f46e5' };
+                        return <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: (colors[type] || '#64748b') + '20', color: colors[type] || '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{type === 'linked' ? 'external source' : type || 'source'}</span>;
                     };
                     return (
                     <div className="space-y-0 max-w-5xl mx-auto h-full flex flex-col overflow-hidden">
@@ -45344,6 +45396,7 @@ Return only the corrected version of this exact text:`;
                                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${(typeColors[doc.documentType] || '#64748b')}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${doc.documentType || 'source'}</span>
                                             </div>
                                             ${doc.source ? '<p style="font-size:11px;color:#64748b;padding:8px 16px 0;margin:0;font-style:italic">Source: ' + doc.source + '</p>' : ''}
+                                            ${doc.sourceUrl ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + doc.sourceUrl + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => { try { return new URL(doc.sourceUrl).hostname; } catch { return 'link'; } })() + ')</a></p>' : ''}
                                             <div style="padding:12px 16px;font-size:13px;line-height:1.7;color:#334155;border-left:4px solid #f59e0b;margin:8px 16px;background:#fffbeb;border-radius:0 8px 8px 0;padding:12px">${doc.excerpt || ''}</div>
                                             <div style="padding:0 16px 12px">
                                                 <h4 style="font-size:12px;font-weight:800;color:#4338ca;margin:12px 0 8px">🔍 HAPP Source Analysis</h4>
@@ -45550,6 +45603,13 @@ Return only the corrected version of this exact text:`;
                                         {activeDoc.perspective && <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', background: '#7c3aed20', color: '#7c3aed', marginLeft: '4px' }}>⚔️ {activeDoc.perspective}</span>}
                                     </div>
                                     {activeDoc.source && <p className="text-xs text-slate-500 italic -mt-2 mb-3">Source: {activeDoc.source}</p>}
+                                    {activeDoc.sourceUrl && (
+                                      <a href={activeDoc.sourceUrl} target="_blank" rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline">
+                                        🔗 View Original Source
+                                        <span className="text-[9px] font-normal text-indigo-400 max-w-[200px] truncate">{(() => { try { return new URL(activeDoc.sourceUrl).hostname; } catch { return ''; } })()}</span>
+                                      </a>
+                                    )}
                                     {/* Document Excerpt with Annotation */}
                                     <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-4 text-sm leading-relaxed text-slate-800 relative">
                                         <div className="absolute top-2 right-2">
