@@ -48,11 +48,17 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 geoQuiz (geoQuiz) ═══
   window.StemLab.registerTool('geoQuiz', {
-    icon: '🔬',
+    icon: '\uD83D\uDDFA\uFE0F',
     label: 'geoQuiz',
     desc: '',
     color: 'slate',
     category: 'geo',
+    questHooks: [
+      { id: 'score_5', label: 'Score 5+ on geography quiz', icon: '\uD83C\uDF0D', check: function(d) { return (d.geoScore || 0) >= 5; }, progress: function(d) { return (d.geoScore || 0) + '/5'; } },
+      { id: 'score_10', label: 'Score 10+ on geography quiz', icon: '\uD83C\uDFC6', check: function(d) { return (d.geoScore || 0) >= 10; }, progress: function(d) { return (d.geoScore || 0) + '/10'; } },
+      { id: 'streak_3', label: 'Get a 3-answer streak', icon: '\uD83D\uDD25', check: function(d) { return (d.geoStreak || 0) >= 3; }, progress: function(d) { return (d.geoStreak || 0) + '/3 streak'; } },
+      { id: 'answer_10', label: 'Answer 10 geography questions', icon: '\uD83D\uDCDA', check: function(d) { return (d.geoAnswered || []).length >= 10; }, progress: function(d) { return (d.geoAnswered || []).length + '/10'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

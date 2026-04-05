@@ -593,12 +593,18 @@ window.StemLab = window.StemLab || {
     description: 'Simulate disease spread with SIR/SEIR models, vaccination strategies, and outbreak maps.',
     category: 'Life Science',
     gradeRange: 'K-12',
+    questHooks: [
+      { id: 'run_sim', label: 'Run an epidemic simulation', icon: '\uD83E\uDDA0', check: function(d) { return d.particleRunning || false; }, progress: function(d) { return d.particleRunning ? 'Running!' : 'Start sim'; } },
+      { id: 'challenge_tier_2', label: 'Reach challenge tier 2', icon: '\uD83C\uDFC6', check: function(d) { return (d.chalTier || 1) >= 2; }, progress: function(d) { return 'Tier ' + (d.chalTier || 1) + '/2'; } },
+      { id: 'view_3_tabs', label: 'Explore 3 epidemic model views', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 views'; } }
+    ],
     render: function(ctx) {
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData.epidemicSim) || {};
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var a11yClick = ctx.a11yClick;
+      var canvasNarrate = ctx.canvasNarrate;
       var gradeBand = getGradeBand(ctx);
 
       // ── State helpers ──
@@ -1228,7 +1234,7 @@ window.StemLab = window.StemLab || {
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Epidemic Simulator sections' },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
-            return h('button', { 'aria-label': 'Update setting',
+            return h('button', { 'aria-label': 'Select intervention strategy',
               key: st.id,
               onClick: function() { updMulti({ tab: st.id, hoverDay: null }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-indigo-50 border border-slate-200'),

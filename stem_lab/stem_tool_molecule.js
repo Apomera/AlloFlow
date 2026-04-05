@@ -33,11 +33,18 @@ window.StemLab = window.StemLab || {
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
 
   window.StemLab.registerTool('molecule', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83E\uDDEA',
     label: 'molecule',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'discover_compound', label: 'Discover a chemical compound', icon: '\uD83E\uDDEA', check: function(d) { return (d.discoveredCompounds || []).length >= 1; }, progress: function(d) { return (d.discoveredCompounds || []).length >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'discover_5_compounds', label: 'Discover 5 different compounds', icon: '\uD83D\uDD2C', check: function(d) { return (d.discoveredCompounds || []).length >= 5; }, progress: function(d) { return (d.discoveredCompounds || []).length + '/5'; } },
+      { id: 'balance_3_reactions', label: 'Balance 3 chemical reactions', icon: '\u2696\uFE0F', check: function(d) { return (d.reactionsBalanced || 0) >= 3; }, progress: function(d) { return (d.reactionsBalanced || 0) + '/3'; } },
+      { id: 'earn_50_rp', label: 'Earn 50 research points', icon: '\u2B50', check: function(d) { return (d.totalRP || 0) >= 50; }, progress: function(d) { return (d.totalRP || 0) + '/50 RP'; } },
+      { id: 'complete_3_challenges', label: 'Complete 3 chemistry challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.completedChallenges || []).length >= 3; }, progress: function(d) { return (d.completedChallenges || []).length + '/3'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;

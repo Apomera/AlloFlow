@@ -20,11 +20,16 @@
 
   // ═══ 🔬 rocks (rocks) ═══
   window.StemLab.registerTool('rocks', {
-    icon: '🔬',
+    icon: '\uD83E\uDEA8',
     label: 'rocks',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'view_all_types', label: 'View igneous, sedimentary, and metamorphic rocks', icon: '\uD83E\uDEA8', check: function(d) { return Object.keys(d.typesViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.typesViewed || {}).length + '/3 types'; } },
+      { id: 'quiz_score_5', label: 'Score 5+ on the rock identification quiz', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizScore || 0) >= 5; }, progress: function(d) { return (d.quizScore || 0) + '/5'; } },
+      { id: 'explore_5_rocks', label: 'Examine 5 different rock specimens', icon: '\uD83D\uDD2C', check: function(d) { return Object.keys(d.rocksViewed || {}).length >= 5; }, progress: function(d) { return Object.keys(d.rocksViewed || {}).length + '/5 rocks'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -58,6 +63,7 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (rocks) ──
       return (function() {
@@ -67,6 +73,14 @@ const d = labToolData.rocks || {};
 
           const mode = d.mode || 'landscape';
 
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('rocks', 'init', {
+              first: 'Rocks and Minerals Explorer loaded. ' + (mode === 'landscape' ? 'Interactive landscape view active. Click on the volcano, river delta, or mountain zones to explore rock types.' : 'Current mode: ' + mode + '.'),
+              repeat: 'Rocks Explorer, mode: ' + mode + '.',
+              terse: 'Rocks Explorer.'
+            }, { debounce: 800 });
+          }
 
 
           // ── Rock type data ──
@@ -1161,6 +1175,8 @@ const d = labToolData.rocks || {};
 
                       else { upd("quizMode", false); }
 
+                      if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', repeat: (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', terse: m + '.' }, { debounce: 500 }); }
+
                     }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                   },
@@ -1200,6 +1216,8 @@ const d = labToolData.rocks || {};
                         upd("selectedType", type);
 
                         upd("mode", "rocks");
+
+                        if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'zone_select', { first: 'Exploring ' + type + ' rocks. Selected ' + rockId + ' from the ' + (type === 'igneous' ? 'volcano zone' : type === 'sedimentary' ? 'river delta zone' : 'mountain core zone') + '.', repeat: type + ' rock: ' + rockId + '.', terse: rockId + '.' }, { debounce: 500 }); }
 
                       };
 
@@ -2082,7 +2100,7 @@ const d = labToolData.rocks || {};
 
                 quizQ.options.map(function (opt) {
 
-                  return React.createElement("button", { "aria-label": "Select option",
+                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                     key: opt, onClick: function () {
 
@@ -3148,7 +3166,7 @@ const d = labToolData.rockCycle;
 
             React.createElement("div", { className: "border-t border-slate-200 pt-3" },
 
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Start rock cycle quiz",
 
                 onClick: function () {
 
@@ -3200,7 +3218,7 @@ const d = labToolData.rockCycle;
 
                     var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
 
-                    return React.createElement("button", { "aria-label": "Select option",
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                       key: opt, disabled: d.rcQuiz.answered, onClick: function () {
 

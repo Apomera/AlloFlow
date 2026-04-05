@@ -381,6 +381,12 @@
     icon: '\u2697\uFE0F', label: 'Chemistry Lab',
     desc: 'Balance equations, explore reactions, stoichiometry, molecular models & lab safety',
     color: 'lime', category: 'science',
+    questHooks: [
+      { id: 'balance_3', label: 'Balance 3 chemical equations', icon: '⚖️', check: function(d) { var e = d._chemExt || {}; return (e.equationsBalanced || 0) >= 3; }, progress: function(d) { var e = d._chemExt || {}; return (e.equationsBalanced || 0) + '/3'; } },
+      { id: 'quiz_3', label: 'Score 3+ on chemistry quiz', icon: '🧠', check: function(d) { var e = d._chemExt || {}; return (e.quizCorrect || 0) >= 3; }, progress: function(d) { var e = d._chemExt || {}; return (e.quizCorrect || 0) + '/3'; } },
+      { id: 'streak_3', label: 'Get a 3-equation balancing streak', icon: '🔥', check: function(d) { return (d.streak || 0) >= 3; }, progress: function(d) { return (d.streak || 0) + '/3 streak'; } }
+    ],
+
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

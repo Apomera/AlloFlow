@@ -31,6 +31,12 @@ window.StemLab = window.StemLab || {
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'adjust_frequency', label: 'Experiment with wave frequency', icon: '∿', check: function(d) { return d.frequency && d.frequency !== 1; }, progress: function(d) { return d.frequency !== 1 ? 'Adjusted!' : 'Change frequency'; } },
+      { id: 'try_doppler', label: 'Try Doppler effect mode', icon: '🚗', check: function(d) { return d.waveMode === 'doppler'; }, progress: function(d) { return d.waveMode === 'doppler' ? 'Exploring!' : 'Select Doppler'; } },
+      { id: 'compare_waves', label: 'Use wave comparison mode', icon: '🔊', check: function(d) { return d.waveMode === 'compare'; }, progress: function(d) { return d.waveMode === 'compare' ? 'Comparing!' : 'Select Compare'; } }
+    ],
+
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

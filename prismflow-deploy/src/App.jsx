@@ -5799,6 +5799,63 @@ const AlloFlowContent = () => {
   useEffect(() => {
       return onAuthStateChanged(auth, (u) => setUser(u));
   }, []);
+  // ── LMS Integration (LTI 1.3 + Bookmarklet) ──
+  const [lmsSession, setLmsSession] = useState(null);
+  const [lmsAuditUrls, setLmsAuditUrls] = useState([]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    // ── LTI 1.3: Detect launch from LMS ──
+    if (params.get('lti') === '1' && params.get('session')) {
+      const sessionToken = params.get('session');
+      const host = window.location.hostname;
+      const functionsBase = host.includes('localhost')
+        ? 'http://localhost:5001'
+        : `https://us-central1-${host.replace('.web.app', '').replace('.firebaseapp.com', '')}.cloudfunctions.net`;
+      fetch(`${functionsBase}/ltiSession?token=${sessionToken}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) {
+            setLmsSession({
+              user: data.user || params.get('user') || 'User',
+              course: data.course || params.get('course') || 'Course',
+              role: data.isInstructor ? 'teacher' : 'student',
+              email: data.email,
+              courseId: data.courseId,
+              platformUrl: data.platformUrl,
+            });
+            debugLog('[LTI] Session loaded:', data.user, data.course);
+          }
+        })
+        .catch(err => {
+          warnLog('[LTI] Session fetch failed, using URL params:', err?.message);
+          setLmsSession({
+            user: params.get('user') || 'User',
+            course: params.get('course') || 'Course',
+            role: params.get('role') || 'student',
+          });
+        });
+      // Clean URL without reload
+      const cleanUrl = new URL(window.location);
+      cleanUrl.searchParams.delete('lti');
+      cleanUrl.searchParams.delete('session');
+      cleanUrl.searchParams.delete('course');
+      cleanUrl.searchParams.delete('role');
+      cleanUrl.searchParams.delete('user');
+      window.history.replaceState({}, '', cleanUrl.toString());
+    }
+    // ── Bookmarklet: Detect audit_urls from LMS page scanner ──
+    if (params.get('audit_urls')) {
+      const urls = params.get('audit_urls').split(',').map(u => decodeURIComponent(u)).filter(Boolean);
+      if (urls.length > 0) {
+        setLmsAuditUrls(urls);
+        debugLog('[LMS Bookmarklet] Audit URLs received:', urls.length);
+      }
+      const cleanUrl = new URL(window.location);
+      cleanUrl.searchParams.delete('audit_urls');
+      window.history.replaceState({}, '', cleanUrl.toString());
+    }
+  }, []);
   const [wordSoundsAutoReview, setWordSoundsAutoReview] = useState(false);
   const [lzLoaded, setLzLoaded] = useState(false);
   const [uiState, uiDispatch] = useReducer(uiChromeReducer, UI_INITIAL_STATE);
@@ -6872,7 +6929,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   const [showReportWriter, setShowReportWriter] = useState(false);
   const [isSymbolStudioOpen, setIsSymbolStudioOpen] = useState(false);
   const [showStoryForge, setShowStoryForge] = useState(false);
-  const [showStoryStage, setShowStoryStage] = useState(false);
+  const [showLitLab, setShowLitLab] = useState(false);
   const [showLearningHub, setShowLearningHub] = useState(false);
   const [showSelHub, setShowSelHub] = useState(false);
   const [selHubTab, setSelHubTab] = useState('explore');
@@ -7039,27 +7096,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/story_forge_module.js');
-    loadModule('StoryStage', 'story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/content_engine_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', 'story_stage_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7075,9 +7132,9 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/';
+      var pluginCdnBase = './';
       var toolModules = [
-        'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
+        'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
         'stem_lab/stem_tool_datastudio.js', 'stem_lab/stem_tool_coding.js',
         'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_titration.js',
@@ -7131,8 +7188,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
-        'stem_lab/stem_tool_creative.js',
-        'stem_lab/stem_tool_art.js',
+        'stem_lab/stem_tool_spacecolony.js',
+        'stem_lab/stem_tool_lifeskills.js',
         'sel_hub/sel_safety_layer.js',
         'sel_hub/sel_tool_advocacy.js',
         'sel_hub/sel_tool_restorativecircle.js',
@@ -30554,6 +30611,60 @@ Return ONLY JSON:
       >
         {t('a11y.skip_content')}
       </a>
+      {/* ── LMS Context Banner ── */}
+      {lmsSession && (
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 flex items-center justify-between text-xs font-medium z-[500]">
+          <div className="flex items-center gap-3">
+            <span className="bg-white/20 px-2 py-0.5 rounded-full font-bold">LMS</span>
+            <span>{lmsSession.course}</span>
+            <span className="opacity-60">|</span>
+            <span>{lmsSession.user}</span>
+            <span className="opacity-60">|</span>
+            <span className="capitalize">{lmsSession.role}</span>
+          </div>
+          <button onClick={() => setLmsSession(null)} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md transition-colors" aria-label="Dismiss LMS banner">Dismiss</button>
+        </div>
+      )}
+      {/* ── Bookmarklet Audit Queue ── */}
+      {lmsAuditUrls.length > 0 && !pendingPdfBase64 && (
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 z-[500]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-bold text-sm">♿ {lmsAuditUrls.length} document{lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS</span>
+            <button onClick={() => setLmsAuditUrls([])} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md text-xs transition-colors">Dismiss</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {lmsAuditUrls.map((url, i) => {
+              const name = decodeURIComponent(url.split('/').pop().split('?')[0]) || `Document ${i + 1}`;
+              return (
+                <button key={i} onClick={async () => {
+                  try {
+                    addToast(`Fetching ${name}...`, 'info');
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const blob = await resp.blob();
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      const base64 = reader.result.split(',')[1];
+                      setPendingPdfBase64(base64);
+                      setPendingPdfFile({ name, size: blob.size });
+                      setPdfAuditResult({ _choosing: true, fileName: name, fileSize: blob.size });
+                      setLmsAuditUrls(prev => prev.filter((_, idx) => idx !== i));
+                      addToast(`${name} loaded — ready for audit`, 'success');
+                    };
+                    reader.readAsDataURL(blob);
+                  } catch (err) {
+                    addToast(`Failed to fetch ${name}: ${err.message}. The file may require LMS authentication.`, 'error');
+                  }
+                }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5">
+                  <span className="bg-white/20 px-1 py-0.5 rounded text-[9px] font-bold">{name.split('.').pop()?.toUpperCase() || 'FILE'}</span>
+                  <span className="max-w-[200px] truncate">{name}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] opacity-70 mt-2">Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.</p>
+        </div>
+      )}
       <div role="status" aria-live="polite" className="fixed top-44 left-[45%] -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center w-full max-w-md">
         {toasts.map(toast => (
             <div
@@ -49419,7 +49530,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 </div>
 
 <div class="footer">
-  Generated by AlloFlow Accessibility Pipeline · ${date} · <a href="https://prismflow-911fe.web.app" style="color:#6366f1">prismflow-911fe.web.app</a>
+  Generated by AlloFlow Accessibility Pipeline · ${date} · <a href="https://github.com/Apomera/AlloFlow" style="color:#6366f1">AlloFlow</a>
 </div>
 </body></html>`);
                             win.document.close();
@@ -54003,10 +54114,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <p className="text-xs text-rose-600 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowLearningHub(false); setShowStoryStage(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+              <button onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🎭</span>
                 <div>
-                  <h3 className="font-bold text-violet-800">StoryStage</h3>
+                  <h3 className="font-bold text-violet-800">LitLab</h3>
                   <p className="text-xs text-violet-600 mt-1">Bring stories to life with character voices & literary analysis</p>
                 </div>
               </button>
@@ -54164,12 +54275,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
             </div>
             );
         })()}
-        {showStoryStage && (() => {
-            const SS = window.AlloModules && window.AlloModules.StoryStage;
+        {showLitLab && (() => {
+            const SS = window.AlloModules && window.AlloModules.LitLab;
             if (SS) {
                 return React.createElement(SS, {
                     isOpen: true,
-                    onClose: () => setShowStoryStage(false),
+                    onClose: () => setShowLitLab(false),
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
                     onCallImagen: callImagen,
@@ -54185,12 +54296,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 });
             }
             return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryStage(false)}>
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowLitLab(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🎭</div>
-                    <p className="text-lg font-bold text-slate-700">Loading StoryStage...</p>
+                    <p className="text-lg font-bold text-slate-700">Loading LitLab...</p>
                     <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
-                    <button onClick={() => setShowStoryStage(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                    <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
             );

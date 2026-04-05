@@ -6,21 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AlloFlow | The Local-First AI Classroom Assistant</title>
     <meta name="description"
-        content="Free, open-source AI tool for differentiated instruction, phonics, RTI progress monitoring, and Science of Reading. Generates leveled text, games, quizzes, and phonemic awareness activities. Runs inside Google Gemini Canvas — no install required.">
+        content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, and clinical reporting. 65 STEM simulations, 24 SEL tools, Symbol Studio AAC boards, PDF accessibility remediation, and 117 verified clinical tests. Runs in Google Gemini Canvas or Firebase — no install required.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
     <meta property="og:title" content="AlloFlow | Differentiation on Auto-Pilot">
     <meta property="og:description"
-        content="The privacy-first AI tool that turns static curriculum into interactive games, leveled text, and quizzes.">
+        content="The privacy-first AI platform with 65 STEM simulations, 24 SEL tools, AAC communication boards, clinical reporting, and PDF accessibility remediation — all free and open source.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="AlloFlow | Differentiation on Auto-Pilot">
     <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser","description":"Open-source, privacy-first AI tool for differentiated instruction.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"EdTech Developer"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
+    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser","description":"Open-source, privacy-first AI platform for differentiated instruction, AAC communication, clinical reporting, and STEM/SEL education. 65 STEM simulations, 24 SEL tools, Symbol Studio, and PDF accessibility remediation.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"School Psychologist"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
     </script>
+    <link rel="stylesheet" href="shared.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-D316aAdz.css">
 </head>
 
 <body>
@@ -32,13 +32,15 @@
                 <i data-lucide="layers" style="width:28px;height:28px"></i>
                 AlloFlow
                 <span
-                    style="font-size:0.6rem;font-weight:400;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px">v1.0</span>
+                    style="font-size:0.6rem;font-weight:400;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px">v1.1</span>
             </a>
             <div class="nav-links">
                 <a href="index.html">Home</a>
                 <a href="features.html">Features</a>
                 <a href="library.html">Library</a>
                 <a href="calculator.html">Savings</a>
+                <a href="students.html">Students</a>
+                <a href="accessibility_demo.html">Accessibility</a>
                 <a href="#pricing">Pricing</a>
                 <a href="#privacy">Privacy</a>
                 <a href="https://ko-fi.com/aaronpomeranz207" target="_blank" class="sponsor-btn"><i data-lucide="heart"
@@ -61,6 +63,8 @@
         <a href="features.html">Features</a>
         <a href="library.html">Library</a>
         <a href="calculator.html">Savings</a>
+        <a href="students.html">Students</a>
+        <a href="accessibility_demo.html">Accessibility</a>
         <a href="#pricing" onclick="this.closest('.mobile-nav').classList.remove('open')">Pricing</a>
         <a href="#privacy" onclick="this.closest('.mobile-nav').classList.remove('open')">Privacy</a>
         <a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
@@ -77,8 +81,7 @@
                     <span
                         style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>
                     <span
-                        style="font-size:0.7rem;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:0.1em">Runs
-                        inside Gemini Canvas</span>
+                        style="font-size:0.7rem;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:0.1em">Gemini Canvas · Firebase Hosting · School Box (coming soon)</span>
                 </div>
                 <h1
                     style="font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-0.02em">
@@ -89,19 +92,22 @@
                     quizzes
                     — in seconds, not hours.
                 </p>
-                <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
+                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
                     <button onclick="copyCanvasLink()" class="btn-primary" id="hero-copy-btn">
                         <i data-lucide="link" style="width:18px;height:18px"></i>
                         <span>Copy Canvas Link</span>
                     </button>
-                    <a href="features.html" class="btn-secondary">
-                        <i data-lucide="sparkles" style="width:18px;height:18px"></i> Explore Features
+                    <a href="https://github.com/Apomera/AlloFlow" class="btn-secondary" style="text-decoration:none">
+                        <i data-lucide="flame" style="width:18px;height:18px"></i> Firebase Deploy
+                    </a>
+                    <a href="https://github.com/Apomera/AlloFlow" class="btn-secondary" style="text-decoration:none">
+                        <i data-lucide="server" style="width:18px;height:18px"></i> School Box (Coming Soon)
                     </a>
                 </div>
                 <div style="margin:20px auto 0;position:relative;display:inline-block">
                     <!-- Allobot SVG (inline for CSS animation support) -->
                     <div style="width:110px;height:110px;margin:0 auto;position:relative;z-index:2" id="hero-allobot">
-                        <img src="/assets/allobot-CLvCxSCg.svg" alt="Allobot" class="allobot-svg" style="width:100%;height:100%">
+                        <img src="allobot.svg" alt="Allobot" class="allobot-svg" style="width:100%;height:100%">
                         <script>
                             fetch('allobot.svg').then(r => r.text()).then(svg => {
                                 document.getElementById('hero-allobot').innerHTML = svg;
@@ -123,8 +129,8 @@
         <div class="section reveal" style="padding:20px 24px 60px;background:#fff;border-top:1px solid #e2e8f0">
             <div class="stats-row">
                 <div class="stat-item">
-                    <div class="stat-number" data-target="700" data-suffix="+">0</div>
-                    <div class="stat-label">Features</div>
+                    <div class="stat-number" data-target="90" data-suffix="+">0</div>
+                    <div class="stat-label">Interactive Tools</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number" data-target="100" data-suffix="+">0</div>
@@ -158,7 +164,7 @@
                         </div>
                         <div
                             style="margin:0 auto;background:#0f172a;padding:4px 12px;border-radius:4px;font-size:0.7rem;color:#64748b;font-family:monospace;display:flex;align-items:center;gap:6px">
-                            <i data-lucide="lock" style="width:10px;height:10px"></i> gemini.google.com
+                            <i data-lucide="lock" style="width:10px;height:10px"></i> gemini.google.com · localhost:3000
                         </div>
                     </div>
                     <div style="aspect-ratio:16/9;position:relative;background:#000" id="video-container">
@@ -334,7 +340,7 @@
                     style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 12px rgba(120,53,15,0.1);border:1px solid #fde68a;max-width:500px;margin:0 auto">
                     <audio controls preload="metadata" style="width:100%;border-radius:8px"
                         aria-label="Kitchen Table Scripts and Gamified Learning audio">
-                        <source src="/assets/Kitchen_Table_Scripts_and_Gamified_Learning-DmrgeiK6.m4a" type="audio/mp4">
+                        <source src="Kitchen_Table_Scripts_and_Gamified_Learning.m4a" type="audio/mp4">
                         Your browser does not support the audio element.
                     </audio>
                     <p style="font-size:0.7rem;color:#b45309;margin-top:10px;opacity:0.7">Duration: ~5 min • Best
@@ -347,33 +353,30 @@
         <section class="section reveal" style="background:#f8fafc;border-top:1px solid #e2e8f0">
             <div class="section-inner">
                 <div class="section-header">
-                    <h2>No Install. Just Click & Go.</h2>
-                    <p>AlloFlow runs directly inside Gemini Canvas — no extensions, no setup.</p>
+                    <h2>Three Pathways. One Mission.</h2>
+                    <p>Run instantly in Gemini Canvas — deploy to Firebase for your district — or go fully offline with the School Box for absolute data sovereignty (coming soon, in collaboration with <a href="https://physher.com" target="_blank" style="color:var(--indigo)">Tyler Despain of Physher</a>).</p>
                 </div>
                 <div class="grid-3">
                     <div style="text-align:center">
                         <div
                             style="width:80px;height:80px;background:#fff;border:4px solid #eef2ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--indigo);font-family:'Outfit'">
                             1</div>
-                        <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Get the Link</h3>
-                        <p style="font-size:0.85rem;color:#64748b">Copy the Canvas link from this site or your district
-                            library.</p>
+                        <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Choose Your Path</h3>
+                        <p style="font-size:0.85rem;color:#64748b"><strong>Cloud:</strong> Paste the Canvas link. <strong>Firebase:</strong> Deploy to Google Hosting. <strong>Local:</strong> Run <code>docker-compose up</code>.</p>
                     </div>
                     <div style="text-align:center">
                         <div
                             style="width:80px;height:80px;background:#fff;border:4px solid #f3e8ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--purple);font-family:'Outfit'">
                             2</div>
-                        <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Open in Gemini</h3>
-                        <p style="font-size:0.85rem;color:#64748b">Paste the link into your browser. The app launches
-                            instantly.</p>
+                        <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Configure & Create</h3>
+                        <p style="font-size:0.85rem;color:#64748b">Complete the Quick Start wizard or ask AlloBot to auto-generate a full lesson pack.</p>
                     </div>
                     <div style="text-align:center">
                         <div
                             style="width:80px;height:80px;background:#fff;border:4px solid #ccfbf1;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--teal);font-family:'Outfit'">
                             3</div>
                         <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Differentiate</h3>
-                        <p style="font-size:0.85rem;color:#64748b">Generate quizzes, games, leveled text, and more. Save
-                            locally.</p>
+                        <p style="font-size:0.85rem;color:#64748b">Generate quizzes, games, leveled text, and more. Export or go live instantly.</p>
                     </div>
                 </div>
             </div>
@@ -1940,18 +1943,19 @@
                                         Interactive STEM Lab</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.08)); border: 1px solid rgba(16,185,129,0.3);">
-                                        <span class="stat-number" style="color:#34d399;">20+</span>
-                                        <span class="stat-label">interactive tools spanning 5 disciplines</span>
+                                        <span class="stat-number" style="color:#34d399;">65</span>
+                                        <span class="stat-label">interactive tools spanning 9 disciplines</span>
                                     </div>
-                                    <p>A full virtual lab that covers math fundamentals, advanced math,
-                                        life & earth science, physics & chemistry, and arts & music.
+                                    <p>A full virtual lab covering math, advanced math, life science,
+                                        earth & space science, physics & chemistry, computer science,
+                                        creative design, social studies, and applied simulation.
                                         Students manipulate <strong>real simulations</strong> — not passive videos.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #10b981;">
                                         <div class="info-title">🔬 Virtual Lab Equipment</div>
-                                        <div class="info-desc">Protractors, coordinate planes, fraction models,
-                                            circuit builders, wave visualizers, ecosystem simulators, a full
-                                            galaxy explorer, and a coding playground — all running in the browser with zero install.</div>
+                                        <div class="info-desc">Circuit builders, wave visualizers, DNA labs with CRISPR simulation,
+                                            titration labs, flight simulators, fire ecology, epidemic modeling,
+                                            semiconductor physics, and a coding playground — all running in the browser with zero install.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #059669;">
                                         <div class="info-title">🐠 Immersive Simulations</div>
@@ -2169,22 +2173,23 @@
                                         <span class="stat-label">step wizard with AI accuracy verification</span>
                                     </div>
                                     <p>A psychoeducational report wizard purpose-built for
-                                        <strong>school psychologists</strong>. The Fact-Chunk pipeline ensures
-                                        every AI-generated sentence is traceable to your original data.</p>
+                                        <strong>school psychologists</strong>. Triangulated generation with
+                                        self-healing accuracy verification ensures every claim is traceable
+                                        to your original data — the safest AI-assisted clinical report tool that exists.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #7e22ce;">
                                         <div class="info-title">🔒 Fact-Chunk Accuracy Pipeline</div>
-                                        <div class="info-desc">Scores are extracted and stored as immutable facts.
-                                            The AI generates narrative sections, then an independent audit pass
-                                            verifies every claim against the original data — color-coded
-                                            green/yellow/red for provenance confidence.</div>
+                                        <div class="info-desc">Scores are extracted as immutable facts. The AI generates
+                                            N parallel drafts, selects the most evidence-grounded one, then runs
+                                            score-text verification, cross-section consistency checking, and a
+                                            self-healing dual-pass audit that auto-fixes errors and re-verifies.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #a855f7;">
-                                        <div class="info-title">📝 Multi-Format Export</div>
-                                        <div class="info-desc">Generate reports at technical, parent, or student
-                                            reading levels. Export in multiple languages via built-in AI translation.
-                                            PII is scrubbed from all AI-facing pipelines — only de-identified
-                                            data reaches the language model.</div>
+                                        <div class="info-title">📝 17 Assessment Presets + Multi-Format Export</div>
+                                        <div class="info-desc">WISC-V, WIAT-4, BASC-3, Vineland-3, BRIEF-2, Conners-4,
+                                            and 11 more. Generate reports at technical, parent, or student reading levels.
+                                            PII is scrubbed from all AI-facing pipelines with developmental norms
+                                            cross-referencing (attention span, tantrums, social play, vocabulary by age).</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -4434,9 +4439,9 @@
                                         <span class="stat-number" style="color:#fbbf24;">$0/yr</span>
                                         <span class="stat-label">AI costs after hardware</span>
                                     </div>
-                                    <p>AlloFlow supports <strong>model-agnostic AI backends</strong>. Run the entire
-                                        platform on a single school workstation — no cloud subscriptions, no data
-                                        leaving the building. One command deploys everything.</p>
+                                    <p>AlloFlow supports <strong>model-agnostic AI backends</strong>. The School Box
+                                        air-gapped deployment is currently in development with collaborator <a href="https://physher.com" target="_blank" style="color:#fbbf24;text-decoration:underline">Tyler Despain of Physher</a> —
+                                        designed to run the entire platform on a single school workstation with zero cloud dependency.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #f59e0b;">
                                         <div class="info-title">🐳 Docker "School Box" Deploy</div>
@@ -5148,6 +5153,7 @@
             <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>An open-source project for educators. Not affiliated with Google.</p>
+            <p>School Box deployment in collaboration with <a href="https://physher.com" target="_blank" style="color:#818cf8">Tyler Despain of Physher</a>.</p>
             <p>Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span></p>
             <div class="footer-links">
                 <a href="features.html">Features</a>

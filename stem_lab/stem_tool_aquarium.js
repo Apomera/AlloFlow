@@ -47,11 +47,17 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 aquarium (aquarium) ═══
   window.StemLab.registerTool('aquarium', {
-    icon: '🔬',
+    icon: '\uD83D\uDC20',
     label: 'aquarium',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'add_3_fish', label: 'Add 3 fish to your aquarium', icon: '\uD83D\uDC20', check: function(d) { return (d.tankFish || []).length >= 3; }, progress: function(d) { return (d.tankFish || []).length + '/3 fish'; } },
+      { id: 'add_5_fish', label: 'Build a diverse tank with 5+ fish', icon: '\uD83C\uDF0A', check: function(d) { return (d.tankFish || []).length >= 5; }, progress: function(d) { return (d.tankFish || []).length + '/5 fish'; } },
+      { id: 'run_simulation', label: 'Run the aquarium simulation', icon: '\u25B6\uFE0F', check: function(d) { return d.simRunning || (d.simTick || 0) > 0; }, progress: function(d) { return (d.simTick || 0) > 0 ? 'Running!' : 'Not started'; } },
+      { id: 'study_anatomy', label: 'Study fish anatomy', icon: '\uD83D\uDD2C', check: function(d) { return !!d.viewingAnatomy; }, progress: function(d) { return d.viewingAnatomy ? 'Studying!' : 'Select a fish'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

@@ -164,14 +164,11 @@ const MODULES = [
 // build.js updates their CDN hash in the pluginCdnBase variable
 const PLUGIN_FILES = [
     'stem_lab/stem_tool_dna.js',
-    'stem_lab/stem_tool_math.js',
     'stem_lab/stem_tool_unitconvert.js',
     'stem_lab/stem_tool_logiclab.js',
     'stem_lab/stem_tool_probability.js',
     'stem_lab/stem_tool_calculus.js',
-    'stem_lab/stem_tool_science.js', 'stem_lab/stem_tool_galaxy.js',
-    'stem_lab/stem_tool_creative.js',
-    'stem_lab/stem_tool_art.js',
+    'stem_lab/stem_tool_galaxy.js',
     'stem_lab/stem_tool_datastudio.js',
     'stem_lab/stem_tool_dataplot.js',
     'stem_lab/stem_tool_geo.js',
@@ -203,8 +200,35 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
     'stem_lab/stem_tool_flightsim.js',
+    'stem_lab/stem_tool_atctower.js',
+    'stem_lab/stem_tool_music.js',
     'stem_lab/stem_tool_climateExplorer.js',
     'stem_lab/stem_tool_fireecology.js',
+    'stem_lab/stem_tool_moonmission.js',
+    'stem_lab/stem_tool_beehive.js',
+    'stem_lab/stem_tool_spacecolony.js',
+    'stem_lab/stem_tool_areamodel.js',
+    'stem_lab/stem_tool_artstudio.js',
+    'stem_lab/stem_tool_brainatlas.js',
+    'stem_lab/stem_tool_cell.js',
+    'stem_lab/stem_tool_chembalance.js',
+    'stem_lab/stem_tool_coding.js',
+    'stem_lab/stem_tool_epidemic.js',
+    'stem_lab/stem_tool_funcgrapher.js',
+    'stem_lab/stem_tool_gamestudio.js',
+    'stem_lab/stem_tool_geosandbox.js',
+    'stem_lab/stem_tool_inequality.js',
+    'stem_lab/stem_tool_lifeskills.js',
+    'stem_lab/stem_tool_multtable.js',
+    'stem_lab/stem_tool_numberline.js',
+    'stem_lab/stem_tool_platetectonics.js',
+    'stem_lab/stem_tool_punnett.js',
+    'stem_lab/stem_tool_semiconductor.js',
+    'stem_lab/stem_tool_titration.js',
+    'stem_lab/stem_tool_volume.js',
+    'stem_lab/stem_tool_wave.js',
+    'stem_lab/stem_tool_oratory.js',
+    'stem_lab/stem_tool_singing.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
@@ -412,6 +436,44 @@ if (dryRun) {
     }
 
     // NOTE: SW stamping moved to postbuild.js (runs AFTER CRA build copies public/sw.js → build/sw.js)
+
+    // ── Auto-copy module files to prismflow-deploy/public/ ──
+    const PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public');
+    const modulesToCopy = [
+        // Root-level modules
+        ...MODULES.map(m => m.filename),
+        'word_sounds_module.js',
+        'teacher_module.js',
+        'ui_strings.js',
+        'escape_room_module.js',
+        // stem_lab hub
+        'stem_lab/stem_lab_module.js'
+    ];
+    let copyCount = 0;
+    modulesToCopy.forEach(f => {
+        const src = path.join(ROOT, f);
+        const isSubdir = f.includes('/');
+        const destDir = isSubdir ? path.join(PUBLIC_DIR, path.dirname(f)) : PUBLIC_DIR;
+        const dest = path.join(destDir, path.basename(f));
+        // For stem_lab_module.js, copy to public root (not public/stem_lab/)
+        const finalDest = f === 'stem_lab/stem_lab_module.js' ? path.join(PUBLIC_DIR, 'stem_lab_module.js') : dest;
+        if (fs.existsSync(src)) {
+            if (!fs.existsSync(path.dirname(finalDest))) fs.mkdirSync(path.dirname(finalDest), { recursive: true });
+            fs.copyFileSync(src, finalDest);
+            copyCount++;
+        }
+    });
+    // Copy all stem_tool plugin files
+    PLUGIN_FILES.forEach(f => {
+        const src = path.join(ROOT, f);
+        const dest = path.join(PUBLIC_DIR, f);
+        if (fs.existsSync(src)) {
+            if (!fs.existsSync(path.dirname(dest))) fs.mkdirSync(path.dirname(dest), { recursive: true });
+            fs.copyFileSync(src, dest);
+            copyCount++;
+        }
+    });
+    console.log(`📦 Auto-copied ${copyCount} module/plugin files to prismflow-deploy/public/`);
 
     // Show next steps
     console.log('\n── Next Steps ──');

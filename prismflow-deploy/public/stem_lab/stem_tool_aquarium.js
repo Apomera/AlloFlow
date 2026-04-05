@@ -47,11 +47,17 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 aquarium (aquarium) ═══
   window.StemLab.registerTool('aquarium', {
-    icon: '🔬',
+    icon: '\uD83D\uDC20',
     label: 'aquarium',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'add_3_fish', label: 'Add 3 fish to your aquarium', icon: '\uD83D\uDC20', check: function(d) { return (d.tankFish || []).length >= 3; }, progress: function(d) { return (d.tankFish || []).length + '/3 fish'; } },
+      { id: 'add_5_fish', label: 'Build a diverse tank with 5+ fish', icon: '\uD83C\uDF0A', check: function(d) { return (d.tankFish || []).length >= 5; }, progress: function(d) { return (d.tankFish || []).length + '/5 fish'; } },
+      { id: 'run_simulation', label: 'Run the aquarium simulation', icon: '\u25B6\uFE0F', check: function(d) { return d.simRunning || (d.simTick || 0) > 0; }, progress: function(d) { return (d.simTick || 0) > 0 ? 'Running!' : 'Not started'; } },
+      { id: 'study_anatomy', label: 'Study fish anatomy', icon: '\uD83D\uDD2C', check: function(d) { return !!d.viewingAnatomy; }, progress: function(d) { return d.viewingAnatomy ? 'Studying!' : 'Select a fish'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -85,10 +91,20 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (aquarium) ──
       return (function() {
 var d = (labToolData && labToolData._aquarium) || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('aquarium', 'init', {
+              first: 'Virtual Aquarium loaded. Build and manage an aquatic ecosystem. Add fish, plants, and decorations while monitoring water quality.',
+              repeat: 'Aquarium active.',
+              terse: 'Aquarium.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (key, val) {
 
@@ -5802,7 +5818,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 TANK_TYPES.map(function (tank) {
 
-                  return React.createElement("button", { "aria-label": "Select option",
+                  return React.createElement("button", { "aria-label": "Select tank: " + tank.name,
 
                     key: tank.id,
 
@@ -5916,7 +5932,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     ].map(function (s) {
 
-                      return React.createElement("button", { "aria-label": "Action",
+                      return React.createElement("button", { "aria-label": "Set simulation speed: " + s.tip,
 
                         key: s.spd,
 
@@ -7074,7 +7090,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex gap-2" },
 
-                    React.createElement("button", { "aria-label": "Action",
+                    React.createElement("button", { "aria-label": "Toggle aquarium simulation",
 
                       onClick: function () {
 
@@ -7772,7 +7788,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   ['small', 'medium', 'large'].map(function (m) {
 
-                    return React.createElement("button", { "aria-label": "Select option",
+                    return React.createElement("button", { "aria-label": "Select mesh size: " + m,
 
                       key: m,
 
@@ -7860,7 +7876,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 }, "\u23E9\u00D75"),
 
-                React.createElement("button", { "aria-label": "Reset",
+                React.createElement("button", { "aria-label": "Reset ocean simulation",
 
                   onClick: resetOcean,
 
@@ -8034,7 +8050,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var isChosen = opt === quizQ.answered;
 
-                    return React.createElement("button", { "aria-label": "Select option",
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                       key: opt,
 

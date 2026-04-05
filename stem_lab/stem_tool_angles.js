@@ -130,6 +130,11 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDCD0', label: 'Angle Explorer',
     desc: 'Measure and construct angles. Classify acute, right, obtuse, and reflex.',
     color: 'purple', category: 'math',
+    questHooks: [
+      { id: 'pin_3_angles', label: 'Save 3 angle measurements', icon: '\uD83D\uDCCD', check: function(d) { return (d.anglePins || []).length >= 3; }, progress: function(d) { return (d.anglePins || []).length + '/3 pins'; } },
+      { id: 'use_bisector', label: 'Use the angle bisector tool', icon: '\u2702\uFE0F', check: function(d) { return d.showBisector || false; }, progress: function(d) { return d.showBisector ? 'Used!' : 'Toggle bisector'; } },
+      { id: 'explore_challenges', label: 'Try the angle challenges tab', icon: '\uD83C\uDFAF', check: function(d) { return d.activeTab === 'challenges'; }, progress: function(d) { return d.activeTab === 'challenges' ? 'Exploring!' : 'Open challenges tab'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

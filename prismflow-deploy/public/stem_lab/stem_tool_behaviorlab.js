@@ -48,11 +48,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
 
   window.StemLab.registerTool('behaviorLab', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83E\uDDEC',
     label: 'behaviorLab',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'reach_level_3', label: 'Advance to level 3 in behavior analysis', icon: '\uD83D\uDCCA', check: function(d) { return (d.blLevel || 1) >= 3; }, progress: function(d) { return 'Level ' + (d.blLevel || 1) + '/3'; } },
+      { id: 'record_10_data', label: 'Record 10 data points on the cumulative record', icon: '\uD83D\uDCDD', check: function(d) { return (d.blCumRecord || []).length >= 10; }, progress: function(d) { return (d.blCumRecord || []).length + '/10 points'; } },
+      { id: 'run_50_ticks', label: 'Run the simulation for 50+ ticks', icon: '\u25B6\uFE0F', check: function(d) { return (d.blTick || 0) >= 50; }, progress: function(d) { return (d.blTick || 0) + '/50 ticks'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
@@ -86,10 +91,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // â”€â”€ Tool body (behaviorLab) â”€â”€
       return (function() {
 var d = labToolData || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('behaviorLab', 'init', {
+              first: 'Behavior Lab loaded. Track and analyze behavioral data with visual charts and evidence-based intervention tools.',
+              repeat: 'Behavior Lab active.',
+              terse: 'Behavior Lab.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
 
@@ -2596,7 +2611,7 @@ var d = labToolData || {};
 
                   var isComplete = blCompletedLevels.indexOf(lvl.id) >= 0;
 
-                  return React.createElement("button", { "aria-label": "Action",
+                  return React.createElement("button", { "aria-label": "Select level " + lvl.id + ": " + lvl.title,
 
                     key: lvl.id,
 
@@ -2668,7 +2683,7 @@ var d = labToolData || {};
 
               // Start button
 
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Start Experiment",
 
                 onClick: function () {
 
@@ -3002,7 +3017,7 @@ var d = labToolData || {};
 
                     else btnClass += 'bg-slate-800/60 text-slate-300 border-slate-600/30 hover:bg-slate-700/60';
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": "Quiz answer: " + opt,
 
                       key: oi,
 
@@ -3064,7 +3079,7 @@ var d = labToolData || {};
 
               // Next level button
 
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Next Level",
 
                 onClick: function () {
 
@@ -3210,7 +3225,7 @@ var d = labToolData || {};
 
               }, "\uD83D\uDD14 Use the Classical Conditioning panel below") :
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Reinforce action",
 
                   onClick: function () {
 
@@ -3544,7 +3559,7 @@ var d = labToolData || {};
 
                 // Ring Bell button
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Ring Bell",
 
                   onClick: function () {
 
@@ -3684,7 +3699,7 @@ var d = labToolData || {};
 
                 // Pair Bell + Food button (only in pairing phase)
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Pair Bell with Food",
 
                   onClick: function () {
 
@@ -3906,7 +3921,7 @@ var d = labToolData || {};
 
                 // CSV Export button
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Export ABC Data as CSV",
 
                   onClick: function () {
 
@@ -4254,11 +4269,11 @@ var d = labToolData || {};
                 }),
                 // Controls
                 React.createElement("div", { className: "flex gap-2 mt-2 justify-center" },
-                  React.createElement("button", { "aria-label": "Reset",
+                  React.createElement("button", { "aria-label": "Toggle schedule animation",
                     onClick: function() { upd('blSchedPaused', !blSchedPaused); },
                     className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (blSchedPaused ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-300')
                   }, blSchedPaused ? '\u25B6 Play' : '\u23F8 Pause'),
-                  React.createElement("button", { "aria-label": "Reset",
+                  React.createElement("button", { "aria-label": "Reset schedule animation",
                     onClick: function() { upd('blSchedTick', 0); upd('blSchedPaused', false); },
                     className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600"
                   }, '\u21BB Reset')

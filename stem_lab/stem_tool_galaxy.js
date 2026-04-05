@@ -50,6 +50,10 @@ window.StemLab = window.StemLab || {
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'toggle_layers', label: 'Toggle 3 galaxy visualization layers', icon: '🌌', check: function(d) { return Object.keys(d.layersToggled || {}).length >= 3; }, progress: function(d) { return Object.keys(d.layersToggled || {}).length + '/3'; } },
+      { id: 'view_lifecycle', label: 'Explore stellar lifecycle', icon: '⭐', check: function(d) { return d.showLifecycle || false; }, progress: function(d) { return d.showLifecycle ? 'Viewing!' : 'Toggle lifecycle'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

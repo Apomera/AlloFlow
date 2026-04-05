@@ -122,11 +122,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
   };
 
   window.StemLab.registerTool('worldBuilder', {
-    icon: '✍️',
+    icon: '\u270D\uFE0F',
     label: 'WriteCraft',
-    desc: 'Literary RPG — explore worlds, craft items, build structures, and battle through the strength of your prose. Your eloquence IS your superpower.',
+    desc: 'Literary RPG \u2014 explore worlds, craft items, build structures, and battle through the strength of your prose.',
     color: 'violet',
     category: 'creative',
+    questHooks: [
+      { id: 'earn_25_wp', label: 'Earn 25 Writing Power through descriptive prose', icon: '\u270D\uFE0F', check: function(d) { return (d.writingPower || 0) >= 25; }, progress: function(d) { return (d.writingPower || 0) + '/25 WP'; } },
+      { id: 'earn_100_xp', label: 'Earn 100 total XP in WriteCraft', icon: '\u2B50', check: function(d) { return (d.totalXP || 0) >= 100; }, progress: function(d) { return (d.totalXP || 0) + '/100 XP'; } },
+      { id: 'create_character', label: 'Create a character with name and class', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', check: function(d) { return !!(d.characterName && d.characterClass); }, progress: function(d) { return d.characterName ? 'Created!' : 'Not yet'; } },
+      { id: 'explore_world', label: 'Enter and explore a world', icon: '\uD83C\uDF0D', check: function(d) { return !!d.selectedWorld; }, progress: function(d) { return d.selectedWorld ? 'Exploring!' : 'Choose a world'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -999,7 +1005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           // World cards
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             WORLDS.map(function(w) {
-              return h('button', { 'aria-label': 'Update setting', key: w.id, onClick: function() { updMulti({ selectedWorld: w.id, currentRoom: w.rooms[0].id, writingPower: 10, roomsVisited: [w.rooms[0].id] }); if (awardStemXP) awardStemXP(5); moveToRoom(w.rooms[0].id); },
+              return h('button', { 'aria-label': 'Select world to explore', key: w.id, onClick: function() { updMulti({ selectedWorld: w.id, currentRoom: w.rooms[0].id, writingPower: 10, roomsVisited: [w.rooms[0].id] }); if (awardStemXP) awardStemXP(5); moveToRoom(w.rooms[0].id); },
                 className: 'p-5 rounded-2xl border-2 border-slate-200 bg-white text-left hover:border-violet-400 hover:shadow-lg transition-all hover:scale-[1.02]'
               },
                 h('div', { className: 'text-3xl mb-2' }, w.emoji),

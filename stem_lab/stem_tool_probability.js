@@ -53,11 +53,16 @@ window.StemLab = window.StemLab || {
   var _autoRun = { interval: null };
 
   window.StemLab.registerTool('probability', {
-    icon: '🎲',
+    icon: '\uD83C\uDFB2',
     label: 'Probability Lab',
-    desc: 'Coin flips, dice, spinners, real sports stats & custom experiments. Watch the Law of Large Numbers in action with chi-square analysis and AI explanations.',
+    desc: 'Coin flips, dice, spinners, real sports stats & custom experiments.',
     color: 'violet',
     category: 'math',
+    questHooks: [
+      { id: 'run_100_trials', label: 'Run 100+ probability trials', icon: '\uD83C\uDFB2', check: function(d) { return (d.totalTrials || 0) >= 100; }, progress: function(d) { return (d.totalTrials || 0) + '/100 trials'; } },
+      { id: 'try_3_experiments', label: 'Try 3 different experiment types', icon: '\uD83E\uDDEA', check: function(d) { return Object.keys(d.experimentsUsed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.experimentsUsed || {}).length + '/3 types'; } },
+      { id: 'monte_carlo', label: 'Run a Monte Carlo simulation', icon: '\uD83D\uDCCA', check: function(d) { return (d._piPoints || []).length > 0; }, progress: function(d) { return (d._piPoints || []).length > 0 ? 'Done!' : 'Not yet'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;

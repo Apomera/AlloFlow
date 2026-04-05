@@ -156,6 +156,11 @@
     desc: 'Graph functions, analyze zeros and intersections, explore transformations',
     color: 'indigo',
     category: 'math',
+    questHooks: [
+      { id: 'graph_3_functions', label: 'Graph 3 different functions', icon: '\uD83D\uDCC8', check: function(d) { return (d.funcs || []).length >= 3; }, progress: function(d) { return (d.funcs || []).length + '/3 functions'; } },
+      { id: 'complete_3_challenges', label: 'Complete 3 graphing challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d._challengesCompleted || 0) >= 3; }, progress: function(d) { return (d._challengesCompleted || 0) + '/3'; } },
+      { id: 'ask_ai_3', label: 'Ask the AI tutor 3 questions', icon: '\uD83E\uDD16', check: function(d) { return (d.aiQuestions || 0) >= 3; }, progress: function(d) { return (d.aiQuestions || 0) + '/3 questions'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

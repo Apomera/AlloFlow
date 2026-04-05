@@ -5799,6 +5799,63 @@ const AlloFlowContent = () => {
   useEffect(() => {
       return onAuthStateChanged(auth, (u) => setUser(u));
   }, []);
+  // ── LMS Integration (LTI 1.3 + Bookmarklet) ──
+  const [lmsSession, setLmsSession] = useState(null);
+  const [lmsAuditUrls, setLmsAuditUrls] = useState([]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    // ── LTI 1.3: Detect launch from LMS ──
+    if (params.get('lti') === '1' && params.get('session')) {
+      const sessionToken = params.get('session');
+      const host = window.location.hostname;
+      const functionsBase = host.includes('localhost')
+        ? 'http://localhost:5001'
+        : `https://us-central1-${host.replace('.web.app', '').replace('.firebaseapp.com', '')}.cloudfunctions.net`;
+      fetch(`${functionsBase}/ltiSession?token=${sessionToken}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) {
+            setLmsSession({
+              user: data.user || params.get('user') || 'User',
+              course: data.course || params.get('course') || 'Course',
+              role: data.isInstructor ? 'teacher' : 'student',
+              email: data.email,
+              courseId: data.courseId,
+              platformUrl: data.platformUrl,
+            });
+            debugLog('[LTI] Session loaded:', data.user, data.course);
+          }
+        })
+        .catch(err => {
+          warnLog('[LTI] Session fetch failed, using URL params:', err?.message);
+          setLmsSession({
+            user: params.get('user') || 'User',
+            course: params.get('course') || 'Course',
+            role: params.get('role') || 'student',
+          });
+        });
+      // Clean URL without reload
+      const cleanUrl = new URL(window.location);
+      cleanUrl.searchParams.delete('lti');
+      cleanUrl.searchParams.delete('session');
+      cleanUrl.searchParams.delete('course');
+      cleanUrl.searchParams.delete('role');
+      cleanUrl.searchParams.delete('user');
+      window.history.replaceState({}, '', cleanUrl.toString());
+    }
+    // ── Bookmarklet: Detect audit_urls from LMS page scanner ──
+    if (params.get('audit_urls')) {
+      const urls = params.get('audit_urls').split(',').map(u => decodeURIComponent(u)).filter(Boolean);
+      if (urls.length > 0) {
+        setLmsAuditUrls(urls);
+        debugLog('[LMS Bookmarklet] Audit URLs received:', urls.length);
+      }
+      const cleanUrl = new URL(window.location);
+      cleanUrl.searchParams.delete('audit_urls');
+      window.history.replaceState({}, '', cleanUrl.toString());
+    }
+  }, []);
   const [wordSoundsAutoReview, setWordSoundsAutoReview] = useState(false);
   const [lzLoaded, setLzLoaded] = useState(false);
   const [uiState, uiDispatch] = useReducer(uiChromeReducer, UI_INITIAL_STATE);
@@ -6872,7 +6929,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   const [showReportWriter, setShowReportWriter] = useState(false);
   const [isSymbolStudioOpen, setIsSymbolStudioOpen] = useState(false);
   const [showStoryForge, setShowStoryForge] = useState(false);
-  const [showStoryStage, setShowStoryStage] = useState(false);
+  const [showLitLab, setShowLitLab] = useState(false);
   const [showLearningHub, setShowLearningHub] = useState(false);
   const [showSelHub, setShowSelHub] = useState(false);
   const [selHubTab, setSelHubTab] = useState('explore');
@@ -7050,7 +7107,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/allobot_module.js');
     loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/teacher_module.js');
     loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/story_forge_module.js');
-    loadModule('StoryStage', 'story_stage_module.js');
+    loadModule('LitLab', 'story_stage_module.js');
     loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/visual_panel_module.js');
     loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/word_sounds_setup_module.js');
     loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/adventure_module.js');
@@ -7077,7 +7134,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     setTimeout(function() {
       var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/';
       var toolModules = [
-        'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
+        'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
         'stem_lab/stem_tool_datastudio.js', 'stem_lab/stem_tool_coding.js',
         'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_titration.js',
@@ -7113,6 +7170,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_circuit.js',
         'stem_lab/stem_tool_climateExplorer.js',
         'stem_lab/stem_tool_fireecology.js',
+        'stem_lab/stem_tool_lifeskills.js',
+        'stem_lab/stem_tool_spacecolony.js',
         'sel_hub/sel_tool_perspective.js',
         'sel_hub/sel_tool_decisions.js',
         'sel_hub/sel_tool_conflict.js',
@@ -7131,8 +7190,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
-        'stem_lab/stem_tool_creative.js',
-        'stem_lab/stem_tool_art.js',
+        'stem_lab/stem_tool_spacecolony.js',
+        'stem_lab/stem_tool_lifeskills.js',
         'sel_hub/sel_safety_layer.js',
         'sel_hub/sel_tool_advocacy.js',
         'sel_hub/sel_tool_restorativecircle.js',
@@ -30554,6 +30613,60 @@ Return ONLY JSON:
       >
         {t('a11y.skip_content')}
       </a>
+      {/* ── LMS Context Banner ── */}
+      {lmsSession && (
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 flex items-center justify-between text-xs font-medium z-[500]">
+          <div className="flex items-center gap-3">
+            <span className="bg-white/20 px-2 py-0.5 rounded-full font-bold">LMS</span>
+            <span>{lmsSession.course}</span>
+            <span className="opacity-60">|</span>
+            <span>{lmsSession.user}</span>
+            <span className="opacity-60">|</span>
+            <span className="capitalize">{lmsSession.role}</span>
+          </div>
+          <button onClick={() => setLmsSession(null)} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md transition-colors" aria-label="Dismiss LMS banner">Dismiss</button>
+        </div>
+      )}
+      {/* ── Bookmarklet Audit Queue ── */}
+      {lmsAuditUrls.length > 0 && !pendingPdfBase64 && (
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 z-[500]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-bold text-sm">♿ {lmsAuditUrls.length} document{lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS</span>
+            <button onClick={() => setLmsAuditUrls([])} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md text-xs transition-colors">Dismiss</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {lmsAuditUrls.map((url, i) => {
+              const name = decodeURIComponent(url.split('/').pop().split('?')[0]) || `Document ${i + 1}`;
+              return (
+                <button key={i} onClick={async () => {
+                  try {
+                    addToast(`Fetching ${name}...`, 'info');
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const blob = await resp.blob();
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      const base64 = reader.result.split(',')[1];
+                      setPendingPdfBase64(base64);
+                      setPendingPdfFile({ name, size: blob.size });
+                      setPdfAuditResult({ _choosing: true, fileName: name, fileSize: blob.size });
+                      setLmsAuditUrls(prev => prev.filter((_, idx) => idx !== i));
+                      addToast(`${name} loaded — ready for audit`, 'success');
+                    };
+                    reader.readAsDataURL(blob);
+                  } catch (err) {
+                    addToast(`Failed to fetch ${name}: ${err.message}. The file may require LMS authentication.`, 'error');
+                  }
+                }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5">
+                  <span className="bg-white/20 px-1 py-0.5 rounded text-[9px] font-bold">{name.split('.').pop()?.toUpperCase() || 'FILE'}</span>
+                  <span className="max-w-[200px] truncate">{name}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] opacity-70 mt-2">Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.</p>
+        </div>
+      )}
       <div role="status" aria-live="polite" className="fixed top-44 left-[45%] -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center w-full max-w-md">
         {toasts.map(toast => (
             <div
@@ -49419,7 +49532,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 </div>
 
 <div class="footer">
-  Generated by AlloFlow Accessibility Pipeline · ${date} · <a href="https://prismflow-911fe.web.app" style="color:#6366f1">prismflow-911fe.web.app</a>
+  Generated by AlloFlow Accessibility Pipeline · ${date} · <a href="https://github.com/Apomera/AlloFlow" style="color:#6366f1">AlloFlow</a>
 </div>
 </body></html>`);
                             win.document.close();
@@ -49701,10 +49814,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {/* Scoring Breakdown — transparent methodology with live calculation */}
                   {(() => {
                     const critCount = (pdfAuditResult.critical || []).length;
-                    const majCount = (pdfAuditResult.major || []).length;
+                    const seriousCount = (pdfAuditResult.serious || pdfAuditResult.major || []).length;
+                    const modCount = (pdfAuditResult.moderate || []).length;
                     const minCount = (pdfAuditResult.minor || []).length;
                     const passCount = (pdfAuditResult.passes || []).length;
-                    const totalIssues = critCount + majCount + minCount;
+                    const totalIssues = critCount + seriousCount + modCount + minCount;
                     const totalChecks = totalIssues + passCount;
                     const passRate = totalChecks > 0 ? Math.round((passCount / totalChecks) * 100) : 0;
                     const aiScore = pdfAuditResult._aiOnlyScore ?? pdfAuditResult.score;
@@ -49712,7 +49826,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const axeAudit = pdfAuditResult._baselineAxeAudit;
                     const isBlended = pdfAuditResult._scoreIsBlended && axeScore !== undefined;
                     const displayedScore = pdfAuditResult.score;
-                    const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
+                    const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
                     const scoreWithoutPasses = Math.max(0, 100 - rawDed);
                     const passBenefit = Math.max(0, aiScore - scoreWithoutPasses);
                     return (
@@ -49727,7 +49841,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
                         <div className="flex justify-between text-red-700 font-bold"><span>Issues found</span><span>{totalIssues}</span></div>
                         {totalIssues > 0 && (
-                          <div className="text-[9px] text-slate-500 pl-2">{critCount > 0 ? `${critCount} critical` : ''}{critCount > 0 && majCount > 0 ? ', ' : ''}{majCount > 0 ? `${majCount} major` : ''}{(critCount > 0 || majCount > 0) && minCount > 0 ? ', ' : ''}{minCount > 0 ? `${minCount} minor` : ''}</div>
+                          <div className="text-[9px] text-slate-500 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
                         )}
                       </div>
                       {/* Two-engine scores side by side */}
@@ -49815,14 +49929,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </ul>
                     </section>
                   )}
-                  {pdfAuditResult.major?.length > 0 && (
-                    <section aria-label={`${pdfAuditResult.major.length} major accessibility issues`}>
-                      <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">Major Issues ({pdfAuditResult.major.length})</h4>
+                  {(pdfAuditResult.serious || pdfAuditResult.major || []).length > 0 && (
+                    <section aria-label={`${(pdfAuditResult.serious || pdfAuditResult.major).length} serious accessibility issues`}>
+                      <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">Serious Issues ({(pdfAuditResult.serious || pdfAuditResult.major).length})</h4>
                       <ul className="list-none space-y-1.5">
-                      {pdfAuditResult.major.map((issue, i) => (
+                      {(pdfAuditResult.serious || pdfAuditResult.major).map((issue, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-amber-50 p-2 rounded-lg border border-amber-100">
                           <span className="text-amber-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
                           <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-amber-500 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}</div>
+                        </li>
+                      ))}
+                      </ul>
+                    </section>
+                  )}
+                  {(pdfAuditResult.moderate || []).length > 0 && (
+                    <section aria-label={`${pdfAuditResult.moderate.length} moderate accessibility issues`}>
+                      <h4 className="text-xs font-bold text-yellow-600 uppercase tracking-widest mb-2">Moderate Issues ({pdfAuditResult.moderate.length})</h4>
+                      <ul className="list-none space-y-1.5">
+                      {pdfAuditResult.moderate.map((issue, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-yellow-50 p-2 rounded-lg border border-yellow-100">
+                          <span className="text-yellow-500 shrink-0 mt-0.5" aria-hidden="true">●</span>
+                          <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-yellow-600 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1">×{issue.count}</span>}</div>
                         </li>
                       ))}
                       </ul>
@@ -49841,10 +49968,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {pdfAuditResult.passes?.length > 0 && (() => {
                     const pc = pdfAuditResult.passes.length;
                     const critC = (pdfAuditResult.critical || []).length;
-                    const majC = (pdfAuditResult.major || []).length;
+                    const serC = (pdfAuditResult.serious || pdfAuditResult.major || []).length;
+                    const modC = (pdfAuditResult.moderate || []).length;
                     const minC = (pdfAuditResult.minor || []).length;
-                    const rawDed = critC * 15 + majC * 10 + minC * 5;
-                    const pf = pc > 0 ? 1 / (1 + pc * 0.05) : 1;
+                    const rawDed = critC * 15 + serC * 10 + modC * 5 + minC * 2;
+                    const pf = pc > 0 ? Math.max(0.85, 1 / (1 + pc * 0.05)) : 1;
                     const saved = rawDed - Math.round(rawDed * pf);
                     return (
                     <section aria-label={`${pc} accessibility checks passed`}>
@@ -54003,10 +54131,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <p className="text-xs text-rose-600 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowLearningHub(false); setShowStoryStage(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+              <button onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🎭</span>
                 <div>
-                  <h3 className="font-bold text-violet-800">StoryStage</h3>
+                  <h3 className="font-bold text-violet-800">LitLab</h3>
                   <p className="text-xs text-violet-600 mt-1">Bring stories to life with character voices & literary analysis</p>
                 </div>
               </button>
@@ -54164,12 +54292,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
             </div>
             );
         })()}
-        {showStoryStage && (() => {
-            const SS = window.AlloModules && window.AlloModules.StoryStage;
+        {showLitLab && (() => {
+            const SS = window.AlloModules && window.AlloModules.LitLab;
             if (SS) {
                 return React.createElement(SS, {
                     isOpen: true,
-                    onClose: () => setShowStoryStage(false),
+                    onClose: () => setShowLitLab(false),
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
                     onCallImagen: callImagen,
@@ -54185,12 +54313,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 });
             }
             return (
-            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryStage(false)}>
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowLitLab(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="text-4xl mb-3">🎭</div>
-                    <p className="text-lg font-bold text-slate-700">Loading StoryStage...</p>
+                    <p className="text-lg font-bold text-slate-700">Loading LitLab...</p>
                     <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
-                    <button onClick={() => setShowStoryStage(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                    <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
             );

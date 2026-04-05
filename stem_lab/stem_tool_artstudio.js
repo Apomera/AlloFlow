@@ -55,6 +55,10 @@ window.StemLab = window.StemLab || {
     desc: '',
     color: 'slate',
     category: 'creative',
+    questHooks: [
+      { id: 'create_palette', label: 'Create a color harmony palette', icon: '🎨', check: function(d) { return d.harmony && d.harmony !== 'complementary'; }, progress: function(d) { return d.harmony ? 'Created!' : 'Try harmonies'; } },
+      { id: 'draw_pixels', label: 'Draw pixel art (10+ cells)', icon: '🖼️', check: function(d) { return Object.keys(d.pixelData || {}).length >= 10; }, progress: function(d) { return Object.keys(d.pixelData || {}).length + '/10'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -697,7 +701,13 @@ const d = labToolData.artStudio || {};
 
           };
 
-
+          // Inject fullscreen CSS for Game of Life (controls + canvas visible)
+          if (!document.getElementById('life-fullscreen-css')) {
+            var fsStyle = document.createElement('style');
+            fsStyle.id = 'life-fullscreen-css';
+            fsStyle.textContent = '#lifeFullscreenContainer:fullscreen, #lifeFullscreenContainer:-webkit-full-screen { background: #0a1a0a !important; overflow-y: auto !important; padding: 16px !important; display: flex !important; flex-direction: column !important; } #lifeFullscreenContainer:fullscreen #lifeCanvasContainer, #lifeFullscreenContainer:-webkit-full-screen #lifeCanvasContainer { flex: 1 !important; min-height: 0 !important; aspect-ratio: auto !important; } #lifeFullscreenContainer:fullscreen canvas, #lifeFullscreenContainer:-webkit-full-screen canvas { max-height: calc(100vh - 280px) !important; width: auto !important; }';
+            document.head.appendChild(fsStyle);
+          }
 
           // ═══ ANIMATED STEREOGRAM HELPERS ═══
 
@@ -1339,8 +1349,48 @@ const d = labToolData.artStudio || {};
 
               React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-full" }, "CREATIVE"),
 
-              React.createElement("button", { "aria-label": "3D Builder", onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192")
+              React.createElement("button", { "aria-label": "3D Builder", onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
 
+              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "bg-pink-50 text-pink-600 border border-pink-200 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": "Toggle studio tour" }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
+
+            ),
+
+            /* ── Art Studio Tour/Welcome Panel ── */
+            d.showTour && React.createElement("div", { className: "mb-4 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 rounded-xl border-2 border-pink-200 p-4 animate-in fade-in duration-200" },
+              React.createElement("h4", { className: "text-sm font-black text-pink-800 mb-3 flex items-center gap-2" }, "\uD83C\uDFA8 Welcome to the Art & Design Studio!"),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, "Explore 15 interactive tools that teach color theory, mathematical art, generative design, and visual accessibility. Each tab is a different creative canvas. Here\u2019s what you can create:"),
+              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3" },
+                [
+                  { icon: '\uD83C\uDFA8', name: 'Color Wheel', desc: 'Explore HSL color space interactively' },
+                  { icon: '\uD83E\uDDEA', name: 'Color Mixer', desc: 'Mix paints with subtractive color theory' },
+                  { icon: '\uD83D\uDDBC', name: 'Pixel Art', desc: 'Create pixel art on a grid canvas' },
+                  { icon: '\u2728', name: 'Symmetry', desc: 'Draw with rotational & reflective symmetry' },
+                  { icon: '\uD83C\uDF00', name: 'Spirograph', desc: 'Mathematical spiral patterns (hypotrochoids)' },
+                  { icon: '\uD83C\uDF86', name: 'Generative', desc: 'Flow fields, particles, starfields, aurora' },
+                  { icon: '\uD83C\uDF00', name: 'Spin Art', desc: 'Virtual spin painting with physics' },
+                  { icon: '\uD83D\uDD78', name: 'String Art', desc: 'Geometric string patterns on pegs' },
+                  { icon: '\uD83D\uDC41', name: 'Op Art', desc: 'Optical illusions and visual tricks' },
+                  { icon: '\uD83D\uDD37', name: 'Tessellation', desc: 'Repeating tile patterns like M.C. Escher' },
+                  { icon: '\uD83D\uDD2E', name: 'Fractals', desc: 'Mandelbrot, Julia sets, Sierpinski triangle' },
+                  { icon: '\uD83C\uDF08', name: 'Gradient', desc: 'Design and export CSS gradient patterns' },
+                  { icon: '\uD83D\uDC53', name: 'Stereogram', desc: 'Hidden 3D images (Magic Eye style)' },
+                  { icon: '\uD83E\uDDEC', name: 'Game of Life', desc: 'Conway\u2019s cellular automaton \u2014 emergent complexity' },
+                  { icon: '\u267F', name: 'Contrast', desc: 'WCAG contrast checker for accessibility' },
+                ].map(function(tool) {
+                  return React.createElement("div", { key: tool.name, className: "bg-white rounded-lg p-2 border border-slate-100 text-center shadow-sm hover:shadow-md transition-shadow cursor-default" },
+                    React.createElement("div", { className: "text-lg" }, tool.icon),
+                    React.createElement("div", { className: "text-[9px] font-bold text-slate-700 mt-0.5" }, tool.name),
+                    React.createElement("div", { className: "text-[8px] text-slate-500 mt-0.5 leading-tight" }, tool.desc)
+                  );
+                })
+              ),
+              React.createElement("div", { className: "bg-white rounded-lg p-3 border border-pink-100" },
+                React.createElement("h5", { className: "text-[10px] font-bold text-pink-700 uppercase mb-1" }, "\uD83D\uDCA1 Educational Concepts"),
+                React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" },
+                  "Color theory (additive vs subtractive mixing, complementary colors, HSL/RGB), mathematical curves (hypotrochoids, Lissajous), fractals & self-similarity, cellular automata & emergence, tessellation geometry, op art visual perception, WCAG accessibility standards, and computational art. Every tool teaches the math behind the beauty."
+                )
+              ),
+              React.createElement("button", { onClick: function () { upd('showTour', false); }, className: "mt-3 w-full py-2 bg-pink-600 text-white text-sm font-bold rounded-lg hover:bg-pink-700 transition-colors" }, "Got it \u2014 let\u2019s create! \uD83C\uDFA8")
             ),
 
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200", role: 'tablist', 'aria-label': 'Art Studio sections' },
@@ -5844,13 +5894,13 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { className: "space-y-3", style: { maxHeight: '85vh', overflowY: 'auto' } },
 
-                  React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-lime-50 rounded-xl p-4 border border-emerald-200" },
+                  React.createElement("div", { id: "lifeFullscreenContainer", className: "bg-gradient-to-br from-emerald-50 to-lime-50 rounded-xl p-4 border border-emerald-200" },
 
                     React.createElement("div", { className: "flex justify-between items-start mb-3" },
 
                       React.createElement("h4", { className: "text-xs font-bold text-emerald-700" }, "\uD83E\uDDEC Conway's Game of Life"),
 
-                      React.createElement("button", { "aria-label": "Fullscreen Mode", onClick: function () { toggleFullscreen('lifeCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" }, "\uD83D\uDD0D Fullscreen Mode")
+                      React.createElement("button", { "aria-label": "Fullscreen Mode", onClick: function () { toggleFullscreen('lifeFullscreenContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" }, "\uD83D\uDD0D Fullscreen Mode")
 
                     ),
 

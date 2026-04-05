@@ -3230,7 +3230,60 @@ Create a hypothesis diagram and return ONLY valid JSON:
                         )
                     )
                 )
-            )
+            ),
+            // ── FCT Vocabulary Readiness — bridge to Word Garden ────────────
+            // Reads Symbol Studio's familiarity data from shared localStorage
+            // to show which replacement words are ready for the identified function
+            (function () {
+                const behaviorFn = aiAnalysis?.hypothesizedFunction;
+                if (!behaviorFn) return null;
+                const FCT_WORDS = {
+                    Attention: { icon: '👀', tip: 'Teach attention-getting words', words: ['look','help','hi','excuse me','come here','play','friend','my turn'] },
+                    Escape: { icon: '🏃', tip: 'Teach break/help-seeking words', words: ['break','stop','all done','help','too hard','need help','not now','finished'] },
+                    Tangible: { icon: '🎁', tip: 'Teach requesting vocabulary', words: ['want','more','give','my turn','can i','please','open','play'] },
+                    Sensory: { icon: '🌀', tip: 'Teach sensory self-advocacy words', words: ['too loud','need break','need quiet','need headphones','feel overwhelmed','need to move','deep breath','help'] }
+                };
+                const fctData = FCT_WORDS[behaviorFn];
+                if (!fctData) return null;
+                // Read familiarity data from Symbol Studio's localStorage
+                let famData = {};
+                try { const raw = localStorage.getItem('alloSymbolFamiliarity'); if (raw) famData = JSON.parse(raw); } catch(e) {}
+                // Read gallery for image availability
+                let galleryLabels = {};
+                try { const raw = localStorage.getItem('alloSymbolGallery'); if (raw) { JSON.parse(raw).forEach(g => { galleryLabels[g.label.toLowerCase().trim()] = true; }); } } catch(e) {}
+                const ready = []; const growing = []; const missing = [];
+                fctData.words.forEach(w => {
+                    const k = w.toLowerCase().trim();
+                    const entry = famData[k];
+                    if (entry) {
+                        const interactions = (entry.taps||0) + (entry.questCorrect||0)*2 + (entry.exposures||0)*0.3;
+                        const score = Math.min(1, interactions / 25);
+                        if (score >= 0.5) ready.push(w);
+                        else growing.push(w);
+                    } else if (galleryLabels[k]) {
+                        growing.push(w);
+                    } else {
+                        missing.push(w);
+                    }
+                });
+                const fc2 = FUNCTION_COLORS[behaviorFn] || FUNCTION_COLORS['Attention'];
+                return h('div', { className: 'bg-white rounded-xl border-2 p-4 mt-3', style: { borderColor: fc2.border, background: fc2.bg + '80' } },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('span', { className: 'text-lg' }, '🌱'),
+                        h('span', { className: 'text-xs font-black uppercase tracking-wide', style: { color: fc2.text } }, 'FCT Vocabulary Readiness'),
+                        h('span', { className: 'text-xs font-medium', style: { color: fc2.text, opacity: 0.7 } }, '(from Word Garden)')),
+                    h('p', { className: 'text-xs mb-3', style: { color: fc2.text } }, fctData.tip + ' so the student can communicate instead of using behavior.'),
+                    ready.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
+                        h('span', { className: 'text-xs font-bold text-emerald-700' }, '✅ Ready: '),
+                        ready.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold' }, w))),
+                    growing.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
+                        h('span', { className: 'text-xs font-bold text-amber-700' }, '🌿 Growing: '),
+                        growing.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold' }, w))),
+                    missing.length > 0 && h('div', { className: 'flex flex-wrap gap-1 items-center' },
+                        h('span', { className: 'text-xs font-bold text-red-700' }, '🌰 Needs planting: '),
+                        missing.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-semibold' }, w))),
+                    h('p', { className: 'text-xs mt-2 italic', style: { color: fc2.text, opacity: 0.7 } }, 'Open Symbol Studio → Word Garden to create and practice these words.'));
+            })()
         );
     };
 
@@ -7559,10 +7612,25 @@ Create a structured ${weeks}-week intervention plan that includes:
 5. DATA COLLECTION SCHEDULE — When/how to collect data
 6. REVIEW DATES — When to review and adjust the plan
 7. REPLACEMENT BEHAVIORS — Positive alternatives to teach
+8. FUNCTIONAL COMMUNICATION TRAINING — If the function is escape, tangible, attention, or sensory, specify communication words the student should learn as replacements (e.g., "break", "help", "want", "too loud")
 
 Use plain text formatting. Be specific and actionable.`;
+                // Enrich prompt with vocabulary readiness from Word Garden if available
+                let fctEnrichment = '';
+                try {
+                    const famRaw = localStorage.getItem('alloSymbolFamiliarity');
+                    if (famRaw) {
+                        const fam = JSON.parse(famRaw);
+                        const knownWords = Object.keys(fam).filter(k => {
+                            const e2 = fam[k];
+                            return ((e2.taps||0) + (e2.questCorrect||0)*2) > 3;
+                        });
+                        if (knownWords.length > 0) fctEnrichment = '\n\nNOTE: The student has practiced these AAC vocabulary words (from Word Garden): ' + knownWords.slice(0,15).join(', ') + '. Include these in replacement behavior recommendations where appropriate.';
+                    }
+                } catch(e3) {}
+                const fullPrompt = prompt + fctEnrichment;
                 setPreAiPlan(plan);
-                const result = await callGemini(prompt, true);
+                const result = await callGemini(fullPrompt, true);
                 setPlan(result);
                 if (addToast) addToast(t('behavior_lens.toast.intervention_plan_generated') || 'Intervention plan generated ✨', 'success');
             } catch (err) {
@@ -7617,7 +7685,45 @@ Use plain text formatting. Be specific and actionable.`;
                         className: 'px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-sm font-bold hover:bg-amber-100'
                     }, '↩️ Undo AI')
                 )
-            )
+            ),
+            // FCT Vocabulary Readiness card — appears when plan exists and function is known
+            plan && aiAnalysis?.hypothesizedFunction && (function () {
+                const behaviorFn = aiAnalysis.hypothesizedFunction;
+                const FCT_WORDS = {
+                    Attention: { words: ['look','help','hi','excuse me','come here','play','friend','my turn'], tip: 'attention-getting' },
+                    Escape: { words: ['break','stop','all done','help','too hard','need help','not now','finished'], tip: 'break/help-seeking' },
+                    Tangible: { words: ['want','more','give','my turn','can i','please','open','play'], tip: 'requesting' },
+                    Sensory: { words: ['too loud','need break','need quiet','need headphones','feel overwhelmed','need to move','deep breath','help'], tip: 'sensory self-advocacy' }
+                };
+                const fctData = FCT_WORDS[behaviorFn];
+                if (!fctData) return null;
+                let famData = {};
+                try { const raw = localStorage.getItem('alloSymbolFamiliarity'); if (raw) famData = JSON.parse(raw); } catch(e4) {}
+                const ready = []; const growing2 = []; const missing2 = [];
+                fctData.words.forEach(w => {
+                    const k = w.toLowerCase().trim();
+                    const entry = famData[k];
+                    if (entry && ((entry.taps||0) + (entry.questCorrect||0)*2) > 5) ready.push(w);
+                    else if (entry) growing2.push(w);
+                    else missing2.push(w);
+                });
+                const fc3 = FUNCTION_COLORS[behaviorFn] || FUNCTION_COLORS['Attention'];
+                return h('div', { className: 'rounded-xl border-2 p-4', style: { borderColor: fc3.border, background: fc3.bg } },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('span', { className: 'text-lg' }, '🌱'),
+                        h('span', { className: 'text-xs font-black uppercase tracking-wide', style: { color: fc3.text } }, 'FCT Replacement Vocabulary — from Word Garden')),
+                    h('p', { className: 'text-xs mb-3', style: { color: fc3.text } }, 'These ' + fctData.tip + ' words serve as communication replacements for ' + behaviorFn.toLowerCase() + '-maintained behavior:'),
+                    ready.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
+                        h('span', { className: 'text-xs font-bold text-emerald-700' }, '✅ Student can use: '),
+                        ready.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold' }, w))),
+                    growing2.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
+                        h('span', { className: 'text-xs font-bold text-amber-700' }, '🌿 Developing: '),
+                        growing2.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold' }, w))),
+                    missing2.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mb-2 items-center' },
+                        h('span', { className: 'text-xs font-bold text-red-700' }, '🌰 Not yet taught: '),
+                        missing2.map(w => h('span', { key: w, className: 'px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-semibold' }, w))),
+                    h('p', { className: 'text-xs mt-1 italic opacity-70', style: { color: fc3.text } }, 'Practice these words in Symbol Studio → Word Garden → Symbol Quest'));
+            })()
         );
     };
 

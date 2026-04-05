@@ -6,6 +6,10 @@
     desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.',
     color: 'orange',
     category: 'science',
+    questHooks: [
+      { id: 'explore_3_tabs', label: 'Explore 3 tectonics topics', icon: '🌋', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3'; } },
+      { id: 'select_plate', label: 'Study a tectonic plate', icon: '🌍', check: function(d) { return !!d.selectedPlate; }, progress: function(d) { return d.selectedPlate ? 'Selected!' : 'Pick a plate'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;

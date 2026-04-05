@@ -85,8 +85,9 @@ Check for these specific issues:
 
 SCORING RUBRIC — Start at 100, deduct points for each unique violation:
   CRITICAL (-15 each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1, no searchable text layer
-  MAJOR (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
-  MINOR (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists, missing document metadata
+  SERIOUS (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
+  MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
+  MINOR (-2 each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
 
 IMPORTANT FORMATTING RULES for the "issue" field:
 - Write each issue as ONE complete sentence. Do NOT split sentences across fields.
@@ -101,7 +102,8 @@ Return ONLY valid JSON:
   "confidence": "<your confidence in this score: 'high' if document is straightforward, 'medium' if some elements are ambiguous, 'low' if you had to guess about key aspects>",
   "summary": "One sentence overall assessment",
   "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
-  "major": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
+  "serious": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
+  "moderate": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "minor": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "passes": ["Things the document does well"],
   "pageCount": N,
@@ -169,15 +171,16 @@ Return ONLY valid JSON:
       // Recalculate from issue counts using the rubric to reduce variance
       parsedAudits.forEach(a => {
         const critCount = (a.critical || []).length;
-        const majCount = (a.major || []).length;
+        const seriousCount = (a.serious || a.major || []).length;
+        const modCount = (a.moderate || []).length;
         const minCount = (a.minor || []).length;
         const passCount = (a.passes || []).length;
-        const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
-        const pf = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
+        const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
+        const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
         const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
         // If Gemini's score diverges significantly from the rubric calculation, override it
         if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) {
-          warnLog(`[PDF Audit] Auditor score ${a.score} overridden to ${calculatedScore} (${critCount}C/${majCount}M/${minCount}m, ${passCount} passes)`);
+          warnLog(`[PDF Audit] Auditor score ${a.score} overridden to ${calculatedScore} (${critCount}C/${seriousCount}S/${modCount}M/${minCount}m, ${passCount} passes)`);
           a.score = calculatedScore;
         }
       });
@@ -197,11 +200,12 @@ Return ONLY valid JSON:
         const extraParsed = extraResults.filter(Boolean).map(r => { try { return parseAudit(r); } catch { return null; } }).filter(Boolean);
         extraParsed.forEach(a => {
           const critCount = (a.critical || []).length;
-          const majCount = (a.major || []).length;
+          const seriousCount = (a.serious || a.major || []).length;
+          const modCount = (a.moderate || []).length;
           const minCount = (a.minor || []).length;
           const passCount = (a.passes || []).length;
-          const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
-          const pf = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
+          const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
+          const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
           const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
           if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) a.score = calculatedScore;
         });
@@ -415,10 +419,11 @@ Check for these specific issues:
 
 SCORING RUBRIC — Start at 100, deduct points for each unique violation:
   CRITICAL (-15 each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1, no searchable text layer
-  MAJOR (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
-  MINOR (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists, missing document metadata
+  SERIOUS (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
+  MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
+  MINOR (-2 each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
 
-Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"major":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false}`;
+Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"serious":[{"issue":"...","wcag":"..."}],"moderate":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false}`;
 
     const batchAllVariants = [
       batchAuditPrompt,
@@ -461,11 +466,12 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
     // Recalculate scores from issue counts
     batchParsedAudits.forEach(a => {
       const critCount = (a.critical || []).length;
-      const majCount = (a.major || []).length;
+      const seriousCount = (a.serious || a.major || []).length;
+      const modCount = (a.moderate || []).length;
       const minCount = (a.minor || []).length;
       const passCount = (a.passes || []).length;
-      const rawDed = critCount * 15 + majCount * 10 + minCount * 5;
-      const pf = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
+      const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
+      const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
       const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
       if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) {
         a.score = calculatedScore;
@@ -1354,7 +1360,13 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       log('Final audit failed (using loop result): ' + batchFinalErr.message);
     }
 
-    const finalScore = curVerification ? curVerification.score : afterScore;
+    // Blend final score with axe-core (same 50/50 method as initial audit for consistent comparison)
+    let finalScore = curVerification ? curVerification.score : afterScore;
+    if (finalScore !== null && curAxeResults && typeof curAxeResults.score === 'number') {
+      const blendedFinal = Math.round((finalScore + curAxeResults.score) / 2);
+      warnLog(`[Batch] Final blended score: AI ${finalScore} + axe ${curAxeResults.score} = ${blendedFinal}`);
+      finalScore = blendedFinal;
+    }
     const needsExpertReview = (finalScore !== null && finalScore < 70) || (curAxeResults ? curAxeResults.critical.length : 0) > 0;
     const elapsed = Math.round((Date.now() - beforeStartTime) / 1000);
 
@@ -1699,7 +1711,7 @@ Return ONLY JSON:
           const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0), 0);
           // Pass credit: strengths mitigate weaknesses
           const pc = (parsed.passes || []).length;
-          const pf = pc > 0 ? 1 / (1 + pc * 0.05) : 1;
+          const pf = pc > 0 ? Math.max(0.85, 1 / (1 + pc * 0.05)) : 1;
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions * pf));
           if (Math.abs((parsed.score || 0) - calculatedScore) > 10) parsed.score = calculatedScore;
         }
@@ -1757,8 +1769,8 @@ HTML section ${chunkNum}/${chunks.length}:
       // Length normalization: longer documents get softer penalty curve
       const lengthFactor = htmlContent.length > 20000 ? 1 / (1 + Math.log2(htmlContent.length / 20000)) : 1;
       // Pass credit: each pass reduces effective deductions (strengths mitigate weaknesses)
-      // Formula: passFactor = 1 / (1 + passCount * 0.05) — 10 passes = 33% reduction
-      const passFactor = passCount > 0 ? 1 / (1 + passCount * 0.05) : 1;
+      // Capped at 0.85 (max 15% reduction) to prevent passes from masking real violations
+      const passFactor = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
       const adjustedDeductions = Math.round(rawDeductions * lengthFactor * passFactor);
       const mergedScore = Math.max(0, 100 - adjustedDeductions);
       // Summary from first chunk (has the global perspective)
@@ -3244,8 +3256,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
           // If BOTH engines are satisfied, stop
-          if (newAxeViolations === 0 && newAiScore >= 90) {
-            warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 — stopping`);
+          const targetScore = pdfTargetScore || 90;
+          if (newAxeViolations === 0 && newAiScore >= targetScore) {
+            warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
             break;
           }
 
@@ -3274,7 +3287,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
       }
 
-      const finalAfterScore = verification ? verification.score : afterScore;
+      // Blend final score with axe-core (same 50/50 method as initial audit for consistent comparison)
+      let finalAfterScore = verification ? verification.score : afterScore;
+      if (finalAfterScore !== null && axeResults && typeof axeResults.score === 'number') {
+        const blendedFinal = Math.round((finalAfterScore + axeResults.score) / 2);
+        warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + axe ${axeResults.score} = ${blendedFinal}`);
+        finalAfterScore = blendedFinal;
+      }
 
       // ── Triage: flag documents that need expert remediation ──
       // Only recommend expert review if problems persist AFTER remediation attempts,

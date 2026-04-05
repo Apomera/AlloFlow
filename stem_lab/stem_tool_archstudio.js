@@ -214,6 +214,12 @@
     name: 'Architecture Studio',
     icon: '\uD83C\uDFD7\uFE0F',
     category: 'explore',
+    questHooks: [
+      { id: 'place_5_blocks', label: 'Place 5 building blocks', icon: '\uD83E\uDDF1', check: function(d) { return (d.blocks || []).length >= 5; }, progress: function(d) { return (d.blocks || []).length + '/5 blocks'; } },
+      { id: 'place_15_blocks', label: 'Build a structure with 15+ blocks', icon: '\uD83C\uDFD7\uFE0F', check: function(d) { return (d.blocks || []).length >= 15; }, progress: function(d) { return (d.blocks || []).length + '/15 blocks'; } },
+      { id: 'try_3_materials', label: 'Use 3 different building materials', icon: '\uD83E\uDEA8', check: function(d) { return Object.keys(d.materialsUsed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.materialsUsed || {}).length + '/3 materials'; } },
+      { id: 'try_2_styles', label: 'Try 2 architectural styles', icon: '\uD83C\uDFDB\uFE0F', check: function(d) { return Object.keys(d.stylesUsed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.stylesUsed || {}).length + '/2 styles'; } }
+    ],
     render: function (ctx) {
     var React = ctx.React;
     var el = React.createElement;

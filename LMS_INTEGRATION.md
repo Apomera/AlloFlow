@@ -23,7 +23,7 @@
 
 ```bash
 git clone https://github.com/Apomera/AlloFlow.git
-cd AlloFlow/prismflow-deploy
+cd AlloFlow
 npm install
 cd functions && npm install && cd ..
 firebase login
@@ -54,10 +54,10 @@ firebase functions:secrets:set LTI_PLATFORM_URL
 2. Click **Register Tool**
 3. Enter:
    - **Name:** AlloFlow Accessibility Pipeline
-   - **Domain:** `your-firebase-project.web.app`
-   - **Login URL:** `https://us-central1-YOUR-PROJECT.cloudfunctions.net/ltiLogin`
-   - **Redirect URL:** `https://us-central1-YOUR-PROJECT.cloudfunctions.net/ltiLaunch`
-   - **Target Link URI:** `https://YOUR-PROJECT.web.app`
+   - **Domain:** `YOUR-PROJECT-ID.web.app`
+   - **Login URL:** `https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net/ltiLogin`
+   - **Redirect URL:** `https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net/ltiLaunch`
+   - **Target Link URI:** `https://YOUR-PROJECT-ID.web.app`
 4. Enable scopes: `openid`
 5. Save → copy the **Client ID** and **Deployment ID** → set as Firebase secrets (Step 2)
 6. Create a **Deployment** and link it to your org units (courses)
@@ -124,6 +124,6 @@ Each institution deploys their own Firebase project. No shared infrastructure. F
 
 ## Support
 
-- **Source:** github.com/Apomera/AlloFlow
+- **Source:** [github.com/Apomera/AlloFlow](https://github.com/Apomera/AlloFlow)
 - **License:** GNU AGPL v3
 - **Contact:** [Your contact info]

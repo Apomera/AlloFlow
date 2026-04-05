@@ -6,6 +6,10 @@ window.StemLab.registerTool('titrationLab', {
   icon: '\uD83E\uDDEA',
   desc: 'Virtual titration lab with S-curve graphing, safety drills, incident simulator, equipment guide, and dilution calculator.',
   category: 'science',
+    questHooks: [
+      { id: 'safety_check', label: 'Complete safety checklist', icon: '🧪', check: function(d) { return d.safetyChecked || false; }, progress: function(d) { return d.safetyChecked ? 'Done!' : 'Complete checklist'; } },
+      { id: 'try_2_setups', label: 'Try 2 titration setups', icon: '🔬', check: function(d) { return Object.keys(d.presetsUsed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.presetsUsed || {}).length + '/2'; } }
+    ],
   render: function(ctx) {
     var React = ctx.React;
     var labToolData = ctx.toolData;

@@ -47,11 +47,16 @@ window.StemLab = window.StemLab || {
 
 
   window.StemLab.registerTool('dataStudio', {
-    icon: '🔬',
+    icon: '\uD83D\uDCCA',
     label: 'dataStudio',
     desc: '',
     color: 'slate',
     category: 'creative',
+    questHooks: [
+      { id: 'enter_5_rows', label: 'Enter 5+ data rows', icon: '\uD83D\uDCCA', check: function(d) { return (d.dataRows || []).length >= 5; }, progress: function(d) { return (d.dataRows || []).length + '/5 rows'; } },
+      { id: 'try_3_chart_types', label: 'Try 3 different chart types', icon: '\uD83D\uDCC8', check: function(d) { return Object.keys(d.chartTypesUsed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.chartTypesUsed || {}).length + '/3 types'; } },
+      { id: 'add_trendline', label: 'Add a trendline to your chart', icon: '\uD83D\uDCC9', check: function(d) { return d.showTrendline || false; }, progress: function(d) { return d.showTrendline ? 'Added!' : 'Not yet'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

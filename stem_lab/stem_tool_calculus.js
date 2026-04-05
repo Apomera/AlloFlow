@@ -21,6 +21,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     desc: 'Riemann sums, derivatives, and guided discovery missions',
     color: 'red',
     category: 'math',
+    questHooks: [
+      { id: 'explore_integral', label: 'Explore Riemann sum approximation', icon: '\u222B', check: function(d) { return (d.n || 20) !== 20 || d.mode !== 'left'; }, progress: function(d) { return d.mode && d.mode !== 'left' ? 'Exploring!' : 'Adjust rectangles'; } },
+      { id: 'try_all_methods', label: 'Try left, right, midpoint, and trapezoid methods', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.methodsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.methodsUsed || {}).length + '/4 methods'; } },
+      { id: 'predict_correctly', label: 'Make a correct prediction in predict mode', icon: '\uD83E\uDDE0', check: function(d) { return d.predictCorrect || false; }, progress: function(d) { return d.predictCorrect ? 'Correct!' : 'Try predicting'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

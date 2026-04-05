@@ -49,11 +49,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
 
   window.StemLab.registerTool('economicsLab', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83D\uDCB9',
     label: 'economicsLab',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'explore_supply_demand', label: 'Explore supply and demand curves', icon: '\uD83D\uDCC8', check: function(d) { return (d.sdDemandShift || 0) !== 0 || (d.sdSupplyShift || 0) !== 0; }, progress: function(d) { return (d.sdDemandShift || d.sdSupplyShift) ? 'Exploring!' : 'Shift a curve'; } },
+      { id: 'set_price_control', label: 'Set a price floor or ceiling', icon: '\uD83D\uDCB0', check: function(d) { return (d.sdPriceFloor || 0) > 0 || (d.sdPriceCeiling || 0) > 0; }, progress: function(d) { return (d.sdPriceFloor || d.sdPriceCeiling) ? 'Set!' : 'Not yet'; } },
+      { id: 'explore_3_tabs', label: 'Explore 3 economics topics', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 topics'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;

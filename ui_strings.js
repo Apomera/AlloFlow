@@ -1351,6 +1351,8 @@
                             "bionic": "Bionic Reading Style",
                               "bionic_sub": "Bolds start of words to guide eye"
     },
+    "reading_theme": "🎨 Reading Theme",
+    "reading_theme_desc": "Background & text color for all content views",
     "voice": {
       "label": "Narrator Voice",
         "helper": "Applies to text-to-speech reading, adventure mode narration, flashcard audio, and the AI Assistant."
@@ -7996,17 +7998,20 @@
     "subtitle": "Choose your learning pathway",
       "full_title": "Full Platform",
         "full_desc": "Complete access to all AlloFlow features — lessons, STEM Lab, and tools",
-          "guided_desc": "Step-by-step guidance through lesson creation and student activities",
-            "stem_title": "STEM Lab",
-              "stem_desc": "40+ interactive science, math, and engineering simulations",
-                "educator_tools_title": "Educator Tools",
-                  "educator_tools_desc": "BehaviorLens, Report Writer, and professional clinical tools — password protected",
-                    "badge_recommended": "Recommended",
-                      "badge_educator": "🔒 Educator",
-                        "badge_educator_open": "🛠️ Educator",
-                          "switch_hint": "You can switch modes anytime from the menu",
-                            "learning_tools_title": "Learning Tools",
-                              "learning_tools_desc": "STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow"
+          "guided_title": "Guided Mode",
+            "guided_desc": "Step-by-step guidance through lesson creation and student activities",
+              "stem_title": "STEM Lab",
+                "stem_desc": "40+ interactive science, math, and engineering simulations",
+                  "educator_tools_title": "Educator Tools",
+                    "educator_tools_desc": "BehaviorLens, Report Writer, and professional clinical tools — password protected",
+                      "badge_recommended": "Recommended",
+                        "badge_3_tools": "3 Tools",
+                          "badge_new": "New",
+                            "badge_educator": "🔒 Educator",
+                              "badge_educator_open": "🛠️ Educator",
+                                "switch_hint": "You can switch modes anytime from the menu",
+                                  "learning_tools_title": "Learning Tools",
+                                    "learning_tools_desc": "STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow"
   },
   "learning_hub": {
     "title": "Learning Tools",

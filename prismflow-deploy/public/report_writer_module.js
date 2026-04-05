@@ -358,7 +358,13 @@
         const ageNorm = norms.find(n => studentAge >= n.ageMin && studentAge <= n.ageMax);
         if (!ageNorm) return null;
         if (ageNorm.typicalMin !== undefined) {
-            if (value >= ageNorm.typicalMin) return { type: 'appropriate', label: 'Developmentally Appropriate', color: 'green', explanation: `Value of ${value} ${ageNorm.unit} falls within the typical range of ${ageNorm.typicalMin}–${ageNorm.typicalMax} ${ageNorm.unit} for age ${studentAge}` };
+            // Check clinical threshold first (e.g., tantrum frequency above threshold is always clinical)
+            if (ageNorm.clinicalThreshold !== undefined && value >= ageNorm.clinicalThreshold) return { type: 'clinical', label: 'Clinically Elevated', color: 'red', explanation: `Value of ${value} ${ageNorm.unit} exceeds the clinical threshold of ${ageNorm.clinicalThreshold} ${ageNorm.unit} for age ${studentAge} (typical range: ${ageNorm.typicalMin}–${ageNorm.typicalMax})` };
+            // Within typical range
+            if (value >= ageNorm.typicalMin && value <= ageNorm.typicalMax) return { type: 'appropriate', label: 'Developmentally Appropriate', color: 'green', explanation: `Value of ${value} ${ageNorm.unit} falls within the typical range of ${ageNorm.typicalMin}–${ageNorm.typicalMax} ${ageNorm.unit} for age ${studentAge}` };
+            // Above typical max but below clinical threshold (elevated but not clinical)
+            if (value > ageNorm.typicalMax) return { type: 'borderline', label: 'Elevated', color: 'amber', explanation: `Value of ${value} ${ageNorm.unit} exceeds the typical range of ${ageNorm.typicalMin}–${ageNorm.typicalMax} ${ageNorm.unit} for age ${studentAge}` };
+            // Below typical min — check one year back
             const oneYearBack = norms.find(n => (studentAge - 1) >= n.ageMin && (studentAge - 1) <= n.ageMax);
             if (oneYearBack && value >= oneYearBack.typicalMin) return { type: 'borderline', label: 'Borderline', color: 'amber', explanation: `Value of ${value} ${ageNorm.unit} is below typical for age ${studentAge} (expected ${ageNorm.typicalMin}–${ageNorm.typicalMax}) but within range for age ${studentAge - 1}` };
             return { type: 'deficit', label: 'Significant Deficit', color: 'red', explanation: `Value of ${value} ${ageNorm.unit} is significantly below the typical range of ${ageNorm.typicalMin}–${ageNorm.typicalMax} ${ageNorm.unit} for age ${studentAge}` };

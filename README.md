@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./rainbow-book.jpg" alt="AlloFlow Logo" width="150"/>
 
-  # AlloFlow (v1.0)
+  # AlloFlow (v1.1)
   **Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
 
   [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
@@ -38,7 +38,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 | Main Interface | Live Session | STEM Lab |
 |:-:|:-:|:-:|
-| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing 55 interactive simulation tiles](docs/screenshots/stem-lab.png) |
+| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing 65 interactive simulation tiles](docs/screenshots/stem-lab.png) |
 
 | Adventure Mode | BehaviorLens | Word Sounds |
 |:-:|:-:|:-:|
@@ -84,38 +84,56 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 | **Quick-Fill AI** | Type a natural language observation; AI auto-structures it into Antecedent, Behavior, Consequence with function hypothesis |
 | **Intervention Templates** | DRO protocols, token economies, behavior contracts, SMART goals, FCT templates, de-escalation toolkit |
 | **Restorative Language** | Affirmative Glossary translates clinical ABA terms to person-first language throughout; Restorative Questions generated from each logged incident |
-| **Symbol Studio** | AI-generated PCS-style communication boards, visual schedules, social stories, and Quick Boards — 6 pre-built templates, 10 social story templates, up to 8 student profiles |
+| **Symbol Studio** | Full AAC platform — AI-generated PCS-style symbols (Imagen + image-to-image), board builder, visual schedules, social stories (Carol Gray format), 8 Quick Board types, Symbol Quest (4 game modes), Symbol Search (auditory-to-visual training), Word Garden (vocabulary growth tracking), IEP goal tracking with auto-recorded trials, partner-assisted scanning, multilingual boards (14 languages), per-cell parent voice recording, up to 8 student profiles |
 | **Word Sounds Studio** | 8 phonemic awareness activity types (segmentation, blending, isolation, rhyming, mapping, spelling, word families) with grade-normed adaptive difficulty and 6 achievement badges |
+| **StoryForge** | 6-phase scaffolded creative writing with AI illustration (Imagen), narration (8 TTS voices), grading with custom rubrics, 18-language support, writing sprint timers, AI grammar/style coaching, revision tracking, and comic panel stickers |
 
 ### 🧠 For School Psychologists
 
 | Feature | Description |
 |---------|-------------|
-| **Report Writer Wizard** | 10-step guided wizard for synthesizing standardized assessment data into bilingual psychoeducational reports |
-| **Fact-Chunk Pipeline** | Immutable PII-scrubbing layer prevents AI hallucination or statistical misinterpretation during report generation |
-| **15+ Assessment Presets** | WISC-V, WIAT-4, BASC-3, Vineland-3, BRIEF-2, Conners-4, WJ-IV, KABC-II, CELF-5, KTEA-3, and more |
-| **Student Analytics (RTI)** | Automated Tier 1/2/3 classification; ORF, Math Fluency, and Literacy CBM probes; anomaly flagging; CSV export |
-| **Math Fluency Probes** | K–8 grade-normed DCPM arithmetic drills (addition, subtraction, multiplication, division) with error analysis |
+| **Report Writer Wizard** | 10-step guided wizard for synthesizing standardized assessment data into bilingual psychoeducational reports with triangulated generation (N parallel passes, best-of-N by evidence coverage), self-healing dual-pass accuracy audit, score-text verification, and cross-section consistency checking |
+| **Fact-Chunk Pipeline** | Immutable PII-scrubbing layer prevents AI hallucination or statistical misinterpretation during report generation; developmental norms cross-referencing (attention span, tantrum frequency, social play, vocabulary by age) |
+| **17 Assessment Presets** | WISC-V, WIAT-4, BASC-3 (Parent & Teacher), Vineland-3, BRIEF-2, Conners-4, WJ-IV COG & ACH, KABC-II, DAS-II, CELF-5, KTEA-3, SRS-2, GARS-3, BOT-2 |
+| **Student Analytics (RTI)** | Automated Tier 1/2/3 classification with aimline monitoring (4-week warning, 6-week critical alerts); ORF, Math Fluency, and Literacy CBM probes; Pearson correlation analysis; anomaly flagging; CSV export |
+| **Math Fluency Probes** | K–8 grade-normed DCPM arithmetic drills (addition, subtraction, multiplication, division) with error analysis and frustration detection |
+| **PDF Accessibility Pipeline** | Upload any PDF → 5-auditor triangulated AI audit with statistical analysis (ICC, Cronbach's alpha) → one-click WCAG remediation via Vision API → axe-core verification → self-healing auto-fix loop → preview/edit with themes, brand matching, and AI image tools → export as accessible PDF, HTML, or audio |
 
 ---
 
-## 🧮 STEM Lab (55 Interactive Simulations)
+## 🧮 STEM Lab (65 Interactive Simulations)
 
-The STEM Lab is a dynamically-loaded suite of **55 browser-based interactive tools** spanning:
+The STEM Lab is a dynamically-loaded suite of **65 browser-based interactive tools** spanning:
 
 | Domain | Tools |
 |--------|-------|
 | **Math Fundamentals** | Fraction Lab, Area Model, Multiplication Table, Number Line, Math Manipulatives, Money Math, Coordinate Grid, Angle Explorer, 3D Volume Explorer, 3D Geometry Sandbox |
-| **Advanced Math** | Function Grapher, Inequality Grapher, Calculus Visualizer, Algebra Solver, Graphing Calculator, Probability Explorer, Unit Converter |
-| **Life Science & Biology** | Cell Simulator, Human Anatomy, Brain Atlas, DNA Lab, Punnett Square, Virtual Dissection, Decomposer, Companion Planting Lab, Aquaculture & Ocean Lab, Ecosystem Simulator |
-| **Earth & Space Science** | Rocks & Minerals, Water Cycle, Rock Cycle, Plate Tectonics, Solar System, Universe Timelapse, Galaxy Explorer |
-| **Physics & Chemistry** | Wave Simulator, Physics Simulator, Circuit Builder, Equation Balancer, Molecule Builder, Titration Lab, Data Plotter |
-| **Technology & CS** | Coding Playground, Cyber Defense Lab |
-| **Creative & Music** | Architecture Studio, Art & Design Studio, Music Synthesizer |
-| **Social Studies** | Economics Lab, Life Skills Lab |
-| **Simulation** | Kepler Colony, Behavior Shaping Lab |
+| **Advanced Math** | Function Grapher, Inequality Grapher, Calculus Visualizer, Algebra CAS, Graphing Calculator, Probability Explorer, Unit Converter, Logic Lab |
+| **Life Science & Biology** | Cell Simulator, Human Anatomy, Brain Atlas, DNA Lab, Punnett Square, Virtual Dissection, Decomposer, Companion Planting Lab, Aquaculture & Ocean Lab, Ecosystem Simulator, Beehive Simulator |
+| **Earth & Space Science** | Rocks & Minerals, Water Cycle, Climate Explorer, Plate Tectonics, Solar System, Universe Timelapse, Galaxy Explorer, Moon Mission |
+| **Physics & Chemistry** | Wave Simulator, Physics Simulator, Circuit Builder, Chemical Equation Balancer, Molecule Builder, Titration Lab, Semiconductor Lab, Data Plotter |
+| **Technology & CS** | Coding Playground, Cyber Defense Lab, Data Studio |
+| **Creative & Design** | Architecture Studio, Art & Design Studio, Art Studio, Creative Studio, Game Studio |
+| **Social Studies & Life** | Economics Lab, Life Skills Lab |
+| **Simulation & Applied** | Kepler Colony, Behavior Shaping Lab, Flight Simulator, ATC Tower, Fire Ecology, Epidemic Simulator, World Builder, Science Lab, Geometry World |
 
 Each tool supports **Generate Drill** for instant related practice sets and saves/restores state with the session.
+
+---
+
+## 💚 SEL Hub (24 Interactive Tools)
+
+The SEL Hub provides **24 social-emotional learning tools** aligned with CASEL's 5 core competencies:
+
+| Competency | Tools |
+|------------|-------|
+| **Self-Awareness** | Emotions Explorer, Strengths Inventory, Journal, Zones of Regulation, Growth Mindset Workshop |
+| **Self-Management** | Coping Strategies, Goals & Planning, Mindfulness, Transitions |
+| **Social Awareness** | Perspective Taking, Compassion, Culture Explorer, Upstander Training |
+| **Relationship Skills** | Friendship Builder, Conflict Resolution, Community, Teamwork, Restorative Circle |
+| **Responsible Decision-Making** | Decisions Lab, Ethical Reasoning Lab, Civic Action & Hope, Safety, Social Skills, Advocacy |
+
+Highlights include the **Growth Mindset Workshop** (Brain Science, Reframe Engine, Famous Yet Stories, AI Growth Coach, Letter to Future Me), **Restorative Circle** (5 circle types with Indigenous roots and talking pieces), **Ethical Reasoning Lab** (6 contemporary dilemmas, 6 ethical frameworks, stakeholder mapping), and **Culture Explorer** (80+ world cultures with AI-powered deep dives).
 
 ---
 
@@ -137,7 +155,9 @@ Each tool supports **Generate Drill** for instant related practice sets and save
 
 ## 🏫 Local-First: The "School Box"
 
-For districts that need **complete data sovereignty and zero ongoing API costs**, AlloFlow runs entirely on local intranet hardware via Docker.
+> **Status: In Development.** The School Box air-gapped deployment is being actively developed in collaboration with **[Tyler Despain of Physher](https://physher.com)**. The architecture is designed and the Docker configuration exists, but the full local stack is not yet operational. The Firebase Hosting cloud deployment (see [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md)) is the current production path.
+
+For districts that need **complete data sovereignty and zero ongoing API costs**, AlloFlow is designed to run entirely on local intranet hardware via Docker.
 
 ```bash
 # Clone the repository
@@ -149,7 +169,7 @@ docker-compose up -d
 # Access at http://localhost:3000
 ```
 
-**What runs locally:**
+**What will run locally:**
 - **Ollama** — LLM inference (Llama 3.1, Phi-3.5) on your own GPU
 - **PocketBase** — local database replacing Firebase
 - **Piper / Edge TTS** — offline text-to-speech
@@ -193,9 +213,9 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
-| **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Student Interests, Gamification Engine |
-| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab, TTS (40+ languages), Color Overlays, Bionic Reading |
-| **Action & Expression** | Writing Scaffolds, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio |
+| **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (65 tools), SEL Hub (24 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
+| **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 
 ---
 
@@ -215,7 +235,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 ## 🔧 For Developers
 
-AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx`) dynamically loads spoke modules (STEM Lab, BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics) on demand. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and contribution guidelines.
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx`, ~55K lines) dynamically loads spoke modules on demand: STEM Lab (65 tools), SEL Hub (24 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Games, Doc Pipeline, AI Backend, and more. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
 
 ```bash
 # Cloud deployment (Firebase)
@@ -224,22 +244,34 @@ npm install
 npm run build
 firebase deploy
 
-# Local development (School Box)
-docker-compose up -d
+# Run clinical logic test suite (no dependencies)
+node tests/clinical_tests.js
 ```
+
+### 🧪 Test Suite
+
+AlloFlow includes **117 automated tests** covering clinical decision-making logic — the scoring algorithms, classification lookups, and data transformations that affect real student services. Tests are organized in three tiers:
+
+- **Tier 1 (Clinical Decisions):** Score classification (standard + T-score), percentile calculation, PII scrubbing, RTI tier classification, developmental norms
+- **Tier 2 (Learning Tracking):** Familiarity scoring, word growth levels, codename validation, Pearson correlation, aimline monitoring
+- **Tier 3 (Data Quality):** Math fluency benchmarks, error analysis, doc pipeline issue normalization, assessment preset integrity
+
+Run with `node tests/clinical_tests.js` — zero dependencies, just Node.js. See [tests/README.md](./tests/README.md) for full documentation.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome — especially new STEM tools, accessibility improvements, and additional language support.
+Contributions are welcome — especially new STEM/SEL tools, accessibility improvements, clinical test cases, and additional language support.
 
-1. Read [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules (Hub-and-Spoke pattern, CDN hash pinning, STEM plugin template).
+1. Read [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules (Hub-and-Spoke pattern, CDN hash pinning, plugin templates).
 2. Read [architecture.md](./architecture.md) for a full technical overview.
 3. Open a descriptive PR explaining which UDL checkpoint or clinical workflow your change enhances.
 
 **Quick wins for new contributors:**
 - Add a new STEM tool (`stem_lab/stem_tool_yourname.js`) — self-contained, no core file changes needed
+- Add a new SEL tool (`sel_hub/sel_tool_yourname.js`) — same plugin pattern
+- Add clinical test cases to `tests/clinical_tests.js` (verify expected values against assessment manuals)
 - Improve i18n strings in `ui_strings.js` for an underrepresented language
 - Add keyboard navigation to an existing game
 - Fix an issue tagged `good first issue` on [GitHub Issues](https://github.com/Apomera/AlloFlow/issues)

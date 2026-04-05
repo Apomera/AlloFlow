@@ -98,6 +98,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { name: 'Himalayas', type: 'landmark', country: 'Nepal/China', lat: 27.988, lon: 86.925, pop: null, fact: 'Mount Everest grows about 4mm per year due to tectonic activity. The Himalayas are still rising.' },
     { name: 'Great Barrier Reef', type: 'landmark', country: 'Australia', lat: -18.286, lon: 147.700, pop: null, fact: 'The Great Barrier Reef is the largest living structure on Earth — visible from space. It\'s home to 1,500+ species of fish.' },
     { name: 'North Pole', type: 'landmark', country: 'Arctic', lat: 89.0, lon: 0, pop: null, fact: 'At the North Pole, every direction is south. The sun rises once and sets once per year (6 months of daylight, 6 of darkness).' },
+    // Additional places for educational coverage
+    { name: 'San Francisco', type: 'city', country: 'United States', lat: 37.775, lon: -122.418, pop: '874K', fact: 'The Golden Gate Bridge is painted "International Orange" — not golden. San Francisco sits on the San Andreas Fault.' },
+    { name: 'Portland', type: 'city', country: 'United States', lat: 43.661, lon: -70.256, pop: '68K', fact: 'Portland, Maine is the birthplace of Henry Wadsworth Longfellow and has the most restaurants per capita in the US!' },
+    { name: 'Denver', type: 'city', country: 'United States', lat: 39.739, lon: -104.990, pop: '715K', fact: 'Denver is exactly one mile above sea level. The 13th step of the state capitol is exactly 5,280 feet elevation.' },
+    { name: 'Honolulu', type: 'capital', country: 'United States (Hawaii)', lat: 21.307, lon: -157.858, pop: '350K', fact: 'Hawaii is the most isolated population center on Earth — 2,390 miles from California. It\'s the only US state that grows coffee.' },
+    { name: 'Anchorage', type: 'city', country: 'United States (Alaska)', lat: 61.218, lon: -149.900, pop: '291K', fact: 'Anchorage receives 19+ hours of daylight on the summer solstice. It\'s closer to Tokyo than to Miami.' },
+    { name: 'Lisbon', type: 'capital', country: 'Portugal', lat: 38.722, lon: -9.139, pop: '505K', fact: 'Lisbon is the westernmost capital in continental Europe. The 1755 earthquake and tsunami destroyed 85% of the city.' },
+    { name: 'Stockholm', type: 'capital', country: 'Sweden', lat: 59.329, lon: 18.069, pop: '975K', fact: 'Stockholm is built on 14 islands connected by 57 bridges. The Nobel Prizes have been awarded here since 1901.' },
+    { name: 'Singapore', type: 'capital', country: 'Singapore', lat: 1.352, lon: 103.820, pop: '5.5M', fact: 'Singapore is both a city and a country. It has zero natural freshwater — all drinking water is imported or desalinated.' },
+    { name: 'Mumbai', type: 'city', country: 'India', lat: 19.076, lon: 72.878, pop: '20.7M', fact: 'Mumbai produces more films per year than Hollywood — the Bollywood industry releases over 1,500 films annually.' },
+    { name: 'Shanghai', type: 'city', country: 'China', lat: 31.230, lon: 121.474, pop: '24.9M', fact: 'Shanghai\'s Pudong district was farmland in 1990. Today it has more skyscrapers than New York City.' },
+    { name: 'Rio de Janeiro', type: 'city', country: 'Brazil', lat: -22.907, lon: -43.173, pop: '6.7M', fact: 'The Christ the Redeemer statue stands 98 ft tall atop Corcovado mountain. Rio hosted the 2016 Olympics.' },
+    { name: 'Antarctica', type: 'landmark', country: 'International', lat: -85.0, lon: 0, pop: null, fact: 'Antarctica contains 70% of Earth\'s fresh water locked in its ice sheet. It\'s the coldest, driest, and windiest continent.' },
+    { name: 'Galápagos Islands', type: 'landmark', country: 'Ecuador', lat: -0.953, lon: -90.966, pop: null, fact: 'Charles Darwin\'s observations here inspired the theory of evolution. Giant tortoises can live over 175 years.' },
+    { name: 'Machu Picchu', type: 'landmark', country: 'Peru', lat: -13.163, lon: -72.545, pop: null, fact: 'Built around 1450 AD by the Inca Empire at 7,970 ft elevation. It was unknown to the outside world until 1911.' },
   ];
 
   // ── CHALLENGES: Structured flight missions ──
@@ -310,11 +325,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   // REGISTER TOOL
   // ═══════════════════════════════════════════
   window.StemLab.registerTool('flightSim', {
-    icon: '✈️',
+    icon: '\u2708\uFE0F',
     label: 'SkySchool',
-    desc: 'Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports.',
+    desc: 'Educational flight simulator \u2014 learn aerodynamics, navigation, and world geography by flying between real airports.',
     color: 'sky',
     category: 'applied',
+    questHooks: [
+      { id: 'visit_3_airports', label: 'Visit 3 different airports', icon: '\uD83D\uDEEB', check: function(d) { return (d.visitedAirports || []).length >= 3; }, progress: function(d) { return (d.visitedAirports || []).length + '/3 airports'; } },
+      { id: 'visit_5_airports', label: 'Visit 5 different airports', icon: '\uD83C\uDF0D', check: function(d) { return (d.visitedAirports || []).length >= 5; }, progress: function(d) { return (d.visitedAirports || []).length + '/5 airports'; } },
+      { id: 'fly_10_min', label: 'Accumulate 10 minutes of flight time', icon: '\u23F1', check: function(d) { return (d.totalFlightTime || 0) >= 600; }, progress: function(d) { return Math.floor((d.totalFlightTime || 0) / 60) + '/10 min'; } },
+      { id: 'complete_lesson', label: 'Complete a flight lesson', icon: '\uD83D\uDCDA', check: function(d) { return (d.lessonsCompleted || 0) >= 1; }, progress: function(d) { return (d.lessonsCompleted || 0) >= 1 ? 'Done!' : 'Not yet'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -349,6 +370,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var hudRef = useRef({});
       var flyingRef = useRef(false);
       var timeRef = useRef(0);
+      var pausedRef = useRef(false);
+
+      // ── WCAG: Accessible state narration ──
+      var skyA11yRef = useRef(null);
+      useEffect(function() {
+        if (skyA11yRef.current) return;
+        var region = document.createElement('div');
+        region.id = 'skyschool-a11y-live';
+        region.setAttribute('aria-live', 'polite');
+        region.setAttribute('aria-atomic', 'true');
+        region.setAttribute('role', 'status');
+        region.className = 'sr-only';
+        region.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+        document.body.appendChild(region);
+        skyA11yRef.current = region;
+        return function() { if (region.parentNode) region.parentNode.removeChild(region); };
+      }, []);
+      var skyAnnounce = function(msg) {
+        if (skyA11yRef.current) { skyA11yRef.current.textContent = ''; setTimeout(function() { skyA11yRef.current.textContent = msg; }, 50); }
+      };
+
+      // ── WCAG: Reduced motion detection ──
+      var skyReducedMotion = useRef(false);
+      useEffect(function() {
+        var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+        skyReducedMotion.current = mq && mq.matches;
+        if (mq && mq.addEventListener) {
+          var handler = function(e) { skyReducedMotion.current = e.matches; };
+          mq.addEventListener('change', handler);
+          return function() { mq.removeEventListener('change', handler); };
+        }
+      }, []);
 
       // ── Keyboard Controls ──
       useEffect(function() {
@@ -413,23 +466,160 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         };
       }, [view]);
 
-      // ── Render HUD instrument ──
+      // ── Render HUD instrument (round gauge, kept for VSI/throttle) ──
       var drawGauge = function(gfx, cx, cy, r, value, max, label, unit, color) {
-        // Background
         gfx.beginPath(); gfx.arc(cx, cy, r, 0, Math.PI * 2); gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fill();
         gfx.strokeStyle = color; gfx.lineWidth = 2; gfx.stroke();
-        // Arc
         var pct = Math.min(1, Math.max(0, value / max));
         gfx.beginPath(); gfx.arc(cx, cy, r - 4, -Math.PI * 0.75, -Math.PI * 0.75 + pct * Math.PI * 1.5);
         gfx.strokeStyle = color; gfx.lineWidth = 3; gfx.stroke();
-        // Value
         gfx.fillStyle = '#fff'; gfx.font = 'bold ' + Math.round(r * 0.5) + 'px system-ui';
         gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
         gfx.fillText(Math.round(value), cx, cy - 2);
-        // Label
         gfx.fillStyle = 'rgba(255,255,255,0.6)'; gfx.font = Math.round(r * 0.25) + 'px system-ui';
         gfx.fillText(label, cx, cy + r * 0.35);
         gfx.fillText(unit, cx, cy + r * 0.55);
+      };
+
+      // ── Glass Cockpit Tape Instruments ──
+      var drawSpeedTape = function(gfx, x, y, w, h2, speed, stallSpeed) {
+        // Background
+        gfx.fillStyle = 'rgba(0,0,0,0.7)';
+        gfx.beginPath(); gfx.roundRect(x, y, w, h2, 4); gfx.fill();
+        // Tape with speed markings
+        gfx.save(); gfx.beginPath(); gfx.rect(x, y, w, h2); gfx.clip();
+        var pxPerKt = 2;
+        var centerY = y + h2 / 2;
+        for (var spd = Math.max(0, Math.floor(speed / 10) * 10 - 60); spd <= speed + 60; spd += 10) {
+          var tickY = centerY - (spd - speed) * pxPerKt;
+          if (tickY < y || tickY > y + h2) continue;
+          var isMajor = spd % 20 === 0;
+          // Stall band (red)
+          if (spd <= stallSpeed) {
+            gfx.fillStyle = 'rgba(239,68,68,0.3)';
+            gfx.fillRect(x, tickY, w, pxPerKt * 10);
+          }
+          gfx.strokeStyle = isMajor ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)';
+          gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(x + w - (isMajor ? 12 : 6), tickY); gfx.lineTo(x + w, tickY); gfx.stroke();
+          if (isMajor) {
+            gfx.fillStyle = 'rgba(255,255,255,0.8)'; gfx.font = '9px monospace'; gfx.textAlign = 'right';
+            gfx.fillText(spd, x + w - 14, tickY + 3);
+          }
+        }
+        gfx.restore();
+        // Current value box
+        gfx.fillStyle = '#000'; gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 1.5;
+        var boxH = 18; var boxY = centerY - boxH / 2;
+        gfx.beginPath(); gfx.roundRect(x + 2, boxY, w - 4, boxH, 3); gfx.fill(); gfx.stroke();
+        gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 12px monospace'; gfx.textAlign = 'center';
+        gfx.fillText(Math.round(speed), x + w / 2, centerY + 4);
+        // Label
+        gfx.fillStyle = 'rgba(255,255,255,0.4)'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+        gfx.fillText('KTS', x + w / 2, y + h2 + 10);
+      };
+
+      var drawAltTape = function(gfx, x, y, w, h2, alt) {
+        gfx.fillStyle = 'rgba(0,0,0,0.7)';
+        gfx.beginPath(); gfx.roundRect(x, y, w, h2, 4); gfx.fill();
+        gfx.save(); gfx.beginPath(); gfx.rect(x, y, w, h2); gfx.clip();
+        var pxPer100 = 2;
+        var centerY = y + h2 / 2;
+        var step = alt > 10000 ? 500 : 100;
+        for (var a = Math.max(0, Math.floor(alt / step) * step - 3000); a <= alt + 3000; a += step) {
+          var tickY = centerY - (a - alt) * pxPer100 / (step / 100);
+          if (tickY < y || tickY > y + h2) continue;
+          var isMajor = a % (step * 2) === 0;
+          gfx.strokeStyle = isMajor ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)';
+          gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(x, tickY); gfx.lineTo(x + (isMajor ? 12 : 6), tickY); gfx.stroke();
+          if (isMajor) {
+            gfx.fillStyle = 'rgba(255,255,255,0.8)'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
+            gfx.fillText(a >= 1000 ? (a / 1000).toFixed(1) + 'K' : a, x + 14, tickY + 3);
+          }
+        }
+        gfx.restore();
+        // Current value box
+        gfx.fillStyle = '#000'; gfx.strokeStyle = '#a78bfa'; gfx.lineWidth = 1.5;
+        var boxH2 = 18; var boxY2 = centerY - boxH2 / 2;
+        gfx.beginPath(); gfx.roundRect(x + 2, boxY2, w - 4, boxH2, 3); gfx.fill(); gfx.stroke();
+        gfx.fillStyle = '#a78bfa'; gfx.font = 'bold 12px monospace'; gfx.textAlign = 'center';
+        gfx.fillText(Math.round(alt).toLocaleString(), x + w / 2, centerY + 4);
+        gfx.fillStyle = 'rgba(255,255,255,0.4)'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+        gfx.fillText('FT', x + w / 2, y + h2 + 10);
+      };
+
+      // ── Heading Tape (top of screen, like real PFD) ──
+      var drawHeadingTape = function(gfx, x, y, w2, h2, heading) {
+        gfx.fillStyle = 'rgba(0,0,0,0.6)';
+        gfx.beginPath(); gfx.roundRect(x, y, w2, h2, 4); gfx.fill();
+        gfx.save(); gfx.beginPath(); gfx.rect(x, y, w2, h2); gfx.clip();
+        var centerX = x + w2 / 2;
+        var pxPerDeg = 3;
+        var dirs = { 0: 'N', 45: 'NE', 90: 'E', 135: 'SE', 180: 'S', 225: 'SW', 270: 'W', 315: 'NW' };
+        for (var hdg = Math.floor(heading / 5) * 5 - 40; hdg <= heading + 40; hdg += 5) {
+          var normHdg = ((hdg % 360) + 360) % 360;
+          var tickX = centerX + (hdg - heading) * pxPerDeg;
+          if (tickX < x || tickX > x + w2) continue;
+          var isMajor = normHdg % 10 === 0;
+          gfx.strokeStyle = isMajor ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)';
+          gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(tickX, y + h2); gfx.lineTo(tickX, y + h2 - (isMajor ? 10 : 5)); gfx.stroke();
+          if (dirs[normHdg]) {
+            gfx.fillStyle = normHdg === 0 ? '#ef4444' : '#fff'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText(dirs[normHdg], tickX, y + 10);
+          } else if (normHdg % 30 === 0) {
+            gfx.fillStyle = 'rgba(255,255,255,0.6)'; gfx.font = '8px monospace'; gfx.textAlign = 'center';
+            gfx.fillText(String(normHdg).padStart(3, '0'), tickX, y + 10);
+          }
+        }
+        gfx.restore();
+        // Center bug
+        gfx.fillStyle = '#fbbf24';
+        gfx.beginPath(); gfx.moveTo(centerX, y + h2); gfx.lineTo(centerX - 4, y + h2 + 5); gfx.lineTo(centerX + 4, y + h2 + 5); gfx.fill();
+      };
+
+      // ── Flight Path Vector (FPV / velocity vector) ──
+      var drawFPV = function(gfx, W, H, state, ctrl) {
+        if (state.onGround) return;
+        var kts2 = state.speed * 0.5924838;
+        if (kts2 < 40) return;
+        // FPV shows where the aircraft is actually going (not where nose points)
+        var fpaRad = Math.atan2(state.vsi, state.speed); // flight path angle
+        var fpaDeg = fpaRad * 180 / Math.PI;
+        var driftDeg = ctrl.bank * 0.3; // simplified drift from bank
+
+        var fpvX = W / 2 + driftDeg * 3;
+        var fpvY = H * 0.5 - fpaDeg * 4;
+        fpvY = Math.max(H * 0.2, Math.min(H * 0.8, fpvY));
+
+        // Circle with wings
+        gfx.strokeStyle = '#4ade80'; gfx.lineWidth = 2;
+        gfx.beginPath(); gfx.arc(fpvX, fpvY, 6, 0, Math.PI * 2); gfx.stroke();
+        // Wings
+        gfx.beginPath(); gfx.moveTo(fpvX - 6, fpvY); gfx.lineTo(fpvX - 18, fpvY); gfx.stroke();
+        gfx.beginPath(); gfx.moveTo(fpvX + 6, fpvY); gfx.lineTo(fpvX + 18, fpvY); gfx.stroke();
+        // Tail
+        gfx.beginPath(); gfx.moveTo(fpvX, fpvY - 6); gfx.lineTo(fpvX, fpvY - 12); gfx.stroke();
+      };
+
+      // ── G-Force Indicator ──
+      var gForceRef = useRef(1.0);
+      var drawGForce = function(gfx, x, y, state, ctrl) {
+        // Approximate G-force from bank angle and pitch change
+        var bankG = 1 / Math.cos(Math.abs(ctrl.bank) * Math.PI / 180);
+        var pitchG = ctrl.pitch * 0.02;
+        var totalG = bankG + pitchG;
+        gForceRef.current = gForceRef.current * 0.9 + totalG * 0.1; // smoothed
+        var g = gForceRef.current;
+
+        gfx.fillStyle = 'rgba(0,0,0,0.6)';
+        gfx.beginPath(); gfx.roundRect(x, y, 40, 30, 4); gfx.fill();
+        gfx.fillStyle = g > 3 ? '#ef4444' : g > 2 ? '#fbbf24' : '#4ade80';
+        gfx.font = 'bold 14px monospace'; gfx.textAlign = 'center';
+        gfx.fillText(g.toFixed(1), x + 20, y + 16);
+        gfx.fillStyle = 'rgba(255,255,255,0.4)'; gfx.font = '7px system-ui';
+        gfx.fillText('G-FORCE', x + 20, y + 27);
       };
 
       // ── Render artificial horizon ──
@@ -462,6 +652,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.beginPath(); gfx.moveTo(cx - 25, cy); gfx.lineTo(cx - 8, cy); gfx.stroke();
         gfx.beginPath(); gfx.moveTo(cx + 8, cy); gfx.lineTo(cx + 25, cy); gfx.stroke();
         gfx.beginPath(); gfx.arc(cx, cy, 3, 0, Math.PI * 2); gfx.fillStyle = '#fbbf24'; gfx.fill();
+        // Bank angle arc (top of horizon)
+        gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 1.5;
+        gfx.beginPath(); gfx.arc(cx, cy, r - 2, -Math.PI * 0.85, -Math.PI * 0.15); gfx.stroke();
+        // Bank marks at 10, 20, 30, 45, 60 degrees
+        [10, 20, 30, 45, 60].forEach(function(deg) {
+          [-1, 1].forEach(function(side) {
+            var markAngle = -Math.PI / 2 + side * deg * Math.PI / 180;
+            var inner = deg === 30 || deg === 60 ? r - 10 : r - 6;
+            gfx.beginPath();
+            gfx.moveTo(cx + Math.cos(markAngle) * inner, cy + Math.sin(markAngle) * inner);
+            gfx.lineTo(cx + Math.cos(markAngle) * (r - 1), cy + Math.sin(markAngle) * (r - 1));
+            gfx.stroke();
+          });
+        });
+        // Bank pointer (moves with bank)
+        var bankPointerAngle = -Math.PI / 2 - bank * Math.PI / 180;
+        gfx.fillStyle = '#fbbf24';
+        gfx.beginPath();
+        gfx.moveTo(cx + Math.cos(bankPointerAngle) * (r - 2), cy + Math.sin(bankPointerAngle) * (r - 2));
+        gfx.lineTo(cx + Math.cos(bankPointerAngle - 0.08) * (r + 5), cy + Math.sin(bankPointerAngle - 0.08) * (r + 5));
+        gfx.lineTo(cx + Math.cos(bankPointerAngle + 0.08) * (r + 5), cy + Math.sin(bankPointerAngle + 0.08) * (r + 5));
+        gfx.fill();
         // Border
         gfx.beginPath(); gfx.arc(cx, cy, r, 0, Math.PI * 2); gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 2; gfx.stroke();
       };
@@ -533,12 +745,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         return n - Math.floor(n);
       };
       var terrainHeight = function(lat, lon) {
-        // Simulated elevation: mountains in western US, Rockies, Alps, Himalayas
+        // Major mountain ranges of the world
         var h = 0;
-        h += Math.max(0, 8000 * (1 - Math.abs(lat - 39) / 5) * (1 - Math.abs(lon + 105) / 8)); // Rockies
-        h += Math.max(0, 6000 * (1 - Math.abs(lat - 46) / 3) * (1 - Math.abs(lon + 7) / 5));   // Alps
-        h += Math.max(0, 12000 * (1 - Math.abs(lat - 28) / 4) * (1 - Math.abs(lon - 85) / 8));  // Himalayas
-        h += terrainHash(lat * 10, lon * 10) * 500; // noise
+        h += Math.max(0, 8000 * (1 - Math.abs(lat - 39) / 5) * (1 - Math.abs(lon + 105) / 8));  // Rocky Mountains
+        h += Math.max(0, 6000 * (1 - Math.abs(lat - 46) / 3) * (1 - Math.abs(lon + 7) / 5));    // Alps
+        h += Math.max(0, 12000 * (1 - Math.abs(lat - 28) / 4) * (1 - Math.abs(lon - 85) / 8));   // Himalayas
+        h += Math.max(0, 5000 * (1 - Math.abs(lat - 44) / 4) * (1 - Math.abs(lon + 120) / 3));   // Cascades
+        h += Math.max(0, 7000 * (1 - Math.abs(lat + 33) / 8) * (1 - Math.abs(lon + 70) / 3));    // Andes
+        h += Math.max(0, 4000 * (1 - Math.abs(lat - 57) / 4) * (1 - Math.abs(lon + 5) / 8));     // Scottish Highlands
+        h += Math.max(0, 5500 * (1 - Math.abs(lat - 3) / 3) * (1 - Math.abs(lon - 37) / 3));     // East African Rift / Kilimanjaro
+        h += Math.max(0, 4500 * (1 - Math.abs(lat + 44) / 4) * (1 - Math.abs(lon - 170) / 3));   // Southern Alps NZ
+        h += Math.max(0, 5000 * (1 - Math.abs(lat - 43) / 5) * (1 - Math.abs(lon - 45) / 5));    // Caucasus
+        h += Math.max(0, 3500 * (1 - Math.abs(lat - 35) / 3) * (1 - Math.abs(lon - 137) / 4));   // Japanese Alps
+        h += Math.max(0, 3000 * (1 - Math.abs(lat - 62) / 5) * (1 - Math.abs(lon - 15) / 5));    // Scandinavian Mountains
+        h += Math.max(0, 4000 * (1 - Math.abs(lat - 37) / 2) * (1 - Math.abs(lon + 119) / 2));   // Sierra Nevada
+        // Multi-octave noise for natural variation
+        h += terrainHash(lat * 10, lon * 10) * 500;
+        h += terrainHash(lat * 20 + 5, lon * 20 + 5) * 200;
+        h += terrainHash(lat * 40 + 10, lon * 40 + 10) * 80;
         return h;
       };
       var isWater = function(lat, lon) {
@@ -556,39 +780,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── Draw terrain perspective ──
       var drawTerrain = function(gfx, W, H, horizonY, state, time) {
-        var rows = 12;
+        var rows = 16;
         var alt = Math.max(100, state.altitude);
+        var hdgRad = state.heading * Math.PI / 180;
+        var cosHdg = Math.cos(hdgRad);
+        var sinHdg = Math.sin(hdgRad);
+
         for (var r = 0; r < rows; r++) {
           var t = (r + 1) / rows;
           var y = horizonY + (H - horizonY) * t;
-          var depth = t * t; // perspective
-          var scanLat = state.lat - Math.cos(state.heading * Math.PI / 180) * depth * (alt / 2000);
-          var scanLon = state.lon - Math.sin(state.heading * Math.PI / 180) * depth * (alt / 2000);
+          var depth = t * t;
+          var scanLat = state.lat - cosHdg * depth * (alt / 2000);
+          var scanLon = state.lon - sinHdg * depth * (alt / 2000);
 
           var water = isWater(scanLat, scanLon);
           var elev = water ? 0 : terrainHeight(scanLat, scanLon);
-          var elevBump = Math.min(20, elev / alt * 40);
+          var elevBump = Math.min(25, elev / alt * 45);
+          var rowH = (H - horizonY) / rows + 2;
+
+          // Check adjacent cells for coastline detection
+          var adjWater = isWater(scanLat + 0.5, scanLon) || isWater(scanLat - 0.5, scanLon) || isWater(scanLat, scanLon + 0.5) || isWater(scanLat, scanLon - 0.5);
+          var isCoast = water !== adjWater;
 
           if (water) {
-            var waveShift = Math.sin(time * 2 + r * 0.5) * 2;
-            gfx.fillStyle = 'rgb(' + Math.round(15 + depth * 30) + ',' + Math.round(60 + depth * 40 + waveShift) + ',' + Math.round(120 + depth * 60) + ')';
+            // Deep vs shallow water
+            var wavePhase = Math.sin(time * 1.8 + r * 0.7) * 2;
+            var wavePhase2 = Math.sin(time * 2.3 + r * 0.4 + 1.5) * 1.5;
+            var depthBlue = Math.round(120 + depth * 60);
+            var depthGreen = Math.round(60 + depth * 40 + wavePhase + wavePhase2);
+            gfx.fillStyle = 'rgb(' + Math.round(15 + depth * 25) + ',' + depthGreen + ',' + depthBlue + ')';
+            gfx.fillRect(0, y, W, rowH);
+
+            // Wave highlights
+            if (depth > 0.2 && alt < 8000) {
+              gfx.strokeStyle = 'rgba(150,200,255,' + (0.06 * depth) + ')';
+              gfx.lineWidth = 0.5;
+              for (var wv = 0; wv < 5; wv++) {
+                var wx = (wv * W / 5 + time * 30 * depth + r * 40) % W;
+                var wy = y + wv * 3 + wavePhase;
+                gfx.beginPath(); gfx.moveTo(wx - 15, wy); gfx.quadraticCurveTo(wx, wy - 2, wx + 15, wy); gfx.stroke();
+              }
+            }
+
+            // Coastline foam
+            if (isCoast && depth > 0.15) {
+              gfx.strokeStyle = 'rgba(255,255,255,' + (0.15 + Math.sin(time * 3 + r) * 0.05) + ')';
+              gfx.lineWidth = 2;
+              gfx.beginPath();
+              for (var fx = 0; fx < W; fx += 20) {
+                var fy = y + Math.sin(time * 2 + fx * 0.05 + r) * 2;
+                if (fx === 0) gfx.moveTo(fx, fy); else gfx.lineTo(fx, fy);
+              }
+              gfx.stroke();
+            }
           } else {
             var green = Math.max(40, Math.min(180, 100 - elev / 60 + depth * 40));
             var brown = elev > 3000 ? Math.min(200, 80 + elev / 40) : 30;
             var snow = elev > 8000 ? Math.min(255, (elev - 8000) / 20) : 0;
-            gfx.fillStyle = snow > 50
-              ? 'rgb(' + Math.round(200 + snow * 0.2) + ',' + Math.round(200 + snow * 0.2) + ',' + Math.round(210 + snow * 0.15) + ')'
-              : elev > 3000
-                ? 'rgb(' + Math.round(brown) + ',' + Math.round(green * 0.6) + ',' + Math.round(30) + ')'
-                : 'rgb(' + Math.round(30 + depth * 20) + ',' + Math.round(green) + ',' + Math.round(20 + depth * 10) + ')';
-          }
-          gfx.fillRect(0, y - elevBump, W, (H - horizonY) / rows + 2);
 
-          // Grid lines for perspective
-          if (r % 3 === 0 && state.altitude > 500) {
-            gfx.strokeStyle = water ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)';
-            gfx.lineWidth = 1;
+            // Desert detection (low latitude, low elevation inland)
+            var isDesert = Math.abs(scanLat) < 30 && Math.abs(scanLat) > 15 && elev < 2000 && terrainHash(scanLat * 3, scanLon * 3) > 0.55;
+            // Tundra detection (high latitude)
+            var isTundra = Math.abs(scanLat) > 60 && elev < 3000;
+
+            if (snow > 50) {
+              gfx.fillStyle = 'rgb(' + Math.round(200 + snow * 0.2) + ',' + Math.round(200 + snow * 0.2) + ',' + Math.round(215 + snow * 0.1) + ')';
+            } else if (isDesert) {
+              var sand = 160 + depth * 30 + terrainHash(scanLat * 5, scanLon * 5) * 20;
+              gfx.fillStyle = 'rgb(' + Math.round(sand) + ',' + Math.round(sand * 0.85) + ',' + Math.round(sand * 0.55) + ')';
+            } else if (isTundra) {
+              var tGreen = 80 + depth * 20;
+              gfx.fillStyle = 'rgb(' + Math.round(tGreen * 0.7) + ',' + Math.round(tGreen) + ',' + Math.round(tGreen * 0.6) + ')';
+            } else if (elev > 3000) {
+              gfx.fillStyle = 'rgb(' + Math.round(brown) + ',' + Math.round(green * 0.6) + ',' + Math.round(30) + ')';
+            } else {
+              gfx.fillStyle = 'rgb(' + Math.round(30 + depth * 20) + ',' + Math.round(green) + ',' + Math.round(20 + depth * 10) + ')';
+            }
+            gfx.fillRect(0, y - elevBump, W, rowH);
+
+            // Terrain texture: forest patches (low elev, temperate)
+            if (elev < 2000 && !isDesert && !isTundra && depth > 0.3 && alt < 10000) {
+              gfx.fillStyle = 'rgba(20,80,20,' + (0.1 * depth) + ')';
+              for (var tr2 = 0; tr2 < 4; tr2++) {
+                var tx = (terrainHash(scanLat * 10 + tr2, scanLon * 10) * W);
+                var tw = 20 + terrainHash(tr2, r) * 40;
+                gfx.fillRect(tx, y - elevBump, tw, rowH * 0.8);
+              }
+            }
+
+            // River simulation (procedural)
+            if (elev < 1500 && !isDesert && depth > 0.2 && alt < 15000) {
+              var riverSeed = Math.floor(scanLat * 5) + Math.floor(scanLon * 5) * 100;
+              if (terrainHash(riverSeed, 0) > 0.7) {
+                gfx.strokeStyle = 'rgba(60,130,200,' + (0.15 + depth * 0.1) + ')';
+                gfx.lineWidth = 1 + depth;
+                gfx.beginPath();
+                var rx = terrainHash(riverSeed, 1) * W;
+                gfx.moveTo(rx, y - 5);
+                for (var rs = 0; rs < 4; rs++) {
+                  rx += (terrainHash(riverSeed + rs, 2) - 0.5) * 30;
+                  gfx.lineTo(rx, y + rs * rowH * 0.3);
+                }
+                gfx.stroke();
+              }
+            }
+
+            // Road/path at low altitude
+            if (depth > 0.5 && alt < 5000 && terrainHash(scanLat * 8, scanLon * 8) > 0.8) {
+              gfx.strokeStyle = 'rgba(120,110,100,' + (0.12 * depth) + ')';
+              gfx.lineWidth = 1;
+              gfx.beginPath();
+              gfx.moveTo(terrainHash(r, 3) * W, y);
+              gfx.lineTo(terrainHash(r, 4) * W, y + rowH);
+              gfx.stroke();
+            }
+          }
+
+          // Perspective grid lines
+          if (r % 4 === 0 && state.altitude > 500) {
+            gfx.strokeStyle = water ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
+            gfx.lineWidth = 0.5;
             gfx.beginPath(); gfx.moveTo(0, y); gfx.lineTo(W, y); gfx.stroke();
+          }
+          // Vanishing point lines (converging perspective)
+          if (r === 4 || r === 8 || r === 12) {
+            gfx.strokeStyle = 'rgba(0,0,0,0.03)'; gfx.lineWidth = 0.5;
+            gfx.beginPath(); gfx.moveTo(W / 2, horizonY); gfx.lineTo(0, y); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(W / 2, horizonY); gfx.lineTo(W, y); gfx.stroke();
           }
         }
       };
@@ -650,6 +968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         milestones.forEach(function(m) {
           if (!ms.shown[m.id] && m.cond) {
             ms.shown[m.id] = time;
+            skyAnnounce(m.msg);
           }
         });
 
@@ -736,6 +1055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Discovery tracking
           if (dist < 15 && !discovered[p.name]) {
             discovered[p.name] = { time: time, place: p };
+            skyAnnounce('Discovered ' + p.name + ', ' + p.country + '. ' + p.fact);
           }
         });
 
@@ -934,12 +1254,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── Weather System ──
       var weatherRef = useRef({ wind: 0, windDir: 270, turbulence: 0, visibility: 1, type: 'clear' });
       var WEATHER_TYPES = [
-        { id: 'clear', label: '☀️ Clear', wind: 5, turb: 0, vis: 1 },
-        { id: 'breezy', label: '🌬️ Breezy', wind: 20, turb: 0.2, vis: 1 },
-        { id: 'gusty', label: '💨 Gusty', wind: 35, turb: 0.6, vis: 0.9 },
-        { id: 'overcast', label: '☁️ Overcast', wind: 15, turb: 0.3, vis: 0.7 },
-        { id: 'stormy', label: '⛈️ Stormy', wind: 45, turb: 0.9, vis: 0.4 },
+        { id: 'clear', label: '☀️ Clear', wind: 5, turb: 0, vis: 1, lesson: 'Clear skies with calm winds. High pressure systems push air down, preventing cloud formation. Called "CAVU" in aviation: Ceiling And Visibility Unlimited.' },
+        { id: 'breezy', label: '🌬️ Breezy', wind: 20, turb: 0.2, vis: 1, lesson: 'Moderate winds caused by pressure differences. Wind always flows from high to low pressure. The Coriolis effect curves wind to the right in the Northern Hemisphere.' },
+        { id: 'gusty', label: '💨 Gusty', wind: 35, turb: 0.6, vis: 0.9, lesson: 'Strong, variable winds with turbulence. Mechanical turbulence forms when wind flows over mountains or buildings. Pilots use the crosswind component to determine if it\'s safe to land.' },
+        { id: 'overcast', label: '☁️ Overcast', wind: 15, turb: 0.3, vis: 0.7, lesson: 'Low cloud cover with reduced visibility. Clouds form when air cools to its dew point. Stratus clouds (flat, layered) indicate stable air. IFR conditions require instrument flying skills.' },
+        { id: 'stormy', label: '⛈️ Stormy', wind: 45, turb: 0.9, vis: 0.4, lesson: 'Thunderstorms with severe turbulence. Cumulonimbus clouds can reach 60,000 ft and contain updrafts of 100+ mph. Pilots ALWAYS avoid thunderstorms — never fly through one.' },
       ];
+
+      // ── Wind Indicator (wind barb on HUD) ──
+      var drawWindIndicator = function(gfx, x, y, windSpeed, windDir, heading) {
+        if (windSpeed < 1) return;
+        var size = 35;
+        // Background
+        gfx.fillStyle = 'rgba(0,0,0,0.5)';
+        gfx.beginPath(); gfx.roundRect(x - size / 2 - 5, y - size / 2 - 5, size + 10, size + 22, 6); gfx.fill();
+        // Wind direction arrow (relative to heading)
+        var relWind = (windDir - heading + 360) % 360;
+        var relRad = relWind * Math.PI / 180;
+        gfx.save();
+        gfx.translate(x, y);
+        gfx.rotate(relRad);
+        // Arrow shaft
+        gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 2;
+        gfx.beginPath(); gfx.moveTo(0, -size / 2 + 2); gfx.lineTo(0, size / 2 - 2); gfx.stroke();
+        // Arrowhead
+        gfx.fillStyle = '#22d3ee';
+        gfx.beginPath(); gfx.moveTo(0, -size / 2 + 2); gfx.lineTo(-4, -size / 2 + 10); gfx.lineTo(4, -size / 2 + 10); gfx.fill();
+        // Wind barbs (5kt = short, 10kt = long, 50kt = flag)
+        var remaining = windSpeed;
+        var barbY = size / 2 - 5;
+        while (remaining >= 50) { gfx.fillStyle = '#22d3ee'; gfx.beginPath(); gfx.moveTo(0, barbY); gfx.lineTo(8, barbY - 3); gfx.lineTo(0, barbY - 6); gfx.fill(); barbY -= 7; remaining -= 50; }
+        while (remaining >= 10) { gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 1.5; gfx.beginPath(); gfx.moveTo(0, barbY); gfx.lineTo(8, barbY - 3); gfx.stroke(); barbY -= 4; remaining -= 10; }
+        while (remaining >= 5) { gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 1.5; gfx.beginPath(); gfx.moveTo(0, barbY); gfx.lineTo(5, barbY - 2); gfx.stroke(); barbY -= 4; remaining -= 5; }
+        gfx.restore();
+        // Labels
+        gfx.fillStyle = 'rgba(255,255,255,0.5)'; gfx.font = '8px monospace'; gfx.textAlign = 'center';
+        gfx.fillText(windSpeed + 'kt', x, y + size / 2 + 8);
+        gfx.fillText(String(Math.round(windDir)).padStart(3, '0') + '°', x, y + size / 2 + 16);
+      };
+
+      // ── Country border segments (simplified) ──
+      var COUNTRY_BORDERS = [
+        // US-Canada border (49th parallel)
+        { lat1: 49, lon1: -125, lat2: 49, lon2: -67, label: 'US / Canada' },
+        // US-Mexico border
+        { lat1: 32, lon1: -117, lat2: 26, lon2: -97, label: 'US / Mexico' },
+        // France-Germany
+        { lat1: 49, lon1: 6, lat2: 47.5, lon2: 8, label: 'France / Germany' },
+        // India-China
+        { lat1: 35, lon1: 74, lat2: 28, lon2: 97, label: 'India / China' },
+        // Brazil-Argentina
+        { lat1: -25, lon1: -55, lat2: -33, lon2: -58, label: 'Brazil / Argentina' },
+        // Egypt-Libya
+        { lat1: 31, lon1: 25, lat2: 22, lon2: 25, label: 'Egypt / Libya' },
+        // Russia-China
+        { lat1: 50, lon1: 87, lat2: 43, lon2: 131, label: 'Russia / China' },
+        // Spain-France
+        { lat1: 43, lon1: -2, lat2: 42.5, lon2: 3, label: 'Spain / France' },
+      ];
+
+      var drawCountryBorders = function(gfx, W, H, horizonY, state) {
+        if (state.altitude < 8000) return;
+        var visRange = state.altitude / 100;
+        COUNTRY_BORDERS.forEach(function(border) {
+          var midLat = (border.lat1 + border.lat2) / 2;
+          var midLon = (border.lon1 + border.lon2) / 2;
+          var dist = haversineNm(state.lat, state.lon, midLat, midLon);
+          if (dist > visRange) return;
+
+          // Project both endpoints
+          var points = [[border.lat1, border.lon1], [border.lat2, border.lon2]].map(function(pt) {
+            var brg = bearing(state.lat, state.lon, pt[0], pt[1]);
+            var relBrg = ((brg - state.heading + 180 + 360) % 360) - 180;
+            if (Math.abs(relBrg) > 80) return null;
+            var d = haversineNm(state.lat, state.lon, pt[0], pt[1]);
+            var depthFactor = 1 - d / visRange;
+            return {
+              x: W / 2 + (relBrg / 80) * (W / 2),
+              y: horizonY + (H - horizonY) * (0.15 + depthFactor * 0.5),
+              depth: depthFactor
+            };
+          });
+
+          if (!points[0] || !points[1]) return;
+          var alpha = Math.min(0.25, (points[0].depth + points[1].depth) / 2 * 0.3);
+          gfx.strokeStyle = 'rgba(255,200,100,' + alpha + ')';
+          gfx.lineWidth = 1;
+          gfx.setLineDash([4, 4]);
+          gfx.beginPath(); gfx.moveTo(points[0].x, points[0].y); gfx.lineTo(points[1].x, points[1].y); gfx.stroke();
+          gfx.setLineDash([]);
+
+          // Label at midpoint
+          if (alpha > 0.1) {
+            gfx.fillStyle = 'rgba(255,200,100,' + (alpha * 1.5) + ')';
+            gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText(border.label, (points[0].x + points[1].x) / 2, (points[0].y + points[1].y) / 2 - 5);
+          }
+        });
+      };
+
+      // ── Jet Stream Visualization ──
+      var drawJetStream = function(gfx, W, H, horizonY, state, time) {
+        // Jet stream flows west-to-east at ~30,000-40,000 ft, latitude ~30-60°N and S
+        if (state.altitude < 20000) return;
+        var inJetStream = (Math.abs(state.lat) > 25 && Math.abs(state.lat) < 65);
+        if (!inJetStream) return;
+
+        var intensity = Math.min(1, (state.altitude - 20000) / 20000);
+        var jetLat = state.lat > 0 ? 45 : -45; // approximate jet stream latitude
+        var proximity = 1 - Math.abs(state.lat - jetLat) / 20;
+        if (proximity < 0) return;
+
+        gfx.globalAlpha = intensity * proximity * 0.12;
+        gfx.strokeStyle = '#a78bfa'; gfx.lineWidth = 1.5;
+        for (var js = 0; js < 4; js++) {
+          var jsY = horizonY * 0.3 + js * 15 + Math.sin(time * 0.3 + js) * 5;
+          gfx.beginPath();
+          for (var jx = 0; jx < W; jx += 10) {
+            var jy = jsY + Math.sin((jx + time * 80) * 0.015 + js) * 8;
+            if (jx === 0) gfx.moveTo(jx, jy); else gfx.lineTo(jx, jy);
+          }
+          gfx.stroke();
+        }
+        gfx.globalAlpha = 1;
+
+        // Jet stream indicator text
+        if (intensity > 0.3 && proximity > 0.5) {
+          gfx.fillStyle = 'rgba(167,139,250,' + (intensity * proximity * 0.5) + ')';
+          gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText('JET STREAM ~' + Math.round(100 + proximity * 150) + ' kt', W / 2, horizonY * 0.2);
+        }
+      };
 
       var applyWeather = function(ctrl, state, dt) {
         var wx = weatherRef.current;
@@ -1025,9 +1470,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           });
         }
 
+        // Approach lighting (ALSF-2 style — row of lights leading to runway)
+        if (nearDist < 7 && nearDist > 0.5) {
+          gfx.fillStyle = '#fff';
+          for (var al = 1; al <= 6; al++) {
+            var alY = rwyY - rwyLen / 2 - al * (5 + proximity * 12);
+            var alFlash = Math.sin(time * 4 + al * 0.7) > 0 ? 1 : 0.3; // sequenced flash
+            gfx.globalAlpha = (0.3 + proximity * 0.4) * alFlash;
+            gfx.fillRect(screenX - 1, alY, 3, 3);
+            // Side bars on inner lights
+            if (al <= 3) {
+              gfx.fillRect(screenX - 6 - proximity * 4, alY, 4, 2);
+              gfx.fillRect(screenX + 3 + proximity * 4, alY, 4, 2);
+            }
+          }
+          gfx.globalAlpha = 1;
+        }
+
+        // Runway edge lights (at close range)
+        if (nearDist < 4 && proximity > 0.5) {
+          var numEdgeLights = Math.floor(rwyLen / 8);
+          for (var el = 0; el < numEdgeLights; el++) {
+            var elY = rwyY - rwyLen / 2 + el * (rwyLen / numEdgeLights);
+            var elBright = 0.3 + Math.sin(time * 0.5) * 0.1;
+            // White edge lights
+            gfx.fillStyle = 'rgba(255,255,220,' + elBright + ')';
+            gfx.fillRect(screenX - rwyWidth / 2 - 2, elY, 2, 2);
+            gfx.fillRect(screenX + rwyWidth / 2, elY, 2, 2);
+            // Last 1/3 = red end lights
+            if (el > numEdgeLights * 0.7) {
+              gfx.fillStyle = 'rgba(255,50,50,' + elBright + ')';
+              gfx.fillRect(screenX - rwyWidth / 2 - 2, elY, 2, 2);
+              gfx.fillRect(screenX + rwyWidth / 2, elY, 2, 2);
+            }
+          }
+        }
+
+        // Taxiway (subtle, to the side)
+        if (proximity > 0.6) {
+          gfx.fillStyle = 'rgba(55,65,81,0.5)';
+          gfx.fillRect(screenX + rwyWidth / 2 + 4, rwyY, rwyWidth * 0.4, rwyLen * 0.3);
+          // Taxiway centerline (green)
+          gfx.strokeStyle = 'rgba(74,222,128,0.3)'; gfx.lineWidth = 1;
+          gfx.beginPath();
+          gfx.moveTo(screenX + rwyWidth / 2 + 4 + rwyWidth * 0.2, rwyY);
+          gfx.lineTo(screenX + rwyWidth / 2 + 4 + rwyWidth * 0.2, rwyY + rwyLen * 0.3);
+          gfx.stroke();
+        }
+
+        // ILS Localizer/Glideslope indicator (diamond indicators)
+        if (nearDist < 8 && nearDist > 0.3) {
+          var ilsX = screenX + rwyWidth / 2 + 25;
+          var ilsY = rwyY - 30;
+          // Background
+          gfx.fillStyle = 'rgba(0,0,0,0.6)';
+          gfx.beginPath(); gfx.roundRect(ilsX - 15, ilsY - 25, 30, 50, 4); gfx.fill();
+          // Localizer (horizontal deviation)
+          gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(ilsX - 10, ilsY); gfx.lineTo(ilsX + 10, ilsY); gfx.stroke();
+          // Glideslope (vertical deviation)
+          gfx.beginPath(); gfx.moveTo(ilsX, ilsY - 20); gfx.lineTo(ilsX, ilsY + 20); gfx.stroke();
+          // Localizer diamond (horizontal position)
+          var locDev = Math.max(-10, Math.min(10, relBrg * 2));
+          gfx.fillStyle = Math.abs(locDev) < 3 ? '#4ade80' : '#fbbf24';
+          gfx.beginPath();
+          gfx.moveTo(ilsX + locDev, ilsY - 3);
+          gfx.lineTo(ilsX + locDev + 3, ilsY);
+          gfx.lineTo(ilsX + locDev, ilsY + 3);
+          gfx.lineTo(ilsX + locDev - 3, ilsY);
+          gfx.fill();
+          // Glideslope diamond (vertical position)
+          var gsIdeal = 3; // degrees
+          var gsActual = state.altitude > 0 ? Math.atan2(state.altitude - (nearWp.alt || 0), nearDist * 6076) * 180 / Math.PI : 0;
+          var gsDev = Math.max(-10, Math.min(10, (gsActual - gsIdeal) * 4));
+          gfx.fillStyle = Math.abs(gsDev) < 3 ? '#4ade80' : '#fbbf24';
+          gfx.beginPath();
+          gfx.moveTo(ilsX - 3, ilsY - gsDev);
+          gfx.lineTo(ilsX, ilsY - gsDev - 3);
+          gfx.lineTo(ilsX + 3, ilsY - gsDev);
+          gfx.lineTo(ilsX, ilsY - gsDev + 3);
+          gfx.fill();
+          // Labels
+          gfx.fillStyle = 'rgba(255,255,255,0.4)'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText('LOC', ilsX, ilsY + 30);
+          gfx.fillText('GS', ilsX + 18, ilsY - 18);
+        }
+
         // Airport label
         gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'center';
         gfx.fillText(nearWp.code + ' RWY', screenX, rwyY + rwyLen / 2 + 14);
+        // Distance/altitude readout during approach
+        if (nearDist < 8) {
+          gfx.fillStyle = 'rgba(255,255,255,0.5)'; gfx.font = '9px monospace';
+          gfx.fillText(nearDist.toFixed(1) + ' nm  ' + Math.round(state.altitude - (nearWp.alt || 0)) + ' ft AGL', screenX, rwyY + rwyLen / 2 + 26);
+        }
       };
 
       // ── Landing Score System ──
@@ -1046,6 +1582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Grade the landing
           ls.grade = fpm < 100 ? 'BUTTER! 🧈' : fpm < 200 ? 'Smooth 😊' : fpm < 400 ? 'Firm 😐' : fpm < 600 ? 'Hard ⚠️' : 'CRASH 💥';
           ls.gradeColor = fpm < 100 ? '#fbbf24' : fpm < 200 ? '#4ade80' : fpm < 400 ? '#60a5fa' : fpm < 600 ? '#f97316' : '#ef4444';
+          skyAnnounce('Landing: ' + ls.grade + '. ' + Math.round(fpm) + ' feet per minute. ' + Math.round(ls.touchdownSpeed) + ' knots.');
         }
         if (!ls.wasAirborne) ls.lastVSI = state.vsi * 60;
         // Display landing score card
@@ -1446,13 +1983,293 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var logRef = useRef({ startTime: 0, maxAlt: 0, maxSpeed: 0, airports: [], distance: 0, lastLat: 0, lastLon: 0 });
 
       // ── Main animation loop ──
+      // ── Flight Plan System ──
+      var flightPlanRef = useRef({ departure: null, destination: null, route: [], distNm: 0, estTime: 0, initialHdg: 0 });
+
+      var createFlightPlan = function(depId, destId) {
+        var dep = WAYPOINTS.find(function(w) { return w.id === depId; });
+        var dest = WAYPOINTS.find(function(w) { return w.id === destId; });
+        if (!dep || !dest) return;
+        var dist = haversineNm(dep.lat, dep.lon, dest.lat, dest.lon);
+        var hdg = bearing(dep.lat, dep.lon, dest.lat, dest.lon);
+        var cruiseKts = currentAC.maxSpeed * 0.59 * 0.75; // 75% of max
+        var estMinutes = dist / cruiseKts * 60;
+        flightPlanRef.current = {
+          departure: dep, destination: dest,
+          route: [dep, dest],
+          distNm: Math.round(dist),
+          estTime: Math.round(estMinutes),
+          initialHdg: Math.round(hdg),
+          cruiseAlt: dist > 500 ? 35000 : dist > 100 ? 18000 : 8000
+        };
+      };
+
+      // ── Enhanced Minimap with route line ──
+      var drawMiniMapEnhanced = function(gfx, x, y, size, state) {
+        var r = size / 2;
+        gfx.fillStyle = 'rgba(0,0,0,0.75)';
+        gfx.beginPath(); gfx.arc(x + r, y + r, r, 0, Math.PI * 2); gfx.fill();
+        gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 1.5; gfx.stroke();
+
+        gfx.save();
+        gfx.beginPath(); gfx.arc(x + r, y + r, r - 2, 0, Math.PI * 2); gfx.clip();
+
+        var scale = Math.max(0.5, Math.min(3, state.altitude / 10000)); // zoom based on altitude
+
+        // Draw simplified land masses
+        var mapRes = 8;
+        for (var my = -mapRes; my <= mapRes; my++) {
+          for (var mx = -mapRes; mx <= mapRes; mx++) {
+            var mLat = state.lat + my * scale / mapRes * 2;
+            var mLon = state.lon + mx * scale / mapRes * 2;
+            var dx = mx / mapRes * r;
+            var dy = -my / mapRes * r;
+            if (dx * dx + dy * dy > r * r) continue;
+            var w = isWater(mLat, mLon);
+            gfx.fillStyle = w ? 'rgba(30,60,120,0.5)' : 'rgba(40,100,40,0.4)';
+            var cellSize = r / mapRes;
+            gfx.fillRect(x + r + dx - cellSize / 2, y + r + dy - cellSize / 2, cellSize, cellSize);
+          }
+        }
+
+        // Flight plan route line
+        var fp = flightPlanRef.current;
+        if (fp.departure && fp.destination) {
+          var depDx = (fp.departure.lon - state.lon) / scale * (r / 2);
+          var depDy = -(fp.departure.lat - state.lat) / scale * (r / 2);
+          var destDx = (fp.destination.lon - state.lon) / scale * (r / 2);
+          var destDy = -(fp.destination.lat - state.lat) / scale * (r / 2);
+          gfx.strokeStyle = 'rgba(251,191,36,0.5)'; gfx.lineWidth = 1.5;
+          gfx.setLineDash([3, 3]);
+          gfx.beginPath(); gfx.moveTo(x + r + depDx, y + r + depDy); gfx.lineTo(x + r + destDx, y + r + destDy); gfx.stroke();
+          gfx.setLineDash([]);
+        }
+
+        // Waypoints
+        WAYPOINTS.forEach(function(wp) {
+          var dx2 = (wp.lon - state.lon) / scale * (r / 2);
+          var dy2 = -(wp.lat - state.lat) / scale * (r / 2);
+          if (dx2 * dx2 + dy2 * dy2 > (r - 5) * (r - 5)) return;
+          var isDestination = fp.destination && fp.destination.id === wp.id;
+          gfx.fillStyle = isDestination ? '#fbbf24' : '#60a5fa';
+          gfx.beginPath(); gfx.arc(x + r + dx2, y + r + dy2, isDestination ? 4 : 2.5, 0, Math.PI * 2); gfx.fill();
+          if (isDestination) {
+            gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.arc(x + r + dx2, y + r + dy2, 7, 0, Math.PI * 2); gfx.stroke();
+          }
+          gfx.fillStyle = 'rgba(255,255,255,0.6)'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText(wp.code, x + r + dx2, y + r + dy2 - 6);
+        });
+
+        // Geography places on minimap
+        GEO_PLACES.forEach(function(place) {
+          var dx3 = (place.lon - state.lon) / scale * (r / 2);
+          var dy3 = -(place.lat - state.lat) / scale * (r / 2);
+          if (dx3 * dx3 + dy3 * dy3 > (r - 5) * (r - 5)) return;
+          gfx.fillStyle = place.type === 'capital' ? 'rgba(251,191,36,0.4)' : 'rgba(148,163,184,0.25)';
+          gfx.fillRect(x + r + dx3 - 0.5, y + r + dy3 - 0.5, 1.5, 1.5);
+        });
+
+        gfx.restore();
+
+        // Aircraft (center, rotated)
+        gfx.save();
+        gfx.translate(x + r, y + r);
+        gfx.rotate(state.heading * Math.PI / 180);
+        gfx.fillStyle = '#4ade80';
+        gfx.beginPath(); gfx.moveTo(0, -7); gfx.lineTo(-4, 5); gfx.lineTo(0, 3); gfx.lineTo(4, 5); gfx.fill();
+        gfx.restore();
+
+        // Range label
+        gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
+        gfx.fillText(Math.round(scale * 200) + ' nm', x + r, y + size + 8);
+
+        // Distance to destination
+        if (fp.destination) {
+          var dToDest = haversineNm(state.lat, state.lon, fp.destination.lat, fp.destination.lon);
+          gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 8px system-ui';
+          gfx.fillText(fp.destination.code + ' ' + Math.round(dToDest) + ' nm', x + r, y - 4);
+        }
+      };
+
+      // ── Particle effects (engine exhaust, wingtip vortices) ──
+      var particlesRef = useRef([]);
+      var drawParticles = function(gfx, W, H, state, ctrl, time) {
+        var particles = particlesRef.current;
+        var kts2 = state.speed * 0.5924838;
+
+        // Spawn engine exhaust particles
+        if (ctrl.throttle > 0.3 && !state.onGround) {
+          var numSpawn = Math.floor(ctrl.throttle * 3);
+          for (var sp = 0; sp < numSpawn; sp++) {
+            particles.push({
+              x: W / 2 + (Math.random() - 0.5) * 6,
+              y: H * 0.52 + Math.random() * 4,
+              vx: (Math.random() - 0.5) * 1,
+              vy: 1.5 + Math.random() * 2,
+              life: 1,
+              decay: 0.02 + Math.random() * 0.02,
+              size: 1.5 + ctrl.throttle * 2,
+              type: 'exhaust'
+            });
+          }
+        }
+
+        // Spawn wingtip vortices at high AoA (visible in moist air)
+        if (kts2 > 80 && Math.abs(ctrl.pitch) > 3 && state.altitude < 15000) {
+          [-30, 30].forEach(function(offset) {
+            if (Math.random() > 0.3) return;
+            particles.push({
+              x: W / 2 + offset,
+              y: H * 0.5 + 5,
+              vx: offset > 0 ? 0.5 : -0.5,
+              vy: 2,
+              life: 1,
+              decay: 0.015,
+              size: 2 + Math.random() * 2,
+              type: 'vortex'
+            });
+          });
+        }
+
+        // Update and render
+        var alive = [];
+        particles.forEach(function(p) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= p.decay;
+          p.size *= 1.01;
+          if (p.life <= 0) return;
+          alive.push(p);
+          if (p.type === 'exhaust') {
+            gfx.fillStyle = 'rgba(200,150,80,' + (p.life * 0.2 * ctrl.throttle) + ')';
+          } else {
+            gfx.fillStyle = 'rgba(200,220,255,' + (p.life * 0.1) + ')';
+          }
+          gfx.beginPath(); gfx.arc(p.x, p.y, p.size, 0, Math.PI * 2); gfx.fill();
+        });
+        particlesRef.current = alive.slice(-80); // cap particles
+      };
+
+      // ── Black Box Flight Data Recorder ──
+      var blackBoxRef = useRef([]);
+      var recordBlackBox = function(state, time) {
+        var bb = blackBoxRef.current;
+        // Record every 2 seconds
+        if (bb.length === 0 || time - bb[bb.length - 1].t > 2) {
+          bb.push({ t: Math.round(time), lat: state.lat, lon: state.lon, alt: Math.round(state.altitude), spd: Math.round(state.speed * 0.5924838), hdg: Math.round(state.heading) });
+          if (bb.length > 500) bb.shift(); // cap at ~16 min of flight
+        }
+      };
+
+      // ── Navigation Computer (displays on HUD when flight plan active) ──
+      var drawNavComputer = function(gfx, x, y, state, time) {
+        var fp = flightPlanRef.current;
+        if (!fp.destination) return;
+        var dest = fp.destination;
+        var distToDest = haversineNm(state.lat, state.lon, dest.lat, dest.lon);
+        var brgToDest = bearing(state.lat, state.lon, dest.lat, dest.lon);
+        var kts3 = state.speed * 0.5924838;
+        var groundSpeed = kts3; // simplified (no wind correction for display)
+        var etaMin = groundSpeed > 10 ? Math.round(distToDest / groundSpeed * 60) : 999;
+        var hdgDiff = ((brgToDest - state.heading + 180 + 360) % 360) - 180;
+
+        // Nav panel background
+        var panelW = 120; var panelH = 80;
+        gfx.fillStyle = 'rgba(0,0,0,0.7)';
+        gfx.beginPath(); gfx.roundRect(x, y, panelW, panelH, 6); gfx.fill();
+        gfx.strokeStyle = 'rgba(59,130,246,0.4)'; gfx.lineWidth = 1; gfx.stroke();
+
+        // Header
+        gfx.fillStyle = '#3b82f6'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
+        gfx.fillText('NAV — ' + dest.code, x + panelW / 2, y + 10);
+
+        // Data rows
+        gfx.font = '9px monospace'; gfx.textAlign = 'left';
+        var rows = [
+          ['DIST', distToDest.toFixed(1) + ' nm', '#60a5fa'],
+          ['BRG', String(Math.round(brgToDest)).padStart(3, '0') + '°', '#fbbf24'],
+          ['ETA', etaMin < 999 ? etaMin + ' min' : '---', '#4ade80'],
+          ['GS', Math.round(groundSpeed) + ' kt', '#a78bfa'],
+        ];
+        rows.forEach(function(row, i) {
+          var ry = y + 20 + i * 14;
+          gfx.fillStyle = 'rgba(255,255,255,0.4)'; gfx.textAlign = 'left';
+          gfx.fillText(row[0], x + 6, ry);
+          gfx.fillStyle = row[2]; gfx.textAlign = 'right'; gfx.font = 'bold 10px monospace';
+          gfx.fillText(row[1], x + panelW - 6, ry);
+          gfx.font = '9px monospace';
+        });
+
+        // Course deviation indicator (CDI line)
+        var cdiX = x + panelW / 2;
+        var cdiY = y + panelH - 6;
+        gfx.strokeStyle = 'rgba(255,255,255,0.2)'; gfx.lineWidth = 1;
+        gfx.beginPath(); gfx.moveTo(x + 10, cdiY); gfx.lineTo(x + panelW - 10, cdiY); gfx.stroke();
+        // CDI needle
+        var needleOffset = Math.max(-40, Math.min(40, hdgDiff * 1.5));
+        gfx.fillStyle = Math.abs(hdgDiff) < 5 ? '#4ade80' : Math.abs(hdgDiff) < 20 ? '#fbbf24' : '#ef4444';
+        gfx.beginPath(); gfx.moveTo(cdiX + needleOffset, cdiY - 3); gfx.lineTo(cdiX + needleOffset - 2, cdiY + 2); gfx.lineTo(cdiX + needleOffset + 2, cdiY + 2); gfx.fill();
+
+        // Turn suggestion arrow
+        if (Math.abs(hdgDiff) > 5) {
+          gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText(hdgDiff > 0 ? '→ Turn R' : '← Turn L', x + panelW / 2, y + panelH + 10);
+        }
+
+        // Arrival proximity alert
+        if (distToDest < 15) {
+          gfx.fillStyle = 'rgba(34,197,94,0.15)';
+          gfx.beginPath(); gfx.roundRect(x, y - 14, panelW, 12, 3); gfx.fill();
+          gfx.fillStyle = '#4ade80'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
+          gfx.fillText('✈️ APPROACHING ' + dest.code, x + panelW / 2, y - 5);
+        }
+      };
+
+      // ── Stall Horn Audio ──
+      var stallHornRef = useRef({ osc: null, gain: null, ctx: null, active: false });
+      var updateStallHorn = function(stalling) {
+        var sh = stallHornRef.current;
+        if (stalling && !sh.active) {
+          try {
+            if (!sh.ctx) sh.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (sh.ctx.state === 'suspended') sh.ctx.resume();
+            sh.osc = sh.ctx.createOscillator();
+            sh.gain = sh.ctx.createGain();
+            sh.osc.type = 'square';
+            sh.osc.frequency.value = 400;
+            sh.gain.gain.value = 0.04;
+            sh.osc.connect(sh.gain);
+            sh.gain.connect(sh.ctx.destination);
+            sh.osc.start();
+            sh.active = true;
+            // Warble effect
+            var lfo = sh.ctx.createOscillator();
+            lfo.frequency.value = 6;
+            var lfoGain = sh.ctx.createGain();
+            lfoGain.gain.value = 80;
+            lfo.connect(lfoGain);
+            lfoGain.connect(sh.osc.frequency);
+            lfo.start();
+            sh.lfo = lfo;
+          } catch(e) {}
+        } else if (!stalling && sh.active) {
+          try {
+            if (sh.osc) { sh.osc.stop(); sh.osc.disconnect(); }
+            if (sh.lfo) { sh.lfo.stop(); sh.lfo.disconnect(); }
+            sh.active = false;
+          } catch(e) {}
+        }
+      };
+
       var startFlying = function(startWaypoint) {
         var wp = WAYPOINTS.find(function(w) { return w.id === startWaypoint; }) || WAYPOINTS[0];
         flightRef.current = { speed: 0, altitude: wp.alt, vsi: 0, heading: 0, lat: wp.lat, lon: wp.lon, aoa: 0, stalling: false, onGround: true, forces: { lift: 0, drag: 0, thrust: 0, weight: 2550 } };
         controlsRef.current = { throttle: 0, pitch: 0, bank: 0 };
         timeRef.current = 0;
         flyingRef.current = true;
-        updMulti({ view: 'flying', showForces: d.showForces || false, nearestWaypoint: null });
+        blackBoxRef.current = [];
+        updMulti({ view: 'flying', showForces: d.showForces || false, nearestWaypoint: null, weatherLesson: null });
       };
 
       useEffect(function() {
@@ -1468,8 +2285,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var dt = 1 / 30;
           timeRef.current += dt;
 
-          // Process keyboard input
+          // WCAG 2.2.1: Pause support
           var keys = keysRef.current;
+          if (keys[' '] && !sprintRef.current.active) {
+            keys[' '] = false;
+            pausedRef.current = !pausedRef.current;
+            skyAnnounce(pausedRef.current ? 'Flight paused. Press Space to resume.' : 'Flight resumed.');
+          }
+          if (keys['i']) {
+            keys['i'] = false;
+            var st = flightRef.current;
+            var ktsInfo = Math.round(st.speed * 0.5924838);
+            skyAnnounce('Altitude ' + Math.round(st.altitude) + ' feet. Speed ' + ktsInfo + ' knots. Heading ' + Math.round(st.heading) + ' degrees. ' + (st.stalling ? 'WARNING: Stalling! ' : '') + (st.onGround ? 'On ground. ' : '') + 'Places discovered: ' + Object.keys(geoDiscoveredRef.current).length + '.');
+          }
+          if (pausedRef.current) {
+            // Render pause overlay
+            gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(0, 0, W, H);
+            gfx.fillStyle = '#fff'; gfx.font = 'bold 28px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('⏸ PAUSED', W / 2, H * 0.4);
+            gfx.fillStyle = '#94a3b8'; gfx.font = '14px system-ui';
+            gfx.fillText('Press Space to resume | I for status | ESC to exit', W / 2, H * 0.5);
+            var ktsP = Math.round(flightRef.current.speed * 0.5924838);
+            gfx.fillStyle = '#64748b'; gfx.font = '12px system-ui';
+            gfx.fillText('ALT: ' + Math.round(flightRef.current.altitude).toLocaleString() + ' ft  |  SPD: ' + ktsP + ' kts  |  HDG: ' + Math.round(flightRef.current.heading) + '°', W / 2, H * 0.58);
+            animRef.current = requestAnimationFrame(loop);
+            return;
+          }
+
+          // Process keyboard input
           var ctrl = controlsRef.current;
           if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(15, ctrl.pitch + 0.5);
           else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-15, ctrl.pitch - 0.5);
@@ -1481,6 +2324,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (keys['control'] || keys['-']) ctrl.throttle = Math.max(0, ctrl.throttle - 0.01);
           // Toggle force diagram
           if (keys['f']) { upd('showForces', !showForces); keys['f'] = false; }
+          if (keys['?'] || keys['/']) { upd('showHelp', !d.showHelp); keys['?'] = false; keys['/'] = false; skyAnnounce(d.showHelp ? 'Help closed' : 'Help screen opened'); }
+          // Autopilot toggle (key: B)
+          if (keys['b']) {
+            keys['b'] = false;
+            var ap = d.autopilot || { hdg: false, alt: false, spd: false };
+            if (!ap.hdg && !ap.alt && !ap.spd) {
+              // Enable all autopilot modes with current values
+              ap = { hdg: true, alt: true, spd: true, tgtHdg: Math.round(flightRef.current.heading), tgtAlt: Math.round(flightRef.current.altitude / 100) * 100, tgtSpd: Math.round(flightRef.current.speed * 0.5924838) };
+              skyAnnounce('Autopilot engaged. Heading ' + ap.tgtHdg + ', altitude ' + ap.tgtAlt + ', speed ' + ap.tgtSpd + ' knots.');
+            } else {
+              ap = { hdg: false, alt: false, spd: false };
+              skyAnnounce('Autopilot disengaged. Manual control.');
+            }
+            upd('autopilot', ap);
+          }
+          // Autopilot control (overrides manual input when engaged)
+          var ap = d.autopilot || {};
+          if (ap.hdg && !sprintRef.current.active) {
+            var apHdgDiff = ((ap.tgtHdg - flightRef.current.heading + 180 + 360) % 360) - 180;
+            ctrl.bank = Math.max(-25, Math.min(25, apHdgDiff * 0.8));
+          }
+          if (ap.alt) {
+            var apAltDiff = ap.tgtAlt - flightRef.current.altitude;
+            ctrl.pitch = Math.max(-8, Math.min(8, apAltDiff * 0.002));
+          }
+          if (ap.spd) {
+            var apSpdDiff = ap.tgtSpd - flightRef.current.speed * 0.5924838;
+            ctrl.throttle = Math.max(0, Math.min(1, ctrl.throttle + apSpdDiff * 0.001));
+          }
+          // Manual input disengages autopilot
+          if ((ap.hdg || ap.alt || ap.spd) && (keys['w'] || keys['s'] || keys['a'] || keys['d'] || keys['arrowup'] || keys['arrowdown'] || keys['arrowleft'] || keys['arrowright'])) {
+            upd('autopilot', { hdg: false, alt: false, spd: false });
+            skyAnnounce('Autopilot disengaged by manual input.');
+          }
           // Geography quiz
           var quiz = geoQuizRef.current;
           if (keys['q']) {
@@ -1581,23 +2458,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = sunGrad; gfx.fillRect(sunX - 80, sunY - 80, 160, 160);
           gfx.fillStyle = '#fffde0'; gfx.beginPath(); gfx.arc(sunX, sunY, 8, 0, Math.PI * 2); gfx.fill();
 
-          // ── HUD Instruments ──
-          // Artificial Horizon (center-left)
-          drawHorizon(gfx, 90, H - 90, 55, ctrl.pitch, ctrl.bank);
+          // Lens flare (when looking toward sun)
+          if (!dayNight.isNight) {
+            var flareAlpha = Math.max(0, 0.12 - Math.abs(sunX - W / 2) / W * 0.3);
+            if (flareAlpha > 0.01) {
+              var flarePoints = [0.3, 0.5, 0.65, 0.8];
+              var flareColors = ['rgba(255,200,100,', 'rgba(100,200,255,', 'rgba(255,150,200,', 'rgba(200,255,100,'];
+              var flareSizes = [12, 8, 15, 6];
+              flarePoints.forEach(function(fp, fi) {
+                var fx = sunX + (W / 2 - sunX) * fp;
+                var fy = sunY + (H / 2 - sunY) * fp;
+                var fg = gfx.createRadialGradient(fx, fy, 0, fx, fy, flareSizes[fi]);
+                fg.addColorStop(0, flareColors[fi] + (flareAlpha * 0.8) + ')');
+                fg.addColorStop(1, flareColors[fi] + '0)');
+                gfx.fillStyle = fg;
+                gfx.fillRect(fx - flareSizes[fi], fy - flareSizes[fi], flareSizes[fi] * 2, flareSizes[fi] * 2);
+              });
+            }
+          }
 
-          // Compass (center)
-          drawCompass(gfx, W / 2, H - 75, 45, state.heading);
+          // Atmospheric haze layers (visible from high altitude)
+          if (state.altitude > 5000) {
+            var hazeY = horizonY - 5;
+            var hazeH = 15 + Math.min(30, state.altitude / 2000);
+            var hazeGrad = gfx.createLinearGradient(0, hazeY, 0, hazeY + hazeH);
+            var hazeBlue = dayNight.isNight ? '80,100,140' : '150,190,230';
+            hazeGrad.addColorStop(0, 'rgba(' + hazeBlue + ',0)');
+            hazeGrad.addColorStop(0.5, 'rgba(' + hazeBlue + ',' + Math.min(0.3, state.altitude / 60000) + ')');
+            hazeGrad.addColorStop(1, 'rgba(' + hazeBlue + ',0)');
+            gfx.fillStyle = hazeGrad;
+            gfx.fillRect(0, hazeY, W, hazeH);
+          }
 
-          // Airspeed gauge (left)
+          // ── HUD Instruments (Glass Cockpit PFD Layout) ──
           var kts = state.speed * 0.5924838; // ft/s to knots
-          drawGauge(gfx, 210, H - 90, 38, kts, 200, 'SPEED', 'KTS', state.stalling ? '#ef4444' : '#22d3ee');
-
-          // Altimeter (right of center)
-          drawGauge(gfx, W / 2 + 100, H - 90, 38, state.altitude, 40000, 'ALT', 'FT', '#a78bfa');
-
-          // VSI (far right)
           var fpm = state.vsi * 60;
-          drawGauge(gfx, W - 90, H - 90, 38, Math.abs(fpm), 3000, fpm >= 0 ? 'CLIMB' : 'DESC', 'FPM', fpm >= 0 ? '#4ade80' : '#f97316');
+          var stallKts = Physics.stallSpeed(state.altitude) * 0.5924838;
+
+          // Artificial Horizon (center)
+          drawHorizon(gfx, W / 2, H - 85, 58, ctrl.pitch, ctrl.bank);
+
+          // Flight Path Vector
+          drawFPV(gfx, W, H, state, ctrl);
+
+          // Speed Tape (left side)
+          drawSpeedTape(gfx, 30, H - 160, 50, 150, kts, stallKts);
+
+          // Altitude Tape (right of center)
+          drawAltTape(gfx, W / 2 + 80, H - 160, 55, 150, state.altitude);
+
+          // Heading Tape (top-center, below status bar)
+          drawHeadingTape(gfx, W / 2 - 100, 36, 200, 22, state.heading);
+
+          // VSI (vertical speed, right side)
+          drawGauge(gfx, W / 2 + 160, H - 85, 30, Math.abs(fpm), 3000, fpm >= 0 ? 'UP' : 'DN', 'FPM', fpm >= 0 ? '#4ade80' : '#f97316');
+
+          // G-Force indicator
+          drawGForce(gfx, W / 2 - 70, H - 50, state, ctrl);
 
           // Throttle bar
           gfx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -1616,6 +2533,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var ampm = localHour >= 12 ? 'PM' : 'AM';
           var hr12 = localHour % 12 || 12;
           gfx.fillText('HDG ' + String(Math.round(state.heading)).padStart(3, '0') + '°  |  ALT ' + Math.round(state.altitude).toLocaleString() + ' ft  |  SPD ' + Math.round(kts) + ' kts  |  VS ' + (fpm >= 0 ? '+' : '') + Math.round(fpm) + ' fpm  |  ' + (dayNight.isNight ? '🌙' : dayNight.isDusk ? '🌅' : '☀️') + ' ' + hr12 + ampm + ' local', 10, 21);
+
+          // Autopilot status (green bar when engaged)
+          var ap2 = d.autopilot || {};
+          if (ap2.hdg || ap2.alt || ap2.spd) {
+            gfx.fillStyle = 'rgba(34,197,94,0.2)'; gfx.fillRect(0, 32, W, 16);
+            gfx.fillStyle = '#4ade80'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'center';
+            var apStatus = 'AP: ';
+            if (ap2.hdg) apStatus += 'HDG ' + ap2.tgtHdg + '°  ';
+            if (ap2.alt) apStatus += 'ALT ' + ap2.tgtAlt.toLocaleString() + '  ';
+            if (ap2.spd) apStatus += 'SPD ' + ap2.tgtSpd + 'kt  ';
+            apStatus += '(B=off, manual input=disengage)';
+            gfx.fillText(apStatus, W / 2, 43);
+          }
 
           // Nearest waypoint
           if (nearWp && nearDist < 500) {
@@ -1643,7 +2573,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           drawForces(gfx, W - 110, 120, state.forces, showForces);
 
           // Mini-map (top-right area)
-          drawMiniMap(gfx, W - 130, 38, 80, state);
+          drawMiniMapEnhanced(gfx, W - 140, 38, 90, state);
 
           // Day/night cycle
           var dayNight = getDayNight(state.lon, timeRef.current);
@@ -1662,8 +2592,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Geography quiz overlay
           drawGeoQuiz(gfx, W, H);
 
+          // Country borders at altitude
+          drawCountryBorders(gfx, W, H, horizonY, state);
+
+          // Jet stream visualization
+          drawJetStream(gfx, W, H, horizonY, state, timeRef.current);
+
+          // Navigation Computer (when flight plan active)
+          drawNavComputer(gfx, 10, H - 240, state, timeRef.current);
+
+          // Black box recording
+          recordBlackBox(state, timeRef.current);
+
+          // Stall horn audio
+          updateStallHorn(state.stalling);
+
+          // Wind indicator (near throttle)
+          drawWindIndicator(gfx, W - 60, 90, weatherRef.current.wind, weatherRef.current.windDir, state.heading);
+
           // World labels (continents/oceans at high altitude)
           drawWorldLabels(gfx, W, H, horizonY, state);
+
+          // Weather lesson display
+          if (d.weatherLesson && timeRef.current < 10) {
+            var wlAlpha = Math.min(1, (8 - timeRef.current) / 2);
+            if (wlAlpha > 0) {
+              var wlW = Math.min(W - 40, 380);
+              var wlX = (W - wlW) / 2;
+              var wlY = H * 0.75;
+              gfx.globalAlpha = Math.max(0, wlAlpha);
+              gfx.fillStyle = 'rgba(0,0,0,0.75)';
+              gfx.beginPath(); gfx.roundRect(wlX, wlY, wlW, 40, 8); gfx.fill();
+              gfx.strokeStyle = 'rgba(34,211,238,0.4)'; gfx.lineWidth = 1; gfx.stroke();
+              gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'left';
+              gfx.fillText('🌤️ WEATHER BRIEFING', wlX + 10, wlY + 14);
+              gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui';
+              // Word wrap the lesson
+              var wWords = d.weatherLesson.split(' ');
+              var wLine = ''; var wLineY = wlY + 28;
+              wWords.forEach(function(word) {
+                var test = wLine + (wLine ? ' ' : '') + word;
+                if (gfx.measureText(test).width > wlW - 20) { gfx.fillText(wLine, wlX + 10, wLineY); wLine = word; wLineY += 11; }
+                else wLine = test;
+              });
+              if (wLine) gfx.fillText(wLine, wlX + 10, wLineY);
+              gfx.globalAlpha = 1;
+            }
+          }
 
           // Check & render achievements
           checkAchievements(state, timeRef.current);
@@ -1699,6 +2674,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // ═══ VISUAL EFFECTS LAYER ═══
 
+          // WCAG 2.3.1: Skip particle/animation effects if reduced motion preferred
+          if (!skyReducedMotion.current) {
           // ── Contrails (at high altitude + speed) ──
           if (state.altitude > 25000 && kts > 200) {
             var trailAlpha = Math.min(0.4, (state.altitude - 25000) / 30000);
@@ -1807,6 +2784,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.restore();
           }
 
+          // Engine exhaust & wingtip vortex particles
+          drawParticles(gfx, W, H, state, ctrl, timeRef.current);
+          } // end reduced motion block
+
+          // ── Help Overlay (press ?) ──
+          if (d.showHelp) {
+            gfx.fillStyle = 'rgba(0,0,0,0.92)'; gfx.fillRect(0, 0, W, H);
+            gfx.fillStyle = '#60a5fa'; gfx.font = 'bold 18px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('✈️ SKYSCHOOL — CONTROLS & HELP', W / 2, 30);
+            var shY = 45;
+            var shSections = [
+              { title: '🛩️ FLIGHT CONTROLS', items: [
+                ['W / ↑', 'Pitch up (climb)'], ['S / ↓', 'Pitch down (descend)'],
+                ['A / ←', 'Bank left (turn left)'], ['D / →', 'Bank right (turn right)'],
+                ['Shift / =', 'Increase throttle'], ['Ctrl / -', 'Decrease throttle'],
+              ]},
+              { title: '📚 LEARNING TOOLS', items: [
+                ['F', 'Toggle force diagram (lift/drag/thrust/weight arrows)'],
+                ['Q', 'Geography quiz — identify nearby places'],
+              ]},
+              { title: '🎮 GAME CONTROLS', items: [
+                ['Space', 'Pause / Resume flight'],
+                ['I', 'Read flight status (screen reader / audio summary)'],
+                ['?', 'Toggle this help screen'],
+                ['ESC', 'Exit to debrief'],
+              ]},
+              { title: '🧭 FLIGHT TIPS', items: [
+                ['Takeoff', 'Full throttle → at 60kts, pitch up gently → you\'re flying!'],
+                ['Level flight', 'When altimeter stops changing, you\'re level. Adjust pitch.'],
+                ['Landing', 'Reduce throttle → descend slowly → aim for < 200 fpm at touchdown'],
+                ['Stall', 'If horn sounds: push nose DOWN and add power immediately'],
+                ['Navigation', 'File a flight plan in the menu → follow the heading tape'],
+              ]},
+            ];
+            shSections.forEach(function(section) {
+              shY += 18;
+              gfx.fillStyle = '#60a5fa'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'left';
+              gfx.fillText(section.title, 30, shY);
+              section.items.forEach(function(item) {
+                shY += 13;
+                if (shY > H - 25) return;
+                gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'left';
+                gfx.fillText(item[0], 40, shY);
+                gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
+                gfx.fillText(item[1], 170, shY);
+              });
+            });
+            gfx.fillStyle = '#64748b'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('Press ? or ESC to close', W / 2, H - 8);
+            animRef.current = requestAnimationFrame(loop); return;
+          }
+
+          // ── Adaptive Flight Hints ──
+          if (!pausedRef.current) {
+            var hintMsg2 = null;
+            var ktsH = state.speed * 0.5924838;
+            if (state.onGround && timeRef.current > 5 && ktsH < 10 && ctrl.throttle < 0.1) {
+              hintMsg2 = '💡 Push Shift to increase throttle — you need speed to fly!';
+            } else if (state.onGround && ktsH > 50 && ktsH < 70 && ctrl.pitch < 1) {
+              hintMsg2 = '💡 You\'re fast enough! Press W to pitch up and take off!';
+            } else if (!state.onGround && state.altitude < 500 && state.vsi < -5 && ctrl.throttle < 0.3) {
+              hintMsg2 = '⚠️ Low altitude! Add throttle (Shift) and pitch up (W)!';
+            } else if (state.stalling) {
+              hintMsg2 = '🚨 STALL! Push S to lower nose, then add power with Shift!';
+            } else if (!state.onGround && state.altitude > 1000 && timeRef.current > 30 && timeRef.current < 35) {
+              hintMsg2 = '💡 Press Q anytime for a geography quiz! Press F to see force arrows.';
+            }
+            if (hintMsg2) {
+              gfx.font = '10px system-ui';
+              var hw = Math.min(W - 20, gfx.measureText(hintMsg2).width + 24);
+              gfx.fillStyle = 'rgba(0,0,0,0.6)';
+              gfx.beginPath(); gfx.roundRect((W - hw) / 2, H - 175, hw, 18, 4); gfx.fill();
+              gfx.fillStyle = '#fbbf24'; gfx.textAlign = 'center';
+              gfx.fillText(hintMsg2, W / 2, H - 163);
+            }
+          }
+
+          // WCAG 2.4.7: Focus ring
+          if (document.activeElement === canvas) {
+            gfx.strokeStyle = '#4ade80'; gfx.lineWidth = 3;
+            gfx.strokeRect(1, 1, W - 2, H - 2);
+          }
+
+          // WCAG: Announce stall warning (once)
+          if (state.stalling && !flightRef.current._stallAnnounced) {
+            skyAnnounce('Stall warning! Push nose down and add power.');
+            flightRef.current._stallAnnounced = true;
+          }
+          if (!state.stalling) flightRef.current._stallAnnounced = false;
+
           // ── Cockpit Frame Overlay ──
           // Canopy bars (subtle frame around the view)
           gfx.strokeStyle = 'rgba(30,30,40,0.5)';
@@ -1838,7 +2905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Controls help (bottom-right)
           gfx.fillStyle = 'rgba(0,0,0,0.4)'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
-          gfx.fillText('W/S: Pitch  |  A/D: Bank  |  Shift/Ctrl: Throttle  |  Q: Geo Quiz  |  F: Forces', W - 10, H - 8);
+          gfx.fillText('W/S: Pitch | A/D: Bank | Shift/Ctrl: Throttle | Q: Quiz | F: Forces | Space: Pause | I: Info', W - 10, H - 8);
 
           animRef.current = requestAnimationFrame(loop);
         };
@@ -1859,9 +2926,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Quick Fly
           h('div', { style: { padding: '0 24px 16px' } },
-            h('button', { onClick: function() { startFlying('kpwm'); },
+            h('button', { onClick: function() { flightPlanRef.current = { departure: null, destination: null, route: [], distNm: 0, estTime: 0, initialHdg: 0 }; startFlying('kpwm'); },
               style: { width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid #3b82f6', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }
             }, '🛫 Free Flight from Portland, ME')
+          ),
+          // Flight Planner
+          h('div', { style: { padding: '0 24px 16px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🗺️ Flight Planner'),
+            h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
+              h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' } },
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: '8px', color: '#64748b', textTransform: 'uppercase', marginBottom: '2px' } }, 'From'),
+                  h('select', { value: d.planDep || 'kpwm', onChange: function(e) { upd('planDep', e.target.value); },
+                    style: { width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: 700 },
+                    'aria-label': 'Departure airport'
+                  }, WAYPOINTS.map(function(wp) { return h('option', { key: wp.id, value: wp.id }, wp.code + ' — ' + wp.name); }))
+                ),
+                h('div', { style: { color: '#64748b', fontSize: '16px', marginTop: '10px' } }, '→'),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: '8px', color: '#64748b', textTransform: 'uppercase', marginBottom: '2px' } }, 'To'),
+                  h('select', { value: d.planDest || 'kjfk', onChange: function(e) { upd('planDest', e.target.value); },
+                    style: { width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: 700 },
+                    'aria-label': 'Destination airport'
+                  }, WAYPOINTS.map(function(wp) { return h('option', { key: wp.id, value: wp.id }, wp.code + ' — ' + wp.name); }))
+                )
+              ),
+              // Route preview
+              (function() {
+                var depWp = WAYPOINTS.find(function(w) { return w.id === (d.planDep || 'kpwm'); });
+                var destWp = WAYPOINTS.find(function(w) { return w.id === (d.planDest || 'kjfk'); });
+                if (!depWp || !destWp || depWp.id === destWp.id) return null;
+                var dist = Math.round(haversineNm(depWp.lat, depWp.lon, destWp.lat, destWp.lon));
+                var hdg = Math.round(bearing(depWp.lat, depWp.lon, destWp.lat, destWp.lon));
+                var cruiseKts = Math.round(currentAC.maxSpeed * 0.59 * 0.75);
+                var estMin = Math.round(dist / cruiseKts * 60);
+                var cruiseAlt = dist > 500 ? 35000 : dist > 100 ? 18000 : 8000;
+                return h('div', null,
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '8px' } },
+                    [['📏 ' + dist + ' nm', 'Distance'], ['🧭 ' + String(hdg).padStart(3, '0') + '°', 'Heading'], ['⏱️ ~' + estMin + ' min', 'Est. Time'], ['🔝 FL' + (cruiseAlt / 100), 'Cruise Alt']].map(function(s) {
+                      return h('div', { key: s[1], style: { background: '#1e293b', borderRadius: '4px', padding: '4px', textAlign: 'center' } },
+                        h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa' } }, s[0]),
+                        h('div', { style: { fontSize: '7px', color: '#64748b' } }, s[1])
+                      );
+                    })
+                  ),
+                  // Nav briefing
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8', background: '#1e293b', borderRadius: '6px', padding: '6px 8px', lineHeight: '1.5', borderLeft: '2px solid #3b82f6' } },
+                    '📋 Depart ' + depWp.code + ' (' + depWp.region + ', ' + depWp.alt + ' ft), fly heading ' + String(hdg).padStart(3, '0') + '° for ' + dist + ' nm. ' +
+                    'Cruise at FL' + (cruiseAlt / 100) + ' (' + cruiseAlt.toLocaleString() + ' ft). ' +
+                    'Arrive ' + destWp.code + ' (' + destWp.region + ', ' + destWp.alt + ' ft). ' +
+                    (Math.abs(depWp.alt - destWp.alt) > 2000 ? '⚠️ Significant elevation difference — adjust approach accordingly.' : '')
+                  ),
+                  h('button', { onClick: function() {
+                    createFlightPlan(d.planDep || 'kpwm', d.planDest || 'kjfk');
+                    startFlying(d.planDep || 'kpwm');
+                  }, style: { width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
+                  }, '🗺️ File Flight Plan & Depart')
+                );
+              })()
+            )
           ),
           // Aircraft Selection
           h('div', { style: { padding: '0 24px 16px' } },
@@ -1975,7 +3098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Controls legend
           h('div', { style: { padding: '12px 24px', borderTop: '1px solid #1e293b', display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' } },
-            [['W/S or ↑/↓', 'Pitch'], ['A/D or ←/→', 'Bank'], ['Shift/Ctrl', 'Throttle'], ['F', 'Forces'], ['Q', 'Geo Quiz'], ['ESC', 'Exit']].map(function(item) {
+            [['W/S or ↑/↓', 'Pitch'], ['A/D or ←/→', 'Bank'], ['Shift/Ctrl', 'Throttle'], ['B', 'Autopilot'], ['F', 'Forces'], ['Q', 'Quiz'], ['Space', 'Pause'], ['?', 'Help'], ['ESC', 'Exit']].map(function(item) {
               return h('div', { key: item[0], style: { textAlign: 'center' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa', background: '#1e3a5f', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' } }, item[0]),
                 h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, item[1])
@@ -2009,10 +3132,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── FLYING VIEW ──
       if (view === 'flying') {
         return h('div', { style: { position: 'relative', width: '100%', height: '500px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
-          h('canvas', { ref: canvasRef, style: { width: '100%', height: '100%', display: 'block' }, tabIndex: 0 }),
+          h('canvas', {
+            ref: canvasRef,
+            role: 'application',
+            'aria-label': 'Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.',
+            'aria-roledescription': 'Flight simulator',
+            tabIndex: 0,
+            style: { width: '100%', height: '100%', display: 'block', outline: 'none' },
+            onFocus: function() { skyAnnounce('SkySchool flight display focused. Press I for flight status. Space to pause.'); }
+          }),
           // Overlay controls
           h('div', { style: { position: 'absolute', top: '40px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 10 } },
-            h('button', { onClick: function() { flyingRef.current = false; stopEngineSound(); updMulti({ view: 'menu' }); },
+            h('button', { onClick: function() {
+              flyingRef.current = false; stopEngineSound(); updateStallHorn(false);
+              // Generate flight debrief
+              var log = logRef.current;
+              var ft = Math.round(timeRef.current - (log.startTime || 0));
+              var discovered = Object.keys(geoDiscoveredRef.current).length;
+              var badges = Object.keys(earnedBadges).length;
+              upd('lastDebrief', {
+                flightTime: ft, distance: Math.round(log.distance), maxAlt: Math.round(log.maxAlt),
+                maxSpeed: Math.round(log.maxSpeed), airports: log.airports.length,
+                discovered: discovered, badges: badges, aircraft: currentAC.name,
+                landings: landingRef.current.scored ? 1 : 0,
+                bestLanding: landingRef.current.touchdownFPM ? Math.round(landingRef.current.touchdownFPM) : null
+              });
+              updMulti({ view: 'debrief' });
+            },
               style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '✕ Exit'),
             h('button', { onClick: function() { upd('showForces', !d.showForces); },
@@ -2023,8 +3169,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               var wx = weatherRef.current;
               var idx = types.findIndex(function(t) { return t.id === wx.type; });
               var next = types[(idx + 1) % types.length];
-              weatherRef.current = { wind: next.wind, windDir: 270, turbulence: next.turb, visibility: next.vis, type: next.id };
-              addToast && addToast(next.label + ' — Wind ' + next.wind + ' kts');
+              weatherRef.current = { wind: next.wind, windDir: Math.floor(Math.random() * 36) * 10, turbulence: next.turb, visibility: next.vis, type: next.id };
+              addToast && addToast(next.label + ' — Wind ' + next.wind + ' kts from ' + String(weatherRef.current.windDir).padStart(3, '0') + '°');
+              upd('weatherLesson', next.lesson);
             },
               style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '🌤️ ' + (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]).label),
@@ -2035,6 +3182,136 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }, currentAC.icon + ' ' + currentAC.name.split(' ')[0]),
             h('div', { style: { padding: '4px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.4)', color: '#4ade80', fontSize: '10px', fontWeight: 700, textAlign: 'center' }
             }, '🏆 ' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length)
+          )
+        );
+      }
+
+      // ── DEBRIEF VIEW ──
+      if (view === 'debrief' && d.lastDebrief) {
+        var db = d.lastDebrief;
+        var mins = Math.floor(db.flightTime / 60);
+        var secs = db.flightTime % 60;
+        var grade = db.distance > 100 && db.airports > 0 ? '🌟 Excellent Flight!' : db.distance > 50 ? '✈️ Great Exploration!' : db.flightTime > 120 ? '🛫 Good Practice!' : '📝 Quick Hop';
+        return h('div', { style: { minHeight: '400px', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', padding: '24px', color: '#fff' } },
+          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { style: { fontSize: '40px', marginBottom: '8px' } }, '📋'),
+            h('div', { style: { fontSize: '22px', fontWeight: 900 } }, 'FLIGHT DEBRIEF'),
+            h('div', { style: { fontSize: '14px', color: '#fbbf24', fontWeight: 700, marginTop: '4px' } }, grade)
+          ),
+          // Aircraft used
+          h('div', { style: { textAlign: 'center', fontSize: '12px', color: '#94a3b8', marginBottom: '16px' } }, 'Aircraft: ' + db.aircraft),
+          // Stats grid
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' } },
+            [['⏱️', mins + ':' + String(secs).padStart(2, '0'), 'Flight Time'],
+             ['📏', db.distance + ' nm', 'Distance'],
+             ['🏔️', db.maxAlt.toLocaleString() + ' ft', 'Max Altitude'],
+             ['💨', db.maxSpeed + ' kts', 'Max Speed'],
+             ['✈️', db.airports, 'Airports'],
+             ['📍', db.discovered, 'Places Found'],
+             ['🏆', db.badges + '/' + ACHIEVEMENTS.length, 'Achievements'],
+             ['🧈', db.bestLanding ? db.bestLanding + ' fpm' : '—', 'Best Landing']
+            ].map(function(stat) {
+              return h('div', { key: stat[2], style: { background: '#0f172a', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid #1e293b' } },
+                h('div', { style: { fontSize: '16px' } }, stat[0]),
+                h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#60a5fa', marginTop: '2px' } }, stat[1]),
+                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, stat[2])
+              );
+            })
+          ),
+          // Flight Path Map (from black box data)
+          blackBoxRef.current.length > 3 ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: '8px' } }, '🗺️ Flight Path'),
+            h('canvas', {
+              ref: function(canvas) {
+                if (!canvas) return;
+                var g = canvas.getContext('2d');
+                var cW = canvas.width = canvas.offsetWidth;
+                var cH = canvas.height = 120;
+                var bb = blackBoxRef.current;
+                if (bb.length < 2) return;
+
+                // Find bounds
+                var minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
+                bb.forEach(function(p) { if (p.lat < minLat) minLat = p.lat; if (p.lat > maxLat) maxLat = p.lat; if (p.lon < minLon) minLon = p.lon; if (p.lon > maxLon) maxLon = p.lon; });
+                var pad = 0.5;
+                minLat -= pad; maxLat += pad; minLon -= pad; maxLon += pad;
+                var latRange = Math.max(1, maxLat - minLat);
+                var lonRange = Math.max(1, maxLon - minLon);
+
+                // Background
+                g.fillStyle = '#0a1628'; g.fillRect(0, 0, cW, cH);
+
+                // Grid
+                g.strokeStyle = 'rgba(255,255,255,0.05)'; g.lineWidth = 0.5;
+                for (var gl = 0; gl < 5; gl++) { g.beginPath(); g.moveTo(gl * cW / 4, 0); g.lineTo(gl * cW / 4, cH); g.stroke(); g.beginPath(); g.moveTo(0, gl * cH / 4); g.lineTo(cW, gl * cH / 4); g.stroke(); }
+
+                // Waypoints in range
+                WAYPOINTS.forEach(function(wp) {
+                  if (wp.lat < minLat || wp.lat > maxLat || wp.lon < minLon || wp.lon > maxLon) return;
+                  var wx = (wp.lon - minLon) / lonRange * cW;
+                  var wy = (1 - (wp.lat - minLat) / latRange) * cH;
+                  g.fillStyle = 'rgba(96,165,250,0.4)'; g.beginPath(); g.arc(wx, wy, 3, 0, Math.PI * 2); g.fill();
+                  g.fillStyle = 'rgba(255,255,255,0.4)'; g.font = '7px system-ui'; g.textAlign = 'center';
+                  g.fillText(wp.code, wx, wy - 5);
+                });
+
+                // Flight path line
+                g.strokeStyle = '#4ade80'; g.lineWidth = 2; g.beginPath();
+                bb.forEach(function(p, i) {
+                  var px = (p.lon - minLon) / lonRange * cW;
+                  var py = (1 - (p.lat - minLat) / latRange) * cH;
+                  if (i === 0) g.moveTo(px, py); else g.lineTo(px, py);
+                });
+                g.stroke();
+
+                // Altitude profile (color gradient along path)
+                var maxAlt2 = Math.max.apply(null, bb.map(function(p) { return p.alt; }));
+                bb.forEach(function(p, i) {
+                  if (i === 0) return;
+                  var px = (p.lon - minLon) / lonRange * cW;
+                  var py = (1 - (p.lat - minLat) / latRange) * cH;
+                  var altPct = maxAlt2 > 0 ? p.alt / maxAlt2 : 0;
+                  g.fillStyle = 'rgba(' + Math.round(255 * (1 - altPct)) + ',' + Math.round(100 + 155 * altPct) + ',' + Math.round(255 * altPct) + ',0.6)';
+                  g.beginPath(); g.arc(px, py, 1.5, 0, Math.PI * 2); g.fill();
+                });
+
+                // Start/end markers
+                var sx = (bb[0].lon - minLon) / lonRange * cW;
+                var sy = (1 - (bb[0].lat - minLat) / latRange) * cH;
+                var ex = (bb[bb.length - 1].lon - minLon) / lonRange * cW;
+                var ey = (1 - (bb[bb.length - 1].lat - minLat) / latRange) * cH;
+                g.fillStyle = '#22d3ee'; g.beginPath(); g.arc(sx, sy, 4, 0, Math.PI * 2); g.fill();
+                g.fillStyle = '#ef4444'; g.beginPath(); g.arc(ex, ey, 4, 0, Math.PI * 2); g.fill();
+                g.fillStyle = '#fff'; g.font = 'bold 7px system-ui'; g.textAlign = 'center';
+                g.fillText('START', sx, sy - 6); g.fillText('END', ex, ey - 6);
+
+                // Legend
+                g.fillStyle = 'rgba(255,255,255,0.3)'; g.font = '7px system-ui'; g.textAlign = 'right';
+                g.fillText(bb.length + ' data points · Color = altitude (blue=high, red=low)', cW - 4, cH - 3);
+              },
+              style: { width: '100%', height: '120px', borderRadius: '6px', display: 'block' }
+            })
+          ) : null,
+          // Educational takeaways
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '8px' } }, '💡 What You Learned This Flight'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              db.maxAlt > 10000 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #22d3ee' } }, '🌌 You flew above 10,000 ft where supplemental oxygen is required. Air density drops to 70% of sea level.') : null,
+              db.maxSpeed > 400 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '💨 You exceeded 400 kts! At these speeds, compressibility effects start to matter — air can no longer be treated as incompressible.') : null,
+              db.airports > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '✈️ You visited ' + db.airports + ' airport(s). Real pilots plan routes using airways — highways in the sky defined by radio beacons.') : null,
+              db.discovered > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #f97316' } }, '📍 You discovered ' + db.discovered + ' geographic locations. Professional pilots use sectional charts that show terrain, airspace, and obstacles.') : null,
+              db.bestLanding && db.bestLanding < 200 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #ec4899' } }, '🧈 Great landing at ' + db.bestLanding + ' fpm! Airline standards consider < 180 fpm a smooth landing. The technique is called "flaring" — pitching up gently at 20 ft above the runway.') : null,
+              db.flightTime > 300 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #8b5cf6' } }, '⏱️ You flew for over 5 minutes. Real pilots track fuel consumption carefully — the Cessna 172 burns about 8 gallons per hour.') : null
+            )
+          ),
+          // Actions
+          h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+            h('button', { onClick: function() { upd('view', 'menu'); },
+              style: { padding: '10px 24px', borderRadius: '8px', border: '1px solid #3b82f6', background: '#1e40af', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+            }, '🏠 Back to Menu'),
+            h('button', { onClick: function() { startFlying('kpwm'); },
+              style: { padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+            }, '🛫 Fly Again')
           )
         );
       }

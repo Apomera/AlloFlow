@@ -188,6 +188,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     desc: 'Explore 10 body systems with layered anatomical visualization',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'explore_3_systems', label: 'Explore 3 different body systems', icon: '\uD83E\uDEC0', check: function(d) { return Object.keys(d.systemsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.systemsViewed || {}).length + '/3 systems'; } },
+      { id: 'explore_all_systems', label: 'Explore all body systems', icon: '\uD83C\uDFC6', check: function(d) { return Object.keys(d.systemsViewed || {}).length >= 8; }, progress: function(d) { return Object.keys(d.systemsViewed || {}).length + '/8 systems'; } },
+      { id: 'complete_tour', label: 'Complete a guided anatomy tour', icon: '\uD83D\uDCDA', check: function(d) { return (d._tourComplete || false); }, progress: function(d) { return d._tourComplete ? 'Done!' : 'Not yet'; } },
+      { id: 'toggle_layers', label: 'Use the layer toggle to reveal internal structures', icon: '\uD83D\uDD2C', check: function(d) { var l = d.visibleLayers || {}; return Object.keys(l).length >= 2; }, progress: function(d) { return Object.keys(d.visibleLayers || {}).length >= 2 ? 'Explored!' : 'Toggle layers'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

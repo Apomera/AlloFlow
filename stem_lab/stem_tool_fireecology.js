@@ -1089,6 +1089,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.',
     color: 'orange',
     category: 'science',
+    questHooks: [
+      { id: 'view_3_nations', label: 'Learn about 3 Indigenous nations\u2019 fire practices', icon: '\uD83C\uDF0E', check: function(d) { return Object.keys(d.nationsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.nationsViewed || {}).length + '/3 nations'; } },
+      { id: 'view_3_ecosystems', label: 'Explore 3 fire-adapted ecosystems', icon: '\uD83C\uDF32', check: function(d) { return Object.keys(d.ecosystemsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.ecosystemsViewed || {}).length + '/3 ecosystems'; } },
+      { id: 'run_simulation', label: 'Run a fire simulation', icon: '\uD83D\uDD25', check: function(d) { return d.simRun || false; }, progress: function(d) { return d.simRun ? 'Done!' : 'Not yet'; } },
+      { id: 'create_burn_plan', label: 'Create a prescribed burn plan', icon: '\uD83D\uDCDD', check: function(d) { return d.burnResult !== null && d.burnResult !== undefined; }, progress: function(d) { return d.burnResult ? 'Created!' : 'Not yet'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

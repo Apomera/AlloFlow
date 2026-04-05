@@ -418,6 +418,10 @@ window.StemLab = window.StemLab || {
     icon: '\uD83E\uDDEC', label: 'Punnett Square Lab',
     desc: 'Genetics lab: crosses, pedigrees, population genetics, DNA translation',
     color: 'violet', category: 'science',
+    questHooks: [
+      { id: 'do_3_crosses', label: 'Perform 3 genetic crosses', icon: '🧬', check: function(d) { return (d._crossCount || 0) >= 3; }, progress: function(d) { return (d._crossCount || 0) + '/3'; } },
+      { id: 'use_2_presets', label: 'Try 2 genetics presets', icon: '🔬', check: function(d) { return (d._presetsUsed || 0) >= 2; }, progress: function(d) { return (d._presetsUsed || 0) + '/2'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

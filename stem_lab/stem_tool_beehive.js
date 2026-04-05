@@ -35,11 +35,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   'use strict';
 
   window.StemLab.registerTool('beehive', {
-    icon: '🐝',
+    icon: '\uD83D\uDC1D',
     label: 'Beehive Simulator',
     desc: 'Colony dynamics, nectar flow, and the science of superorganisms',
     color: 'amber',
     category: 'science',
+    questHooks: [
+      { id: 'survive_30_days', label: 'Keep the colony alive for 30 days', icon: '\uD83D\uDC1D', check: function(d) { return (d.day || 0) >= 30; }, progress: function(d) { return (d.day || 0) + '/30 days'; } },
+      { id: 'produce_honey', label: 'Produce honey for harvest', icon: '\uD83C\uDF6F', check: function(d) { return (d.totalHoney || 0) >= 10; }, progress: function(d) { return (d.totalHoney || 0) + '/10 units'; } },
+      { id: 'score_50', label: 'Earn 50+ colony health points', icon: '\u2B50', check: function(d) { return (d.score || 0) >= 50; }, progress: function(d) { return (d.score || 0) + '/50 pts'; } },
+      { id: 'handle_event', label: 'Successfully handle a colony threat event', icon: '\u26A0\uFE0F', check: function(d) { return (d.eventsHandled || 0) >= 1; }, progress: function(d) { return (d.eventsHandled || 0) >= 1 ? 'Handled!' : 'Waiting...'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

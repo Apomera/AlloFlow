@@ -33,6 +33,11 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDCB5', label: 'Money Math',
     desc: 'Coins, bills, making change, grocery store sim, currency exchange, tips, budget, and personal finance.',
     color: 'emerald', category: 'math',
+    questHooks: [
+      { id: 'place_5_coins', label: 'Place 5 coins on the counting mat', icon: '\uD83E\uDE99', check: function(d) { return (d.placed || []).length >= 5; }, progress: function(d) { return (d.placed || []).length + '/5 coins'; } },
+      { id: 'make_change', label: 'Successfully make change for a purchase', icon: '\uD83D\uDCB0', check: function(d) { return d.changeFeedback === 'correct'; }, progress: function(d) { return d.changeFeedback === 'correct' ? 'Done!' : 'Try making change'; } },
+      { id: 'shop_3_items', label: 'Add 3 items to shopping cart', icon: '\uD83D\uDED2', check: function(d) { return (d.cart || []).length >= 3; }, progress: function(d) { return (d.cart || []).length + '/3 items'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
@@ -1311,7 +1316,7 @@ window.StemLab = window.StemLab || {
                           isAdding && React.createElement("div", { className: "absolute z-20 left-0 right-0 -bottom-2 translate-y-full bg-white rounded-xl p-3 shadow-xl border-2 border-orange-300 space-y-2" },
                             React.createElement("p", { className: "text-[10px] font-bold text-orange-700 text-center" }, "How many " + item.pricePer + "s?"),
                             React.createElement("div", { className: "flex items-center gap-1.5" },
-                              React.createElement("button", { "aria-label": "Add", onClick: function () { upd('weightInput', Math.max(0.25, (d.weightInput || 1) - 0.25)); }, className: "px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\u2212"),
+                              React.createElement("button", { "aria-label": "Decrease item weight", onClick: function () { upd('weightInput', Math.max(0.25, (d.weightInput || 1) - 0.25)); }, className: "px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\u2212"),
                               React.createElement("input", { type: "number", step: "0.25", min: "0.25", value: d.weightInput || 1, 'aria-label': 'Item weight in pounds', onChange: function (e) { upd('weightInput', parseFloat(e.target.value) || 0.25); }, className: "w-14 text-center px-1 py-1 border border-orange-300 rounded-lg text-xs font-bold focus:ring-2 focus:ring-orange-400 outline-none" }),
                               React.createElement("button", { "aria-label": "Add to Cart", onClick: function () { upd('weightInput', (d.weightInput || 1) + 0.25); }, className: "px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
                               React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, item.pricePer)
@@ -1737,7 +1742,7 @@ window.StemLab = window.StemLab || {
                             if (typeof addXP === 'function') addXP(10, 'Money Math: Fewest coins challenge');
                           }
                         }, className: "flex-1 px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-xs" }, "\u2714 Check"),
-                        React.createElement("button", { "aria-label": "Reset", onClick: function () { upd('fcPlaced', []); }, className: "px-4 py-2 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, "\u21BA Reset")
+                        React.createElement("button", { "aria-label": "Reset coin selection", onClick: function () { upd('fcPlaced', []); }, className: "px-4 py-2 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, "\u21BA Reset")
                       ),
                       d.fcFeedback && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.fcFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.fcFeedback.msg)
                     )
@@ -1979,7 +1984,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "flex flex-wrap gap-1.5 justify-center" },
                       COIN_DENOMS.map(function (coin) {
                         var wouldOvershoot = cdRound + coin.val > cdTarget + 0.001;
-                        return React.createElement("button", { "aria-label": "Action", key: coin.label, onClick: function () {
+                        return React.createElement("button", { "aria-label": "Drop " + coin.label + " coin", key: coin.label, onClick: function () {
                             if (cdFb) return; // Already solved
                             var newDropped = cdDropped.concat([coin.val]);
                             var newTotal = Math.round((cdRound + coin.val) * 100) / 100;

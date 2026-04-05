@@ -5,11 +5,17 @@
   // â•â•â• ðŸ”¬ dissection (dissection) â•â•â•
   console.log('[Dissection Plugin] Registering dissection tool...');
   window.StemLab.registerTool('dissection', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83D\uDD2C',
     label: 'dissection',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'reveal_3_layers', label: 'Reveal 3 layers of a specimen', icon: '\uD83D\uDD2C', check: function(d) { return Object.keys(d.revealedLayers || {}).length >= 3; }, progress: function(d) { return Object.keys(d.revealedLayers || {}).length + '/3 layers'; } },
+      { id: 'complete_guided', label: 'Complete a guided dissection', icon: '\uD83D\uDCDA', check: function(d) { return d.guidedComplete || false; }, progress: function(d) { return d.guidedComplete ? 'Done!' : 'In progress'; } },
+      { id: 'quiz_3_correct', label: 'Answer 3+ dissection quiz questions correctly', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizScore || 0) >= 3; }, progress: function(d) { return (d.quizScore || 0) + '/3'; } },
+      { id: 'try_2_specimens', label: 'Explore 2 different specimens', icon: '\uD83D\uDC38', check: function(d) { return Object.keys(d.specimensViewed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.specimensViewed || {}).length + '/2'; } }
+    ],
     render: function(ctx) {
       console.log('[Dissection Plugin] render() called, has React:', !!ctx.React, 'has toolData:', !!ctx.toolData);
       // Aliases â€” maps ctx properties to original variable names

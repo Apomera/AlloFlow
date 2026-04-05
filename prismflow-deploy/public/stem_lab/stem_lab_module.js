@@ -374,6 +374,207 @@
       });
       var [_activeStationId, _setActiveStationId] = React.useState(null);
 
+      // ═══ QUEST SYSTEM ═══
+      var [_stationQuests, _setStationQuests] = React.useState([]);
+      var [_questPickerOpen, _setQuestPickerOpen] = React.useState(false);
+      var [_questProgress, _setQuestProgress] = React.useState(function() {
+        try { return JSON.parse(localStorage.getItem('alloflow_quest_progress') || '{}'); } catch(e) { return {}; }
+      });
+      var [_questHudCollapsed, _setQuestHudCollapsed] = React.useState(false);
+      var [_questFreeResponseOpen, _setQuestFreeResponseOpen] = React.useState(null); // qid of expanded free response
+
+      // Quest progress persistence
+      React.useEffect(function() {
+        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); } catch(e) {}
+      }, [_questProgress]);
+
+      // Quest evaluation — watches labToolData for auto-completion
+      React.useEffect(function() {
+        if (!_activeStation || !_activeStation.quests || !_activeStation.quests.length) return;
+        var updated = _evaluateQuests(_activeStation, labToolData || {}, _questProgress);
+        if (updated !== _questProgress) {
+          // Check which quests just completed for celebration
+          var stProg = updated[_activeStation.id] || {};
+          _activeStation.quests.forEach(function(q) {
+            var oldProg = (_questProgress[_activeStation.id] || {})[q.qid];
+            var newProg = stProg[q.qid];
+            if (newProg && newProg.complete && (!oldProg || !oldProg.complete)) {
+              if (addToast) addToast('\uD83C\uDFC6 Quest complete: ' + q.label, 'success');
+              if (typeof announceToSR === 'function') announceToSR('Quest completed: ' + q.label);
+              if (typeof stemCelebrate === 'function') stemCelebrate();
+              if (typeof awardStemXP === 'function') awardStemXP('questBonus', 10, 'Quest: ' + q.label);
+            }
+          });
+          _setQuestProgress(updated);
+        }
+      }, [labToolData, _activeStationId]);
+
+      // Quest time tracking — accumulates time spent in each tool
+      React.useEffect(function() {
+        if (!_activeStation || !stemLabTool) return;
+        var timeQuests = (_activeStation.quests || []).filter(function(q) {
+          return q.type === 'timeSpent' && q.toolId === stemLabTool;
+        });
+        if (timeQuests.length === 0) return;
+        var openTs = Date.now();
+        return function() {
+          var elapsed = Date.now() - openTs;
+          if (elapsed < 1000) return; // ignore sub-second switches
+          _setQuestProgress(function(prev) {
+            var sp = Object.assign({}, prev[_activeStation.id] || {});
+            timeQuests.forEach(function(q) {
+              var qp = Object.assign({}, sp[q.qid] || {});
+              qp.timeAccumMs = (qp.timeAccumMs || 0) + elapsed;
+              sp[q.qid] = qp;
+            });
+            var next = Object.assign({}, prev);
+            next[_activeStation.id] = sp;
+            return next;
+          });
+        };
+      }, [stemLabTool, _activeStationId]);
+
+
+      // Quest type definitions
+      var QUEST_TYPES = [
+        { id: 'xpThreshold', label: 'Earn XP', icon: '\u2B50', paramLabel: 'XP Target', defaultVal: 50, unit: 'XP' },
+        { id: 'timeSpent', label: 'Spend Time', icon: '\u23F1', paramLabel: 'Minutes', defaultVal: 5, unit: 'min' },
+        { id: 'discoveryCount', label: 'Discover Items', icon: '\uD83D\uDD2D', paramLabel: 'Item Count', defaultVal: 5, unit: 'items' },
+        { id: 'quizScore', label: 'Quiz Score', icon: '\uD83C\uDFAF', paramLabel: 'Min Score', defaultVal: 5, unit: 'pts' },
+        { id: 'freeResponse', label: 'Written Response', icon: '\u270D\uFE0F', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars' },
+        { id: 'toolQuest', label: 'Tool-Specific', icon: '\uD83C\uDFC6', paramLabel: 'Quest', defaultVal: '', unit: '' }
+      ];
+
+      // Get available tool-specific quests for a given tool ID
+      function _getToolQuestHooks(toolId) {
+        if (!toolId || !window.StemLab || !window.StemLab._registry) return [];
+        var toolConfig = window.StemLab._registry[toolId];
+        return (toolConfig && toolConfig.questHooks) || [];
+      }
+
+      // Auto-generate quest label
+      function _questAutoLabel(type, toolId, params) {
+        var toolName = 'this tool';
+        if (toolId) {
+          var found = _allStemTools.find(function(t2) { return t2.id === toolId; });
+          if (found) toolName = found.label || toolId;
+        }
+        switch(type) {
+          case 'xpThreshold': return 'Earn ' + (params.threshold || 50) + ' XP in ' + toolName;
+          case 'timeSpent': return 'Spend ' + (params.minutes || 5) + ' minutes in ' + toolName;
+          case 'discoveryCount': return 'Discover ' + (params.count || 5) + ' items in ' + toolName;
+          case 'quizScore': return 'Score ' + (params.minScore || 5) + '+ on the ' + toolName + ' quiz';
+          case 'freeResponse': return params.prompt || 'Describe what you learned';
+          default: return 'Complete a quest';
+        }
+      }
+
+      // Evaluate all quests for a station against current tool data
+      function _evaluateQuests(station, toolData, progress) {
+        if (!station || !station.quests || !station.quests.length) return progress;
+        var stProg = Object.assign({}, progress[station.id] || {});
+        var changed = false;
+        station.quests.forEach(function(q) {
+          var qp = stProg[q.qid] || {};
+          if (qp.complete) return;
+          var complete = false;
+          var xpData, toolState, field, val, score;
+          switch(q.type) {
+            case 'xpThreshold':
+              xpData = (toolData._stemXP || {})[q.toolId];
+              complete = xpData && (typeof xpData === 'number' ? xpData : (xpData.earned || 0)) >= (q.params.threshold || 50);
+              break;
+            case 'timeSpent':
+              complete = (qp.timeAccumMs || 0) >= (q.params.minutes || 5) * 60000;
+              break;
+            case 'discoveryCount':
+              toolState = toolData['_' + q.toolId] || toolData[q.toolId] || {};
+              field = q.params.field || 'discoveries';
+              val = field.indexOf('.') !== -1 ? field.split('.').reduce(function(o, k) { return (o || {})[k]; }, toolState) : toolState[field];
+              complete = (Array.isArray(val) ? val.length : (typeof val === 'number' ? val : 0)) >= (q.params.count || 5);
+              break;
+            case 'quizScore':
+              toolState = toolData['_' + q.toolId] || toolData[q.toolId] || {};
+              field = q.params.field || 'quizScore';
+              score = field.indexOf('.') !== -1 ? field.split('.').reduce(function(o, k) { return (o || {})[k]; }, toolState) : toolState[field];
+              complete = typeof score === 'number' && score >= (q.params.minScore || 5);
+              break;
+            case 'freeResponse':
+              complete = (qp.response || '').length >= (q.params.minLength || 30);
+              break;
+            case 'toolQuest':
+              // Tool-specific quest — look up the hook's check function
+              var hooks = _getToolQuestHooks(q.toolId);
+              var hook = hooks.find(function(h) { return h.id === q.params.hookId; });
+              if (hook && hook.check) {
+                var toolState2 = toolData[q.toolId] || toolData['_' + q.toolId] || {};
+                complete = hook.check(toolState2);
+              }
+              break;
+          }
+          if (complete && !qp.complete) {
+            qp.complete = true;
+            qp.completedAt = new Date().toISOString();
+            changed = true;
+          }
+          stProg[q.qid] = qp;
+        });
+        if (changed) {
+          var updated = Object.assign({}, progress);
+          updated[station.id] = stProg;
+          return updated;
+        }
+        return progress;
+      }
+
+      // Get display info for a quest's progress
+      function _getQuestDisplay(quest, toolData, progress, stationId) {
+        var qp = ((progress[stationId] || {})[quest.qid]) || {};
+        if (qp.complete) return { done: true, text: 'Complete', pct: 100 };
+        var xpData, toolState, field, val, ms, targetMs;
+        switch(quest.type) {
+          case 'xpThreshold':
+            xpData = (toolData._stemXP || {})[quest.toolId];
+            var earned = xpData ? (typeof xpData === 'number' ? xpData : (xpData.earned || 0)) : 0;
+            var thr = quest.params.threshold || 50;
+            return { done: false, text: earned + '/' + thr + ' XP', pct: Math.min(100, earned / thr * 100) };
+          case 'timeSpent':
+            ms = qp.timeAccumMs || 0;
+            targetMs = (quest.params.minutes || 5) * 60000;
+            return { done: false, text: Math.floor(ms / 60000) + '/' + (quest.params.minutes || 5) + ' min', pct: Math.min(100, ms / targetMs * 100) };
+          case 'discoveryCount':
+            toolState = toolData['_' + quest.toolId] || toolData[quest.toolId] || {};
+            field = quest.params.field || 'discoveries';
+            val = field.indexOf('.') !== -1 ? field.split('.').reduce(function(o, k) { return (o || {})[k]; }, toolState) : toolState[field];
+            var c = Array.isArray(val) ? val.length : (typeof val === 'number' ? val : 0);
+            var target = quest.params.count || 5;
+            return { done: false, text: c + '/' + target, pct: Math.min(100, c / target * 100) };
+          case 'quizScore':
+            toolState = toolData['_' + quest.toolId] || toolData[quest.toolId] || {};
+            field = quest.params.field || 'quizScore';
+            val = field.indexOf('.') !== -1 ? field.split('.').reduce(function(o, k) { return (o || {})[k]; }, toolState) : toolState[field];
+            var sv = typeof val === 'number' ? val : 0;
+            var minS = quest.params.minScore || 5;
+            return { done: false, text: sv + '/' + minS, pct: Math.min(100, sv / minS * 100) };
+          case 'freeResponse':
+            var len = (qp.response || '').length;
+            var minL = quest.params.minLength || 30;
+            return { done: false, text: len + '/' + minL + ' chars', pct: Math.min(100, len / minL * 100) };
+          case 'toolQuest':
+            var hooks2 = _getToolQuestHooks(quest.toolId);
+            var hook2 = hooks2.find(function(h2) { return h2.id === quest.params.hookId; });
+            if (hook2 && hook2.progress) {
+              var ts2 = toolData[quest.toolId] || toolData['_' + quest.toolId] || {};
+              var progText = hook2.progress(ts2);
+              var isDone2 = hook2.check ? hook2.check(ts2) : false;
+              return { done: isDone2, text: progText, pct: isDone2 ? 100 : 50 };
+            }
+            return { done: false, text: 'In progress', pct: 25 };
+          default:
+            return { done: false, text: '?', pct: 0 };
+        }
+      }
+
       // Sync incoming activeStation prop from main app (e.g. resource pack click)
       // When the main app sets activeStation and opens STEM Lab, auto-load that station
       React.useEffect(function () {
@@ -2294,6 +2495,12 @@
                 color: 'blue', ready: true
               },
               {
+                // @tool moonMission
+                id: 'moonMission', icon: '\uD83D\uDE80', label: 'Moon Mission',
+                desc: 'Full Apollo mission simulator — launch, orbit, land on the Moon, walk in 1/6 gravity, collect rocks, and splash down!',
+                color: 'slate', ready: true
+              },
+              {
                 // @tool galaxy
                 id: 'galaxy', icon: '\uD83C\uDF0C', label: t('stem.tools_menu.galaxy_explorer'),
                 desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
@@ -2323,9 +2530,14 @@
                 color: 'emerald', ready: true
               },
               {
-                id: 'companionPlanting', icon: '🌱', label: 'Companion Planting Lab',
-                desc: 'Explore the ancient milpa / Three Sisters system — corn, beans, and squash growing in symbiosis. Soil chemistry, nitrogen cycles, and 7,000 years of agricultural science.',
+                id: 'companionPlanting', icon: '\uD83C\uDF31', label: 'Companion Planting Lab',
+                desc: 'Explore the ancient milpa / Three Sisters system \u2014 corn, beans, and squash growing in symbiosis. Soil chemistry, nitrogen cycles, and 7,000 years of agricultural science.',
                 color: 'emerald', ready: true
+              },
+              {
+                id: 'beehive', icon: '\uD83D\uDC1D', label: 'Beehive Colony Simulator',
+                desc: 'Manage a living honeybee colony \u2014 nectar economics, waggle dances, seasonal cycles, threats, and the science of superorganisms. Connected to Companion Planting!',
+                color: 'amber', ready: true
               },
               {
                 id: 'climateExplorer', icon: '\uD83C\uDF0D', label: 'Climate Explorer',
@@ -2489,6 +2701,11 @@
                 desc: 'Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports with real physics.',
                 color: 'sky', ready: true
               },
+              {
+                id: 'atcTower', icon: '🗼', label: 'ATC Tower',
+                desc: 'Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
+                color: 'emerald', ready: true
+              },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
@@ -2583,7 +2800,11 @@
               React.createElement("button", { "aria-label": "Exit Station",
                 onClick: function() { _setActiveStationId(null); },
                 className: "ml-auto text-[10px] text-emerald-500 hover:text-emerald-700 font-bold"
-              }, "\u2715 Exit Station")
+              }, "\u2715 Exit Station"),
+              // Quest count badge
+              _activeStation.quests && _activeStation.quests.length > 0 ? React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold" },
+                "\uD83C\uDFC6 " + (_activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length) + "/" + _activeStation.quests.length + " quests"
+              ) : null
             ) : null,
             // Saved stations dropdown
             _savedStations.length > 0 && !_activeStation ? React.createElement("select", {
@@ -2603,10 +2824,82 @@
             },
               React.createElement("option", { value: "" }, "\uD83D\uDCCB Load Station..."),
               _savedStations.map(function(st) {
-                return React.createElement("option", { key: st.id, value: st.id }, st.name + (st.grade ? ' (Gr ' + st.grade + ')' : ''));
+                var questInfo = st.quests && st.quests.length > 0 ? ' \uD83C\uDFC6' + st.quests.length : '';
+                return React.createElement("option", { key: st.id, value: st.id }, st.name + (st.grade ? ' (Gr ' + st.grade + ')' : '') + questInfo);
               })
             ) : null
           ),
+
+          // ═══ Quest HUD (visible when student is inside a tool with quests) ═══
+          _activeStation && _activeStation.quests && _activeStation.quests.length > 0 && stemLabTool ?
+            React.createElement("div", {
+              className: "mb-3 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-300 overflow-hidden transition-all",
+              role: 'region',
+              'aria-label': 'Quest log for station ' + _activeStation.name
+            },
+              // Header
+              React.createElement("div", {
+                className: "flex items-center justify-between px-3 py-2 bg-amber-100 cursor-pointer",
+                onClick: function() { _setQuestHudCollapsed(!_questHudCollapsed); }
+              },
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "\uD83C\uDFC6 Quest Log"),
+                React.createElement("div", { className: "flex items-center gap-2" },
+                  React.createElement("span", { className: "text-[10px] text-amber-600 font-bold" },
+                    _activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length + "/" + _activeStation.quests.length + " complete"
+                  ),
+                  React.createElement("span", { className: "text-[10px] text-amber-500" }, _questHudCollapsed ? "\u25BC" : "\u25B2")
+                )
+              ),
+              // Quest list
+              !_questHudCollapsed && React.createElement("div", { className: "p-2 space-y-1.5" },
+                _activeStation.quests.map(function(quest) {
+                  var disp = _getQuestDisplay(quest, labToolData || {}, _questProgress, _activeStation.id);
+                  var qp = ((_questProgress[_activeStation.id] || {})[quest.qid]) || {};
+                  var qtDef = QUEST_TYPES.find(function(qt) { return qt.id === quest.type; }) || {};
+                  return React.createElement("div", { key: quest.qid, className: "bg-white rounded-lg px-2.5 py-2 border " + (disp.done ? 'border-green-300 bg-green-50/50' : 'border-amber-200') },
+                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                      React.createElement("span", { className: "text-[11px] font-bold " + (disp.done ? 'text-green-700' : 'text-slate-700') },
+                        (disp.done ? "\u2705 " : (qtDef.icon || "\u2B1C") + " ") + quest.label
+                      ),
+                      React.createElement("span", { className: "text-[9px] font-mono " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
+                    ),
+                    // Progress bar
+                    !disp.done && React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full overflow-hidden", role: 'progressbar', 'aria-valuenow': Math.round(disp.pct), 'aria-valuemax': 100 },
+                      React.createElement("div", { className: "h-full rounded-full bg-amber-400 transition-all", style: { width: disp.pct + '%' } })
+                    ),
+                    // Free response textarea
+                    quest.type === 'freeResponse' && !disp.done && React.createElement("textarea", {
+                      value: qp.response || '',
+                      placeholder: quest.params.prompt || 'Describe what you learned...',
+                      'aria-label': quest.params.prompt || 'Write your response',
+                      onChange: function(e) {
+                        var val = e.target.value;
+                        _setQuestProgress(function(prev) {
+                          var sp = Object.assign({}, prev[_activeStation.id] || {});
+                          var qpUpdate = Object.assign({}, sp[quest.qid] || {});
+                          qpUpdate.response = val;
+                          sp[quest.qid] = qpUpdate;
+                          var next = Object.assign({}, prev);
+                          next[_activeStation.id] = sp;
+                          return next;
+                        });
+                      },
+                      rows: 2,
+                      className: "w-full mt-1.5 px-2 py-1.5 text-xs border border-amber-200 rounded-lg resize-none focus:ring-2 focus:ring-amber-400 outline-none"
+                    })
+                  );
+                }),
+                // All quests complete celebration
+                (function() {
+                  var allDone = _activeStation.quests.every(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; });
+                  return allDone ? React.createElement("div", { className: "bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-3 border border-green-300 text-center" },
+                    React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF89"),
+                    React.createElement("p", { className: "text-sm font-bold text-green-800" }, "All Quests Complete!"),
+                    React.createElement("p", { className: "text-[10px] text-green-600" }, "Great work, explorer! You finished all " + _activeStation.quests.length + " quests in this station.")
+                  ) : null;
+                })()
+              )
+            ) : null,
 
           // ── Station Builder Panel ──
           _showStationBuilder ? React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4" },
@@ -2661,6 +2954,235 @@
               })
             ),
 
+            // ═══ Quest Picker (optional) ═══
+            React.createElement("div", { className: "mb-3 border border-amber-200 rounded-xl overflow-hidden" },
+              React.createElement("button", {
+                'aria-label': 'Toggle quest assignment section. ' + _stationQuests.length + ' quests added.',
+                'aria-expanded': _questPickerOpen ? 'true' : 'false',
+                onClick: function() { _setQuestPickerOpen(!_questPickerOpen); },
+                className: "w-full flex items-center justify-between px-3 py-2 text-sm font-bold " + (_questPickerOpen ? 'bg-amber-100 text-amber-800' : 'bg-amber-50 text-amber-700 hover:bg-amber-100') + " transition-colors"
+              },
+                React.createElement("span", null, "\uD83C\uDFC6 Add Quests (" + _stationQuests.length + ")" + (_stationQuests.length === 0 ? " \u2014 optional" : "")),
+                React.createElement("span", { className: "text-xs" }, _questPickerOpen ? "\u25B2" : "\u25BC")
+              ),
+              _questPickerOpen && React.createElement("div", { className: "p-3 bg-amber-50/50 space-y-3" },
+                // Quick preset templates
+                _stationQuests.length === 0 && React.createElement("div", { className: "space-y-1.5" },
+                  React.createElement("p", { className: "text-[9px] text-amber-600 font-bold uppercase tracking-wider mb-1" }, "\u26A1 Quick Presets"),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
+                    [
+                      { name: 'Quick Explore', icon: '\uD83D\uDC63', desc: 'XP + time in each tool', quests: function() {
+                        var tools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
+                        return tools.slice(0, 3).map(function(tid) {
+                          return { type: 'xpThreshold', toolId: tid, label: _questAutoLabel('xpThreshold', tid, { threshold: 30 }), params: { threshold: 30 } };
+                        }).concat([{ type: 'timeSpent', toolId: tools[0] || null, label: _questAutoLabel('timeSpent', tools[0] || null, { minutes: 3 }), params: { minutes: 3 } }]);
+                      }},
+                      { name: 'Deep Dive', icon: '\uD83D\uDD2C', desc: 'XP + quiz + reflection', quests: function() {
+                        var tools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
+                        var t0 = tools[0] || null;
+                        return [
+                          { type: 'xpThreshold', toolId: t0, label: _questAutoLabel('xpThreshold', t0, { threshold: 75 }), params: { threshold: 75 } },
+                          { type: 'timeSpent', toolId: t0, label: _questAutoLabel('timeSpent', t0, { minutes: 8 }), params: { minutes: 8 } },
+                          { type: 'freeResponse', toolId: null, label: 'What was the most important thing you learned?', params: { prompt: 'What was the most important thing you learned and why?', minLength: 50 } }
+                        ];
+                      }},
+                      { name: 'Research Report', icon: '\uD83D\uDCDD', desc: 'Explore + document', quests: function() {
+                        var tools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
+                        return tools.slice(0, 2).map(function(tid) {
+                          return { type: 'xpThreshold', toolId: tid, label: _questAutoLabel('xpThreshold', tid, { threshold: 50 }), params: { threshold: 50 } };
+                        }).concat([
+                          { type: 'freeResponse', toolId: null, label: 'Compare what you learned from each tool', params: { prompt: 'Compare what you learned from each tool. How do they connect?', minLength: 80 } },
+                          { type: 'freeResponse', toolId: null, label: 'Write a question you still have', params: { prompt: 'Write a question you still have after exploring.', minLength: 20 } }
+                        ]);
+                      }}
+                    ].map(function(preset) {
+                      return React.createElement("button", {
+                        key: preset.name,
+                        'aria-label': 'Apply preset: ' + preset.name + '. ' + preset.desc,
+                        onClick: function() {
+                          var tools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
+                          if (tools.length === 0) { if (addToast) addToast('Select tools first, then add quests', 'info'); return; }
+                          _setStationQuests(preset.quests());
+                          if (addToast) addToast('\uD83C\uDFC6 Applied "' + preset.name + '" quest template!', 'success');
+                        },
+                        className: "bg-white rounded-lg p-2 border border-amber-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-center"
+                      },
+                        React.createElement("div", { className: "text-lg" }, preset.icon),
+                        React.createElement("div", { className: "text-[9px] font-bold text-amber-800" }, preset.name),
+                        React.createElement("div", { className: "text-[8px] text-amber-500" }, preset.desc)
+                      );
+                    })
+                  )
+                ),
+                // Added quests list
+                _stationQuests.length > 0 && React.createElement("div", { className: "space-y-1.5" },
+                  _stationQuests.map(function(q, qi) {
+                    return React.createElement("div", { key: qi, className: "flex items-center justify-between bg-white rounded-lg px-2.5 py-1.5 border border-amber-200 text-xs" },
+                      React.createElement("span", null, QUEST_TYPES.find(function(qt) { return qt.id === q.type; })?.icon + " " + q.label),
+                      React.createElement("button", {
+                        'aria-label': 'Remove quest: ' + q.label,
+                        onClick: function() { _setStationQuests(_stationQuests.filter(function(_, i) { return i !== qi; })); },
+                        className: "text-red-400 hover:text-red-600 px-1"
+                      }, "\u2715")
+                    );
+                  })
+                ),
+                // Tool-specific quests (from questHooks)
+                (function() {
+                  var selectedToolIds = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
+                  var allHooks = [];
+                  selectedToolIds.forEach(function(tid) {
+                    var hooks3 = _getToolQuestHooks(tid);
+                    hooks3.forEach(function(h3) {
+                      // Skip if already added
+                      var alreadyAdded = _stationQuests.some(function(sq) { return sq.type === 'toolQuest' && sq.params && sq.params.hookId === h3.id && sq.toolId === tid; });
+                      if (!alreadyAdded) allHooks.push({ toolId: tid, hook: h3 });
+                    });
+                  });
+                  if (allHooks.length === 0) return null;
+                  return React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-purple-200 space-y-1.5" },
+                    React.createElement("p", { className: "text-[9px] text-purple-600 font-bold uppercase tracking-wider" }, "\uD83C\uDFC6 Tool-Specific Quests (" + allHooks.length + " available)"),
+                    React.createElement("div", { className: "grid grid-cols-1 gap-1 max-h-[200px] overflow-y-auto" },
+                      allHooks.map(function(ah, ahi) {
+                        var toolLabel = (_allStemTools.find(function(t3) { return t3.id === ah.toolId; }) || {}).label || ah.toolId;
+                        return React.createElement("button", {
+                          key: ah.toolId + '_' + ah.hook.id,
+                          'aria-label': 'Add quest: ' + ah.hook.label + ' in ' + toolLabel,
+                          onClick: function() {
+                            _setStationQuests(_stationQuests.concat([{
+                              type: 'toolQuest',
+                              toolId: ah.toolId,
+                              label: ah.hook.label,
+                              params: { hookId: ah.hook.id }
+                            }]));
+                            if (addToast) addToast('\uD83C\uDFC6 Added: ' + ah.hook.label, 'success');
+                          },
+                          className: "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-[10px] bg-purple-50 border border-purple-100 hover:border-purple-400 hover:bg-purple-100 transition-all"
+                        },
+                          React.createElement("span", { className: "text-sm shrink-0" }, ah.hook.icon || '\uD83C\uDFC6'),
+                          React.createElement("div", { className: "flex-1 min-w-0" },
+                            React.createElement("div", { className: "font-bold text-purple-800 truncate" }, ah.hook.label),
+                            React.createElement("div", { className: "text-[8px] text-purple-400" }, toolLabel)
+                          ),
+                          React.createElement("span", { className: "text-purple-400 text-xs shrink-0" }, "+")
+                        );
+                      })
+                    )
+                  );
+                })(),
+                // Add quest form (universal types)
+                React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-amber-200 space-y-2" },
+                  React.createElement("p", { className: "text-[9px] text-amber-600 font-bold uppercase tracking-wider" }, "Custom Quest"),
+                  // Type selector
+                  React.createElement("div", { className: "grid grid-cols-5 gap-1" },
+                    QUEST_TYPES.map(function(qt) {
+                      var isActive = (d._questBuilderType || 'xpThreshold') === qt.id;
+                      return React.createElement("button", {
+                        key: qt.id,
+                        'aria-label': 'Quest type: ' + qt.label,
+                        onClick: function() { upd('_questBuilderType', qt.id); },
+                        className: "px-1.5 py-1.5 rounded-lg text-[9px] font-bold text-center transition-all border " + (isActive ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
+                      },
+                        React.createElement("div", { className: "text-sm" }, qt.icon),
+                        React.createElement("div", null, qt.label)
+                      );
+                    })
+                  ),
+                  // Tool selector (for non-freeResponse types)
+                  (d._questBuilderType || 'xpThreshold') !== 'freeResponse' && React.createElement("div", null,
+                    React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, "For which tool?"),
+                    React.createElement("select", {
+                      value: d._questBuilderTool || '',
+                      onChange: function(e) { upd('_questBuilderTool', e.target.value); },
+                      'aria-label': 'Select tool for quest',
+                      className: "w-full px-2 py-1.5 text-xs border border-amber-200 rounded-lg bg-white"
+                    },
+                      React.createElement("option", { value: "" }, "-- Select a tool --"),
+                      Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).map(function(toolId) {
+                        var tool = _allStemTools.find(function(t2) { return t2.id === toolId; });
+                        return React.createElement("option", { key: toolId, value: toolId }, (tool ? tool.icon + ' ' + tool.label : toolId));
+                      })
+                    )
+                  ),
+                  // Parameter input
+                  React.createElement("div", null,
+                    (function() {
+                      var qType = d._questBuilderType || 'xpThreshold';
+                      var qtDef = QUEST_TYPES.find(function(qt2) { return qt2.id === qType; }) || QUEST_TYPES[0];
+                      if (qType === 'freeResponse') {
+                        return React.createElement("div", null,
+                          React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, "Prompt for student"),
+                          React.createElement("input", {
+                            type: "text",
+                            value: d._questBuilderPrompt || '',
+                            onChange: function(e) { upd('_questBuilderPrompt', e.target.value); },
+                            placeholder: "e.g. What was the most interesting thing you learned?",
+                            className: "w-full px-2 py-1.5 text-xs border border-amber-200 rounded-lg"
+                          })
+                        );
+                      }
+                      return React.createElement("div", null,
+                        React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, qtDef.paramLabel),
+                        React.createElement("input", {
+                          type: "number",
+                          value: d._questBuilderParam || qtDef.defaultVal,
+                          onChange: function(e) { upd('_questBuilderParam', parseInt(e.target.value) || qtDef.defaultVal); },
+                          min: 1,
+                          'aria-label': qtDef.paramLabel + ' for quest',
+                          className: "w-20 px-2 py-1.5 text-xs border border-amber-200 rounded-lg"
+                        }),
+                        React.createElement("span", { className: "text-[9px] text-slate-400 ml-1.5" }, qtDef.unit)
+                      );
+                    })()
+                  ),
+                  // Preview + Add button
+                  React.createElement("div", { className: "flex items-center justify-between" },
+                    React.createElement("span", { className: "text-[9px] text-slate-400 italic" },
+                      "\u201C" + _questAutoLabel(
+                        d._questBuilderType || 'xpThreshold',
+                        d._questBuilderTool || null,
+                        (function() {
+                          var qT = d._questBuilderType || 'xpThreshold';
+                          var p = d._questBuilderParam || QUEST_TYPES.find(function(x) { return x.id === qT; })?.defaultVal || 5;
+                          if (qT === 'xpThreshold') return { threshold: p };
+                          if (qT === 'timeSpent') return { minutes: p };
+                          if (qT === 'discoveryCount') return { count: p };
+                          if (qT === 'quizScore') return { minScore: p };
+                          if (qT === 'freeResponse') return { prompt: d._questBuilderPrompt || 'Describe what you learned', minLength: 30 };
+                          return {};
+                        })()
+                      ) + "\u201D"
+                    ),
+                    React.createElement("button", {
+                      'aria-label': 'Add this quest to the station',
+                      disabled: (d._questBuilderType || 'xpThreshold') !== 'freeResponse' && !d._questBuilderTool,
+                      onClick: function() {
+                        var qT2 = d._questBuilderType || 'xpThreshold';
+                        var p2 = d._questBuilderParam || QUEST_TYPES.find(function(x) { return x.id === qT2; })?.defaultVal || 5;
+                        var params2;
+                        if (qT2 === 'xpThreshold') params2 = { threshold: p2 };
+                        else if (qT2 === 'timeSpent') params2 = { minutes: p2 };
+                        else if (qT2 === 'discoveryCount') params2 = { count: p2, field: 'discoveries' };
+                        else if (qT2 === 'quizScore') params2 = { minScore: p2, field: 'quizScore' };
+                        else if (qT2 === 'freeResponse') params2 = { prompt: d._questBuilderPrompt || 'Describe what you learned', minLength: 30 };
+                        else params2 = {};
+                        var newQuest = {
+                          type: qT2,
+                          toolId: qT2 === 'freeResponse' ? null : (d._questBuilderTool || null),
+                          label: _questAutoLabel(qT2, qT2 === 'freeResponse' ? null : d._questBuilderTool, params2),
+                          params: params2
+                        };
+                        _setStationQuests(_stationQuests.concat([newQuest]));
+                        upd('_questBuilderParam', null);
+                        upd('_questBuilderPrompt', '');
+                      },
+                      className: "px-3 py-1.5 rounded-lg text-[10px] font-bold text-white bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    }, "+ Add Quest")
+                  )
+                )
+              )
+            ),
+
             // Tool selector grid
             React.createElement("div", { className: "mb-3" },
               React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" },
@@ -2699,16 +3221,21 @@
                     grade: _stationGrade || null,
                     timeEstimate: _stationTimeEst + ' min',
                     teacherNote: _stationNote.trim(),
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    quests: _stationQuests.map(function(q, qi) {
+                      return { qid: 'q_' + Date.now() + '_' + qi, type: q.type, toolId: q.toolId, label: q.label, params: q.params };
+                    })
                   };
                   var updated = _savedStations.concat([station]);
                   _setSavedStations(updated);
                   localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated));
                   _setShowStationBuilder(false);
                   _setStationName(''); _setStationGrade(''); _setStationNote(''); _setStationTools({}); _setStationTimeEst('20');
+                  _setStationQuests([]); _setQuestPickerOpen(false);
                   _setActiveStationId(station.id);
                   if (station.grade && typeof props.setGradeLevel === 'function') props.setGradeLevel(station.grade);
-                  if (addToast) addToast('\u2705 Station "' + station.name + '" created with ' + selectedIds.length + ' tools!', 'success');
+                  var questMsg = station.quests.length > 0 ? ' \u2022 ' + station.quests.length + ' quest' + (station.quests.length > 1 ? 's' : '') : '';
+                  if (addToast) addToast('\u2705 Station "' + station.name + '" created with ' + selectedIds.length + ' tools!' + questMsg, 'success');
                 },
                 disabled: Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).length === 0,
                 className: "flex-1 py-2 rounded-lg text-sm font-bold transition-all " +
@@ -11478,7 +12005,7 @@
             // Art & Music
             artStudio: true, creative: true, gameStudio: true,
             // Earth & Space
-            galaxy: true, plateTectonics: true,
+            galaxy: true, moonMission: true, plateTectonics: true,
             // Data & Logic
             behaviorLab: true, dataStudio: true, economicsLab: true, logicLab: true,
             // Geography
@@ -11486,7 +12013,9 @@
             // Applied
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
-            flightSim: true
+            flightSim: true,
+            atcTower: true,
+            musicSynth: true
           };
           console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
           if (!_pluginOnlyTools[stemLabTool]) return null;

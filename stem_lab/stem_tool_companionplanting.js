@@ -48,11 +48,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
 
 
   window.StemLab.registerTool('companionPlanting', {
-    icon: '🔬',
+    icon: '\uD83C\uDF31',
     label: 'companionPlanting',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'plant_three_sisters', label: 'Plant all Three Sisters (corn, beans, squash)', icon: '\uD83C\uDF3D', check: function(d) { return d.cornPlanted && d.beansPlanted && d.squashPlanted; }, progress: function(d) { var c = (d.cornPlanted ? 1 : 0) + (d.beansPlanted ? 1 : 0) + (d.squashPlanted ? 1 : 0); return c + '/3 planted'; } },
+      { id: 'complete_harvest', label: 'Complete a harvest cycle', icon: '\uD83C\uDF3E', check: function(d) { return (d.harvestCount || 0) >= 1; }, progress: function(d) { return (d.harvestCount || 0) >= 1 ? 'Harvested!' : 'Growing...'; } },
+      { id: 'harvest_3_times', label: 'Complete 3 harvest cycles', icon: '\uD83C\uDFC6', check: function(d) { return (d.harvestCount || 0) >= 3; }, progress: function(d) { return (d.harvestCount || 0) + '/3 harvests'; } },
+      { id: 'view_soil_science', label: 'Explore the soil science panel', icon: '\uD83E\uDDEA', check: function(d) { return !!d.showSoilDetail; }, progress: function(d) { return d.showSoilDetail ? 'Explored!' : 'Not yet'; } },
+      { id: 'learn_culture', label: 'Read about Indigenous agricultural knowledge', icon: '\uD83C\uDF0E', check: function(d) { return !!d.showCulture; }, progress: function(d) { return d.showCulture ? 'Read!' : 'Not yet'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

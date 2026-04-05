@@ -66,6 +66,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
     desc: 'Carbon calculator, renewables simulator, climate justice & solutions.',
     color: 'emerald',
     category: 'science',
+    questHooks: [
+      { id: 'calculate_footprint', label: 'Calculate your carbon footprint', icon: '\uD83D\uDC63', check: function(d) { return (d.ccTransport || 0) + (d.ccFood || 0) + (d.ccEnergy || 0) > 0; }, progress: function(d) { return (d.ccTransport || 0) + (d.ccFood || 0) + (d.ccEnergy || 0) > 0 ? 'Calculated!' : 'Adjust sliders'; } },
+      { id: 'explore_renewables', label: 'Design a renewable energy mix', icon: '\u2600\uFE0F', check: function(d) { return d.renewablesDesigned || false; }, progress: function(d) { return d.renewablesDesigned ? 'Designed!' : 'Not yet'; } },
+      { id: 'view_all_tabs', label: 'Explore all Climate Explorer sections', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 sections'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var el = React.createElement;

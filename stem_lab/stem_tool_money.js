@@ -33,6 +33,11 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDCB5', label: 'Money Math',
     desc: 'Coins, bills, making change, grocery store sim, currency exchange, tips, budget, and personal finance.',
     color: 'emerald', category: 'math',
+    questHooks: [
+      { id: 'place_5_coins', label: 'Place 5 coins on the counting mat', icon: '\uD83E\uDE99', check: function(d) { return (d.placed || []).length >= 5; }, progress: function(d) { return (d.placed || []).length + '/5 coins'; } },
+      { id: 'make_change', label: 'Successfully make change for a purchase', icon: '\uD83D\uDCB0', check: function(d) { return d.changeFeedback === 'correct'; }, progress: function(d) { return d.changeFeedback === 'correct' ? 'Done!' : 'Try making change'; } },
+      { id: 'shop_3_items', label: 'Add 3 items to shopping cart', icon: '\uD83D\uDED2', check: function(d) { return (d.cart || []).length >= 3; }, progress: function(d) { return (d.cart || []).length + '/3 items'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;

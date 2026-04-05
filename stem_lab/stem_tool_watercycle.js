@@ -19,6 +19,12 @@
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'waterCycle', desc:'Interactive Water Cycle with Journey Mode',
     color:'sky', category:'science',
+    questHooks: [
+      { id: 'complete_journey', label: 'Complete a water droplet journey loop', icon: '\uD83D\uDCA7', check: function(d) { return (d.journeyLoops || 0) >= 1; }, progress: function(d) { return (d.journeyLoops || 0) >= 1 ? 'Complete!' : 'In journey'; } },
+      { id: 'complete_3_journeys', label: 'Complete 3 journey loops', icon: '\uD83C\uDFC6', check: function(d) { return (d.journeyLoops || 0) >= 3; }, progress: function(d) { return (d.journeyLoops || 0) + '/3 loops'; } },
+      { id: 'explore_all_stages', label: 'View all water cycle stages', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.stagesViewed || {}).length >= 5; }, progress: function(d) { return Object.keys(d.stagesViewed || {}).length + '/5 stages'; } },
+      { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } }
+    ],
     render:function(ctx){
       var React=ctx.React; var h=React.createElement;
       var labToolData=ctx.toolData; var setLabToolData=ctx.setToolData;

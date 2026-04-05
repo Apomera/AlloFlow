@@ -47,13 +47,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
 
 
   window.StemLab.registerTool('solarSystem', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83C\uDF0D',
     label: 'solarSystem',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'visit_all_planets', label: 'Visit all 9 planets', icon: '\uD83C\uDF0D', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 9; }, progress: function(d) { return (d.planetsVisited || []).length + '/9 planets'; } },
+      { id: 'quiz_score_5', label: 'Score 5+ on the planet quiz', icon: '\uD83E\uDDE0', field: 'quiz.score', check: function(d) { return d.quiz && d.quiz.score >= 5; }, progress: function(d) { return (d.quiz ? d.quiz.score : 0) + '/5'; } },
+      { id: 'quiz_score_8', label: 'Score 8+ on the planet quiz', icon: '\uD83C\uDFC6', field: 'quiz.score', check: function(d) { return d.quiz && d.quiz.score >= 8; }, progress: function(d) { return (d.quiz ? d.quiz.score : 0) + '/8'; } },
+      { id: 'deploy_rover', label: 'Deploy a rover or probe on any planet', icon: '\uD83D\uDE97', field: 'missionLog', check: function(d) { return (d.missionLog || []).length >= 1; }, progress: function(d) { return (d.missionLog || []).length > 0 ? 'Done' : 'Not yet'; } },
+      { id: 'visit_5_planets', label: 'Visit at least 5 different planets', icon: '\u2B50', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 5; }, progress: function(d) { return (d.planetsVisited || []).length + '/5 planets'; } }
+    ],
     render: function(ctx) {
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases â€" maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -87,7 +94,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
 
-      // â”€â”€ Tool body (solarSystem) â”€â”€
+      // â"€â"€ Tool body (solarSystem) â"€â"€
       return (function() {
 const d = labToolData.solarSystem;
 
@@ -580,11 +587,11 @@ const d = labToolData.solarSystem;
 
 
 
-          // â”€â”€ Three.js 3D Canvas â”€â”€
+          // â"€â"€ Three.js 3D Canvas â"€â"€
 
           const canvasRef = function (canvas) {
 
-            if (!canvas) { // cleanup on unmount â€” but skip if canvas is still alive (just a ref swap from re-render)
+            if (!canvas) { // cleanup on unmount â€" but skip if canvas is still alive (just a ref swap from re-render)
 
               const prev = document.querySelector('.solar3d-canvas');
 
@@ -626,7 +633,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Starfield â”€â”€
+              // â"€â"€ Starfield â"€â"€
 
               const starGeo = new THREE.BufferGeometry();
 
@@ -640,13 +647,13 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Ambient light â”€â”€
+              // â"€â"€ Ambient light â"€â"€
 
               scene.add(new THREE.AmbientLight(0x222244, 0.3));
 
 
 
-              // â”€â”€ Sun â”€â”€
+              // â"€â"€ Sun â"€â"€
 
               const sunGeo = new THREE.SphereGeometry(5.5, 32, 32);
 
@@ -682,7 +689,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Procedural planet texture â”€â”€
+              // â"€â"€ Procedural planet texture â"€â"€
 
               function makePlanetTex(rgb, variation) {
 
@@ -718,7 +725,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Create planets â”€â”€
+              // â"€â"€ Create planets â"€â"€
 
               const planetMeshes = [];
 
@@ -754,7 +761,7 @@ const d = labToolData.solarSystem;
 
                 mesh.userData = { name: p.name, idx: idx };
 
-                // Starting orbital angle â€” spread planets out
+                // Starting orbital angle â€" spread planets out
 
                 mesh._orbitAngle = (idx / PLANETS.length) * Math.PI * 2;
 
@@ -840,7 +847,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Asteroid belt (between Mars and Jupiter) â”€â”€
+              // â"€â"€ Asteroid belt (between Mars and Jupiter) â"€â"€
 
               const asteroidCount = 300;
 
@@ -889,7 +896,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Camera orbit controls (manual) â”€â”€
+              // â"€â"€ Camera orbit controls (manual) â"€â"€
 
               let camTheta = 0.5, camPhi = 1.0, camDist = 55;
 
@@ -969,7 +976,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Raycasting for planet clicks (smooth fly-to) â”€â”€
+              // â"€â"€ Raycasting for planet clicks (smooth fly-to) â"€â"€
 
               const raycaster = new THREE.Raycaster();
 
@@ -1007,7 +1014,7 @@ const d = labToolData.solarSystem;
 
                   focusedPlanetIdx = hitObj.userData.idx;
 
-                  // Set smooth zoom target â€” closer for small planets, farther for giants
+                  // Set smooth zoom target â€" closer for small planets, farther for giants
 
                   var radius = hitObj.geometry.parameters.radius;
 
@@ -1023,7 +1030,7 @@ const d = labToolData.solarSystem;
 
                 } else {
 
-                  // Clicked empty space â€” deselect, return to system view
+                  // Clicked empty space â€" deselect, return to system view
 
                   upd('selectedPlanet', null);
 
@@ -1067,13 +1074,13 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Planet label overlay â”€â”€
+              // â"€â"€ Planet label overlay â"€â"€
 
               const labelContainer = canvas.parentElement.querySelector('.solar-labels');
 
 
 
-              // â”€â”€ Animation loop â”€â”€
+              // â"€â"€ Animation loop â"€â"€
 
               let animId;
 
@@ -1151,7 +1158,7 @@ const d = labToolData.solarSystem;
 
 
 
-                // â”€â”€ Handle camera reset signal from Reset View button â”€â”€
+                // â"€â"€ Handle camera reset signal from Reset View button â"€â"€
 
                 if (canvas.dataset.resetCamera === 'true') {
 
@@ -1171,7 +1178,7 @@ const d = labToolData.solarSystem;
 
 
 
-                // â”€â”€ Smooth camera tracking â”€â”€
+                // â"€â"€ Smooth camera tracking â"€â"€
 
                 // If focused on a planet, update targetLookAt to follow it as it orbits
 
@@ -1290,7 +1297,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Resize handler â”€â”€
+              // â"€â"€ Resize handler â"€â"€
 
               const resizeObserver = new ResizeObserver(function () {
 
@@ -1304,7 +1311,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ Cleanup â”€â”€
+              // â"€â"€ Cleanup â"€â"€
 
               canvas._solarCleanup = function () {
 
@@ -1447,7 +1454,7 @@ const d = labToolData.solarSystem;
 
             ),
 
-            // â”€â”€ Scale Explanation Collapsible â”€â”€
+            // â"€â"€ Scale Explanation Collapsible â"€â"€
 
             React.createElement("details", { className: "mt-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden" },
 
@@ -1495,7 +1502,7 @@ const d = labToolData.solarSystem;
 
             ),
 
-            // â”€â”€ Planet Info Card (Enhanced with Close-Up & Drone) â”€â”€
+            // â"€â"€ Planet Info Card (Enhanced with Close-Up & Drone) â"€â"€
 
             sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
 
@@ -1539,7 +1546,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ OVERVIEW TAB â”€â”€
+              // â"€â"€ OVERVIEW TAB â"€â"€
 
               (d.viewTab || 'overview') === 'overview' && React.createElement("div", null,
 
@@ -1617,7 +1624,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ SURFACE TAB â”€â”€
+              // â"€â"€ SURFACE TAB â"€â"€
 
               (d.viewTab) === 'surface' && React.createElement("div", { className: "space-y-3" },
 
@@ -1633,7 +1640,7 @@ const d = labToolData.solarSystem;
 
                   React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3" }, sel.surfaceDesc || 'Surface data unavailable.'),
 
-                  React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },
 
                     [
 
@@ -1641,7 +1648,7 @@ const d = labToolData.solarSystem;
 
                       ['\uD83C\uDF21 Temperature', sel.temp],
 
-                      ['\uD83C\uDF2C\uFE0F Atmosphere', (sel.atmosphere || 'None').split(' â€”')[0]]
+                      ['\uD83C\uDF2C\uFE0F Atmosphere', (sel.atmosphere || 'None').split(' \u2014')[0]]
 
                     ].map(function (item) {
 
@@ -1655,11 +1662,26 @@ const d = labToolData.solarSystem;
 
                     })
 
-                  )
+                  ),
+                  // Gravity comparison: your weight on this planet
+                  (function() {
+                    var gVal = parseFloat((sel.gravity || '0').replace('g', ''));
+                    if (!gVal || sel.name === 'Earth') return null;
+                    var earthWeight = 70; // kg reference
+                    var planetWeight = Math.round(earthWeight * gVal);
+                    return React.createElement("div", { className: "bg-white/5 rounded-lg p-2 flex items-center gap-2 border border-white/10" },
+                      React.createElement("span", { className: "text-sm" }, "\uD83C\uDFCB\uFE0F"),
+                      React.createElement("div", { className: "flex-1" },
+                        React.createElement("p", { className: "text-[10px] text-slate-400" }, "If you weigh 70 kg on Earth:"),
+                        React.createElement("p", { className: "text-xs font-bold " + (gVal > 1 ? 'text-red-400' : 'text-green-400') },
+                          "You'd weigh " + planetWeight + " kg on " + sel.name + (gVal > 1 ? ' \u2014 heavier!' : gVal < 0.5 ? ' \u2014 you could jump ' + Math.round(1/gVal) + 'x higher!' : ' \u2014 lighter!'))
+                      )
+                    );
+                  })()
 
                 ),
 
-                // â”€â”€ 2D Planet Surface Canvas â”€â”€
+                // â"€â"€ 2D Planet Surface Canvas â"€â"€
 
                 React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 shadow-xl", style: { height: '350px', borderColor: sel.color + '60' } },
 
@@ -1971,6 +1993,24 @@ const d = labToolData.solarSystem;
                           // Ocean blue tint
                           ctx.fillStyle = 'rgba(30,80,150,0.08)';
                           ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                          // Ocean depth zone indicator (right edge)
+                          ctx.save();
+                          ctx.beginPath(); ctx.arc(cx, cy, planetR, 0, Math.PI * 2); ctx.clip();
+                          var depthZones = [
+                            { y: 0, h: 0.15, color: 'rgba(14,165,233,0.06)', label: 'Sunlight' },
+                            { y: 0.15, h: 0.15, color: 'rgba(3,105,161,0.06)', label: 'Twilight' },
+                            { y: 0.30, h: 0.20, color: 'rgba(30,58,138,0.06)', label: 'Midnight' },
+                            { y: 0.50, h: 0.25, color: 'rgba(15,23,42,0.06)', label: 'Abyssal' },
+                            { y: 0.75, h: 0.25, color: 'rgba(0,10,20,0.08)', label: 'Hadal' }
+                          ];
+                          depthZones.forEach(function(dz) {
+                            ctx.fillStyle = dz.color;
+                            ctx.fillRect(cx - planetR, cy - planetR + dz.y * planetR * 2, planetR * 2, dz.h * planetR * 2);
+                          });
+                          ctx.restore();
+                          // Feature labels
+                          _featureLabels.push({ x: cx - planetR * 0.3, y: cy - planetR * 0.2, r: planetR * 0.15, name: 'Pacific Ocean', desc: 'Largest ocean \u2014 covers more area than all land combined (165.25 million km\u00B2)' });
+                          _featureLabels.push({ x: cx + planetR * 0.2, y: cy + planetR * 0.15, r: planetR * 0.1, name: 'Mid-Ocean Ridge', desc: '65,000 km underwater mountain chain where new ocean floor is born' });
                         } else if (sel.terrainType === 'desert') {
                           // Mars: Valles Marineris canyon scar + Olympus Mons
                           _featureLabels.push({ x: cx - planetR * 0.35, y: cy - planetR * 0.2, r: planetR * 0.12, name: 'Olympus Mons', desc: 'Tallest volcano in the solar system (21.9 km)' });
@@ -2008,7 +2048,9 @@ const d = labToolData.solarSystem;
                           }
                         } else if (sel.terrainType === 'volcanic') {
                           // Venus: lava flows + volcanic calderas
-                          _featureLabels.push({ x: cx - planetR * 0.2, y: cy - planetR * 0.25, r: planetR * 0.12, name: 'Maxwell Montes', desc: 'Highest point on Venus at 11 km' });
+                          _featureLabels.push({ x: cx - planetR * 0.2, y: cy - planetR * 0.25, r: planetR * 0.12, name: 'Maxwell Montes', desc: 'Highest point on Venus at 11 km \u2014 coated in metallic "snow" of lead and bismuth sulfide' });
+                          _featureLabels.push({ x: cx + planetR * 0.25, y: cy - planetR * 0.3, r: planetR * 0.15, name: 'Ishtar Terra', desc: 'Highland continent (Australia-sized) containing Maxwell Montes \u2014 one of two main "continents"' });
+                          _featureLabels.push({ x: cx + planetR * 0.1, y: cy + planetR * 0.2, r: planetR * 0.12, name: 'Aphrodite Terra', desc: 'Largest highland region \u2014 stretches along the equator like a vast volcanic plateau' });
                           for (var vfi = 0; vfi < 6; vfi++) {
                             var vfx = cx + ((vfi * 79 + 17) % Math.floor(planetR * 1.4)) - planetR * 0.7;
                             var vfy = cy + ((vfi * 53 + 31) % Math.floor(planetR * 1.2)) - planetR * 0.6;
@@ -2026,6 +2068,47 @@ const d = labToolData.solarSystem;
                               ctx.beginPath();
                               ctx.arc(vfx, vfy, 10 + vfi * 3, 0, Math.PI * 2);
                               ctx.fill();
+                            }
+                          }
+                        } else if (sel.terrainType === 'iceworld') {
+                          // Pluto/iceworld: Tombaugh Regio heart + icy craters
+                          // Heart-shaped bright region
+                          var heartX = cx + Math.sin(_dragRotation + tick * 0.003) * planetR * 0.15;
+                          var heartY = cy - planetR * 0.05;
+                          ctx.globalAlpha = 0.2;
+                          ctx.fillStyle = '#e8ddd0';
+                          // Draw heart shape from two arcs + triangle
+                          ctx.beginPath();
+                          var hs = planetR * 0.18;
+                          ctx.moveTo(heartX, heartY + hs * 0.6);
+                          ctx.bezierCurveTo(heartX + hs * 0.8, heartY - hs * 0.3, heartX + hs * 0.5, heartY - hs * 0.8, heartX, heartY - hs * 0.3);
+                          ctx.bezierCurveTo(heartX - hs * 0.5, heartY - hs * 0.8, heartX - hs * 0.8, heartY - hs * 0.3, heartX, heartY + hs * 0.6);
+                          ctx.fill();
+                          // Inner brighter region (Sputnik Planitia)
+                          ctx.globalAlpha = 0.12;
+                          ctx.fillStyle = '#f0ece0';
+                          ctx.beginPath();
+                          ctx.ellipse(heartX - hs * 0.15, heartY, hs * 0.35, hs * 0.4, 0.1, 0, Math.PI * 2);
+                          ctx.fill();
+                          ctx.globalAlpha = 1;
+                          _featureLabels.push({ x: heartX, y: heartY, r: hs, name: 'Tombaugh Regio', desc: 'Heart-shaped nitrogen glacier \u2014 Sputnik Planitia ice plain' });
+                          // Dark reddish Cthulhu Macula
+                          ctx.globalAlpha = 0.1;
+                          ctx.fillStyle = '#6b3a2a';
+                          var cthX = cx + planetR * 0.3 + Math.sin(_dragRotation) * 5;
+                          ctx.beginPath();
+                          ctx.ellipse(cthX, cy + planetR * 0.15, planetR * 0.2, planetR * 0.1, 0.3, 0, Math.PI * 2);
+                          ctx.fill();
+                          ctx.globalAlpha = 1;
+                          _featureLabels.push({ x: cthX, y: cy + planetR * 0.15, r: planetR * 0.15, name: 'Cthulhu Macula', desc: 'Dark region colored by tholins \u2014 complex organic molecules' });
+                          // Icy craters
+                          for (var ici = 0; ici < 12; ici++) {
+                            var icx = cx + ((ici * 97 + 31) % Math.floor(planetR * 1.4)) - planetR * 0.7;
+                            var icy2 = cy + ((ici * 73 + 17) % Math.floor(planetR * 1.2)) - planetR * 0.6;
+                            var icr = 2 + (ici % 5) * 2;
+                            if (Math.sqrt((icx - cx) * (icx - cx) + (icy2 - cy) * (icy2 - cy)) + icr < planetR * 0.9) {
+                              ctx.fillStyle = 'rgba(200,210,220,0.06)';
+                              ctx.beginPath(); ctx.arc(icx, icy2, icr, 0, Math.PI * 2); ctx.fill();
                             }
                           }
                         } else {
@@ -2368,6 +2451,81 @@ const d = labToolData.solarSystem;
                             ctx.arc(cx, cy, atmoR, 0, Math.PI * 2);
                             ctx.fill();
                           }
+                        }
+
+                        // === Uranus: tilted axis line + faint ring system ===
+                        if (sel.name === 'Uranus') {
+                          ctx.save();
+                          // Axis tilt indicator (97.8 degrees — nearly horizontal)
+                          ctx.strokeStyle = 'rgba(103,232,249,0.25)';
+                          ctx.lineWidth = 0.8;
+                          ctx.setLineDash([4, 4]);
+                          var axisTilt = 97.8 * Math.PI / 180;
+                          ctx.beginPath();
+                          ctx.moveTo(cx + Math.cos(axisTilt) * planetR * 1.4, cy - Math.sin(axisTilt) * planetR * 1.4);
+                          ctx.lineTo(cx - Math.cos(axisTilt) * planetR * 1.4, cy + Math.sin(axisTilt) * planetR * 1.4);
+                          ctx.stroke();
+                          ctx.setLineDash([]);
+                          // Axis label
+                          ctx.globalAlpha = 0.3;
+                          ctx.font = '7px system-ui';
+                          ctx.fillStyle = '#67e8f9';
+                          ctx.textAlign = 'left';
+                          ctx.fillText('97.8\u00B0 tilt', cx + Math.cos(axisTilt) * planetR * 1.15 + 4, cy - Math.sin(axisTilt) * planetR * 1.15);
+                          ctx.globalAlpha = 1;
+                          // Faint ring system (Uranus has rings too — very faint)
+                          ctx.globalAlpha = 0.12;
+                          ctx.strokeStyle = '#67e8f9';
+                          ctx.lineWidth = 1;
+                          for (var uri = 0; uri < 3; uri++) {
+                            var urR = planetR * (1.15 + uri * 0.06);
+                            ctx.beginPath();
+                            ctx.ellipse(cx, cy, urR, urR * 0.08, axisTilt - Math.PI / 2, 0, Math.PI * 2);
+                            ctx.stroke();
+                          }
+                          ctx.globalAlpha = 1;
+                          _featureLabels.push({ x: cx + planetR * 0.8, y: cy - planetR * 0.9, r: 15, name: '97.8\u00B0 Axial Tilt', desc: 'Knocked sideways by an ancient collision with an Earth-sized body' });
+                          ctx.restore();
+                        }
+
+                        // === Mercury: intense solar glare from proximity ===
+                        if (sel.name === 'Mercury') {
+                          // Solar glare on the sunward (left) side
+                          ctx.save();
+                          var glareGrad = ctx.createRadialGradient(cx - planetR * 0.8, cy, 0, cx - planetR * 0.8, cy, planetR * 0.8);
+                          glareGrad.addColorStop(0, 'rgba(255,248,220,0.15)');
+                          glareGrad.addColorStop(0.5, 'rgba(255,240,200,0.05)');
+                          glareGrad.addColorStop(1, 'transparent');
+                          ctx.fillStyle = glareGrad;
+                          ctx.beginPath();
+                          ctx.arc(cx - planetR * 0.8, cy, planetR * 0.8, 0, Math.PI * 2);
+                          ctx.fill();
+                          // Temperature gradient indicator
+                          ctx.globalAlpha = 0.2;
+                          ctx.font = '7px system-ui';
+                          ctx.fillStyle = '#fef3c7';
+                          ctx.textAlign = 'center';
+                          ctx.fillText('430\u00B0C', cx - planetR * 0.6, cy + planetR * 0.6);
+                          ctx.fillStyle = '#93c5fd';
+                          ctx.fillText('-180\u00B0C', cx + planetR * 0.6, cy + planetR * 0.6);
+                          ctx.globalAlpha = 1;
+                          // Caloris Basin (large impact crater)
+                          ctx.save();
+                          ctx.beginPath(); ctx.arc(cx, cy, planetR, 0, Math.PI * 2); ctx.clip();
+                          var calX = cx - planetR * 0.15 + Math.sin(_dragRotation + tick * 0.003) * planetR * 0.1;
+                          var calY = cy - planetR * 0.1;
+                          ctx.globalAlpha = 0.1;
+                          ctx.strokeStyle = '#aaa';
+                          ctx.lineWidth = 1;
+                          ctx.beginPath(); ctx.arc(calX, calY, planetR * 0.22, 0, Math.PI * 2); ctx.stroke();
+                          ctx.fillStyle = 'rgba(0,0,0,0.04)';
+                          ctx.beginPath(); ctx.arc(calX, calY, planetR * 0.2, 0, Math.PI * 2); ctx.fill();
+                          ctx.globalAlpha = 1;
+                          ctx.restore();
+                          _featureLabels.push({ x: calX, y: calY, r: planetR * 0.18, name: 'Caloris Basin', desc: '1,550 km impact crater \u2014 one of the largest in the solar system' });
+                          // Polar ice indicator
+                          _featureLabels.push({ x: cx, y: cy - planetR * 0.85, r: 10, name: 'Polar Ice Deposits', desc: 'Water ice in permanently shadowed craters, despite being closest to the Sun' });
+                          ctx.restore();
                         }
 
                         // === ENHANCED: Gas giant — scrolling cloud eddies + lightning ===
@@ -2894,7 +3052,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // â”€â”€ ROVER / PROBE TAB (Three.js First-Person) â”€â”€
+              // â"€â"€ ROVER / PROBE TAB (Three.js First-Person) â"€â"€
 
               (d.viewTab) === 'drone' && React.createElement("div", { id: "drone-fullscreen-container" },
 
@@ -2936,7 +3094,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Sky dome â”€â”€
+                        // â"€â"€ Sky dome â"€â"€
 
                         var skyGeo = new THREE.SphereGeometry(200, 32, 16);
 
@@ -3068,7 +3226,7 @@ const d = labToolData.solarSystem;
                           coronaMesh.visible = false;
                         }
 
-                        // â”€â”€ Terrain (rocky planets) or Cloud layers (gas giants) â”€â”€
+                        // â"€â"€ Terrain (rocky planets) or Cloud layers (gas giants) â"€â"€
 
                         // Fractal noise helper for realistic terrain
                         var fbm = function(x, z, octaves, lacunarity, gain) {
@@ -3215,6 +3373,65 @@ const d = labToolData.solarSystem;
                           var causticLight = new THREE.PointLight(0x66aacc, 0.6, 60);
                           causticLight.position.set(0, 15, 0);
                           scene.add(causticLight);
+
+                          // ── Animated caustic light pattern on seafloor ──
+                          var causticCv = document.createElement('canvas'); causticCv.width = 256; causticCv.height = 256;
+                          var causticCtx2 = causticCv.getContext('2d');
+                          var causticTex = new THREE.CanvasTexture(causticCv);
+                          causticTex.wrapS = causticTex.wrapT = THREE.RepeatWrapping;
+                          causticTex.repeat.set(6, 6);
+                          var causticPlane = new THREE.Mesh(
+                            new THREE.PlaneGeometry(120, 120),
+                            new THREE.MeshBasicMaterial({ map: causticTex, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending })
+                          );
+                          causticPlane.rotation.x = -Math.PI / 2;
+                          causticPlane.position.y = -24.5; // just above seafloor
+                          scene.add(causticPlane);
+
+                          // ── Shark silhouette (distant, cruising) ──
+                          var sharkGroup = new THREE.Group();
+                          // Body - elongated cone
+                          var sharkBody = new THREE.Mesh(
+                            new THREE.ConeGeometry(0.3, 2.5, 5),
+                            new THREE.MeshStandardMaterial({ color: 0x445566, roughness: 0.6 })
+                          );
+                          sharkBody.rotation.x = Math.PI / 2;
+                          sharkGroup.add(sharkBody);
+                          // Dorsal fin
+                          var dorsalGeo = new THREE.PlaneGeometry(0.05, 0.5);
+                          var dorsalMat = new THREE.MeshStandardMaterial({ color: 0x3a4a5a, side: THREE.DoubleSide });
+                          var dorsal = new THREE.Mesh(dorsalGeo, dorsalMat);
+                          dorsal.position.set(0, 0.3, -0.3);
+                          dorsal.rotation.x = -0.2;
+                          sharkGroup.add(dorsal);
+                          // Tail fin
+                          var tailGeo2 = new THREE.PlaneGeometry(0.4, 0.5);
+                          var tailMesh2 = new THREE.Mesh(tailGeo2, dorsalMat.clone());
+                          tailMesh2.position.set(0, 0.15, 1.3);
+                          tailMesh2.rotation.x = -0.3;
+                          sharkGroup.add(tailMesh2);
+                          sharkGroup.position.set(-40, -1, 30);
+                          sharkGroup.scale.setScalar(2);
+                          sharkGroup._sharkAngle = 0;
+                          scene.add(sharkGroup);
+
+                          // ── Tropical fish school near coral (small colorful fish) ──
+                          var tropicalFish = new THREE.Group();
+                          var tropColors = [0xff6b6b, 0xffd93d, 0x4ecdc4, 0xff8a5c, 0xa78bfa, 0x06d6a0];
+                          for (var tfi = 0; tfi < 20; tfi++) {
+                            var tfGeo = new THREE.ConeGeometry(0.04, 0.15, 3);
+                            tfGeo.rotateX(-Math.PI / 2);
+                            var tfMesh = new THREE.Mesh(tfGeo, new THREE.MeshStandardMaterial({ color: tropColors[tfi % tropColors.length], roughness: 0.4 }));
+                            tfMesh.position.set((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 4);
+                            tfMesh._tfPhase = Math.random() * Math.PI * 2;
+                            tropicalFish.add(tfMesh);
+                          }
+                          // Position near a coral area
+                          var tfBaseX = 10, tfBaseZ = -8;
+                          tropicalFish.position.set(tfBaseX, _terrainHeightAt(tfBaseX, tfBaseZ) + 2, tfBaseZ);
+                          tropicalFish._basePos = tropicalFish.position.clone();
+                          tropicalFish._swimAngle = 0;
+                          scene.add(tropicalFish);
 
                           // ── Fish Schools (groups of small fish that swim together) ──
                           var fishSchools = [];
@@ -3530,7 +3747,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Lighting â”€â”€
+                        // â"€â"€ Lighting â"€â"€
 
                         scene.add(new THREE.AmbientLight(0x444466, 0.6));
 
@@ -3565,7 +3782,7 @@ const d = labToolData.solarSystem;
                           skyMoons.push(moonGroup);
                         });
 
-                        // â”€â”€ 3D Rover / Probe / Submarine Model â”€â”€
+                        // â"€â"€ 3D Rover / Probe / Submarine Model â"€â"€
 
                         var roverGroup = new THREE.Group();
 
@@ -4131,12 +4348,12 @@ const d = labToolData.solarSystem;
                           var sonarEl = document.createElement('div');
                           sonarEl.id = 'hud-sonar';
                           sonarEl.style.cssText = 'position:absolute;bottom:12px;left:12px;background:rgba(5,20,40,0.9);backdrop-filter:blur(8px);border:1px solid rgba(0,180,255,0.25);border-radius:10px;padding:10px;z-index:14;width:180px;font-family:system-ui;pointer-events:none';
-                          sonarEl.innerHTML = '<div style=”font-size:9px;font-weight:bold;color:#00b4ff;margin-bottom:6px;letter-spacing:1px”>\uD83D\uDD0A SONAR</div>' +
-                            '<div id=”sonar-readout” style=”display:flex;flex-direction:column;gap:3px”></div>';
+                          sonarEl.innerHTML = '<div style="font-size:9px;font-weight:bold;color:#00b4ff;margin-bottom:6px;letter-spacing:1px">\uD83D\uDD0A SONAR</div>' +
+                            '<div id="sonar-readout" style="display:flex;flex-direction:column;gap:3px"></div>';
                           canvasEl.parentElement.appendChild(sonarEl);
                         }
 
-                        // â”€â”€ Scattered Environment Objects (rocks/boulders for depth cues) â”€â”€
+                        // â"€â"€ Scattered Environment Objects (rocks/boulders for depth cues) â"€â"€
 
                         var envObjects = [];
 
@@ -4283,6 +4500,65 @@ const d = labToolData.solarSystem;
                           }
                         }
 
+                        // ── Mars: Olympus Mons (giant shield volcano) ──
+                        if (sel.terrainType === 'desert' && !isOcean) {
+                          // Massive volcanic cone in the distance
+                          var omGeo = new THREE.ConeGeometry(18, 14, 12);
+                          var omPos2 = omGeo.attributes.position.array;
+                          for (var omi = 0; omi < omPos2.length; omi += 3) {
+                            omPos2[omi] *= 0.9 + Math.random() * 0.2;
+                            omPos2[omi + 2] *= 0.9 + Math.random() * 0.2;
+                          }
+                          omGeo.computeVertexNormals();
+                          var omMat = new THREE.MeshStandardMaterial({ color: 0xb5452a, roughness: 0.95, flatShading: true });
+                          var olympusMons = new THREE.Mesh(omGeo, omMat);
+                          var omX = 80, omZ = -60;
+                          olympusMons.position.set(omX, _terrainHeightAt(omX, omZ) + 5, omZ);
+                          scene.add(olympusMons);
+                          // Caldera at summit
+                          var calderaGeo = new THREE.CylinderGeometry(4, 4, 1.5, 12, 1, true);
+                          var calderaMat = new THREE.MeshStandardMaterial({ color: 0x8a3a1a, roughness: 0.9, side: THREE.DoubleSide });
+                          var caldera = new THREE.Mesh(calderaGeo, calderaMat);
+                          caldera.position.set(omX, _terrainHeightAt(omX, omZ) + 18, omZ);
+                          scene.add(caldera);
+                          // Snow/ice cap at summit
+                          var snowGeo = new THREE.CircleGeometry(3.5, 12);
+                          var snowMat = new THREE.MeshStandardMaterial({ color: 0xccddee, roughness: 0.6, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+                          var snow = new THREE.Mesh(snowGeo, snowMat);
+                          snow.rotation.x = -Math.PI / 2;
+                          snow.position.set(omX, _terrainHeightAt(omX, omZ) + 19.2, omZ);
+                          scene.add(snow);
+                        }
+
+                        // ── Pluto: Heart-shaped Tombaugh Regio glacier ──
+                        if (sel.name === 'Pluto' || sel.terrainType === 'iceworld') {
+                          // Large flat bright ice plain
+                          var tRegioGeo = new THREE.CircleGeometry(15, 16);
+                          var tRegioMat = new THREE.MeshStandardMaterial({ color: 0xeeeeff, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
+                          var tRegio = new THREE.Mesh(tRegioGeo, tRegioMat);
+                          tRegio.rotation.x = -Math.PI / 2;
+                          var trX = -30, trZ = 25;
+                          tRegio.position.set(trX, _terrainHeightAt(trX, trZ) + 0.1, trZ);
+                          scene.add(tRegio);
+                          // Cryovolcano (nitrogen ice volcano)
+                          var cryoGeo = new THREE.ConeGeometry(3, 5, 8);
+                          var cryoMat = new THREE.MeshStandardMaterial({ color: 0xbbccdd, roughness: 0.6, flatShading: true });
+                          var cryo = new THREE.Mesh(cryoGeo, cryoMat);
+                          cryo.position.set(trX + 20, _terrainHeightAt(trX + 20, trZ - 10) + 2, trZ - 10);
+                          scene.add(cryo);
+                          // Nitrogen geyser particles
+                          var geyserParts = new THREE.BufferGeometry();
+                          var geyserPos = new Float32Array(40 * 3);
+                          for (var gpi = 0; gpi < 40; gpi++) {
+                            geyserPos[gpi * 3] = trX + 20 + (Math.random() - 0.5) * 2;
+                            geyserPos[gpi * 3 + 1] = _terrainHeightAt(trX + 20, trZ - 10) + 5 + Math.random() * 6;
+                            geyserPos[gpi * 3 + 2] = trZ - 10 + (Math.random() - 0.5) * 2;
+                          }
+                          geyserParts.setAttribute('position', new THREE.BufferAttribute(geyserPos, 3));
+                          var geyserMesh = new THREE.Points(geyserParts, new THREE.PointsMaterial({ color: 0xddddff, size: 0.08, transparent: true, opacity: 0.4 }));
+                          scene.add(geyserMesh);
+                        }
+
                         // ── Ocean: Shipwreck on the ocean floor ──
                         var shipwreck = null;
                         if (isOcean) {
@@ -4405,7 +4681,7 @@ const d = labToolData.solarSystem;
                           }
                         }
 
-                        // â”€â”€ Particle effects â”€â”€
+                        // â"€â"€ Particle effects â"€â"€
 
                         if (sel.terrainType === 'desert' || sel.terrainType === 'volcanic') {
 
@@ -4463,7 +4739,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Movement state â”€â”€
+                        // â"€â"€ Movement state â"€â"€
 
                         var moveState = { forward: false, back: false, left: false, right: false, up: false, down: false };
 
@@ -4538,6 +4814,7 @@ const d = labToolData.solarSystem;
 
 
                         var tick3d = 0;
+                        var _photoCooldown = 0;
 
                         var animId3d;
 
@@ -4547,7 +4824,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Rich Educational HUD (Enhanced) â”€â”€
+                        // â"€â"€ Rich Educational HUD (Enhanced) â"€â"€
 
                         var hud = document.createElement('div');
 
@@ -4563,7 +4840,7 @@ const d = labToolData.solarSystem;
 
                         var featList = (sel.notableFeatures || []).slice(0, 3).map(function (f) { return '<div style="color:#94a3b8;font-size:9px;padding-left:8px">\u2022 ' + f + '</div>'; }).join('');
 
-                        // â”€â”€ Fullscreen Toggle â”€â”€
+                        // â"€â"€ Fullscreen Toggle â"€â"€
 
                         var fsToggle = document.createElement('button');
 
@@ -4749,7 +5026,7 @@ const d = labToolData.solarSystem;
 
                           (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
 
-                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') + ' \u2022 Mouse look' : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#22d3ee">G</span> scan \u2022 V view \u2022 M mission \u2022 <span style="color:#38bdf8">H</span> hud \u2022 <span style="color:#a78bfa">N</span> nav \u2022 <span style="color:#8b5cf6">P</span> plot</div>';
+                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 V view \u2022 M mission \u2022 H hud \u2022 N nav</div>';
 
                         hud.innerHTML = hudStaticHTML;
 
@@ -4760,10 +5037,10 @@ const d = labToolData.solarSystem;
                           var invPanel = document.createElement('div');
                           invPanel.id = 'gas-sample-inventory';
                           invPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;max-width:90%;max-height:80%;overflow-y:auto;background:rgba(15,23,42,0.95);backdrop-filter:blur(12px);border:2px solid rgba(251,191,36,0.3);border-radius:16px;padding:20px;z-index:30;color:#e2e8f0;font-family:system-ui';
-                          invPanel.innerHTML = '<div style=”display:flex;justify-content:space-between;align-items:center;margin-bottom:12px”><div style=”font-weight:bold;font-size:16px;color:#fbbf24”>\uD83E\uDDEA Gas Sample Collection</div><div style=”font-size:11px;color:#94a3b8”>Press TAB to close</div></div>' +
-                            '<div style=”font-size:11px;color:#94a3b8;margin-bottom:12px”>Fly through the atmosphere and press <span style=”color:#fbbf24;font-weight:bold”>F</span> near glowing orbs to collect gas samples. Descend deeper for rarer specimens!</div>' +
-                            '<div id=”gas-sample-list” style=”space-y:8px”></div>' +
-                            '<div id=”gas-sample-empty” style=”text-align:center;padding:20px;color:#64748b;font-style:italic”>No samples collected yet. Look for glowing orbs in the atmosphere!</div>';
+                          invPanel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:bold;font-size:16px;color:#fbbf24">\uD83E\uDDEA Gas Sample Collection</div><div style="font-size:11px;color:#94a3b8">Press TAB to close</div></div>' +
+                            '<div style="font-size:11px;color:#94a3b8;margin-bottom:12px">Fly through the atmosphere and press <span style="color:#fbbf24;font-weight:bold">F</span> near glowing orbs to collect gas samples. Descend deeper for rarer specimens!</div>' +
+                            '<div id="gas-sample-list" style="space-y:8px"></div>' +
+                            '<div id="gas-sample-empty" style="text-align:center;padding:20px;color:#64748b;font-style:italic">No samples collected yet. Look for glowing orbs in the atmosphere!</div>';
                           canvasEl.parentElement.appendChild(invPanel);
                         }
                         // ── Ocean Specimen Inventory Panel (Tab to toggle) ──
@@ -4771,14 +5048,14 @@ const d = labToolData.solarSystem;
                           var oceanInvPanel = document.createElement('div');
                           oceanInvPanel.id = 'ocean-sample-inventory';
                           oceanInvPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;max-width:90%;max-height:80%;overflow-y:auto;background:rgba(5,20,45,0.95);backdrop-filter:blur(12px);border:2px solid rgba(0,180,255,0.3);border-radius:16px;padding:20px;z-index:30;color:#e2e8f0;font-family:system-ui';
-                          oceanInvPanel.innerHTML = '<div style=”display:flex;justify-content:space-between;align-items:center;margin-bottom:12px”><div style=”font-weight:bold;font-size:16px;color:#00b4ff”>\uD83E\uDDEB Marine Specimen Collection</div><div style=”font-size:11px;color:#94a3b8”>Press TAB to close</div></div>' +
-                            '<div style=”font-size:11px;color:#94a3b8;margin-bottom:12px”>Dive through the ocean and press <span style=”color:#00b4ff;font-weight:bold”>F</span> near glowing specimens to collect them. Descend deeper for rarer life forms!</div>' +
-                            '<div id=”ocean-sample-list” style=”space-y:8px”></div>' +
-                            '<div id=”ocean-sample-empty” style=”text-align:center;padding:20px;color:#64748b;font-style:italic”>No specimens collected yet. Look for glowing orbs in the water!</div>';
+                          oceanInvPanel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:bold;font-size:16px;color:#00b4ff">\uD83E\uDDEB Marine Specimen Collection</div><div style="font-size:11px;color:#94a3b8">Press TAB to close</div></div>' +
+                            '<div style="font-size:11px;color:#94a3b8;margin-bottom:12px">Dive through the ocean and press <span style="color:#00b4ff;font-weight:bold">F</span> near glowing specimens to collect them. Descend deeper for rarer life forms!</div>' +
+                            '<div id="ocean-sample-list" style="space-y:8px"></div>' +
+                            '<div id="ocean-sample-empty" style="text-align:center;padding:20px;color:#64748b;font-style:italic">No specimens collected yet. Look for glowing orbs in the water!</div>';
                           canvasEl.parentElement.appendChild(oceanInvPanel);
                         }
 
-                        // â”€â”€ Hazard Warning Strip â”€â”€
+                        // â"€â"€ Hazard Warning Strip â"€â"€
 
                         var hazardEl = document.createElement('div');
 
@@ -4850,7 +5127,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Discovery System (POI landmarks) â”€â”€
+                        // â"€â"€ Discovery System (POI landmarks) â"€â"€
 
                         var POI_DATA = {
 
@@ -5054,7 +5331,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Mission Card Overlay (M key toggle) â”€â”€
+                        // â"€â"€ Mission Card Overlay (M key toggle) â"€â"€
 
                         var missionCard = document.createElement('div');
 
@@ -5117,6 +5394,9 @@ const d = labToolData.solarSystem;
                         var prevPos = new THREE.Vector3().copy(playerPos);
 
                         var odometer = 0;
+                        var _lastMilestone = 0;
+                        var _milestones = [100, 250, 500, 1000, 2500, 5000, 10000];
+                        var _milestoneNames = ['Scout', 'Explorer', 'Voyager', 'Pathfinder', 'Pioneer', 'Odyssey', 'Legend'];
 
                         var lastSpeed = 0;
 
@@ -5124,7 +5404,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Science Fact Ticker (bottom of canvas, expanded) â”€â”€
+                        // â"€â"€ Science Fact Ticker (bottom of canvas, expanded) â"€â"€
 
                         var ticker = document.createElement('div');
 
@@ -5190,7 +5470,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Compass / bearing indicator (top-right) â”€â”€
+                        // â"€â"€ Compass / bearing indicator (top-right) â"€â"€
 
                         var compass = document.createElement('div');
 
@@ -5204,13 +5484,13 @@ const d = labToolData.solarSystem;
                         var depthGauge = document.createElement('div');
                         depthGauge.style.cssText = 'position:absolute;top:64px;right:12px;width:28px;height:200px;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);border-radius:14px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.2);overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:4px 0';
                         depthGauge.innerHTML =
-                          '<div style=”font-size:6px;color:#94a3b8;margin-bottom:2px”>' + (isOcean ? '\u2191 SURF' : isGas ? '\u2191 HIGH' : '\u2191 UP') + '</div>' +
-                          '<div style=”flex:1;width:8px;background:rgba(30,41,59,0.8);border-radius:4px;position:relative;overflow:hidden”>' +
-                            '<div id=”depth-gauge-fill” style=”position:absolute;bottom:0;left:0;right:0;height:50%;border-radius:4px;transition:height 0.3s,background 0.3s;background:linear-gradient(to top,' + (isOcean ? '#0369a1,#0ea5e9' : isGas ? '#f59e0b,#eab308' : '#22c55e,#4ade80') + ')”></div>' +
-                            '<div id=”depth-gauge-marker” style=”position:absolute;left:-2px;right:-2px;height:3px;background:#fff;border-radius:2px;top:50%;transition:top 0.3s;box-shadow:0 0 4px rgba(255,255,255,0.5)”></div>' +
+                          '<div style="font-size:6px;color:#94a3b8;margin-bottom:2px">' + (isOcean ? '\u2191 SURF' : isGas ? '\u2191 HIGH' : '\u2191 UP') + '</div>' +
+                          '<div style="flex:1;width:8px;background:rgba(30,41,59,0.8);border-radius:4px;position:relative;overflow:hidden">' +
+                            '<div id="depth-gauge-fill" style="position:absolute;bottom:0;left:0;right:0;height:50%;border-radius:4px;transition:height 0.3s,background 0.3s;background:linear-gradient(to top,' + (isOcean ? '#0369a1,#0ea5e9' : isGas ? '#f59e0b,#eab308' : '#22c55e,#4ade80') + ')"></div>' +
+                            '<div id="depth-gauge-marker" style="position:absolute;left:-2px;right:-2px;height:3px;background:#fff;border-radius:2px;top:50%;transition:top 0.3s;box-shadow:0 0 4px rgba(255,255,255,0.5)"></div>' +
                           '</div>' +
-                          '<div id=”depth-gauge-val” style=”font-size:7px;color:#67e8f9;margin-top:2px;font-family:monospace;font-weight:bold”>0m</div>' +
-                          '<div style=”font-size:6px;color:#94a3b8;margin-top:1px”>' + (isOcean ? '\u2193 DEEP' : isGas ? '\u2193 DEEP' : '\u2193 DN') + '</div>';
+                          '<div id="depth-gauge-val" style="font-size:7px;color:#67e8f9;margin-top:2px;font-family:monospace;font-weight:bold">0m</div>' +
+                          '<div style="font-size:6px;color:#94a3b8;margin-top:1px">' + (isOcean ? '\u2193 DEEP' : isGas ? '\u2193 DEEP' : '\u2193 DN') + '</div>';
                         canvasEl.parentElement.appendChild(depthGauge);
 
                         // ── POI Direction Arrow (points to nearest undiscovered POI) ──
@@ -5218,8 +5498,8 @@ const d = labToolData.solarSystem;
                         poiArrow.id = 'poi-arrow';
                         poiArrow.style.cssText = 'position:absolute;bottom:56px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:10;text-align:center;opacity:0;transition:opacity 0.5s';
                         poiArrow.innerHTML =
-                          '<div id=”poi-arrow-icon” style=”font-size:20px;transition:transform 0.2s;filter:drop-shadow(0 0 4px rgba(251,191,36,0.5))”>\u2B06\uFE0F</div>' +
-                          '<div id=”poi-arrow-label” style=”font-size:8px;color:#fbbf24;font-weight:bold;text-shadow:0 1px 3px rgba(0,0,0,0.8)”>POI 50m</div>';
+                          '<div id="poi-arrow-icon" style="font-size:20px;transition:transform 0.2s;filter:drop-shadow(0 0 4px rgba(251,191,36,0.5))">\u2B06\uFE0F</div>' +
+                          '<div id="poi-arrow-label" style="font-size:8px;color:#fbbf24;font-weight:bold;text-shadow:0 1px 3px rgba(0,0,0,0.8)">POI 50m</div>';
                         canvasEl.parentElement.appendChild(poiArrow);
 
                         // ── Mini-Map Radar (bottom-right) ──
@@ -5233,11 +5513,11 @@ const d = labToolData.solarSystem;
                         var screenFx = document.createElement('div');
                         screenFx.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:9;border-radius:inherit;overflow:hidden';
                         // Vignette
-                        screenFx.innerHTML = '<div style=”position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.4) 100%)”></div>' +
+                        screenFx.innerHTML = '<div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.4) 100%)"></div>' +
                           // Subtle scan lines
-                          '<div id=”scanline-fx” style=”position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);opacity:0.5”></div>' +
+                          '<div id="scanline-fx" style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);opacity:0.5"></div>' +
                           // Depth color tint overlay (changes with depth for fluid environments)
-                          '<div id=”depth-tint-fx” style=”position:absolute;inset:0;background:transparent;transition:background 1s;opacity:0.15”></div>';
+                          '<div id="depth-tint-fx" style="position:absolute;inset:0;background:transparent;transition:background 1s;opacity:0.15"></div>';
                         canvasEl.parentElement.appendChild(screenFx);
 
                         // ── Atmospheric Sound Description (top-center, cycles) ──
@@ -5281,11 +5561,11 @@ const d = labToolData.solarSystem;
                         scannerOverlay.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:20;opacity:0;transition:opacity 0.3s';
                         scannerOverlay.innerHTML =
                           // Scanning sweep line
-                          '<div id=”scan-sweep” style=”position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(to right,transparent,rgba(56,189,248,0.6),transparent);transition:left 1.5s linear”></div>' +
+                          '<div id="scan-sweep" style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(to right,transparent,rgba(56,189,248,0.6),transparent);transition:left 1.5s linear"></div>' +
                           // Scan result card
-                          '<div id=”scan-result” style=”position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,10,20,0.92);backdrop-filter:blur(12px);border:1px solid rgba(56,189,248,0.4);border-radius:14px;padding:16px 20px;max-width:340px;width:85%;color:#e2e8f0;font-family:system-ui;text-align:center;opacity:0;transition:opacity 0.5s 0.8s”>' +
-                            '<div style=”font-weight:bold;font-size:14px;color:#38bdf8;margin-bottom:6px;letter-spacing:1px”>\uD83D\uDD2C ENVIRONMENT SCAN</div>' +
-                            '<div id=”scan-body” style=”font-size:11px;line-height:1.6”></div>' +
+                          '<div id="scan-result" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,10,20,0.92);backdrop-filter:blur(12px);border:1px solid rgba(56,189,248,0.4);border-radius:14px;padding:16px 20px;max-width:340px;width:85%;color:#e2e8f0;font-family:system-ui;text-align:center;opacity:0;transition:opacity 0.5s 0.8s">' +
+                            '<div style="font-weight:bold;font-size:14px;color:#38bdf8;margin-bottom:6px;letter-spacing:1px">\uD83D\uDD2C ENVIRONMENT SCAN</div>' +
+                            '<div id="scan-body" style="font-size:11px;line-height:1.6"></div>' +
                           '</div>';
                         canvasEl.parentElement.appendChild(scannerOverlay);
 
@@ -5302,20 +5582,20 @@ const d = labToolData.solarSystem;
                           var scanHTML = '';
                           if (isOcean && oceanAtmo) {
                             var oz = oceanAtmo.getZone(playerPos.y);
-                            scanHTML = '<div style=”color:#00b4ff;font-weight:bold;margin-bottom:4px”>' + oz.name + '</div>' +
-                              '<div style=”display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px”>' +
+                            scanHTML = '<div style="color:#00b4ff;font-weight:bold;margin-bottom:4px">' + oz.name + '</div>' +
+                              '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\uD83C\uDF21 ' + oz.temp + '</div><div>\uD83D\uDCA8 ' + oz.pressure + '</div>' +
                               '</div>' +
-                              '<div style=”color:#4ade80;font-size:10px;margin-bottom:4px”>\uD83E\uDDA0 Life detected: ' + (oz.life || []).join(', ') + '</div>' +
-                              '<div style=”color:#94a3b8;font-size:10px;font-style:italic”>' + oz.science + '</div>';
+                              '<div style="color:#4ade80;font-size:10px;margin-bottom:4px">\uD83E\uDDA0 Life detected: ' + (oz.life || []).join(', ') + '</div>' +
+                              '<div style="color:#94a3b8;font-size:10px;font-style:italic">' + oz.science + '</div>';
                           } else if (isGas && gasAtmo) {
                             var gz = gasAtmo.getZone(playerPos.y);
-                            scanHTML = '<div style=”color:#fbbf24;font-weight:bold;margin-bottom:4px”>' + gz.name + '</div>' +
-                              '<div style=”display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px”>' +
+                            scanHTML = '<div style="color:#fbbf24;font-weight:bold;margin-bottom:4px">' + gz.name + '</div>' +
+                              '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\uD83C\uDF21 ' + gz.temp + '</div><div>\uD83D\uDCA8 ' + gz.pressure + '</div>' +
                               '<div>\uD83C\uDF2C\uFE0F ' + gz.windSpeed + ' km/h</div><div>\uD83E\uDDEA ' + (gz.gases || []).join(', ') + '</div>' +
                               '</div>' +
-                              '<div style=”color:#94a3b8;font-size:10px;font-style:italic”>' + gz.science + '</div>';
+                              '<div style="color:#94a3b8;font-size:10px;font-style:italic">' + gz.science + '</div>';
                           } else {
                             // Rocky planet scan
                             var elev = ((playerPos.y - 1.6) * scaleFactor).toFixed(0);
@@ -5325,13 +5605,13 @@ const d = labToolData.solarSystem;
                               var d2 = Math.sqrt(Math.pow(playerPos.x - p.x, 2) + Math.pow(playerPos.z - p.z, 2)) * scaleFactor;
                               if (d2 < nearestPOIDist2) { nearestPOIDist2 = d2; nearestPOIName = p.name; }
                             });
-                            scanHTML = '<div style=”color:#67e8f9;font-weight:bold;margin-bottom:4px”>' + sel.name + ' Surface Analysis</div>' +
-                              '<div style=”display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px”>' +
+                            scanHTML = '<div style="color:#67e8f9;font-weight:bold;margin-bottom:4px">' + sel.name + ' Surface Analysis</div>' +
+                              '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\u2696\uFE0F ' + (sel.gravity || '?') + '</div><div>\uD83C\uDF21 ' + sel.temp + '</div>' +
                               '<div>\uD83D\uDCCF Elev: ' + elev + 'm</div><div>\uD83E\uDDED Nearest: ' + Math.round(nearestPOIDist2) + 'm</div>' +
                               '</div>' +
-                              '<div style=”color:#fbbf24;font-size:10px;margin-bottom:4px”>\uD83D\uDD2D Nearest landmark: ' + nearestPOIName + '</div>' +
-                              '<div style=”color:#94a3b8;font-size:10px;font-style:italic”>' + (sel.surfaceDesc || sel.fact) + '</div>';
+                              '<div style="color:#fbbf24;font-size:10px;margin-bottom:4px">\uD83D\uDD2D Nearest landmark: ' + nearestPOIName + '</div>' +
+                              '<div style="color:#94a3b8;font-size:10px;font-style:italic">' + (sel.surfaceDesc || sel.fact) + '</div>';
                           }
                           if (scanBody) scanBody.innerHTML = scanHTML;
                           if (scanResult) scanResult.style.opacity = '1';
@@ -5344,7 +5624,7 @@ const d = labToolData.solarSystem;
                           }, 5000);
                         }
 
-                        // â”€â”€ 3rd-person camera toggle (V key) + Mission card (M key) â”€â”€
+                        // â"€â"€ 3rd-person camera toggle (V key) + Mission card (M key) â"€â"€
 
                         var thirdPerson = false;
 
@@ -5416,11 +5696,39 @@ const d = labToolData.solarSystem;
                             doEnvironmentScan();
                           }
 
+                          // Photo capture mode (C key)
+                          if (e.key === 'c' || e.key === 'C') {
+                            if (typeof _photoCooldown !== 'undefined' && _photoCooldown > 0) return;
+                            _photoCooldown = 120;
+                            // Flash effect
+                            var flash = document.createElement('div');
+                            flash.style.cssText = 'position:absolute;inset:0;background:rgba(255,255,255,0.7);z-index:50;pointer-events:none;transition:opacity 0.4s';
+                            canvasEl.parentElement.appendChild(flash);
+                            setTimeout(function() { flash.style.opacity = '0'; }, 100);
+                            setTimeout(function() { if (flash.parentElement) flash.parentElement.removeChild(flash); }, 500);
+                            // Photo card overlay
+                            var photoCard = document.createElement('div');
+                            photoCard.style.cssText = 'position:absolute;bottom:70px;right:12px;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);border:2px solid rgba(56,189,248,0.4);border-radius:12px;padding:10px 14px;z-index:25;pointer-events:none;color:#e2e8f0;font-family:system-ui;max-width:220px;opacity:0;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px)';
+                            var photoLabel = isOcean ? 'DEPTH ' + Math.abs(playerPos.y * scaleFactor).toFixed(0) + 'm' : isGas ? 'ALT ' + (playerPos.y * scaleFactor).toFixed(0) + 'm' : 'ELEV ' + ((playerPos.y - 1.6) * scaleFactor).toFixed(0) + 'm';
+                            var timestamp = new Date().toLocaleTimeString();
+                            photoCard.innerHTML = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:14px">\uD83D\uDCF8</span><span style="font-weight:bold;font-size:11px;color:#38bdf8">PHOTO CAPTURED</span></div>' +
+                              '<div style="font-size:9px;color:#94a3b8">' + sel.name + ' \u2022 ' + photoLabel + '</div>' +
+                              '<div style="font-size:9px;color:#64748b">' + dirLabel + ' ' + Math.round(deg) + '\u00B0 \u2022 ' + timestamp + '</div>' +
+                              '<div style="font-size:9px;color:#4ade80;margin-top:3px">\u2B50 +5 XP \u2022 Added to mission log</div>';
+                            canvasEl.parentElement.appendChild(photoCard);
+                            setTimeout(function() { photoCard.style.opacity = '1'; photoCard.style.transform = 'translateY(0)'; }, 50);
+                            setTimeout(function() { photoCard.style.opacity = '0'; photoCard.style.transform = 'translateY(10px)'; }, 4000);
+                            setTimeout(function() { if (photoCard.parentElement) photoCard.parentElement.removeChild(photoCard); }, 4500);
+                            // Award XP
+                            if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 5);
+                            addMissionEntry('\uD83D\uDCF8 Photo: ' + sel.name + ' ' + photoLabel + ' heading ' + dirLabel);
+                          }
+
                         });
 
 
 
-                        // â”€â”€ Trail Line (path history) - REMOVED â”€â”€
+                        // â"€â"€ Trail Line (path history) - REMOVED â"€â"€
 
                         var trailPositions = []; var trailLine = null; var trailMaxPoints = 500;
 
@@ -5432,7 +5740,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Navigation Challenge System (N key) â”€â”€
+                        // â"€â"€ Navigation Challenge System (N key) â"€â"€
 
                         var navChallengeActive = false, navTargetX = 0, navTargetZ = 0, navTargetMesh = null;
 
@@ -5596,7 +5904,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Course Plotter System (P key) â”€â”€
+                        // â"€â"€ Course Plotter System (P key) â"€â"€
 
                         var plotterVisible = false, plotterWaypoints = [], plotterRouteLine = null, plotterActiveWP = 0;
 
@@ -5752,7 +6060,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Signal Triangulation System â”€â”€
+                        // â"€â"€ Signal Triangulation System â"€â"€
 
                         var beacons = [
 
@@ -5806,7 +6114,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Skills Badge System â”€â”€
+                        // â"€â"€ Skills Badge System â"€â"€
 
                         var badges = {
 
@@ -5846,13 +6154,76 @@ const d = labToolData.solarSystem;
 
 
 
-                        // â”€â”€ Animation loop with 3rd-person + compass â”€â”€
+                        // ── Entry descent animation state ──
+                        var _descentPhase = 0; // 0 = descending, 1 = arrived, 2 = playing
+                        var _descentTick = 0;
+                        var _descentDuration = 180; // ~3 sec at 60fps
+                        var _descentStartY = isOcean ? 30 : isGas ? 25 : 20;
+                        var _descentTargetY = isFluid ? 5 : 1.6;
+                        // Descent overlay
+                        var descentOverlay = document.createElement('div');
+                        descentOverlay.style.cssText = 'position:absolute;inset:0;z-index:30;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1s';
+                        descentOverlay.innerHTML =
+                          '<div style="font-size:24px;margin-bottom:8px">' + (isOcean ? '\uD83D\uDEA4' : isGas ? '\uD83D\uDEF8' : '\uD83D\uDE80') + '</div>' +
+                          '<div style="font-weight:bold;font-size:16px;color:#38bdf8;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,0.8)">' + (isOcean ? 'SUBMERSIBLE DEPLOYING' : isGas ? 'PROBE DESCENDING' : 'ROVER LANDING') + '</div>' +
+                          '<div id="descent-status" style="font-size:11px;color:#94a3b8;margin-top:4px;text-shadow:0 1px 4px rgba(0,0,0,0.8)">Entering ' + sel.name + (isOcean ? "'s ocean..." : "'s " + (isGas ? 'atmosphere...' : 'atmosphere...')) + '</div>' +
+                          '<div id="descent-alt" style="font-family:monospace;font-size:13px;color:#67e8f9;margin-top:12px;text-shadow:0 1px 4px rgba(0,0,0,0.8)">' + (isOcean ? 'DEPTH: 0m' : 'ALT: ' + Math.round(_descentStartY * scaleFactor) + 'm') + '</div>';
+                        canvasEl.parentElement.appendChild(descentOverlay);
+
+                        // Hide main HUD during descent
+                        if (hud) hud.style.opacity = '0';
+
+                        // â"€â"€ Animation loop with 3rd-person + compass â"€â"€
 
                         function animate3dV2() {
 
                           animId3d = requestAnimationFrame(animate3dV2);
 
                           tick3d++;
+
+                          // ── Descent intro sequence ──
+                          if (_descentPhase === 0) {
+                            _descentTick++;
+                            var t2 = Math.min(1, _descentTick / _descentDuration);
+                            // Ease-out cubic
+                            var eased = 1 - Math.pow(1 - t2, 3);
+                            var curY = _descentStartY + (_descentTargetY - _descentStartY) * eased;
+                            playerPos.y = curY;
+                            playerPos.x = Math.sin(_descentTick * 0.01) * 2 * (1 - eased); // gentle spiral
+                            playerPos.z = Math.cos(_descentTick * 0.01) * 2 * (1 - eased);
+                            camera.position.copy(playerPos);
+                            camera.position.y += 2 * (1 - eased);
+                            pitch = -0.3 * (1 - eased); // look down during descent
+                            camera.rotation.order = 'YXZ';
+                            camera.rotation.y = _descentTick * 0.003;
+                            camera.rotation.x = pitch;
+                            // Update altitude readout
+                            var altEl2 = document.getElementById('descent-alt');
+                            if (altEl2) {
+                              var dispAlt = Math.round(Math.abs(curY) * scaleFactor);
+                              altEl2.textContent = (isOcean ? 'DEPTH: ' : 'ALT: ') + dispAlt + 'm';
+                            }
+                            var statusEl = document.getElementById('descent-status');
+                            if (statusEl && t2 > 0.5) statusEl.textContent = isOcean ? 'Approaching dive depth...' : isGas ? 'Entering cloud layer...' : 'Final approach...';
+                            // Transition to play mode
+                            if (t2 >= 1) {
+                              _descentPhase = 1;
+                              descentOverlay.style.opacity = '0';
+                              if (hud) hud.style.opacity = '1';
+                              pitch = 0;
+                              playerPos.x = 0; playerPos.z = 0;
+                              setTimeout(function() {
+                                if (descentOverlay.parentElement) descentOverlay.parentElement.removeChild(descentOverlay);
+                                _descentPhase = 2;
+                              }, 1200);
+                            }
+                            // Still render the scene during descent
+                            roverGroup.position.copy(playerPos);
+                            roverGroup.position.y -= 0.5;
+                            roverGroup.visible = true;
+                            renderer.render(scene, camera);
+                            return; // skip normal movement during descent
+                          }
 
                           // Movement
 
@@ -6395,6 +6766,50 @@ const d = labToolData.solarSystem;
                               ventSmokeMesh.geometry.attributes.position.needsUpdate = true;
                             }
 
+                            // Animated caustic pattern (redraw every 10 frames)
+                            if (typeof causticCtx2 !== 'undefined' && tick3d % 10 === 0 && playerPos.y > -8) {
+                              causticCtx2.clearRect(0, 0, 256, 256);
+                              causticCtx2.fillStyle = 'rgba(100,200,255,0.3)';
+                              for (var cci = 0; cci < 25; cci++) {
+                                var ccx2 = 128 + Math.sin(tick3d * 0.008 + cci * 1.7) * 80 + Math.cos(tick3d * 0.005 + cci * 2.3) * 40;
+                                var ccy2 = 128 + Math.cos(tick3d * 0.006 + cci * 1.3) * 80 + Math.sin(tick3d * 0.009 + cci * 1.9) * 40;
+                                var ccr2 = 15 + Math.sin(tick3d * 0.01 + cci * 3) * 10;
+                                causticCtx2.beginPath();
+                                causticCtx2.arc(ccx2, ccy2, ccr2, 0, Math.PI * 2);
+                                causticCtx2.fill();
+                              }
+                              causticTex.needsUpdate = true;
+                              // Fade caustics with depth
+                              causticPlane.material.opacity = Math.max(0, 0.15 - Math.abs(playerPos.y) * 0.006);
+                              causticPlane.position.x = playerPos.x;
+                              causticPlane.position.z = playerPos.z;
+                            }
+
+                            // Shark cruising in large circle
+                            if (typeof sharkGroup !== 'undefined') {
+                              sharkGroup._sharkAngle += 0.0015;
+                              sharkGroup.position.x = Math.cos(sharkGroup._sharkAngle) * 45;
+                              sharkGroup.position.z = Math.sin(sharkGroup._sharkAngle) * 45;
+                              sharkGroup.position.y = -1 + Math.sin(tick3d * 0.005) * 0.8;
+                              sharkGroup.rotation.y = sharkGroup._sharkAngle + Math.PI / 2;
+                              // Tail sweep
+                              if (sharkGroup.children[2]) sharkGroup.children[2].rotation.y = Math.sin(tick3d * 0.08) * 0.3;
+                            }
+
+                            // Tropical fish school swirling near coral
+                            if (typeof tropicalFish !== 'undefined') {
+                              tropicalFish._swimAngle += 0.006;
+                              tropicalFish.position.x = tropicalFish._basePos.x + Math.cos(tropicalFish._swimAngle) * 3;
+                              tropicalFish.position.z = tropicalFish._basePos.z + Math.sin(tropicalFish._swimAngle) * 3;
+                              tropicalFish.children.forEach(function(tf) {
+                                if (tf._tfPhase !== undefined) {
+                                  tf.position.x += Math.sin(tick3d * 0.08 + tf._tfPhase) * 0.02;
+                                  tf.position.y += Math.cos(tick3d * 0.06 + tf._tfPhase) * 0.01;
+                                  tf.rotation.y = Math.sin(tick3d * 0.1 + tf._tfPhase) * 0.3;
+                                }
+                              });
+                            }
+
                             // Sonar readout update
                             if (tick3d % 20 === 0) {
                               var sonarReadout = document.getElementById('sonar-readout');
@@ -6639,7 +7054,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // â”€â”€ Live telemetry updates (every 3 frames for perf) â”€â”€
+                          // â"€â"€ Live telemetry updates (every 3 frames for perf) â"€â"€
 
                           if (tick3d % 3 === 0) {
 
@@ -6648,6 +7063,19 @@ const d = labToolData.solarSystem;
                             var frameDist = Math.sqrt(dx * dx + dy * dy + dz * dz) * scaleFactor;
 
                             odometer += frameDist;
+
+                            // Distance milestone check
+                            for (var msi = 0; msi < _milestones.length; msi++) {
+                              if (odometer >= _milestones[msi] && _lastMilestone < _milestones[msi]) {
+                                _lastMilestone = _milestones[msi];
+                                var msLabel = _milestoneNames[msi] || 'Traveler';
+                                var msDistLabel = _milestones[msi] >= 1000 ? (_milestones[msi] / 1000) + ' km' : _milestones[msi] + 'm';
+                                if (typeof addToast === 'function') addToast('\uD83C\uDFC5 Distance Milestone: ' + msDistLabel + ' \u2014 "' + msLabel + '" rank achieved!', 'success');
+                                if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 10 + msi * 5);
+                                addMissionEntry('\uD83C\uDFC5 ' + msDistLabel + ' milestone \u2014 ' + msLabel + ' rank');
+                                break;
+                              }
+                            }
 
                             lastSpeed = frameDist * 20; // ~60fps/3 = 20 updates/s
 
@@ -6791,7 +7219,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // â”€â”€ Update Goal Line Dynamic Vertex â”€â”€
+                          // â"€â"€ Update Goal Line Dynamic Vertex â"€â"€
 
                           if (navChallengeActive && navGoalLine) {
 
@@ -6805,7 +7233,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // â”€â”€ POI proximity detection (every 10 frames) â”€â”€
+                          // â"€â"€ POI proximity detection (every 10 frames) â"€â"€
 
                           if (tick3d % 10 === 0) {
 
@@ -6843,14 +7271,30 @@ const d = labToolData.solarSystem;
 
 
 
-                          // â”€â”€ Feature updates (trail, nav, plotter, badges) â”€â”€
+                          // â"€â"€ Feature updates (trail, nav, plotter, badges) â"€â"€
 
                           if (tick3d % 5 === 0) updateTrail();
 
                           if (tick3d % 10 === 0) { checkNavCompletion(); checkBadges(); }
 
-                          // Scanner cooldown
+                          // Scanner + photo cooldowns
                           if (scannerCooldown > 0) scannerCooldown--;
+                          if (_photoCooldown > 0) _photoCooldown--;
+
+                          // Pluto geyser particle animation
+                          if (typeof geyserMesh !== 'undefined' && geyserMesh) {
+                            var gArr = geyserMesh.geometry.attributes.position.array;
+                            for (var gai = 0; gai < gArr.length; gai += 3) {
+                              gArr[gai + 1] += 0.03;
+                              gArr[gai] += (Math.random() - 0.5) * 0.03;
+                              gArr[gai + 2] += (Math.random() - 0.5) * 0.03;
+                              if (gArr[gai + 1] > 20) {
+                                gArr[gai] = gArr[gai] - (Math.random() - 0.5) * 0.5;
+                                gArr[gai + 1] = 5 + Math.random() * 2;
+                              }
+                            }
+                            geyserMesh.geometry.attributes.position.needsUpdate = true;
+                          }
 
                           // ── Mini-Map Radar Rendering (every 5 frames) ──
                           if (tick3d % 5 === 0 && mmCtx) {
@@ -6966,7 +7410,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // â”€â”€ Pulse POI markers (animate opacity) â”€â”€
+                          // â"€â"€ Pulse POI markers (animate opacity) â"€â"€
 
                           poiMeshes.forEach(function (m) {
 
@@ -6990,7 +7434,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // â”€â”€ Update rover/probe model position â”€â”€
+                          // â"€â"€ Update rover/probe model position â"€â"€
 
                           roverGroup.position.x = playerPos.x;
 
@@ -7106,6 +7550,7 @@ const d = labToolData.solarSystem;
                           if (screenFx && screenFx.parentElement) screenFx.parentElement.removeChild(screenFx);
                           if (soundDesc && soundDesc.parentElement) soundDesc.parentElement.removeChild(soundDesc);
                           if (scannerOverlay && scannerOverlay.parentElement) scannerOverlay.parentElement.removeChild(scannerOverlay);
+                          if (descentOverlay && descentOverlay.parentElement) descentOverlay.parentElement.removeChild(descentOverlay);
                           clearInterval(soundTimer);
 
                         };
@@ -7136,7 +7581,7 @@ const d = labToolData.solarSystem;
 
                   }),
 
-                  // â”€â”€ Quiz Mode â”€â”€
+                  // â"€â"€ Quiz Mode â"€â"€
 
                   React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
 
@@ -7220,7 +7665,7 @@ const d = labToolData.solarSystem;
 
                     ),
 
-                    // â”€â”€ Planet Comparison â”€â”€
+                    // â"€â"€ Planet Comparison â"€â"€
 
                     React.createElement("div", { className: "mt-3" },
 

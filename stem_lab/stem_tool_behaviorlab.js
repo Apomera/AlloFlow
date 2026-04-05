@@ -48,11 +48,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
 
   window.StemLab.registerTool('behaviorLab', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83E\uDDEC',
     label: 'behaviorLab',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'reach_level_3', label: 'Advance to level 3 in behavior analysis', icon: '\uD83D\uDCCA', check: function(d) { return (d.blLevel || 1) >= 3; }, progress: function(d) { return 'Level ' + (d.blLevel || 1) + '/3'; } },
+      { id: 'record_10_data', label: 'Record 10 data points on the cumulative record', icon: '\uD83D\uDCDD', check: function(d) { return (d.blCumRecord || []).length >= 10; }, progress: function(d) { return (d.blCumRecord || []).length + '/10 points'; } },
+      { id: 'run_50_ticks', label: 'Run the simulation for 50+ ticks', icon: '\u25B6\uFE0F', check: function(d) { return (d.blTick || 0) >= 50; }, progress: function(d) { return (d.blTick || 0) + '/50 ticks'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;

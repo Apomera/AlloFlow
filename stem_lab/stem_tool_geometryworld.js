@@ -821,6 +821,12 @@
     name: 'Geometry World',
     icon: '\uD83E\uDDF1',
     category: 'explore',
+    questHooks: [
+      { id: 'score_5', label: 'Score 5 points in Geometry World', icon: '\uD83C\uDFAF', check: function(d) { return (d.score || 0) >= 5; }, progress: function(d) { return (d.score || 0) + '/5 pts'; } },
+      { id: 'answer_10', label: 'Answer 10 geometry questions', icon: '\uD83E\uDDE0', check: function(d) { return (d.totalQ || 0) >= 10; }, progress: function(d) { return (d.totalQ || 0) + '/10 questions'; } },
+      { id: 'talk_to_npc', label: 'Talk to an NPC character', icon: '\uD83D\uDCAC', check: function(d) { return d.showNpcDialog || false; }, progress: function(d) { return d.showNpcDialog ? 'Talking!' : 'Find an NPC'; } },
+      { id: 'enter_world', label: 'Enter the Geometry World', icon: '\uD83C\uDF0D', check: function(d) { return d.worldActive || false; }, progress: function(d) { return d.worldActive ? 'Exploring!' : 'Click Enter'; } }
+    ],
     render: function (ctx) {
       var React = ctx.React;
       var el = React.createElement;

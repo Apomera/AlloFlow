@@ -189,6 +189,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     icon: '\uD83E\uDD8A', label: 'Ecosystem Simulator',
     desc: 'Model predator-prey dynamics with Lotka\u2013Volterra equations, live canvas, sandbox mode, event injection, quiz & AI tutor.',
     color: 'emerald', category: 'science',
+    questHooks: [
+      { id: 'run_100_steps', label: 'Run the simulation for 100+ steps', icon: '\u25B6\uFE0F', check: function(d) { d = d.ecosystem || d; return (d.steps || 0) >= 100; }, progress: function(d) { d = d.ecosystem || d; return (d.steps || 0) + '/100 steps'; } },
+      { id: 'quiz_3_correct', label: 'Answer 3+ ecology quiz questions correctly', icon: '\uD83E\uDDE0', check: function(d) { d = d.ecosystem || d; return (d.quizCorrect || 0) >= 3; }, progress: function(d) { d = d.ecosystem || d; return (d.quizCorrect || 0) + '/3'; } },
+      { id: 'use_3_presets', label: 'Try 3 different ecosystem presets', icon: '\uD83C\uDF0D', check: function(d) { d = d.ecosystem || d; return Object.keys(d.presetsUsed || {}).length >= 3; }, progress: function(d) { d = d.ecosystem || d; return Object.keys(d.presetsUsed || {}).length + '/3 presets'; } },
+      { id: 'use_all_graph_views', label: 'View all graph types (population, phase, energy)', icon: '\uD83D\uDCCA', check: function(d) { d = d.ecosystem || d; return Object.keys(d.graphViewsUsed || {}).length >= 3; }, progress: function(d) { d = d.ecosystem || d; return Object.keys(d.graphViewsUsed || {}).length + '/3 views'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

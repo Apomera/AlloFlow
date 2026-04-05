@@ -28,6 +28,12 @@
     name: 'Cyber Defense Lab',
     icon: '\uD83D\uDEE1\uFE0F',
     category: 'tech',
+    questHooks: [
+      { id: 'phish_score_3', label: 'Identify 3 phishing emails correctly', icon: '\uD83C\uDFA3', check: function(d) { return (d.phishScore || 0) >= 3; }, progress: function(d) { return (d.phishScore || 0) + '/3'; } },
+      { id: 'phish_score_5', label: 'Identify 5 phishing emails correctly', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return (d.phishScore || 0) >= 5; }, progress: function(d) { return (d.phishScore || 0) + '/5'; } },
+      { id: 'phish_streak_3', label: 'Get a 3-answer phishing streak', icon: '\uD83D\uDD25', check: function(d) { return (d.phishStreak || 0) >= 3; }, progress: function(d) { return (d.phishStreak || 0) + '/3 streak'; } },
+      { id: 'test_password', label: 'Test a password in the strength checker', icon: '\uD83D\uDD10', check: function(d) { return !!(d.pwInput && d.pwInput.length > 0); }, progress: function(d) { return d.pwInput ? 'Tested!' : 'Enter a password'; } }
+    ],
     render: function (ctx) {
     var React = ctx.React;
     var el = React.createElement;

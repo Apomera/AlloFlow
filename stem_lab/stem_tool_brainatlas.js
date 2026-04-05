@@ -10,6 +10,10 @@
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'explore_3_views', label: 'Explore 3 brain views', icon: '🧠', check: function(d) { return Object.keys(d.viewsExplored || {}).length >= 3; }, progress: function(d) { return Object.keys(d.viewsExplored || {}).length + '/3 views'; } },
+      { id: 'quiz_3', label: 'Answer 3 brain quiz questions', icon: '🎯', check: function(d) { return (d.quizCorrect || 0) >= 3; }, progress: function(d) { return (d.quizCorrect || 0) + '/3'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

@@ -10,6 +10,10 @@
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'explore_3_views', label: 'Explore 3 brain views', icon: '🧠', check: function(d) { return Object.keys(d.viewsExplored || {}).length >= 3; }, progress: function(d) { return Object.keys(d.viewsExplored || {}).length + '/3 views'; } },
+      { id: 'quiz_3', label: 'Answer 3 brain quiz questions', icon: '🎯', check: function(d) { return (d.quizCorrect || 0) >= 3; }, progress: function(d) { return (d.quizCorrect || 0) + '/3'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -43,10 +47,20 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (brainAtlas) ──
       return (function() {
 var d = labToolData.brainAtlas || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('brainAtlas', 'init', {
+              first: 'Brain Atlas loaded. Explore brain regions, their functions, and neural pathways in an interactive 3D model.',
+              repeat: 'Brain Atlas active.',
+              terse: 'Brain Atlas.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () {
   // WCAG 4.1.3: Status live region for dynamic content announcements
@@ -3999,7 +4013,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
 
-                      React.createElement("button", { "aria-label": "Function", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
+                      React.createElement("button", { "aria-label": "Close region detail panel", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
 
                     ),
 

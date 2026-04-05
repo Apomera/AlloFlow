@@ -54,11 +54,16 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 physics (physics) ═══
   window.StemLab.registerTool('physics', {
-    icon: '🔬',
+    icon: '\uD83D\uDE80',
     label: 'Physics Simulator',
     desc: 'Launch projectiles, explore kinematics, and learn Newtons laws',
     color: 'sky',
     category: 'science',
+    questHooks: [
+      { id: 'hit_3_targets', label: 'Hit 3 targets in target practice', icon: '\uD83C\uDFAF', check: function(d) { return (d.targetScore || 0) >= 3; }, progress: function(d) { return (d.targetScore || 0) + '/3 targets'; } },
+      { id: 'complete_target_round', label: 'Complete a full target round', icon: '\uD83C\uDFC6', check: function(d) { return (d.targetRound || 1) >= 2; }, progress: function(d) { return (d.targetRound || 1) >= 2 ? 'Done!' : 'Round ' + (d.targetRound || 1); } },
+      { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

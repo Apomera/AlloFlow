@@ -50,6 +50,10 @@ window.StemLab = window.StemLab || {
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'toggle_layers', label: 'Toggle 3 galaxy visualization layers', icon: '🌌', check: function(d) { return Object.keys(d.layersToggled || {}).length >= 3; }, progress: function(d) { return Object.keys(d.layersToggled || {}).length + '/3'; } },
+      { id: 'view_lifecycle', label: 'Explore stellar lifecycle', icon: '⭐', check: function(d) { return d.showLifecycle || false; }, progress: function(d) { return d.showLifecycle ? 'Viewing!' : 'Toggle lifecycle'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -82,6 +86,7 @@ window.StemLab = window.StemLab || {
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
+      var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
       var renderTutorial = ctx.renderTutorial || function() { return null; };
       var _tutGalaxy = ctx._tutGalaxy || [];
@@ -440,6 +445,12 @@ if (!window._galaxyHasLoadedOnce) {
             if (canvasEl._galaxyInit) return;
 
             canvasEl._galaxyInit = true;
+            // Canvas Narration: galaxy init
+            if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'init', {
+              first: 'Galaxy Explorer loaded. A 3-D view of the Milky Way with ' + starCount.toLocaleString() + ' stars. Drag to orbit, scroll to zoom. Explore galaxy types, warp to locations, and travel through cosmic time.',
+              repeat: 'Galaxy Explorer ready.',
+              terse: 'Galaxy Explorer ready.'
+            });
 
             var doInit = function () { loadGalaxyPP(function () { initGalaxy(canvasEl); }); };
 
@@ -1335,7 +1346,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
 
-                  return React.createElement("button", { "aria-label": "Action",
+                  return React.createElement("button", { "aria-label": "Switch to " + m.label + " mode",
 
                     key: m.key, onClick: function () {
 
@@ -1364,7 +1375,18 @@ if (!window._galaxyHasLoadedOnce) {
                         }
                       }
 
-                      else { upd("quizMode", false); upd("simMode", m.key); }
+                      else {
+                        upd("quizMode", false); upd("simMode", m.key);
+                        // Canvas Narration: sim mode switch
+                        if (typeof canvasNarrate === 'function') {
+                          var modeDesc = m.key === 'galaxy' ? 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.' : 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.';
+                          canvasNarrate('galaxy', 'simMode', {
+                            first: 'Switched to ' + m.label + '. ' + modeDesc,
+                            repeat: m.label + ' mode active.',
+                            terse: m.label
+                          });
+                        }
+                      }
 
                     }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white')
 
@@ -1401,6 +1423,12 @@ if (!window._galaxyHasLoadedOnce) {
                       var cv = document.querySelector('[data-galaxy-canvas]');
 
                       if (cv) { cv._galaxyInit = false; cv._galaxyCleanup && cv._galaxyCleanup(); canvasRefCb(cv); }
+                      // Canvas Narration: galaxy type switch
+                      if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'galaxyType', {
+                        first: 'Switched to ' + gt.label + ' galaxy. ' + gt.desc + ' Example: ' + gt.example + '.',
+                        repeat: gt.label + ' galaxy active.',
+                        terse: gt.label
+                      });
 
                     },
 
@@ -1572,6 +1600,12 @@ if (!window._galaxyHasLoadedOnce) {
                       var cv = document.querySelector('[data-galaxy-canvas]');
 
                       if (cv && cv._updateAge) cv._updateAge(val);
+                      // Canvas Narration: cosmic age change
+                      if (typeof canvasNarrate === 'function') {
+                        var ep = getEpochNarration(val);
+                        var msg = val.toFixed(1) + ' billion years' + (ep ? '. ' + ep.title : '');
+                        canvasNarrate('galaxy', 'cosmicAge', msg, { debounce: 800 });
+                      }
 
                     },
 
@@ -1585,7 +1619,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex gap-1.5 mt-2" },
 
-                  React.createElement("button", { "aria-label": "Action",
+                  React.createElement("button", { "aria-label": "Toggle cosmic time-lapse playback",
 
                     onMouseDown: function (e) {
 
@@ -1715,7 +1749,15 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
 
-                WARP_POINTS.map(function (wp) { return React.createElement("button", { "aria-label": "Function", key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
+                WARP_POINTS.map(function (wp) { return React.createElement("button", { "aria-label": "Warp to " + wp.label, key: wp.label, onClick: function () {
+                  var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc);
+                  // Canvas Narration: warp navigation
+                  if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'warp', {
+                    first: 'Warping to ' + wp.label + '. ' + (wp.desc || 'Camera repositioning to this location.'),
+                    repeat: 'Warped to ' + wp.label + '.',
+                    terse: wp.label
+                  });
+                }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
 
               ),
 
@@ -1848,7 +1890,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   quizQ.options.map(function (opt) {
 
-                    return React.createElement("button", { "aria-label": "Select option",
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                       key: opt, disabled: !!d.quizFeedback,
 
@@ -2419,7 +2461,15 @@ if (!window._galaxyHasLoadedOnce) {
 
                     type: "range", min: 0.5, max: 50, step: 0.5, value: lifecycleMass, "aria-label": "Star mass in solar masses",
 
-                    onChange: function (e) { upd("lifecycleMass", parseFloat(e.target.value)); },
+                    onChange: function (e) {
+                      var massVal = parseFloat(e.target.value);
+                      upd("lifecycleMass", massVal);
+                      // Canvas Narration: star mass change
+                      if (typeof canvasNarrate === 'function') {
+                        var cat = massVal < 0.5 ? 'Brown Dwarf' : massVal < 0.8 ? 'Red Dwarf' : massVal < 2 ? 'Sun-like star' : massVal < 8 ? 'Hot star' : massVal < 25 ? 'Massive star' : 'Hypermassive star';
+                        canvasNarrate('galaxy', 'starMass', cat + ' at ' + massVal + ' solar masses', { debounce: 800 });
+                      }
+                    },
 
                     className: "flex-1 h-2 accent-amber-400 cursor-pointer"
 
@@ -2526,7 +2576,15 @@ if (!window._galaxyHasLoadedOnce) {
                         )
                       ) : null,
 
-                      React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function() { upd('activeStage', s.id); }, className: "flex items-center gap-3 p-2 rounded-xl border transition-all cursor-pointer " + (isDeathBranch ? "ml-6 " : "") + (isActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isActive ? s.color : s.color + '55', background: isActive ? s.color + '25' : s.color + '15' } },
+                      React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function() {
+                        upd('activeStage', s.id);
+                        // Canvas Narration: lifecycle stage selection
+                        if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'stageSelect', {
+                          first: s.emoji + ' ' + s.name + '. ' + s.desc,
+                          repeat: s.name + ' stage selected.',
+                          terse: s.name
+                        });
+                      }, className: "flex items-center gap-3 p-2 rounded-xl border transition-all cursor-pointer " + (isDeathBranch ? "ml-6 " : "") + (isActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isActive ? s.color : s.color + '55', background: isActive ? s.color + '25' : s.color + '15' } },
                         React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("p", { className: "text-[11px] font-bold leading-tight", style: { color: s.color } }, s.name),

@@ -217,7 +217,7 @@ exports.ltiLogin = onRequest(
       response_type: "id_token",
       response_mode: "form_post",
       client_id: client_id || LTI_CLIENT_ID.value(),
-      redirect_uri: `https://us-central1-prismflow-911fe.cloudfunctions.net/ltiLaunch`,
+      redirect_uri: `https://${req.headers.host || req.hostname}/ltiLaunch`,
       login_hint,
       nonce,
       state,
@@ -300,7 +300,9 @@ exports.ltiLaunch = onRequest(
       });
 
       // Redirect to AlloFlow with session info
-      const alloFlowUrl = new URL("https://prismflow-911fe.web.app");
+      // Derive hosting URL from the Cloud Functions hostname (same Firebase project)
+      const projectId = (req.headers.host || "").replace(/^us-central1-/, "").replace(/\.cloudfunctions\.net$/, "") || "prismflow-911fe";
+      const alloFlowUrl = new URL(`https://${projectId}.web.app`);
       alloFlowUrl.searchParams.set("lti", "1");
       alloFlowUrl.searchParams.set("session", sessionToken);
       alloFlowUrl.searchParams.set("course", ltiClaims.context.title || "Course");

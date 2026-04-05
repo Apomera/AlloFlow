@@ -359,6 +359,12 @@
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'explore_5_materials', label: 'Explore 5 decomposable materials', icon: '\uD83E\uDDEB', check: function(d) { return (d.materialsExplored || []).length >= 5; }, progress: function(d) { return (d.materialsExplored || []).length + '/5'; } },
+      { id: 'explore_15_materials', label: 'Explore 15 materials (master decomposer!)', icon: '\uD83C\uDFC6', check: function(d) { return (d.materialsExplored || []).length >= 15; }, progress: function(d) { return (d.materialsExplored || []).length + '/15'; } },
+      { id: 'quiz_score_5', label: 'Score 5+ on the decomposition quiz', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizScore || 0) >= 5; }, progress: function(d) { return (d.quizScore || 0) + '/5'; } },
+      { id: 'streak_3', label: 'Get a 3-answer correct streak', icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 3; }, progress: function(d) { return (d.bestStreak || 0) + '/3'; } }
+    ],
     render: function(ctx) {
       /* ── Aliases ── */
       var React = ctx.React;

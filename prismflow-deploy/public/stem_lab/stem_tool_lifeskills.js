@@ -1401,7 +1401,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-1' }, '\uD83D\uDCCF Recipe Scaler'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mb-2' },
               RECIPES.map(function(r, i) {
-                return h('button', { 'aria-label': 'Update setting', key: i, onClick: function() { updMulti({ cookRecipeIdx: i, cookScale: 1 }); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' + (cookRecipeIdx % RECIPES.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200') }, r.icon + ' ' + r.name);
+                return h('button', { 'aria-label': 'Select cooking recipe', key: i, onClick: function() { updMulti({ cookRecipeIdx: i, cookScale: 1 }); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' + (cookRecipeIdx % RECIPES.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200') }, r.icon + ' ' + r.name);
               })
             ),
             h('div', { className: 'flex items-center gap-3 mb-2' },

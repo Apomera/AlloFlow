@@ -35,11 +35,17 @@ window.StemLab = window.StemLab || {
   var _drag = { sym: null, proofKey: null };
 
   window.StemLab.registerTool('logicLab', {
-    icon: '🧠',
+    icon: '\uD83E\uDDE0',
     label: 'Logic Lab',
     desc: 'Propositional Logic, Proofs & Reasoning',
     color: 'violet',
     category: 'math',
+    questHooks: [
+      { id: 'build_truth_table', label: 'Build a truth table for a logical expression', icon: '\uD83D\uDCCB', check: function(d) { return d.expression && d.expression !== 'P \u2192 Q'; }, progress: function(d) { return d.expression && d.expression !== 'P \u2192 Q' ? 'Built!' : 'Modify the expression'; } },
+      { id: 'complete_challenge', label: 'Complete a logic challenge', icon: '\uD83C\uDFAF', check: function(d) { return (d.currentChallenge || 0) >= 1; }, progress: function(d) { return (d.currentChallenge || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'write_3_proof_steps', label: 'Write 3 proof steps', icon: '\u270D\uFE0F', check: function(d) { return (d.proofSteps || []).length >= 3; }, progress: function(d) { return (d.proofSteps || []).length + '/3 steps'; } },
+      { id: 'complete_3_challenges', label: 'Complete 3 logic challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.currentChallenge || 0) >= 3; }, progress: function(d) { return (d.currentChallenge || 0) + '/3'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

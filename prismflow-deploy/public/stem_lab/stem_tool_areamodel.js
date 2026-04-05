@@ -503,7 +503,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
             h('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDD16 AI Area Model Tutor'),
-            h('button', { 'aria-label': 'Update setting', onClick: function() { upd({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
+            h('button', { 'aria-label': 'Close AI tutor panel', onClick: function() { upd({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
           ),
           h('div', { className: 'flex gap-2' },
             h('input', {

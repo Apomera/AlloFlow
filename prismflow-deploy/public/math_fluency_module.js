@@ -41,8 +41,9 @@
   }
 
   function getBenchmark(grade, operation) {
-    var g = String(grade || '3').replace(/\D/g, '') || '3';
-    if (g === '0') g = 'K';
+    var raw = String(grade || '3').trim();
+    if (raw.toUpperCase() === 'K') { var g = 'K'; }
+    else { var g = raw.replace(/\D/g, '') || '3'; if (g === '0') g = 'K'; }
     var gradeData = BENCHMARKS[g] || BENCHMARKS['3'];
     var op = operation === 'mixed' ? 'add' : operation;
     var opData = gradeData[op] || gradeData.add || { fall: 30, winter: 40, spring: 50 };

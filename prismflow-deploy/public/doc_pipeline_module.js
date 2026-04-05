@@ -28,7 +28,7 @@ var createDocPipeline = function (deps) {
     return window.__docPipelineState || {};
   };
   // Re-expose state vars as getters so existing code works unchanged
-  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage, selectedFont, responses, history, inputText, gradeLevel, projectName, studentNickname, isTeacherMode, generatedContent, pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult, pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect, pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns, customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading, setPdfFixStep, setPendingPdfBase64, setPendingPdfFile, setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex, setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle, setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting, setExportAuditLoading, setExportAuditResult, exportAuditResult;
+  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage, selectedFont, responses, history, inputText, gradeLevel, projectName, studentNickname, isTeacherMode, generatedContent, pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult, pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect, pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns, customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, pdfTargetScore, setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading, setPdfFixStep, setPendingPdfBase64, setPendingPdfFile, setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex, setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle, setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting, setExportAuditLoading, setExportAuditResult;
   // Bind all vars from the state bag before each public function call
   var _bindState = function () {
     var s = _s();
@@ -62,6 +62,7 @@ var createDocPipeline = function (deps) {
     exportStylePrompt = s.exportStylePrompt;
     pdfFixModeRef = s.pdfFixModeRef;
     pdfPreviewRef = s.pdfPreviewRef;
+    pdfTargetScore = s.pdfTargetScore || 90;
     setPdfAuditResult = s.setPdfAuditResult;
     setPdfAuditLoading = s.setPdfAuditLoading;
     setPdfFixResult = s.setPdfFixResult;
@@ -81,7 +82,6 @@ var createDocPipeline = function (deps) {
     setIsExtracting = s.setIsExtracting;
     setExportAuditLoading = s.setExportAuditLoading;
     setExportAuditResult = s.setExportAuditResult;
-    exportAuditResult = s.exportAuditResult;
   };
 
   // ── PDF Accessibility Audit ──
@@ -800,7 +800,502 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         return `id="${id}-${counter}"`;
       });
     });
+
+    // 14. Fix orphaned <li> elements not inside <ul> or <ol>
+    accessibleHtml = accessibleHtml.replace(/(?<!\n\s*<\/[uo]l>)\s*(<li[\s>])/gi, (match, li, offset) => {
+      // Check if this <li> is already inside a <ul> or <ol> by looking back
+      const before = accessibleHtml.substring(Math.max(0, offset - 200), offset);
+      const lastUlOl = Math.max(before.lastIndexOf('<ul'), before.lastIndexOf('<ol'));
+      const lastClose = Math.max(before.lastIndexOf('</ul'), before.lastIndexOf('</ol'));
+      if (lastUlOl > lastClose) return match; // already inside a list
+      aiFixCount++;
+      return '<ul>' + li;
+    });
+    // Close any unclosed <ul> we just opened (simplified — catches most cases)
+    const openUls = (accessibleHtml.match(/<ul[\s>]/gi) || []).length;
+    const closeUls = (accessibleHtml.match(/<\/ul>/gi) || []).length;
+    if (openUls > closeUls) {
+      for (let ui = 0; ui < openUls - closeUls; ui++) {
+        accessibleHtml = accessibleHtml.replace(/<\/li>(?![\s\S]*?<li[\s>])/, '</li></ul>');
+        aiFixCount++;
+      }
+    }
+
+    // 15. Fix form inputs without labels
+    accessibleHtml = accessibleHtml.replace(/<input([^>]*)>/gi, (match, attrs) => {
+      if (/aria-label|aria-labelledby|id="[^"]*"/.test(attrs) && /<label[^>]*for=/.test(accessibleHtml)) return match;
+      if (/aria-label/.test(attrs)) return match;
+      const type = (attrs.match(/type="([^"]*)"/i) || [])[1] || 'text';
+      const placeholder = (attrs.match(/placeholder="([^"]*)"/i) || [])[1] || '';
+      const name = (attrs.match(/name="([^"]*)"/i) || [])[1] || '';
+      const label = placeholder || name || type;
+      if (label && label !== 'hidden' && label !== 'submit') {
+        aiFixCount++;
+        return `<input aria-label="${label}"${attrs}>`;
+      }
+      return match;
+    });
+
+    // 16. Fix buttons without accessible names
+    accessibleHtml = accessibleHtml.replace(/<button([^>]*)>\s*<\/button>/gi, (match, attrs) => {
+      if (/aria-label/.test(attrs)) return match;
+      aiFixCount++;
+      return `<button aria-label="Button"${attrs}></button>`;
+    });
+
+    // 17. Fix iframes without titles
+    accessibleHtml = accessibleHtml.replace(/<iframe([^>]*)>/gi, (match, attrs) => {
+      if (/title=/.test(attrs)) return match;
+      const src = (attrs.match(/src="([^"]*)"/i) || [])[1] || '';
+      const domain = src.replace(/https?:\/\//, '').split('/')[0].substring(0, 30) || 'Embedded content';
+      aiFixCount++;
+      return `<iframe title="${domain}"${attrs}>`;
+    });
+
+    // 18. Fix positive tabindex values (should be 0 or -1)
+    accessibleHtml = accessibleHtml.replace(/tabindex="(\d+)"/gi, (match, val) => {
+      if (val === '0' || val === '-1') return match;
+      aiFixCount++;
+      return 'tabindex="0"';
+    });
+
+    // 19. Fix role="img" without alt/aria-label
+    accessibleHtml = accessibleHtml.replace(/role="img"([^>]*)>/gi, (match, attrs) => {
+      if (/aria-label|alt=/.test(attrs)) return match;
+      aiFixCount++;
+      return `role="img" aria-label="Image"${attrs}>`;
+    });
+
+    // 20. Fix <svg> without accessible name
+    accessibleHtml = accessibleHtml.replace(/<svg([^>]*)>/gi, (match, attrs) => {
+      if (/aria-label|aria-hidden|role="presentation"/.test(attrs)) return match;
+      if (/<title>/.test(accessibleHtml.substring(accessibleHtml.indexOf(match), accessibleHtml.indexOf(match) + 500))) return match;
+      aiFixCount++;
+      return `<svg aria-hidden="true"${attrs}>`;
+    });
+
+    // 21. Ensure <html> has both lang and dir attributes
+    if (accessibleHtml.includes('lang="ar"') || accessibleHtml.includes('lang="he"') || accessibleHtml.includes('lang="fa"') || accessibleHtml.includes('lang="ur"')) {
+      if (!accessibleHtml.includes('dir=')) {
+        accessibleHtml = accessibleHtml.replace(/<html([^>]*)>/, '<html dir="rtl"$1>');
+        aiFixCount++;
+      }
+    }
+
+    // 22. Ensure all <table> elements have role="table" for screen readers
+    accessibleHtml = accessibleHtml.replace(/<table(?![^>]*role=)([^>]*)>/gi, () => {
+      aiFixCount++;
+      return '<table role="table"$1>';
+    });
+
+    // 23. Add aria-current="page" to self-referencing links (common a11y best practice)
+    // (skipped — requires knowing the current page URL)
+
+    // 24. Ensure <nav> elements have aria-label
+    accessibleHtml = accessibleHtml.replace(/<nav(?![^>]*aria-label)([^>]*)>/gi, () => {
+      aiFixCount++;
+      return '<nav aria-label="Navigation"$1>';
+    });
+
+    // 25. Strip user-scalable=no and maximum-scale=1 (prevents pinch-to-zoom — WCAG 1.4.4)
+    accessibleHtml = accessibleHtml.replace(/user-scalable\s*=\s*no/gi, () => {
+      aiFixCount++;
+      return 'user-scalable=yes';
+    });
+    accessibleHtml = accessibleHtml.replace(/maximum-scale\s*=\s*1(\.0)?/gi, () => {
+      aiFixCount++;
+      return 'maximum-scale=5';
+    });
+
+    // 26. Fix invalid ARIA roles (strip unknown roles rather than leave broken ones)
+    const validRoles = ['alert', 'alertdialog', 'application', 'article', 'banner', 'button', 'cell', 'checkbox', 'columnheader', 'combobox', 'complementary', 'contentinfo', 'definition', 'dialog', 'directory', 'document', 'feed', 'figure', 'form', 'grid', 'gridcell', 'group', 'heading', 'img', 'link', 'list', 'listbox', 'listitem', 'log', 'main', 'marquee', 'math', 'menu', 'menubar', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'navigation', 'none', 'note', 'option', 'presentation', 'progressbar', 'radio', 'radiogroup', 'region', 'row', 'rowgroup', 'rowheader', 'scrollbar', 'search', 'searchbox', 'separator', 'slider', 'spinbutton', 'status', 'switch', 'tab', 'table', 'tablist', 'tabpanel', 'term', 'textbox', 'timer', 'toolbar', 'tooltip', 'tree', 'treegrid', 'treeitem'];
+    accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (match, role) => {
+      if (validRoles.includes(role.toLowerCase())) return match;
+      aiFixCount++;
+      warnLog('[Det Fix] Removed invalid ARIA role: ' + role);
+      return '';
+    });
+
+    // 27. Fix <select> elements without accessible names
+    accessibleHtml = accessibleHtml.replace(/<select(?![^>]*aria-label)(?![^>]*id="([^"]*)")([^>]*)>/gi, (match, id, attrs) => {
+      if (/aria-label/.test(match)) return match;
+      const name = (match.match(/name="([^"]*)"/i) || [])[1] || 'Selection';
+      aiFixCount++;
+      return `<select aria-label="${name}"${attrs}>`;
+    });
+
+    // 28. Fix <object> and <embed> without alt/aria-label
+    accessibleHtml = accessibleHtml.replace(/<(object|embed)(?![^>]*aria-label)(?![^>]*alt=)([^>]*)>/gi, (match, tag, attrs) => {
+      aiFixCount++;
+      return `<${tag} aria-label="Embedded content"${attrs}>`;
+    });
+
+    // 29. Ensure <aside> elements have aria-label
+    accessibleHtml = accessibleHtml.replace(/<aside(?![^>]*aria-label)([^>]*)>/gi, () => {
+      aiFixCount++;
+      return '<aside aria-label="Supplementary content"$1>';
+    });
+
+    // 30. Fix definition lists: ensure <dt>/<dd> are inside <dl>
+    accessibleHtml = accessibleHtml.replace(/<(dt|dd)([^>]*)>/gi, (match, tag, attrs, offset) => {
+      const before = accessibleHtml.substring(Math.max(0, offset - 300), offset);
+      const lastDl = before.lastIndexOf('<dl');
+      const lastCloseDl = before.lastIndexOf('</dl');
+      if (lastDl > lastCloseDl) return match; // already inside dl
+      aiFixCount++;
+      return '<dl>' + match;
+    });
+
+    // 31. Add role="presentation" to layout tables (tables without th/thead)
+    accessibleHtml = accessibleHtml.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, (match, attrs, content) => {
+      if (/<th[\s>]/i.test(content) || /<thead/i.test(content) || /role=/.test(attrs)) return match;
+      // No headers = likely a layout table
+      if (/<td[\s>]/i.test(content)) {
+        aiFixCount++;
+        return `<table role="presentation"${attrs}>${content}</table>`;
+      }
+      return match;
+    });
+
+    // 32. Ensure <footer> has role="contentinfo" if it doesn't have a role
+    accessibleHtml = accessibleHtml.replace(/<footer(?![^>]*role=)([^>]*)>/gi, () => {
+      aiFixCount++;
+      return '<footer role="contentinfo"$1>';
+    });
+
+    // 33. Ensure <header> has role="banner" if it doesn't have a role
+    accessibleHtml = accessibleHtml.replace(/<header(?![^>]*role=)([^>]*)>/gi, () => {
+      aiFixCount++;
+      return '<header role="banner"$1>';
+    });
+
+    // 34. Fix aria-hidden="true" on elements containing focusable children
+    accessibleHtml = accessibleHtml.replace(/aria-hidden="true"([^>]*>[\s\S]*?(?:<a\b|<button\b|<input\b|<select\b|<textarea\b|tabindex="0"))/gi, match => {
+      aiFixCount++;
+      return match.replace('aria-hidden="true"', 'aria-hidden="false"');
+    });
+
+    // 35. Fix scope attribute on <td> (only valid on <th>)
+    accessibleHtml = accessibleHtml.replace(/<td([^>]*)\bscope="[^"]*"([^>]*)>/gi, (match, before, after) => {
+      aiFixCount++;
+      return `<td${before}${after}>`;
+    });
+
+    // 36. Ensure all <section> elements have aria-label or aria-labelledby
+    accessibleHtml = accessibleHtml.replace(/<section(?![^>]*aria-label)([^>]*)>/gi, (match, attrs) => {
+      // Try to find a heading inside for labelling
+      const afterMatch = accessibleHtml.substring(accessibleHtml.indexOf(match));
+      const headingMatch = afterMatch.match(/<h[1-6][^>]*>([^<]+)/i);
+      const label = headingMatch ? headingMatch[1].trim().substring(0, 60) : 'Content section';
+      aiFixCount++;
+      return `<section aria-label="${label}"${attrs}>`;
+    });
+
+    // 37. Ensure <figure> elements have figcaption or aria-label
+    accessibleHtml = accessibleHtml.replace(/<figure(?![^>]*aria-label)([^>]*)>([\s\S]*?)<\/figure>/gi, (match, attrs, content) => {
+      if (/<figcaption/i.test(content)) return match; // has figcaption, fine
+      const altMatch = content.match(/alt="([^"]*)"/i);
+      const label = altMatch ? altMatch[1] : 'Figure';
+      aiFixCount++;
+      return `<figure aria-label="${label}"${attrs}>${content}</figure>`;
+    });
+
+    // 38. Add lang attribute to common non-English text patterns
+    // (Detect Spanish, French, Arabic script and wrap in lang spans)
+    accessibleHtml = accessibleHtml.replace(/([\u0600-\u06FF]{5,})/g, match => {
+      aiFixCount++;
+      return `<span lang="ar">${match}</span>`;
+    });
+
+    // 39. Ensure all <ul>/<ol> have role="list" for Safari VoiceOver compatibility
+    accessibleHtml = accessibleHtml.replace(/<(ul|ol)(?![^>]*role=)([^>]*)>/gi, (match, tag, attrs) => {
+      // Only add if list-style is set to none (Safari bug requires explicit role)
+      if (/list-style\s*:\s*none/i.test(match) || /list-style-type\s*:\s*none/i.test(accessibleHtml)) {
+        aiFixCount++;
+        return `<${tag} role="list"${attrs}>`;
+      }
+      return match;
+    });
     if (aiFixCount > 0) log(`Applied ${aiFixCount} deterministic fixes`);
+
+    // ── Phase 3c: Surgical AI-diagnosed fixes ──
+    // AI diagnoses specific issues → deterministic micro-tools fix each one precisely.
+    // Runs BEFORE the full AI rewrite loop — cheaper, safer, more precise.
+    // Whatever remains after this goes to the full rewrite loop (Phase 5).
+    log('Phase 3c: Surgical AI-diagnosed fixes...');
+    const surgicalTools = {
+      fix_alt_text: function (html, p) {
+        if (!p.index && p.index !== 0) return html;
+        let idx = 0;
+        return html.replace(/<img([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== p.index) return m;
+          if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
+          return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      fix_heading: function (html, p) {
+        if (!p.newLevel) return html;
+        let idx = 0;
+        return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function (m, lv, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
+        });
+      },
+      fix_link_text: function (html, p) {
+        if (!p.newText) return html;
+        let idx = 0;
+        return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function (m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
+          if (['click here', 'here', 'read more', 'more', 'link', 'learn more'].indexOf(text) !== -1 || p.force) {
+            return '<a' + attrs + '>' + p.newText + '</a>';
+          }
+          return m;
+        });
+      },
+      fix_table_caption: function (html, p) {
+        if (!p.caption) return html;
+        let idx = 0;
+        return html.replace(/<table([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          return '<table' + attrs + '><caption>' + p.caption + '</caption>';
+        });
+      },
+      fix_aria_label: function (html, p) {
+        if (!p.tag || !p.label) return html;
+        let idx = 0;
+        var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
+        return html.replace(re, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+          return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      fix_lang: function (html, p) {
+        if (!p.lang) return html;
+        return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"').replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
+      },
+      // Add scope to a specific table header
+      fix_th_scope: function (html, p) {
+        var scope = p.scope || 'col';
+        let idx = 0;
+        return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function (m, attrs) {
+          if (p.index !== undefined && idx++ !== p.index) return m;
+          return '<th scope="' + scope + '"' + attrs + '>';
+        });
+      },
+      // Remove an empty heading by index
+      fix_remove_empty_heading: function (html, p) {
+        let idx = 0;
+        return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function (m) {
+          if (p.index !== undefined && idx++ !== p.index) return m;
+          return '';
+        });
+      },
+      // Add label to a form input by index
+      fix_input_label: function (html, p) {
+        if (!p.label) return html;
+        let idx = 0;
+        return html.replace(/<input([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+          return '<input aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      // Add accessible name to a button by index
+      fix_button_name: function (html, p) {
+        if (!p.label) return html;
+        let idx = 0;
+        return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function (m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (content.trim()) return m; // has content, leave it
+          return '<button aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>' + content + '</button>';
+        });
+      },
+      // Add title to an iframe by index
+      fix_iframe_title: function (html, p) {
+        if (!p.title) return html;
+        let idx = 0;
+        return html.replace(/<iframe([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/title=/i.test(attrs)) return m.replace(/title="[^"]*"/, 'title="' + p.title.replace(/"/g, '&quot;') + '"');
+          return '<iframe title="' + p.title.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      // Wrap orphaned content in a landmark
+      fix_add_landmark: function (html, p) {
+        var tag = p.tag || 'section';
+        var label = p.label || 'Content';
+        var selector = p.selector || 'body';
+        // Simple: wrap first non-landmarked block of content
+        if (selector === 'body' && !html.includes('<main')) {
+          return html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main" aria-label="' + label + '">').replace('</body>', '</main>\n</body>');
+        }
+        return html;
+      },
+      // Fix duplicate ID by appending suffix
+      fix_duplicate_id: function (html, p) {
+        if (!p.id) return html;
+        let count = 0;
+        return html.replace(new RegExp('id="' + p.id + '"', 'g'), function (m) {
+          count++;
+          if (count === 1) return m;
+          return 'id="' + p.id + '-' + count + '"';
+        });
+      },
+      // Add figcaption to a figure by index
+      fix_figcaption: function (html, p) {
+        if (!p.caption) return html;
+        let idx = 0;
+        return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function (m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/<figcaption/i.test(content)) return m; // already has one
+          return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
+        });
+      },
+      // Set document title
+      fix_title: function (html, p) {
+        if (!p.title) return html;
+        if (/<title>[^<]*<\/title>/i.test(html)) return html.replace(/<title>[^<]*<\/title>/i, '<title>' + p.title + '</title>');
+        return html.replace('</head>', '<title>' + p.title + '</title>\n</head>');
+      },
+      // Wrap text in a lang span for multilingual content
+      fix_lang_span: function (html, p) {
+        if (!p.text || !p.lang) return html;
+        return html.replace(p.text, '<span lang="' + p.lang + '">' + p.text + '</span>');
+      },
+      // Change a specific element's text color for contrast compliance
+      fix_contrast: function (html, p) {
+        if (!p.oldColor || !p.newColor) return html;
+        return html.replace(new RegExp(p.oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), p.newColor);
+      },
+      // Promote first row of a table to thead with th elements
+      fix_table_header_row: function (html, p) {
+        let idx = 0;
+        return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function (m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/<thead/i.test(content)) return m; // already has thead
+          // Convert first <tr> with <td> to <thead> with <th>
+          var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function (row, rAttrs, cells) {
+            var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
+            return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
+          });
+          return '<table' + attrs + '>' + fixed + '</table>';
+        });
+      },
+      // Wrap an acronym/abbreviation in <abbr> with expansion
+      fix_abbreviation: function (html, p) {
+        if (!p.abbr || !p.title) return html;
+        var re = new RegExp('\\b' + p.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b');
+        var replaced = false;
+        return html.replace(re, function (m) {
+          if (replaced) return m; // only wrap first occurrence
+          replaced = true;
+          return '<abbr title="' + p.title.replace(/"/g, '&quot;') + '">' + m + '</abbr>';
+        });
+      },
+      // Mark an image as decorative (empty alt + role=presentation)
+      fix_image_decorative: function (html, p) {
+        let idx = 0;
+        return html.replace(/<img([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
+          return '<img alt="" role="presentation"' + cleaned + '>';
+        });
+      },
+      // Wrap orphaned list items in a proper list container
+      fix_list_wrap: function (html, p) {
+        var tag = p.ordered ? 'ol' : 'ul';
+        // Find orphaned <li> and wrap them
+        return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function (m, liBlock) {
+          // Check if already inside a list
+          var before = html.substring(Math.max(0, html.indexOf(m) - 100), html.indexOf(m));
+          if (/<[uo]l[^>]*>\s*$/i.test(before)) return m; // already wrapped
+          return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
+        });
+      },
+      // Add skip-to-content link if missing
+      fix_skip_nav: function (html) {
+        if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
+        return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
+      },
+      // Set text spacing for readability (letter-spacing, word-spacing, line-height)
+      fix_text_spacing: function (html, p) {
+        var css = '';
+        if (p.letterSpacing) css += 'letter-spacing:' + p.letterSpacing + ';';
+        if (p.wordSpacing) css += 'word-spacing:' + p.wordSpacing + ';';
+        if (p.lineHeight) css += 'line-height:' + p.lineHeight + ';';
+        if (!css) return html;
+        var style = '<style id="alloflow-text-spacing">body{' + css + '}</style>';
+        if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
+        return style + html;
+      }
+    };
+
+    // Run surgical diagnosis (1 API call) + deterministic execution
+    try {
+      var preAxe = await runAxeAudit(accessibleHtml);
+      if (preAxe && preAxe.totalViolations > 0) {
+        var surgViolations = [].concat((preAxe.critical || []).map(function (v) {
+          return 'CRITICAL: ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)';
+        })).concat((preAxe.serious || []).map(function (v) {
+          return 'SERIOUS: ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)';
+        })).concat((preAxe.moderate || []).map(function (v) {
+          return 'MODERATE: ' + v.description + ' (' + v.id + ')';
+        })).slice(0, 12).join('\n');
+        var surgDiagnosis = await callGemini('You are an accessibility remediation expert. Analyze these axe-core violations and prescribe SPECIFIC targeted fixes.\n\n' + 'VIOLATIONS:\n' + surgViolations + '\n\n' + 'HTML (first 6000 chars for context):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\n' + 'Prescribe fixes using these tools (return ONLY a JSON array):\n\n' + 'CONTENT FIXES:\n' + '- fix_alt_text: { "tool": "fix_alt_text", "index": <img# 0-based>, "alt": "descriptive text" }\n' + '- fix_heading: { "tool": "fix_heading", "index": <heading# 0-based>, "newLevel": <1-6> }\n' + '- fix_link_text: { "tool": "fix_link_text", "index": <link# 0-based>, "newText": "descriptive text" }\n' + '- fix_figcaption: { "tool": "fix_figcaption", "index": <figure# 0-based>, "caption": "description" }\n' + '- fix_title: { "tool": "fix_title", "title": "document title" }\n' + '- fix_lang: { "tool": "fix_lang", "lang": "language code" }\n' + '- fix_lang_span: { "tool": "fix_lang_span", "text": "foreign text to wrap", "lang": "code" }\n\n' + 'TABLE FIXES:\n' + '- fix_table_caption: { "tool": "fix_table_caption", "index": <table# 0-based>, "caption": "description" }\n' + '- fix_th_scope: { "tool": "fix_th_scope", "index": <th# 0-based or omit for ALL>, "scope": "col" or "row" }\n\n' + 'FORM/INTERACTIVE FIXES:\n' + '- fix_input_label: { "tool": "fix_input_label", "index": <input# 0-based>, "label": "description" }\n' + '- fix_button_name: { "tool": "fix_button_name", "index": <button# 0-based>, "label": "description" }\n' + '- fix_iframe_title: { "tool": "fix_iframe_title", "index": <iframe# 0-based>, "title": "description" }\n\n' + 'STRUCTURE FIXES:\n' + '- fix_aria_label: { "tool": "fix_aria_label", "tag": "element", "index": <0-based>, "label": "description" }\n' + '- fix_add_landmark: { "tool": "fix_add_landmark", "tag": "main", "label": "Main content" }\n' + '- fix_remove_empty_heading: { "tool": "fix_remove_empty_heading", "index": <empty heading# 0-based> }\n' + '- fix_duplicate_id: { "tool": "fix_duplicate_id", "id": "the-duplicate-id" }\n\n' + 'VISUAL/READABILITY FIXES:\n' + '- fix_contrast: { "tool": "fix_contrast", "oldColor": "#hex", "newColor": "#hex" }\n' + '- fix_image_decorative: { "tool": "fix_image_decorative", "index": <img# 0-based> }\n' + '- fix_abbreviation: { "tool": "fix_abbreviation", "abbr": "WCAG", "title": "Web Content Accessibility Guidelines" }\n' + '- fix_text_spacing: { "tool": "fix_text_spacing", "letterSpacing": "0.05em", "lineHeight": "1.7" }\n\n' + 'TABLE/LIST FIXES:\n' + '- fix_table_header_row: { "tool": "fix_table_header_row", "index": <table# 0-based> }\n' + '- fix_list_wrap: { "tool": "fix_list_wrap", "ordered": false }\n' + '- fix_skip_nav: { "tool": "fix_skip_nav" }\n\n' + 'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' + 'Return ONLY a valid JSON array, no explanation or markdown.', true);
+
+        // Run 3 parallel diagnoses and merge — each catches different issues
+        var surgPromptBase = 'VIOLATIONS:\n' + surgViolations + '\n\nHTML (first 6000 chars):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\nUse the same tool format. Return ONLY a valid JSON array.';
+        var [surgDiagnosis2, surgDiagnosis3] = await Promise.all([callGemini('You are an independent accessibility expert (second opinion). Focus on content fixes — alt text quality, link descriptions, and heading structure.\n\n' + surgPromptBase, true), callGemini('You are a strict WCAG compliance auditor (third opinion). Focus on structural fixes — landmarks, ARIA, table headers, and form labels.\n\n' + surgPromptBase, true)]);
+
+        // Parse all diagnoses
+        var parseSurgical = function (raw) {
+          if (!raw) return [];
+          var fixes = [];
+          try {
+            fixes = JSON.parse(raw);
+          } catch (e) {
+            try {
+              fixes = JSON.parse(raw.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
+            } catch (e2) {
+              fixes = [];
+            }
+          }
+          return Array.isArray(fixes) ? fixes : [];
+        };
+        var fixes1 = parseSurgical(surgDiagnosis);
+        var fixes2 = parseSurgical(surgDiagnosis2);
+        var fixes3 = parseSurgical(surgDiagnosis3);
+
+        // Merge all 3: deduplicate by tool+index
+        var seenKeys = {};
+        var surgFixes = [];
+        [].concat(fixes1, fixes2, fixes3).forEach(function (fix) {
+          if (!fix || !fix.tool) return;
+          var key = fix.tool + '-' + (fix.index || 0) + '-' + (fix.tag || '');
+          if (!seenKeys[key]) {
+            seenKeys[key] = true;
+            surgFixes.push(fix);
+          }
+        });
+        var surgApplied = 0;
+        for (var si = 0; si < surgFixes.length; si++) {
+          var fix = surgFixes[si];
+          var tool = fix && fix.tool && surgicalTools[fix.tool];
+          if (tool) {
+            var before = accessibleHtml;
+            accessibleHtml = tool(accessibleHtml, fix);
+            if (accessibleHtml !== before) surgApplied++;
+          }
+        }
+        if (surgApplied > 0) {
+          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (3 parallel diagnoses, merged)');
+        }
+      }
+    } catch (surgErr) {
+      warnLog('[Surgical] Diagnosis failed (non-blocking):', surgErr?.message);
+    }
 
     // ── Phase 4: Verify with both engines ──
     log('Phase 4: Dual-engine verification...');
@@ -810,12 +1305,18 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     // Deterministic contrast fix
     if (batchAxeResults && batchAxeResults.critical.concat(batchAxeResults.serious).some(v => v.id === 'color-contrast')) {
       const cf = fixContrastViolations(accessibleHtml);
-      if (cf.fixCount > 0) { accessibleHtml = cf.html; log(`Fixed ${cf.fixCount} contrast violations`); }
+      if (cf.fixCount > 0) {
+        accessibleHtml = cf.html;
+        log(`Fixed ${cf.fixCount} contrast violations`);
+      }
     }
     // Deterministic list-structure fix
     if (batchAxeResults && batchAxeResults.critical.concat(batchAxeResults.serious).some(v => v.id === 'list')) {
       const lf = fixListViolations(accessibleHtml);
-      if (lf.fixCount > 0) { accessibleHtml = lf.html; log(`Fixed ${lf.fixCount} list-structure violations`); }
+      if (lf.fixCount > 0) {
+        accessibleHtml = lf.html;
+        log(`Fixed ${lf.fixCount} list-structure violations`);
+      }
     }
 
     // ── Phase 5: Self-correcting AI fix loop ──
@@ -850,10 +1351,9 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         }
 
         // Run axe-core (local, zero API calls) + 2 Gemini audits per pass
-        // 2 audits prevents false score swings from prematurely ending remediation
-        // Final pass gets 3 audits for statistical reliability
-        const isFinalPass = fp === batchMaxFix - 1 || curAxeResults && curAxeResults.totalViolations === 0;
-        const numAudits = isFinalPass ? 3 : 2;
+        // 3 parallel audits every pass — Flash calls are cheap, accuracy is priceless
+        // Prevents false score swings from prematurely ending or continuing remediation
+        const numAudits = 3;
         const auditPromises = [];
         for (let ai = 0; ai < numAudits; ai++) auditPromises.push(auditOutputAccessibility(accessibleHtml));
         auditPromises.push(runAxeAudit(accessibleHtml)); // axe-core is local — no API cost
@@ -894,8 +1394,9 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         bestAiScore = newAi;
         bestAxeViolations = newAxe;
         log(`Pass ${fp + 1}: AI ${newAi}/100, axe ${newAxe} violations`);
-        if (newAxe === 0 && newAi >= 90) {
-          log('Excellent \u2014 stopping');
+        const targetScore = pdfTargetScore || 90;
+        if (newAxe === 0 && newAi >= targetScore) {
+          log(`Target score ${targetScore} reached (${newAi}) with 0 violations \u2014 stopping`);
           break;
         }
         const bMinDet = Math.max(2, Math.round(rvSEM * 1.5));
@@ -1560,44 +2061,107 @@ HTML section ${chunkNum}/${chunks.length}:
     }
   };
 
-  // ── Deterministic color-contrast fixer (no AI needed) ──
-  const fixContrastViolations = (htmlContent) => {
-    const hexToRgb = (hex) => {
+  // ── Deterministic color-contrast fixer (comprehensive) ──
+  const fixContrastViolations = htmlContent => {
+    const hexToRgb = hex => {
       const h = hex.replace('#', '');
-      if (h.length === 3) return [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)];
-      return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+      if (h.length === 3) return [parseInt(h[0] + h[0], 16), parseInt(h[1] + h[1], 16), parseInt(h[2] + h[2], 16)];
+      return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)];
     };
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map(c => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
     const luminance = (r, g, b) => {
-      const [rs, gs, bs] = [r/255, g/255, b/255].map(c => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4));
+      const [rs, gs, bs] = [r / 255, g / 255, b / 255].map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
       return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
     };
     const contrastRatio = (rgb1, rgb2) => {
-      const l1 = luminance(...rgb1), l2 = luminance(...rgb2);
+      const l1 = luminance(...rgb1),
+        l2 = luminance(...rgb2);
       return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
     };
+
+    // Named CSS colors that fail contrast against white
     const namedColorMap = {
-      'gray': '#808080', 'grey': '#808080', 'silver': '#c0c0c0', 'darkgray': '#a9a9a9', 'darkgrey': '#a9a9a9',
-      'lightgray': '#d3d3d3', 'lightgrey': '#d3d3d3', 'gainsboro': '#dcdcdc', 'lightslategray': '#778899',
-      'lightsteelblue': '#b0c4de', 'lightblue': '#add8e6', 'lightskyblue': '#87cefa', 'lightcoral': '#f08080',
-      'lightpink': '#ffb6c1', 'lightsalmon': '#ffa07a', 'lightyellow': '#ffffe0', 'lightgreen': '#90ee90',
-      'lightcyan': '#e0ffff', 'lemonchiffon': '#fffacd', 'lavender': '#e6e6fa', 'linen': '#faf0e6',
-      'mistyrose': '#ffe4e1', 'mintcream': '#f5fffa', 'oldlace': '#fdf5e6', 'papayawhip': '#ffefd5',
-      'peachpuff': '#ffdab9', 'seashell': '#fff5ee', 'snow': '#fffafa', 'wheat': '#f5deb3', 'white': '#ffffff',
-      'whitesmoke': '#f5f5f5', 'beige': '#f5f5dc', 'cornsilk': '#fff8dc', 'honeydew': '#f0fff0',
-      'ivory': '#fffff0', 'khaki': '#f0e68c', 'tan': '#d2b48c', 'thistle': '#d8bfd8', 'plum': '#dda0dd',
-      'yellow': '#ffff00', 'lime': '#00ff00', 'aqua': '#00ffff', 'cyan': '#00ffff', 'magenta': '#ff00ff',
-      'orange': '#ffa500', 'coral': '#ff7f50', 'tomato': '#ff6347', 'orangered': '#ff4500',
-      'red': '#ff0000', 'pink': '#ffc0cb', 'hotpink': '#ff69b4', 'deeppink': '#ff1493',
-      'mediumslateblue': '#7b68ee', 'royalblue': '#4169e1', 'dodgerblue': '#1e90ff',
-      'cornflowerblue': '#6495ed', 'mediumpurple': '#9370db', 'orchid': '#da70d6',
-      'violet': '#ee82ee', 'gold': '#ffd700', 'greenyellow': '#adff2f', 'chartreuse': '#7fff00',
-      'springgreen': '#00ff7f', 'mediumspringgreen': '#00fa9a', 'palegreen': '#98fb98',
-      'paleturquoise': '#afeeee', 'powderblue': '#b0e0e6', 'skyblue': '#87ceeb',
-      'mediumaquamarine': '#66cdaa', 'turquoise': '#40e0d0', 'mediumturquoise': '#48d1cc',
-      'sandybrown': '#f4a460', 'burlywood': '#deb887', 'navajowhite': '#ffdead', 'moccasin': '#ffe4b5',
-      'rosybrown': '#bc8f8f', 'darkkhaki': '#bdb76b', 'darkseagreen': '#8fbc8f'
+      'gray': '#808080',
+      'grey': '#808080',
+      'silver': '#c0c0c0',
+      'darkgray': '#a9a9a9',
+      'darkgrey': '#a9a9a9',
+      'lightgray': '#d3d3d3',
+      'lightgrey': '#d3d3d3',
+      'gainsboro': '#dcdcdc',
+      'lightslategray': '#778899',
+      'lightsteelblue': '#b0c4de',
+      'lightblue': '#add8e6',
+      'lightskyblue': '#87cefa',
+      'lightcoral': '#f08080',
+      'lightpink': '#ffb6c1',
+      'lightsalmon': '#ffa07a',
+      'lightyellow': '#ffffe0',
+      'lightgreen': '#90ee90',
+      'lightcyan': '#e0ffff',
+      'lemonchiffon': '#fffacd',
+      'lavender': '#e6e6fa',
+      'linen': '#faf0e6',
+      'mistyrose': '#ffe4e1',
+      'mintcream': '#f5fffa',
+      'oldlace': '#fdf5e6',
+      'papayawhip': '#ffefd5',
+      'peachpuff': '#ffdab9',
+      'seashell': '#fff5ee',
+      'snow': '#fffafa',
+      'wheat': '#f5deb3',
+      'white': '#ffffff',
+      'whitesmoke': '#f5f5f5',
+      'beige': '#f5f5dc',
+      'cornsilk': '#fff8dc',
+      'honeydew': '#f0fff0',
+      'ivory': '#fffff0',
+      'khaki': '#f0e68c',
+      'tan': '#d2b48c',
+      'thistle': '#d8bfd8',
+      'plum': '#dda0dd',
+      'yellow': '#ffff00',
+      'lime': '#00ff00',
+      'aqua': '#00ffff',
+      'cyan': '#00ffff',
+      'magenta': '#ff00ff',
+      'orange': '#ffa500',
+      'coral': '#ff7f50',
+      'tomato': '#ff6347',
+      'orangered': '#ff4500',
+      'red': '#ff0000',
+      'pink': '#ffc0cb',
+      'hotpink': '#ff69b4',
+      'deeppink': '#ff1493',
+      'mediumslateblue': '#7b68ee',
+      'royalblue': '#4169e1',
+      'dodgerblue': '#1e90ff',
+      'cornflowerblue': '#6495ed',
+      'mediumpurple': '#9370db',
+      'orchid': '#da70d6',
+      'violet': '#ee82ee',
+      'gold': '#ffd700',
+      'greenyellow': '#adff2f',
+      'chartreuse': '#7fff00',
+      'springgreen': '#00ff7f',
+      'mediumspringgreen': '#00fa9a',
+      'palegreen': '#98fb98',
+      'paleturquoise': '#afeeee',
+      'powderblue': '#b0e0e6',
+      'skyblue': '#87ceeb',
+      'mediumaquamarine': '#66cdaa',
+      'turquoise': '#40e0d0',
+      'mediumturquoise': '#48d1cc',
+      'sandybrown': '#f4a460',
+      'burlywood': '#deb887',
+      'navajowhite': '#ffdead',
+      'moccasin': '#ffe4b5',
+      'rosybrown': '#bc8f8f',
+      'darkkhaki': '#bdb76b',
+      'darkseagreen': '#8fbc8f'
     };
+
+    // Darken a color until it meets 4.5:1 against a background (or lighten if bg is dark)
     const fixToPass = (fgRgb, bgRgb, targetRatio = 4.5) => {
       let [r, g, b] = fgRgb;
       const bgLum = luminance(...bgRgb);
@@ -1605,10 +2169,12 @@ HTML section ${chunkNum}/${chunks.length}:
       for (let i = 0; i < 30; i++) {
         if (contrastRatio([r, g, b], bgRgb) >= targetRatio) break;
         if (isDarkBg) {
+          // Lighten foreground against dark backgrounds
           r = Math.min(255, Math.round(r + (255 - r) * 0.15));
           g = Math.min(255, Math.round(g + (255 - g) * 0.15));
           b = Math.min(255, Math.round(b + (255 - b) * 0.15));
         } else {
+          // Darken foreground against light backgrounds
           r = Math.max(0, Math.round(r * 0.82));
           g = Math.max(0, Math.round(g * 0.82));
           b = Math.max(0, Math.round(b * 0.82));
@@ -1616,19 +2182,34 @@ HTML section ${chunkNum}/${chunks.length}:
       }
       return [r, g, b];
     };
-    const parseColor = (colorStr) => {
+
+    // Parse any CSS color value to RGB
+    const parseColor = colorStr => {
       if (!colorStr) return null;
       const s = colorStr.trim().toLowerCase();
-      if (s.startsWith('#')) { try { return hexToRgb(s); } catch(e) { return null; } }
+      if (s.startsWith('#')) {
+        try {
+          return hexToRgb(s);
+        } catch (e) {
+          return null;
+        }
+      }
       const rgbMatch = s.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
       if (rgbMatch) return [parseInt(rgbMatch[1]), parseInt(rgbMatch[2]), parseInt(rgbMatch[3])];
-      if (namedColorMap[s]) { try { return hexToRgb(namedColorMap[s]); } catch(e) { return null; } }
+      if (namedColorMap[s]) {
+        try {
+          return hexToRgb(namedColorMap[s]);
+        } catch (e) {
+          return null;
+        }
+      }
       return null;
     };
     let fixed = htmlContent;
     let fixCount = 0;
     const whiteBg = [255, 255, 255];
-    // Pass 1: hex colors
+
+    // ── Pass 1: Fix color:#hex declarations against white background ──
     fixed = fixed.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
       try {
         const rgb = hexToRgb(hex);
@@ -1637,10 +2218,11 @@ HTML section ${chunkNum}/${chunks.length}:
           fixCount++;
           return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
-      } catch(e) {}
+      } catch (e) {}
       return match;
     });
-    // Pass 2: rgb/rgba colors
+
+    // ── Pass 2: Fix color:rgb() and color:rgba() declarations ──
     fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)/gi, (match, r, g, b) => {
       const rgb = [parseInt(r), parseInt(g), parseInt(b)];
       if (contrastRatio(rgb, whiteBg) < 4.5) {
@@ -1650,7 +2232,8 @@ HTML section ${chunkNum}/${chunks.length}:
       }
       return match;
     });
-    // Pass 3: named CSS colors
+
+    // ── Pass 3: Fix named CSS color values ──
     const namedColorRegex = new RegExp('([;"\\s])color:\\s*(' + Object.keys(namedColorMap).join('|') + ')\\b', 'gi');
     fixed = fixed.replace(namedColorRegex, (match, prefix, name) => {
       const hex = namedColorMap[name.toLowerCase()];
@@ -1662,10 +2245,11 @@ HTML section ${chunkNum}/${chunks.length}:
           fixCount++;
           return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
-      } catch(e) {}
+      } catch (e) {}
       return match;
     });
-    // Pass 4: foreground+background combos
+
+    // ── Pass 4: Fix foreground+background combos within same style attribute ──
     fixed = fixed.replace(/style="([^"]*)"/gi, (fullMatch, styleContent) => {
       const fgMatch = styleContent.match(/(?:^|;)\s*color:\s*([^;]+)/i);
       const bgMatch = styleContent.match(/background(?:-color)?:\s*([^;]+)/i);
@@ -1679,15 +2263,18 @@ HTML section ${chunkNum}/${chunks.length}:
           return 'style="' + newStyle + '"';
         }
       }
+      // Fix bg-only case: if element has a dark background but no explicit foreground color, add one
       if (bgMatch && !fgMatch) {
         const bgRgb = parseColor(bgMatch[1].trim().replace(/\s*!important/gi, ''));
         if (bgRgb) {
           const bgLum = luminance(...bgRgb);
-          if (bgLum < 0.18 && contrastRatio([0,0,0], bgRgb) < 4.5) {
+          // Dark background with no text color specified — default text (#000) may fail
+          if (bgLum < 0.18 && contrastRatio([0, 0, 0], bgRgb) < 4.5) {
             fixCount++;
             return 'style="' + styleContent + ';color:#ffffff"';
           }
-          if (bgLum > 0.7 && contrastRatio([0,0,0], bgRgb) < 4.5) {
+          // Light background — ensure dark text
+          if (bgLum > 0.7 && contrastRatio([0, 0, 0], bgRgb) < 4.5) {
             fixCount++;
             return 'style="' + styleContent + ';color:#1e293b"';
           }
@@ -1695,9 +2282,15 @@ HTML section ${chunkNum}/${chunks.length}:
       }
       return fullMatch;
     });
-    // Pass 5: low opacity
-    fixed = fixed.replace(/opacity:\s*0\.[0-5]\d*/g, () => { fixCount++; return 'opacity:0.85'; });
-    // Pass 6: safety net CSS for class-based colors
+
+    // ── Pass 5: Fix low opacity ──
+    fixed = fixed.replace(/opacity:\s*0\.[0-5]\d*/g, () => {
+      fixCount++;
+      return 'opacity:0.85';
+    });
+
+    // ── Pass 6: Inject a global CSS rule as a safety net for common light-colored classes ──
+    // This catches elements styled by class names rather than inline styles
     if (fixed.includes('<head>') && !fixed.includes('/* a11y-contrast-safety */')) {
       const safetyCSS = `<style>/* a11y-contrast-safety */
 .text-gray-400,.text-gray-300,.text-slate-400,.text-slate-300,.text-zinc-400,.text-zinc-300{color:#4b5563 !important}
@@ -1712,51 +2305,69 @@ HTML section ${chunkNum}/${chunks.length}:
       fixCount++;
     }
     warnLog(`[Contrast Fix] Fixed ${fixCount} color-contrast issues deterministically`);
-    return { html: fixed, fixCount };
+    return {
+      html: fixed,
+      fixCount
+    };
   };
 
-  // ── Deterministic list-structure fixer ──
-  const fixListViolations = (htmlContent) => {
+  // ── Deterministic list-structure fixer (no AI needed) ──
+  const fixListViolations = htmlContent => {
     let fixed = htmlContent;
     let fixCount = 0;
-    // Fix 1: Wrap direct non-<li> children of <ul>/<ol> in <li>
+
+    // Fix 1: Wrap direct non-<li> children of <ul>/<ol> in <li> tags
+    // Matches <ul> or <ol> content blocks and ensures all direct children are <li>
     fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>[\s\S]*?<\/\1>/gi, (listBlock, tag) => {
+      // Parse direct children — find text/elements between <ul> and </ul> that aren't <li>
       let result = listBlock;
-      result = result.replace(
-        new RegExp('(<' + tag + '(?:\\s[^>]*)?>)([\\s\\S]*?)(<\\/' + tag + '>)', 'i'),
-        (m, open, content, close) => {
-          let newContent = content;
-          newContent = newContent.replace(
-            /(?<=<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)\s*(<(?:div|p|span|a|strong|em|b|i|h[1-6])\b[^>]*>[\s\S]*?<\/(?:div|p|span|a|strong|em|b|i|h[1-6])>)\s*(?=<li|<\/(?:ul|ol)>)/gi,
-            (bareEl, inner) => { fixCount++; return '<li>' + inner + '</li>'; }
-          );
-          newContent = newContent.replace(
-            /(<\/li>)\s*([^<\s][^<]*[^<\s])\s*(<li|<\/(?:ul|ol)>)/gi,
-            (m2, closeLi, text, next) => { fixCount++; return closeLi + '<li>' + text.trim() + '</li>' + next; }
-          );
-          return open + newContent + close;
-        }
-      );
+
+      // Remove stray text nodes directly inside <ul>/<ol> (wrap them in <li>)
+      result = result.replace(new RegExp('(<' + tag + '(?:\\s[^>]*)?>)([\\s\\S]*?)(<\\/' + tag + '>)', 'i'), (m, open, content, close) => {
+        // Split content into segments: <li>...</li> blocks and everything else
+        let newContent = content;
+
+        // Wrap bare <div>, <p>, <span>, <a> inside <li>
+        newContent = newContent.replace(/(?<=<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)\s*(<(?:div|p|span|a|strong|em|b|i|h[1-6])\b[^>]*>[\s\S]*?<\/(?:div|p|span|a|strong|em|b|i|h[1-6])>)\s*(?=<li|<\/(?:ul|ol)>)/gi, (bareEl, inner) => {
+          fixCount++;
+          return '<li>' + inner + '</li>';
+        });
+
+        // Wrap bare text nodes (non-whitespace text between closing </li> and opening <li>)
+        newContent = newContent.replace(/(<\/li>)\s*([^<\s][^<]*[^<\s])\s*(<li|<\/(?:ul|ol)>)/gi, (m2, closeLi, text, next) => {
+          fixCount++;
+          return closeLi + '<li>' + text.trim() + '</li>' + next;
+        });
+        return open + newContent + close;
+      });
       return result;
     });
-    // Fix 2: Remove wrapper divs around <li> items
-    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>(\s*)<div[^>]*>([\s\S]*?)<\/div>(\s*)<\/\1>/gi,
-      (m, tag, attrs, ws1, content, ws2) => {
-        if (content.includes('<li')) { fixCount++; return '<' + tag + (attrs || '') + '>' + ws1 + content + ws2 + '</' + tag + '>'; }
-        return m;
+
+    // Fix 2: Convert <ul> or <ol> that contain <div> wrappers around <li> items
+    // Pattern: <ul><div><li>...</li></div></ul> → <ul><li>...</li></ul>
+    fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>(\s*)<div[^>]*>([\s\S]*?)<\/div>(\s*)<\/\1>/gi, (m, tag, attrs, ws1, content, ws2) => {
+      if (content.includes('<li')) {
+        fixCount++;
+        return '<' + tag + (attrs || '') + '>' + ws1 + content + ws2 + '</' + tag + '>';
       }
-    );
-    // Fix 3: Remove stray <br> between <li> elements
+      return m;
+    });
+
+    // Fix 3: Remove bare <br> and empty text between <li> elements inside lists
     fixed = fixed.replace(/<(ul|ol)(\s[^>]*)?>[\s\S]*?<\/\1>/gi, (listBlock, tag) => {
       let cleaned = listBlock;
-      cleaned = cleaned.replace(
-        new RegExp('(<' + tag + '(?:\\s[^>]*)?>|<\\/li>)\\s*<br\\s*\\/?>\\s*(?=<li|<\\/' + tag + '>)', 'gi'),
-        (m, before) => { fixCount++; return before; }
-      );
+      // Remove stray <br> directly inside <ul>/<ol> (not inside <li>)
+      cleaned = cleaned.replace(new RegExp('(<' + tag + '(?:\\s[^>]*)?>|<\\/li>)\\s*<br\\s*\\/?>\\s*(?=<li|<\\/' + tag + '>)', 'gi'), (m, before) => {
+        fixCount++;
+        return before;
+      });
       return cleaned;
     });
     warnLog(`[List Fix] Fixed ${fixCount} list-structure issues deterministically`);
-    return { html: fixed, fixCount };
+    return {
+      html: fixed,
+      fixCount
+    };
   };
 
   // ── Auto-fix axe-core violations via targeted AI pass ──
@@ -2230,7 +2841,7 @@ ${currentHtml.substring(0, 20000)}
           if (!block.type && block.description) block.type = 'image';
           const sanitizeField = val => {
             if (typeof val !== 'string') return String(val || '');
-            return val.replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\\0/g, '').trim();
+            return val.replace(/\\\\n/g, ' ').replace(/\\0/g, '').trim();
           };
           try {
             // Clean block text: strip JSON field names, id tags, literal \n, and type labels
@@ -3253,11 +3864,21 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
           html += `<div style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:12px;text-align:center;margin:0.5rem 0"><div style="font-weight:bold;color:#16a34a">Zero WCAG violations detected by axe-core</div></div>`;
         }
         if (axe.critical?.length || axe.serious?.length || axe.moderate?.length) {
+          html += `<h3 style="color:#dc2626;margin-top:1rem">Remaining Violations</h3>`;
           html += `<table><thead><tr><th>Rule</th><th>Impact</th><th>Description</th><th>Elements</th></tr></thead><tbody>`;
           [...(axe.critical || []), ...(axe.serious || []), ...(axe.moderate || [])].forEach(v => {
             html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px;font-family:monospace">${v.id}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px;font-weight:bold;color:${v.impact === 'critical' ? '#dc2626' : v.impact === 'serious' ? '#ea580c' : '#d97706'}">${v.impact}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px">${v.description}</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:center">${v.nodes}</td></tr>`;
           });
           html += `</tbody></table>`;
+        }
+        // ── Passed Checks Detail ──
+        if (axe.passes?.length > 0) {
+          html += `<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:bold;color:#16a34a;font-size:14px">✅ ${axe.passes.length} Checks Passed (click to expand)</summary>`;
+          html += `<table style="margin-top:8px"><thead><tr><th>Rule</th><th>Description</th><th>WCAG</th><th>Elements Checked</th></tr></thead><tbody>`;
+          axe.passes.forEach(p => {
+            html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px;font-family:monospace;color:#16a34a">${p.id}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:12px">${p.description}</td><td style="padding:6px;border:1px solid #e2e8f0;font-size:11px;color:#64748b">${p.wcag || '—'}</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-size:12px">${p.nodes}</td></tr>`;
+          });
+          html += `</tbody></table></details>`;
         }
       }
     }
@@ -3471,9 +4092,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   // ── Document Generation (parseMarkdownToHTML, generateResourceHTML, etc.) ──
   const parseMarkdownToHTML = text => {
     if (!text) return '';
-    // Clean literal \n that survived AI response parsing (common Gemini artifact)
-    let processedText = text.replace(/\\n/g, '\n').replace(/\\t/g, ' ');
-    processedText = processedText.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
+    let processedText = text.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
     const isRtl = isRtlLang(leveledTextLanguage);
     const align = isRtl ? 'right' : 'left';
     const lines = processedText.split('\n');
@@ -4791,7 +5410,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
     fixContrastViolations: _wrap(fixContrastViolations),
-    fixListViolations: _wrap(fixListViolations),
     autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
     generateAuditReportHtml: _wrap(generateAuditReportHtml),

@@ -52,6 +52,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'visit_5_epochs', label: 'Visit 5 cosmic epochs', icon: '🌠', check: function(d) { return (d.epochsVisited || []).length >= 5; }, progress: function(d) { return (d.epochsVisited || []).length + '/5'; } },
+      { id: 'earn_50_rp', label: 'Earn 50 research points', icon: '⭐', check: function(d) { return (d.totalRP || 0) >= 50; }, progress: function(d) { return (d.totalRP || 0) + '/50 RP'; } },
+      { id: 'quiz_8', label: 'Score 8+ on cosmic quiz', icon: '🧠', check: function(d) { return (d.quizScore || 0) >= 8; }, progress: function(d) { return (d.quizScore || 0) + '/8'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;

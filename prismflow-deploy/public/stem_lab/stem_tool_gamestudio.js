@@ -446,11 +446,21 @@ window.StemLab = window.StemLab || {
       var gradeLevel = ctx.gradeLevel;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
+      var canvasNarrate = ctx.canvasNarrate;
 
       return (function() {
         // == State ==
         var _gs = labToolData && labToolData.gameStudio || {};
         var upd = function(patch) {
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('gameStudio', 'init', {
+              first: 'Game Studio loaded. Design and build interactive games using a visual editor with sprites, physics, and event scripting.',
+              repeat: 'Game Studio active.',
+              terse: 'Game Studio.'
+            }, { debounce: 800 });
+          }
           setLabToolData(function(prev) {
             return Object.assign({}, prev, { gameStudio: Object.assign({}, prev && prev.gameStudio || {}, patch) });
           });
@@ -773,7 +783,7 @@ window.StemLab = window.StemLab || {
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 mb-4 p-1 bg-rose-50 rounded-xl border border-rose-200 overflow-x-auto' },
             TABS.map(function(tab) {
               var isActive = gsTab === tab.id;
-              return h('button', { 'aria-label': 'Update setting',
+              return h('button', { 'aria-label': 'Select game creator option',
                 key: tab.id,
                 onClick: function() { upd({ tab: tab.id, playMessage: null }); },
                 className: 'flex-1 py-2 px-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
@@ -819,7 +829,7 @@ window.StemLab = window.StemLab || {
                 '\u26A0\uFE0F Danger Map'
               ),
               // AI Map Gen
-              callGemini && h('button', { 'aria-label': 'Update setting',
+              callGemini && h('button', { 'aria-label': 'Select game creator option',
                 onClick: function() {
                   upd({ aiLoading: true });
                   var prompt = 'Generate a ' + gridW + 'x' + gridH + ' tile map for a ' + gameType + ' game as JSON. ' +
@@ -859,7 +869,7 @@ window.StemLab = window.StemLab || {
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-rose-700' }, 'Tiles'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 ml-auto' },
                   [{ id: 'brush', icon: '\u270F\uFE0F' }, { id: 'fill', icon: '\uD83E\uDEA3' }, { id: 'eraser', icon: '\uD83E\uDDF9' }, { id: 'eyedropper', icon: '\uD83D\uDCA7' }].map(function(bt) {
-                    return h('button', { 'aria-label': 'Update setting',
+                    return h('button', { 'aria-label': 'Select game creator option',
                       key: bt.id,
                       onClick: function() { upd({ brushTool: bt.id }); },
                       className: 'px-2 py-1 rounded text-sm transition-all ' + (brushTool === bt.id ? 'bg-rose-200 shadow-inner' : 'hover:bg-rose-50'),
@@ -870,7 +880,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1' },
                 TILE_PALETTE.map(function(t) {
-                  return h('button', { 'aria-label': 'Update setting',
+                  return h('button', { 'aria-label': 'Select game creator option',
                     key: t.id,
                     onClick: function() { upd({ selectedTile: t.id, brushTool: 'brush' }); },
                     className: 'w-8 h-8 rounded border-2 flex items-center justify-center text-sm transition-all ' +
@@ -956,7 +966,7 @@ window.StemLab = window.StemLab || {
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-rose-700 mb-2' }, 'Sprite Presets'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
                 SPRITE_PRESETS.map(function(sp) {
-                  return h('button', { 'aria-label': 'Update setting',
+                  return h('button', { 'aria-label': 'Select game creator option',
                     key: sp.id,
                     onClick: function() { upd({ activeSprite: sp.id, spritePixels: Object.assign({}, sp.pixels), spriteColor: sp.color }); },
                     className: 'px-3 py-2 rounded-lg border-2 text-xs font-bold transition-all ' +
@@ -1301,7 +1311,7 @@ window.StemLab = window.StemLab || {
 
             // Controls
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center flex-wrap' },
-              h('button', { 'aria-label': 'Update setting',
+              h('button', { 'aria-label': 'Select game creator option',
                 onClick: function() {
                   if (isPlaying) {
                     upd({ isPlaying: false });
@@ -1349,7 +1359,7 @@ window.StemLab = window.StemLab || {
 
             // AI Playtest Advisor
             callGemini && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-3 rounded-xl border border-purple-200 bg-purple-50' },
-              h('button', { 'aria-label': 'Update setting',
+              h('button', { 'aria-label': 'Select game creator option',
                 onClick: function() {
                   upd({ aiLoading: true, aiResult: null });
                   var st = JSON.stringify({ gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, events: events });
@@ -1493,7 +1503,7 @@ window.StemLab = window.StemLab || {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               LESSONS.map(function(lesson, li) {
                 var isComplete = learnCompleted[lesson.id];
-                return h('button', { 'aria-label': 'Update setting',
+                return h('button', { 'aria-label': 'Select game creator option',
                   key: lesson.id,
                   onClick: function() { upd({ activeLesson: lesson.id, learnAnswer: null, learnShowResult: false }); },
                   className: 'p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ' +
@@ -1723,7 +1733,7 @@ window.StemLab = window.StemLab || {
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-rose-700 mb-2' }, '\uD83C\uDFAE Starter Projects'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
                 STARTERS.map(function(starter) {
-                  return h('button', { 'aria-label': 'Update setting',
+                  return h('button', { 'aria-label': 'Select game creator option',
                     key: starter.name,
                     onClick: function() {
                       upd({ projectName: starter.name, gameType: starter.type, gridW: 16, gridH: 12, tiles: starter.tiles, tab: 'map' });
