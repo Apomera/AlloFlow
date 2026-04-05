@@ -7058,7 +7058,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('PersonaUIModule', './persona_ui_module.js');
     loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('ContentEngineModule', './content_engine_module.js');
-    loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/escape_room_module.js');
+    loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');

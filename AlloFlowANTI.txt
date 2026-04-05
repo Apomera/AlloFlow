@@ -7060,7 +7060,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/persona_ui_module.js');
     loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/doc_pipeline_module.js');
     loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/content_engine_module.js');
-    loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/escape_room_module.js');
+    loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
@@ -7142,6 +7142,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_friendship.js',
         'sel_hub/sel_tool_transitions.js',
         'sel_hub/sel_tool_upstander.js',
+        'sel_hub/sel_tool_voicedetective.js',
       ];
       // Wait for StemLab registry to be available before loading plugins
       var waitForRegistry = function(cb) {
