@@ -83,7 +83,8 @@ var createContentEngine = function (deps) {
       }
     }
     rawText = body + bib;
-    rawText = rawText.replace(/([.!?])\s*(#{1,6}\s+)/g, '$1\n\n$2');
+    rawText = rawText.replace(/([.!?])(\s*(?:\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]*\)\s*)*)\s*(#{1,6}\s+)/g, '$1$2\n\n$3');
+    rawText = rawText.replace(/([^\n])\n?(#{1,6}\s+)/g, '$1\n\n$2');
     var lines = rawText.split('\n');
     var titleProcessed = false;
     var repairedLines = lines.map(function (line, index) {

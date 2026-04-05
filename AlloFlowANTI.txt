@@ -4376,9 +4376,23 @@ const normalizeCitationPlacement = (text) => {
     result = result.replace(/\n\s*\.\s+(\[⁽)/g, '.\n$1');
     return result;
 };
+// Filter out non-educational sources from grounding chunks (YouTube music, IMDB, social media, etc.)
+const filterEducationalSources = (chunks) => {
+    if (!chunks || !Array.isArray(chunks)) return chunks;
+    const rejectUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i];
+    const rejectTitle = [/official\s*(music\s*)?video/i, /\(official\s*video\)/i, /\blyrics?\b/i, /\bremaster(ed)?\b/i, /\bmovie\s*trailer\b/i, /\bfull\s*movie\b/i];
+    return chunks.filter(chunk => {
+        const uri = chunk?.web?.uri || '';
+        const title = chunk?.web?.title || '';
+        for (const p of rejectUrl) { if (p.test(uri)) return false; }
+        for (const p of rejectTitle) { if (p.test(title)) return false; }
+        return true;
+    });
+};
 const generateBibliographyString = (metadata, citationStyle = 'Links Only', title = 'Verified Sources') => {
     if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
-    const chunks = metadata.groundingChunks;
+    const chunks = filterEducationalSources(metadata.groundingChunks);
+    if (chunks.length === 0) return "";
     let bib = `\n\n### ${title}\n\n`;
     chunks.forEach((chunk, i) => {
         const num = i + 1;
@@ -4394,7 +4408,8 @@ const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson =
     const hasSupports = metadata.groundingSupports && metadata.groundingSupports.length > 0;
     if (!hasChunks) return text;
     let newText = text;
-    const chunks = metadata.groundingChunks;
+    const chunks = filterEducationalSources(metadata.groundingChunks);
+    if (chunks.length === 0) return text;
     if (!hasSupports) {
         const paragraphs = text.split(/\n\n+/);
         const citationsPerParagraph = Math.max(1, Math.ceil(chunks.length / paragraphs.length));

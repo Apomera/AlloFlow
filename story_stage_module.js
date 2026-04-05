@@ -81,6 +81,14 @@
     var _genGenre = useState('fairy-tale'); var genGenre = _genGenre[0]; var setGenGenre = _genGenre[1];
     var _genPrompt = useState(''); var genPrompt = _genPrompt[0]; var setGenPrompt = _genPrompt[1];
     var _genCharCount = useState(3); var genCharCount = _genCharCount[0]; var setGenCharCount = _genCharCount[1];
+    var _genGradeLevel = useState(gradeLevel || '5th Grade'); var genGradeLevel = _genGradeLevel[0]; var setGenGradeLevel = _genGradeLevel[1];
+    var _genLength = useState('medium'); var genLength = _genLength[0]; var setGenLength = _genLength[1];
+    var GRADE_OPTIONS = ['K', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade', '6th Grade', '7th Grade', '8th Grade', '9th Grade', '10th Grade', '11th Grade', '12th Grade'];
+    var LENGTH_OPTIONS = [
+      { id: 'short', label: 'Short', words: '200-400', desc: 'Quick read, 1-2 scenes' },
+      { id: 'medium', label: 'Medium', words: '500-800', desc: 'Standard story arc' },
+      { id: 'long', label: 'Long', words: '900-1500', desc: 'Detailed with subplots' },
+    ];
 
     // Script state
     var _script = useState(null); var script = _script[0]; var setScript = _script[1];
@@ -175,10 +183,11 @@
       setIsLoading(true);
       setLoadingMsg('Analyzing text and extracting characters...');
       try {
-        var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+        var gl = genGradeLevel || gradeLevel || '5th Grade';
+        var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gl);
         var prompt = 'You are an expert drama teacher and literary analyst. Analyze this fiction text and convert it into a performable script.\n\n'
           + 'Text:\n"""\n' + text.substring(0, 12000) + '\n"""\n\n'
-          + 'Target audience: ' + gradeLevel + ' students.\n\n'
+          + 'Target audience: ' + gl + ' students.\n\n'
           + 'Extract:\n'
           + '1. TITLE: A title for this story/scene\n'
           + '2. CHARACTERS: Every distinct character who speaks or is referenced. For each character provide:\n'
@@ -235,15 +244,25 @@
     var generateStory = useCallback(async function () {
       if (!onCallGemini) return;
       setIsLoading(true);
-      setLoadingMsg('Writing a ' + GENRES.find(function (g) { return g.id === genGenre; }).label + ' story...');
+      var genreObj = GENRES.find(function (g) { return g.id === genGenre; }) || GENRES[0];
+      setLoadingMsg('Writing a ' + genreObj.label + ' story...');
       try {
-        var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
-        var prompt = 'You are a talented fiction writer for ' + gradeLevel + ' students.\n\n'
-          + 'Write a ' + GENRES.find(function (g) { return g.id === genGenre; }).label + ' story'
+        var gl = genGradeLevel || gradeLevel || '5th Grade';
+        var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gl);
+        var isMid = /6th|7th|8th/i.test(gl);
+        var lenObj = LENGTH_OPTIONS.find(function (l) { return l.id === genLength; }) || LENGTH_OPTIONS[1];
+        var wordRange = lenObj.words;
+        var vocabGuide = isElem
+          ? 'Keep vocabulary simple and sentences short (' + gl + ' reading level).'
+          : isMid
+          ? 'Use grade-appropriate vocabulary for ' + gl + ' students. Include descriptive language and character development.'
+          : 'Use rich, literary language appropriate for ' + gl + '. Include at least one literary device (metaphor, foreshadowing, irony).';
+        var prompt = 'You are a talented fiction writer for ' + gl + ' students.\n\n'
+          + 'Write a ' + genreObj.label + ' story'
           + (genPrompt.trim() ? ' with these instructions: "' + genPrompt.trim() + '"' : '') + '.\n\n'
           + 'Requirements:\n'
           + '- Include ' + genCharCount + ' distinct characters with dialogue\n'
-          + '- ' + (isElem ? 'Keep vocabulary simple and sentences short (2nd-3rd grade reading level). 400-600 words.' : /6th|7th|8th/i.test(gradeLevel) ? 'Use grade-appropriate vocabulary. Include descriptive language and character development. 600-900 words.' : 'Use rich, literary language. Include at least one literary device (metaphor, foreshadowing, irony). 800-1200 words.') + '\n'
+          + '- ' + vocabGuide + ' Target length: ' + wordRange + ' words.\n'
           + '- Include a clear beginning, middle, and end\n'
           + '- Use dialogue tags ("said", "whispered", "exclaimed") so characters are clearly identified\n'
           + '- Include sensory details and setting description\n\n'
@@ -259,7 +278,7 @@
       } catch (err) {
         addToast && addToast('Story generation failed: ' + err.message, 'error');
       } finally { setIsLoading(false); setLoadingMsg(''); }
-    }, [onCallGemini, gradeLevel, genGenre, genPrompt, genCharCount, addToast]);
+    }, [onCallGemini, gradeLevel, genGradeLevel, genGenre, genPrompt, genCharCount, genLength, addToast]);
 
     // ── TTS Playback ──
     var speakLine = useCallback(function (text, voice, speed) {
@@ -677,6 +696,29 @@
                   return e('button', { key: n, onClick: function () { setGenCharCount(n); },
                     style: { width: '32px', height: '32px', borderRadius: '50%', border: '2px solid ' + (genCharCount === n ? PURPLE : '#d1d5db'), background: genCharCount === n ? PURPLE : '#fff', color: genCharCount === n ? '#fff' : '#374151', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
                   }, n);
+                })
+              ),
+              // Grade level selector
+              e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' } },
+                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0 } }, 'Grade Level:'),
+                e('select', { value: genGradeLevel, onChange: function (ev) { setGenGradeLevel(ev.target.value); },
+                  style: Object.assign({}, S.input, { flex: 1 }),
+                  'aria-label': 'Story grade level'
+                },
+                  GRADE_OPTIONS.map(function (g) { return e('option', { key: g, value: g }, g); })
+                )
+              ),
+              // Length selector
+              e('div', { style: { display: 'flex', gap: '6px', marginBottom: '12px' } },
+                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0, paddingTop: '6px' } }, 'Length:'),
+                LENGTH_OPTIONS.map(function (lo) {
+                  return e('button', { key: lo.id, onClick: function () { setGenLength(lo.id); },
+                    'aria-label': lo.label + ' story: ' + lo.words + ' words',
+                    style: { flex: 1, padding: '6px 10px', borderRadius: '10px', border: '2px solid ' + (genLength === lo.id ? PURPLE : '#e5e7eb'), background: genLength === lo.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'center', fontSize: '11px' }
+                  },
+                    e('div', { style: { fontWeight: 700, color: genLength === lo.id ? PURPLE : '#374151' } }, lo.label),
+                    e('div', { style: { color: '#9ca3af', fontSize: '9px' } }, lo.words + ' words')
+                  );
                 })
               ),
               e('button', { onClick: generateStory, disabled: isLoading,

@@ -4248,6 +4248,45 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
         }
       }
     }
+
+    // ── Reading Level Analysis ──
+    try {
+      var _d$after4;
+      const reportText = (isBeforeAfter ? ((_d$after4 = d.after) === null || _d$after4 === void 0 ? void 0 : _d$after4.html) || '' : d.html || d.accessibleHtml || '').replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim();
+      if (reportText.length > 50) {
+        const rtWords = reportText.match(/[a-zA-Z]+(?:[''-][a-zA-Z]+)*/g) || [];
+        const rtSentences = Math.max(1, (reportText.match(/[.!?]+/g) || []).length);
+        const rtWordCount = Math.max(1, rtWords.length);
+        let rtSyllables = 0;
+        rtWords.forEach(w => {
+          let lw = w.toLowerCase();
+          if (lw.length <= 3) {
+            rtSyllables++;
+            return;
+          }
+          lw = lw.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '');
+          rtSyllables += (lw.match(/[aeiouy]{1,2}/g) || []).length || 1;
+        });
+        const fkGrade = Math.max(0, Math.min(18, 0.39 * (rtWordCount / rtSentences) + 11.8 * (rtSyllables / rtWordCount) - 15.59)).toFixed(1);
+        const gradeLabel = fkGrade <= 5 ? 'Elementary (K-5)' : fkGrade <= 8 ? 'Middle School (6-8)' : fkGrade <= 12 ? 'High School (9-12)' : 'College Level';
+        html += `<h2 style="margin-top:2rem">Reading Level Analysis</h2>
+        <div style="display:flex;gap:1rem;margin-bottom:1rem">
+          <div style="flex:1;text-align:center;padding:12px;border:1px solid #e2e8f0;border-radius:8px">
+            <div style="font-size:24px;font-weight:900;color:#4f46e5">${fkGrade}</div>
+            <div style="font-size:11px;color:#64748b;font-weight:600">FLESCH-KINCAID GRADE</div>
+          </div>
+          <div style="flex:1;text-align:center;padding:12px;border:1px solid #e2e8f0;border-radius:8px">
+            <div style="font-size:16px;font-weight:700;color:#334155">${gradeLabel}</div>
+            <div style="font-size:11px;color:#64748b;font-weight:600">READING LEVEL</div>
+          </div>
+          <div style="flex:1;text-align:center;padding:12px;border:1px solid #e2e8f0;border-radius:8px">
+            <div style="font-size:16px;font-weight:700;color:#334155">${rtWordCount.toLocaleString()}</div>
+            <div style="font-size:11px;color:#64748b;font-weight:600">WORDS</div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:#64748b">Cognitive accessibility note: For broad accessibility, aim for 8th grade reading level or below. AlloFlow's Simplified Text tool can rewrite content at specific grade levels for differentiated access.</p>`;
+      }
+    } catch (rlErr) {/* non-blocking */}
     html += `<h2 style="margin-top:2rem">Scoring Methodology</h2>
     <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:1rem">
       <thead><tr style="background:#f8fafc"><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Severity</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:center">Deduction</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Examples</th></tr></thead>

@@ -46,7 +46,12 @@ var createContentEngine = function(deps) {
       }
     }
     rawText = body + bib;
-    rawText = rawText.replace(/([.!?])\s*(#{1,6}\s+)/g, '$1\n\n$2');
+    // Ensure headings always start on a new line with a blank line before them
+    // Handle cases where citations appear between text and heading:
+    // "...text. [⁽⁷⁾](url) [⁽⁸⁾](url) ### Heading" → "...text. [⁽⁷⁾](url) [⁽⁸⁾](url)\n\n### Heading"
+    rawText = rawText.replace(/([.!?])(\s*(?:\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]*\)\s*)*)\s*(#{1,6}\s+)/g, '$1$2\n\n$3');
+    // Also catch headings directly after any text (no punctuation)
+    rawText = rawText.replace(/([^\n])\n?(#{1,6}\s+)/g, '$1\n\n$2');
     var lines = rawText.split('\n');
     var titleProcessed = false;
     var repairedLines = lines.map(function(line, index) {
@@ -1260,18 +1265,23 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       }
   };
   const stopPlayback = () => {
+    // Read refs from window state bag (they're React refs in the main component)
+    var _state = window.__contentEngineState || window.__docPipelineState || {};
+    var _playbackRef = _state.playbackSessionRef || (typeof playbackSessionRef !== 'undefined' ? playbackSessionRef : null);
+    var _audioRef = _state.audioRef || (typeof audioRef !== 'undefined' ? audioRef : null);
+    var _blobUrlsRef = _state.activeBlobUrlsRef || (typeof activeBlobUrlsRef !== 'undefined' ? activeBlobUrlsRef : null);
     // Invalidate the current playback session so any in-flight playSequence
     // chain stops at its next iteration check
-    playbackSessionRef.current = -1;
-    if (audioRef.current) {
-        const currentSrc = audioRef.current.src;
-        audioRef.current.pause();
-        audioRef.current.onended = null; // prevent chained playback
-        if (currentSrc && currentSrc.startsWith('blob:')) {
+    if (_playbackRef) _playbackRef.current = -1;
+    if (_audioRef && _audioRef.current) {
+        const currentSrc = _audioRef.current.src;
+        _audioRef.current.pause();
+        _audioRef.current.onended = null; // prevent chained playback
+        if (currentSrc && currentSrc.startsWith('blob:') && _blobUrlsRef) {
              URL.revokeObjectURL(currentSrc);
-             activeBlobUrlsRef.current.delete(currentSrc);
+             _blobUrlsRef.current.delete(currentSrc);
         }
-        audioRef.current = null;
+        _audioRef.current = null;
     }
     // Stop any Kokoro streaming queue
     if (window._kokoroTTS && window._kokoroTTS.stop) {

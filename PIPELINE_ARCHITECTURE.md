@@ -292,17 +292,30 @@ Different document types have different accessibility patterns. A syllabus, a re
 
 ---
 
-## What the Pipeline Cannot Do
+## Additional Capabilities
 
-1. **Evaluate visual design quality** — It can check contrast ratios but not whether a color scheme is aesthetically appropriate for the audience.
+### Reading Level & Cognitive Accessibility Analysis
+AlloFlow includes a **Simplified/Leveled Text** tool that can rewrite content at specific grade levels (K-12 and college), and an **Analyze Source Text** feature that evaluates reading level using standard readability metrics. The pipeline can analyze the remediated document's reading level and include it in the audit report, helping institutions ensure documents are accessible not just structurally but cognitively.
 
-2. **Assess cognitive accessibility** — Reading level, plain language, and information architecture require human judgment.
+### Screen Reader Compatibility Simulation
+While the pipeline cannot run physical screen reader software (JAWS, NVDA, VoiceOver), it simulates screen reader compatibility through two mechanisms:
+- **axe-core** evaluates the same accessibility tree that screen readers use, checking for the same structural requirements (landmarks, headings, ARIA attributes, focus order)
+- **AI auditors** include a "screen reader user perspective" variant that evaluates the document as a screen reader would experience it
 
-3. **Test with real assistive technology** — The pipeline uses axe-core (automated) and AI analysis, but cannot simulate the experience of a screen reader user navigating the document. This is why the Knowbility referral exists for high-stakes documents.
+### Visual Design Quality Assessment
+Gemini's vision capabilities can evaluate the visual design of remediated documents — analyzing typography quality, spacing consistency, color harmony, visual hierarchy, and overall readability. The **AI Style Studio** provides one-click design presets (Academic, Kid-Friendly, Dark Mode, Magazine, Minimal) and can also match an uploaded brand reference document. Users can also describe a custom style in natural language and Gemini generates the CSS.
 
-4. **Fix source PDFs** — The pipeline converts PDFs to accessible HTML. It does not modify the original PDF file. The remediated HTML is the accessible version.
+---
 
-5. **Guarantee 100% compliance** — No automated tool can guarantee full WCAG compliance. The pipeline typically achieves 80-95% of the way there, with remaining issues clearly documented in the audit report for expert review.
+## Current Limitations
+
+1. **Fix source PDFs** — The pipeline converts PDFs to accessible HTML. It does not modify the original PDF file. The remediated HTML is the accessible version.
+
+2. **Guarantee 100% compliance** — No automated tool can guarantee full WCAG compliance. The pipeline typically achieves 80-95% of the way there, with remaining issues clearly documented in the audit report for expert review. This is why the Knowbility referral exists for high-stakes documents.
+
+3. **Complex interactive content** — Forms with complex validation logic, embedded multimedia players, and JavaScript-dependent widgets may need manual remediation.
+
+4. **Scanned image-only PDFs** — PDFs that are purely scanned images (no text layer) require OCR first. The pipeline detects this and can extract text via Gemini Vision, but OCR accuracy depends on scan quality.
 
 ---
 
