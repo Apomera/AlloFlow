@@ -217,7 +217,7 @@ Return ONLY valid JSON:
         const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
         const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
         // If Gemini's score diverges significantly from the rubric calculation, override it
-        if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) {
+        if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
           warnLog(`[PDF Audit] Auditor score ${a.score} overridden to ${calculatedScore} (${critCount}C/${seriousCount}S/${modCount}M/${minCount}m, ${passCount} passes)`);
           a.score = calculatedScore;
         }
@@ -250,7 +250,7 @@ Return ONLY valid JSON:
           const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
           const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
           const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
-          if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) a.score = calculatedScore;
+          if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) a.score = calculatedScore;
         });
         parsedAudits.push(...extraParsed);
         warnLog(`[PDF Audit] Adaptive: now ${parsedAudits.length} total audits (was ${initialScores.length})`);
@@ -545,7 +545,7 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
       const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
       const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
-      if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 15) {
+      if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
         a.score = calculatedScore;
       }
     });
@@ -1897,7 +1897,7 @@ Return ONLY JSON:
           const pc = (parsed.passes || []).length;
           const pf = pc > 0 ? Math.max(0.85, 1 / (1 + pc * 0.05)) : 1;
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions * pf));
-          if (Math.abs((parsed.score || 0) - calculatedScore) > 10) parsed.score = calculatedScore;
+          if (Math.abs((parsed.score || 0) - calculatedScore) > 12) parsed.score = calculatedScore;
         }
         return parsed;
       }
@@ -1960,17 +1960,17 @@ HTML section ${chunkNum}/${chunks.length}:
       const mergedIssues = [...seenIssues.values()];
       const passCount = mergedPasses.size;
       // Score from merged deductions — each unique violation type counted ONCE
+      // Deduplication above already prevents long documents from over-counting,
+      // so no separate length factor is needed (it was double-compensating)
       const rawDeductions = mergedIssues.reduce((sum, i) => sum + (i.deduction || 0), 0);
-      // Length normalization: longer documents get softer penalty curve
-      const lengthFactor = htmlContent.length > 20000 ? 1 / (1 + Math.log2(htmlContent.length / 20000)) : 1;
       // Pass credit: each pass reduces effective deductions (strengths mitigate weaknesses)
       // Capped at 0.85 (max 15% reduction) to prevent passes from masking real violations
       const passFactor = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
-      const adjustedDeductions = Math.round(rawDeductions * lengthFactor * passFactor);
+      const adjustedDeductions = Math.round(rawDeductions * passFactor);
       const mergedScore = Math.max(0, 100 - adjustedDeductions);
       // Summary from first chunk (has the global perspective)
       const summary = ((_chunkResults$ = chunkResults[0]) === null || _chunkResults$ === void 0 ? void 0 : _chunkResults$.summary) || `Audited ${chunks.length} sections of ${htmlContent.length.toLocaleString()} chars.`;
-      warnLog(`[Output Audit] Chunked: ${chunks.length} sections, ${mergedIssues.length} unique issues, raw deductions ${rawDeductions}, length factor ${lengthFactor.toFixed(2)}, adjusted score ${mergedScore}`);
+      warnLog(`[Output Audit] Chunked: ${chunks.length} sections, ${mergedIssues.length} unique issues, raw deductions ${rawDeductions}, pass factor ${passFactor.toFixed(2)}, score ${mergedScore}`);
       return {
         score: mergedScore,
         summary: summary + ` (${chunks.length} sections audited)`,
