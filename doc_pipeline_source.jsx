@@ -1782,7 +1782,8 @@ HTML section ${chunkNum}/${chunks.length}:
       // Merge: deduplicate issues across chunks using WCAG code + violation category
       // This prevents length-penalty: "missing alt on page 5" and "missing alt on page 20" count as ONE issue type
       const seenIssues = new Map(); // key → issue (keeps the first/best description)
-      const mergedPasses = new Set();
+      const seenPassKeys = new Set();
+      const mergedPassList = [];
       chunkResults.forEach(cr => {
         (cr.issues || []).forEach(issue => {
           // Dedup by WCAG code + severity (same violation type = same deduction regardless of how many pages)
@@ -1794,10 +1795,21 @@ HTML section ${chunkNum}/${chunks.length}:
             seenIssues.set(key, issue);
           }
         });
-        (cr.passes || []).forEach(p => mergedPasses.add(p));
+        // Deduplicate passes by normalized keywords — Gemini phrases the same pass
+        // differently per chunk ("No images found" vs "No images without alt text detected")
+        (cr.passes || []).forEach(p => {
+          const passText = typeof p === 'string' ? p : (p.description || p.id || '');
+          const passKey = passText.toLowerCase()
+            .replace(/\b(the|a|an|is|are|was|were|no|not|none|found|present|detected|this|that|in|of|for|to|and|or|with|without|section|block|specific|text|content|provided|been|has|have|all)\b/g, '')
+            .replace(/[^a-z\s]/g, '').trim().split(/\s+/).filter(w => w.length > 2).sort().slice(0, 5).join('_');
+          if (passKey && !seenPassKeys.has(passKey)) {
+            seenPassKeys.add(passKey);
+            mergedPassList.push(passText);
+          }
+        });
       });
       const mergedIssues = [...seenIssues.values()];
-      const passCount = mergedPasses.size;
+      const passCount = mergedPassList.length;
       // Score from merged deductions — each unique violation type counted ONCE
       // Deduplication above already prevents long documents from over-counting,
       // so no separate length factor is needed (it was double-compensating)
@@ -1815,7 +1827,7 @@ HTML section ${chunkNum}/${chunks.length}:
         score: mergedScore,
         summary: summary + ` (${chunks.length} sections audited)`,
         issues: mergedIssues,
-        passes: [...mergedPasses],
+        passes: mergedPassList,
         chunksAudited: chunks.length,
         lengthFactor: Math.round(lengthFactor * 100) / 100
       };
