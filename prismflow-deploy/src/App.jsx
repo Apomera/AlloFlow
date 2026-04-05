@@ -949,6 +949,62 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.theme_placeholder': 'e.g. cartoon, pixel art, realistic...',
     'word_sounds.theme_hint': 'Optional: Style for new word images (not glossary)',
     'word_sounds.select_sound_chip': 'Select sound',
+    'word_sounds.activity_manipulation': 'Sound Swap',
+    'word_sounds.activity_missing_letter': 'Missing Letter',
+    'word_sounds.activity_spelling_bee': 'Spelling Bee',
+    'word_sounds.activity_syllable_blending': 'Syllable Blending',
+    'word_sounds.activity_syllable_counting': 'Syllable Claps',
+    'word_sounds.activity_word_scramble': 'Word Scramble',
+    'word_sounds.back_to_class': 'Back to Class',
+    'word_sounds.check_spelling': 'Check Spelling',
+    'word_sounds.choose_activity': 'Choose an Activity',
+    'word_sounds.correct': 'Correct!',
+    'word_sounds.fb_great_work_next': 'Great work! Moving to the next word.',
+    'word_sounds.fb_nice_try': 'Nice try! Let\'s keep going.',
+    'word_sounds.fb_no_text_mode': 'Listen carefully and choose your answer!',
+    'word_sounds.fb_one_more_try': 'One more try!',
+    'word_sounds.fb_spelling_transition': 'Now let\'s try spelling it!',
+    'word_sounds.fb_text_scaffold': 'Here\'s a hint to help you.',
+    'word_sounds.fb_try_again': 'Try again!',
+    'word_sounds.hear_word_again': 'Hear Word Again',
+    'word_sounds.listen_word': 'Listen to Word',
+    'word_sounds.manipulation_desc': 'Delete or change sounds in words',
+    'word_sounds.mic_switch_mic': 'Switch to Microphone',
+    'word_sounds.mic_switch_tapping': 'Switch to Tapping',
+    'word_sounds.mic_switch_typing': 'Switch to Typing',
+    'word_sounds.missing_letter_desc': 'Fill in the blank',
+    'word_sounds.parent_amazing': 'Amazing progress! 🌟',
+    'word_sounds.parent_great': 'Great effort today!',
+    'word_sounds.parent_summary': 'Here\'s how your learner did today:',
+    'word_sounds.play_again': 'Play Again',
+    'word_sounds.rhymes_with': 'Rhymes with',
+    'word_sounds.session_complete': 'Session Complete!',
+    'word_sounds.session_msg_good': 'Good work! Keep practicing.',
+    'word_sounds.session_msg_great': 'Great job!',
+    'word_sounds.session_msg_nice': 'Nice work!',
+    'word_sounds.session_msg_outstanding': 'Outstanding! You\'re a word sounds star! ⭐',
+    'word_sounds.session_next_activity': 'Next Activity',
+    'word_sounds.session_words_practiced': 'Words Practiced',
+    'word_sounds.session_xp_earned': 'XP Earned',
+    'word_sounds.sound_sort_complete': 'Sound Sort Complete!',
+    'word_sounds.sound_sort_instruction': 'Tap words that contain the target sound',
+    'word_sounds.sound_sort_label': 'Sound Sort',
+    'word_sounds.sound_sort_wrong_hint': 'That word doesn\'t have the target sound. Try another!',
+    'word_sounds.spelling_bee_desc': 'Spell the word you hear',
+    'word_sounds.spelling_bee_hint_more': '💡 More hints',
+    'word_sounds.spelling_bee_hint_vowels': '💡 Show vowels',
+    'word_sounds.survey_skip': 'Skip',
+    'word_sounds.survey_take': 'Take Survey',
+    'word_sounds.survey_title': 'How was your experience?',
+    'word_sounds.switch_click_mode': 'Click Mode',
+    'word_sounds.switch_letter_mode': 'Letter Mode',
+    'word_sounds.switch_mic_mode': 'Mic Mode',
+    'word_sounds.switch_sound_only': 'Sound Only',
+    'word_sounds.syllable_blending_desc': 'Blend syllables into whole words',
+    'word_sounds.syllable_counting_desc': 'Count the syllables in words',
+    'word_sounds.test_sequence': 'Test Sequence',
+    'word_sounds.tts_speed': 'Speech Speed',
+    'word_sounds.word_scramble_desc': 'Unscramble the letters',
 };
 const getWordSoundsString = (t, key, params = {}) => {
     const translated = t(key, params);
@@ -7115,27 +7171,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    loadModule('StoryForge', './story_forge_module.js');
-    loadModule('LitLab', './story_stage_module.js');
-    loadModule('VisualPanelModule', './visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
-    loadModule('AdventureModule', './adventure_module.js');
-    loadModule('StudentInteractionModule', './student_interaction_module.js');
-    loadModule('UIModalsModule', './ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
-    loadModule('PersonaUIModule', './persona_ui_module.js');
-    loadModule('DocPipelineModule', './doc_pipeline_module.js');
-    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7151,7 +7207,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6ce827e/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
