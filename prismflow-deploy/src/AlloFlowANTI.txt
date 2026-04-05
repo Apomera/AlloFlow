@@ -49933,15 +49933,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const fixed = await callGemini(fixPrompt, true);
                               if (fixed && fixed.length > html.length * 0.5 && (fixed.includes('<!DOCTYPE') || fixed.includes('<html'))) html = fixed;
                               cf = fixContrastViolations(html); if (cf.fixCount > 0) html = cf.html;
-                              // Verify (quick mode for speed — full audit runs once at the end)
-                              setPdfFixStep(`Pass ${pass + 1}: verifying...`);
-                              const [rv, ra] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
+                              // Verify with 2 AI audits + axe (parallel — no extra time)
+                              setPdfFixStep(`Pass ${pass + 1}: verifying (2 audits)...`);
+                              const [rv1, rv2, ra] = await Promise.all([auditOutputAccessibility(html, true), auditOutputAccessibility(html, true), runAxeAudit(html)]);
                               if (ra && ra.totalViolations > 0) {
                                 const fr = await autoFixAxeViolations(html, ra, 1);
                                 html = fr.html;
                               }
-                              const [fv, fa] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
-                              const finalAi = fv || rv;
+                              const [fv1, fv2, fa] = await Promise.all([auditOutputAccessibility(html, true), auditOutputAccessibility(html, true), runAxeAudit(html)]);
+                              // Average the 2 AI scores for reliability
+                              const bestAiScores = [fv1, fv2, rv1, rv2].filter(Boolean).map(a => a?.score).filter(s => typeof s === 'number');
+                              const finalAi = fv1 || fv2 || rv1 || rv2;
+                              if (finalAi && bestAiScores.length > 0) finalAi.score = Math.round(bestAiScores.reduce((a,b) => a+b, 0) / bestAiScores.length);
                               const finalAxe = fa || ra;
                               const newCount = (finalAi?.issues?.length || 0) + (finalAxe?.totalViolations || 0);
                               totalPasses++;
@@ -49956,22 +49959,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               }
                             }
                             // Run 2 AI audits at the end and average for reliable scoring
-                            // (single auditor scores vary too much — causes score paradox)
-                            setPdfFixStep('Final verification (averaging 2 audits)...');
-                            const [endAi1, endAi2, endAxe] = await Promise.all([
+                            // 3 parallel AI audits + axe for reliable final score
+                            setPdfFixStep('Final verification (averaging 3 audits)...');
+                            const [endAi1, endAi2, endAi3, endAxe] = await Promise.all([
+                              auditOutputAccessibility(bestHtml),
                               auditOutputAccessibility(bestHtml),
                               auditOutputAccessibility(bestHtml),
                               runAxeAudit(bestHtml)
                             ]);
-                            const endScores = [endAi1, endAi2].map(a => a?.score).filter(s => typeof s === 'number');
-                            // If scores diverge > 15 points, add tiebreaker
+                            const endScores = [endAi1, endAi2, endAi3].map(a => a?.score).filter(s => typeof s === 'number');
                             let avgScore;
-                            if (endScores.length === 2 && Math.abs(endScores[0] - endScores[1]) > 15) {
-                              const tiebreaker = await auditOutputAccessibility(bestHtml);
-                              if (tiebreaker?.score != null) endScores.push(tiebreaker.score);
-                              warnLog('[Fix Remaining] Score divergence (' + endScores.join(', ') + ') — added tiebreaker');
-                            }
+                            // No tiebreaker needed — we already have 3
                             avgScore = endScores.length > 0 ? Math.round(endScores.reduce((a,b) => a+b, 0) / endScores.length) : bestAi?.score;
+                            warnLog('[Fix Remaining] Final scores: ' + endScores.join(', ') + ' → avg ' + avgScore);
                             const finalAxeResult = endAxe || bestAxe;
                             const finalAiResult = endAi1 || bestAi;
                             if (finalAiResult) finalAiResult.score = avgScore;

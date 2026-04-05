@@ -1179,11 +1179,13 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         })).slice(0, 12).join('\n');
         var surgDiagnosis = await callGemini('You are an accessibility remediation expert. Analyze these axe-core violations and prescribe SPECIFIC targeted fixes.\n\n' + 'VIOLATIONS:\n' + surgViolations + '\n\n' + 'HTML (first 6000 chars for context):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\n' + 'Prescribe fixes using these tools (return ONLY a JSON array):\n\n' + 'CONTENT FIXES:\n' + '- fix_alt_text: { "tool": "fix_alt_text", "index": <img# 0-based>, "alt": "descriptive text" }\n' + '- fix_heading: { "tool": "fix_heading", "index": <heading# 0-based>, "newLevel": <1-6> }\n' + '- fix_link_text: { "tool": "fix_link_text", "index": <link# 0-based>, "newText": "descriptive text" }\n' + '- fix_figcaption: { "tool": "fix_figcaption", "index": <figure# 0-based>, "caption": "description" }\n' + '- fix_title: { "tool": "fix_title", "title": "document title" }\n' + '- fix_lang: { "tool": "fix_lang", "lang": "language code" }\n' + '- fix_lang_span: { "tool": "fix_lang_span", "text": "foreign text to wrap", "lang": "code" }\n\n' + 'TABLE FIXES:\n' + '- fix_table_caption: { "tool": "fix_table_caption", "index": <table# 0-based>, "caption": "description" }\n' + '- fix_th_scope: { "tool": "fix_th_scope", "index": <th# 0-based or omit for ALL>, "scope": "col" or "row" }\n\n' + 'FORM/INTERACTIVE FIXES:\n' + '- fix_input_label: { "tool": "fix_input_label", "index": <input# 0-based>, "label": "description" }\n' + '- fix_button_name: { "tool": "fix_button_name", "index": <button# 0-based>, "label": "description" }\n' + '- fix_iframe_title: { "tool": "fix_iframe_title", "index": <iframe# 0-based>, "title": "description" }\n\n' + 'STRUCTURE FIXES:\n' + '- fix_aria_label: { "tool": "fix_aria_label", "tag": "element", "index": <0-based>, "label": "description" }\n' + '- fix_add_landmark: { "tool": "fix_add_landmark", "tag": "main", "label": "Main content" }\n' + '- fix_remove_empty_heading: { "tool": "fix_remove_empty_heading", "index": <empty heading# 0-based> }\n' + '- fix_duplicate_id: { "tool": "fix_duplicate_id", "id": "the-duplicate-id" }\n\n' + 'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' + 'Return ONLY a valid JSON array, no explanation or markdown.', true);
 
-        // Run 2 parallel diagnoses and merge their fix lists (catches more issues)
-        var surgDiagnosis2 = await callGemini('You are an independent accessibility remediation expert (second opinion). ' + 'Analyze these violations and prescribe targeted fixes. Focus on issues the first auditor might miss.\n\n' + 'VIOLATIONS:\n' + surgViolations + '\n\n' + 'HTML (first 6000 chars):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\n' + 'Use the same tool format. Return ONLY a valid JSON array.', true);
+        // Run 3 parallel diagnoses and merge — each catches different issues
+        var surgPromptBase = 'VIOLATIONS:\n' + surgViolations + '\n\nHTML (first 6000 chars):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\nUse the same tool format. Return ONLY a valid JSON array.';
+        var [surgDiagnosis2, surgDiagnosis3] = await Promise.all([callGemini('You are an independent accessibility expert (second opinion). Focus on content fixes — alt text quality, link descriptions, and heading structure.\n\n' + surgPromptBase, true), callGemini('You are a strict WCAG compliance auditor (third opinion). Focus on structural fixes — landmarks, ARIA, table headers, and form labels.\n\n' + surgPromptBase, true)]);
 
-        // Parse both diagnoses
+        // Parse all diagnoses
         var parseSurgical = function (raw) {
+          if (!raw) return [];
           var fixes = [];
           try {
             fixes = JSON.parse(raw);
@@ -1198,11 +1200,12 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         };
         var fixes1 = parseSurgical(surgDiagnosis);
         var fixes2 = parseSurgical(surgDiagnosis2);
+        var fixes3 = parseSurgical(surgDiagnosis3);
 
-        // Merge: deduplicate by tool+index, prefer fixes with longer/better descriptions
+        // Merge all 3: deduplicate by tool+index
         var seenKeys = {};
         var surgFixes = [];
-        [].concat(fixes1, fixes2).forEach(function (fix) {
+        [].concat(fixes1, fixes2, fixes3).forEach(function (fix) {
           if (!fix || !fix.tool) return;
           var key = fix.tool + '-' + (fix.index || 0) + '-' + (fix.tag || '');
           if (!seenKeys[key]) {
@@ -1221,7 +1224,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           }
         }
         if (surgApplied > 0) {
-          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (2 API calls, merged)');
+          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (3 parallel diagnoses, merged)');
         }
       }
     } catch (surgErr) {
@@ -1282,10 +1285,9 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         }
 
         // Run axe-core (local, zero API calls) + 2 Gemini audits per pass
-        // 2 audits prevents false score swings from prematurely ending remediation
-        // Final pass gets 3 audits for statistical reliability
-        const isFinalPass = fp === batchMaxFix - 1 || curAxeResults && curAxeResults.totalViolations === 0;
-        const numAudits = isFinalPass ? 3 : 2;
+        // 3 parallel audits every pass — Flash calls are cheap, accuracy is priceless
+        // Prevents false score swings from prematurely ending or continuing remediation
+        const numAudits = 3;
         const auditPromises = [];
         for (let ai = 0; ai < numAudits; ai++) auditPromises.push(auditOutputAccessibility(accessibleHtml));
         auditPromises.push(runAxeAudit(accessibleHtml)); // axe-core is local — no API cost
