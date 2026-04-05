@@ -4208,6 +4208,7 @@ const ADVENTURE_SHOP_ITEMS = [
     icon: '💰',
   }
 ];
+window.ADVENTURE_SHOP_ITEMS = ADVENTURE_SHOP_ITEMS;
 const scrambleWord = (word) => {
   if (!word || word.length < 2) return word;
   const arr = word.split('');
@@ -25980,6 +25981,15 @@ Return ONLY JSON.`;
         }
     }
     if (!textToProcess || !textToProcess.trim()) return;
+    // If source text is bilingual, extract the appropriate block for processing
+    // Most tools need the English block for consistent processing; translation happens later
+    if (textToProcess.includes('--- ENGLISH TRANSLATION ---')) {
+        const extracted = extractSourceTextForProcessing(textToProcess, true); // prefer English
+        if (extracted.isBilingual) {
+            textToProcess = extracted.englishBlock || extracted.text;
+            warnLog('[Generate] Bilingual source detected — using English block for ' + type + ' generation (' + textToProcess.length + ' chars)');
+        }
+    }
     if (type === 'simplified' && differentiationRange !== 'None' && Object.keys(configOverride).length === 0) {
         const gradesToGen = getDifferentiationGrades(gradeLevel, differentiationRange);
         if (gradesToGen.length > 1) {

@@ -11,6 +11,17 @@
   'use strict';
   // Pixelated image rendering style (used for adventure pixel art)
   var STYLE_IMAGE_PIXELATED = { imageRendering: 'pixelated' };
+  // Fallback: define ADVENTURE_SHOP_ITEMS if not available from main app
+  if (typeof ADVENTURE_SHOP_ITEMS === 'undefined') {
+    var ADVENTURE_SHOP_ITEMS = window.ADVENTURE_SHOP_ITEMS || [
+      { id: 'ration', name: 'Emergency Ration', cost: 50, description: 'Restores 20 Energy.', effectType: 'energy', effectValue: 20, icon: '🍎' },
+      { id: 'feast', name: 'Field Feast', cost: 120, description: 'Fully restores energy.', effectType: 'energy', effectValue: 100, icon: '🍱' },
+      { id: 'hint', name: 'Oracle Whisper', cost: 75, description: 'Reveals a hint.', effectType: 'hint', effectValue: 1, icon: '🔮' },
+      { id: 'charm', name: 'Luck Charm', cost: 100, description: '+5 to next roll.', effectType: 'modifier', effectValue: 5, icon: '🍀' },
+      { id: 'journal', name: "Scholar's Journal", cost: 100, description: 'Double XP next turn.', effectType: 'xp_boost', effectValue: 2, icon: '📔' },
+      { id: 'detector', name: 'Metal Detector', cost: 50, description: 'More gold for 3 scenes.', effectType: 'gold_boost', effectValue: 3, icon: '💰' },
+    ];
+  }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-adventure')) return;

@@ -4068,6 +4068,26 @@ const getBilingualPromptInstruction = (targetLang) => {
     - Even for Dialogue or Scripts, finish the ENTIRE ${targetLang} script before starting the English script.
     `;
 };
+
+// Extract the English portion from bilingual content (or return full text if not bilingual)
+// Also returns metadata about what was found
+const extractSourceTextForProcessing = (text, preferEnglish = true) => {
+    if (!text) return { text: '', isBilingual: false, targetLangBlock: '', englishBlock: '' };
+    const delimiter = '--- ENGLISH TRANSLATION ---';
+    const idx = text.indexOf(delimiter);
+    if (idx === -1) {
+        // Not bilingual — return as-is
+        return { text: text, isBilingual: false, targetLangBlock: text, englishBlock: text };
+    }
+    const targetLangBlock = text.substring(0, idx).trim();
+    const englishBlock = text.substring(idx + delimiter.length).trim();
+    return {
+        text: preferEnglish ? englishBlock : targetLangBlock,
+        isBilingual: true,
+        targetLangBlock: targetLangBlock,
+        englishBlock: englishBlock
+    };
+};
 const MAX_OFFLINE_ITEMS = 50;
 const LENGTH_THRESHOLDS = {
     MIN_VARIANCE: 0.6,
@@ -7171,27 +7191,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/content_engine_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7207,11 +7227,11 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@417a2d5/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
-        'stem_lab/stem_tool_datastudio.js', 'stem_lab/stem_tool_coding.js',
+        'stem_lab/stem_tool_datastudio.js', 'stem_lab/stem_tool_coding.js', 'stem_lab/stem_tool_applab.js',
         'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_titration.js',
         'stem_lab/stem_tool_volume.js', 'stem_lab/stem_tool_numberline.js', 'stem_lab/stem_tool_areamodel.js',
         'stem_lab/stem_tool_fractions.js', 'stem_lab/stem_tool_manipulatives.js', 'stem_lab/stem_tool_money.js',
@@ -17400,10 +17420,12 @@ Return ONLY valid JSON:
                     : personaState.selectedCharacter;
                   if (speakingChar && speakingChar.voiceProfile) {
                     // Use the detailed voice profile for consistent accent/tone
-                    voiceInstruction = `[Voice direction: ${speakingChar.voiceProfile}. Maintain this exact accent and speaking style consistently throughout.]`;
+                    const nationalityHint = speakingChar.nationality ? ` This person is ${speakingChar.nationality} — their accent MUST reflect this nationality throughout.` : '';
+                    voiceInstruction = `[CRITICAL VOICE DIRECTION: ${speakingChar.voiceProfile}.${nationalityHint} You MUST speak with this exact accent consistently for every word. Do NOT default to a neutral American accent.]`;
                   } else if (speakingChar && speakingChar.name) {
-                    // Fallback: use character name + role for basic voice guidance
-                    voiceInstruction = `[Speak as ${speakingChar.name}${speakingChar.role ? ', ' + speakingChar.role : ''}${speakingChar.year ? ' from ' + speakingChar.year : ''}. Stay in character with a consistent accent and tone.]`;
+                    // Fallback: use character name + nationality for accent guidance
+                    const natHint = speakingChar.nationality ? ` Speak with a ${speakingChar.nationality} accent.` : '';
+                    voiceInstruction = `[Speak as ${speakingChar.name}${speakingChar.role ? ', ' + speakingChar.role : ''}${speakingChar.year ? ' from ' + speakingChar.year : ''}.${natHint} Stay in character with a consistent accent and tone.]`;
                   }
                   textToSpeak = voiceInstruction + ' ' + textToSpeak;
               }
@@ -24462,14 +24484,35 @@ Return ONLY JSON.`;
              "Zephyr" (Light/Younger Male),
              "Aoede" (Standard Female)
             ]
+            NATIONALITY & ACCENT (CRITICAL FOR TTS):
+            For each character, determine their EXACT nationality and native language. The TTS system uses this for accent. Be specific:
+            - Austrian/German characters (e.g., Freud, Einstein, Mozart): "German accent, Viennese dialect"
+            - British characters (e.g., Churchill, Darwin, Shakespeare): "British accent, Received Pronunciation" or "British accent, Cockney" etc.
+            - French characters (e.g., Napoleon, Marie Curie): "French accent"
+            - Italian characters (e.g., da Vinci, Galileo): "Italian accent"
+            - Russian characters (e.g., Tolstoy, Catherine the Great): "Russian accent"
+            - Chinese characters (e.g., Confucius, Sun Tzu): "Chinese accent, Mandarin"
+            - Japanese characters (e.g., Hokusai, Emperor Meiji): "Japanese accent"
+            - Indian characters (e.g., Gandhi, Tagore): "Indian accent"
+            - American characters: specify region — "Southern American", "New England", "Midwestern", "New York" etc.
+            - Ancient Greek/Roman: "Greek accent" or "Italian accent" (closest modern equivalent)
+            Include the nationality field in the JSON.
+
             VOICE PROFILE:
-            For each character, write a "voiceProfile" string describing EXACTLY how they should sound aloud. Include their accent/dialect (e.g., "British Received Pronunciation", "Southern American drawl"), speaking pace, emotional tone, and any speech mannerisms. This must be specific and consistent. Example: "Speaks with a refined British accent, measured pace, warm but authoritative tone, uses deliberate pauses between key points."
+            For each character, write a "voiceProfile" string describing EXACTLY how they should sound aloud. This MUST include:
+            1. Their specific accent based on nationality (e.g., "thick Viennese German accent" not just "European accent")
+            2. Speaking pace (measured, rapid, deliberate)
+            3. Emotional tone (warm, stern, passionate, contemplative)
+            4. Speech mannerisms (uses pauses, speaks in metaphors, formal diction, etc.)
+            Example for Freud: "Speaks with a thick Viennese German accent, measured and deliberate pace, contemplative and analytical tone, frequently pauses to consider before speaking, uses medical terminology naturally, occasionally lapses into German phrases."
+            Example for MLK Jr: "Speaks with a Southern American Baptist preacher's cadence, powerful and rhythmic delivery, builds from quiet reflection to passionate crescendo, uses biblical allusions and repetition for emphasis."
             Return ONLY a JSON array of objects with this exact structure:
             [
                 {
                     "name": "Name",
                     "role": "Short Description",
                     "year": "Relevant Year or Era",
+                    "nationality": "Country/region of origin (e.g., Austrian, British, American-Southern)",
                     "context": "Why they are relevant",
                     "visualDescription": "A highly detailed physical description for an image generator (e.g., 'Oil painting of [Name], [details], neutral background').",
                     "artStyle": "The specific art style string selected based on era",
@@ -25937,6 +25980,15 @@ Return ONLY JSON.`;
         }
     }
     if (!textToProcess || !textToProcess.trim()) return;
+    // If source text is bilingual, extract the appropriate block for processing
+    // Most tools need the English block for consistent processing; translation happens later
+    if (textToProcess.includes('--- ENGLISH TRANSLATION ---')) {
+        const extracted = extractSourceTextForProcessing(textToProcess, true); // prefer English
+        if (extracted.isBilingual) {
+            textToProcess = extracted.englishBlock || extracted.text;
+            warnLog('[Generate] Bilingual source detected — using English block for ' + type + ' generation (' + textToProcess.length + ' chars)');
+        }
+    }
     if (type === 'simplified' && differentiationRange !== 'None' && Object.keys(configOverride).length === 0) {
         const gradesToGen = getDifferentiationGrades(gradeLevel, differentiationRange);
         if (gradesToGen.length > 1) {
