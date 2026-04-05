@@ -7038,26 +7038,26 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/content_engine_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7073,7 +7073,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7122,6 +7122,9 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_worldbuilder.js',
         'stem_lab/stem_tool_flightsim.js',
         'stem_lab/stem_tool_atctower.js',
+        'stem_lab/stem_tool_oratory.js',
+        'stem_lab/stem_tool_beehive.js',
+        'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_geometryworld.js',
         'stem_lab/stem_tool_creative.js',
         'stem_lab/stem_tool_art.js',
@@ -12825,7 +12828,25 @@ Return only the corrected version of this exact text:`;
                   focusStreak: focusData.longestStreak || 0,
                   pasteEventCount: pasteEvents.length,
                   storyForgeSubmissions: history.filter(h => h.type === 'storyforge-submission').length,
-                  storyForgeLatest: (() => { const sf = history.filter(h => h.type === 'storyforge-submission').pop(); return sf ? { title: sf.data?.storyTitle, words: sf.data?.analytics?.totalWords, vocab: sf.data?.analytics?.vocabUsedCount, grade: sf.data?.analytics?.readingLevel?.grade, drafts: sf.data?.analytics?.draftCount } : null; })()
+                  storyForgeLatest: (() => { const sf = history.filter(h => h.type === 'storyforge-submission').pop(); return sf ? { title: sf.data?.storyTitle, words: sf.data?.analytics?.totalWords, vocab: sf.data?.analytics?.vocabUsedCount, grade: sf.data?.analytics?.readingLevel?.grade, drafts: sf.data?.analytics?.draftCount } : null; })(),
+                  dbqProgress: (() => {
+                      try {
+                          const dbqItems = history.filter(h => h.type === 'dbq');
+                          if (dbqItems.length === 0) return null;
+                          const latest = dbqItems[dbqItems.length - 1];
+                          const resps = studentResponses[latest.id] || {};
+                          const happNotes = resps._happNotes || {};
+                          const docs = latest.data?.documents || [];
+                          const docsAnalyzed = docs.filter(d => {
+                              const dh = happNotes[d.id] || {};
+                              return ['historical','audience','purpose','pointOfView'].some(k => dh[k]?.trim());
+                          }).length;
+                          const hasFeedback = docs.some(d => resps[`_docFeedback_${d.id}`] && typeof resps[`_docFeedback_${d.id}`] === 'object');
+                          const essayWords = (resps._essayText || '').split(/\s+/).filter(Boolean).length;
+                          const essayFeedback = resps._aiFeedback && typeof resps._aiFeedback === 'object' ? resps._aiFeedback.overallScore : null;
+                          return { title: latest.data?.title, totalDocs: docs.length, docsAnalyzed, hasFeedback, essayWords, essayScore: essayFeedback };
+                      } catch (e) { return null; }
+                  })()
               },
               focusData: {
                   engagedMinutes: focusData.engagedMinutes || 0,
@@ -15693,16 +15714,21 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                   // If rate limited, set cooldown so subsequent calls skip straight to fallback
                   if (e?.message?.includes('429') || e?.message?.includes('Rate Limited')) {
                       globalTtsRateLimitedUntil = Date.now() + 60000;
+                      window.__ttsGeminiQuotaFailed = true;
+                  }
+                  if (e?.message?.includes('401') || e?.message?.includes('403') || e?.message?.includes('API key')) {
+                      window.__ttsGeminiAuthFailed = true;
                   }
               }
           } else {
               console.warn('[Canvas TTS] Gemini rate-limited, using local fallback');
+              window.__ttsGeminiQuotaFailed = true;
           }
           // Fallback: Kokoro (English) or Piper (multilingual) — works offline
-          // If Kokoro isn't loaded yet (Canvas lazy mode), offer to download it
+          // Only offer Kokoro download on ACTUAL quota/auth failures, not transient errors
+          // Also respect user's "No Thanks" choice (kokoroOfferDeclined)
           if (!window._kokoroTTS?.ready && !window.__kokoroTTSDownloading) {
-            // Show modal offering Kokoro download (only on first failure per session)
-            if (!window.__kokoroOfferShown) {
+            if (!window.__kokoroOfferShown && !window.__kokoroOfferDeclined && (window.__ttsGeminiQuotaFailed || window.__ttsGeminiAuthFailed)) {
               window.__kokoroOfferShown = true;
               setShowKokoroOfferModal(true);
             }
@@ -25635,6 +25661,7 @@ Return ONLY JSON.`;
   const updateEscapeRoomFinalDoor = _erCall('updateEscapeRoomFinalDoor');
   const saveEscapeRoomConfig = _erCall('saveEscapeRoomConfig');
   const loadSavedEscapeRoom = _erCall('loadSavedEscapeRoom');
+  const hasSavedEscapeRoom = _erCall('hasSavedEscapeRoom');
   const launchCollaborativeEscapeRoom = _erCall('launchCollaborativeEscapeRoom');
   const endCollaborativeEscapeRoom = _erCall('endCollaborativeEscapeRoom');
   // Escape room timer — delegated to CDN module hook or inline fallback
@@ -27439,6 +27466,7 @@ ${isElementary ? '   - Use sentence starters: "The main idea is..." and "I know 
 ${isElementary ? '   Include a simple thesis sentence starter: "I think ___ because Document A shows ___ and Document B shows ___."' : isMiddle ? '   Include a thesis template: "Although [counterargument], [your position] because [reason 1] and [reason 2]."' : ''}
 
 8. RUBRIC: A 4-point rubric (1-4) with criteria for: Thesis, Evidence Use, Analysis, Organization.
+${isElementary ? '   - Rubric language should be simple and encouraging. A "4" for elementary means: states a clear opinion with a reason, mentions at least 2 documents, uses simple connecting words. A "1" means: no clear opinion stated.' : isMiddle ? '   - Rubric should reflect middle school expectations. A "4" means: clear thesis with counterargument acknowledgment, cites 3+ documents with specific evidence, explains WHY evidence matters. A "1" means: no thesis, no document references.' : '   - Rubric should reflect AP/high school rigor. A "4" means: nuanced thesis addressing complexity, integrates evidence from most documents with analysis of perspective/bias, demonstrates historical thinking skills (causation, continuity, contextualization). A "1" means: restatement without analysis.'}
 
 ${effectiveLanguage !== 'English' ? `All content must be in ${effectiveLanguage}.` : ''}
 
@@ -30469,7 +30497,7 @@ Return ONLY JSON:
               Note: In this environment, the download won't persist between sessions.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => { setShowKokoroOfferModal(false); }} className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">
+              <button onClick={() => { setShowKokoroOfferModal(false); window.__kokoroOfferDeclined = true; }} className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">
                 No Thanks
               </button>
               <button onClick={() => {
@@ -31358,6 +31386,39 @@ Return ONLY JSON:
                                                     data-help-key="header_settings_text_spacing"
                                                     className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                                 />
+                                            </div>
+                                            {/* ── Reading Theme Swatches ── */}
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="text-xs font-bold flex items-center gap-1 text-slate-500 dark:text-slate-500">{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
+                                                    <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{readingTheme === 'default' ? 'Default' : readingTheme}</span>
+                                                </div>
+                                                <p className="text-[9px] text-slate-400 mb-2">{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
+                                                <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Reading theme">
+                                                    {[
+                                                        { id: 'default', label: 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
+                                                        { id: 'warm', label: 'Warm', bg: '#fdfbf7', fg: '#5c4033', border: '#f5e6d3', emoji: '☀️' },
+                                                        { id: 'sepia', label: 'Sepia', bg: '#f4ecd8', fg: '#5c4033', border: '#d4c5a9', emoji: '📜' },
+                                                        { id: 'dark', label: 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#334155', emoji: '🌙' },
+                                                        { id: 'highContrast', label: 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', emoji: '◼️' },
+                                                        { id: 'blue', label: 'Blue', bg: '#d6eaf8', fg: '#1b2631', border: '#85c1e9', emoji: '💧' },
+                                                        { id: 'green', label: 'Green', bg: '#e8f5e9', fg: '#1b5e20', border: '#81c784', emoji: '🌿' },
+                                                        { id: 'rose', label: 'Rose', bg: '#fce4ec', fg: '#880e4f', border: '#f48fb1', emoji: '🌸' },
+                                                        { id: 'dyslexia', label: 'Easy Read', bg: '#faf8ef', fg: '#1e293b', border: '#e8e0c8', emoji: '🔤' },
+                                                    ].map(function(th) {
+                                                        var isActive = readingTheme === th.id;
+                                                        return <button key={th.id}
+                                                            role="radio" aria-checked={isActive} aria-label={th.label + ' theme'}
+                                                            onClick={() => setReadingTheme(th.id)}
+                                                            title={th.label}
+                                                            className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? 'ring-2 ring-indigo-500 ring-offset-1 scale-105' : 'hover:scale-105'}`}
+                                                            style={{ background: th.bg, color: th.fg, borderColor: isActive ? '#6366f1' : th.border }}
+                                                        >
+                                                            <span className="text-sm leading-none">{th.emoji}</span>
+                                                            <span className="text-[8px] font-bold leading-none" style={{ color: th.fg }}>{th.label}</span>
+                                                        </button>;
+                                                    })}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -37851,7 +37912,9 @@ Return only the corrected version of this exact text:`;
                   <div className="space-y-6">
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <p className="text-sm text-blue-800 max-w-xs"><strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('glossary.udl_goal_desc')}</p>
-                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                        <div className="flex flex-col gap-2 w-full sm:w-auto">
+                          {/* Row 1: Flashcards & Export */}
+                          <div className="flex flex-wrap items-center gap-2">
                              <div className="flex bg-white rounded-full p-1 border border-blue-200 shadow-sm">
                                  <button
                                     data-help-key="glossary_standard_flashcards"
@@ -37895,6 +37958,9 @@ Return only the corrected version of this exact text:`;
                                     <Languages size={14} /> {t('flashcards.export_language')}
                                 </button>
                              )}
+                          </div>
+                          {/* Row 2: Games */}
+                          <div className="flex flex-wrap items-center gap-2">
                             <div className="flex items-center bg-teal-50 rounded-full p-0.5 border border-teal-200">
                                 {selectedLanguages.length > 0 && (
                                     <select aria-label={t('common.selection')}
@@ -37977,6 +38043,9 @@ Return only the corrected version of this exact text:`;
                             >
                                 <Shuffle size={14} /> {t('glossary.scramble')}
                             </button>
+                          </div>
+                          {/* Row 3: Settings & Tools */}
+                          <div className="flex flex-wrap items-center gap-2">
                             {isTeacherMode && (
                              <button
                                 data-help-key="glossary_edit"
@@ -38030,6 +38099,26 @@ Return only the corrected version of this exact text:`;
                                 <input type="text" aria-label={t('glossary.search_placeholder') || 'Search glossary'} placeholder={t('glossary.search_placeholder')} value={glossarySearchTerm} onChange={(e) => setGlossarySearchTerm(e.target.value)} className="pl-8 pr-3 py-1.5 text-sm border border-blue-200 rounded focus:outline-none focus:ring-2 focus:ring-indigo-200 w-full"/>
                                 {glossarySearchTerm && <button onClick={handleSetGlossarySearchTermConst} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-400 hover:text-blue-600" aria-label={t('common.clear')}><X size={14} /></button>}
                             </div>
+                            {/* Manual Health Check Button */}
+                            <button
+                                onClick={() => {
+                                    if (generatedContent?.type === 'glossary' && Array.isArray(generatedContent?.data)) {
+                                        const sourceText = (history.slice().reverse().find(h => h && h.type === 'analysis')?.data?.originalText) || inputText || '';
+                                        console.log('[HealthCheck] Manual trigger: ' + generatedContent.data.length + ' terms');
+                                        runGlossaryHealthCheck(generatedContent.data, sourceText);
+                                    } else {
+                                        console.warn('[HealthCheck] Manual trigger failed: generatedContent type=' + generatedContent?.type + ', data is array=' + Array.isArray(generatedContent?.data));
+                                        addToast(t('common.generate_glossary_first') || 'Generate a glossary first', 'info');
+                                    }
+                                }}
+                                disabled={isRunningHealthCheck || generatedContent?.type !== 'glossary'}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-all shadow-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Analyze glossary quality, grade level, and accuracy"
+                            >
+                                {isRunningHealthCheck ? <RefreshCw size={14} className="animate-spin"/> : <span>📊</span>}
+                                {isRunningHealthCheck ? 'Analyzing...' : (glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check')}
+                            </button>
+                          </div>
                         </div>
                     </div>
                     {isInteractiveFlashcards && generatedContent?.data && (
@@ -40982,9 +41071,12 @@ Return only the corrected version of this exact text:`;
                                 escapeTimeLeft={escapeTimeLeft}
                                 isEscapeTimerRunning={isEscapeTimerRunning}
                                 setIsEscapeTimerRunning={setIsEscapeTimerRunning}
+                                handleSetIsEscapeTimerRunningToTrue={() => setIsEscapeTimerRunning(true)}
                                 handlers={{generateEscapeRoom, handlePuzzleSolved, handleSelectObject, handleWrongAnswer, handleEscapeRoomAnswer, handleSequenceAnswer, handleCipherAnswer, handleMatchingSelect, handleScrambleAnswer, handleFillinAnswer, handleFinalDoorAnswer, resetEscapeRoom, handleRevealHint, derangeShuffle, openEscapeRoomSettings}}
                                 t={t}
                                 soundEnabled={soundEnabled}
+                                setSoundEnabled={setSoundEnabled}
+                                playSound={playSound}
                                 globalPoints={globalPoints}
                                 inputText={inputText}
                             />
@@ -45056,6 +45148,112 @@ Return only the corrected version of this exact text:`;
                                             ))}
                                         </div>
                                     )}
+                                    {/* ── Check My Analysis: AI Feedback on HAPP + Sourcing + Analysis ── */}
+                                    {(() => {
+                                        const docHapp = happNotes[activeDoc.id] || {};
+                                        const hasAnyResponse = ['historical','audience','purpose','pointOfView'].some(k => docHapp[k]?.trim()) ||
+                                            (activeDoc.sourcingQuestions || []).some((_, qi) => r[`doc-${activeDoc.id}-sourcing-${qi}`]?.trim()) ||
+                                            (activeDoc.analysisQuestions || []).some((_, qi) => r[`doc-${activeDoc.id}-analysis-${qi}`]?.trim());
+                                        const docFeedback = r[`_docFeedback_${activeDoc.id}`];
+                                        const feedbackLoading = docFeedback === 'loading';
+                                        return hasAnyResponse && (
+                                            <div className="space-y-3">
+                                                <button onClick={async () => {
+                                                    if (!callGemini) { addToast && addToast('AI feedback unavailable'); return; }
+                                                    setDbq(`_docFeedback_${activeDoc.id}`, 'loading');
+                                                    try {
+                                                        const happSummary = ['historical','audience','purpose','pointOfView'].map(k =>
+                                                            `${k}: "${docHapp[k] || '(not answered)'}"`).join('\n');
+                                                        const sourcingSummary = (activeDoc.sourcingQuestions || []).map((q, qi) =>
+                                                            `Q: ${q}\nA: "${r[`doc-${activeDoc.id}-sourcing-${qi}`] || '(not answered)'}"`).join('\n');
+                                                        const analysisSummary = (activeDoc.analysisQuestions || []).map((q, qi) =>
+                                                            `Q: ${q}\nA: "${r[`doc-${activeDoc.id}-analysis-${qi}`] || '(not answered)'}"`).join('\n');
+                                                        const isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+                                                        const isMid = /6th|7th|8th/i.test(gradeLevel);
+                                                        const gradeExpectations = isElem
+                                                            ? `GRADE-LEVEL EXPECTATIONS (Elementary):
+- "exemplary" = student identifies who made the document and gives a simple reason why, mentions what was happening, uses words like "because" or "so"
+- "proficient" = student attempts most HAPP dimensions with simple but relevant answers
+- "developing" = student gives very short answers or only completes 1-2 dimensions
+- Use very simple vocabulary in your feedback (2nd-3rd grade reading level). Use encouraging phrases like "Great job noticing that!" and "You're thinking like a historian!"
+- Model responses should use short sentences (8-12 words) and familiar vocabulary`
+                                                            : isMid
+                                                            ? `GRADE-LEVEL EXPECTATIONS (Middle School):
+- "exemplary" = student connects the document to a specific historical event, identifies the author's purpose with evidence, considers bias or perspective
+- "proficient" = student addresses most HAPP dimensions with relevant detail and some reasoning
+- "developing" = answers are vague, surface-level, or don't connect to the document content
+- Use clear, direct language (5th-7th grade reading level). Encourage deeper thinking with questions like "What makes you think the author felt that way?"
+- Model responses should show cause-and-effect reasoning and use transition words`
+                                                            : `GRADE-LEVEL EXPECTATIONS (High School / AP):
+- "exemplary" = student demonstrates historical thinking skills (sourcing, contextualization, corroboration), identifies bias and perspective with textual evidence, connects to broader historical patterns
+- "proficient" = student addresses all HAPP dimensions with specific evidence and some analysis of reliability or perspective
+- "developing" = answers are descriptive rather than analytical, or rely on surface-level observations without connecting to historical context
+- Use academic vocabulary appropriate for 9th-12th grade. Push toward historiographical thinking: "How might this source's perspective limit our understanding?"
+- Model responses should demonstrate disciplinary literacy and evidence-based reasoning`;
+                                                        const fbPrompt = `You are a warm, encouraging social studies teacher providing formative feedback to a ${gradeLevel} student analyzing a primary source document.
+
+Document: "${activeDoc.title}" — ${activeDoc.source}
+Excerpt: "${(activeDoc.excerpt || '').substring(0, 500)}"
+
+Student's HAPP Source Analysis:
+${happSummary}
+
+Student's Sourcing Responses:
+${sourcingSummary}
+
+Student's Analysis Responses:
+${analysisSummary}
+
+${gradeExpectations}
+
+Provide supportive, specific feedback as JSON:
+{"overallRating":"developing|proficient|exemplary","happFeedback":{"historical":"feedback on their historical context answer","audience":"feedback on audience answer","purpose":"feedback on purpose answer","pointOfView":"feedback on POV answer"},"sourcingFeedback":"overall feedback on sourcing responses","analysisFeedback":"overall feedback on analysis depth","strengths":["1-2 specific things they did well"],"nudges":["1-2 specific ways to deepen their thinking"],"modelResponse":"A brief exemplar for the HAPP dimension where they need the most growth"}
+
+Rules:
+- Be encouraging and specific — name what they got right before suggesting improvements
+- If an answer is blank, gently encourage them to try it
+- Match your feedback vocabulary and sentence complexity to ${gradeLevel} reading level
+- The "nudges" should be questions, not answers — guide them to think deeper
+- The "modelResponse" must match the grade-level expectations above — do NOT give an AP-level model to an elementary student`;
+                                                        const fbResult = await callGemini(fbPrompt, true);
+                                                        const parsed = JSON.parse(cleanJson(fbResult));
+                                                        setDbq(`_docFeedback_${activeDoc.id}`, parsed);
+                                                        addToast && addToast('Feedback received!');
+                                                        const xpAmount = parsed.overallRating === 'exemplary' ? 30 : parsed.overallRating === 'proficient' ? 20 : 10;
+                                                        handleScoreUpdate(xpAmount, `DBQ Source Analysis (Doc ${activeDoc.id})`, `dbq-analysis-${activeDoc.id}`);
+                                                    } catch (e) { setDbq(`_docFeedback_${activeDoc.id}`, { error: 'Could not generate feedback. Try again.' }); }
+                                                }} disabled={feedbackLoading}
+                                                    className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                                                    aria-label="Get AI feedback on document analysis">
+                                                    {feedbackLoading ? '⏳ Analyzing...' : '✨ Check My Analysis'}
+                                                </button>
+                                                {docFeedback && typeof docFeedback === 'object' && !docFeedback.error && (
+                                                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <h4 className="text-sm font-black text-emerald-800">📝 Analysis Feedback</h4>
+                                                            <span className={`text-xs font-black px-3 py-1 rounded-full ${docFeedback.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : docFeedback.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`}>{docFeedback.overallRating === 'exemplary' ? '⭐ Exemplary' : docFeedback.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing'}</span>
+                                                        </div>
+                                                        {docFeedback.happFeedback && (
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                {Object.entries(docFeedback.happFeedback).map(([k, v]) => v && (
+                                                                    <div key={k} className="bg-white/60 rounded-lg p-2.5 border border-emerald-100">
+                                                                        <div className="text-[10px] font-bold text-emerald-600 uppercase mb-0.5">{k === 'pointOfView' ? 'Point of View' : k.charAt(0).toUpperCase() + k.slice(1)}</div>
+                                                                        <p className="text-xs text-slate-700">{v}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {docFeedback.sourcingFeedback && <div className="bg-white/60 rounded-lg p-3"><div className="text-[10px] font-bold text-purple-600 mb-0.5">SOURCING</div><p className="text-xs text-slate-700">{docFeedback.sourcingFeedback}</p></div>}
+                                                        {docFeedback.analysisFeedback && <div className="bg-white/60 rounded-lg p-3"><div className="text-[10px] font-bold text-blue-600 mb-0.5">ANALYSIS</div><p className="text-xs text-slate-700">{docFeedback.analysisFeedback}</p></div>}
+                                                        {docFeedback.strengths?.length > 0 && <div><div className="text-xs font-bold text-green-700 mb-1">💪 Strengths</div><ul className="text-xs text-green-800 space-y-1">{docFeedback.strengths.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-green-500 mt-0.5">✓</span>{s}</li>)}</ul></div>}
+                                                        {docFeedback.nudges?.length > 0 && <div><div className="text-xs font-bold text-amber-700 mb-1">🤔 Think Deeper</div><ul className="text-xs text-amber-800 space-y-1">{docFeedback.nudges.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-amber-500 mt-0.5">→</span>{s}</li>)}</ul></div>}
+                                                        {docFeedback.modelResponse && <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200"><div className="text-[10px] font-bold text-indigo-700 mb-0.5">💡 EXAMPLE RESPONSE</div><p className="text-xs text-indigo-800 italic">{docFeedback.modelResponse}</p></div>}
+                                                    </div>
+                                                )}
+                                                {docFeedback?.error && <p className="text-sm text-red-600">{docFeedback.error}</p>}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                                 )}
                             </div>
@@ -45163,9 +45361,19 @@ Return only the corrected version of this exact text:`;
                                         if (!callGemini) { addToast && addToast('AI feedback unavailable'); return; }
                                         setDbq('_aiFeedback', 'Analyzing your essay...');
                                         try {
-                                            const fbResult = await callGemini(`You are a supportive writing coach reviewing a ${gradeLevel} student's DBQ synthesis essay.\n\nPrompt: "${dbqData.synthesisPrompt}"\nDocuments: ${docs.map(d => `Doc ${d.id}: ${d.title}`).join(', ')}\n\nEssay:\n"""\n${essayText}\n"""\n\nProvide constructive feedback as JSON:\n{"overallScore":1-4,"strengths":["..."],"improvements":["..."],"thesisFeedback":"...","evidenceFeedback":"...","missingDocs":["doc IDs not cited"],"nextSteps":"one specific revision suggestion"}`, true);
-                                            setDbq('_aiFeedback', JSON.parse(cleanJson(fbResult)));
+                                            const _isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+                                            const _isMid = /6th|7th|8th/i.test(gradeLevel);
+                                            const essayGradeGuide = _isElem
+                                                ? `\n\nGRADE-LEVEL SCORING (Elementary):\n4 = States a clear opinion ("I think...because..."), mentions 2+ documents by name, uses simple connecting words (because, so, also). For K-2: even 2-3 sentences with one document reference is excellent.\n3 = Has an opinion and mentions at least 1 document.\n2 = Attempts an opinion but doesn't clearly connect to documents.\n1 = Off-topic or no attempt.\nFeedback language: Use 2nd-3rd grade vocabulary. Be very encouraging. Focus on what they DID do, not what's missing.`
+                                                : _isMid
+                                                ? `\n\nGRADE-LEVEL SCORING (Middle School):\n4 = Clear thesis with reasoning, cites 3+ documents with specific evidence (quotes or paraphrases), explains WHY evidence supports the argument, acknowledges a counterargument.\n3 = Has a thesis, cites 2+ documents, some analysis beyond summary.\n2 = Thesis is vague or just summarizes documents without analysis.\n1 = No thesis, no document references, or off-topic.\nFeedback language: 5th-7th grade level. Be encouraging but push toward deeper analysis.`
+                                                : `\n\nGRADE-LEVEL SCORING (High School / AP):\n4 = Nuanced thesis addressing complexity/tension, integrates evidence from most documents with analysis of perspective, reliability, or bias, demonstrates historical thinking (causation, change over time, contextualization), addresses counterarguments substantively.\n3 = Clear thesis, cites most documents with evidence, some analytical moves beyond description.\n2 = Thesis present but generic, evidence is listed rather than analyzed, limited historical thinking.\n1 = No thesis, summary only, or fails to engage with documents.\nFeedback language: Academic vocabulary appropriate for 9th-12th grade. Push toward historiographical sophistication.`;
+                                            const fbResult = await callGemini(`You are a supportive writing coach reviewing a ${gradeLevel} student's DBQ synthesis essay.\n\nPrompt: "${dbqData.synthesisPrompt}"\nDocuments: ${docs.map(d => `Doc ${d.id}: ${d.title}`).join(', ')}\n\nEssay:\n"""\n${essayText}\n"""${essayGradeGuide}\n\nProvide constructive feedback as JSON:\n{"overallScore":1-4,"strengths":["..."],"improvements":["..."],"thesisFeedback":"...","evidenceFeedback":"...","missingDocs":["doc IDs not cited"],"nextSteps":"one specific revision suggestion"}\n\nIMPORTANT: Score according to the grade-level rubric above, NOT adult writing standards. A 2nd grader who writes "I think animals need water because Document A says so" deserves a 3 or 4, not a 1. Match your feedback vocabulary to ${gradeLevel} reading level.`, true);
+                                            const parsed = JSON.parse(cleanJson(fbResult));
+                                            setDbq('_aiFeedback', parsed);
                                             addToast && addToast('Feedback received!');
+                                            const essayXP = (parsed.overallScore || 1) * 10;
+                                            handleScoreUpdate(essayXP, 'DBQ Synthesis Essay', `dbq-essay-${resId}`);
                                         } catch (e) { setDbq('_aiFeedback', { error: 'Could not generate feedback. Try again.' }); }
                                     }} className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 shrink-0">✨ Get AI Feedback</button>
                                     {aiFeedback && typeof aiFeedback === 'string' && <p className="text-sm text-slate-500 italic flex-1">{aiFeedback}</p>}
@@ -46292,17 +46500,19 @@ Return only the corrected version of this exact text:`;
               mode="settings"
               escapeRoomState={escapeRoomState}
               setEscapeRoomState={setEscapeRoomState}
-              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom}}
+              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
               t={t}
+              hasSourceOrAnalysis={hasSourceOrAnalysis}
           />
       )}
-      {escapeRoomState.showPreview && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
+      {escapeRoomState.isPreview && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
           <window.AlloModules.EscapeRoomDialogs
               mode="preview"
               escapeRoomState={escapeRoomState}
               setEscapeRoomState={setEscapeRoomState}
-              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom}}
+              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
               t={t}
+              hasSourceOrAnalysis={hasSourceOrAnalysis}
           />
       )}
       {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && (
@@ -51041,7 +51251,25 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   aria-label="Insert table" title="Insert accessible table">📊</button>
               </div>
               <iframe ref={pdfPreviewRef} title="Accessible document preview" className="flex-1 w-full border-0"
-                sandbox="allow-same-origin allow-scripts" />
+                sandbox="allow-same-origin allow-scripts allow-forms"
+                onLoad={() => {
+                  const iframe = pdfPreviewRef.current;
+                  const doc = iframe?.contentDocument;
+                  if (doc) {
+                    doc.body.spellcheck = true;
+                    doc.addEventListener('keydown', function(e) {
+                      if (e.ctrlKey || e.metaKey) {
+                        if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+                        else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
+                        else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
+                        else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
+                        else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt('Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
+                        else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
+                        else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
+                      }
+                    });
+                  }
+                }} />
             </div>
           </div>
         </div>
@@ -52183,6 +52411,67 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       className="flex-1 accent-indigo-600" aria-label="Font size" />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-slate-500 shrink-0">Margins:</span>
+                    <div className="flex gap-1 flex-1">
+                      {[
+                        { label: 'Narrow', val: '0.5in' },
+                        { label: 'Normal', val: '1in' },
+                        { label: 'Wide', val: '1.5in' },
+                      ].map(m => (
+                        <button key={m.label} onClick={() => {
+                          const iframe = exportPreviewRef.current;
+                          const doc = iframe?.contentDocument;
+                          if (doc) {
+                            let ms = doc.getElementById('allo-margin-style');
+                            if (!ms) { ms = doc.createElement('style'); ms.id = 'allo-margin-style'; doc.head.appendChild(ms); }
+                            ms.textContent = `@media print { @page { margin: ${m.val}; } } body { padding-left: ${m.val}; padding-right: ${m.val}; }`;
+                          }
+                        }}
+                          className="flex-1 text-[8px] font-bold text-slate-500 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                          title={`${m.label} margins (${m.val})`} aria-label={`Set ${m.label} page margins`}>{m.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Word count + goal */}
+                <div className="bg-slate-50 rounded-lg border border-slate-200 p-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase">Word Count</span>
+                    <span className="text-[10px] font-mono text-slate-600" aria-live="polite">
+                      {(() => {
+                        const iframe = exportPreviewRef.current;
+                        const text = iframe?.contentDocument?.body?.textContent || '';
+                        return text.split(/\s+/).filter(w => w.length > 0).length.toLocaleString();
+                      })()} words
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-[9px] text-slate-400 shrink-0" htmlFor="word-goal-input">Goal:</label>
+                    <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
+                      className="flex-1 text-[10px] border border-slate-200 rounded px-2 py-1 bg-white"
+                      aria-label="Target word count goal"
+                      onChange={(e) => {
+                        const goal = parseInt(e.target.value);
+                        const iframe = exportPreviewRef.current;
+                        const text = iframe?.contentDocument?.body?.textContent || '';
+                        const count = text.split(/\s+/).filter(w => w.length > 0).length;
+                        const bar = document.getElementById('word-goal-bar');
+                        const lbl = document.getElementById('word-goal-label');
+                        if (bar && goal > 0) {
+                          const pct = Math.min(100, Math.round((count / goal) * 100));
+                          bar.style.width = pct + '%';
+                          bar.style.background = pct >= 100 ? '#16a34a' : pct >= 75 ? '#2563eb' : '#d97706';
+                          if (lbl) lbl.textContent = count + ' / ' + goal + ' (' + pct + '%)';
+                        }
+                      }} />
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label="Word count progress">
+                    <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
+                  </div>
+                  <div id="word-goal-label" className="text-[8px] text-slate-400 mt-0.5"></div>
+                  <div className="text-[8px] text-slate-300 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
                 </div>
 
                 {/* ── SECTION: Content ── */}
@@ -52473,6 +52762,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           const doc = iframe?.contentDocument;
                           if (doc) {
                             doc.designMode = 'on';
+                            doc.body.spellcheck = true;
                             // Add editing styles
                             const editStyle = doc.createElement('style');
                             editStyle.textContent = `
@@ -52482,6 +52772,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               ::selection { background: #c7d2fe; }
                             `;
                             doc.head.appendChild(editStyle);
+                            // Keyboard shortcuts for power users
+                            doc.addEventListener('keydown', function(e) {
+                              if (e.ctrlKey || e.metaKey) {
+                                if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+                                else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
+                                else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
+                                else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
+                                else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt('Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
+                                else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
+                                else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
+                              }
+                            });
                           }
                         }, 300);
                       }, 100);

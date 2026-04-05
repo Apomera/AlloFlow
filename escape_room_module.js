@@ -1907,7 +1907,7 @@ inputText.substring(0, 6000) + '\n' +
 
     // ── Settings Dialog ──
     if (escapeRoomState.showSettings) {
-      var hasSaved = handlers.hasSavedEscapeRoom();
+      var hasSaved = typeof handlers.hasSavedEscapeRoom === 'function' ? handlers.hasSavedEscapeRoom() : false;
       settingsDialog = h('div', {
         role: 'button',
         'aria-label': 'Close dialog',

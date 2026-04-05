@@ -6872,6 +6872,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   const [showReportWriter, setShowReportWriter] = useState(false);
   const [isSymbolStudioOpen, setIsSymbolStudioOpen] = useState(false);
   const [showStoryForge, setShowStoryForge] = useState(false);
+  const [showStoryStage, setShowStoryStage] = useState(false);
   const [showLearningHub, setShowLearningHub] = useState(false);
   const [showSelHub, setShowSelHub] = useState(false);
   const [selHubTab, setSelHubTab] = useState('explore');
@@ -7038,26 +7039,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/story_forge_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/story_forge_module.js');
+    loadModule('StoryStage', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7073,7 +7075,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@771c9e8/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4060b92/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7122,6 +7124,10 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_worldbuilder.js',
         'stem_lab/stem_tool_flightsim.js',
         'stem_lab/stem_tool_atctower.js',
+        'stem_lab/stem_tool_oratory.js',
+        'stem_lab/stem_tool_beehive.js',
+        'stem_lab/stem_tool_moonmission.js',
+        'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
         'stem_lab/stem_tool_creative.js',
         'stem_lab/stem_tool_art.js',
@@ -7205,7 +7211,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
 
       if (_isCanvasEnv) {
-        // Canvas: only load Piper script (tiny) for multilingual fallback, NOT Kokoro
+        // Canvas: load Piper bootstrap only (10KB script — voice models 15-75MB download on-demand per language)
         console.log('[Canvas TTS] Lazy mode — Kokoro will download on demand');
         setKokoroLoadState(null); // No loading overlay
         window.__loadPiperTTS();
@@ -12825,7 +12831,25 @@ Return only the corrected version of this exact text:`;
                   focusStreak: focusData.longestStreak || 0,
                   pasteEventCount: pasteEvents.length,
                   storyForgeSubmissions: history.filter(h => h.type === 'storyforge-submission').length,
-                  storyForgeLatest: (() => { const sf = history.filter(h => h.type === 'storyforge-submission').pop(); return sf ? { title: sf.data?.storyTitle, words: sf.data?.analytics?.totalWords, vocab: sf.data?.analytics?.vocabUsedCount, grade: sf.data?.analytics?.readingLevel?.grade, drafts: sf.data?.analytics?.draftCount } : null; })()
+                  storyForgeLatest: (() => { const sf = history.filter(h => h.type === 'storyforge-submission').pop(); return sf ? { title: sf.data?.storyTitle, words: sf.data?.analytics?.totalWords, vocab: sf.data?.analytics?.vocabUsedCount, grade: sf.data?.analytics?.readingLevel?.grade, drafts: sf.data?.analytics?.draftCount } : null; })(),
+                  dbqProgress: (() => {
+                      try {
+                          const dbqItems = history.filter(h => h.type === 'dbq');
+                          if (dbqItems.length === 0) return null;
+                          const latest = dbqItems[dbqItems.length - 1];
+                          const resps = studentResponses[latest.id] || {};
+                          const happNotes = resps._happNotes || {};
+                          const docs = latest.data?.documents || [];
+                          const docsAnalyzed = docs.filter(d => {
+                              const dh = happNotes[d.id] || {};
+                              return ['historical','audience','purpose','pointOfView'].some(k => dh[k]?.trim());
+                          }).length;
+                          const hasFeedback = docs.some(d => resps[`_docFeedback_${d.id}`] && typeof resps[`_docFeedback_${d.id}`] === 'object');
+                          const essayWords = (resps._essayText || '').split(/\s+/).filter(Boolean).length;
+                          const essayFeedback = resps._aiFeedback && typeof resps._aiFeedback === 'object' ? resps._aiFeedback.overallScore : null;
+                          return { title: latest.data?.title, totalDocs: docs.length, docsAnalyzed, hasFeedback, essayWords, essayScore: essayFeedback };
+                      } catch (e) { return null; }
+                  })()
               },
               focusData: {
                   engagedMinutes: focusData.engagedMinutes || 0,
@@ -15028,6 +15052,7 @@ Keep coverageGaps to max 3 suggestions. Keep conceptConnections to max 2.`;
                   }
               }
               setGlossaryHealthCheck(parsed);
+              setShowHealthCheckPanel(true); // Re-assert visibility when results arrive
               setIsRunningHealthCheck(false);
               return parsed;
           }
@@ -15093,10 +15118,9 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                           }, 6000);
                       }
                   });
-              }, 12000);
+              }, 3000);
           }
       }
-      return () => { if (glossaryHealthCheckTimerRef.current) { clearTimeout(glossaryHealthCheckTimerRef.current); glossaryHealthCheckTimerRef.current = null; } };
       return () => { if (glossaryHealthCheckTimerRef.current) { clearTimeout(glossaryHealthCheckTimerRef.current); glossaryHealthCheckTimerRef.current = null; } };
   }, [generatedContent, history, runGlossaryHealthCheck]);
   const resilientJsonParse = async (jsonString, attempt = 1) => {
@@ -15693,16 +15717,21 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                   // If rate limited, set cooldown so subsequent calls skip straight to fallback
                   if (e?.message?.includes('429') || e?.message?.includes('Rate Limited')) {
                       globalTtsRateLimitedUntil = Date.now() + 60000;
+                      window.__ttsGeminiQuotaFailed = true;
+                  }
+                  if (e?.message?.includes('401') || e?.message?.includes('403') || e?.message?.includes('API key')) {
+                      window.__ttsGeminiAuthFailed = true;
                   }
               }
           } else {
               console.warn('[Canvas TTS] Gemini rate-limited, using local fallback');
+              window.__ttsGeminiQuotaFailed = true;
           }
           // Fallback: Kokoro (English) or Piper (multilingual) — works offline
-          // If Kokoro isn't loaded yet (Canvas lazy mode), offer to download it
+          // Only offer Kokoro download on ACTUAL quota/auth failures, not transient errors
+          // Also respect user's "No Thanks" choice (kokoroOfferDeclined)
           if (!window._kokoroTTS?.ready && !window.__kokoroTTSDownloading) {
-            // Show modal offering Kokoro download (only on first failure per session)
-            if (!window.__kokoroOfferShown) {
+            if (!window.__kokoroOfferShown && !window.__kokoroOfferDeclined && (window.__ttsGeminiQuotaFailed || window.__ttsGeminiAuthFailed)) {
               window.__kokoroOfferShown = true;
               setShowKokoroOfferModal(true);
             }
@@ -25635,6 +25664,7 @@ Return ONLY JSON.`;
   const updateEscapeRoomFinalDoor = _erCall('updateEscapeRoomFinalDoor');
   const saveEscapeRoomConfig = _erCall('saveEscapeRoomConfig');
   const loadSavedEscapeRoom = _erCall('loadSavedEscapeRoom');
+  const hasSavedEscapeRoom = _erCall('hasSavedEscapeRoom');
   const launchCollaborativeEscapeRoom = _erCall('launchCollaborativeEscapeRoom');
   const endCollaborativeEscapeRoom = _erCall('endCollaborativeEscapeRoom');
   // Escape room timer — delegated to CDN module hook or inline fallback
@@ -27396,10 +27426,14 @@ Return ONLY JSON.`;
          const isMiddle = /6th|7th|8th/i.test(gradeLevel);
          const _dbqMode = window._dbqMode || 'standard';
          const _dbqFocusTopic = document.getElementById('dbq-focus-topic')?.value || '';
+         const _dbqCustomDocs = document.getElementById('dbq-custom-docs')?.value || '';
+         const _dbqCustomEssayFocus = document.getElementById('dbq-custom-essay-focus')?.value || '';
          const _dbqModeInstructions = _dbqMode === 'perspectives'
            ? `\n\nSPECIAL MODE — COMPETING PERSPECTIVES:\nYou MUST structure this DBQ around two or more clearly opposing viewpoints or interpretations.${_dbqFocusTopic ? ' Focus on: ' + _dbqFocusTopic + '.' : ''}\n- At least 2 documents should represent each major perspective\n- Label each document's perspective in a "perspective" field (e.g., "Federalist", "Anti-Federalist", "Pro-expansion", "Indigenous resistance")\n- The corroborationClaims MUST include at least one claim where documents directly contradict each other\n- The synthesis essay prompt MUST require students to evaluate BOTH perspectives and take a position\n- Include a "perspectives" array in the JSON root: [{"label": "Perspective A Name", "description": "Brief description", "docIds": ["A","C"]}, {"label": "Perspective B Name", "description": "Brief description", "docIds": ["B","D"]}]\n`
            : _dbqMode === 'search'
            ? `\n\nSPECIAL MODE — WEB-ENHANCED SOURCES:\nIn addition to extracting documents from the provided source text, you should GENERATE additional document excerpts that represent real historical primary sources relevant to this topic.${_dbqFocusTopic ? ' Search focus: ' + _dbqFocusTopic + '.' : ''}\n- Create realistic excerpts attributed to real historical figures, organizations, or publications (with accurate dates and contexts)\n- Include a mix of document types: speeches, letters, newspaper editorials, government records, testimony, data/statistics\n- Mark AI-generated historical sources with "documentType": "reconstructed" so teachers know they are illustrative, not verbatim\n- Aim for 5-6 total documents (2-3 from source text + 2-3 reconstructed historical sources)\n- Each reconstructed source must include accurate historical context in the "source" field\n`
+           : _dbqMode === 'custom' && _dbqCustomDocs.trim()
+           ? `\n\nSPECIAL MODE — TEACHER-PROVIDED DOCUMENTS:\nThe teacher has provided specific documents below. You MUST use EXACTLY these documents as the document excerpts. Do NOT generate, modify, or replace them. Your job is to:\n- Preserve each document's exact text as the "excerpt"\n- Parse any "Title:" and "Source:" lines the teacher provided for each document\n- Add appropriate "documentType" classification (primary, secondary, data, visual, testimony)\n- Generate HAPP prompts, sourcing questions, analysis questions, and sentence starters for each document\n- Create corroboration claims that connect across the teacher's documents\n- Write a synthesis essay prompt${_dbqCustomEssayFocus ? ' focused on: ' + _dbqCustomEssayFocus : ''}\n- Build the rubric appropriate to the grade level\n\nTEACHER-PROVIDED DOCUMENTS (separated by ---):\n"""\n${_dbqCustomDocs}\n"""\n`
            : '';
          const dbqPrompt = `You are an expert social studies and ELA curriculum designer creating a Document-Based Question (DBQ) activity.
 
@@ -27439,6 +27473,7 @@ ${isElementary ? '   - Use sentence starters: "The main idea is..." and "I know 
 ${isElementary ? '   Include a simple thesis sentence starter: "I think ___ because Document A shows ___ and Document B shows ___."' : isMiddle ? '   Include a thesis template: "Although [counterargument], [your position] because [reason 1] and [reason 2]."' : ''}
 
 8. RUBRIC: A 4-point rubric (1-4) with criteria for: Thesis, Evidence Use, Analysis, Organization.
+${isElementary ? '   - Rubric language should be simple and encouraging. A "4" for elementary means: states a clear opinion with a reason, mentions at least 2 documents, uses simple connecting words. A "1" means: no clear opinion stated.' : isMiddle ? '   - Rubric should reflect middle school expectations. A "4" means: clear thesis with counterargument acknowledgment, cites 3+ documents with specific evidence, explains WHY evidence matters. A "1" means: no thesis, no document references.' : '   - Rubric should reflect AP/high school rigor. A "4" means: nuanced thesis addressing complexity, integrates evidence from most documents with analysis of perspective/bias, demonstrates historical thinking skills (causation, continuity, contextualization). A "1" means: restatement without analysis.'}
 
 ${effectiveLanguage !== 'English' ? `All content must be in ${effectiveLanguage}.` : ''}
 
@@ -30469,7 +30504,7 @@ Return ONLY JSON:
               Note: In this environment, the download won't persist between sessions.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => { setShowKokoroOfferModal(false); }} className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">
+              <button onClick={() => { setShowKokoroOfferModal(false); window.__kokoroOfferDeclined = true; }} className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">
                 No Thanks
               </button>
               <button onClick={() => {
@@ -31358,6 +31393,39 @@ Return ONLY JSON:
                                                     data-help-key="header_settings_text_spacing"
                                                     className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                                 />
+                                            </div>
+                                            {/* ── Reading Theme Swatches ── */}
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="text-xs font-bold flex items-center gap-1 text-slate-500 dark:text-slate-500">{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
+                                                    <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{readingTheme === 'default' ? 'Default' : readingTheme}</span>
+                                                </div>
+                                                <p className="text-[9px] text-slate-400 mb-2">{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
+                                                <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Reading theme">
+                                                    {[
+                                                        { id: 'default', label: 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
+                                                        { id: 'warm', label: 'Warm', bg: '#fdfbf7', fg: '#5c4033', border: '#f5e6d3', emoji: '☀️' },
+                                                        { id: 'sepia', label: 'Sepia', bg: '#f4ecd8', fg: '#5c4033', border: '#d4c5a9', emoji: '📜' },
+                                                        { id: 'dark', label: 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#334155', emoji: '🌙' },
+                                                        { id: 'highContrast', label: 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', emoji: '◼️' },
+                                                        { id: 'blue', label: 'Blue', bg: '#d6eaf8', fg: '#1b2631', border: '#85c1e9', emoji: '💧' },
+                                                        { id: 'green', label: 'Green', bg: '#e8f5e9', fg: '#1b5e20', border: '#81c784', emoji: '🌿' },
+                                                        { id: 'rose', label: 'Rose', bg: '#fce4ec', fg: '#880e4f', border: '#f48fb1', emoji: '🌸' },
+                                                        { id: 'dyslexia', label: 'Easy Read', bg: '#faf8ef', fg: '#1e293b', border: '#e8e0c8', emoji: '🔤' },
+                                                    ].map(function(th) {
+                                                        var isActive = readingTheme === th.id;
+                                                        return <button key={th.id}
+                                                            role="radio" aria-checked={isActive} aria-label={th.label + ' theme'}
+                                                            onClick={() => setReadingTheme(th.id)}
+                                                            title={th.label}
+                                                            className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? 'ring-2 ring-indigo-500 ring-offset-1 scale-105' : 'hover:scale-105'}`}
+                                                            style={{ background: th.bg, color: th.fg, borderColor: isActive ? '#6366f1' : th.border }}
+                                                        >
+                                                            <span className="text-sm leading-none">{th.emoji}</span>
+                                                            <span className="text-[8px] font-bold leading-none" style={{ color: th.fg }}>{th.label}</span>
+                                                        </button>;
+                                                    })}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -34038,6 +34106,39 @@ Return ONLY JSON:
                   <textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
+                    onPaste={async (e) => {
+                        const items = e.clipboardData?.items;
+                        if (!items || !callGeminiVision) return;
+                        for (const item of items) {
+                            if (item.type.startsWith('image/')) {
+                                e.preventDefault();
+                                const blob = item.getAsFile();
+                                if (!blob) return;
+                                setIsExtracting(true);
+                                setGenerationStep('Extracting text from pasted image...');
+                                addToast && addToast('Image detected — extracting text...', 'info');
+                                const reader = new FileReader();
+                                reader.onload = async () => {
+                                    try {
+                                        const base64 = reader.result.split(',')[1];
+                                        const text = await callGeminiVision(
+                                            'You are an OCR expert for educators. Extract all readable text from this image. Preserve structure (headers, paragraphs) using markdown. If there are tables, preserve them as markdown tables. Return ONLY the extracted text.',
+                                            base64, item.type
+                                        );
+                                        if (text && text.trim().length > 10) {
+                                            setInputText(prev => prev ? prev + '\n\n' + text.trim() : text.trim());
+                                            addToast && addToast('Text extracted from image!', 'success');
+                                        } else {
+                                            addToast && addToast('Could not extract readable text from image.', 'error');
+                                        }
+                                    } catch (err) { addToast && addToast('Image OCR failed: ' + err.message, 'error'); }
+                                    setIsExtracting(false); setGenerationStep('');
+                                };
+                                reader.readAsDataURL(blob);
+                                return;
+                            }
+                        }
+                    }}
                     placeholder={isGeneratingSource ? t('common.writing_content') : isExtracting ? t('common.scanning_document') : t('input.placeholder')}
                     disabled={isGeneratingSource || isExtracting}
                     className={`w-full h-48 p-3 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none transition-all duration-300 ${(isGeneratingSource || isExtracting) ? 'bg-slate-50 text-slate-500' : ''}`}
@@ -35211,7 +35312,8 @@ Return ONLY JSON:
                             <div className="flex gap-1">
                                 {[['standard', '📄 Standard DBQ', 'Extract documents from your source text'],
                                   ['perspectives', '⚔️ Competing Perspectives', 'AI finds 2+ viewpoints that agree and disagree'],
-                                  ['search', '🔍 Web-Enhanced', 'AI searches for real primary sources on your topic']
+                                  ['search', '🔍 Web-Enhanced', 'AI searches for real primary sources on your topic'],
+                                  ['custom', '✏️ Teacher Documents', 'Paste your own documents — AI builds the scaffolding around them']
                                 ].map(([mode, label, desc]) => (
                                     <button key={mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
                                         className={`flex-1 text-left p-2 rounded-lg text-[10px] font-bold transition-all border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-500 hover:bg-rose-50'}`}>
@@ -35233,6 +35335,118 @@ Return ONLY JSON:
                                     id="dbq-focus-topic" />
                             </div>
                         )}
+                        {/* Teacher Documents mode — paste your own documents */}
+                        {window._dbqMode === 'custom' && (
+                            <div className="space-y-2">
+                                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                                    <p className="text-[10px] text-indigo-700 mb-2"><strong>Paste each document below.</strong> Separate documents with <code className="bg-indigo-100 px-1 rounded">---</code> on its own line. Or use the import buttons to fetch from a URL or upload an image of a document.</p>
+                                    <p className="text-[10px] text-indigo-500">For each document, optionally include a title and source on the first lines:</p>
+                                    <pre className="text-[9px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap">Title: Letter from Abigail Adams to John Adams{'\n'}Source: March 31, 1776{'\n'}Remember the Ladies, and be more generous and favourable to them than your ancestors...{'\n'}---{'\n'}Title: Declaration of Independence (excerpt){'\n'}Source: Thomas Jefferson, July 4, 1776{'\n'}We hold these truths to be self-evident, that all men are created equal...</pre>
+                                </div>
+                                {/* Import tools — URL fetch + image upload */}
+                                <div className="flex gap-2 flex-wrap items-end">
+                                    <div className="flex-1 min-w-[200px]">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Import from URL</label>
+                                        <div className="flex gap-1">
+                                            <input type="text" id="dbq-import-url"
+                                                className="flex-1 text-xs border border-indigo-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 outline-none"
+                                                placeholder="https://... (article, speech, primary source)"
+                                                aria-label="URL to import as document" />
+                                            <button onClick={async () => {
+                                                const urlInput = document.getElementById('dbq-import-url');
+                                                const docArea = document.getElementById('dbq-custom-docs');
+                                                const url = urlInput?.value?.trim();
+                                                if (!url || !docArea) return;
+                                                addToast && addToast('Fetching document from URL...', 'info');
+                                                try {
+                                                    const text = await fetchAndCleanUrl(url, callGemini, addToast);
+                                                    if (text) {
+                                                        const separator = docArea.value.trim() ? '\n---\n' : '';
+                                                        docArea.value += separator + 'Title: (imported from URL)\nSource: ' + url + '\n' + text.replace(/^Source:.*\n\n?/, '');
+                                                        urlInput.value = '';
+                                                        addToast && addToast('Document imported! Review and edit the text below.', 'success');
+                                                    }
+                                                } catch (e) { addToast && addToast('Import failed: ' + e.message, 'error'); }
+                                            }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-all shrink-0"
+                                                aria-label="Fetch URL">🔗 Fetch</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Upload Document Image</label>
+                                        <div className="flex gap-1">
+                                            <input type="file" id="dbq-import-image" accept="image/*,.pdf" className="hidden"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    const docArea = document.getElementById('dbq-custom-docs');
+                                                    if (!file || !docArea || !callGeminiVision) return;
+                                                    addToast && addToast('Extracting text from image...', 'info');
+                                                    try {
+                                                        const reader = new FileReader();
+                                                        reader.onload = async () => {
+                                                            try {
+                                                                const base64 = reader.result.split(',')[1];
+                                                                const mimeType = file.type || 'image/png';
+                                                                const ocrPrompt = `You are an OCR expert. Extract ALL readable text from this document image. Preserve the original wording exactly. Maintain paragraph structure. If there are handwritten portions, do your best to transcribe them. Return ONLY the extracted text.`;
+                                                                const text = await callGeminiVision(ocrPrompt, base64, mimeType);
+                                                                if (text && text.trim().length > 10) {
+                                                                    const separator = docArea.value.trim() ? '\n---\n' : '';
+                                                                    docArea.value += separator + 'Title: (extracted from ' + file.name + ')\nSource: Uploaded document image\n' + text.trim();
+                                                                    addToast && addToast('Text extracted from image! Review and edit below.', 'success');
+                                                                } else {
+                                                                    addToast && addToast('Could not extract readable text from this image.', 'error');
+                                                                }
+                                                            } catch (err) { addToast && addToast('OCR failed: ' + err.message, 'error'); }
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    } catch (err) { addToast && addToast('File read failed: ' + err.message, 'error'); }
+                                                    e.target.value = '';
+                                                }} />
+                                            <button onClick={() => document.getElementById('dbq-import-image')?.click()}
+                                                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded-lg transition-all flex items-center gap-1"
+                                                aria-label="Upload document image">📷 Upload Image</button>
+                                            <button onClick={async () => {
+                                                const docArea = document.getElementById('dbq-custom-docs');
+                                                if (!docArea || !callGeminiVision) return;
+                                                try {
+                                                    const items = await navigator.clipboard.read();
+                                                    for (const item of items) {
+                                                        const imageType = item.types.find(t => t.startsWith('image/'));
+                                                        if (imageType) {
+                                                            addToast && addToast('Extracting text from clipboard image...', 'info');
+                                                            const blob = await item.getType(imageType);
+                                                            const reader = new FileReader();
+                                                            reader.onload = async () => {
+                                                                try {
+                                                                    const base64 = reader.result.split(',')[1];
+                                                                    const text = await callGeminiVision('You are an OCR expert. Extract ALL readable text from this document image. Preserve original wording and paragraph structure. Return ONLY the extracted text.', base64, imageType);
+                                                                    if (text && text.trim().length > 10) {
+                                                                        const separator = docArea.value.trim() ? '\n---\n' : '';
+                                                                        docArea.value += separator + 'Title: (pasted from clipboard)\nSource: Clipboard image\n' + text.trim();
+                                                                        addToast && addToast('Text extracted from clipboard image!', 'success');
+                                                                    } else { addToast && addToast('Could not extract text from clipboard image.', 'error'); }
+                                                                } catch (err) { addToast && addToast('OCR failed: ' + err.message, 'error'); }
+                                                            };
+                                                            reader.readAsDataURL(blob);
+                                                            return;
+                                                        }
+                                                    }
+                                                    addToast && addToast('No image found in clipboard. Copy an image first (screenshot, right-click copy, etc.)', 'info');
+                                                } catch (err) { addToast && addToast('Clipboard access failed. Try uploading instead.', 'info'); }
+                                            }} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold rounded-lg transition-all flex items-center gap-1"
+                                                aria-label="Paste image from clipboard">📋 Paste Image</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <textarea id="dbq-custom-docs"
+                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none font-mono"
+                                    rows={8} placeholder="Paste your documents here, separated by --- on its own line..."
+                                    aria-label="Custom documents for DBQ" />
+                                <input type="text" id="dbq-custom-essay-focus"
+                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
+                                    placeholder="Essay focus question (optional) — e.g. 'How did different groups define liberty in 1776?'"
+                                    aria-label="Custom essay focus question" />
+                            </div>
+                        )}
                         <div className="bg-white rounded-lg p-2 border border-rose-100">
                             <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">{t('dbq.includes') || 'DBQ Packet Includes'}</div>
                             <div className="flex flex-wrap gap-1">
@@ -35243,10 +35457,11 @@ Return ONLY JSON:
                                 <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📊 4-Point Rubric</span>
                                 {(window._dbqMode === 'perspectives') && <span className="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium">⚔️ POV Comparison</span>}
                                 {(window._dbqMode === 'search') && <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium">🌐 Web Sources</span>}
+                                {(window._dbqMode === 'custom') && <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium">✏️ Teacher Docs</span>}
                             </div>
                         </div>
                     </div>
-                    {!hasSourceOrAnalysis && (
+                    {!hasSourceOrAnalysis && window._dbqMode !== 'custom' && (
                         <div className="px-3 pb-2">
                             <p className="text-[10px] text-rose-400 italic flex items-center gap-1">⬆️ Paste a source text above first — the DBQ will be built from it.</p>
                         </div>
@@ -37851,7 +38066,9 @@ Return only the corrected version of this exact text:`;
                   <div className="space-y-6">
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <p className="text-sm text-blue-800 max-w-xs"><strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('glossary.udl_goal_desc')}</p>
-                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                        <div className="flex flex-col gap-2 w-full sm:w-auto">
+                          {/* Row 1: Flashcards & Export */}
+                          <div className="flex flex-wrap items-center gap-2">
                              <div className="flex bg-white rounded-full p-1 border border-blue-200 shadow-sm">
                                  <button
                                     data-help-key="glossary_standard_flashcards"
@@ -37895,6 +38112,9 @@ Return only the corrected version of this exact text:`;
                                     <Languages size={14} /> {t('flashcards.export_language')}
                                 </button>
                              )}
+                          </div>
+                          {/* Row 2: Games */}
+                          <div className="flex flex-wrap items-center gap-2">
                             <div className="flex items-center bg-teal-50 rounded-full p-0.5 border border-teal-200">
                                 {selectedLanguages.length > 0 && (
                                     <select aria-label={t('common.selection')}
@@ -37977,6 +38197,9 @@ Return only the corrected version of this exact text:`;
                             >
                                 <Shuffle size={14} /> {t('glossary.scramble')}
                             </button>
+                          </div>
+                          {/* Row 3: Settings & Tools */}
+                          <div className="flex flex-wrap items-center gap-2">
                             {isTeacherMode && (
                              <button
                                 data-help-key="glossary_edit"
@@ -38030,6 +38253,26 @@ Return only the corrected version of this exact text:`;
                                 <input type="text" aria-label={t('glossary.search_placeholder') || 'Search glossary'} placeholder={t('glossary.search_placeholder')} value={glossarySearchTerm} onChange={(e) => setGlossarySearchTerm(e.target.value)} className="pl-8 pr-3 py-1.5 text-sm border border-blue-200 rounded focus:outline-none focus:ring-2 focus:ring-indigo-200 w-full"/>
                                 {glossarySearchTerm && <button onClick={handleSetGlossarySearchTermConst} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-400 hover:text-blue-600" aria-label={t('common.clear')}><X size={14} /></button>}
                             </div>
+                            {/* Manual Health Check Button */}
+                            <button
+                                onClick={() => {
+                                    if (generatedContent?.type === 'glossary' && Array.isArray(generatedContent?.data)) {
+                                        const sourceText = (history.slice().reverse().find(h => h && h.type === 'analysis')?.data?.originalText) || inputText || '';
+                                        console.log('[HealthCheck] Manual trigger: ' + generatedContent.data.length + ' terms');
+                                        runGlossaryHealthCheck(generatedContent.data, sourceText);
+                                    } else {
+                                        console.warn('[HealthCheck] Manual trigger failed: generatedContent type=' + generatedContent?.type + ', data is array=' + Array.isArray(generatedContent?.data));
+                                        addToast(t('common.generate_glossary_first') || 'Generate a glossary first', 'info');
+                                    }
+                                }}
+                                disabled={isRunningHealthCheck || generatedContent?.type !== 'glossary'}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-all shadow-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Analyze glossary quality, grade level, and accuracy"
+                            >
+                                {isRunningHealthCheck ? <RefreshCw size={14} className="animate-spin"/> : <span>📊</span>}
+                                {isRunningHealthCheck ? 'Analyzing...' : (glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check')}
+                            </button>
+                          </div>
                         </div>
                     </div>
                     {isInteractiveFlashcards && generatedContent?.data && (
@@ -40982,9 +41225,12 @@ Return only the corrected version of this exact text:`;
                                 escapeTimeLeft={escapeTimeLeft}
                                 isEscapeTimerRunning={isEscapeTimerRunning}
                                 setIsEscapeTimerRunning={setIsEscapeTimerRunning}
+                                handleSetIsEscapeTimerRunningToTrue={() => setIsEscapeTimerRunning(true)}
                                 handlers={{generateEscapeRoom, handlePuzzleSolved, handleSelectObject, handleWrongAnswer, handleEscapeRoomAnswer, handleSequenceAnswer, handleCipherAnswer, handleMatchingSelect, handleScrambleAnswer, handleFillinAnswer, handleFinalDoorAnswer, resetEscapeRoom, handleRevealHint, derangeShuffle, openEscapeRoomSettings}}
                                 t={t}
                                 soundEnabled={soundEnabled}
+                                setSoundEnabled={setSoundEnabled}
+                                playSound={playSound}
                                 globalPoints={globalPoints}
                                 inputText={inputText}
                             />
@@ -44940,6 +45186,53 @@ Return only the corrected version of this exact text:`;
                                 }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">
                                     🖨️ Print DBQ Packet
                                 </button>
+                                {/* Timer for AP Practice */}
+                                {(() => {
+                                    const timerActive = r._dbqTimerEnd && Date.now() < r._dbqTimerEnd;
+                                    const timerDone = r._dbqTimerEnd && Date.now() >= r._dbqTimerEnd;
+                                    const remaining = timerActive ? Math.max(0, Math.ceil((r._dbqTimerEnd - Date.now()) / 1000)) : 0;
+                                    const mins = Math.floor(remaining / 60);
+                                    const secs = remaining % 60;
+                                    // Auto-refresh every second when timer active
+                                    if (timerActive && !r._dbqTimerInterval) {
+                                        const iv = setInterval(() => setDbq('_dbqTimerTick', Date.now()), 1000);
+                                        setDbq('_dbqTimerInterval', iv);
+                                    }
+                                    if (!timerActive && r._dbqTimerInterval) {
+                                        clearInterval(r._dbqTimerInterval);
+                                        setDbq('_dbqTimerInterval', null);
+                                    }
+                                    return (
+                                        <>
+                                            {!timerActive && !timerDone && (
+                                                <div className="flex items-center gap-1">
+                                                    {[15, 30, 45, 60].map(m => (
+                                                        <button key={m} onClick={() => setDbq('_dbqTimerEnd', Date.now() + m * 60 * 1000)}
+                                                            className="px-2 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-slate-200"
+                                                            aria-label={`Start ${m} minute timer`}>⏱️ {m}m</button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {timerActive && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`font-mono font-black text-sm px-3 py-1 rounded-lg border-2 ${remaining <= 300 ? 'bg-red-50 text-red-700 border-red-300' : remaining <= 600 ? 'bg-amber-50 text-amber-700 border-amber-300' : 'bg-indigo-50 text-indigo-700 border-indigo-300'}`}
+                                                        role="timer" aria-live="polite" aria-label={`${mins} minutes ${secs} seconds remaining`}>
+                                                        {mins}:{secs < 10 ? '0' : ''}{secs}
+                                                    </span>
+                                                    <button onClick={() => { if (r._dbqTimerInterval) clearInterval(r._dbqTimerInterval); setDbq('_dbqTimerEnd', null); setDbq('_dbqTimerInterval', null); }}
+                                                        className="text-[10px] text-slate-500 hover:text-red-600" aria-label="Cancel timer">✕</button>
+                                                </div>
+                                            )}
+                                            {timerDone && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse">⏰ Time's up!</span>
+                                                    <button onClick={() => { setDbq('_dbqTimerEnd', null); }}
+                                                        className="text-[10px] text-slate-500 hover:text-slate-700" aria-label="Dismiss timer">Dismiss</button>
+                                                </div>
+                                            )}
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
                         {/* Tab Bar */}
@@ -44948,6 +45241,48 @@ Return only the corrected version of this exact text:`;
                                 <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{...tabBtnStyle(id), whiteSpace: 'nowrap', fontSize: '12px'}}>{label}</button>
                             ))}
                         </div>
+                        {/* ── DBQ Progress Tracker ── */}
+                        {(() => {
+                            const docsDone = docs.filter(d => {
+                                const dh = (happNotes[d.id] || {});
+                                return ['historical','audience','purpose','pointOfView'].some(k => dh[k]?.trim());
+                            }).length;
+                            const docsFeedback = docs.filter(d => r[`_docFeedback_${d.id}`] && typeof r[`_docFeedback_${d.id}`] === 'object').length;
+                            const corrobDone = claims.some((_, ci) => corrobNotes[ci]?.trim()) || docs.some(d => r[`corrob-claim-${d.id}`]?.trim());
+                            const hasCorrobFb = r._corrobFeedback && typeof r._corrobFeedback === 'object';
+                            const essayLen = (essayText || '').split(/\s+/).filter(Boolean).length;
+                            const hasEssayFb = r._aiFeedback && typeof r._aiFeedback === 'object' && !r._aiFeedback.error;
+                            const selfDone = Object.keys(selfScores).length === rubric.length && rubric.length > 0;
+                            const steps = [
+                                { label: 'Analyze', done: docsDone === docs.length && docs.length > 0, partial: docsDone > 0, detail: `${docsDone}/${docs.length} docs` },
+                                { label: 'Feedback', done: docsFeedback === docs.length && docs.length > 0, partial: docsFeedback > 0, detail: `${docsFeedback}/${docs.length}` },
+                                { label: 'Corroborate', done: corrobDone && hasCorrobFb, partial: corrobDone, detail: hasCorrobFb ? '✓' : corrobDone ? 'started' : '' },
+                                { label: 'Essay', done: hasEssayFb, partial: essayLen > 0, detail: essayLen > 0 ? `${essayLen}w` : '' },
+                                { label: 'Self-Assess', done: selfDone, partial: Object.keys(selfScores).length > 0, detail: selfDone ? '✓' : '' }
+                            ];
+                            const completed = steps.filter(s => s.done).length;
+                            const pct = Math.round((completed / steps.length) * 100);
+                            return (
+                                <div className="px-3 py-2 bg-slate-50 border-x border-slate-200" style={{ fontSize: '10px' }}>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-bold text-slate-600">Progress:</span>
+                                        <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: pct + '%', background: pct === 100 ? '#22c55e' : 'linear-gradient(90deg, #4f46e5, #a78bfa)' }} />
+                                        </div>
+                                        <span className="font-bold" style={{ color: pct === 100 ? '#16a34a' : '#6366f1' }}>{pct}%</span>
+                                    </div>
+                                    <div className="flex gap-1 justify-between">
+                                        {steps.map((s, i) => (
+                                            <div key={i} className="flex items-center gap-1">
+                                                <span style={{ color: s.done ? '#22c55e' : s.partial ? '#f59e0b' : '#cbd5e1', fontWeight: 700 }}>{s.done ? '●' : s.partial ? '◐' : '○'}</span>
+                                                <span className="text-slate-500">{s.label}</span>
+                                                {s.detail && <span className="text-slate-400">({s.detail})</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                         {/* Tab Content */}
                         <div className="flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5" role="tabpanel">
                         {/* ═══ DOCUMENTS TAB ═══ */}
@@ -44987,7 +45322,41 @@ Return only the corrected version of this exact text:`;
                                                     addToast && addToast('Highlight saved!');
                                                 } else { addToast && addToast('Select text first to annotate'); }
                                             }} className="text-[10px] font-bold bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-2 py-1 rounded-full">🖍️ Highlight</button>
+                                            <button onClick={() => {
+                                                const text = activeDoc.excerpt || '';
+                                                if (!text) return;
+                                                if (r[`_docSpeaking_${activeDoc.id}`]) { window.speechSynthesis && window.speechSynthesis.cancel(); setDbq(`_docSpeaking_${activeDoc.id}`, false); return; }
+                                                setDbq(`_docSpeaking_${activeDoc.id}`, true);
+                                                if (callTTS) {
+                                                    callTTS(text, selectedVoice || 'Kore', 0.9).then(url => { if (url) { const a = new Audio(url); a.onended = () => setDbq(`_docSpeaking_${activeDoc.id}`, false); a.play().catch(() => setDbq(`_docSpeaking_${activeDoc.id}`, false)); } else { setDbq(`_docSpeaking_${activeDoc.id}`, false); } }).catch(() => {
+                                                        if (window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.9; u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false); window.speechSynthesis.speak(u); } else { setDbq(`_docSpeaking_${activeDoc.id}`, false); }
+                                                    });
+                                                } else if (window.speechSynthesis) {
+                                                    window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.9; u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false); window.speechSynthesis.speak(u);
+                                                } else { setDbq(`_docSpeaking_${activeDoc.id}`, false); }
+                                            }} className={`text-[10px] font-bold px-2 py-1 rounded-full ${r[`_docSpeaking_${activeDoc.id}`] ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`}
+                                                aria-label={r[`_docSpeaking_${activeDoc.id}`] ? 'Stop reading' : 'Read aloud'}>{r[`_docSpeaking_${activeDoc.id}`] ? '⏹️ Stop' : '🔊 Listen'}</button>
+                                            <button onClick={async () => {
+                                                if (r[`_docVocab_${activeDoc.id}`]) { setDbq(`_docVocab_${activeDoc.id}`, null); return; }
+                                                if (!callGemini || !activeDoc.excerpt) return;
+                                                setDbq(`_docVocab_${activeDoc.id}`, 'loading');
+                                                try {
+                                                    const vResult = await callGemini(`Identify 4-6 challenging vocabulary words in this text excerpt for a ${gradeLevel} student. For each word, provide a simple, grade-appropriate definition.\n\nText: "${(activeDoc.excerpt || '').substring(0, 800)}"\n\nReturn ONLY JSON array: [{"word":"the word","definition":"simple definition"}]`, true);
+                                                    setDbq(`_docVocab_${activeDoc.id}`, JSON.parse(cleanJson(vResult)));
+                                                } catch (e) { setDbq(`_docVocab_${activeDoc.id}`, null); addToast && addToast('Could not load vocabulary'); }
+                                            }} className={`text-[10px] font-bold px-2 py-1 rounded-full ${r[`_docVocab_${activeDoc.id}`] && r[`_docVocab_${activeDoc.id}`] !== 'loading' ? 'bg-green-200 hover:bg-green-300 text-green-800' : 'bg-purple-200 hover:bg-purple-300 text-purple-800'}`}
+                                                aria-label="Vocabulary help">{r[`_docVocab_${activeDoc.id}`] === 'loading' ? '⏳' : r[`_docVocab_${activeDoc.id}`] ? '📖 Hide Vocab' : '📖 Vocab Help'}</button>
                                         </div>
+                                        {/* Vocabulary glossary */}
+                                        {r[`_docVocab_${activeDoc.id}`] && Array.isArray(r[`_docVocab_${activeDoc.id}`]) && (
+                                            <div className="flex gap-2 flex-wrap mb-2">
+                                                {r[`_docVocab_${activeDoc.id}`].map((v, vi) => (
+                                                    <span key={vi} className="text-[10px] bg-purple-50 border border-purple-200 rounded-lg px-2 py-1 cursor-help" title={v.definition}>
+                                                        <strong className="text-purple-700">{v.word}</strong> <span className="text-purple-500">— {v.definition}</span>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                         {activeDoc.excerpt}
                                     </div>
                                     {/* Annotations */}
@@ -45056,6 +45425,197 @@ Return only the corrected version of this exact text:`;
                                             ))}
                                         </div>
                                     )}
+                                    {/* ── Source Reliability Analysis ── */}
+                                    <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
+                                        <h4 className="text-sm font-bold text-rose-800 mb-1 flex items-center gap-2">🔎 Source Reliability Check</h4>
+                                        <p className="text-[10px] text-rose-500 mb-3">Think critically: Is this source trustworthy? Why or why not?</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                            <div className="bg-white rounded-lg p-3 border border-rose-100">
+                                                <div className="text-[10px] font-bold text-rose-700 mb-1">🎯 Reliability Rating</div>
+                                                <div className="flex gap-1">
+                                                    {['Very Reliable', 'Somewhat Reliable', 'Questionable', 'Unreliable'].map(rating => (
+                                                        <button key={rating} onClick={() => setDbq(`_reliability_${activeDoc.id}`, { ...(r[`_reliability_${activeDoc.id}`] || {}), rating })}
+                                                            className={`text-[10px] px-2 py-1 rounded-full border transition-all ${(r[`_reliability_${activeDoc.id}`] || {}).rating === rating ? 'bg-rose-600 text-white border-rose-600 font-bold' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'}`}
+                                                            aria-label={`Rate as ${rating}`}>{rating}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="bg-white rounded-lg p-3 border border-rose-100">
+                                                <div className="text-[10px] font-bold text-rose-700 mb-1">⚠️ Potential Bias</div>
+                                                <div className="flex gap-1 flex-wrap">
+                                                    {['None detected', 'Political', 'Cultural', 'Economic', 'Personal', 'Other'].map(bias => (
+                                                        <button key={bias} onClick={() => setDbq(`_reliability_${activeDoc.id}`, { ...(r[`_reliability_${activeDoc.id}`] || {}), bias })}
+                                                            className={`text-[10px] px-2 py-1 rounded-full border transition-all ${(r[`_reliability_${activeDoc.id}`] || {}).bias === bias ? 'bg-rose-600 text-white border-rose-600 font-bold' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'}`}
+                                                            aria-label={`Bias: ${bias}`}>{bias}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <textarea value={(r[`_reliability_${activeDoc.id}`] || {}).reasoning || ''} onChange={(e) => setDbq(`_reliability_${activeDoc.id}`, { ...(r[`_reliability_${activeDoc.id}`] || {}), reasoning: e.target.value })}
+                                            rows={2} placeholder={/k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? 'I think this source is... because...' : /6th|7th|8th/i.test(gradeLevel) ? 'This source seems reliable/unreliable because... The author might be biased because...' : 'Evaluate the reliability of this source considering the author\'s position, the intended audience, corroborating evidence, and potential limitations...'}
+                                            className="w-full text-sm border border-rose-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-rose-400 outline-none"
+                                            aria-label={`Source reliability reasoning for Document ${activeDoc.id}`} />
+                                        {/* AI Reliability Analysis (hidden until student submits theirs, then revealed) */}
+                                        {(r[`_reliability_${activeDoc.id}`] || {}).reasoning?.trim() && !r[`_reliabilityAI_${activeDoc.id}`] && (
+                                            <button onClick={async () => {
+                                                if (!callGemini) return;
+                                                setDbq(`_reliabilityAI_${activeDoc.id}`, 'loading');
+                                                try {
+                                                    const isE = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+                                                    const isM = /6th|7th|8th/i.test(gradeLevel);
+                                                    const result = await callGemini(`Analyze the reliability and potential bias of this historical document for a ${gradeLevel} student. Then compare the student's own reliability assessment.
+
+Document: "${activeDoc.title}" — ${activeDoc.source}
+Type: ${activeDoc.documentType || 'unknown'}
+Excerpt: "${(activeDoc.excerpt || '').substring(0, 600)}"
+
+Student's Assessment:
+- Rating: ${(r[`_reliability_${activeDoc.id}`] || {}).rating || 'not selected'}
+- Bias identified: ${(r[`_reliability_${activeDoc.id}`] || {}).bias || 'not selected'}
+- Reasoning: "${(r[`_reliability_${activeDoc.id}`] || {}).reasoning || ''}"
+
+Provide analysis as JSON:
+{"reliabilityRating":"very reliable|somewhat reliable|questionable|unreliable","biasTypes":["type1"],"reasoning":"why this source is or isn't reliable","studentComparison":"how the student's assessment compares — what they got right, what they might reconsider","keyQuestion":"one question to push their thinking about this source's trustworthiness","factualConcerns":["any specific claims in the excerpt that might be inaccurate or misleading, or empty array if none"]}
+
+${isE ? 'Use simple, encouraging language. Praise their attempt to think critically even if their assessment differs from yours.' : isM ? 'Use clear language. Acknowledge their reasoning before suggesting alternatives.' : 'Use academic language. Push toward nuanced evaluation of source limitations and historiographical context.'}`, true);
+                                                    const parsed = JSON.parse(cleanJson(result));
+                                                    setDbq(`_reliabilityAI_${activeDoc.id}`, parsed);
+                                                    handleScoreUpdate(15, `DBQ Source Reliability (Doc ${activeDoc.id})`, `dbq-reliability-${activeDoc.id}`);
+                                                    addToast && addToast('Reliability analysis complete!');
+                                                } catch (e) { setDbq(`_reliabilityAI_${activeDoc.id}`, { error: 'Could not analyze. Try again.' }); }
+                                            }} className="mt-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl transition-all flex items-center gap-1.5"
+                                                aria-label="Compare my assessment with AI analysis">🔍 Compare My Assessment with AI Analysis</button>
+                                        )}
+                                        {r[`_reliabilityAI_${activeDoc.id}`] === 'loading' && <p className="text-xs text-rose-500 italic mt-2">⏳ Analyzing source reliability...</p>}
+                                        {r[`_reliabilityAI_${activeDoc.id}`] && typeof r[`_reliabilityAI_${activeDoc.id}`] === 'object' && !r[`_reliabilityAI_${activeDoc.id}`].error && (() => {
+                                            const ai = r[`_reliabilityAI_${activeDoc.id}`];
+                                            return (
+                                                <div className="mt-3 bg-white border-2 border-rose-200 rounded-xl p-4 space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <h5 className="text-xs font-black text-rose-800">🤖 AI Reliability Analysis</h5>
+                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ai.reliabilityRating === 'very reliable' ? 'bg-green-100 text-green-800' : ai.reliabilityRating === 'somewhat reliable' ? 'bg-blue-100 text-blue-800' : ai.reliabilityRating === 'questionable' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>{ai.reliabilityRating}</span>
+                                                    </div>
+                                                    {ai.biasTypes?.length > 0 && <div className="flex gap-1 flex-wrap">{ai.biasTypes.map((b, bi) => <span key={bi} className="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200">{b}</span>)}</div>}
+                                                    <p className="text-xs text-slate-700">{ai.reasoning}</p>
+                                                    {ai.studentComparison && <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200"><div className="text-[10px] font-bold text-indigo-700 mb-0.5">YOUR ASSESSMENT vs AI</div><p className="text-xs text-indigo-800">{ai.studentComparison}</p></div>}
+                                                    {ai.factualConcerns?.length > 0 && <div className="bg-amber-50 rounded-lg p-3 border border-amber-200"><div className="text-[10px] font-bold text-amber-700 mb-0.5">⚠️ FACTUAL CONCERNS</div><ul className="text-xs text-amber-800 space-y-1">{ai.factualConcerns.map((c, ci) => <li key={ci}>• {c}</li>)}</ul></div>}
+                                                    {ai.keyQuestion && <div className="bg-rose-50 rounded-lg p-2 border border-rose-200"><div className="text-[10px] font-bold text-rose-600">🤔 THINK ABOUT THIS:</div><p className="text-xs text-rose-800 italic">{ai.keyQuestion}</p></div>}
+                                                </div>
+                                            );
+                                        })()}
+                                        {r[`_reliabilityAI_${activeDoc.id}`]?.error && <p className="text-xs text-red-600 mt-2">{r[`_reliabilityAI_${activeDoc.id}`].error}</p>}
+                                    </div>
+                                    {/* ── Check My Analysis: AI Feedback on HAPP + Sourcing + Analysis ── */}
+                                    {(() => {
+                                        const docHapp = happNotes[activeDoc.id] || {};
+                                        const hasAnyResponse = ['historical','audience','purpose','pointOfView'].some(k => docHapp[k]?.trim()) ||
+                                            (activeDoc.sourcingQuestions || []).some((_, qi) => r[`doc-${activeDoc.id}-sourcing-${qi}`]?.trim()) ||
+                                            (activeDoc.analysisQuestions || []).some((_, qi) => r[`doc-${activeDoc.id}-analysis-${qi}`]?.trim());
+                                        const docFeedback = r[`_docFeedback_${activeDoc.id}`];
+                                        const feedbackLoading = docFeedback === 'loading';
+                                        return hasAnyResponse && (
+                                            <div className="space-y-3">
+                                                <button onClick={async () => {
+                                                    if (!callGemini) { addToast && addToast('AI feedback unavailable'); return; }
+                                                    setDbq(`_docFeedback_${activeDoc.id}`, 'loading');
+                                                    try {
+                                                        const happSummary = ['historical','audience','purpose','pointOfView'].map(k =>
+                                                            `${k}: "${docHapp[k] || '(not answered)'}"`).join('\n');
+                                                        const sourcingSummary = (activeDoc.sourcingQuestions || []).map((q, qi) =>
+                                                            `Q: ${q}\nA: "${r[`doc-${activeDoc.id}-sourcing-${qi}`] || '(not answered)'}"`).join('\n');
+                                                        const analysisSummary = (activeDoc.analysisQuestions || []).map((q, qi) =>
+                                                            `Q: ${q}\nA: "${r[`doc-${activeDoc.id}-analysis-${qi}`] || '(not answered)'}"`).join('\n');
+                                                        const isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+                                                        const isMid = /6th|7th|8th/i.test(gradeLevel);
+                                                        const gradeExpectations = isElem
+                                                            ? `GRADE-LEVEL EXPECTATIONS (Elementary):
+- "exemplary" = student identifies who made the document and gives a simple reason why, mentions what was happening, uses words like "because" or "so"
+- "proficient" = student attempts most HAPP dimensions with simple but relevant answers
+- "developing" = student gives very short answers or only completes 1-2 dimensions
+- Use very simple vocabulary in your feedback (2nd-3rd grade reading level). Use encouraging phrases like "Great job noticing that!" and "You're thinking like a historian!"
+- Model responses should use short sentences (8-12 words) and familiar vocabulary`
+                                                            : isMid
+                                                            ? `GRADE-LEVEL EXPECTATIONS (Middle School):
+- "exemplary" = student connects the document to a specific historical event, identifies the author's purpose with evidence, considers bias or perspective
+- "proficient" = student addresses most HAPP dimensions with relevant detail and some reasoning
+- "developing" = answers are vague, surface-level, or don't connect to the document content
+- Use clear, direct language (5th-7th grade reading level). Encourage deeper thinking with questions like "What makes you think the author felt that way?"
+- Model responses should show cause-and-effect reasoning and use transition words`
+                                                            : `GRADE-LEVEL EXPECTATIONS (High School / AP):
+- "exemplary" = student demonstrates historical thinking skills (sourcing, contextualization, corroboration), identifies bias and perspective with textual evidence, connects to broader historical patterns
+- "proficient" = student addresses all HAPP dimensions with specific evidence and some analysis of reliability or perspective
+- "developing" = answers are descriptive rather than analytical, or rely on surface-level observations without connecting to historical context
+- Use academic vocabulary appropriate for 9th-12th grade. Push toward historiographical thinking: "How might this source's perspective limit our understanding?"
+- Model responses should demonstrate disciplinary literacy and evidence-based reasoning`;
+                                                        const fbPrompt = `You are a warm, encouraging social studies teacher providing formative feedback to a ${gradeLevel} student analyzing a primary source document.
+
+Document: "${activeDoc.title}" — ${activeDoc.source}
+Excerpt: "${(activeDoc.excerpt || '').substring(0, 500)}"
+
+Student's HAPP Source Analysis:
+${happSummary}
+
+Student's Sourcing Responses:
+${sourcingSummary}
+
+Student's Analysis Responses:
+${analysisSummary}
+
+Student's Source Reliability Assessment:
+Rating: ${(r[`_reliability_${activeDoc.id}`] || {}).rating || '(not completed)'}
+Bias: ${(r[`_reliability_${activeDoc.id}`] || {}).bias || '(not completed)'}
+Reasoning: "${(r[`_reliability_${activeDoc.id}`] || {}).reasoning || '(not completed)'}"
+
+${gradeExpectations}
+
+Provide supportive, specific feedback as JSON:
+{"overallRating":"developing|proficient|exemplary","happFeedback":{"historical":"feedback on their historical context answer","audience":"feedback on audience answer","purpose":"feedback on purpose answer","pointOfView":"feedback on POV answer"},"sourcingFeedback":"overall feedback on sourcing responses","analysisFeedback":"overall feedback on analysis depth","strengths":["1-2 specific things they did well"],"nudges":["1-2 specific ways to deepen their thinking"],"modelResponse":"A brief exemplar for the HAPP dimension where they need the most growth"}
+
+Rules:
+- Be encouraging and specific — name what they got right before suggesting improvements
+- If an answer is blank, gently encourage them to try it
+- Match your feedback vocabulary and sentence complexity to ${gradeLevel} reading level
+- The "nudges" should be questions, not answers — guide them to think deeper
+- The "modelResponse" must match the grade-level expectations above — do NOT give an AP-level model to an elementary student`;
+                                                        const fbResult = await callGemini(fbPrompt, true);
+                                                        const parsed = JSON.parse(cleanJson(fbResult));
+                                                        setDbq(`_docFeedback_${activeDoc.id}`, parsed);
+                                                        addToast && addToast('Feedback received!');
+                                                        const xpAmount = parsed.overallRating === 'exemplary' ? 30 : parsed.overallRating === 'proficient' ? 20 : 10;
+                                                        handleScoreUpdate(xpAmount, `DBQ Source Analysis (Doc ${activeDoc.id})`, `dbq-analysis-${activeDoc.id}`);
+                                                    } catch (e) { setDbq(`_docFeedback_${activeDoc.id}`, { error: 'Could not generate feedback. Try again.' }); }
+                                                }} disabled={feedbackLoading}
+                                                    className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                                                    aria-label="Get AI feedback on document analysis">
+                                                    {feedbackLoading ? '⏳ Analyzing...' : '✨ Check My Analysis'}
+                                                </button>
+                                                {docFeedback && typeof docFeedback === 'object' && !docFeedback.error && (
+                                                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <h4 className="text-sm font-black text-emerald-800">📝 Analysis Feedback</h4>
+                                                            <span className={`text-xs font-black px-3 py-1 rounded-full ${docFeedback.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : docFeedback.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`}>{docFeedback.overallRating === 'exemplary' ? '⭐ Exemplary' : docFeedback.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing'}</span>
+                                                        </div>
+                                                        {docFeedback.happFeedback && (
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                {Object.entries(docFeedback.happFeedback).map(([k, v]) => v && (
+                                                                    <div key={k} className="bg-white/60 rounded-lg p-2.5 border border-emerald-100">
+                                                                        <div className="text-[10px] font-bold text-emerald-600 uppercase mb-0.5">{k === 'pointOfView' ? 'Point of View' : k.charAt(0).toUpperCase() + k.slice(1)}</div>
+                                                                        <p className="text-xs text-slate-700">{v}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {docFeedback.sourcingFeedback && <div className="bg-white/60 rounded-lg p-3"><div className="text-[10px] font-bold text-purple-600 mb-0.5">SOURCING</div><p className="text-xs text-slate-700">{docFeedback.sourcingFeedback}</p></div>}
+                                                        {docFeedback.analysisFeedback && <div className="bg-white/60 rounded-lg p-3"><div className="text-[10px] font-bold text-blue-600 mb-0.5">ANALYSIS</div><p className="text-xs text-slate-700">{docFeedback.analysisFeedback}</p></div>}
+                                                        {docFeedback.strengths?.length > 0 && <div><div className="text-xs font-bold text-green-700 mb-1">💪 Strengths</div><ul className="text-xs text-green-800 space-y-1">{docFeedback.strengths.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-green-500 mt-0.5">✓</span>{s}</li>)}</ul></div>}
+                                                        {docFeedback.nudges?.length > 0 && <div><div className="text-xs font-bold text-amber-700 mb-1">🤔 Think Deeper</div><ul className="text-xs text-amber-800 space-y-1">{docFeedback.nudges.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-amber-500 mt-0.5">→</span>{s}</li>)}</ul></div>}
+                                                        {docFeedback.modelResponse && <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200"><div className="text-[10px] font-bold text-indigo-700 mb-0.5">💡 EXAMPLE RESPONSE</div><p className="text-xs text-indigo-800 italic">{docFeedback.modelResponse}</p></div>}
+                                                    </div>
+                                                )}
+                                                {docFeedback?.error && <p className="text-sm text-red-600">{docFeedback.error}</p>}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                                 )}
                             </div>
@@ -45125,6 +45685,72 @@ Return only the corrected version of this exact text:`;
                                         </div>
                                     )}
                                 </div>
+                                {/* ── Corroboration AI Feedback ── */}
+                                {(() => {
+                                    const hasCorrobResponses = claims.some((_, ci) => corrobNotes[ci]?.trim()) ||
+                                        docs.some(d => r[`corrob-claim-${d.id}`]?.trim()) ||
+                                        (r._perspectiveResponse || '').trim();
+                                    const corrobFb = r._corrobFeedback;
+                                    const corrobLoading = corrobFb === 'loading';
+                                    return hasCorrobResponses && (
+                                        <div className="space-y-3 mt-4">
+                                            <button onClick={async () => {
+                                                if (!callGemini) { addToast && addToast('AI feedback unavailable'); return; }
+                                                setDbq('_corrobFeedback', 'loading');
+                                                try {
+                                                    const _isE = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+                                                    const _isM = /6th|7th|8th/i.test(gradeLevel);
+                                                    const claimSummary = claims.map((c, ci) => `Claim: "${c.claim}" (supports: ${(c.supportingDocs||[]).join(',')}, challenges: ${(c.challengingDocs||[]).join(',')})\nStudent response: "${corrobNotes[ci] || '(blank)'}"`).join('\n\n');
+                                                    const tableSummary = docs.map(d => `Doc ${d.id}: claim="${r[`corrob-claim-${d.id}`] || '(blank)'}", agrees="${r[`corrob-agree-${d.id}`] || ''}", disagrees="${r[`corrob-disagree-${d.id}`] || ''}"`).join('\n');
+                                                    const perspResp = r._perspectiveResponse || '';
+                                                    const gradeGuide = _isE ? 'Elementary: "exemplary" = student notices that two documents talk about the same thing or disagree about something, even in simple terms. Use very encouraging, simple language.'
+                                                        : _isM ? 'Middle School: "exemplary" = student identifies specific points of agreement/disagreement between documents, explains why sources might differ, and uses evidence. Use clear, direct language.'
+                                                        : 'High School/AP: "exemplary" = student evaluates reliability and bias across sources, explains WHY sources agree/disagree based on perspective, purpose, or context, and synthesizes multiple viewpoints. Use academic language.';
+                                                    const fbResult = await callGemini(`You are a supportive social studies teacher evaluating a ${gradeLevel} student's corroboration analysis across multiple documents in a DBQ.
+
+Documents in this DBQ: ${docs.map(d => `Doc ${d.id}: "${d.title}"`).join(', ')}
+
+Claims & Student Responses:
+${claimSummary}
+
+Corroboration Table:
+${tableSummary}
+
+${perspResp ? `Perspective Response: "${perspResp}"` : ''}
+
+Grade-level expectations: ${gradeGuide}
+
+Provide feedback as JSON:
+{"overallRating":"developing|proficient|exemplary","corrobStrengths":["1-2 things they did well comparing sources"],"corrobNudges":["1-2 guiding questions to deepen cross-document thinking"],"perspectiveFeedback":"${perspResp ? 'feedback on their perspective comparison' : 'null'}","modelCorroboration":"A brief exemplar showing how to compare two specific documents from this DBQ"}
+
+Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A and Document B both talk about water" is demonstrating corroboration. Match vocabulary to grade level.`, true);
+                                                    const parsed = JSON.parse(cleanJson(fbResult));
+                                                    setDbq('_corrobFeedback', parsed);
+                                                    addToast && addToast('Feedback received!');
+                                                    const xp = parsed.overallRating === 'exemplary' ? 25 : parsed.overallRating === 'proficient' ? 15 : 10;
+                                                    handleScoreUpdate(xp, 'DBQ Corroboration Analysis', `dbq-corrob-${resId}`);
+                                                } catch (e) { setDbq('_corrobFeedback', { error: 'Could not generate feedback. Try again.' }); }
+                                            }} disabled={corrobLoading}
+                                                className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                                                aria-label="Get AI feedback on corroboration analysis">
+                                                {corrobLoading ? '⏳ Analyzing...' : '✨ Check My Corroboration'}
+                                            </button>
+                                            {corrobFb && typeof corrobFb === 'object' && !corrobFb.error && (
+                                                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <h4 className="text-sm font-black text-emerald-800">🔗 Corroboration Feedback</h4>
+                                                        <span className={`text-xs font-black px-3 py-1 rounded-full ${corrobFb.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : corrobFb.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`}>{corrobFb.overallRating === 'exemplary' ? '⭐ Exemplary' : corrobFb.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing'}</span>
+                                                    </div>
+                                                    {corrobFb.corrobStrengths?.length > 0 && <div><div className="text-xs font-bold text-green-700 mb-1">💪 Strengths</div><ul className="text-xs text-green-800 space-y-1">{corrobFb.corrobStrengths.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-green-500 mt-0.5">✓</span>{s}</li>)}</ul></div>}
+                                                    {corrobFb.corrobNudges?.length > 0 && <div><div className="text-xs font-bold text-amber-700 mb-1">🤔 Think Deeper</div><ul className="text-xs text-amber-800 space-y-1">{corrobFb.corrobNudges.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-amber-500 mt-0.5">→</span>{s}</li>)}</ul></div>}
+                                                    {corrobFb.perspectiveFeedback && corrobFb.perspectiveFeedback !== 'null' && <div className="bg-white/60 rounded-lg p-3"><div className="text-[10px] font-bold text-purple-600 mb-0.5">PERSPECTIVE</div><p className="text-xs text-slate-700">{corrobFb.perspectiveFeedback}</p></div>}
+                                                    {corrobFb.modelCorroboration && <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200"><div className="text-[10px] font-bold text-indigo-700 mb-0.5">💡 EXAMPLE</div><p className="text-xs text-indigo-800 italic">{corrobFb.modelCorroboration}</p></div>}
+                                                </div>
+                                            )}
+                                            {corrobFb?.error && <p className="text-sm text-red-600">{corrobFb.error}</p>}
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
                         {/* ═══ ESSAY TAB ═══ */}
@@ -45163,9 +45789,19 @@ Return only the corrected version of this exact text:`;
                                         if (!callGemini) { addToast && addToast('AI feedback unavailable'); return; }
                                         setDbq('_aiFeedback', 'Analyzing your essay...');
                                         try {
-                                            const fbResult = await callGemini(`You are a supportive writing coach reviewing a ${gradeLevel} student's DBQ synthesis essay.\n\nPrompt: "${dbqData.synthesisPrompt}"\nDocuments: ${docs.map(d => `Doc ${d.id}: ${d.title}`).join(', ')}\n\nEssay:\n"""\n${essayText}\n"""\n\nProvide constructive feedback as JSON:\n{"overallScore":1-4,"strengths":["..."],"improvements":["..."],"thesisFeedback":"...","evidenceFeedback":"...","missingDocs":["doc IDs not cited"],"nextSteps":"one specific revision suggestion"}`, true);
-                                            setDbq('_aiFeedback', JSON.parse(cleanJson(fbResult)));
+                                            const _isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+                                            const _isMid = /6th|7th|8th/i.test(gradeLevel);
+                                            const essayGradeGuide = _isElem
+                                                ? `\n\nGRADE-LEVEL SCORING (Elementary):\n4 = States a clear opinion ("I think...because..."), mentions 2+ documents by name, uses simple connecting words (because, so, also). For K-2: even 2-3 sentences with one document reference is excellent.\n3 = Has an opinion and mentions at least 1 document.\n2 = Attempts an opinion but doesn't clearly connect to documents.\n1 = Off-topic or no attempt.\nFeedback language: Use 2nd-3rd grade vocabulary. Be very encouraging. Focus on what they DID do, not what's missing.`
+                                                : _isMid
+                                                ? `\n\nGRADE-LEVEL SCORING (Middle School):\n4 = Clear thesis with reasoning, cites 3+ documents with specific evidence (quotes or paraphrases), explains WHY evidence supports the argument, acknowledges a counterargument.\n3 = Has a thesis, cites 2+ documents, some analysis beyond summary.\n2 = Thesis is vague or just summarizes documents without analysis.\n1 = No thesis, no document references, or off-topic.\nFeedback language: 5th-7th grade level. Be encouraging but push toward deeper analysis.`
+                                                : `\n\nGRADE-LEVEL SCORING (High School / AP):\n4 = Nuanced thesis addressing complexity/tension, integrates evidence from most documents with analysis of perspective, reliability, or bias, demonstrates historical thinking (causation, change over time, contextualization), addresses counterarguments substantively.\n3 = Clear thesis, cites most documents with evidence, some analytical moves beyond description.\n2 = Thesis present but generic, evidence is listed rather than analyzed, limited historical thinking.\n1 = No thesis, summary only, or fails to engage with documents.\nFeedback language: Academic vocabulary appropriate for 9th-12th grade. Push toward historiographical sophistication.`;
+                                            const fbResult = await callGemini(`You are a supportive writing coach reviewing a ${gradeLevel} student's DBQ synthesis essay.\n\nPrompt: "${dbqData.synthesisPrompt}"\nDocuments: ${docs.map(d => `Doc ${d.id}: ${d.title}`).join(', ')}\n\nEssay:\n"""\n${essayText}\n"""${essayGradeGuide}\n\nProvide constructive feedback as JSON:\n{"overallScore":1-4,"strengths":["..."],"improvements":["..."],"thesisFeedback":"...","evidenceFeedback":"...","missingDocs":["doc IDs not cited"],"nextSteps":"one specific revision suggestion"}\n\nIMPORTANT: Score according to the grade-level rubric above, NOT adult writing standards. A 2nd grader who writes "I think animals need water because Document A says so" deserves a 3 or 4, not a 1. Match your feedback vocabulary to ${gradeLevel} reading level.`, true);
+                                            const parsed = JSON.parse(cleanJson(fbResult));
+                                            setDbq('_aiFeedback', parsed);
                                             addToast && addToast('Feedback received!');
+                                            const essayXP = (parsed.overallScore || 1) * 10;
+                                            handleScoreUpdate(essayXP, 'DBQ Synthesis Essay', `dbq-essay-${resId}`);
                                         } catch (e) { setDbq('_aiFeedback', { error: 'Could not generate feedback. Try again.' }); }
                                     }} className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 shrink-0">✨ Get AI Feedback</button>
                                     {aiFeedback && typeof aiFeedback === 'string' && <p className="text-sm text-slate-500 italic flex-1">{aiFeedback}</p>}
@@ -46292,17 +46928,19 @@ Return only the corrected version of this exact text:`;
               mode="settings"
               escapeRoomState={escapeRoomState}
               setEscapeRoomState={setEscapeRoomState}
-              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom}}
+              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
               t={t}
+              hasSourceOrAnalysis={hasSourceOrAnalysis}
           />
       )}
-      {escapeRoomState.showPreview && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
+      {escapeRoomState.isPreview && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
           <window.AlloModules.EscapeRoomDialogs
               mode="preview"
               escapeRoomState={escapeRoomState}
               setEscapeRoomState={setEscapeRoomState}
-              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom}}
+              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
               t={t}
+              hasSourceOrAnalysis={hasSourceOrAnalysis}
           />
       )}
       {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && (
@@ -52671,6 +53309,62 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <p className="text-xs text-purple-600 mt-1">AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing</p>
                 </div>
               </button>
+              <button onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">📄</span>
+                <div>
+                  <h3 className="font-bold text-emerald-800">Document Hub</h3>
+                  <p className="text-xs text-emerald-600 mt-1">Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)</p>
+                </div>
+              </button>
+              <button onClick={() => {
+                  setShowEducatorHub(false);
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'application/pdf,.pdf,image/*,.docx,.pptx';
+                  input.multiple = true;
+                  input.onchange = (e) => {
+                      const files = [...e.target.files];
+                      if (files.length === 0) return;
+                      const pdfFiles = files.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+                      if (pdfFiles.length === 1 && files.length === 1) {
+                          const file = pdfFiles[0];
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                              const base64 = reader.result.split(',')[1];
+                              setPendingPdfBase64(base64);
+                              setPendingPdfFile(file);
+                              setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
+                          };
+                          reader.readAsDataURL(file);
+                      } else if (pdfFiles.length > 1) {
+                          const batchFiles = [];
+                          let loaded = 0;
+                          pdfFiles.forEach(file => {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                  batchFiles.push({ name: file.name, base64: reader.result.split(',')[1], size: file.size });
+                                  loaded++;
+                                  if (loaded === pdfFiles.length) {
+                                      setPdfBatchFiles(batchFiles);
+                                      setPdfBatchMode(true);
+                                      setPdfAuditResult({ _choosing: true, fileName: pdfFiles.length + ' files', fileSize: pdfFiles.reduce((s, f) => s + f.size, 0) });
+                                  }
+                              };
+                              reader.readAsDataURL(file);
+                          });
+                      } else {
+                          // Non-PDF file (image, docx) → go through main upload handler
+                          handleFileUpload(e);
+                      }
+                  };
+                  input.click();
+              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">♿</span>
+                <div>
+                  <h3 className="font-bold text-teal-800">PDF Accessibility</h3>
+                  <p className="text-xs text-teal-600 mt-1">Upload PDFs for WCAG accessibility audit & remediation with axe-core verification</p>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -52698,6 +53392,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                   <h3 className="font-bold text-rose-800">{t('learning_hub.storyforge_title') || 'StoryForge'}</h3>
                   <p className="text-xs text-rose-600 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
+                </div>
+              </button>
+              <button onClick={() => { setShowLearningHub(false); setShowStoryStage(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                <span className="text-4xl">🎭</span>
+                <div>
+                  <h3 className="font-bold text-violet-800">StoryStage</h3>
+                  <p className="text-xs text-violet-600 mt-1">Bring stories to life with character voices & literary analysis</p>
                 </div>
               </button>
               <button onClick={() => { setShowLearningHub(false); setShowSelHub(true); setSelHubTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
@@ -52850,6 +53551,37 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <p className="text-lg font-bold text-slate-700">Loading StoryForge...</p>
                     <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setShowStoryForge(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                </div>
+            </div>
+            );
+        })()}
+        {showStoryStage && (() => {
+            const SS = window.AlloModules && window.AlloModules.StoryStage;
+            if (SS) {
+                return React.createElement(SS, {
+                    isOpen: true,
+                    onClose: () => setShowStoryStage(false),
+                    onCallGemini: callGemini,
+                    onCallTTS: callTTS,
+                    onCallImagen: callImagen,
+                    onCallGeminiImageEdit: callGeminiImageEdit,
+                    onCallGeminiVision: callGeminiVision,
+                    selectedVoice,
+                    gradeLevel,
+                    addToast,
+                    geminiVoices: GEMINI_VOICES,
+                    kokoroVoices: KOKORO_VOICES,
+                    studentNickname,
+                    handleScoreUpdate,
+                });
+            }
+            return (
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryStage(false)}>
+                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-4xl mb-3">🎭</div>
+                    <p className="text-lg font-bold text-slate-700">Loading StoryStage...</p>
+                    <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <button onClick={() => setShowStoryStage(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
             );
