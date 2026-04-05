@@ -1111,11 +1111,32 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' +
           'Return ONLY a valid JSON array, no explanation or markdown.', true);
 
+        // Run 2 parallel diagnoses and merge their fix lists (catches more issues)
+        var surgDiagnosis2 = await callGemini('You are an independent accessibility remediation expert (second opinion). ' +
+          'Analyze these violations and prescribe targeted fixes. Focus on issues the first auditor might miss.\n\n' +
+          'VIOLATIONS:\n' + surgViolations + '\n\n' +
+          'HTML (first 6000 chars):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\n' +
+          'Use the same tool format. Return ONLY a valid JSON array.', true);
+
+        // Parse both diagnoses
+        var parseSurgical = function(raw) {
+          var fixes = [];
+          try { fixes = JSON.parse(raw); } catch(e) {
+            try { fixes = JSON.parse(raw.replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); } catch(e2) { fixes = []; }
+          }
+          return Array.isArray(fixes) ? fixes : [];
+        };
+        var fixes1 = parseSurgical(surgDiagnosis);
+        var fixes2 = parseSurgical(surgDiagnosis2);
+
+        // Merge: deduplicate by tool+index, prefer fixes with longer/better descriptions
+        var seenKeys = {};
         var surgFixes = [];
-        try { surgFixes = JSON.parse(surgDiagnosis); } catch(e) {
-          try { surgFixes = JSON.parse(surgDiagnosis.replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); } catch(e2) { surgFixes = []; }
-        }
-        if (!Array.isArray(surgFixes)) surgFixes = [];
+        [].concat(fixes1, fixes2).forEach(function(fix) {
+          if (!fix || !fix.tool) return;
+          var key = fix.tool + '-' + (fix.index || 0) + '-' + (fix.tag || '');
+          if (!seenKeys[key]) { seenKeys[key] = true; surgFixes.push(fix); }
+        });
 
         var surgApplied = 0;
         for (var si = 0; si < surgFixes.length; si++) {
@@ -1128,7 +1149,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           }
         }
         if (surgApplied > 0) {
-          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (1 API call)');
+          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (2 API calls, merged)');
         }
       }
     } catch(surgErr) {

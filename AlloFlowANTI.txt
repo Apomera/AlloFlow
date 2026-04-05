@@ -49883,8 +49883,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             setPdfFixResult(p => ({...p, accessibleHtml: html, verificationAudit: rv||p.verificationAudit, axeAudit: ra||p.axeAudit, afterScore: finalScore ?? p.afterScore, htmlChars: html.length}));
                           }
                           addToast('Sweep complete!', 'success');
-                        } catch(e) { addToast('Sweep failed', 'error'); }
-                        setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = '';
+                        } catch(e) { addToast('Sweep failed: ' + (e?.message || ''), 'error'); }
+                        finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
                       }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-violet-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading && pdfFixModeRef.current === 'sweep' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Sweeping...'}</> : <><Sparkles size={16} /> Additional Sweep</>}
                       </button>
@@ -49979,8 +49979,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const startCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
                             setPdfFixResult(p => ({...p, accessibleHtml: bestHtml, verificationAudit: finalAiResult, axeAudit: finalAxeResult, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0) + totalPasses, htmlChars: bestHtml.length}));
                             addToast(bestIssueCount < startCount ? `Fixed! ${startCount} → ${bestIssueCount} issues (${totalPasses} passes).` : `${totalPasses} passes completed. ${bestIssueCount} issues may need manual remediation.`, bestIssueCount < startCount ? 'success' : 'info');
-                          } catch(e) { warnLog('Fix remaining failed:', e); addToast('Fix remaining issues failed', 'error'); }
-                          setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = '';
+                          } catch(e) { warnLog('Fix remaining failed:', e); addToast('Fix remaining failed: ' + (e?.message || 'unknown error'), 'error'); }
+                          // Always reset loading state — prevents button from getting stuck
+                          finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
                         }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                           {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : <><Wrench size={16} /> {((pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : 'Run Additional Fix Pass'}</>}
                         </button>
