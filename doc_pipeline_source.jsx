@@ -1072,6 +1072,72 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         if (!p.text || !p.lang) return html;
         return html.replace(p.text, '<span lang="' + p.lang + '">' + p.text + '</span>');
       },
+      // Change a specific element's text color for contrast compliance
+      fix_contrast: function(html, p) {
+        if (!p.oldColor || !p.newColor) return html;
+        return html.replace(new RegExp(p.oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), p.newColor);
+      },
+      // Promote first row of a table to thead with th elements
+      fix_table_header_row: function(html, p) {
+        let idx = 0;
+        return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/<thead/i.test(content)) return m; // already has thead
+          // Convert first <tr> with <td> to <thead> with <th>
+          var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
+            var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
+            return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
+          });
+          return '<table' + attrs + '>' + fixed + '</table>';
+        });
+      },
+      // Wrap an acronym/abbreviation in <abbr> with expansion
+      fix_abbreviation: function(html, p) {
+        if (!p.abbr || !p.title) return html;
+        var re = new RegExp('\\b' + p.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b');
+        var replaced = false;
+        return html.replace(re, function(m) {
+          if (replaced) return m; // only wrap first occurrence
+          replaced = true;
+          return '<abbr title="' + p.title.replace(/"/g, '&quot;') + '">' + m + '</abbr>';
+        });
+      },
+      // Mark an image as decorative (empty alt + role=presentation)
+      fix_image_decorative: function(html, p) {
+        let idx = 0;
+        return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          var cleaned = attrs.replace(/alt="[^"]*"/i, '').replace(/role="[^"]*"/i, '');
+          return '<img alt="" role="presentation"' + cleaned + '>';
+        });
+      },
+      // Wrap orphaned list items in a proper list container
+      fix_list_wrap: function(html, p) {
+        var tag = p.ordered ? 'ol' : 'ul';
+        // Find orphaned <li> and wrap them
+        return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock) {
+          // Check if already inside a list
+          var before = html.substring(Math.max(0, html.indexOf(m) - 100), html.indexOf(m));
+          if (/<[uo]l[^>]*>\s*$/i.test(before)) return m; // already wrapped
+          return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
+        });
+      },
+      // Add skip-to-content link if missing
+      fix_skip_nav: function(html) {
+        if (/skip.to|skip-nav|skipnav/i.test(html)) return html;
+        return html.replace(/<body([^>]*)>/i, '<body$1>\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to main content</a>');
+      },
+      // Set text spacing for readability (letter-spacing, word-spacing, line-height)
+      fix_text_spacing: function(html, p) {
+        var css = '';
+        if (p.letterSpacing) css += 'letter-spacing:' + p.letterSpacing + ';';
+        if (p.wordSpacing) css += 'word-spacing:' + p.wordSpacing + ';';
+        if (p.lineHeight) css += 'line-height:' + p.lineHeight + ';';
+        if (!css) return html;
+        var style = '<style id="alloflow-text-spacing">body{' + css + '}</style>';
+        if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
+        return style + html;
+      },
     };
 
     // Run surgical diagnosis (1 API call) + deterministic execution
@@ -1108,6 +1174,15 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           '- fix_add_landmark: { "tool": "fix_add_landmark", "tag": "main", "label": "Main content" }\n' +
           '- fix_remove_empty_heading: { "tool": "fix_remove_empty_heading", "index": <empty heading# 0-based> }\n' +
           '- fix_duplicate_id: { "tool": "fix_duplicate_id", "id": "the-duplicate-id" }\n\n' +
+          'VISUAL/READABILITY FIXES:\n' +
+          '- fix_contrast: { "tool": "fix_contrast", "oldColor": "#hex", "newColor": "#hex" }\n' +
+          '- fix_image_decorative: { "tool": "fix_image_decorative", "index": <img# 0-based> }\n' +
+          '- fix_abbreviation: { "tool": "fix_abbreviation", "abbr": "WCAG", "title": "Web Content Accessibility Guidelines" }\n' +
+          '- fix_text_spacing: { "tool": "fix_text_spacing", "letterSpacing": "0.05em", "lineHeight": "1.7" }\n\n' +
+          'TABLE/LIST FIXES:\n' +
+          '- fix_table_header_row: { "tool": "fix_table_header_row", "index": <table# 0-based> }\n' +
+          '- fix_list_wrap: { "tool": "fix_list_wrap", "ordered": false }\n' +
+          '- fix_skip_nav: { "tool": "fix_skip_nav" }\n\n' +
           'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' +
           'Return ONLY a valid JSON array, no explanation or markdown.', true);
 
