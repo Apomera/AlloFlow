@@ -12017,6 +12017,7 @@ Return only the corrected version of this exact text:`;
   const pdfPreviewRef = useRef(null);
   // ── PDF Batch Mode ──
   const [pdfBatchMode, setPdfBatchMode] = useState(false);
+  const [pdfWebMode, setPdfWebMode] = useState(false);
   const [pdfBatchQueue, setPdfBatchQueue] = useState([]);
   const [pdfBatchProcessing, setPdfBatchProcessing] = useState(false);
   const [pdfBatchCurrentIndex, setPdfBatchCurrentIndex] = useState(-1);
@@ -49044,11 +49045,139 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                 {/* ── Batch Mode Toggle ── */}
                 <div className="flex justify-center mb-4">
                   <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
-                    <button onClick={() => setPdfBatchMode(false)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📄 Single File</button>
-                    <button onClick={() => setPdfBatchMode(true)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📂 Batch Mode</button>
+                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📄 Single PDF</button>
+                    <button onClick={() => { setPdfBatchMode(true); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📂 Batch</button>
+                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>🌐 Website / HTML</button>
                   </div>
                 </div>
-                {pdfBatchMode ? (
+                {pdfWebMode ? (
+                  /* ═══ WEBSITE / HTML MODE ═══ */
+                  <div className="text-left space-y-4">
+                    <h3 className="text-lg font-black text-slate-800 mb-1 text-center">🌐 Website & HTML Accessibility</h3>
+                    <p className="text-xs text-slate-500 text-center">Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation</p>
+
+                    {/* URL Input */}
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase" htmlFor="web-audit-url">Website URL</label>
+                      <div className="flex gap-2 mt-1">
+                        <input type="url" id="web-audit-url" placeholder="https://example.com" aria-label="Website URL to audit"
+                          className="flex-1 text-sm border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-300 outline-none" />
+                        <button onClick={async () => {
+                          const url = document.getElementById('web-audit-url')?.value?.trim();
+                          if (!url) { addToast('Enter a URL', 'info'); return; }
+                          addToast('Fetching website...', 'info');
+                          try {
+                            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                            const resp = await fetch(proxyUrl);
+                            if (!resp.ok) throw new Error('Fetch failed: ' + resp.status);
+                            let html = await resp.text();
+                            // Inject base tag so relative URLs resolve
+                            if (!html.includes('<base')) {
+                              const baseTag = '<base href="' + url.replace(/\/[^/]*$/, '/') + '">';
+                              html = html.replace(/<head([^>]*)>/i, '<head$1>' + baseTag);
+                            }
+                            document.getElementById('web-audit-html').value = html;
+                            addToast('Website fetched! (' + html.length.toLocaleString() + ' chars) — click Audit to analyze', 'success');
+                          } catch (e) {
+                            addToast('Could not fetch URL — try pasting the HTML source instead. Error: ' + e.message, 'error');
+                          }
+                        }} className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors" aria-label="Fetch website HTML">
+                          🔍 Fetch
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-slate-400 mt-1">Or paste HTML source code directly below</p>
+                    </div>
+
+                    {/* HTML Input */}
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase" htmlFor="web-audit-html">HTML Source</label>
+                      <textarea id="web-audit-html" rows={8} placeholder="Paste HTML source code here, or use Fetch above..."
+                        className="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 mt-1 font-mono focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
+                        aria-label="HTML source code to audit" />
+                    </div>
+
+                    {/* Audit + Remediate buttons */}
+                    <div className="flex gap-3 justify-center">
+                      <button onClick={async () => {
+                        const html = document.getElementById('web-audit-html')?.value?.trim();
+                        if (!html || html.length < 20) { addToast('Paste or fetch HTML first', 'info'); return; }
+                        addToast('Running accessibility audit...', 'info');
+                        // Run both AI audit and axe-core on the HTML
+                        const [aiResult, axeResult] = await Promise.all([
+                          auditOutputAccessibility(html),
+                          runAxeAudit(html)
+                        ]);
+                        const aiScore = aiResult?.score ?? null;
+                        const axeScore = axeResult?.score ?? null;
+                        const blended = (aiScore !== null && axeScore !== null) ? Math.round((aiScore + axeScore) / 2) : (axeScore ?? aiScore ?? 0);
+                        setPdfAuditResult({
+                          score: blended,
+                          _aiOnlyScore: aiScore,
+                          _baselineAxeScore: axeScore,
+                          summary: (aiResult?.summary || 'Website audit complete') + (axeResult ? ` | axe-core: ${axeResult.totalViolations} violations` : ''),
+                          critical: aiResult?.issues?.filter(i => i.severity === 'critical') || [],
+                          major: aiResult?.issues?.filter(i => i.severity === 'serious' || i.severity === 'major') || [],
+                          minor: aiResult?.issues?.filter(i => i.severity === 'moderate' || i.severity === 'minor') || [],
+                          passes: aiResult?.passes || [],
+                          axeAudit: axeResult,
+                          _isWebAudit: true,
+                          scores: [blended],
+                          scoreSD: 0,
+                          scoreRange: 0,
+                          auditorCount: 1,
+                        });
+                        // Store the HTML for potential remediation
+                        setPendingPdfBase64(null);
+                        setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '.html' });
+                        // Pre-load the HTML into pdfFixResult so "Fix & Verify" can remediate it
+                        window.__pendingWebHtml = html;
+                      }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                        ♿ Audit (AI + axe-core)
+                      </button>
+                      <button onClick={async () => {
+                        const html = document.getElementById('web-audit-html')?.value?.trim();
+                        if (!html || html.length < 20) { addToast('Paste or fetch HTML first', 'info'); return; }
+                        addToast('Auditing & remediating HTML...', 'info');
+                        // Run deterministic fixes + AI fix loop directly on the HTML
+                        setPdfFixLoading(true);
+                        setPdfFixStep('Applying deterministic fixes...');
+                        try {
+                          let fixed = html;
+                          // Apply the same deterministic fixes from the pipeline
+                          const cf = fixContrastViolations(fixed);
+                          if (cf.fixCount > 0) fixed = cf.html;
+                          // Ensure basic structure
+                          if (!fixed.includes('lang=')) fixed = fixed.replace(/<html/, '<html lang="en"');
+                          if (!fixed.includes('<main')) { fixed = fixed.replace(/<body[^>]*>/, (m) => m + '\n<main id="main-content" role="main">'); fixed = fixed.replace('</body>', '</main>\n</body>'); }
+                          if (!fixed.includes('Skip to') && !fixed.includes('skip-nav')) fixed = fixed.replace(/<body[^>]*>/, (m) => m + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>');
+                          // AI fix passes
+                          const autoFix = await autoFixAxeViolations(fixed, await runAxeAudit(fixed), pdfAutoFixPasses);
+                          if (autoFix?.html) fixed = autoFix.html;
+                          // Final verification
+                          const [finalAi, finalAxe] = await Promise.all([auditOutputAccessibility(fixed), runAxeAudit(fixed)]);
+                          const finalScore = (finalAi && finalAxe) ? Math.round(((finalAi.score || 0) + (finalAxe.score || 0)) / 2) : (finalAi?.score || 0);
+                          setPdfFixResult({
+                            accessibleHtml: fixed,
+                            beforeScore: 0,
+                            afterScore: finalScore,
+                            verificationAudit: finalAi,
+                            axeAudit: finalAxe,
+                            autoFixPasses: autoFix?.passes || 0,
+                            needsExpertReview: finalScore < 70,
+                            htmlChars: fixed.length,
+                          });
+                          setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '-remediated.html' });
+                          addToast(`Remediation complete! Score: ${finalScore}/100`, 'success');
+                        } catch (e) { addToast('Remediation failed: ' + e.message, 'error'); }
+                        setPdfFixLoading(false);
+                        setPdfFixStep('');
+                      }} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
+                        🔧 Audit & Remediate
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 text-center">"Audit" scores without changing. "Audit & Remediate" fixes the HTML and produces a downloadable accessible version.</p>
+                  </div>
+                ) : pdfBatchMode ? (
                   /* ═══ BATCH MODE UI ═══ */
                   <div className="text-left">
                     <h3 className="text-lg font-black text-slate-800 mb-3 text-center">📂 Batch PDF Remediation</h3>
