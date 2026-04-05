@@ -134,7 +134,7 @@ var d = labToolData || {};
 
               id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
 
-              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (↪️) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (↩️↪️) and reinforce those. (3) Finally, wait for full "Spinning" (ð€) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
+              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (↪️) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (↩️↪️) and reinforce those. (3) Finally, wait for full "Spinning" (🌀) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
 
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
 
@@ -154,7 +154,7 @@ var d = labToolData || {};
 
               termDef: 'Extinction Burst: A temporary increase in frequency/intensity of a previously reinforced behavior when reinforcement is discontinued.',
 
-              funFact: 'ð›— Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
+              funFact: '🛗 Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
 
               vocab: ['Extinction', 'Extinction Burst', 'Spontaneous Recovery'],
 
@@ -188,7 +188,7 @@ var d = labToolData || {};
 
               funFact: '🚦 Traffic lights work as discriminative stimuli for drivers — green (SD) signals "go" and red (S-delta) signals "stop"!',
 
-              vocab: ['SD (Discriminative Stimulus)', 'S-delta (Sâˆ†)', 'Stimulus Control'],
+              vocab: ['SD (Discriminative Stimulus)', 'S-delta (S∆)', 'Stimulus Control'],
 
               contingency: { a: '🟢 Green light (SD)', b: 'Presses lever', c: '🍕 Food delivered' }
 
@@ -218,7 +218,7 @@ var d = labToolData || {};
 
               termDef: 'Behavior Chain: A sequence of responses where each response produces the discriminative stimulus (SD) for the next response, and the last response is followed by a reinforcer.',
 
-              funFact: 'ð• Service dogs learn behavior chains of 20+ steps — like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
+              funFact: '🐕 Service dogs learn behavior chains of 20+ steps — like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
 
               vocab: ['Behavior Chain', 'Forward Chaining', 'Task Analysis', 'Terminal Reinforcer'],
 
@@ -254,7 +254,7 @@ var d = labToolData || {};
 
               vocab: ['US (Unconditioned Stimulus)', 'UR (Unconditioned Response)', 'CS (Conditioned Stimulus)', 'CR (Conditioned Response)', 'Acquisition', 'Extinction'],
 
-              contingency: { a: 'ð”” Bell (CS)', b: 'Paired with food (US)', c: '🤤 Salivation (CR)' }
+              contingency: { a: '🔔 Bell (CS)', b: 'Paired with food (US)', c: '🤤 Salivation (CR)' }
 
             }
 
@@ -615,7 +615,7 @@ var d = labToolData || {};
 
           var blChainHistory = d.blChainHistory || [];
 
-          var blMoodEmoji = d.blMoodEmoji || 'ð˜';
+          var blMoodEmoji = d.blMoodEmoji || '😐';
 
           var blMoodTimer = d.blMoodTimer || 0;
 
@@ -757,11 +757,11 @@ var d = labToolData || {};
 
           var ACTION_LABELS = {
 
-            explore: 'ð” Exploring', groom: '🧹 Grooming', sniff: 'ð‘ƒ Sniffing',
+            explore: '🔍 Exploring', groom: '🧹 Grooming', sniff: '👃 Sniffing',
 
             pressLever: '⚡ Pressing Lever!', turnLeft: '↩️ Turning Left', turnRight: '↪️ Turning Right',
 
-            rearUp: '🐭 Rearing Up', freeze: '🧊 Frozen', spin: 'ð€ Spinning!', touchWall: '🧱 Touching Wall'
+            rearUp: '🐭 Rearing Up', freeze: '🧊 Frozen', spin: '🌀 Spinning!', touchWall: '🧱 Touching Wall'
 
           };
 
@@ -879,7 +879,7 @@ var d = labToolData || {};
 
             // Mood update — happy!
 
-            upd('blMoodEmoji', 'ð˜Š');
+            upd('blMoodEmoji', '😊');
 
             upd('blMoodTimer', Date.now());
 
@@ -1229,7 +1229,7 @@ var d = labToolData || {};
 
             if (blMoodTimer > 0 && (Date.now() - blMoodTimer) > 5000) {
 
-              upd('blMoodEmoji', blReinforcements > 3 ? 'ð¤”' : 'ð˜');
+              upd('blMoodEmoji', blReinforcements > 3 ? '🤔' : '😐');
 
               upd('blMoodTimer', 0);
 
@@ -1317,7 +1317,7 @@ var d = labToolData || {};
 
                 var droResetLog = blAbcLog.slice();
 
-                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: '⚡ Pressing Lever!', c: 'ð”„ Timer reset (target occurred)', t: Date.now() });
+                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: '⚡ Pressing Lever!', c: '🔄 Timer reset (target occurred)', t: Date.now() });
 
                 upd('blAbcLog', droResetLog.slice(0, 50));
 
@@ -1343,7 +1343,7 @@ var d = labToolData || {};
 
                   upd('blLevelScore', blLevelScore + 1);
 
-                  upd('blMoodEmoji', 'ð˜Š');
+                  upd('blMoodEmoji', '😊');
 
                   upd('blMoodTimer', Date.now());
 
@@ -2119,7 +2119,7 @@ var d = labToolData || {};
 
             var tailWag = Math.sin(Date.now() / tailBaseFreq) * 6;
 
-            var isHappy = blMoodEmoji === 'ð˜Š';
+            var isHappy = blMoodEmoji === '😊';
 
             var recentFood = blFoodVisible || (blFoodTime && (Date.now() - blFoodTime) < 2000);
 
@@ -2569,7 +2569,7 @@ var d = labToolData || {};
 
 
 
-          // â•â•â•â•â•â•â•â•â•â•â• RENDER â•â•â•â•â•â•â•â•â•â•â•
+          // ═══════════ RENDER ═══════════
 
           // Intro Phase
 
@@ -2919,7 +2919,7 @@ var d = labToolData || {};
 
                 return React.createElement("p", { className: "text-2xl text-center mb-1", style: { letterSpacing: 4, textShadow: '0 0 12px rgba(251,191,36,0.5)' } },
 
-                  '⭐'.repeat(stars) + 'â˜†'.repeat(3 - stars)
+                  '⭐'.repeat(stars) + '☆'.repeat(3 - stars)
 
                 );
 
@@ -3037,7 +3037,7 @@ var d = labToolData || {};
 
                           if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 5, 'Quiz correct: Level ' + blLevel);
 
-                          if (addToast) addToast('â… Correct! +5 XP bonus!', 'success');
+                          if (addToast) addToast('✅ Correct! +5 XP bonus!', 'success');
 
                         } else {
 
@@ -3061,7 +3061,7 @@ var d = labToolData || {};
 
                 },
 
-                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? 'â… Correct!' : '❌ Incorrect'),
+                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? '✅ Correct!' : '❌ Incorrect'),
 
                   React.createElement("p", null, QUIZ_BANK[blLevel].explain)
 
@@ -3327,7 +3327,7 @@ var d = labToolData || {};
 
                   var isCurrent = si === blChainStep;
 
-                  var stepLabel = step === 'sniff' ? 'ð‘ƒ Sniff' : step === 'rearUp' ? '🐭 Rear Up' : '⚡ Press Lever';
+                  var stepLabel = step === 'sniff' ? '👃 Sniff' : step === 'rearUp' ? '🐭 Rear Up' : '⚡ Press Lever';
 
                   return React.createElement(React.Fragment, { key: si },
 
@@ -3347,7 +3347,7 @@ var d = labToolData || {};
 
                             'bg-slate-800/60 text-slate-500 border border-slate-700/40')
 
-                    }, (isDone ? 'â… ' : isCurrent ? '⏳ ' : '') + stepLabel)
+                    }, (isDone ? '✅ ' : isCurrent ? '⏳ ' : '') + stepLabel)
 
                   );
 
