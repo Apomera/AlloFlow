@@ -2779,7 +2779,39 @@
                 return false;
               });
             }
+            // Category filter (from chip buttons)
+            var _catFilter = d._categoryFilter || '';
+            if (_catFilter && !_activeStation) {
+              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo'], strategy: ['Strategy', 'strategy'] };
+              var _catKeys = _catMap[_catFilter] || [_catFilter];
+              _filteredTools = _filteredTools.filter(function(tool) {
+                if (tool.category) {
+                  // Check if this category header matches
+                  var catLabel = (tool.label || '').toLowerCase();
+                  return _catKeys.some(function(ck) { return catLabel.indexOf(ck.toLowerCase()) !== -1; });
+                }
+                // Check tool's own category
+                var toolCat = '';
+                // Find the preceding category header
+                var toolIdx = _allStemTools.indexOf(tool);
+                for (var ci3 = toolIdx - 1; ci3 >= 0; ci3--) {
+                  if (_allStemTools[ci3].category) { toolCat = (_allStemTools[ci3].label || '').toLowerCase(); break; }
+                }
+                return _catKeys.some(function(ck) { return toolCat.indexOf(ck.toLowerCase()) !== -1; });
+              });
+              // Remove orphan categories
+              _filteredTools = _filteredTools.filter(function(tool, i, arr) {
+                if (!tool.category) return true;
+                for (var j = i + 1; j < arr.length; j++) {
+                  if (arr[j].category) return false;
+                  return true;
+                }
+                return false;
+              });
+            }
             var _cardIndex = 0;
+            // Tool count summary
+            var _toolCount = _filteredTools.filter(function(t2) { return !t2.category; }).length;
             return /*#__PURE__*/React.createElement("div", {
               className: "max-w-3xl mx-auto animate-in fade-in duration-200"
             },
@@ -2800,6 +2832,32 @@
                 'aria-label': 'Clear search'
               }, "\u2715")
             ),
+
+          // ── Category filter chips ──
+          !_activeStation && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3", role: 'group', 'aria-label': 'Filter tools by category' },
+            [
+              { id: '', label: 'All', icon: '\u2B50' },
+              { id: 'science', label: 'Science', icon: '\uD83E\uDDEA' },
+              { id: 'math', label: 'Math', icon: '\uD83D\uDCCA' },
+              { id: 'engineering', label: 'Engineering', icon: '\u2699\uFE0F' },
+              { id: 'creative', label: 'Creative', icon: '\uD83C\uDFA8' },
+              { id: 'applied', label: 'Applied', icon: '\uD83D\uDE80' },
+              { id: 'strategy', label: 'Games', icon: '\uD83C\uDFAE' }
+            ].map(function(cat) {
+              var isActive = (_stemToolSearch === '' && !d._categoryFilter && cat.id === '') || d._categoryFilter === cat.id;
+              return React.createElement("button", {
+                key: cat.id,
+                'aria-label': 'Filter by ' + (cat.label || 'all categories'),
+                'aria-pressed': isActive ? 'true' : 'false',
+                onClick: function() {
+                  upd('_categoryFilter', cat.id === d._categoryFilter ? '' : cat.id);
+                  _setStemToolSearch('');
+                },
+                className: "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all border " +
+                  (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600')
+              }, cat.icon + ' ' + cat.label);
+            })
+          ),
 
           // ── Station Controls ──
           React.createElement("div", { className: "flex items-center gap-2 mb-4" },
@@ -2846,16 +2904,17 @@
             ) : null
           ),
 
-          // ═══ Quest HUD (visible when student is inside a tool with quests) ═══
+          // ═══ Quest HUD (floating compact panel) ═══
           _activeStation && _activeStation.quests && _activeStation.quests.length > 0 && stemLabTool ?
             React.createElement("div", {
-              className: "mb-3 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-300 overflow-hidden transition-all",
+              className: "fixed bottom-4 right-4 z-[9998] transition-all " + (_questHudCollapsed ? 'w-auto' : 'w-72'),
               role: 'region',
               'aria-label': 'Quest log for station ' + _activeStation.name
             },
+              React.createElement("div", { className: "bg-white/95 backdrop-blur-sm rounded-xl border-2 border-amber-300 shadow-2xl overflow-hidden" },
               // Header
               React.createElement("div", {
-                className: "flex items-center justify-between px-3 py-2 bg-amber-100 cursor-pointer",
+                className: "flex items-center justify-between px-3 py-1.5 bg-amber-100 cursor-pointer",
                 onClick: function() { _setQuestHudCollapsed(!_questHudCollapsed); }
               },
                 React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "\uD83C\uDFC6 Quest Log"),
@@ -2990,7 +3049,7 @@
                   );
                 })()
               )
-            ) : null,
+            )) : null,
 
           // ── Station Builder Panel ──
           _showStationBuilder ? React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4" },
@@ -3705,6 +3764,26 @@
           };
           console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
           if (!_pluginOnlyTools[stemLabTool]) return null;
+
+          // Show skeleton loader while plugin hasn't registered yet
+          if (!window.StemLab.isRegistered(stemLabTool)) {
+            return React.createElement("div", { className: "animate-pulse space-y-4 p-6" },
+              React.createElement("div", { className: "flex items-center gap-3" },
+                React.createElement("div", { className: "w-10 h-10 bg-slate-200 rounded-lg" }),
+                React.createElement("div", { className: "space-y-2 flex-1" },
+                  React.createElement("div", { className: "h-4 bg-slate-200 rounded w-1/3" }),
+                  React.createElement("div", { className: "h-3 bg-slate-100 rounded w-1/2" })
+                )
+              ),
+              React.createElement("div", { className: "h-48 bg-slate-100 rounded-xl" }),
+              React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+                React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" }),
+                React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" }),
+                React.createElement("div", { className: "h-20 bg-slate-100 rounded-lg" })
+              ),
+              React.createElement("p", { className: "text-center text-xs text-slate-400" }, "\uD83D\uDD2C Loading " + stemLabTool + "...")
+            );
+          }
 
           // Build context bridge: map hub-local variables to plugin ctx format
           var _ctx = {

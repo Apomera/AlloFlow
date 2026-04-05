@@ -2435,11 +2435,10 @@ var d = (labToolData.companionPlanting) || {};
               check: function(grid) { var has = {}; grid.forEach(function(c) { if (c.plantId) has[c.plantId] = true; }); return has.corn && has.beans && has.squash; }
             }
           ];
-          var cgActiveChallenge = cg.activeChallenge || null;
-          var cgCompletedChallenges = cg.completedChallenges || [];
-
           // ── Community Garden State ──
           var cg = d.communityGarden || {};
+          var cgActiveChallenge = cg.activeChallenge || null;
+          var cgCompletedChallenges = cg.completedChallenges || [];
           var cgGrid = cg.grid || []; // Array of 16 cells: { plantId: null|string, growthDay: 0, health: 100, watered: false, pests: 0 }
           var cgDay = cg.day || 0;
           var cgSeason = Math.floor((cgDay % 120) / 30); // 0=spring, 1=summer, 2=autumn, 3=winter

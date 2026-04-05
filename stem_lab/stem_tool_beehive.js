@@ -972,16 +972,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'h-2 bg-red-100 rounded-full overflow-hidden' },
                 h('div', { style: { width: pesticideExposure + '%' }, className: 'h-full bg-red-500 rounded-full transition-all' })))),
 
-          // Action buttons with action point costs
+          // Action buttons — grouped by purpose
           colonySurvived && h('div', { className: 'space-y-2' },
-            h('div', { className: 'flex gap-2 flex-wrap' },
-              h('button', { onClick: advanceDay, 'aria-label': 'Advance one day', className: 'px-4 py-2 bg-amber-600 text-white rounded-lg font-bold text-sm hover:bg-amber-700' }, '⏩ Next Day'),
-              h('button', { onClick: function() { for(var i=0;i<5;i++) advanceDay(); }, className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '⏭️ +5 Days'),
-              h('button', { onClick: treatVarroa, 'aria-label': 'Apply varroa mite treatment', disabled: varroaLevel < 10, className: 'px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-bold hover:bg-red-200 disabled:opacity-40' }, '🧪 Treat Varroa'),
-              h('button', { onClick: addSuper, 'aria-label': 'Add honey super for more space', className: 'px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '📦 Add Super'),
-              h('button', { onClick: harvestHoney, 'aria-label': 'Harvest surplus honey', disabled: honey < 15, className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200 disabled:opacity-40' }, '🍯 Harvest'),
-              h('button', { onClick: feedBees, 'aria-label': 'Feed bees sugar syrup', className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🫙 Feed'),
-              h('button', { onClick: function() { upd('showInspect', true); }, 'aria-label': 'Open hive inspector', className: 'px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-bold hover:bg-indigo-200' }, '🔍 Inspect')),
+            // Primary actions row
+            h('div', { className: 'flex gap-2 items-center' },
+              h('button', { onClick: advanceDay, 'aria-label': 'Advance one day', className: 'flex-1 py-2.5 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 shadow-sm transition-all hover:shadow-md' }, '\u23E9 Next Day'),
+              h('button', { onClick: function() { for(var i=0;i<5;i++) advanceDay(); }, 'aria-label': 'Advance 5 days', className: 'px-3 py-2.5 bg-amber-100 text-amber-700 rounded-xl text-sm font-bold hover:bg-amber-200' }, '\u23ED +5')
+            ),
+            // Management actions
+            h('div', { className: 'grid grid-cols-5 gap-1.5' },
+              h('button', { onClick: treatVarroa, 'aria-label': 'Treat varroa mites', disabled: varroaLevel < 10, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl text-center transition-all ' + (varroaLevel >= 10 ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' : 'bg-slate-50 text-slate-300 border border-slate-100') },
+                h('span', { className: 'text-lg' }, '\uD83E\uDDEA'),
+                h('span', { className: 'text-[8px] font-bold' }, 'Treat')),
+              h('button', { onClick: addSuper, 'aria-label': 'Add honey super', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-all' },
+                h('span', { className: 'text-lg' }, '\uD83D\uDCE6'),
+                h('span', { className: 'text-[8px] font-bold' }, 'Super')),
+              h('button', { onClick: harvestHoney, 'aria-label': 'Harvest honey', disabled: honey < 15, className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all ' + (honey >= 15 ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200' : 'bg-slate-50 text-slate-300 border border-slate-100') },
+                h('span', { className: 'text-lg' }, '\uD83C\uDF6F'),
+                h('span', { className: 'text-[8px] font-bold' }, 'Harvest')),
+              h('button', { onClick: feedBees, 'aria-label': 'Feed bees', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all' },
+                h('span', { className: 'text-lg' }, '\uD83E\uDED9'),
+                h('span', { className: 'text-[8px] font-bold' }, 'Feed')),
+              h('button', { onClick: function() { upd('showInspect', true); }, 'aria-label': 'Inspect hive', className: 'flex flex-col items-center gap-0.5 p-2 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-all' },
+                h('span', { className: 'text-lg' }, '\uD83D\uDD2C'),
+                h('span', { className: 'text-[8px] font-bold' }, 'Inspect'))),
 
             // Conservation Actions
             h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },

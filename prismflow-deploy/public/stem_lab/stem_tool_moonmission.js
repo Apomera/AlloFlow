@@ -933,7 +933,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
         // ═══ PHASE 5: POWERED DESCENT ═══
         phase === 5 && h('div', { className: 'space-y-3' },
-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+          // Onboarding overlay (before game starts)
+          !d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
+            h('div', { className: 'text-4xl mb-3' }, '\u2B07\uFE0F'),
+            h('h4', { className: 'text-lg font-black mb-2' }, 'Powered Descent'),
+            h('p', { className: 'text-xs text-slate-400 mb-4' }, 'You are piloting the Lunar Module to the Moon\'s surface. Control your thrust to land softly!'),
+            h('div', { className: 'grid grid-cols-3 gap-3 mb-4 max-w-sm mx-auto' },
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '\u2B06\uFE0F'),
+                h('p', { className: 'text-[10px] font-bold text-sky-300' }, 'W / \u2191'),
+                h('p', { className: 'text-[9px] text-slate-400' }, 'Fire engines (thrust UP)')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '\u2194\uFE0F'),
+                h('p', { className: 'text-[10px] font-bold text-sky-300' }, 'A/D or \u2190/\u2192'),
+                h('p', { className: 'text-[9px] text-slate-400' }, 'Lateral movement')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '\uD83C\uDFAF'),
+                h('p', { className: 'text-[10px] font-bold text-amber-300' }, 'Goal'),
+                h('p', { className: 'text-[9px] text-slate-400' }, 'V < 3 m/s, H < 5 m/s')
+              )
+            ),
+            h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-sm mx-auto' },
+              h('p', { className: 'text-[10px] text-amber-300 font-bold mb-1' }, '\u26A0\uFE0F Tips from Mission Control:'),
+              h('ul', { className: 'text-[10px] text-amber-200 space-y-1 text-left pl-4' },
+                h('li', null, 'Start slowing down early \u2014 Moon gravity is gentle but relentless'),
+                h('li', null, 'Watch your fuel gauge \u2014 you can\'t thrust without fuel!'),
+                h('li', null, 'Reduce horizontal speed before focusing on vertical'),
+                h('li', null, 'The real Apollo 11 landed with only 25 seconds of fuel left!')
+              )
+            ),
+            h('button', {
+              'aria-label': 'Begin powered descent piloting',
+              onClick: function() { upd('descentStarted', true); },
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
+            }, '\uD83D\uDE80 Begin Descent \u2014 Take the Controls!')
+          ),
+          // Game canvas (after onboarding)
+          d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '420px' } },
               h('canvas', {
                 'data-descent-canvas': 'true',

@@ -305,7 +305,7 @@ Return ONLY valid JSON:
       // Issue agreement: count how many auditors flagged each issue
       const issueFrequency = {};
       parsedAudits.forEach(a => {
-        [...(a.critical || []), ...(a.major || []), ...(a.minor || [])].forEach(issue => {
+        [...(a.critical || []), ...(a.serious || a.major || []), ...(a.moderate || []), ...(a.minor || [])].forEach(issue => {
           const key = (issue.issue || '').toLowerCase().substring(0, 40);
           issueFrequency[key] = (issueFrequency[key] || 0) + 1;
         });
@@ -328,7 +328,8 @@ Return ONLY valid JSON:
           ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}`
           : `${parsedAudits[0].summary} (${n}-auditor consensus, SD: ${scoreSD})`,
         critical: mergeIssues(...parsedAudits.map(a => a.critical)),
-        major: mergeIssues(...parsedAudits.map(a => a.major)),
+        serious: mergeIssues(...parsedAudits.map(a => a.serious || a.major)),
+        moderate: mergeIssues(...parsedAudits.map(a => a.moderate)),
         minor: mergeIssues(...parsedAudits.map(a => a.minor)),
         issueFrequency,
         passes: [...new Set(parsedAudits.flatMap(a => a.passes || []))],
@@ -387,7 +388,7 @@ Return ONLY valid JSON:
       }
     } catch (err) {
       warnLog('[PDF Audit] Failed:', err);
-      setPdfAuditResult({ score: -1, summary: 'Audit could not be completed — proceeding to transformation.', critical: [], major: [], minor: [], passes: [] });
+      setPdfAuditResult({ score: -1, summary: 'Audit could not be completed — proceeding to transformation.', critical: [], serious: [], moderate: [], minor: [], passes: [] });
     }
     setPdfAuditLoading(false);
   };
@@ -482,20 +483,22 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
     const beforeScore = batchScores.length > 0 ? Math.round(batchScores.reduce((a, b) => a + b, 0) / batchScores.length) : 0;
     const pageCount = batchParsedAudits.find(a => a.pageCount)?.pageCount || 1;
 
-    // Merge issues
+    // Merge issues (4-tier: critical/serious/moderate/minor)
     const allCrit = [...new Map(batchParsedAudits.flatMap(a => (a.critical || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
-    const allMaj = [...new Map(batchParsedAudits.flatMap(a => (a.major || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
+    const allSer = [...new Map(batchParsedAudits.flatMap(a => (a.serious || a.major || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
+    const allMod = [...new Map(batchParsedAudits.flatMap(a => (a.moderate || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
     const allMin = [...new Map(batchParsedAudits.flatMap(a => (a.minor || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
 
-    log(`Audit: score ${beforeScore}/100 (${batchParsedAudits.length} auditors, ${allCrit.length}C/${allMaj.length}M/${allMin.length}m)`);
+    log(`Audit: score ${beforeScore}/100 (${batchParsedAudits.length} auditors, ${allCrit.length}C/${allSer.length}S/${allMod.length}M/${allMin.length}m)`);
 
     // ── Phase 2: Extract text ──
     log('Phase 2: Extracting text...');
     const batchIssueList = []
       .concat(allCrit.map(i => '\ud83d\udd34 ' + i.issue))
-      .concat(allMaj.map(i => '\ud83d\udfe0 ' + i.issue))
-      .concat(allMin.map(i => '\ud83d\udfe1 ' + i.issue))
-      .slice(0, 20).join('\n');
+      .concat(allSer.map(i => '\ud83d\udfe0 ' + i.issue))
+      .concat(allMod.map(i => '\ud83d\udfe1 ' + i.issue))
+      .concat(allMin.map(i => '\u26aa ' + i.issue))
+      .slice(0, 25).join('\n');
 
     let extractedText = '';
     const BATCH_PAGES_PER_CHUNK = 5;
@@ -2256,9 +2259,10 @@ ${currentHtml.substring(0, 20000)}
     try {
       const issueList = []
         .concat((_auditResult?.critical || []).map(i => '🔴 ' + i.issue))
-        .concat((_auditResult?.major || []).map(i => '🟠 ' + i.issue))
-        .concat((_auditResult?.minor || []).map(i => '🟡 ' + i.issue))
-        .slice(0, 20).join('\n');
+        .concat((_auditResult?.serious || _auditResult?.major || []).map(i => '🟠 ' + i.issue))
+        .concat((_auditResult?.moderate || []).map(i => '🟡 ' + i.issue))
+        .concat((_auditResult?.minor || []).map(i => '⚪ ' + i.issue))
+        .slice(0, 25).join('\n');
 
       // ── Step 1: Extract ALL text content from PDF (chunked for long docs) ──
       updateProgress(1, 'Reading document content...');
@@ -3320,7 +3324,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         imageCount: extractedImages.length,
         extractedChars: extractedLength,
         htmlChars: accessibleHtml.length,
-        issuesFixed: (_auditResult.critical || []).length + (_auditResult.major || []).length + (_auditResult.minor || []).length,
+        issuesFixed: (_auditResult.critical || []).length + (_auditResult.serious || _auditResult.major || []).length + (_auditResult.moderate || []).length + (_auditResult.minor || []).length,
         remainingIssues: verification ? (verification.issues || []).length : null,
         elapsed: Math.round((Date.now() - _startTime) / 1000),
       };
@@ -3356,7 +3360,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
     const d = auditData;
     const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const scoreColor = (s) => s >= 80 ? '#16a34a' : s >= 50 ? '#d97706' : '#dc2626';
-    const severityBadge = (sev, count) => `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;color:white;background:${sev === 'critical' ? '#dc2626' : sev === 'major' ? '#ea580c' : sev === 'minor' ? '#2563eb' : '#16a34a'}">${sev.toUpperCase()} (${count})</span>`;
+    const severityBadge = (sev, count) => `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;color:white;background:${sev === 'critical' ? '#dc2626' : sev === 'serious' ? '#ea580c' : sev === 'moderate' ? '#d97706' : sev === 'minor' ? '#2563eb' : '#16a34a'}">${sev.toUpperCase()} (${count})</span>`;
     const issueRows = (issues, severity) => (issues || []).map(i => {
       // Issues are already normalized by normalizeIssue() upstream; this is the safety net
       let wcag = i.wcag || '';
@@ -3443,9 +3447,14 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
       html += `<h2>${severityBadge('critical', issueSource.critical.length)} Critical Issues${sectionLabel}</h2>
       <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.critical, 'critical')}</tbody></table>`;
     }
-    if (issueSource.major?.length) {
-      html += `<h2>${severityBadge('major', issueSource.major.length)} Major Issues${sectionLabel}</h2>
-      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.major, 'major')}</tbody></table>`;
+    const seriousIssues = issueSource.serious || issueSource.major || [];
+    if (seriousIssues.length) {
+      html += `<h2>${severityBadge('serious', seriousIssues.length)} Serious Issues${sectionLabel}</h2>
+      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(seriousIssues, 'serious')}</tbody></table>`;
+    }
+    if (issueSource.moderate?.length) {
+      html += `<h2>${severityBadge('moderate', issueSource.moderate.length)} Moderate Issues${sectionLabel}</h2>
+      <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Count</th></tr></thead><tbody>${issueRows(issueSource.moderate, 'moderate')}</tbody></table>`;
     }
     if (issueSource.minor?.length) {
       html += `<h2>${severityBadge('minor', issueSource.minor.length)} Minor Issues${sectionLabel}</h2>
@@ -3529,12 +3538,13 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
       <thead><tr style="background:#f8fafc"><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Severity</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:center">Deduction</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Examples</th></tr></thead>
       <tbody>
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#dc2626">Critical</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-15</td><td style="padding:8px;border:1px solid #e2e8f0">Missing lang attribute, no page title, images without alt text, no main landmark, contrast below 3:1</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#ea580c">Major</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-10</td><td style="padding:8px;border:1px solid #e2e8f0">No h1 heading, heading level skips, data tables without th/scope, form inputs without labels</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#2563eb">Minor</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-5</td><td style="padding:8px;border:1px solid #e2e8f0">Missing skip-to-content link, missing landmarks, non-descriptive links, bullet characters instead of lists</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Mitigate</td><td style="padding:8px;border:1px solid #e2e8f0">Each passed accessibility check reduces the impact of remaining deductions (strengths offset weaknesses)</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#ea580c">Serious</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-10</td><td style="padding:8px;border:1px solid #e2e8f0">No h1 heading, heading level skips, data tables without th/scope, form inputs without labels, contrast below 4.5:1</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#d97706">Moderate</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-5</td><td style="padding:8px;border:1px solid #e2e8f0">Missing skip-to-content link, missing landmarks, non-descriptive links, bullet characters instead of lists</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#2563eb">Minor</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-2</td><td style="padding:8px;border:1px solid #e2e8f0">Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Mitigate</td><td style="padding:8px;border:1px solid #e2e8f0">Each passed check reduces deduction impact up to 15% (strengths offset weaknesses, capped)</td></tr>
       </tbody>
     </table>
-    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation type (counted once regardless of frequency). Passes reduce effective deductions. Longer documents receive length normalization. After remediation, the displayed score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
+    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passes reduce effective deductions (capped at 15%). Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
 
     html += `<div class="footer">
       <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI triangulation with adaptive confidence scoring, statistical reliability analysis (ICC, SEM, CV), and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>

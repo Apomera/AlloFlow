@@ -4818,7 +4818,7 @@ const d = labToolData.solarSystem;
 
                         var animId3d;
 
-                        var hudMode = 'full'; // 'simple' | 'standard' | 'full'
+                        var hudMode = 'simple'; // 'simple' | 'standard' | 'full' — start simple, press H to reveal more
 
                         // animate3d is defined later as animate3dV2 with 3rd-person and compass support
 
@@ -4978,7 +4978,7 @@ const d = labToolData.solarSystem;
 
                           '</div>' +
 
-                          '<div id="hud-standard-rows" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
+                          '<div id="hud-standard-rows" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:none;grid-template-columns:auto 1fr;gap:2px 8px">' +
 
                           '<span style="color:#64748b" title="Compass heading: 0=N, 90=E, 180=S, 270=W">\uD83E\uDDED Hdg</span><span id="hud-hdg" style="color:#67e8f9">N 0\u00B0</span>' +
 
@@ -4988,7 +4988,7 @@ const d = labToolData.solarSystem;
 
                           '</div>' +
 
-                          '<div id="hud-full-rows" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
+                          '<div id="hud-full-rows" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:none;grid-template-columns:auto 1fr;gap:2px 8px">' +
 
                           '<span style="color:#64748b" title="Height above surface (radar altimeter)">\uD83D\uDCCF Alt</span><span id="hud-alt" style="color:#67e8f9">0 m</span>' +
 
