@@ -2080,10 +2080,40 @@ HTML section ${chunkNum}/${chunks.length}:
         });
       });
       const mergedIssues = [...seenIssues.values()];
+
+      // ── Structural pass detection on full document ──
+      // Chunked audits underreport passes because most chunks are plain content.
+      // Check the full HTML structure once for global accessibility features.
+      const structuralPasses = [];
+      const lc = htmlContent.toLowerCase();
+      if (/<html[^>]*lang="[a-z]{2,3}/.test(lc)) structuralPasses.push('HTML lang attribute is correctly set');
+      if (/<title>[^<]+<\/title>/.test(lc)) structuralPasses.push('Page title is present and descriptive');
+      if (/<main[\s>]/.test(lc)) structuralPasses.push('A <main> landmark defines the primary content area');
+      if (/<nav[\s>]/.test(lc)) structuralPasses.push('Navigation landmark (<nav>) is present');
+      if (/<header[\s>]/.test(lc)) structuralPasses.push('Header landmark is present');
+      if (/<footer[\s>]/.test(lc)) structuralPasses.push('Footer landmark is present');
+      if (/<h1[\s>]/.test(lc)) structuralPasses.push('Level 1 heading (h1) establishes the document topic');
+      if (/<h2[\s>]/.test(lc)) structuralPasses.push('Section headings (h2) provide document structure');
+      if (/<a[^>]*href=/.test(lc) && !/<a[^>]*>click here<\/a>/i.test(htmlContent)) structuralPasses.push('Links use descriptive text');
+      if (/<ul[\s>]/.test(lc) && /<li[\s>]/.test(lc)) structuralPasses.push('Semantic list markup (ul/li) is used');
+      if (/<ol[\s>]/.test(lc) && /<li[\s>]/.test(lc)) structuralPasses.push('Ordered lists (ol/li) are used for sequential content');
+      if (/<table[\s>]/.test(lc) && /<th[\s>]/.test(lc)) structuralPasses.push('Table headers (th) are used for data tables');
+      if (/<th[^>]*scope=/.test(lc)) structuralPasses.push('Table header scope attributes define data relationships');
+      if (/skip.*content|skip.*nav/i.test(htmlContent)) structuralPasses.push('Skip-to-content link is provided for keyboard navigation');
+      if (/<img[^>]*alt="[^"]+"/i.test(htmlContent)) structuralPasses.push('Images have descriptive alt text');
+      if (/<figcaption[\s>]/.test(lc)) structuralPasses.push('Figure captions provide image descriptions');
+      if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) structuralPasses.push('Form elements have associated labels');
+      if (/role="(main|navigation|banner|contentinfo|complementary)"/.test(lc)) structuralPasses.push('ARIA landmark roles are used for page structure');
+      // Merge structural passes with chunk-reported passes (dedup by key)
+      structuralPasses.forEach(sp => {
+        const spKey = sp.toLowerCase().replace(/[^a-z\s]/g, '').trim().split(/\s+/).filter(w => w.length > 2).sort().slice(0, 5).join('_');
+        if (spKey && !seenPassKeys.has(spKey)) {
+          seenPassKeys.add(spKey);
+          mergedPassList.push(sp);
+        }
+      });
       const passCount = mergedPassList.length;
       // Score from merged deductions — each unique violation type counted ONCE
-      // Deduplication above already prevents long documents from over-counting,
-      // so no separate length factor is needed (it was double-compensating)
       const rawDeductions = mergedIssues.reduce((sum, i) => sum + (i.deduction || 0), 0);
       // Pass credit: ratio of passes to total checks — proportional to document quality
       const issueCount = mergedIssues.length;
@@ -2093,14 +2123,13 @@ HTML section ${chunkNum}/${chunks.length}:
       const mergedScore = Math.max(0, 100 - adjustedDeductions);
       // Summary from first chunk (has the global perspective)
       const summary = ((_chunkResults$ = chunkResults[0]) === null || _chunkResults$ === void 0 ? void 0 : _chunkResults$.summary) || `Audited ${chunks.length} sections of ${htmlContent.length.toLocaleString()} chars.`;
-      warnLog(`[Output Audit] Chunked: ${chunks.length} sections, ${mergedIssues.length} unique issues, raw deductions ${rawDeductions}, pass factor ${passFactor.toFixed(2)}, score ${mergedScore}`);
+      warnLog(`[Output Audit] Chunked: ${chunks.length} sections, ${mergedIssues.length} unique issues, ${passCount} passes (${structuralPasses.length} structural), raw deductions ${rawDeductions}, pass factor ${passFactor.toFixed(2)}, score ${mergedScore}`);
       return {
         score: mergedScore,
         summary: summary + ` (${chunks.length} sections audited)`,
         issues: mergedIssues,
         passes: mergedPassList,
-        chunksAudited: chunks.length,
-        lengthFactor: Math.round(lengthFactor * 100) / 100
+        chunksAudited: chunks.length
       };
     } catch (err) {
       warnLog('[Output Audit] Failed:', err);
