@@ -7100,27 +7100,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7136,7 +7136,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5365cc0/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@86d336f/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -51424,9 +51424,49 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
               </div>
 
+              {/* AI Style Studio — quick presets for remediation preview */}
+              <div>
+                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">✨ AI Restyle</div>
+                <div className="flex flex-wrap gap-1 mb-1.5">
+                  {[
+                    { label: '🎨 Beautify', prompt: 'Make this document visually stunning with a modern color scheme, elegant typography, subtle gradients, rounded section cards, and a cohesive design. Use a sophisticated palette.' },
+                    { label: '🏫 Academic', prompt: 'Professional academic style: serif headings, navy/gold scheme, formal tables, proper margins, scholarly appearance for university submissions.' },
+                    { label: '🌈 Kid-Friendly', prompt: 'Bright, playful style for elementary students. Rounded corners, fun colors (teal, coral, purple), larger friendly fonts, card-based layout with soft shadows.' },
+                    { label: '🌙 Dark', prompt: 'Elegant dark mode: dark charcoal background, soft white text, indigo accents, subtle borders, beautiful contrast for screen reading.' },
+                    { label: '🧊 Minimal', prompt: 'Ultra-minimal: whitespace, thin sans-serif, muted grays, one accent color, hairline borders, understated elegance.' },
+                  ].map(preset => (
+                    <button key={preset.label} onClick={async () => {
+                      if (!callGemini) return;
+                      addToast('Applying AI style...', 'info');
+                      try {
+                        const css = await callGemini(`You are a CSS expert. Create a beautiful, accessible stylesheet.\n\nThe user wants: "${preset.prompt}"\n\nTarget these elements: body, h1, h2, h3, h4, p, main, section, table, th, td, a, blockquote, figure, figcaption, header, footer, nav, ul, ol, li, img, code, pre.\n\nRequirements:\n- WCAG AA contrast (4.5:1 for text)\n- Min 12px font size\n- Include @import for Google Fonts if used\n- Include print styles (@media print)\n\nReturn ONLY CSS — no explanation, no markdown fences.`, true);
+                        if (css && pdfPreviewRef.current?.contentDocument) {
+                          const doc = pdfPreviewRef.current.contentDocument;
+                          const old = doc.getElementById('ai-restyle'); if (old) old.remove();
+                          const style = doc.createElement('style');
+                          style.id = 'ai-restyle';
+                          style.textContent = css.replace(/```[\s\S]*?```/g, '').replace(/^```\w*\n?/gm, '').replace(/\n?```$/gm, '').trim();
+                          doc.head.appendChild(style);
+                          addToast('✨ AI style applied!', 'success');
+                        }
+                      } catch(err) { addToast('Style failed — try again', 'error'); }
+                    }}
+                      className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[9px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors"
+                    >{preset.label}</button>
+                  ))}
+                  {pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle') && (
+                    <button onClick={() => {
+                      const old = pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle');
+                      if (old) { old.remove(); addToast('AI style removed', 'info'); }
+                    }} className="px-2 py-1 bg-red-50 border border-red-200 rounded-md text-[9px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
+                  )}
+                </div>
+                <p className="text-[9px] text-slate-400 mb-2">One-click AI restyling. These override the theme above.</p>
+              </div>
+
               {/* Reference document theme extraction */}
               <div>
-                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">Brand Match</div>
+                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">📎 Brand Match</div>
                 <label className="w-full flex items-center gap-2 px-2 py-1.5 bg-white border border-dashed border-slate-300 rounded-lg text-[10px] text-slate-500 hover:border-indigo-400 hover:text-indigo-600 cursor-pointer transition-colors">
                   📎 Upload brand reference (PDF, image, or logo)
                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
