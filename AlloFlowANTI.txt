@@ -10008,13 +10008,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const prevWsPreloadedWordsLengthRef = useRef(0);
   useEffect(() => {
       if (wsPreloadedWords.length > 0 && prevWsPreloadedWordsLengthRef.current === 0) {
-          debugLog("🚀 Auto-opening Word Sounds mode for", wsPreloadedWords.length, "preloaded words");
-          setIsWordSoundsMode(true);
-          setActiveView('word-sounds');
-          setWordSoundsAutoReview(true);
+          if (activeView === 'word-sounds-generator') {
+              debugLog("🎯 Skipping auto-open — WordSoundsGenerator handles its own transition");
+          } else {
+              debugLog("🚀 Auto-opening Word Sounds mode for", wsPreloadedWords.length, "preloaded words");
+              setIsWordSoundsMode(true);
+              setActiveView('word-sounds');
+              setWordSoundsAutoReview(true);
+          }
       }
       prevWsPreloadedWordsLengthRef.current = wsPreloadedWords.length;
-  }, [wsPreloadedWords.length]);
+  }, [wsPreloadedWords.length, activeView]);
   const [connectingSourceId, setConnectingSourceId] = useState(null);
   const [mapAddInput, setMapAddInput] = useState('');
   const mapContainerRef = useRef(null);

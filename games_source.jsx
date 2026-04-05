@@ -1681,7 +1681,9 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (gameLang === 'english' && item.translation) return item.translation;
       return item.text;
   };
+  const bothLabel = BOTH_TRANSLATIONS[primaryLanguage] || BOTH_TRANSLATIONS.English;
   const getTitle = (key) => {
+      if (key === 'shared') return titles.shared ? (typeof titles.shared === 'string' ? titles.shared : titles.shared.text || bothLabel) : bothLabel;
       const t = titles[key];
       if (!t) return "";
       if (typeof t === 'string') return t;
