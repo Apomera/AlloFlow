@@ -2775,6 +2775,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             )
           ),
 
+            // Bat Diet Diversity
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDF7D\uFE0F Bat Diet Diversity \u2014 Not Just Bugs and Fruit!'),
+              h('p', { className: 'text-[10px] mb-3 ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
+                'With over 1,400 species, bats have evolved an incredible range of diets. The two playable species in the simulator represent the two largest dietary groups, but bats eat much more:'),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
+                [
+                  { icon: '\uD83E\uDD9F', diet: 'Insectivore (70%)', desc: 'Most bat species eat insects. A single colony can consume tons of agricultural pests nightly.', color: isDark ? 'bg-amber-900/30' : 'bg-amber-50' },
+                  { icon: '\uD83C\uDF4C', diet: 'Frugivore (15%)', desc: 'Fruit bats disperse seeds and pollinate hundreds of plant species across tropical regions.', color: isDark ? 'bg-emerald-900/30' : 'bg-emerald-50' },
+                  { icon: '\uD83C\uDF3A', diet: 'Nectarivore (5%)', desc: 'Nectar-feeding bats have long tongues and pollinate night-blooming flowers including agave and cactus.', color: isDark ? 'bg-pink-900/30' : 'bg-pink-50' },
+                  { icon: '\uD83D\uDC1F', diet: 'Piscivore (rare)', desc: 'Fishing bats skim water surfaces using echolocation to detect fish fins breaking the surface.', color: isDark ? 'bg-blue-900/30' : 'bg-blue-50' },
+                  { icon: '\uD83E\uDD87', diet: 'Carnivore (rare)', desc: 'Some large bats prey on frogs, lizards, birds, and even other bats! The false vampire bat is an apex predator.', color: isDark ? 'bg-red-900/30' : 'bg-red-50' },
+                  { icon: '\uD83E\uDE78', diet: 'Sanguivore (3 spp)', desc: 'Only 3 species of vampire bats exist. They lap blood from cattle/birds using anticoagulant saliva.', color: isDark ? 'bg-purple-900/30' : 'bg-purple-50' }
+                ].map(function(d2, di) {
+                  return h('div', { key: di, className: 'p-2 rounded-lg ' + d2.color },
+                    h('div', { className: 'flex items-center gap-1 mb-1' },
+                      h('span', null, d2.icon),
+                      h('span', { className: 'text-[10px] font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, d2.diet)),
+                    h('p', { className: 'text-[9px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, d2.desc));
+                })
+              ),
+              h('div', { className: 'mt-2 text-[9px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
+                'The diversity of bat diets reflects their evolutionary success. Bats make up ~25% of all mammal species \u2014 second only to rodents. Every continent except Antarctica has bats.')
+            ),
+
+            // Echolocation Evolution Timeline
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+              h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\u23F0 Evolution of Echolocation \u2014 Timeline'),
+              h('div', { className: 'space-y-2' },
+                [
+                  { mya: '65 MYA', event: 'Earliest bat-like mammals appear after dinosaur extinction', color: '#6366f1' },
+                  { mya: '55 MYA', event: 'Onychonycteris finneyi \u2014 oldest known bat fossil. Could fly but may not have echolocated!', color: '#8b5cf6' },
+                  { mya: '52 MYA', event: 'Icaronycteris \u2014 early bat with developed cochlea, suggesting echolocation ability', color: '#a855f7' },
+                  { mya: '50 MYA', event: 'Major bat diversification. Insectivorous bats with sophisticated sonar dominate', color: '#c084fc' },
+                  { mya: '40 MYA', event: 'Fruit bats (Pteropodidae) diverge. Most LOSE echolocation, relying on vision/smell instead', color: '#22c55e' },
+                  { mya: '26 MYA', event: 'Egyptian fruit bat lineage evolves tongue-click echolocation independently', color: '#10b981' },
+                  { mya: 'Present', event: '1,400+ bat species worldwide. Echolocation retained in ~85% of species', color: '#f59e0b' }
+                ].map(function(ev, ei) {
+                  return h('div', { key: ei, className: 'flex gap-3 items-start' },
+                    h('div', { className: 'flex-shrink-0 w-16 text-right' },
+                      h('span', { className: 'text-[10px] font-bold', style: { color: ev.color } }, ev.mya)),
+                    h('div', { className: 'flex-shrink-0 w-3 flex flex-col items-center' },
+                      h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: ev.color } }),
+                      ei < 6 ? h('div', { style: { width: '2px', height: '16px', background: isDark ? '#334155' : '#e2e8f0' } }) : null),
+                    h('p', { className: 'text-[10px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, ev.event)
+                  );
+                })
+              ),
+              h('div', { className: 'mt-2 text-[9px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
+                'Key debate: Did bats evolve flight first, then echolocation? Or echolocation first, then flight? The Onychonycteris fossil suggests flight came first \u2014 but the question remains open.')
+            )
+          ),
+
           // SPECIES GALLERY
           bioSection === 'species' && h('div', { className: 'space-y-3' },
             h('div', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD87 Bat Species Gallery'),

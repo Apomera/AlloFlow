@@ -214,7 +214,9 @@ Return ONLY valid JSON:
         const minCount = (a.minor || []).length;
         const passCount = (a.passes || []).length;
         const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-        const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
+        const issueCount = critCount + seriousCount + modCount + minCount;
+        const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
+        const pf = 1 - passRatio * 0.3;
         const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
         // If Gemini's score diverges significantly from the rubric calculation, override it
         if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
@@ -248,7 +250,9 @@ Return ONLY valid JSON:
           const minCount = (a.minor || []).length;
           const passCount = (a.passes || []).length;
           const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-          const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
+          const issueCount = critCount + seriousCount + modCount + minCount;
+          const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
+          const pf = 1 - passRatio * 0.3;
           const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
           if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) a.score = calculatedScore;
         });
@@ -543,7 +547,9 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       const minCount = (a.minor || []).length;
       const passCount = (a.passes || []).length;
       const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-      const pf = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
+      const issueCount = critCount + seriousCount + modCount + minCount;
+      const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
+      const pf = 1 - passRatio * 0.3;
       const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
       if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
         a.score = calculatedScore;
@@ -1893,9 +1899,11 @@ Return ONLY JSON:
         const parsed = parseAuditJson(result);
         if (parsed.issues && Array.isArray(parsed.issues)) {
           const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0), 0);
-          // Pass credit: strengths mitigate weaknesses
+          // Pass credit: ratio of passes to total checks — more passes = more proportional credit
           const pc = (parsed.passes || []).length;
-          const pf = pc > 0 ? Math.max(0.85, 1 / (1 + pc * 0.05)) : 1;
+          const ic = parsed.issues.length;
+          const passRatio = pc > 0 ? pc / (pc + ic) : 0;
+          const pf = 1 - passRatio * 0.3;
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions * pf));
           if (Math.abs((parsed.score || 0) - calculatedScore) > 12) parsed.score = calculatedScore;
         }
@@ -1963,9 +1971,10 @@ HTML section ${chunkNum}/${chunks.length}:
       // Deduplication above already prevents long documents from over-counting,
       // so no separate length factor is needed (it was double-compensating)
       const rawDeductions = mergedIssues.reduce((sum, i) => sum + (i.deduction || 0), 0);
-      // Pass credit: each pass reduces effective deductions (strengths mitigate weaknesses)
-      // Capped at 0.85 (max 15% reduction) to prevent passes from masking real violations
-      const passFactor = passCount > 0 ? Math.max(0.85, 1 / (1 + passCount * 0.05)) : 1;
+      // Pass credit: ratio of passes to total checks — proportional to document quality
+      const issueCount = mergedIssues.length;
+      const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
+      const passFactor = 1 - passRatio * 0.3;
       const adjustedDeductions = Math.round(rawDeductions * passFactor);
       const mergedScore = Math.max(0, 100 - adjustedDeductions);
       // Summary from first chunk (has the global perspective)
@@ -4009,7 +4018,7 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Mitigate</td><td style="padding:8px;border:1px solid #e2e8f0">Each passed check reduces deduction impact up to 15% (strengths offset weaknesses, capped)</td></tr>
       </tbody>
     </table>
-    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passes reduce effective deductions (capped at 15%). Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
+    <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passing checks proportionally offset deductions — a document that passes 90% of checks receives up to 27% reduction in effective deductions, reflecting that the violations represent a small proportion of the overall content. Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
     html += `<div class="footer">
       <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI triangulation with adaptive confidence scoring, statistical reliability analysis (ICC, SEM, CV), and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
       <p><strong>Standards:</strong> WCAG 2.1 Level AA | ADA Title II (28 CFR Part 35 Subpart H) | Section 508 | EN 301 549</p>
