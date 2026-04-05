@@ -385,8 +385,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           if (!runningRef.current) return;
           var game = gameRef.current;
           if (game.gameOver || game.paused) { animRef.current = requestAnimationFrame(loop); return; }
-          var W = canvas.width = canvas.offsetWidth;
-          var H = canvas.height = canvas.offsetHeight;
+          // Resize canvas resolution to match display (only when size changes)
+          if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+          }
+          var W = canvas.width;
+          var H = canvas.height;
+          gfx.clearRect(0, 0, W, H);
           var dt = 1 / 30;
           game.time += dt;
 
@@ -1095,11 +1101,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         // Mouse click handler
         var onClick = function(e) {
           var game = gameRef.current;
+          if (!game || !game.aircraft) return;
           var rect = canvas.getBoundingClientRect();
-          var mx = e.clientX - rect.left;
-          var my = e.clientY - rect.top;
-          var scl = Math.min(canvas.offsetWidth, canvas.offsetHeight) / 400;
-          var closest = null; var closestDist = 20;
+          // Convert mouse coords from CSS display space to canvas pixel space
+          var cssX = e.clientX - rect.left;
+          var cssY = e.clientY - rect.top;
+          var mx = cssX * (canvas.width / rect.width);
+          var my = cssY * (canvas.height / rect.height);
+          var scl = Math.min(canvas.width, canvas.height) / 400;
+          var closest = null; var closestDist = 35;
           game.aircraft.forEach(function(ac) {
             if (ac.state === 'landed' || ac.state === 'departed') return;
             var dist2 = distNm(mx, my, ac.x * scl, ac.y * scl);
