@@ -3578,6 +3578,29 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } else {
         addToast('PDF transformed to accessible HTML. Verification could not complete.', 'info');
       }
+
+      // ── Log to institutional compliance dashboard (non-blocking) ──
+      try {
+        const host = typeof window !== 'undefined' ? window.location.hostname : '';
+        if (host.includes('.web.app') || host.includes('.firebaseapp.com')) {
+          fetch('/api/logRemediation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: pendingPdfFile?.name || 'unknown',
+              user: typeof window !== 'undefined' && window.__alloUser ? window.__alloUser.displayName || window.__alloUser.email : 'anonymous',
+              email: typeof window !== 'undefined' && window.__alloUser ? window.__alloUser.email : null,
+              beforeScore,
+              afterScore: finalAfterScore,
+              axeViolationsAfter: axeResults ? axeResults.totalViolations : null,
+              fixPasses: autoFixPasses,
+              needsExpertReview,
+              pageCount,
+              elapsed: Math.round((Date.now() - _startTime) / 1000),
+            }),
+          }).catch(() => {}); // fire-and-forget
+        }
+      } catch(logErr) { /* non-blocking */ }
     } catch (err) {
       warnLog('[PDF Fix] Error:', err);
       if (_isBatch) throw err; // Let batch caller handle it

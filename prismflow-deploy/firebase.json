@@ -16,6 +16,30 @@
                 "function": "searchProxy"
             },
             {
+                "source": "/api/logRemediation",
+                "function": "logRemediation"
+            },
+            {
+                "source": "/api/dashboardData",
+                "function": "dashboardData"
+            },
+            {
+                "source": "/api/triggerLmsScan",
+                "function": "triggerLmsScan"
+            },
+            {
+                "source": "/api/scanResults",
+                "function": "scanResults"
+            },
+            {
+                "source": "/api/accessible",
+                "function": "accessible"
+            },
+            {
+                "source": "/api/storeRemediated",
+                "function": "storeRemediated"
+            },
+            {
                 "source": "**",
                 "destination": "/index.html"
             }

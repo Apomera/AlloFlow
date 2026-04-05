@@ -259,27 +259,84 @@
         var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gl);
         var isMid = /6th|7th|8th/i.test(gl);
         var lenObj = LENGTH_OPTIONS.find(function (l) { return l.id === genLength; }) || LENGTH_OPTIONS[1];
-        var wordRange = lenObj.words;
+        var wordRange = genLength === 'custom' ? (customWordCount || '600') + ' words' : lenObj.words;
         var vocabGuide = isElem
           ? 'Keep vocabulary simple and sentences short (' + gl + ' reading level).'
           : isMid
           ? 'Use grade-appropriate vocabulary for ' + gl + ' students. Include descriptive language and character development.'
           : 'Use rich, literary language appropriate for ' + gl + '. Include at least one literary device (metaphor, foreshadowing, irony).';
-        var prompt = 'You are a talented fiction writer for ' + gl + ' students.\n\n'
+        // Determine if we need multi-pass generation (Gemini max ~6000 words per call)
+        var targetWords = genLength === 'custom' ? parseInt(customWordCount || '600', 10) : (genLength === 'short' ? 300 : genLength === 'long' ? 1200 : 650);
+        var needsChunking = targetWords > 1200;
+        var chunkTarget = needsChunking ? Math.ceil(targetWords / 2) : targetWords;
+
+        var basePrompt = 'You are a talented fiction writer for ' + gl + ' students.\n\n'
           + 'Write a ' + genreObj.label + ' story'
           + (genPrompt.trim() ? ' with these instructions: "' + genPrompt.trim() + '"' : '') + '.\n\n'
           + 'Requirements:\n'
           + '- Include ' + genCharCount + ' distinct characters with dialogue\n'
-          + '- ' + vocabGuide + ' Target length: ' + wordRange + ' words.\n'
-          + '- Include a clear beginning, middle, and end\n'
+          + '- ' + vocabGuide + '\n'
           + '- Use dialogue tags ("said", "whispered", "exclaimed") so characters are clearly identified\n'
-          + '- Include sensory details and setting description\n\n'
-          + 'Return ONLY the story text — no title header, no commentary.';
-        var result = await onCallGemini(prompt, false);
-        if (result && result.trim().length > 50) {
-          setSourceText(result.trim());
+          + '- Include sensory details and setting description\n';
+
+        var fullStory = '';
+
+        if (needsChunking) {
+          // Part 1: Beginning and middle
+          var p1 = basePrompt + '- Target length: approximately ' + chunkTarget + ' words.\n'
+            + '- Write the BEGINNING and MIDDLE of the story. End at a cliffhanger or turning point — do NOT resolve the story yet.\n'
+            + '- The story should feel incomplete — the reader should want to know what happens next.\n\n'
+            + 'Return ONLY the story text — no title, no commentary, no "To be continued."';
+          var part1 = await onCallGemini(p1, false);
+          if (!part1 || part1.trim().length < 50) throw new Error('Part 1 generation failed');
+          fullStory = part1.trim();
+          setLoadingMsg('Writing part 2...');
+
+          // Brief delay to avoid rate limiting
+          await new Promise(function (r) { setTimeout(r, 1000); });
+
+          // Part 2: Climax and ending
+          var p2 = 'You are continuing a ' + genreObj.label + ' story for ' + gl + ' students.\n\n'
+            + 'Here is the story so far:\n"""\n' + fullStory.substring(fullStory.length - 2000) + '\n"""\n\n'
+            + 'Requirements:\n'
+            + '- Write the CLIMAX and ENDING of this story. Approximately ' + chunkTarget + ' more words.\n'
+            + '- Resolve all plot threads. Give the story a satisfying conclusion.\n'
+            + '- Maintain the same characters, tone, and style.\n'
+            + '- ' + vocabGuide + '\n\n'
+            + 'Return ONLY the continuation text — no title, no "Part 2" header, no commentary. Start exactly where the previous part left off.';
+          var part2 = await onCallGemini(p2, false);
+          if (part2 && part2.trim().length > 30) {
+            fullStory += '\n\n' + part2.trim();
+          }
+
+          // Part 3 if we're targeting 3000+ words and still short
+          if (targetWords > 3000) {
+            var currentWords = fullStory.split(/\s+/).length;
+            if (currentWords < targetWords * 0.75) {
+              setLoadingMsg('Expanding the story...');
+              await new Promise(function (r) { setTimeout(r, 1000); });
+              var p3 = 'You are expanding a ' + genreObj.label + ' story for ' + gl + ' students. The story needs more detail.\n\n'
+                + 'Here is the current story:\n"""\n' + fullStory.substring(0, 3000) + '\n...\n' + fullStory.substring(fullStory.length - 1500) + '\n"""\n\n'
+                + 'Add approximately ' + Math.max(300, targetWords - currentWords) + ' more words of rich detail: expand scenes, add dialogue, deepen character moments, add sensory description. '
+                + 'Weave the new content naturally into the existing story. Return the FULL expanded story.';
+              var expanded = await onCallGemini(p3, false);
+              if (expanded && expanded.trim().length > fullStory.length * 0.8) {
+                fullStory = expanded.trim();
+              }
+            }
+          }
+        } else {
+          // Single-pass generation for shorter stories
+          var prompt = basePrompt + '- Target length: ' + wordRange + ' words.\n'
+            + '- Include a clear beginning, middle, and end\n\n'
+            + 'Return ONLY the story text — no title header, no commentary.';
+          fullStory = await onCallGemini(prompt, false);
+        }
+
+        if (fullStory && fullStory.trim().length > 50) {
+          setSourceText(fullStory.trim());
           setInputMode('paste');
-          addToast && addToast('Story generated! Review it, then click "Create Script" to continue.', 'success');
+          addToast && addToast('Story generated! ' + fullStory.trim().split(/\s+/).length + ' words. Review it, then click "Create Script".', 'success');
         } else {
           addToast && addToast('Generation returned too little text. Try again.', 'error');
         }
@@ -335,18 +392,28 @@
         var lineEl = document.getElementById('ss-line-' + i);
         if (lineEl) lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         var line = script.lines[i];
+        // Update current page based on line index
+        setCurrentPage(Math.floor(i / LINES_PER_PAGE));
         // If student is playing a role, skip TTS for their character
         if (myRole && line.speaker === myRole) {
-          // Wait for student to read (3 seconds per line or they click next)
+          // Announce whose turn it is
+          var myChar = script.characters.find(function (c) { return c.id === myRole; });
+          await speakLine('Your turn, ' + (myChar ? myChar.name : 'you') + '.', 'Aoede', playbackSpeed);
           await new Promise(function (r) { setTimeout(r, 3000); });
           continue;
         }
         if (line.type === 'stage-direction') {
-          await new Promise(function (r) { setTimeout(r, 1000); });
+          // Narrator reads stage directions aloud
+          await speakLine(line.text, 'Aoede', playbackSpeed * 0.9);
           continue;
         }
         var character = script.characters.find(function (c) { return c.id === line.speaker; });
         var voice = character ? character.voice : 'Aoede';
+        // Announce speaker name before dialogue (not for narrator — it's obvious)
+        if (line.type === 'dialogue' && character && character.id !== 'narrator') {
+          await speakLine(character.name + ' says:', 'Aoede', playbackSpeed * 1.2);
+          await new Promise(function (r) { setTimeout(r, 150); });
+        }
         await speakLine(line.text, voice, playbackSpeed);
         // Brief pause between lines
         if (playingRef.current) await new Promise(function (r) { setTimeout(r, 300); });
@@ -448,6 +515,107 @@
       } catch (err) { warnLog('Scene image failed:', err.message); }
       setSceneImageLoading(false);
     }, [onCallImagen, script, storyTitle]);
+
+    // ── Page helpers ──
+    var getPages = function () {
+      if (!script || !script.lines) return [];
+      var pages = [];
+      for (var i = 0; i < script.lines.length; i += LINES_PER_PAGE) {
+        pages.push(script.lines.slice(i, i + LINES_PER_PAGE));
+      }
+      return pages;
+    };
+    var pages = script ? getPages() : [];
+    var totalPages = pages.length;
+
+    // ── Generate illustration for a specific page ──
+    var generatePageImage = useCallback(async function (pageIdx) {
+      if (!onCallImagen || !script || !pages[pageIdx]) return;
+      setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = true; return n; });
+      try {
+        var pageLines = pages[pageIdx];
+        var sceneDesc = pageLines.map(function (l) { return l.text; }).join(' ').substring(0, 300);
+        var prompt = 'Illustration for a children\'s storybook page: ' + sceneDesc + '. '
+          + 'Style: warm, colorful, detailed storybook illustration. Landscape format. STRICTLY NO TEXT or words in the image.';
+        var url = await onCallImagen(prompt, 512, 0.85);
+        if (url) setPageImages(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = url; return n; });
+      } catch (err) { warnLog('Page image failed:', err.message); }
+      setPageImgLoading(function (prev) { var n = Object.assign({}, prev); delete n[pageIdx]; return n; });
+    }, [onCallImagen, script, pages]);
+
+    // ── Generate all page illustrations ──
+    var generateAllImages = useCallback(async function () {
+      if (!onCallImagen || !script) return;
+      addToast && addToast('Generating illustrations for all ' + totalPages + ' pages...', 'info');
+      for (var i = 0; i < totalPages; i++) {
+        if (!pageImages[i]) {
+          await generatePageImage(i);
+          if (i < totalPages - 1) await new Promise(function (r) { setTimeout(r, 1500); });
+        }
+      }
+      addToast && addToast('All illustrations complete!', 'success');
+    }, [onCallImagen, script, totalPages, pageImages, generatePageImage, addToast]);
+
+    // ── Export as printable storybook ──
+    var exportStorybook = useCallback(function () {
+      if (!script) return;
+      var chars = script.characters.filter(function (c) { return c.id !== 'stage'; });
+      var html = '<html><head><title>' + storyTitle + ' — Storybook</title>'
+        + '<style>'
+        + 'body{font-family:Georgia,serif;margin:0;padding:0;color:#1e293b;background:#fff}'
+        + '.page{page-break-after:always;min-height:100vh;padding:40px 50px;box-sizing:border-box;display:flex;flex-direction:column}'
+        + '.page:last-child{page-break-after:auto}'
+        + '.page-img{width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.1)}'
+        + '.narration{font-style:italic;color:#475569;margin:8px 0;line-height:1.8;font-size:16px}'
+        + '.dialogue{margin:8px 0;padding-left:24px;line-height:1.8;font-size:16px}'
+        + '.char-name{font-weight:bold;font-variant:small-caps;margin-right:8px}'
+        + '.stage{font-style:italic;color:#9ca3af;font-size:14px;margin:6px 0 6px 20px}'
+        + '.page-num{text-align:center;color:#9ca3af;font-size:12px;margin-top:auto;padding-top:16px}'
+        + '.cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;min-height:100vh}'
+        + '.cover h1{font-size:48px;font-weight:900;margin:0 0 12px}'
+        + '.cover .subtitle{font-size:18px;opacity:0.8}'
+        + '.cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:20px 0}'
+        + '.cast-card{text-align:center;padding:12px;border-radius:12px;border:2px solid #e5e7eb}'
+        + '@media print{.page{page-break-after:always}.cover{page-break-after:always}}'
+        + '</style></head><body>';
+      // Cover page
+      html += '<div class="page cover">';
+      if (sceneImage) html += '<img src="' + sceneImage + '" style="width:300px;height:300px;border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,0.3);margin-bottom:20px" />';
+      html += '<h1>' + storyTitle + '</h1>';
+      if (performerName) html += '<div class="subtitle">Performed by ' + performerName + '</div>';
+      html += '<div class="subtitle" style="margin-top:12px;opacity:0.6">A LitLab Storybook</div>';
+      html += '</div>';
+      // Cast page
+      html += '<div class="page"><h2 style="text-align:center;margin-bottom:20px">Cast of Characters</h2><div class="cast-grid">';
+      chars.forEach(function (c) {
+        html += '<div class="cast-card" style="border-color:' + c.color + '">'
+          + (c.portrait ? '<img src="' + c.portrait + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
+          + '<div style="font-weight:bold;color:' + c.color + ';font-size:16px">' + c.name + '</div>'
+          + '<div style="font-size:12px;color:#6b7280">' + (c.description || '') + '</div></div>';
+      });
+      html += '</div></div>';
+      // Story pages
+      pages.forEach(function (pageLines, pi) {
+        html += '<div class="page">';
+        if (pageImages[pi]) html += '<img class="page-img" src="' + pageImages[pi] + '" alt="Illustration for page ' + (pi + 1) + '" />';
+        pageLines.forEach(function (line) {
+          var ch = script.characters.find(function (c) { return c.id === line.speaker; });
+          if (line.type === 'stage-direction') {
+            html += '<div class="stage">[' + line.text + ']</div>';
+          } else if (line.type === 'narration') {
+            html += '<div class="narration">' + line.text + '</div>';
+          } else {
+            html += '<div class="dialogue"><span class="char-name" style="color:' + (ch ? ch.color : '#374151') + '">' + (ch ? ch.name : '') + ':</span>' + line.text + '</div>';
+          }
+        });
+        html += '<div class="page-num">— ' + (pi + 1) + ' —</div></div>';
+      });
+      // Back cover
+      if (script.theme) html += '<div class="page" style="display:flex;align-items:center;justify-content:center;text-align:center"><div><h2>The End</h2><p style="color:#6b7280;font-style:italic">"' + script.theme + '"</p><p style="font-size:12px;color:#9ca3af;margin-top:24px">Created with AlloFlow LitLab</p></div></div>';
+      html += '</body></html>';
+      var w = window.open('', '_blank');
+      if (w) { w.document.write(html); w.document.close(); }
+    }, [script, storyTitle, performerName, sceneImage, pages, pageImages]);
 
     // ── Recording ──
     var startRecording = useCallback(async function () {
@@ -721,13 +889,22 @@
                 e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0, paddingTop: '6px' } }, 'Length:'),
                 LENGTH_OPTIONS.map(function (lo) {
                   return e('button', { key: lo.id, onClick: function () { setGenLength(lo.id); },
-                    'aria-label': lo.label + ' story: ' + lo.words + ' words',
+                    'aria-label': lo.label + ' story' + (lo.words ? ': ' + lo.words + ' words' : ''),
                     style: { flex: 1, padding: '6px 10px', borderRadius: '10px', border: '2px solid ' + (genLength === lo.id ? PURPLE : '#e5e7eb'), background: genLength === lo.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'center', fontSize: '11px' }
                   },
                     e('div', { style: { fontWeight: 700, color: genLength === lo.id ? PURPLE : '#374151' } }, lo.label),
-                    e('div', { style: { color: '#9ca3af', fontSize: '9px' } }, lo.words + ' words')
+                    e('div', { style: { color: '#9ca3af', fontSize: '9px' } }, lo.words ? lo.words + ' words' : 'You choose')
                   );
                 })
+              ),
+              // Custom word count input
+              genLength === 'custom' && e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' } },
+                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0 } }, 'Word count:'),
+                e('input', { type: 'number', min: 50, max: 5000, step: 50, value: customWordCount,
+                  onChange: function (ev) { setCustomWordCount(ev.target.value); },
+                  style: Object.assign({}, S.input, { width: '120px' }),
+                  'aria-label': 'Custom word count' }),
+                e('span', { style: { fontSize: '10px', color: '#9ca3af' } }, 'words (50–5000)')
               ),
               e('button', { onClick: generateStory, disabled: isLoading,
                 style: S.btn(PURPLE, '#fff', isLoading) }, isLoading ? '⏳ ' + loadingMsg : '✨ Generate Story'),
@@ -828,23 +1005,34 @@
                 ? e('button', { onClick: startRecording, style: S.btn('#dc2626', '#fff', false) }, '⏺ Record')
                 : e('button', { onClick: stopRecording, style: S.btn('#dc2626', '#fff', false) }, '⏹ Stop Recording'),
               recordingUrl && e('audio', { controls: true, src: recordingUrl, style: { height: '28px', maxWidth: '150px' }, 'aria-label': 'Your recording' }),
-              e('button', { onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, '🖨️ Print Script'),
+              e('button', { onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, '🖨️ Script'),
+              e('button', { onClick: exportStorybook, style: S.btn('#f1f5f9', '#374151', false) }, '📖 Storybook'),
+              onCallImagen && e('button', { onClick: generateAllImages, style: S.btn('#f1f5f9', '#374151', false) }, '🎨 All Art'),
               e('button', { onClick: function () { setPhase('analyze'); }, style: S.btn('#f1f5f9', '#374151', false) }, '📝 Analyze →')
             ),
-            // Scene illustration
-            sceneImage && e('div', { style: { marginBottom: '12px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' } },
-              e('img', { src: sceneImage, alt: 'Scene illustration', style: { width: '100%', maxHeight: '200px', objectFit: 'cover' } })
+            // Page navigation bar
+            totalPages > 1 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', justifyContent: 'center' } },
+              e('button', { onClick: function () { setCurrentPage(Math.max(0, currentPage - 1)); }, disabled: currentPage === 0,
+                style: S.btn('#f1f5f9', '#374151', currentPage === 0), 'aria-label': 'Previous page' }, '◀'),
+              e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#6b7280' } }, 'Page ' + (currentPage + 1) + ' of ' + totalPages),
+              e('button', { onClick: function () { setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); }, disabled: currentPage >= totalPages - 1,
+                style: S.btn('#f1f5f9', '#374151', currentPage >= totalPages - 1), 'aria-label': 'Next page' }, '▶')
             ),
-            !sceneImage && onCallImagen && e('button', { onClick: generateSceneImage, disabled: sceneImageLoading,
-              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: sceneImageLoading ? 'wait' : 'pointer', marginBottom: '12px', display: 'block' }
-            }, sceneImageLoading ? '⏳ Generating scene...' : '🎨 Generate Scene Illustration'),
+            // Page illustration
+            pageImages[currentPage] && e('div', { style: { marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' } },
+              e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover' } })
+            ),
+            !pageImages[currentPage] && onCallImagen && e('button', { onClick: function () { generatePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
+              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', marginBottom: '10px', display: 'block', margin: '0 auto 10px' }
+            }, pageImgLoading[currentPage] ? '⏳ Generating...' : '🎨 Illustrate This Page'),
             // Progress bar
             e('div', { style: { height: '4px', background: '#e5e7eb', borderRadius: '2px', marginBottom: '12px', overflow: 'hidden' } },
               e('div', { style: { height: '100%', width: (script.lines.length > 0 ? Math.round(((currentLine + 1) / script.lines.length) * 100) : 0) + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a855f7)', borderRadius: '2px', transition: 'width 0.3s' } })
             ),
-            // Script lines
+            // Script lines — show current page only (or all if single page)
             e('div', { ref: lineContainerRef, style: { maxHeight: '55vh', overflowY: 'auto', padding: '8px' } },
-              script.lines.map(function (line, idx) {
+              (totalPages > 1 ? (pages[currentPage] || []) : script.lines).map(function (line) {
+                var idx = script.lines.indexOf(line);
                 var isCurrent = idx === currentLine;
                 var character = script.characters.find(function (c) { return c.id === line.speaker; });
                 var isMyLine = myRole && line.speaker === myRole;

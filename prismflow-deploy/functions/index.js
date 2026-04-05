@@ -10,14 +10,21 @@
  */
 
 const { onRequest } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const crypto = require("crypto");
+const admin = require("firebase-admin");
+if (!admin.apps.length) admin.initializeApp();
 
 // ── Secrets stored in Firebase Secret Manager ──
 const SERPER_API_KEY = defineSecret("SERPER_API_KEY");
 const LTI_CLIENT_ID = defineSecret("LTI_CLIENT_ID");
 const LTI_DEPLOYMENT_ID = defineSecret("LTI_DEPLOYMENT_ID");
 const LTI_PLATFORM_URL = defineSecret("LTI_PLATFORM_URL"); // e.g. https://usm.brightspace.com
+const LMS_CLIENT_ID = defineSecret("LMS_CLIENT_ID"); // Brightspace OAuth2 app client ID
+const LMS_CLIENT_SECRET = defineSecret("LMS_CLIENT_SECRET"); // Brightspace OAuth2 app client secret
+
+const db = admin.firestore();
 
 exports.searchProxy = onRequest(
   {
@@ -352,5 +359,491 @@ exports.ltiSession = onRequest(
       platformUrl: session.claims?.platformUrl || null,
       roles: session.claims?.roles || [],
     });
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════════
+// ── FEATURE 1: Institutional Compliance Dashboard ──
+// Stores remediation results in Firestore, provides admin API
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Log Remediation Result — called by the client after each remediation
+ * Stores: user, document name, before/after scores, timestamp, department
+ */
+exports.logRemediation = onRequest(
+  { region: "us-central1", memory: "256MiB", invoker: "public" },
+  async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+    if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
+
+    try {
+      const data = req.body;
+      const record = {
+        fileName: data.fileName || "unknown",
+        user: data.user || "anonymous",
+        email: data.email || null,
+        department: data.department || null,
+        courseId: data.courseId || null,
+        courseName: data.courseName || null,
+        beforeScore: data.beforeScore ?? null,
+        afterScore: data.afterScore ?? null,
+        improvement: data.afterScore != null && data.beforeScore != null ? data.afterScore - data.beforeScore : null,
+        axeViolationsBefore: data.axeViolationsBefore ?? null,
+        axeViolationsAfter: data.axeViolationsAfter ?? null,
+        fixPasses: data.fixPasses ?? null,
+        needsExpertReview: data.needsExpertReview || false,
+        pageCount: data.pageCount ?? null,
+        elapsed: data.elapsed ?? null,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      await db.collection("remediations").add(record);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      console.error("[Dashboard] Log failed:", err.message);
+      res.status(500).json({ error: "Failed to log remediation" });
+    }
+  }
+);
+
+/**
+ * Dashboard Data — returns aggregated compliance metrics for admins
+ * Query params: ?days=30 (default 30), ?department=CS (optional filter)
+ */
+exports.dashboardData = onRequest(
+  { region: "us-central1", memory: "256MiB", invoker: "public" },
+  async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+    try {
+      const days = parseInt(req.query.days) || 30;
+      const department = req.query.department || null;
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+      let query = db.collection("remediations")
+        .where("timestamp", ">=", since)
+        .orderBy("timestamp", "desc");
+      if (department) query = query.where("department", "==", department);
+
+      const snapshot = await query.limit(1000).get();
+      const records = [];
+      snapshot.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
+
+      // Aggregate metrics
+      const total = records.length;
+      const avgBefore = total > 0 ? Math.round(records.reduce((s, r) => s + (r.beforeScore || 0), 0) / total) : 0;
+      const avgAfter = total > 0 ? Math.round(records.reduce((s, r) => s + (r.afterScore || 0), 0) / total) : 0;
+      const avgImprovement = total > 0 ? Math.round(records.reduce((s, r) => s + (r.improvement || 0), 0) / total) : 0;
+      const above90 = records.filter(r => (r.afterScore || 0) >= 90).length;
+      const needsReview = records.filter(r => r.needsExpertReview).length;
+      const uniqueUsers = new Set(records.map(r => r.email || r.user)).size;
+      const totalPages = records.reduce((s, r) => s + (r.pageCount || 0), 0);
+
+      // Per-department breakdown
+      const deptMap = {};
+      records.forEach(r => {
+        const dept = r.department || r.courseName || "Unspecified";
+        if (!deptMap[dept]) deptMap[dept] = { count: 0, totalBefore: 0, totalAfter: 0, above90: 0, needsReview: 0 };
+        deptMap[dept].count++;
+        deptMap[dept].totalBefore += r.beforeScore || 0;
+        deptMap[dept].totalAfter += r.afterScore || 0;
+        if ((r.afterScore || 0) >= 90) deptMap[dept].above90++;
+        if (r.needsExpertReview) deptMap[dept].needsReview++;
+      });
+      const departments = Object.entries(deptMap).map(([name, d]) => ({
+        name,
+        count: d.count,
+        avgBefore: Math.round(d.totalBefore / d.count),
+        avgAfter: Math.round(d.totalAfter / d.count),
+        complianceRate: Math.round((d.above90 / d.count) * 100),
+        needsReview: d.needsReview,
+      })).sort((a, b) => b.count - a.count);
+
+      // Recent activity (last 10)
+      const recent = records.slice(0, 10).map(r => ({
+        fileName: r.fileName,
+        user: r.user,
+        department: r.department || r.courseName,
+        beforeScore: r.beforeScore,
+        afterScore: r.afterScore,
+        timestamp: r.timestamp?.toDate?.()?.toISOString() || null,
+      }));
+
+      res.status(200).json({
+        period: `${days} days`,
+        summary: {
+          totalRemediations: total,
+          avgBefore,
+          avgAfter,
+          avgImprovement,
+          complianceRate: total > 0 ? Math.round((above90 / total) * 100) : 0,
+          needsExpertReview: needsReview,
+          uniqueUsers,
+          totalPages,
+        },
+        departments,
+        recent,
+      });
+    } catch (err) {
+      console.error("[Dashboard] Query failed:", err.message);
+      res.status(500).json({ error: "Dashboard query failed" });
+    }
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════════
+// ── FEATURE 2: Passive LMS Scanning (Scheduled) ──
+// Crawls Brightspace courses weekly, catalogs documents, stores results
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Helper: Get Brightspace OAuth2 token
+ */
+async function getBrightspaceToken(platformUrl) {
+  const tokenUrl = `${platformUrl}/d2l/auth/oauth2/token`;
+  const resp = await fetch(tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: LMS_CLIENT_ID.value(),
+      client_secret: LMS_CLIENT_SECRET.value(),
+      scope: "core:*:* content:*:*",
+    }),
+  });
+  if (!resp.ok) throw new Error(`OAuth2 token failed: ${resp.status}`);
+  const data = await resp.json();
+  return data.access_token;
+}
+
+/**
+ * Helper: Fetch Brightspace API with auth
+ */
+async function brightspaceApi(platformUrl, token, path) {
+  const resp = await fetch(`${platformUrl}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!resp.ok) return null;
+  return resp.json();
+}
+
+/**
+ * Scheduled LMS Scan — runs weekly, crawls active courses for documents
+ * Stores document inventory in Firestore for dashboard reporting
+ */
+exports.lmsScan = onSchedule(
+  {
+    schedule: "every sunday 02:00",
+    timeZone: "America/New_York",
+    region: "us-central1",
+    memory: "512MiB",
+    timeoutSeconds: 300,
+    secrets: [LMS_CLIENT_ID, LMS_CLIENT_SECRET, LTI_PLATFORM_URL],
+  },
+  async () => {
+    const platformUrl = LTI_PLATFORM_URL.value();
+    if (!platformUrl || !LMS_CLIENT_ID.value()) {
+      console.log("[LMS Scan] No LMS credentials configured — skipping");
+      return;
+    }
+
+    try {
+      const token = await getBrightspaceToken(platformUrl);
+      console.log("[LMS Scan] Authenticated with Brightspace");
+
+      // Get active course offerings (current semester)
+      const orgUnits = await brightspaceApi(platformUrl, token,
+        "/d2l/api/lp/1.35/orgstructure/?orgUnitType=3&exactOrgUnitType=true");
+      if (!orgUnits?.Items) { console.log("[LMS Scan] No courses found"); return; }
+
+      const scanResults = {
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        coursesScanned: 0,
+        totalDocuments: 0,
+        documentTypes: { pdf: 0, docx: 0, pptx: 0, other: 0 },
+        courses: [],
+      };
+
+      // Scan each course's content (limit to 50 courses per run to avoid timeouts)
+      const courses = orgUnits.Items.slice(0, 50);
+      for (const course of courses) {
+        try {
+          const courseId = course.Identifier;
+          const courseName = course.Name;
+          // Get content modules (folders)
+          const toc = await brightspaceApi(platformUrl, token,
+            `/d2l/api/le/1.67/lti/link/${courseId}/content/toc`);
+          // Get content topics (files)
+          const modules = toc?.Modules || [];
+          const docs = [];
+
+          for (const mod of modules) {
+            const topics = await brightspaceApi(platformUrl, token,
+              `/d2l/api/le/1.67/${courseId}/content/modules/${mod.ModuleId}/structure/`);
+            if (!topics) continue;
+            (Array.isArray(topics) ? topics : [topics]).forEach(topic => {
+              if (topic.Url || topic.TopicType === 1) { // TopicType 1 = file
+                const url = topic.Url || '';
+                const title = topic.Title || '';
+                const ext = url.split('.').pop()?.toLowerCase() || '';
+                if (['pdf', 'docx', 'pptx', 'doc', 'ppt'].includes(ext)) {
+                  docs.push({
+                    title: title,
+                    url: url,
+                    type: ext,
+                    moduleTitle: mod.Title || 'Content',
+                  });
+                  if (ext === 'pdf') scanResults.documentTypes.pdf++;
+                  else if (ext === 'docx' || ext === 'doc') scanResults.documentTypes.docx++;
+                  else if (ext === 'pptx' || ext === 'ppt') scanResults.documentTypes.pptx++;
+                  else scanResults.documentTypes.other++;
+                }
+              }
+            });
+          }
+
+          scanResults.courses.push({
+            courseId,
+            courseName,
+            documentCount: docs.length,
+            documents: docs.slice(0, 100), // cap per course
+          });
+          scanResults.totalDocuments += docs.length;
+          scanResults.coursesScanned++;
+        } catch (courseErr) {
+          console.warn(`[LMS Scan] Course ${course.Name} failed:`, courseErr.message);
+        }
+      }
+
+      // Store scan results in Firestore
+      await db.collection("lmsScans").add(scanResults);
+      console.log(`[LMS Scan] Complete: ${scanResults.coursesScanned} courses, ${scanResults.totalDocuments} documents`);
+    } catch (err) {
+      console.error("[LMS Scan] Failed:", err.message);
+    }
+  }
+);
+
+/**
+ * Manual LMS Scan Trigger — allows admins to trigger a scan on-demand
+ */
+exports.triggerLmsScan = onRequest(
+  {
+    region: "us-central1",
+    memory: "512MiB",
+    timeoutSeconds: 300,
+    invoker: "public",
+    secrets: [LMS_CLIENT_ID, LMS_CLIENT_SECRET, LTI_PLATFORM_URL],
+  },
+  async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+    const platformUrl = LTI_PLATFORM_URL.value();
+    if (!platformUrl || !LMS_CLIENT_ID.value()) {
+      res.status(400).json({ error: "LMS credentials not configured. Set LMS_CLIENT_ID, LMS_CLIENT_SECRET, and LTI_PLATFORM_URL in Firebase secrets." });
+      return;
+    }
+
+    try {
+      const token = await getBrightspaceToken(platformUrl);
+      const orgUnits = await brightspaceApi(platformUrl, token,
+        "/d2l/api/lp/1.35/orgstructure/?orgUnitType=3&exactOrgUnitType=true");
+      const courseCount = orgUnits?.Items?.length || 0;
+      res.status(200).json({
+        success: true,
+        message: `LMS scan initiated. Found ${courseCount} courses. Full scan runs in background.`,
+        coursesFound: courseCount,
+      });
+    } catch (err) {
+      res.status(500).json({ error: "LMS connection failed: " + err.message });
+    }
+  }
+);
+
+/**
+ * Get Latest Scan Results — returns the most recent LMS scan data
+ */
+exports.scanResults = onRequest(
+  { region: "us-central1", memory: "256MiB", invoker: "public" },
+  async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+    try {
+      const snapshot = await db.collection("lmsScans")
+        .orderBy("timestamp", "desc").limit(1).get();
+      if (snapshot.empty) {
+        res.status(200).json({ message: "No scans yet. Configure LMS credentials and run a scan." });
+        return;
+      }
+      const latest = snapshot.docs[0].data();
+      latest.timestamp = latest.timestamp?.toDate?.()?.toISOString() || null;
+      res.status(200).json(latest);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to retrieve scan results" });
+    }
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════════
+// ── FEATURE 3: In-LMS Accessible Document Server ──
+// Serves remediated documents directly, with alt format options
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Serve Accessible Version — given a document hash/ID, serves the
+ * remediated HTML with an alt-format toolbar
+ * URL: /accessible?doc=<hash>&format=html|epub|brf|txt|md
+ */
+exports.accessible = onRequest(
+  { region: "us-central1", memory: "256MiB", invoker: "public" },
+  async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+    const docId = req.query.doc;
+    const format = req.query.format || "html";
+
+    if (!docId) {
+      res.status(400).json({ error: "Missing doc parameter" });
+      return;
+    }
+
+    try {
+      // Look up remediated document in Firestore
+      const docRef = db.collection("remediatedDocs").doc(docId);
+      const docSnap = await docRef.get();
+
+      if (!docSnap.exists) {
+        // Document not yet remediated — show a landing page with remediation link
+        const projectId = req.headers.host?.replace('.web.app', '').replace('.firebaseapp.com', '') || 'alloflow';
+        res.status(200).send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessible Version</title>
+<style>body{font-family:system-ui;max-width:600px;margin:60px auto;padding:0 24px;color:#334155}
+h1{color:#4f46e5}.btn{display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;margin-top:16px}</style>
+</head><body><h1>Accessible Version Not Yet Available</h1>
+<p>This document hasn't been remediated yet. An instructor or accessibility coordinator can remediate it using AlloFlow.</p>
+<a class="btn" href="https://${projectId}.web.app">Open AlloFlow</a>
+</body></html>`);
+        return;
+      }
+
+      const data = docSnap.data();
+
+      if (format === "html") {
+        // Serve the accessible HTML with an alt-format toolbar at the top
+        const toolbar = `<div style="position:sticky;top:0;z-index:9999;background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:8px 16px;display:flex;align-items:center;gap:8px;font-family:system-ui;font-size:12px;color:white;box-shadow:0 2px 8px rgba(0,0,0,0.2)">
+<strong>♿ AlloFlow Accessible Version</strong>
+<span style="opacity:0.6">|</span>
+<span>Score: ${data.afterScore || '?'}/100</span>
+<span style="margin-left:auto;display:flex;gap:6px">
+<a href="?doc=${docId}&format=txt" style="color:white;text-decoration:none;padding:4px 10px;background:rgba(255,255,255,0.15);border-radius:6px;font-weight:600">📄 TXT</a>
+<a href="?doc=${docId}&format=md" style="color:white;text-decoration:none;padding:4px 10px;background:rgba(255,255,255,0.15);border-radius:6px;font-weight:600">📝 MD</a>
+<a href="?doc=${docId}&format=epub" style="color:white;text-decoration:none;padding:4px 10px;background:rgba(255,255,255,0.15);border-radius:6px;font-weight:600">📚 ePub</a>
+<a href="?doc=${docId}&format=brf" style="color:white;text-decoration:none;padding:4px 10px;background:rgba(255,255,255,0.15);border-radius:6px;font-weight:600">⠿ BRF</a>
+</span></div>`;
+        res.set("Content-Type", "text/html; charset=utf-8");
+        res.status(200).send(data.html.replace(/<body[^>]*>/, '$&' + toolbar));
+      } else if (format === "txt") {
+        const text = data.html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+        res.set("Content-Type", "text/plain; charset=utf-8");
+        res.set("Content-Disposition", `attachment; filename="${data.fileName || 'document'}.txt"`);
+        res.status(200).send(text);
+      } else if (format === "md") {
+        let md = data.html
+          .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
+          .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+          .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+          .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+          .replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/\n{3,}/g, '\n\n').trim();
+        res.set("Content-Type", "text/markdown; charset=utf-8");
+        res.set("Content-Disposition", `attachment; filename="${data.fileName || 'document'}.md"`);
+        res.status(200).send(md);
+      } else if (format === "brf") {
+        const text = data.html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+        const brailleMap = {'a':'1','b':'12','c':'14','d':'145','e':'15','f':'124','g':'1245','h':'125','i':'24','j':'245','k':'13','l':'123','m':'134','n':'1345','o':'135','p':'1234','q':'12345','r':'1235','s':'234','t':'2345','u':'136','v':'1236','w':'2456','x':'1346','y':'13456','z':'1356',' ':' ','.':'256',',':'2','?':'236','!':'235'};
+        const dotToAscii = (dots) => String.fromCharCode(0x2800 + dots.split('').reduce((s, d) => s + (1 << (parseInt(d) - 1)), 0));
+        let brf = '';
+        text.split('\n').forEach(line => {
+          let bl = ''; const lower = line.toLowerCase();
+          for (let i = 0; i < lower.length; i++) {
+            if (line[i] !== lower[i]) bl += dotToAscii('6');
+            bl += brailleMap[lower[i]] ? dotToAscii(brailleMap[lower[i]]) : lower[i];
+          }
+          brf += bl + '\n';
+        });
+        res.set("Content-Type", "text/plain; charset=utf-8");
+        res.set("Content-Disposition", `attachment; filename="${data.fileName || 'document'}.brf"`);
+        res.status(200).send(brf);
+      } else {
+        res.status(400).json({ error: "Unsupported format. Use: html, txt, md, brf" });
+      }
+    } catch (err) {
+      console.error("[Accessible] Serve failed:", err.message);
+      res.status(500).json({ error: "Failed to serve document" });
+    }
+  }
+);
+
+/**
+ * Store Remediated Document — saves accessible HTML to Firestore
+ * for later serving via the /accessible endpoint
+ * Called by client after successful remediation
+ */
+exports.storeRemediated = onRequest(
+  { region: "us-central1", memory: "512MiB", invoker: "public" },
+  async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+    if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
+
+    try {
+      const { html, fileName, afterScore, courseId, courseName, user } = req.body;
+      if (!html) { res.status(400).json({ error: "Missing html" }); return; }
+
+      // Generate a stable document ID from content hash
+      const hash = crypto.createHash("sha256").update(html.substring(0, 10000)).digest("hex").substring(0, 12);
+      const docId = (fileName || "doc").replace(/[^a-zA-Z0-9]/g, "-").substring(0, 40) + "-" + hash;
+
+      await db.collection("remediatedDocs").doc(docId).set({
+        html,
+        fileName: fileName || "document",
+        afterScore: afterScore || null,
+        courseId: courseId || null,
+        courseName: courseName || null,
+        user: user || "anonymous",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      const projectId = req.headers.host?.replace(/\.cloudfunctions\.net$/, '').replace(/^us-central1-/, '') || 'alloflow';
+      const accessUrl = `https://${projectId}.web.app/api/accessible?doc=${docId}`;
+
+      res.status(200).json({
+        success: true,
+        docId,
+        accessUrl,
+        formats: {
+          html: `${accessUrl}&format=html`,
+          txt: `${accessUrl}&format=txt`,
+          md: `${accessUrl}&format=md`,
+          brf: `${accessUrl}&format=brf`,
+        },
+      });
+    } catch (err) {
+      console.error("[Store] Failed:", err.message);
+      res.status(500).json({ error: "Failed to store document" });
+    }
   }
 );

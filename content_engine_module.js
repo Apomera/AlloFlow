@@ -71,6 +71,17 @@ var createContentEngine = function (deps) {
   };
   var repairSourceMarkdown = function (rawText) {
     if (!rawText) return rawText;
+    // Fix broken/truncated citations (Gemini token limit truncation)
+    rawText = rawText.replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
+    rawText = rawText.replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
+    rawText = rawText.replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
+    rawText = rawText.replace(/\s*\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function(match, offset) {
+      var before = rawText.substring(Math.max(0, offset - 5), offset);
+      if (before.includes('](')) return match;
+      return '';
+    });
+    rawText = rawText.replace(/\n\s*#\s*$/gm, '');
+    rawText = rawText.replace(/\n\s*#\s*\n/g, '\n');
     var bibMatch = rawText.match(/(\n---\n|\n#{2,3} Source Text References)/s);
     var body = bibMatch ? rawText.substring(0, bibMatch.index) : rawText;
     var bib = bibMatch ? rawText.substring(bibMatch.index) : '';
