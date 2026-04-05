@@ -1314,6 +1314,12 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           break;
         }
 
+        // Run deterministic fixes after each AI pass to clean up any structural issues
+        const postListFix = fixListViolations(accessibleHtml);
+        if (postListFix.fixCount > 0) { accessibleHtml = postListFix.html; log(`  Deterministic: fixed ${postListFix.fixCount} list issues`); }
+        const postContrastFix = fixContrastViolations(accessibleHtml);
+        if (postContrastFix.fixCount > 0) { accessibleHtml = postContrastFix.html; log(`  Deterministic: fixed ${postContrastFix.fixCount} contrast issues`); }
+
         // Run axe-core (local, zero API calls) + 2 Gemini audits per pass
         // 3 parallel audits every pass — Flash calls are cheap, accuracy is priceless
         // Prevents false score swings from prematurely ending or continuing remediation
@@ -2101,9 +2107,15 @@ HTML section ${chunkNum}/${chunks.length}:
           // Split content into segments: <li>...</li> blocks and everything else
           let newContent = content;
 
-          // Wrap bare <div>, <p>, <span>, <a> inside <li> (rewritten to avoid lookbehind for Safari < 16.4 compat)
+          // Wrap ANY bare block/inline element inside <li> (not just div/p/span)
+          // This catches <hr>, <table>, <section>, <article>, <figure>, <blockquote>, <img>, etc.
           newContent = newContent.replace(
-            /(<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)(\s*)(<(?:div|p|span|a|strong|em|b|i|h[1-6])\b[^>]*>[\s\S]*?<\/(?:div|p|span|a|strong|em|b|i|h[1-6])>)(\s*)(?=<li|<\/(?:ul|ol)>)/gi,
+            /(<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)(\s*)(<(?!li\b|\/li|ul\b|ol\b|\/ul|\/ol|script|template)[a-z][a-z0-9]*\b[^>]*>[\s\S]*?<\/(?!li|ul|ol)[a-z][a-z0-9]*>)(\s*)(?=<li|<\/(?:ul|ol)>)/gi,
+            (m, prefix, ws1, inner, ws2) => { fixCount++; return prefix + '<li>' + inner + '</li>'; }
+          );
+          // Also wrap self-closing elements like <hr/>, <br/>, <img/>
+          newContent = newContent.replace(
+            /(<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)(\s*)(<(?:hr|img|br|input)\b[^>]*\/?>)(\s*)(?=<li|<\/(?:ul|ol)>)/gi,
             (m, prefix, ws1, inner, ws2) => { fixCount++; return prefix + '<li>' + inner + '</li>'; }
           );
 
