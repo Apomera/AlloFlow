@@ -720,10 +720,43 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       });
     }
 
-    // 3. Ensure <html> has lang attribute
+    // 3. Ensure <html> has valid lang attribute (BCP 47)
     if (!accessibleHtml.includes('lang=')) {
       accessibleHtml = accessibleHtml.replace(/<html/, '<html lang="en"');
       aiFixCount++;
+    } else {
+      // Validate existing lang value — fix common AI mistakes like "English", "en_US", empty string
+      const validLangPattern = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+      accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
+        const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
+        if (!trimmed || !validLangPattern.test(trimmed)) {
+          // Map common invalid values to valid BCP 47 codes
+          const langMap = {
+            'english': 'en',
+            'spanish': 'es',
+            'french': 'fr',
+            'german': 'de',
+            'portuguese': 'pt',
+            'chinese': 'zh',
+            'japanese': 'ja',
+            'korean': 'ko',
+            'arabic': 'ar',
+            'russian': 'ru',
+            'italian': 'it',
+            'dutch': 'nl',
+            'hindi': 'hi'
+          };
+          const fixed = langMap[trimmed] || 'en';
+          aiFixCount++;
+          warnLog(`[Det Fix] Invalid lang="${langVal}" → lang="${fixed}"`);
+          return `<html${before}lang="${fixed}"`;
+        }
+        if (trimmed !== langVal) {
+          aiFixCount++;
+          return `<html${before}lang="${trimmed}"`;
+        }
+        return m;
+      });
     }
 
     // 4. Ensure <title> is non-empty
@@ -929,10 +962,37 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       return 'maximum-scale=5';
     });
 
-    // 26. Fix invalid ARIA roles (strip unknown roles rather than leave broken ones)
+    // 26. Fix invalid ARIA roles (correct or strip unknown roles)
     const validRoles = ['alert', 'alertdialog', 'application', 'article', 'banner', 'button', 'cell', 'checkbox', 'columnheader', 'combobox', 'complementary', 'contentinfo', 'definition', 'dialog', 'directory', 'document', 'feed', 'figure', 'form', 'grid', 'gridcell', 'group', 'heading', 'img', 'link', 'list', 'listbox', 'listitem', 'log', 'main', 'marquee', 'math', 'menu', 'menubar', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'navigation', 'none', 'note', 'option', 'presentation', 'progressbar', 'radio', 'radiogroup', 'region', 'row', 'rowgroup', 'rowheader', 'scrollbar', 'search', 'searchbox', 'separator', 'slider', 'spinbutton', 'status', 'switch', 'tab', 'table', 'tablist', 'tabpanel', 'term', 'textbox', 'timer', 'toolbar', 'tooltip', 'tree', 'treegrid', 'treeitem'];
+    // Common AI mistakes and their corrections
+    const roleCorrections = {
+      'content-info': 'contentinfo',
+      'nav': 'navigation',
+      'header': 'banner',
+      'footer': 'contentinfo',
+      'aside': 'complementary',
+      'section': 'region',
+      'radiobutton': 'radio',
+      'check-box': 'checkbox',
+      'drop-down': 'listbox',
+      'text-box': 'textbox',
+      'search-box': 'searchbox',
+      'progress-bar': 'progressbar',
+      'scroll-bar': 'scrollbar',
+      'tab-panel': 'tabpanel',
+      'tab-list': 'tablist',
+      'tree-item': 'treeitem',
+      'menu-item': 'menuitem',
+      'list-item': 'listitem'
+    };
     accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (match, role) => {
-      if (validRoles.includes(role.toLowerCase())) return match;
+      const lower = role.toLowerCase().trim();
+      if (validRoles.includes(lower)) return `role="${lower}"`;
+      if (roleCorrections[lower]) {
+        aiFixCount++;
+        warnLog(`[Det Fix] Corrected ARIA role: "${role}" → "${roleCorrections[lower]}"`);
+        return `role="${roleCorrections[lower]}"`;
+      }
       aiFixCount++;
       warnLog('[Det Fix] Removed invalid ARIA role: ' + role);
       return '';
@@ -1374,7 +1434,7 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           break;
         }
 
-        // Run deterministic fixes after each AI pass to clean up any structural issues
+        // Run deterministic fixes after each AI pass to clean up structural issues + AI mistakes
         const postListFix = fixListViolations(accessibleHtml);
         if (postListFix.fixCount > 0) {
           accessibleHtml = postListFix.html;
@@ -1385,6 +1445,38 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           accessibleHtml = postContrastFix.html;
           log(`  Deterministic: fixed ${postContrastFix.fixCount} contrast issues`);
         }
+        // Fix invalid ARIA roles that AI may have introduced
+        const _validRoles = ['alert', 'alertdialog', 'application', 'article', 'banner', 'button', 'cell', 'checkbox', 'columnheader', 'combobox', 'complementary', 'contentinfo', 'definition', 'dialog', 'directory', 'document', 'feed', 'figure', 'form', 'grid', 'gridcell', 'group', 'heading', 'img', 'link', 'list', 'listbox', 'listitem', 'log', 'main', 'marquee', 'math', 'menu', 'menubar', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'navigation', 'none', 'note', 'option', 'presentation', 'progressbar', 'radio', 'radiogroup', 'region', 'row', 'rowgroup', 'rowheader', 'scrollbar', 'search', 'searchbox', 'separator', 'slider', 'spinbutton', 'status', 'switch', 'tab', 'table', 'tablist', 'tabpanel', 'term', 'textbox', 'timer', 'toolbar', 'tooltip', 'tree', 'treegrid', 'treeitem'];
+        const _roleCorrections = {
+          'content-info': 'contentinfo',
+          'nav': 'navigation',
+          'header': 'banner',
+          'footer': 'contentinfo',
+          'aside': 'complementary',
+          'section': 'region'
+        };
+        let _roleFixCount = 0;
+        accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (match, role) => {
+          const lower = role.toLowerCase().trim();
+          if (_validRoles.includes(lower)) return `role="${lower}"`;
+          if (_roleCorrections[lower]) {
+            _roleFixCount++;
+            return `role="${_roleCorrections[lower]}"`;
+          }
+          _roleFixCount++;
+          return '';
+        });
+        if (_roleFixCount > 0) log(`  Deterministic: fixed ${_roleFixCount} invalid ARIA roles`);
+        // Fix invalid lang attribute
+        const _validLangPat = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+        accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
+          const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
+          if (!trimmed || !_validLangPat.test(trimmed)) {
+            log(`  Deterministic: fixed invalid lang="${langVal}" → "en"`);
+            return `<html${before}lang="en"`;
+          }
+          return m;
+        });
 
         // Run axe-core (local, zero API calls) + 2 Gemini audits per pass
         // 3 parallel audits every pass — Flash calls are cheap, accuracy is priceless
@@ -3527,10 +3619,37 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           });
         }
 
-        // 3. Ensure <html> has lang attribute
+        // 3. Ensure <html> has valid lang attribute (BCP 47)
         if (!accessibleHtml.includes('lang=')) {
           accessibleHtml = accessibleHtml.replace(/<html/, '<html lang="en"');
           aiFixCount++;
+        } else {
+          const validLangPat = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+          accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
+            const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
+            if (!trimmed || !validLangPat.test(trimmed)) {
+              const lMap = {
+                'english': 'en',
+                'spanish': 'es',
+                'french': 'fr',
+                'german': 'de',
+                'portuguese': 'pt',
+                'chinese': 'zh',
+                'japanese': 'ja',
+                'korean': 'ko',
+                'arabic': 'ar'
+              };
+              const fixed = lMap[trimmed] || 'en';
+              aiFixCount++;
+              warnLog(`[Det Fix] Invalid lang="${langVal}" → lang="${fixed}"`);
+              return `<html${before}lang="${fixed}"`;
+            }
+            if (trimmed !== langVal) {
+              aiFixCount++;
+              return `<html${before}lang="${trimmed}"`;
+            }
+            return m;
+          });
         }
 
         // 4. Ensure <title> is non-empty
