@@ -1139,12 +1139,14 @@
         engine.camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 200);
         engine.camera.position.set(2, 3, 2);
 
-        engine.renderer = new THREE.WebGLRenderer({ antialias: true });
+        var cnv = document.createElement('canvas');
+        cnv.style.width = '100%';
+        cnv.style.height = '100%';
+        container.appendChild(cnv);
+        engine.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
         engine.renderer.setSize(container.clientWidth, container.clientHeight);
         engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         engine.renderer.shadowMap.enabled = true;
-        engine.renderer.xr.enabled = true;
-        container.appendChild(engine.renderer.domElement);
 
         // Lighting
         engine.scene.add(new THREE.AmbientLight(0xffffff, 0.6));

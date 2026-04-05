@@ -2280,8 +2280,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         var loop = function() {
           if (!flyingRef.current) return;
-          var W = canvas.width = canvas.offsetWidth;
-          var H = canvas.height = canvas.offsetHeight;
+          var W = canvas.width = canvas.clientWidth || canvas.parentElement.clientWidth || 800;
+          var H = canvas.height = canvas.clientHeight || canvas.parentElement.clientHeight || 500;
           var dt = 1 / 30;
           timeRef.current += dt;
 
@@ -3131,7 +3131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── FLYING VIEW ──
       if (view === 'flying') {
-        return h('div', { style: { position: 'relative', width: '100%', height: '500px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
+        return h('div', { style: { position: 'relative', width: '100%', height: '70vh', minHeight: '400px', maxHeight: '800px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
           h('canvas', {
             ref: canvasRef,
             role: 'application',
