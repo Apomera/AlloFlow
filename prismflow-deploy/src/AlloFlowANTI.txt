@@ -7144,6 +7144,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_upstander.js',
         'sel_hub/sel_tool_voicedetective.js',
         'sel_hub/sel_tool_sociallab.js',
+        'sel_hub/sel_tool_peersupport.js',
       ];
       // Wait for StemLab registry to be available before loading plugins
       var waitForRegistry = function(cb) {
@@ -50632,6 +50633,76 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </label>
                       </div>
 
+                      {/* Save Structure as Accessible Template */}
+                      <button onClick={() => {
+                        const html = pdfFixResult?.accessibleHtml;
+                        if (!html) return;
+                        // Extract structural skeleton — headings, sections, tables, lists
+                        const structure = [];
+                        const headings = [...html.matchAll(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi)];
+                        headings.forEach(m => {
+                          structure.push({ type: 'heading', level: parseInt(m[1]), text: m[2].replace(/<[^>]*>/g, '').trim().substring(0, 80) });
+                        });
+                        // Extract table structures
+                        const tables = [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)];
+                        tables.forEach((t, i) => {
+                          const headers = [...t[1].matchAll(/<th[^>]*>([\s\S]*?)<\/th>/gi)].map(h => h[1].replace(/<[^>]*>/g, '').trim());
+                          const caption = (t[1].match(/<caption[^>]*>([\s\S]*?)<\/caption>/i) || [])[1] || '';
+                          structure.push({ type: 'table', index: i, headers, caption: caption.replace(/<[^>]*>/g, '').trim(), rowCount: (t[1].match(/<tr/gi) || []).length });
+                        });
+                        // Extract list structures
+                        const lists = [...html.matchAll(/<(ul|ol)[^>]*>([\s\S]*?)<\/\1>/gi)];
+                        lists.forEach((l, i) => {
+                          const items = (l[2].match(/<li/gi) || []).length;
+                          structure.push({ type: 'list', ordered: l[1] === 'ol', itemCount: items, index: i });
+                        });
+                        // Extract landmarks
+                        const landmarks = [];
+                        if (html.includes('<main')) landmarks.push('main');
+                        if (html.includes('<nav')) landmarks.push('nav');
+                        if (html.includes('<header')) landmarks.push('header');
+                        if (html.includes('<footer')) landmarks.push('footer');
+                        if (html.includes('<aside')) landmarks.push('aside');
+                        // Extract images (just count and alt text patterns)
+                        const images = [...html.matchAll(/<img[^>]*alt="([^"]*)"[^>]*>/gi)].map(m => m[1]);
+                        // Build template
+                        const templateName = prompt('Template name (e.g., "IEP Document", "Course Syllabus"):');
+                        if (!templateName) return;
+                        const template = {
+                          version: 1,
+                          type: 'alloflow-template',
+                          name: templateName,
+                          createdAt: new Date().toISOString(),
+                          sourceFile: pendingPdfFile?.name || 'document',
+                          structure,
+                          landmarks,
+                          imageCount: images.length,
+                          imageAlts: images.slice(0, 5),
+                          hasSkipNav: html.includes('Skip to'),
+                          hasLangAttr: /lang="[^"]*"/.test(html),
+                          lang: (html.match(/lang="([^"]*)"/) || [])[1] || 'en',
+                          styles: {
+                            headingColor: (html.match(/h1[^{]*\{[^}]*color:\s*([^;"]+)/i) || [])[1] || '#1e293b',
+                            fontFamily: (html.match(/font-family:\s*([^;"]+)/i) || [])[1] || 'system-ui, sans-serif',
+                          },
+                        };
+                        // Save to localStorage for Firebase persistence
+                        try {
+                          const saved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]');
+                          saved.push(template);
+                          localStorage.setItem('alloflow_templates', JSON.stringify(saved));
+                        } catch(e) {}
+                        // Also download as JSON file (universal, FERPA-safe)
+                        const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a'); a.href = url;
+                        a.download = templateName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() + '.alloflow-template.json';
+                        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                        addToast('📐 Template "' + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', 'success');
+                      }} className="w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2">
+                        📐 Save Structure as Template (for future documents)
+                      </button>
+
                       {/* Alternative Formats (matching Anthology Ally feature set) */}
                       <details className="group">
                         <summary className="text-[10px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
@@ -51620,6 +51691,77 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <option value="intervention">🎯 Intervention Plan</option>
                     <option value="parentletter">👪 Parent Communication</option>
                   </select>
+
+                  {/* Load saved accessibility templates */}
+                  {(() => {
+                    let savedTemplates = [];
+                    try { savedTemplates = JSON.parse(localStorage.getItem('alloflow_templates') || '[]'); } catch(e) {}
+                    return savedTemplates.length > 0 ? (
+                      <div className="mt-1.5">
+                        <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Saved Accessible Templates</div>
+                        <div className="space-y-1">
+                          {savedTemplates.map((tmpl, i) => (
+                            <button key={i} onClick={() => {
+                              const doc = (exportPreviewRef.current || pdfPreviewRef.current)?.contentDocument;
+                              if (!doc) return;
+                              // Generate accessible HTML from template structure
+                              let html = `<!DOCTYPE html><html lang="${tmpl.lang || 'en'}"><head><meta charset="UTF-8"><title>${tmpl.name}</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:${tmpl.styles?.fontFamily || 'system-ui, sans-serif'};max-width:800px;margin:0 auto;padding:2rem;line-height:1.7;color:#1e293b}h1,h2,h3{color:${tmpl.styles?.headingColor || '#1e293b'}}table{width:100%;border-collapse:collapse;margin:1rem 0}th{background:#f1f5f9;padding:8px 12px;text-align:left;font-weight:700;border:1px solid #e2e8f0}td{padding:8px 12px;border:1px solid #e2e8f0}@media print{body{max-width:100%}}</style></head><body>`;
+                              html += '<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>';
+                              html += '<main id="main-content" role="main">';
+                              tmpl.structure.forEach(s => {
+                                if (s.type === 'heading') {
+                                  html += `<h${s.level}>${s.text || '[Section Title]'}</h${s.level}>\n<p>[Content for this section]</p>\n`;
+                                } else if (s.type === 'table') {
+                                  html += `<table role="table"><caption>${s.caption || '[Table Description]'}</caption><thead><tr>`;
+                                  (s.headers || ['Column 1', 'Column 2', 'Column 3']).forEach(h => { html += `<th scope="col">${h}</th>`; });
+                                  html += '</tr></thead><tbody>';
+                                  for (let r = 0; r < Math.min(s.rowCount || 3, 5); r++) {
+                                    html += '<tr>' + (s.headers || ['','','']).map(() => '<td>[Data]</td>').join('') + '</tr>';
+                                  }
+                                  html += '</tbody></table>\n';
+                                } else if (s.type === 'list') {
+                                  const tag = s.ordered ? 'ol' : 'ul';
+                                  html += `<${tag} role="list">`;
+                                  for (let li = 0; li < Math.min(s.itemCount || 3, 8); li++) { html += '<li>[List item]</li>'; }
+                                  html += `</${tag}>\n`;
+                                }
+                              });
+                              html += '</main></body></html>';
+                              doc.open(); doc.write(html); doc.close();
+                              try { doc.designMode = 'on'; } catch(e) {}
+                              addToast('📐 Template "' + tmpl.name + '" applied — click any text to edit', 'success');
+                            }} className="w-full text-[9px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
+                              <span>📐 {tmpl.name}</span>
+                              <span className="text-[8px] text-amber-400">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
+
+                  {/* Upload template JSON file */}
+                  <label className="mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[9px] font-bold text-amber-600 hover:bg-amber-50 cursor-pointer transition-colors">
+                    📂 Load Template File (.json)
+                    <input type="file" accept=".json" className="hidden" onChange={(e) => {
+                      const file = e.target.files?.[0]; if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        try {
+                          const tmpl = JSON.parse(ev.target.result);
+                          if (tmpl.type !== 'alloflow-template' || !tmpl.structure) { addToast('Invalid template file', 'error'); return; }
+                          // Save to localStorage
+                          try {
+                            const saved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]');
+                            if (!saved.some(s => s.name === tmpl.name)) { saved.push(tmpl); localStorage.setItem('alloflow_templates', JSON.stringify(saved)); }
+                          } catch(e) {}
+                          addToast('📐 Template "' + tmpl.name + '" loaded! It now appears in Saved Templates above.', 'success');
+                        } catch(err) { addToast('Failed to load template: ' + err.message, 'error'); }
+                      };
+                      reader.readAsText(file);
+                      e.target.value = '';
+                    }} />
+                  </label>
                 </div>
               </details>
 
