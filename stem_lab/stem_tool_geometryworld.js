@@ -1125,7 +1125,8 @@
 
       // ── Initialize 3D engine ──
       function initEngine(container) {
-        if (!window.THREE || !container || window[engineKey]) return;
+        if (!window.THREE || !container || window[engineKey] || window[engineKey + '_failed']) return;
+        try {
         var THREE = window.THREE;
 
         var engine = {};
@@ -1773,6 +1774,10 @@
 
         // Auto-load default lesson
         engine.loadLesson(SAMPLE_LESSONS.volumeExplorer);
+        } catch(e) {
+          console.error('[GeometryWorld] WebGL init failed:', e.message);
+          window[engineKey + '_failed'] = true;
+        }
       }
 
       // ── Cleanup on unmount ──

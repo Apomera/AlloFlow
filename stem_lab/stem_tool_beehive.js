@@ -557,6 +557,292 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('h3', { className: 'text-lg font-bold text-slate-800' }, '🐝 Beehive Colony Simulator'),
                 h('p', { className: 'text-xs text-slate-500' }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
 
+          // ═══ ANIMATED CANVAS SIMULATION ═══
+          h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg', style: { height: '300px' } },
+            h('canvas', {
+              role: 'img',
+              'aria-label': 'Animated beehive simulation showing flying bees, hive cross-section, flowers, and seasonal environment. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
+              style: { width: '100%', height: '100%', display: 'block' },
+              ref: function(cvEl) {
+                if (!cvEl) return;
+                var ctx2 = cvEl.getContext('2d');
+                var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 300;
+                cvEl.width = W * 2; cvEl.height = H * 2; ctx2.scale(2, 2);
+
+                // Cancel previous animation if re-rendering
+                if (cvEl._beeAnimId) cancelAnimationFrame(cvEl._beeAnimId);
+
+                // ── Bee particles ──
+                var bees = [];
+                var numBees = Math.min(60, Math.floor(workers / 300));
+                for (var bi = 0; bi < numBees; bi++) {
+                  bees.push({
+                    x: W * 0.3 + Math.random() * W * 0.5,
+                    y: H * 0.1 + Math.random() * H * 0.5,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 1.5,
+                    size: 2 + Math.random() * 2,
+                    phase: Math.random() * Math.PI * 2,
+                    carrying: Math.random() > 0.6, // carrying pollen
+                    targetFlower: Math.random() > 0.5, // heading to flower or hive
+                    wingPhase: Math.random() * Math.PI * 2
+                  });
+                }
+
+                // ── Flower positions ──
+                var flowers = [];
+                var numFlowers = Math.min(12, 3 + Math.floor(habitat / 10));
+                for (var fi = 0; fi < numFlowers; fi++) {
+                  flowers.push({
+                    x: W * 0.55 + fi * (W * 0.4 / numFlowers) + Math.random() * 15,
+                    y: H * 0.72 + Math.random() * 10 - 5,
+                    color: ['#f472b6', '#fbbf24', '#a78bfa', '#fb923c', '#34d399', '#f87171', '#60a5fa'][fi % 7],
+                    size: 4 + Math.random() * 4,
+                    swayPhase: Math.random() * Math.PI * 2
+                  });
+                }
+
+                var tick = 0;
+                function drawHive() {
+                  tick++;
+                  ctx2.clearRect(0, 0, W, H);
+
+                  // ── Sky background (seasonal) ──
+                  var skyColors = [
+                    ['#87ceeb', '#c0e8ff', '#90d88c'], // spring
+                    ['#5ba3d9', '#87ceeb', '#4ade80'], // summer
+                    ['#c4856b', '#e8c496', '#b5833a'], // autumn
+                    ['#8aa4be', '#b0c4de', '#e2e8f0']  // winter
+                  ];
+                  var sc = skyColors[season] || skyColors[0];
+                  var skyGrad = ctx2.createLinearGradient(0, 0, 0, H);
+                  skyGrad.addColorStop(0, sc[0]);
+                  skyGrad.addColorStop(0.6, sc[1]);
+                  skyGrad.addColorStop(1, sc[2]);
+                  ctx2.fillStyle = skyGrad;
+                  ctx2.fillRect(0, 0, W, H);
+
+                  // Sun
+                  ctx2.fillStyle = season === 3 ? 'rgba(200,200,220,0.4)' : 'rgba(255,220,100,0.6)';
+                  ctx2.beginPath();
+                  ctx2.arc(W * 0.85, H * 0.12, season === 1 ? 22 : 16, 0, Math.PI * 2);
+                  ctx2.fill();
+
+                  // Clouds
+                  ctx2.globalAlpha = 0.3;
+                  ctx2.fillStyle = '#fff';
+                  for (var ci2 = 0; ci2 < 3; ci2++) {
+                    var clx = (ci2 * W * 0.35 + tick * 0.15 + ci2 * 50) % (W + 60) - 30;
+                    ctx2.beginPath();
+                    ctx2.ellipse(clx, 25 + ci2 * 12, 30, 10, 0, 0, Math.PI * 2);
+                    ctx2.fill();
+                  }
+                  ctx2.globalAlpha = 1;
+
+                  // ── Ground ──
+                  ctx2.fillStyle = season === 3 ? '#e2e8f0' : season === 2 ? '#b5833a' : '#4ade80';
+                  ctx2.fillRect(0, H * 0.78, W, H * 0.22);
+                  // Grass blades (not winter)
+                  if (season !== 3) {
+                    ctx2.strokeStyle = season === 2 ? '#92702a' : '#22c55e';
+                    ctx2.lineWidth = 1;
+                    for (var gi = 0; gi < 40; gi++) {
+                      var gx = gi * (W / 40) + Math.sin(gi * 1.3) * 5;
+                      var sway = Math.sin(tick * 0.02 + gi * 0.5) * 2;
+                      ctx2.beginPath();
+                      ctx2.moveTo(gx, H * 0.78);
+                      ctx2.lineTo(gx + sway, H * 0.78 - 6 - Math.random() * 4);
+                      ctx2.stroke();
+                    }
+                  }
+                  // Snow (winter)
+                  if (season === 3) {
+                    ctx2.fillStyle = '#fff';
+                    for (var sn = 0; sn < 20; sn++) {
+                      var snx = (sn * 37 + tick * 0.3) % W;
+                      var sny = (sn * 19 + tick * 0.5) % H;
+                      ctx2.beginPath();
+                      ctx2.arc(snx, sny, 1 + Math.random(), 0, Math.PI * 2);
+                      ctx2.fill();
+                    }
+                  }
+
+                  // ── Flowers ──
+                  flowers.forEach(function(fl) {
+                    if (season === 3) return; // no flowers in winter
+                    var fSway = Math.sin(tick * 0.015 + fl.swayPhase) * 2;
+                    var bloomSize = season === 1 ? fl.size * 1.2 : season === 2 ? fl.size * 0.8 : fl.size;
+                    // Stem
+                    ctx2.strokeStyle = '#22c55e';
+                    ctx2.lineWidth = 1.5;
+                    ctx2.beginPath();
+                    ctx2.moveTo(fl.x + fSway * 0.5, fl.y + 12);
+                    ctx2.lineTo(fl.x + fSway, fl.y);
+                    ctx2.stroke();
+                    // Petals
+                    ctx2.fillStyle = fl.color;
+                    for (var pi = 0; pi < 5; pi++) {
+                      var pa = pi * Math.PI * 2 / 5 + tick * 0.003;
+                      ctx2.beginPath();
+                      ctx2.ellipse(fl.x + fSway + Math.cos(pa) * bloomSize * 0.5, fl.y + Math.sin(pa) * bloomSize * 0.5, bloomSize * 0.4, bloomSize * 0.2, pa, 0, Math.PI * 2);
+                      ctx2.fill();
+                    }
+                    // Center
+                    ctx2.fillStyle = '#fbbf24';
+                    ctx2.beginPath();
+                    ctx2.arc(fl.x + fSway, fl.y, bloomSize * 0.25, 0, Math.PI * 2);
+                    ctx2.fill();
+                  });
+
+                  // ── Beehive (cross-section, left side) ──
+                  var hiveX = W * 0.12, hiveY = H * 0.25, hiveW = W * 0.28, hiveH = H * 0.52;
+                  // Hive body
+                  ctx2.fillStyle = '#92700a';
+                  ctx2.beginPath();
+                  ctx2.roundRect(hiveX, hiveY, hiveW, hiveH, 8);
+                  ctx2.fill();
+                  // Inner cross-section
+                  ctx2.fillStyle = '#c9a04a';
+                  ctx2.beginPath();
+                  ctx2.roundRect(hiveX + 4, hiveY + 4, hiveW - 8, hiveH - 8, 6);
+                  ctx2.fill();
+
+                  // Honeycomb cells (hex grid inside hive)
+                  var cellSize = 5;
+                  var honeyPct = Math.min(1, honey / 60);
+                  var broodPct = Math.min(1, brood / 8000);
+                  for (var hy = 0; hy < 8; hy++) {
+                    for (var hx2 = 0; hx2 < 6; hx2++) {
+                      var ccx = hiveX + 10 + hx2 * (cellSize * 2) + (hy % 2) * cellSize;
+                      var ccy = hiveY + 12 + hy * (cellSize * 1.7);
+                      // Color based on cell contents
+                      var cellContent = (hy < 3) ? (hx2 / 6 < honeyPct ? 'honey' : 'empty') : (hx2 / 6 < broodPct ? 'brood' : 'empty');
+                      ctx2.fillStyle = cellContent === 'honey' ? '#fbbf24' : cellContent === 'brood' ? '#f0ddd0' : '#e8d5a0';
+                      ctx2.globalAlpha = cellContent === 'empty' ? 0.4 : 0.8;
+                      // Hexagon
+                      ctx2.beginPath();
+                      for (var hi2 = 0; hi2 < 6; hi2++) {
+                        var ha2 = hi2 * Math.PI / 3 + Math.PI / 6;
+                        var px2 = ccx + Math.cos(ha2) * cellSize;
+                        var py2 = ccy + Math.sin(ha2) * cellSize;
+                        hi2 === 0 ? ctx2.moveTo(px2, py2) : ctx2.lineTo(px2, py2);
+                      }
+                      ctx2.closePath();
+                      ctx2.fill();
+                      ctx2.strokeStyle = '#b5833a';
+                      ctx2.lineWidth = 0.3;
+                      ctx2.stroke();
+                    }
+                  }
+                  ctx2.globalAlpha = 1;
+
+                  // Hive entrance
+                  ctx2.fillStyle = '#3a2a0a';
+                  ctx2.fillRect(hiveX + hiveW * 0.3, hiveY + hiveH - 2, hiveW * 0.4, 6);
+
+                  // Labels on hive
+                  ctx2.font = 'bold 8px system-ui';
+                  ctx2.fillStyle = '#fff';
+                  ctx2.textAlign = 'center';
+                  ctx2.fillText('\uD83C\uDF6F ' + honey.toFixed(0) + ' lbs', hiveX + hiveW * 0.5, hiveY + 20);
+                  ctx2.fillStyle = '#fef3c7';
+                  ctx2.font = '7px system-ui';
+                  ctx2.fillText(workers.toLocaleString() + ' workers', hiveX + hiveW * 0.5, hiveY + hiveH - 8);
+
+                  // ── Queen indicator (inside hive) ──
+                  if (queenHealth > 0) {
+                    var qx = hiveX + hiveW * 0.5, qy = hiveY + hiveH * 0.6;
+                    ctx2.fillStyle = '#fbbf24';
+                    ctx2.font = '10px system-ui';
+                    ctx2.fillText('\uD83D\uDC51', qx, qy);
+                    // Queen health bar
+                    ctx2.fillStyle = 'rgba(0,0,0,0.3)';
+                    ctx2.fillRect(qx - 12, qy + 3, 24, 3);
+                    ctx2.fillStyle = queenHealth > 60 ? '#22c55e' : queenHealth > 30 ? '#f59e0b' : '#ef4444';
+                    ctx2.fillRect(qx - 12, qy + 3, 24 * (queenHealth / 100), 3);
+                  }
+
+                  // ── Varroa mite warning (red dots if high) ──
+                  if (varroaLevel > 20) {
+                    ctx2.fillStyle = '#ef4444';
+                    ctx2.globalAlpha = 0.5 + Math.sin(tick * 0.05) * 0.3;
+                    for (var vi = 0; vi < Math.min(8, Math.floor(varroaLevel / 10)); vi++) {
+                      ctx2.beginPath();
+                      ctx2.arc(hiveX + 8 + Math.random() * (hiveW - 16), hiveY + 8 + Math.random() * (hiveH - 16), 1.5, 0, Math.PI * 2);
+                      ctx2.fill();
+                    }
+                    ctx2.globalAlpha = 1;
+                  }
+
+                  // ── Flying bees ──
+                  bees.forEach(function(bee) {
+                    // Movement: bees fly between hive entrance and flowers
+                    var targetX = bee.targetFlower ? (W * 0.6 + Math.sin(bee.phase) * W * 0.15) : (hiveX + hiveW * 0.5);
+                    var targetY = bee.targetFlower ? (H * 0.55 + Math.cos(bee.phase * 0.7) * 20) : (hiveY + hiveH - 5);
+                    bee.vx += (targetX - bee.x) * 0.003 + (Math.random() - 0.5) * 0.3;
+                    bee.vy += (targetY - bee.y) * 0.003 + (Math.random() - 0.5) * 0.2;
+                    bee.vx *= 0.97; bee.vy *= 0.97;
+                    bee.x += bee.vx; bee.y += bee.vy;
+                    // Flip direction when reaching target
+                    if (Math.abs(bee.x - targetX) < 10 && Math.abs(bee.y - targetY) < 10) {
+                      bee.targetFlower = !bee.targetFlower;
+                      bee.carrying = bee.targetFlower ? false : true;
+                    }
+                    bee.wingPhase += 0.4;
+
+                    // Draw bee body
+                    ctx2.fillStyle = '#fbbf24';
+                    ctx2.beginPath();
+                    ctx2.ellipse(bee.x, bee.y, bee.size, bee.size * 0.6, Math.atan2(bee.vy, bee.vx), 0, Math.PI * 2);
+                    ctx2.fill();
+                    // Stripes
+                    ctx2.fillStyle = '#1a1a1a';
+                    ctx2.fillRect(bee.x - bee.size * 0.3, bee.y - bee.size * 0.4, bee.size * 0.3, bee.size * 0.8);
+                    // Wings
+                    ctx2.globalAlpha = 0.3;
+                    ctx2.fillStyle = '#dbeafe';
+                    var wingY = Math.sin(bee.wingPhase) * 2;
+                    ctx2.beginPath();
+                    ctx2.ellipse(bee.x, bee.y - bee.size * 0.5 + wingY, bee.size * 0.5, bee.size * 0.3, -0.3, 0, Math.PI * 2);
+                    ctx2.fill();
+                    ctx2.globalAlpha = 1;
+                    // Pollen sacs (if carrying)
+                    if (bee.carrying) {
+                      ctx2.fillStyle = '#f59e0b';
+                      ctx2.beginPath();
+                      ctx2.arc(bee.x + bee.size * 0.3, bee.y + bee.size * 0.3, 1.5, 0, Math.PI * 2);
+                      ctx2.fill();
+                    }
+                  });
+
+                  // ── HUD overlay ──
+                  ctx2.fillStyle = 'rgba(0,0,0,0.5)';
+                  ctx2.beginPath();
+                  ctx2.roundRect(W - 130, 6, 124, 52, 8);
+                  ctx2.fill();
+                  ctx2.font = 'bold 9px system-ui';
+                  ctx2.fillStyle = '#fbbf24';
+                  ctx2.textAlign = 'right';
+                  ctx2.fillText(seasonNames[season] + ' \u2022 Day ' + day + ' \u2022 Year ' + year, W - 12, 20);
+                  ctx2.font = '8px system-ui';
+                  ctx2.fillStyle = '#e2e8f0';
+                  ctx2.fillText('\uD83D\uDC1D ' + workers.toLocaleString() + ' \u2022 \uD83C\uDF6F ' + honey.toFixed(0) + ' lbs \u2022 \u2764\uFE0F ' + morale + '%', W - 12, 32);
+                  ctx2.fillStyle = varroaLevel > 30 ? '#ef4444' : '#94a3b8';
+                  ctx2.fillText('\uD83E\uDDA0 Varroa: ' + varroaLevel + '% \u2022 \uD83C\uDF3F Habitat: ' + habitat + '%', W - 12, 44);
+
+                  // Habitat health indicator (bottom right)
+                  ctx2.font = '7px system-ui';
+                  ctx2.fillStyle = 'rgba(255,255,255,0.5)';
+                  ctx2.textAlign = 'center';
+                  ctx2.fillText(gardenPollinators > 0 ? '\uD83C\uDF31 Garden bonus: +' + gardenBonus + '% foraging' : '\uD83C\uDF31 Plant pollinator garden for bonus!', W * 0.65, H - 6);
+
+                  cvEl._beeAnimId = requestAnimationFrame(drawHive);
+                }
+                drawHive();
+              }
+            })
+          ),
+
           // Event popup
           activeEvent && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-300') },
             h('div', { className: 'flex items-center gap-2' },

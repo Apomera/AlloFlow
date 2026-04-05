@@ -7107,7 +7107,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/allobot_module.js');
     loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/teacher_module.js');
     loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/story_forge_module.js');
-    loadModule('LitLab', 'story_stage_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/story_stage_module.js');
     loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/visual_panel_module.js');
     loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/word_sounds_setup_module.js');
     loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a191aa7/adventure_module.js');
