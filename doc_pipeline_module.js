@@ -1018,6 +1018,106 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     });
     if (aiFixCount > 0) log(`Applied ${aiFixCount} deterministic fixes`);
 
+    // ── Phase 3c: Surgical AI-diagnosed fixes ──
+    // AI diagnoses specific issues → deterministic micro-tools fix each one precisely.
+    // Runs BEFORE the full AI rewrite loop — cheaper, safer, more precise.
+    // Whatever remains after this goes to the full rewrite loop (Phase 5).
+    log('Phase 3c: Surgical AI-diagnosed fixes...');
+    const surgicalTools = {
+      fix_alt_text: function (html, p) {
+        if (!p.index && p.index !== 0) return html;
+        let idx = 0;
+        return html.replace(/<img([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== p.index) return m;
+          if (/alt="[^"]+"/i.test(attrs) && p.alt) return m.replace(/alt="[^"]*"/, 'alt="' + p.alt.replace(/"/g, '&quot;') + '"');
+          return '<img alt="' + (p.alt || 'Image').replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      fix_heading: function (html, p) {
+        if (!p.newLevel) return html;
+        let idx = 0;
+        return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/gi, function (m, lv, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          return '<h' + p.newLevel + attrs + '>' + content + '</h' + p.newLevel + '>';
+        });
+      },
+      fix_link_text: function (html, p) {
+        if (!p.newText) return html;
+        let idx = 0;
+        return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function (m, attrs, content) {
+          if (idx++ !== (p.index || 0)) return m;
+          var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
+          if (['click here', 'here', 'read more', 'more', 'link', 'learn more'].indexOf(text) !== -1 || p.force) {
+            return '<a' + attrs + '>' + p.newText + '</a>';
+          }
+          return m;
+        });
+      },
+      fix_table_caption: function (html, p) {
+        if (!p.caption) return html;
+        let idx = 0;
+        return html.replace(/<table([^>]*)>/gi, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          return '<table' + attrs + '><caption>' + p.caption + '</caption>';
+        });
+      },
+      fix_aria_label: function (html, p) {
+        if (!p.tag || !p.label) return html;
+        let idx = 0;
+        var re = new RegExp('<' + p.tag + '([^>]*)>', 'gi');
+        return html.replace(re, function (m, attrs) {
+          if (idx++ !== (p.index || 0)) return m;
+          if (/aria-label/i.test(attrs)) return m.replace(/aria-label="[^"]*"/, 'aria-label="' + p.label.replace(/"/g, '&quot;') + '"');
+          return '<' + p.tag + ' aria-label="' + p.label.replace(/"/g, '&quot;') + '"' + attrs + '>';
+        });
+      },
+      fix_lang: function (html, p) {
+        if (!p.lang) return html;
+        return html.replace(/<html([^>]*)lang="[^"]*"/, '<html$1lang="' + p.lang + '"').replace(/<html(?![^>]*lang=)/, '<html lang="' + p.lang + '"');
+      }
+    };
+
+    // Run surgical diagnosis (1 API call) + deterministic execution
+    try {
+      var preAxe = await runAxeAudit(accessibleHtml);
+      if (preAxe && preAxe.totalViolations > 0) {
+        var surgViolations = [].concat((preAxe.critical || []).map(function (v) {
+          return 'CRITICAL: ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)';
+        })).concat((preAxe.serious || []).map(function (v) {
+          return 'SERIOUS: ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)';
+        })).concat((preAxe.moderate || []).map(function (v) {
+          return 'MODERATE: ' + v.description + ' (' + v.id + ')';
+        })).slice(0, 12).join('\n');
+        var surgDiagnosis = await callGemini('You are an accessibility remediation expert. Analyze these axe-core violations and prescribe SPECIFIC targeted fixes.\n\n' + 'VIOLATIONS:\n' + surgViolations + '\n\n' + 'HTML (first 6000 chars for context):\n"""\n' + accessibleHtml.substring(0, 6000) + '\n"""\n\n' + 'Prescribe fixes using these tools (return ONLY a JSON array):\n' + '- fix_alt_text: { "tool": "fix_alt_text", "index": <img number 0-based>, "alt": "descriptive text" }\n' + '- fix_heading: { "tool": "fix_heading", "index": <heading number 0-based>, "newLevel": <1-6> }\n' + '- fix_link_text: { "tool": "fix_link_text", "index": <link number 0-based>, "newText": "descriptive text" }\n' + '- fix_table_caption: { "tool": "fix_table_caption", "index": <table number 0-based>, "caption": "description" }\n' + '- fix_aria_label: { "tool": "fix_aria_label", "tag": "element", "index": <0-based>, "label": "description" }\n' + '- fix_lang: { "tool": "fix_lang", "lang": "language code" }\n\n' + 'Be specific. Use the actual content to write good alt text and link descriptions.\n' + 'Return ONLY valid JSON array, no explanation.', true);
+        var surgFixes = [];
+        try {
+          surgFixes = JSON.parse(surgDiagnosis);
+        } catch (e) {
+          try {
+            surgFixes = JSON.parse(surgDiagnosis.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
+          } catch (e2) {
+            surgFixes = [];
+          }
+        }
+        if (!Array.isArray(surgFixes)) surgFixes = [];
+        var surgApplied = 0;
+        for (var si = 0; si < surgFixes.length; si++) {
+          var fix = surgFixes[si];
+          var tool = fix && fix.tool && surgicalTools[fix.tool];
+          if (tool) {
+            var before = accessibleHtml;
+            accessibleHtml = tool(accessibleHtml, fix);
+            if (accessibleHtml !== before) surgApplied++;
+          }
+        }
+        if (surgApplied > 0) {
+          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (1 API call)');
+        }
+      }
+    } catch (surgErr) {
+      warnLog('[Surgical] Diagnosis failed (non-blocking):', surgErr?.message);
+    }
+
     // ── Phase 4: Verify with both engines ──
     log('Phase 4: Dual-engine verification...');
     const [batchVerification, batchAxeResults] = await Promise.all([auditOutputAccessibility(accessibleHtml), runAxeAudit(accessibleHtml)]);
