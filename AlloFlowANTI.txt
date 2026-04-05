@@ -25628,9 +25628,40 @@ Return ONLY JSON.`;
         const standardsBlock = standards && standards.trim().length > 0
             ? `Mandatory Standards: ${standards}`
             : "Mandatory Standards: None specific (Focus on general comprehension)";
-        const existingBlock = existingResources.length > 0
-            ? `ALREADY GENERATED: ${existingResources.join(', ')}`
-            : "ALREADY GENERATED: None";
+        // Build rich context about existing resources so the lesson plan can reference specifics
+        let existingBlock = "ALREADY GENERATED: None";
+        if (existingResources.length > 0) {
+            const resourceSummaries = history.filter(h => h.type && h.type !== 'lesson-plan').slice(-15).map(h => {
+                const type = h.type;
+                const data = h.data || h.content || {};
+                let summary = type;
+                try {
+                    if (type === 'persona' && Array.isArray(data)) {
+                        summary = `persona: Characters available for interview: ${data.map(c => c.name || c.title || 'Unknown').join(', ')}`;
+                    } else if (type === 'dbq' && data.title) {
+                        summary = `dbq: "${data.title}" with ${(data.documents || []).length} documents. Includes: ${(data.documents || []).map(d => d.title || d.id).join(', ')}`;
+                    } else if (type === 'quiz' && data.questions) {
+                        summary = `quiz: ${data.questions.length} questions covering: ${(data.questions.slice(0, 3).map(q => (q.question || '').substring(0, 50))).join('; ')}`;
+                    } else if (type === 'glossary' && data.terms) {
+                        summary = `glossary: ${data.terms.length} terms including: ${data.terms.slice(0, 5).map(t2 => t2.term || t2.word || '').join(', ')}`;
+                    } else if (type === 'timeline' && data.events) {
+                        summary = `timeline: ${data.events.length} events from "${(data.events[0]?.title || '').substring(0, 30)}" to "${(data.events[data.events.length - 1]?.title || '').substring(0, 30)}"`;
+                    } else if (type === 'adventure' && data.title) {
+                        summary = `adventure: "${data.title}" — ${data.mode || 'choice'} mode`;
+                    } else if (type === 'concept-sort' && data.categories) {
+                        summary = `concept-sort: Categories: ${data.categories.map(c => c.name || c.label || '').join(', ')}`;
+                    } else if (type === 'simplified' && typeof data === 'string') {
+                        summary = `simplified: ${data.substring(0, 80)}...`;
+                    } else if (type === 'analysis' && typeof data === 'string') {
+                        summary = `analysis: ${data.substring(0, 80)}...`;
+                    } else if (h.title) {
+                        summary = `${type}: "${h.title}"`;
+                    }
+                } catch(e) { summary = type; }
+                return summary;
+            });
+            existingBlock = `ALREADY GENERATED RESOURCES (reference these specifically in the lesson plan — tell teachers exactly which resource to use and what content it contains):\n${resourceSummaries.map((s, i) => `  ${i + 1}. ${s}`).join('\n')}`;
+        }
         const VALID_TOOLS_LIST = "analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, persona, dbq";
         let countConstraint = "";
         let allowDuplicates = false;
