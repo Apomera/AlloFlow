@@ -6872,6 +6872,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   const [showReportWriter, setShowReportWriter] = useState(false);
   const [isSymbolStudioOpen, setIsSymbolStudioOpen] = useState(false);
   const [showStoryForge, setShowStoryForge] = useState(false);
+  const [showStoryStage, setShowStoryStage] = useState(false);
   const [showLearningHub, setShowLearningHub] = useState(false);
   const [showSelHub, setShowSelHub] = useState(false);
   const [selHubTab, setSelHubTab] = useState('explore');
@@ -7038,26 +7039,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    loadModule('StoryForge', './story_forge_module.js');
-    loadModule('VisualPanelModule', './visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
-    loadModule('AdventureModule', './adventure_module.js');
-    loadModule('StudentInteractionModule', './student_interaction_module.js');
-    loadModule('UIModalsModule', './ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
-    loadModule('PersonaUIModule', './persona_ui_module.js');
-    loadModule('DocPipelineModule', './doc_pipeline_module.js');
-    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/story_forge_module.js');
+    loadModule('StoryStage', 'story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7073,7 +7075,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@eeaa9f0/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7097,6 +7099,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_a11yauditor.js',
         'stem_lab/stem_tool_aquarium.js',
         'stem_lab/stem_tool_ecosystem.js',
+        'stem_lab/stem_tool_epidemic.js',
         'stem_lab/stem_tool_molecule.js',
         'stem_lab/stem_tool_solarsystem.js',
         'stem_lab/stem_tool_universe.js',
@@ -7126,6 +7129,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_singing.js',
         'stem_lab/stem_tool_beehive.js',
         'stem_lab/stem_tool_moonmission.js',
+        'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
         'stem_lab/stem_tool_creative.js',
         'stem_lab/stem_tool_art.js',
@@ -7140,6 +7144,9 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_friendship.js',
         'sel_hub/sel_tool_transitions.js',
         'sel_hub/sel_tool_upstander.js',
+        'sel_hub/sel_tool_voicedetective.js',
+        'sel_hub/sel_tool_sociallab.js',
+        'sel_hub/sel_tool_peersupport.js',
       ];
       // Wait for StemLab registry to be available before loading plugins
       var waitForRegistry = function(cb) {
@@ -7209,7 +7216,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
 
       if (_isCanvasEnv) {
-        // Canvas: only load Piper script (tiny) for multilingual fallback, NOT Kokoro
+        // Canvas: load Piper bootstrap only (10KB script — voice models 15-75MB download on-demand per language)
         console.log('[Canvas TTS] Lazy mode — Kokoro will download on demand');
         setKokoroLoadState(null); // No loading overlay
         window.__loadPiperTTS();
@@ -12014,6 +12021,7 @@ Return only the corrected version of this exact text:`;
   const pdfPreviewRef = useRef(null);
   // ── PDF Batch Mode ──
   const [pdfBatchMode, setPdfBatchMode] = useState(false);
+  const [pdfWebMode, setPdfWebMode] = useState(false);
   const [pdfBatchQueue, setPdfBatchQueue] = useState([]);
   const [pdfBatchProcessing, setPdfBatchProcessing] = useState(false);
   const [pdfBatchCurrentIndex, setPdfBatchCurrentIndex] = useState(-1);
@@ -27424,10 +27432,14 @@ Return ONLY JSON.`;
          const isMiddle = /6th|7th|8th/i.test(gradeLevel);
          const _dbqMode = window._dbqMode || 'standard';
          const _dbqFocusTopic = document.getElementById('dbq-focus-topic')?.value || '';
+         const _dbqCustomDocs = document.getElementById('dbq-custom-docs')?.value || '';
+         const _dbqCustomEssayFocus = document.getElementById('dbq-custom-essay-focus')?.value || '';
          const _dbqModeInstructions = _dbqMode === 'perspectives'
            ? `\n\nSPECIAL MODE — COMPETING PERSPECTIVES:\nYou MUST structure this DBQ around two or more clearly opposing viewpoints or interpretations.${_dbqFocusTopic ? ' Focus on: ' + _dbqFocusTopic + '.' : ''}\n- At least 2 documents should represent each major perspective\n- Label each document's perspective in a "perspective" field (e.g., "Federalist", "Anti-Federalist", "Pro-expansion", "Indigenous resistance")\n- The corroborationClaims MUST include at least one claim where documents directly contradict each other\n- The synthesis essay prompt MUST require students to evaluate BOTH perspectives and take a position\n- Include a "perspectives" array in the JSON root: [{"label": "Perspective A Name", "description": "Brief description", "docIds": ["A","C"]}, {"label": "Perspective B Name", "description": "Brief description", "docIds": ["B","D"]}]\n`
            : _dbqMode === 'search'
            ? `\n\nSPECIAL MODE — WEB-ENHANCED SOURCES:\nIn addition to extracting documents from the provided source text, you should GENERATE additional document excerpts that represent real historical primary sources relevant to this topic.${_dbqFocusTopic ? ' Search focus: ' + _dbqFocusTopic + '.' : ''}\n- Create realistic excerpts attributed to real historical figures, organizations, or publications (with accurate dates and contexts)\n- Include a mix of document types: speeches, letters, newspaper editorials, government records, testimony, data/statistics\n- Mark AI-generated historical sources with "documentType": "reconstructed" so teachers know they are illustrative, not verbatim\n- Aim for 5-6 total documents (2-3 from source text + 2-3 reconstructed historical sources)\n- Each reconstructed source must include accurate historical context in the "source" field\n`
+           : _dbqMode === 'custom' && _dbqCustomDocs.trim()
+           ? `\n\nSPECIAL MODE — TEACHER-PROVIDED DOCUMENTS:\nThe teacher has provided specific documents below. You MUST use EXACTLY these documents as the document excerpts. Do NOT generate, modify, or replace them. Your job is to:\n- Preserve each document's exact text as the "excerpt"\n- Parse any "Title:" and "Source:" lines the teacher provided for each document\n- Add appropriate "documentType" classification (primary, secondary, data, visual, testimony)\n- Generate HAPP prompts, sourcing questions, analysis questions, and sentence starters for each document\n- Create corroboration claims that connect across the teacher's documents\n- Write a synthesis essay prompt${_dbqCustomEssayFocus ? ' focused on: ' + _dbqCustomEssayFocus : ''}\n- Build the rubric appropriate to the grade level\n\nTEACHER-PROVIDED DOCUMENTS (separated by ---):\n"""\n${_dbqCustomDocs}\n"""\n`
            : '';
          const dbqPrompt = `You are an expert social studies and ELA curriculum designer creating a Document-Based Question (DBQ) activity.
 
@@ -34100,6 +34112,39 @@ Return ONLY JSON:
                   <textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
+                    onPaste={async (e) => {
+                        const items = e.clipboardData?.items;
+                        if (!items || !callGeminiVision) return;
+                        for (const item of items) {
+                            if (item.type.startsWith('image/')) {
+                                e.preventDefault();
+                                const blob = item.getAsFile();
+                                if (!blob) return;
+                                setIsExtracting(true);
+                                setGenerationStep('Extracting text from pasted image...');
+                                addToast && addToast('Image detected — extracting text...', 'info');
+                                const reader = new FileReader();
+                                reader.onload = async () => {
+                                    try {
+                                        const base64 = reader.result.split(',')[1];
+                                        const text = await callGeminiVision(
+                                            'You are an OCR expert for educators. Extract all readable text from this image. Preserve structure (headers, paragraphs) using markdown. If there are tables, preserve them as markdown tables. Return ONLY the extracted text.',
+                                            base64, item.type
+                                        );
+                                        if (text && text.trim().length > 10) {
+                                            setInputText(prev => prev ? prev + '\n\n' + text.trim() : text.trim());
+                                            addToast && addToast('Text extracted from image!', 'success');
+                                        } else {
+                                            addToast && addToast('Could not extract readable text from image.', 'error');
+                                        }
+                                    } catch (err) { addToast && addToast('Image OCR failed: ' + err.message, 'error'); }
+                                    setIsExtracting(false); setGenerationStep('');
+                                };
+                                reader.readAsDataURL(blob);
+                                return;
+                            }
+                        }
+                    }}
                     placeholder={isGeneratingSource ? t('common.writing_content') : isExtracting ? t('common.scanning_document') : t('input.placeholder')}
                     disabled={isGeneratingSource || isExtracting}
                     className={`w-full h-48 p-3 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none transition-all duration-300 ${(isGeneratingSource || isExtracting) ? 'bg-slate-50 text-slate-500' : ''}`}
@@ -35273,7 +35318,8 @@ Return ONLY JSON:
                             <div className="flex gap-1">
                                 {[['standard', '📄 Standard DBQ', 'Extract documents from your source text'],
                                   ['perspectives', '⚔️ Competing Perspectives', 'AI finds 2+ viewpoints that agree and disagree'],
-                                  ['search', '🔍 Web-Enhanced', 'AI searches for real primary sources on your topic']
+                                  ['search', '🔍 Web-Enhanced', 'AI searches for real primary sources on your topic'],
+                                  ['custom', '✏️ Teacher Documents', 'Paste your own documents — AI builds the scaffolding around them']
                                 ].map(([mode, label, desc]) => (
                                     <button key={mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
                                         className={`flex-1 text-left p-2 rounded-lg text-[10px] font-bold transition-all border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-500 hover:bg-rose-50'}`}>
@@ -35295,6 +35341,118 @@ Return ONLY JSON:
                                     id="dbq-focus-topic" />
                             </div>
                         )}
+                        {/* Teacher Documents mode — paste your own documents */}
+                        {window._dbqMode === 'custom' && (
+                            <div className="space-y-2">
+                                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                                    <p className="text-[10px] text-indigo-700 mb-2"><strong>Paste each document below.</strong> Separate documents with <code className="bg-indigo-100 px-1 rounded">---</code> on its own line. Or use the import buttons to fetch from a URL or upload an image of a document.</p>
+                                    <p className="text-[10px] text-indigo-500">For each document, optionally include a title and source on the first lines:</p>
+                                    <pre className="text-[9px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap">Title: Letter from Abigail Adams to John Adams{'\n'}Source: March 31, 1776{'\n'}Remember the Ladies, and be more generous and favourable to them than your ancestors...{'\n'}---{'\n'}Title: Declaration of Independence (excerpt){'\n'}Source: Thomas Jefferson, July 4, 1776{'\n'}We hold these truths to be self-evident, that all men are created equal...</pre>
+                                </div>
+                                {/* Import tools — URL fetch + image upload */}
+                                <div className="flex gap-2 flex-wrap items-end">
+                                    <div className="flex-1 min-w-[200px]">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Import from URL</label>
+                                        <div className="flex gap-1">
+                                            <input type="text" id="dbq-import-url"
+                                                className="flex-1 text-xs border border-indigo-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 outline-none"
+                                                placeholder="https://... (article, speech, primary source)"
+                                                aria-label="URL to import as document" />
+                                            <button onClick={async () => {
+                                                const urlInput = document.getElementById('dbq-import-url');
+                                                const docArea = document.getElementById('dbq-custom-docs');
+                                                const url = urlInput?.value?.trim();
+                                                if (!url || !docArea) return;
+                                                addToast && addToast('Fetching document from URL...', 'info');
+                                                try {
+                                                    const text = await fetchAndCleanUrl(url, callGemini, addToast);
+                                                    if (text) {
+                                                        const separator = docArea.value.trim() ? '\n---\n' : '';
+                                                        docArea.value += separator + 'Title: (imported from URL)\nSource: ' + url + '\n' + text.replace(/^Source:.*\n\n?/, '');
+                                                        urlInput.value = '';
+                                                        addToast && addToast('Document imported! Review and edit the text below.', 'success');
+                                                    }
+                                                } catch (e) { addToast && addToast('Import failed: ' + e.message, 'error'); }
+                                            }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-all shrink-0"
+                                                aria-label="Fetch URL">🔗 Fetch</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Upload Document Image</label>
+                                        <div className="flex gap-1">
+                                            <input type="file" id="dbq-import-image" accept="image/*,.pdf" className="hidden"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    const docArea = document.getElementById('dbq-custom-docs');
+                                                    if (!file || !docArea || !callGeminiVision) return;
+                                                    addToast && addToast('Extracting text from image...', 'info');
+                                                    try {
+                                                        const reader = new FileReader();
+                                                        reader.onload = async () => {
+                                                            try {
+                                                                const base64 = reader.result.split(',')[1];
+                                                                const mimeType = file.type || 'image/png';
+                                                                const ocrPrompt = `You are an OCR expert. Extract ALL readable text from this document image. Preserve the original wording exactly. Maintain paragraph structure. If there are handwritten portions, do your best to transcribe them. Return ONLY the extracted text.`;
+                                                                const text = await callGeminiVision(ocrPrompt, base64, mimeType);
+                                                                if (text && text.trim().length > 10) {
+                                                                    const separator = docArea.value.trim() ? '\n---\n' : '';
+                                                                    docArea.value += separator + 'Title: (extracted from ' + file.name + ')\nSource: Uploaded document image\n' + text.trim();
+                                                                    addToast && addToast('Text extracted from image! Review and edit below.', 'success');
+                                                                } else {
+                                                                    addToast && addToast('Could not extract readable text from this image.', 'error');
+                                                                }
+                                                            } catch (err) { addToast && addToast('OCR failed: ' + err.message, 'error'); }
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    } catch (err) { addToast && addToast('File read failed: ' + err.message, 'error'); }
+                                                    e.target.value = '';
+                                                }} />
+                                            <button onClick={() => document.getElementById('dbq-import-image')?.click()}
+                                                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded-lg transition-all flex items-center gap-1"
+                                                aria-label="Upload document image">📷 Upload Image</button>
+                                            <button onClick={async () => {
+                                                const docArea = document.getElementById('dbq-custom-docs');
+                                                if (!docArea || !callGeminiVision) return;
+                                                try {
+                                                    const items = await navigator.clipboard.read();
+                                                    for (const item of items) {
+                                                        const imageType = item.types.find(t => t.startsWith('image/'));
+                                                        if (imageType) {
+                                                            addToast && addToast('Extracting text from clipboard image...', 'info');
+                                                            const blob = await item.getType(imageType);
+                                                            const reader = new FileReader();
+                                                            reader.onload = async () => {
+                                                                try {
+                                                                    const base64 = reader.result.split(',')[1];
+                                                                    const text = await callGeminiVision('You are an OCR expert. Extract ALL readable text from this document image. Preserve original wording and paragraph structure. Return ONLY the extracted text.', base64, imageType);
+                                                                    if (text && text.trim().length > 10) {
+                                                                        const separator = docArea.value.trim() ? '\n---\n' : '';
+                                                                        docArea.value += separator + 'Title: (pasted from clipboard)\nSource: Clipboard image\n' + text.trim();
+                                                                        addToast && addToast('Text extracted from clipboard image!', 'success');
+                                                                    } else { addToast && addToast('Could not extract text from clipboard image.', 'error'); }
+                                                                } catch (err) { addToast && addToast('OCR failed: ' + err.message, 'error'); }
+                                                            };
+                                                            reader.readAsDataURL(blob);
+                                                            return;
+                                                        }
+                                                    }
+                                                    addToast && addToast('No image found in clipboard. Copy an image first (screenshot, right-click copy, etc.)', 'info');
+                                                } catch (err) { addToast && addToast('Clipboard access failed. Try uploading instead.', 'info'); }
+                                            }} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold rounded-lg transition-all flex items-center gap-1"
+                                                aria-label="Paste image from clipboard">📋 Paste Image</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <textarea id="dbq-custom-docs"
+                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none font-mono"
+                                    rows={8} placeholder="Paste your documents here, separated by --- on its own line..."
+                                    aria-label="Custom documents for DBQ" />
+                                <input type="text" id="dbq-custom-essay-focus"
+                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
+                                    placeholder="Essay focus question (optional) — e.g. 'How did different groups define liberty in 1776?'"
+                                    aria-label="Custom essay focus question" />
+                            </div>
+                        )}
                         <div className="bg-white rounded-lg p-2 border border-rose-100">
                             <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">{t('dbq.includes') || 'DBQ Packet Includes'}</div>
                             <div className="flex flex-wrap gap-1">
@@ -35305,10 +35463,11 @@ Return ONLY JSON:
                                 <span className="text-[10px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📊 4-Point Rubric</span>
                                 {(window._dbqMode === 'perspectives') && <span className="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium">⚔️ POV Comparison</span>}
                                 {(window._dbqMode === 'search') && <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium">🌐 Web Sources</span>}
+                                {(window._dbqMode === 'custom') && <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium">✏️ Teacher Docs</span>}
                             </div>
                         </div>
                     </div>
-                    {!hasSourceOrAnalysis && (
+                    {!hasSourceOrAnalysis && window._dbqMode !== 'custom' && (
                         <div className="px-3 pb-2">
                             <p className="text-[10px] text-rose-400 italic flex items-center gap-1">⬆️ Paste a source text above first — the DBQ will be built from it.</p>
                         </div>
@@ -45033,6 +45192,53 @@ Return only the corrected version of this exact text:`;
                                 }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">
                                     🖨️ Print DBQ Packet
                                 </button>
+                                {/* Timer for AP Practice */}
+                                {(() => {
+                                    const timerActive = r._dbqTimerEnd && Date.now() < r._dbqTimerEnd;
+                                    const timerDone = r._dbqTimerEnd && Date.now() >= r._dbqTimerEnd;
+                                    const remaining = timerActive ? Math.max(0, Math.ceil((r._dbqTimerEnd - Date.now()) / 1000)) : 0;
+                                    const mins = Math.floor(remaining / 60);
+                                    const secs = remaining % 60;
+                                    // Auto-refresh every second when timer active
+                                    if (timerActive && !r._dbqTimerInterval) {
+                                        const iv = setInterval(() => setDbq('_dbqTimerTick', Date.now()), 1000);
+                                        setDbq('_dbqTimerInterval', iv);
+                                    }
+                                    if (!timerActive && r._dbqTimerInterval) {
+                                        clearInterval(r._dbqTimerInterval);
+                                        setDbq('_dbqTimerInterval', null);
+                                    }
+                                    return (
+                                        <>
+                                            {!timerActive && !timerDone && (
+                                                <div className="flex items-center gap-1">
+                                                    {[15, 30, 45, 60].map(m => (
+                                                        <button key={m} onClick={() => setDbq('_dbqTimerEnd', Date.now() + m * 60 * 1000)}
+                                                            className="px-2 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-slate-200"
+                                                            aria-label={`Start ${m} minute timer`}>⏱️ {m}m</button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {timerActive && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`font-mono font-black text-sm px-3 py-1 rounded-lg border-2 ${remaining <= 300 ? 'bg-red-50 text-red-700 border-red-300' : remaining <= 600 ? 'bg-amber-50 text-amber-700 border-amber-300' : 'bg-indigo-50 text-indigo-700 border-indigo-300'}`}
+                                                        role="timer" aria-live="polite" aria-label={`${mins} minutes ${secs} seconds remaining`}>
+                                                        {mins}:{secs < 10 ? '0' : ''}{secs}
+                                                    </span>
+                                                    <button onClick={() => { if (r._dbqTimerInterval) clearInterval(r._dbqTimerInterval); setDbq('_dbqTimerEnd', null); setDbq('_dbqTimerInterval', null); }}
+                                                        className="text-[10px] text-slate-500 hover:text-red-600" aria-label="Cancel timer">✕</button>
+                                                </div>
+                                            )}
+                                            {timerDone && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse">⏰ Time's up!</span>
+                                                    <button onClick={() => { setDbq('_dbqTimerEnd', null); }}
+                                                        className="text-[10px] text-slate-500 hover:text-slate-700" aria-label="Dismiss timer">Dismiss</button>
+                                                </div>
+                                            )}
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
                         {/* Tab Bar */}
@@ -45041,6 +45247,48 @@ Return only the corrected version of this exact text:`;
                                 <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{...tabBtnStyle(id), whiteSpace: 'nowrap', fontSize: '12px'}}>{label}</button>
                             ))}
                         </div>
+                        {/* ── DBQ Progress Tracker ── */}
+                        {(() => {
+                            const docsDone = docs.filter(d => {
+                                const dh = (happNotes[d.id] || {});
+                                return ['historical','audience','purpose','pointOfView'].some(k => dh[k]?.trim());
+                            }).length;
+                            const docsFeedback = docs.filter(d => r[`_docFeedback_${d.id}`] && typeof r[`_docFeedback_${d.id}`] === 'object').length;
+                            const corrobDone = claims.some((_, ci) => corrobNotes[ci]?.trim()) || docs.some(d => r[`corrob-claim-${d.id}`]?.trim());
+                            const hasCorrobFb = r._corrobFeedback && typeof r._corrobFeedback === 'object';
+                            const essayLen = (essayText || '').split(/\s+/).filter(Boolean).length;
+                            const hasEssayFb = r._aiFeedback && typeof r._aiFeedback === 'object' && !r._aiFeedback.error;
+                            const selfDone = Object.keys(selfScores).length === rubric.length && rubric.length > 0;
+                            const steps = [
+                                { label: 'Analyze', done: docsDone === docs.length && docs.length > 0, partial: docsDone > 0, detail: `${docsDone}/${docs.length} docs` },
+                                { label: 'Feedback', done: docsFeedback === docs.length && docs.length > 0, partial: docsFeedback > 0, detail: `${docsFeedback}/${docs.length}` },
+                                { label: 'Corroborate', done: corrobDone && hasCorrobFb, partial: corrobDone, detail: hasCorrobFb ? '✓' : corrobDone ? 'started' : '' },
+                                { label: 'Essay', done: hasEssayFb, partial: essayLen > 0, detail: essayLen > 0 ? `${essayLen}w` : '' },
+                                { label: 'Self-Assess', done: selfDone, partial: Object.keys(selfScores).length > 0, detail: selfDone ? '✓' : '' }
+                            ];
+                            const completed = steps.filter(s => s.done).length;
+                            const pct = Math.round((completed / steps.length) * 100);
+                            return (
+                                <div className="px-3 py-2 bg-slate-50 border-x border-slate-200" style={{ fontSize: '10px' }}>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-bold text-slate-600">Progress:</span>
+                                        <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: pct + '%', background: pct === 100 ? '#22c55e' : 'linear-gradient(90deg, #4f46e5, #a78bfa)' }} />
+                                        </div>
+                                        <span className="font-bold" style={{ color: pct === 100 ? '#16a34a' : '#6366f1' }}>{pct}%</span>
+                                    </div>
+                                    <div className="flex gap-1 justify-between">
+                                        {steps.map((s, i) => (
+                                            <div key={i} className="flex items-center gap-1">
+                                                <span style={{ color: s.done ? '#22c55e' : s.partial ? '#f59e0b' : '#cbd5e1', fontWeight: 700 }}>{s.done ? '●' : s.partial ? '◐' : '○'}</span>
+                                                <span className="text-slate-500">{s.label}</span>
+                                                {s.detail && <span className="text-slate-400">({s.detail})</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                         {/* Tab Content */}
                         <div className="flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5" role="tabpanel">
                         {/* ═══ DOCUMENTS TAB ═══ */}
@@ -45080,7 +45328,41 @@ Return only the corrected version of this exact text:`;
                                                     addToast && addToast('Highlight saved!');
                                                 } else { addToast && addToast('Select text first to annotate'); }
                                             }} className="text-[10px] font-bold bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-2 py-1 rounded-full">🖍️ Highlight</button>
+                                            <button onClick={() => {
+                                                const text = activeDoc.excerpt || '';
+                                                if (!text) return;
+                                                if (r[`_docSpeaking_${activeDoc.id}`]) { window.speechSynthesis && window.speechSynthesis.cancel(); setDbq(`_docSpeaking_${activeDoc.id}`, false); return; }
+                                                setDbq(`_docSpeaking_${activeDoc.id}`, true);
+                                                if (callTTS) {
+                                                    callTTS(text, selectedVoice || 'Kore', 0.9).then(url => { if (url) { const a = new Audio(url); a.onended = () => setDbq(`_docSpeaking_${activeDoc.id}`, false); a.play().catch(() => setDbq(`_docSpeaking_${activeDoc.id}`, false)); } else { setDbq(`_docSpeaking_${activeDoc.id}`, false); } }).catch(() => {
+                                                        if (window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.9; u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false); window.speechSynthesis.speak(u); } else { setDbq(`_docSpeaking_${activeDoc.id}`, false); }
+                                                    });
+                                                } else if (window.speechSynthesis) {
+                                                    window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.9; u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false); window.speechSynthesis.speak(u);
+                                                } else { setDbq(`_docSpeaking_${activeDoc.id}`, false); }
+                                            }} className={`text-[10px] font-bold px-2 py-1 rounded-full ${r[`_docSpeaking_${activeDoc.id}`] ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`}
+                                                aria-label={r[`_docSpeaking_${activeDoc.id}`] ? 'Stop reading' : 'Read aloud'}>{r[`_docSpeaking_${activeDoc.id}`] ? '⏹️ Stop' : '🔊 Listen'}</button>
+                                            <button onClick={async () => {
+                                                if (r[`_docVocab_${activeDoc.id}`]) { setDbq(`_docVocab_${activeDoc.id}`, null); return; }
+                                                if (!callGemini || !activeDoc.excerpt) return;
+                                                setDbq(`_docVocab_${activeDoc.id}`, 'loading');
+                                                try {
+                                                    const vResult = await callGemini(`Identify 4-6 challenging vocabulary words in this text excerpt for a ${gradeLevel} student. For each word, provide a simple, grade-appropriate definition.\n\nText: "${(activeDoc.excerpt || '').substring(0, 800)}"\n\nReturn ONLY JSON array: [{"word":"the word","definition":"simple definition"}]`, true);
+                                                    setDbq(`_docVocab_${activeDoc.id}`, JSON.parse(cleanJson(vResult)));
+                                                } catch (e) { setDbq(`_docVocab_${activeDoc.id}`, null); addToast && addToast('Could not load vocabulary'); }
+                                            }} className={`text-[10px] font-bold px-2 py-1 rounded-full ${r[`_docVocab_${activeDoc.id}`] && r[`_docVocab_${activeDoc.id}`] !== 'loading' ? 'bg-green-200 hover:bg-green-300 text-green-800' : 'bg-purple-200 hover:bg-purple-300 text-purple-800'}`}
+                                                aria-label="Vocabulary help">{r[`_docVocab_${activeDoc.id}`] === 'loading' ? '⏳' : r[`_docVocab_${activeDoc.id}`] ? '📖 Hide Vocab' : '📖 Vocab Help'}</button>
                                         </div>
+                                        {/* Vocabulary glossary */}
+                                        {r[`_docVocab_${activeDoc.id}`] && Array.isArray(r[`_docVocab_${activeDoc.id}`]) && (
+                                            <div className="flex gap-2 flex-wrap mb-2">
+                                                {r[`_docVocab_${activeDoc.id}`].map((v, vi) => (
+                                                    <span key={vi} className="text-[10px] bg-purple-50 border border-purple-200 rounded-lg px-2 py-1 cursor-help" title={v.definition}>
+                                                        <strong className="text-purple-700">{v.word}</strong> <span className="text-purple-500">— {v.definition}</span>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                         {activeDoc.excerpt}
                                     </div>
                                     {/* Annotations */}
@@ -45149,6 +45431,86 @@ Return only the corrected version of this exact text:`;
                                             ))}
                                         </div>
                                     )}
+                                    {/* ── Source Reliability Analysis ── */}
+                                    <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
+                                        <h4 className="text-sm font-bold text-rose-800 mb-1 flex items-center gap-2">🔎 Source Reliability Check</h4>
+                                        <p className="text-[10px] text-rose-500 mb-3">Think critically: Is this source trustworthy? Why or why not?</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                            <div className="bg-white rounded-lg p-3 border border-rose-100">
+                                                <div className="text-[10px] font-bold text-rose-700 mb-1">🎯 Reliability Rating</div>
+                                                <div className="flex gap-1">
+                                                    {['Very Reliable', 'Somewhat Reliable', 'Questionable', 'Unreliable'].map(rating => (
+                                                        <button key={rating} onClick={() => setDbq(`_reliability_${activeDoc.id}`, { ...(r[`_reliability_${activeDoc.id}`] || {}), rating })}
+                                                            className={`text-[10px] px-2 py-1 rounded-full border transition-all ${(r[`_reliability_${activeDoc.id}`] || {}).rating === rating ? 'bg-rose-600 text-white border-rose-600 font-bold' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'}`}
+                                                            aria-label={`Rate as ${rating}`}>{rating}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="bg-white rounded-lg p-3 border border-rose-100">
+                                                <div className="text-[10px] font-bold text-rose-700 mb-1">⚠️ Potential Bias</div>
+                                                <div className="flex gap-1 flex-wrap">
+                                                    {['None detected', 'Political', 'Cultural', 'Economic', 'Personal', 'Other'].map(bias => (
+                                                        <button key={bias} onClick={() => setDbq(`_reliability_${activeDoc.id}`, { ...(r[`_reliability_${activeDoc.id}`] || {}), bias })}
+                                                            className={`text-[10px] px-2 py-1 rounded-full border transition-all ${(r[`_reliability_${activeDoc.id}`] || {}).bias === bias ? 'bg-rose-600 text-white border-rose-600 font-bold' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'}`}
+                                                            aria-label={`Bias: ${bias}`}>{bias}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <textarea value={(r[`_reliability_${activeDoc.id}`] || {}).reasoning || ''} onChange={(e) => setDbq(`_reliability_${activeDoc.id}`, { ...(r[`_reliability_${activeDoc.id}`] || {}), reasoning: e.target.value })}
+                                            rows={2} placeholder={/k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? 'I think this source is... because...' : /6th|7th|8th/i.test(gradeLevel) ? 'This source seems reliable/unreliable because... The author might be biased because...' : 'Evaluate the reliability of this source considering the author\'s position, the intended audience, corroborating evidence, and potential limitations...'}
+                                            className="w-full text-sm border border-rose-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-rose-400 outline-none"
+                                            aria-label={`Source reliability reasoning for Document ${activeDoc.id}`} />
+                                        {/* AI Reliability Analysis (hidden until student submits theirs, then revealed) */}
+                                        {(r[`_reliability_${activeDoc.id}`] || {}).reasoning?.trim() && !r[`_reliabilityAI_${activeDoc.id}`] && (
+                                            <button onClick={async () => {
+                                                if (!callGemini) return;
+                                                setDbq(`_reliabilityAI_${activeDoc.id}`, 'loading');
+                                                try {
+                                                    const isE = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+                                                    const isM = /6th|7th|8th/i.test(gradeLevel);
+                                                    const result = await callGemini(`Analyze the reliability and potential bias of this historical document for a ${gradeLevel} student. Then compare the student's own reliability assessment.
+
+Document: "${activeDoc.title}" — ${activeDoc.source}
+Type: ${activeDoc.documentType || 'unknown'}
+Excerpt: "${(activeDoc.excerpt || '').substring(0, 600)}"
+
+Student's Assessment:
+- Rating: ${(r[`_reliability_${activeDoc.id}`] || {}).rating || 'not selected'}
+- Bias identified: ${(r[`_reliability_${activeDoc.id}`] || {}).bias || 'not selected'}
+- Reasoning: "${(r[`_reliability_${activeDoc.id}`] || {}).reasoning || ''}"
+
+Provide analysis as JSON:
+{"reliabilityRating":"very reliable|somewhat reliable|questionable|unreliable","biasTypes":["type1"],"reasoning":"why this source is or isn't reliable","studentComparison":"how the student's assessment compares — what they got right, what they might reconsider","keyQuestion":"one question to push their thinking about this source's trustworthiness","factualConcerns":["any specific claims in the excerpt that might be inaccurate or misleading, or empty array if none"]}
+
+${isE ? 'Use simple, encouraging language. Praise their attempt to think critically even if their assessment differs from yours.' : isM ? 'Use clear language. Acknowledge their reasoning before suggesting alternatives.' : 'Use academic language. Push toward nuanced evaluation of source limitations and historiographical context.'}`, true);
+                                                    const parsed = JSON.parse(cleanJson(result));
+                                                    setDbq(`_reliabilityAI_${activeDoc.id}`, parsed);
+                                                    handleScoreUpdate(15, `DBQ Source Reliability (Doc ${activeDoc.id})`, `dbq-reliability-${activeDoc.id}`);
+                                                    addToast && addToast('Reliability analysis complete!');
+                                                } catch (e) { setDbq(`_reliabilityAI_${activeDoc.id}`, { error: 'Could not analyze. Try again.' }); }
+                                            }} className="mt-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl transition-all flex items-center gap-1.5"
+                                                aria-label="Compare my assessment with AI analysis">🔍 Compare My Assessment with AI Analysis</button>
+                                        )}
+                                        {r[`_reliabilityAI_${activeDoc.id}`] === 'loading' && <p className="text-xs text-rose-500 italic mt-2">⏳ Analyzing source reliability...</p>}
+                                        {r[`_reliabilityAI_${activeDoc.id}`] && typeof r[`_reliabilityAI_${activeDoc.id}`] === 'object' && !r[`_reliabilityAI_${activeDoc.id}`].error && (() => {
+                                            const ai = r[`_reliabilityAI_${activeDoc.id}`];
+                                            return (
+                                                <div className="mt-3 bg-white border-2 border-rose-200 rounded-xl p-4 space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <h5 className="text-xs font-black text-rose-800">🤖 AI Reliability Analysis</h5>
+                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ai.reliabilityRating === 'very reliable' ? 'bg-green-100 text-green-800' : ai.reliabilityRating === 'somewhat reliable' ? 'bg-blue-100 text-blue-800' : ai.reliabilityRating === 'questionable' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>{ai.reliabilityRating}</span>
+                                                    </div>
+                                                    {ai.biasTypes?.length > 0 && <div className="flex gap-1 flex-wrap">{ai.biasTypes.map((b, bi) => <span key={bi} className="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200">{b}</span>)}</div>}
+                                                    <p className="text-xs text-slate-700">{ai.reasoning}</p>
+                                                    {ai.studentComparison && <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200"><div className="text-[10px] font-bold text-indigo-700 mb-0.5">YOUR ASSESSMENT vs AI</div><p className="text-xs text-indigo-800">{ai.studentComparison}</p></div>}
+                                                    {ai.factualConcerns?.length > 0 && <div className="bg-amber-50 rounded-lg p-3 border border-amber-200"><div className="text-[10px] font-bold text-amber-700 mb-0.5">⚠️ FACTUAL CONCERNS</div><ul className="text-xs text-amber-800 space-y-1">{ai.factualConcerns.map((c, ci) => <li key={ci}>• {c}</li>)}</ul></div>}
+                                                    {ai.keyQuestion && <div className="bg-rose-50 rounded-lg p-2 border border-rose-200"><div className="text-[10px] font-bold text-rose-600">🤔 THINK ABOUT THIS:</div><p className="text-xs text-rose-800 italic">{ai.keyQuestion}</p></div>}
+                                                </div>
+                                            );
+                                        })()}
+                                        {r[`_reliabilityAI_${activeDoc.id}`]?.error && <p className="text-xs text-red-600 mt-2">{r[`_reliabilityAI_${activeDoc.id}`].error}</p>}
+                                    </div>
                                     {/* ── Check My Analysis: AI Feedback on HAPP + Sourcing + Analysis ── */}
                                     {(() => {
                                         const docHapp = happNotes[activeDoc.id] || {};
@@ -45204,6 +45566,11 @@ ${sourcingSummary}
 
 Student's Analysis Responses:
 ${analysisSummary}
+
+Student's Source Reliability Assessment:
+Rating: ${(r[`_reliability_${activeDoc.id}`] || {}).rating || '(not completed)'}
+Bias: ${(r[`_reliability_${activeDoc.id}`] || {}).bias || '(not completed)'}
+Reasoning: "${(r[`_reliability_${activeDoc.id}`] || {}).reasoning || '(not completed)'}"
 
 ${gradeExpectations}
 
@@ -45324,6 +45691,72 @@ Rules:
                                         </div>
                                     )}
                                 </div>
+                                {/* ── Corroboration AI Feedback ── */}
+                                {(() => {
+                                    const hasCorrobResponses = claims.some((_, ci) => corrobNotes[ci]?.trim()) ||
+                                        docs.some(d => r[`corrob-claim-${d.id}`]?.trim()) ||
+                                        (r._perspectiveResponse || '').trim();
+                                    const corrobFb = r._corrobFeedback;
+                                    const corrobLoading = corrobFb === 'loading';
+                                    return hasCorrobResponses && (
+                                        <div className="space-y-3 mt-4">
+                                            <button onClick={async () => {
+                                                if (!callGemini) { addToast && addToast('AI feedback unavailable'); return; }
+                                                setDbq('_corrobFeedback', 'loading');
+                                                try {
+                                                    const _isE = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
+                                                    const _isM = /6th|7th|8th/i.test(gradeLevel);
+                                                    const claimSummary = claims.map((c, ci) => `Claim: "${c.claim}" (supports: ${(c.supportingDocs||[]).join(',')}, challenges: ${(c.challengingDocs||[]).join(',')})\nStudent response: "${corrobNotes[ci] || '(blank)'}"`).join('\n\n');
+                                                    const tableSummary = docs.map(d => `Doc ${d.id}: claim="${r[`corrob-claim-${d.id}`] || '(blank)'}", agrees="${r[`corrob-agree-${d.id}`] || ''}", disagrees="${r[`corrob-disagree-${d.id}`] || ''}"`).join('\n');
+                                                    const perspResp = r._perspectiveResponse || '';
+                                                    const gradeGuide = _isE ? 'Elementary: "exemplary" = student notices that two documents talk about the same thing or disagree about something, even in simple terms. Use very encouraging, simple language.'
+                                                        : _isM ? 'Middle School: "exemplary" = student identifies specific points of agreement/disagreement between documents, explains why sources might differ, and uses evidence. Use clear, direct language.'
+                                                        : 'High School/AP: "exemplary" = student evaluates reliability and bias across sources, explains WHY sources agree/disagree based on perspective, purpose, or context, and synthesizes multiple viewpoints. Use academic language.';
+                                                    const fbResult = await callGemini(`You are a supportive social studies teacher evaluating a ${gradeLevel} student's corroboration analysis across multiple documents in a DBQ.
+
+Documents in this DBQ: ${docs.map(d => `Doc ${d.id}: "${d.title}"`).join(', ')}
+
+Claims & Student Responses:
+${claimSummary}
+
+Corroboration Table:
+${tableSummary}
+
+${perspResp ? `Perspective Response: "${perspResp}"` : ''}
+
+Grade-level expectations: ${gradeGuide}
+
+Provide feedback as JSON:
+{"overallRating":"developing|proficient|exemplary","corrobStrengths":["1-2 things they did well comparing sources"],"corrobNudges":["1-2 guiding questions to deepen cross-document thinking"],"perspectiveFeedback":"${perspResp ? 'feedback on their perspective comparison' : 'null'}","modelCorroboration":"A brief exemplar showing how to compare two specific documents from this DBQ"}
+
+Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A and Document B both talk about water" is demonstrating corroboration. Match vocabulary to grade level.`, true);
+                                                    const parsed = JSON.parse(cleanJson(fbResult));
+                                                    setDbq('_corrobFeedback', parsed);
+                                                    addToast && addToast('Feedback received!');
+                                                    const xp = parsed.overallRating === 'exemplary' ? 25 : parsed.overallRating === 'proficient' ? 15 : 10;
+                                                    handleScoreUpdate(xp, 'DBQ Corroboration Analysis', `dbq-corrob-${resId}`);
+                                                } catch (e) { setDbq('_corrobFeedback', { error: 'Could not generate feedback. Try again.' }); }
+                                            }} disabled={corrobLoading}
+                                                className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                                                aria-label="Get AI feedback on corroboration analysis">
+                                                {corrobLoading ? '⏳ Analyzing...' : '✨ Check My Corroboration'}
+                                            </button>
+                                            {corrobFb && typeof corrobFb === 'object' && !corrobFb.error && (
+                                                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <h4 className="text-sm font-black text-emerald-800">🔗 Corroboration Feedback</h4>
+                                                        <span className={`text-xs font-black px-3 py-1 rounded-full ${corrobFb.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : corrobFb.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`}>{corrobFb.overallRating === 'exemplary' ? '⭐ Exemplary' : corrobFb.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing'}</span>
+                                                    </div>
+                                                    {corrobFb.corrobStrengths?.length > 0 && <div><div className="text-xs font-bold text-green-700 mb-1">💪 Strengths</div><ul className="text-xs text-green-800 space-y-1">{corrobFb.corrobStrengths.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-green-500 mt-0.5">✓</span>{s}</li>)}</ul></div>}
+                                                    {corrobFb.corrobNudges?.length > 0 && <div><div className="text-xs font-bold text-amber-700 mb-1">🤔 Think Deeper</div><ul className="text-xs text-amber-800 space-y-1">{corrobFb.corrobNudges.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-amber-500 mt-0.5">→</span>{s}</li>)}</ul></div>}
+                                                    {corrobFb.perspectiveFeedback && corrobFb.perspectiveFeedback !== 'null' && <div className="bg-white/60 rounded-lg p-3"><div className="text-[10px] font-bold text-purple-600 mb-0.5">PERSPECTIVE</div><p className="text-xs text-slate-700">{corrobFb.perspectiveFeedback}</p></div>}
+                                                    {corrobFb.modelCorroboration && <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200"><div className="text-[10px] font-bold text-indigo-700 mb-0.5">💡 EXAMPLE</div><p className="text-xs text-indigo-800 italic">{corrobFb.modelCorroboration}</p></div>}
+                                                </div>
+                                            )}
+                                            {corrobFb?.error && <p className="text-sm text-red-600">{corrobFb.error}</p>}
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
                         {/* ═══ ESSAY TAB ═══ */}
@@ -48616,11 +49049,139 @@ Rules:
                 {/* ── Batch Mode Toggle ── */}
                 <div className="flex justify-center mb-4">
                   <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
-                    <button onClick={() => setPdfBatchMode(false)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📄 Single File</button>
-                    <button onClick={() => setPdfBatchMode(true)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📂 Batch Mode</button>
+                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📄 Single PDF</button>
+                    <button onClick={() => { setPdfBatchMode(true); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>📂 Batch</button>
+                    <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>🌐 Website / HTML</button>
                   </div>
                 </div>
-                {pdfBatchMode ? (
+                {pdfWebMode ? (
+                  /* ═══ WEBSITE / HTML MODE ═══ */
+                  <div className="text-left space-y-4">
+                    <h3 className="text-lg font-black text-slate-800 mb-1 text-center">🌐 Website & HTML Accessibility</h3>
+                    <p className="text-xs text-slate-500 text-center">Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation</p>
+
+                    {/* URL Input */}
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase" htmlFor="web-audit-url">Website URL</label>
+                      <div className="flex gap-2 mt-1">
+                        <input type="url" id="web-audit-url" placeholder="https://example.com" aria-label="Website URL to audit"
+                          className="flex-1 text-sm border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-300 outline-none" />
+                        <button onClick={async () => {
+                          const url = document.getElementById('web-audit-url')?.value?.trim();
+                          if (!url) { addToast('Enter a URL', 'info'); return; }
+                          addToast('Fetching website...', 'info');
+                          try {
+                            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                            const resp = await fetch(proxyUrl);
+                            if (!resp.ok) throw new Error('Fetch failed: ' + resp.status);
+                            let html = await resp.text();
+                            // Inject base tag so relative URLs resolve
+                            if (!html.includes('<base')) {
+                              const baseTag = '<base href="' + url.replace(/\/[^/]*$/, '/') + '">';
+                              html = html.replace(/<head([^>]*)>/i, '<head$1>' + baseTag);
+                            }
+                            document.getElementById('web-audit-html').value = html;
+                            addToast('Website fetched! (' + html.length.toLocaleString() + ' chars) — click Audit to analyze', 'success');
+                          } catch (e) {
+                            addToast('Could not fetch URL — try pasting the HTML source instead. Error: ' + e.message, 'error');
+                          }
+                        }} className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:bg-indigo-700 transition-colors" aria-label="Fetch website HTML">
+                          🔍 Fetch
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-slate-400 mt-1">Or paste HTML source code directly below</p>
+                    </div>
+
+                    {/* HTML Input */}
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase" htmlFor="web-audit-html">HTML Source</label>
+                      <textarea id="web-audit-html" rows={8} placeholder="Paste HTML source code here, or use Fetch above..."
+                        className="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 mt-1 font-mono focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
+                        aria-label="HTML source code to audit" />
+                    </div>
+
+                    {/* Audit + Remediate buttons */}
+                    <div className="flex gap-3 justify-center">
+                      <button onClick={async () => {
+                        const html = document.getElementById('web-audit-html')?.value?.trim();
+                        if (!html || html.length < 20) { addToast('Paste or fetch HTML first', 'info'); return; }
+                        addToast('Running accessibility audit...', 'info');
+                        // Run both AI audit and axe-core on the HTML
+                        const [aiResult, axeResult] = await Promise.all([
+                          auditOutputAccessibility(html),
+                          runAxeAudit(html)
+                        ]);
+                        const aiScore = aiResult?.score ?? null;
+                        const axeScore = axeResult?.score ?? null;
+                        const blended = (aiScore !== null && axeScore !== null) ? Math.round((aiScore + axeScore) / 2) : (axeScore ?? aiScore ?? 0);
+                        setPdfAuditResult({
+                          score: blended,
+                          _aiOnlyScore: aiScore,
+                          _baselineAxeScore: axeScore,
+                          summary: (aiResult?.summary || 'Website audit complete') + (axeResult ? ` | axe-core: ${axeResult.totalViolations} violations` : ''),
+                          critical: aiResult?.issues?.filter(i => i.severity === 'critical') || [],
+                          major: aiResult?.issues?.filter(i => i.severity === 'serious' || i.severity === 'major') || [],
+                          minor: aiResult?.issues?.filter(i => i.severity === 'moderate' || i.severity === 'minor') || [],
+                          passes: aiResult?.passes || [],
+                          axeAudit: axeResult,
+                          _isWebAudit: true,
+                          scores: [blended],
+                          scoreSD: 0,
+                          scoreRange: 0,
+                          auditorCount: 1,
+                        });
+                        // Store the HTML for potential remediation
+                        setPendingPdfBase64(null);
+                        setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '.html' });
+                        // Pre-load the HTML into pdfFixResult so "Fix & Verify" can remediate it
+                        window.__pendingWebHtml = html;
+                      }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                        ♿ Audit (AI + axe-core)
+                      </button>
+                      <button onClick={async () => {
+                        const html = document.getElementById('web-audit-html')?.value?.trim();
+                        if (!html || html.length < 20) { addToast('Paste or fetch HTML first', 'info'); return; }
+                        addToast('Auditing & remediating HTML...', 'info');
+                        // Run deterministic fixes + AI fix loop directly on the HTML
+                        setPdfFixLoading(true);
+                        setPdfFixStep('Applying deterministic fixes...');
+                        try {
+                          let fixed = html;
+                          // Apply the same deterministic fixes from the pipeline
+                          const cf = fixContrastViolations(fixed);
+                          if (cf.fixCount > 0) fixed = cf.html;
+                          // Ensure basic structure
+                          if (!fixed.includes('lang=')) fixed = fixed.replace(/<html/, '<html lang="en"');
+                          if (!fixed.includes('<main')) { fixed = fixed.replace(/<body[^>]*>/, (m) => m + '\n<main id="main-content" role="main">'); fixed = fixed.replace('</body>', '</main>\n</body>'); }
+                          if (!fixed.includes('Skip to') && !fixed.includes('skip-nav')) fixed = fixed.replace(/<body[^>]*>/, (m) => m + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>');
+                          // AI fix passes
+                          const autoFix = await autoFixAxeViolations(fixed, await runAxeAudit(fixed), pdfAutoFixPasses);
+                          if (autoFix?.html) fixed = autoFix.html;
+                          // Final verification
+                          const [finalAi, finalAxe] = await Promise.all([auditOutputAccessibility(fixed), runAxeAudit(fixed)]);
+                          const finalScore = (finalAi && finalAxe) ? Math.round(((finalAi.score || 0) + (finalAxe.score || 0)) / 2) : (finalAi?.score || 0);
+                          setPdfFixResult({
+                            accessibleHtml: fixed,
+                            beforeScore: 0,
+                            afterScore: finalScore,
+                            verificationAudit: finalAi,
+                            axeAudit: finalAxe,
+                            autoFixPasses: autoFix?.passes || 0,
+                            needsExpertReview: finalScore < 70,
+                            htmlChars: fixed.length,
+                          });
+                          setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '-remediated.html' });
+                          addToast(`Remediation complete! Score: ${finalScore}/100`, 'success');
+                        } catch (e) { addToast('Remediation failed: ' + e.message, 'error'); }
+                        setPdfFixLoading(false);
+                        setPdfFixStep('');
+                      }} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
+                        🔧 Audit & Remediate
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 text-center">"Audit" scores without changing. "Audit & Remediate" fixes the HTML and produces a downloadable accessible version.</p>
+                  </div>
+                ) : pdfBatchMode ? (
                   /* ═══ BATCH MODE UI ═══ */
                   <div className="text-left">
                     <h3 className="text-lg font-black text-slate-800 mb-3 text-center">📂 Batch PDF Remediation</h3>
@@ -48734,6 +49295,138 @@ Rules:
                             {'\ud83d\udce5'} Download All (ZIP)
                           </button>
                           <button onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">New Batch</button>
+                          <button onClick={() => {
+                            const queue = pdfBatchQueue;
+                            const summary = pdfBatchSummary;
+                            const done = queue.filter(f => f.status === 'done');
+                            const failed = queue.filter(f => f.status === 'failed');
+                            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                            // Categorize by score ranges
+                            const excellent = done.filter(f => (f.result?.afterScore || 0) >= 90);
+                            const good = done.filter(f => (f.result?.afterScore || 0) >= 70 && (f.result?.afterScore || 0) < 90);
+                            const needsWork = done.filter(f => (f.result?.afterScore || 0) < 70);
+
+                            // Common violations across all documents
+                            const allViolations = {};
+                            done.forEach(f => {
+                              const issues = f.result?.verificationAudit?.issues || [];
+                              issues.forEach(i => {
+                                const key = (i.wcag || 'unknown') + ': ' + (i.issue || '').substring(0, 60);
+                                allViolations[key] = (allViolations[key] || 0) + 1;
+                              });
+                            });
+                            const topViolations = Object.entries(allViolations).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+                            const win = window.open('', '_blank');
+                            if (!win) { addToast('Pop-up blocked', 'error'); return; }
+                            win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Compliance Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.header{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:24px 32px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:20px;font-weight:800;color:#fff}
+.header .date{font-size:12px;color:#a5b4fc}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px 32px}
+.card{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155}
+.card-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;margin-bottom:8px}
+.card-value{font-size:36px;font-weight:900}
+.card-sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.section{padding:0 32px 24px}
+.section h2{font-size:14px;font-weight:800;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse}
+th{background:#1e293b;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:2px solid #334155}
+td{padding:10px 12px;border-bottom:1px solid #1e293b;font-size:13px}
+tr:hover{background:#1e293b50}
+.score-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-weight:800;font-size:12px}
+.excellent{background:#16a34a20;color:#4ade80}
+.good{background:#d9770620;color:#fbbf24}
+.needs-work{background:#dc262620;color:#f87171}
+.bar{height:8px;border-radius:4px;transition:width 0.5s}
+.chart{display:flex;gap:4px;height:40px;align-items:end}
+.chart-bar{flex:1;border-radius:3px 3px 0 0;min-width:8px;transition:height 0.5s}
+.violation-row{display:flex;justify-content:space-between;padding:8px 12px;background:#1e293b;border-radius:8px;margin-bottom:4px;font-size:12px}
+.footer{padding:24px 32px;text-align:center;font-size:11px;color:#475569;border-top:1px solid #1e293b}
+@media print{body{background:white;color:#1e293b}.header{background:#4f46e5;-webkit-print-color-adjust:exact;print-color-adjust:exact}.card{border:1px solid #e2e8f0}th{background:#f1f5f9;color:#1e293b;-webkit-print-color-adjust:exact;print-color-adjust:exact}.violation-row{background:#f8fafc}}
+</style></head><body>
+<div class="header">
+  <div><h1>♿ Accessibility Compliance Dashboard</h1><div class="date">${date} · ${queue.length} documents analyzed · AlloFlow Pipeline</div></div>
+  <button onclick="window.print()" style="background:white;color:#4f46e5;border:none;padding:8px 16px;border-radius:8px;font-weight:bold;cursor:pointer">🖨️ Print</button>
+</div>
+
+<div class="grid">
+  <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} succeeded · ${failed.length} failed</div></div>
+  <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: +${summary?.avgImprovement || 0}</div></div>
+  <div class="card"><div class="card-title">Compliance Rate</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+</div></div>
+  <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
+</div>
+
+<div class="section">
+  <h2>Score Distribution</h2>
+  <div style="display:flex;gap:24px;margin-bottom:16px">
+    <div style="flex:1;background:#1e293b;border-radius:12px;padding:16px;border:1px solid #334155">
+      <div class="chart">${done.map(f => {
+        const s = f.result?.afterScore || 0;
+        const color = s >= 90 ? '#4ade80' : s >= 70 ? '#fbbf24' : '#f87171';
+        return '<div class="chart-bar" style="height:' + Math.max(4, s) + '%;background:' + color + '" title="' + f.fileName + ': ' + s + '/100"></div>';
+      }).join('')}</div>
+      <div style="font-size:10px;color:#64748b;margin-top:8px;text-align:center">Each bar = one document (height = score)</div>
+    </div>
+    <div style="width:200px;display:flex;flex-direction:column;gap:8px">
+      <div style="background:#16a34a20;border:1px solid #16a34a40;border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:900;color:#4ade80">${excellent.length}</div>
+        <div style="font-size:10px;color:#4ade80;font-weight:700">EXCELLENT (90+)</div>
+      </div>
+      <div style="background:#d9770620;border:1px solid #d9770640;border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:900;color:#fbbf24">${good.length}</div>
+        <div style="font-size:10px;color:#fbbf24;font-weight:700">GOOD (70-89)</div>
+      </div>
+      <div style="background:#dc262620;border:1px solid #dc262640;border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:900;color:#f87171">${needsWork.length}</div>
+        <div style="font-size:10px;color:#f87171;font-weight:700">NEEDS WORK (<70)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Document Details</h2>
+  <table><thead><tr><th>#</th><th>Document</th><th>Before</th><th>After</th><th>Gain</th><th>Fix Passes</th><th>Status</th></tr></thead><tbody>
+  ${queue.map((f, i) => {
+    const r = f.result;
+    const after = r?.afterScore || 0;
+    const cls = after >= 90 ? 'excellent' : after >= 70 ? 'good' : 'needs-work';
+    return '<tr><td>' + (i+1) + '</td><td>' + f.fileName + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—') + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + (f.error || '')) + '</td></tr>';
+  }).join('')}
+  </tbody></table>
+</div>
+
+${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (Training Priorities)</h2>' +
+  topViolations.map(([v, count]) => '<div class="violation-row"><span>' + v + '</span><span style="font-weight:800;color:#f87171">' + count + ' docs</span></div>').join('') +
+  '<p style="font-size:11px;color:#64748b;margin-top:12px">These violations appeared across multiple documents — addressing them through faculty training would have the highest impact.</p></div>' : ''}
+
+<div class="section">
+  <h2>Compliance Summary</h2>
+  <div style="background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155">
+    <p style="font-size:13px;line-height:1.8;color:#cbd5e1">
+      Of <strong>${queue.length}</strong> documents analyzed, <strong>${excellent.length}</strong> (${done.length > 0 ? Math.round(excellent.length/done.length*100) : 0}%) meet WCAG 2.1 Level AA compliance (score ≥ 90).
+      ${good.length > 0 ? '<strong>' + good.length + '</strong> document' + (good.length > 1 ? 's are' : ' is') + ' partially compliant (70-89) and may meet requirements with minor additional remediation.' : ''}
+      ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's require' : ' requires') + ' significant remediation or expert review to meet compliance standards.' : ''}
+    </p>
+    <p style="font-size:11px;color:#64748b;margin-top:12px">Standards: WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
+    <p style="font-size:11px;color:#64748b">Methodology: AI multi-auditor triangulation + axe-core (Deque) automated verification · 39 deterministic fixes + 17 surgical AI-diagnosed fixes + iterative AI remediation loop</p>
+  </div>
+</div>
+
+<div class="footer">
+  Generated by AlloFlow Accessibility Pipeline · ${date} · <a href="https://prismflow-911fe.web.app" style="color:#6366f1">prismflow-911fe.web.app</a>
+</div>
+</body></html>`);
+                            win.document.close();
+                            addToast('📊 Dashboard opened', 'success');
+                          }} className="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
+                            📊 Dashboard
+                          </button>
                         </>
                       )}
                     </div>
@@ -49190,8 +49883,8 @@ Rules:
                             setPdfFixResult(p => ({...p, accessibleHtml: html, verificationAudit: rv||p.verificationAudit, axeAudit: ra||p.axeAudit, afterScore: finalScore ?? p.afterScore, htmlChars: html.length}));
                           }
                           addToast('Sweep complete!', 'success');
-                        } catch(e) { addToast('Sweep failed', 'error'); }
-                        setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = '';
+                        } catch(e) { addToast('Sweep failed: ' + (e?.message || ''), 'error'); }
+                        finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
                       }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-violet-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading && pdfFixModeRef.current === 'sweep' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Sweeping...'}</> : <><Sparkles size={16} /> Additional Sweep</>}
                       </button>
@@ -49240,15 +49933,18 @@ Rules:
                               const fixed = await callGemini(fixPrompt, true);
                               if (fixed && fixed.length > html.length * 0.5 && (fixed.includes('<!DOCTYPE') || fixed.includes('<html'))) html = fixed;
                               cf = fixContrastViolations(html); if (cf.fixCount > 0) html = cf.html;
-                              // Verify (quick mode for speed — full audit runs once at the end)
-                              setPdfFixStep(`Pass ${pass + 1}: verifying...`);
-                              const [rv, ra] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
+                              // Verify with 2 AI audits + axe (parallel — no extra time)
+                              setPdfFixStep(`Pass ${pass + 1}: verifying (2 audits)...`);
+                              const [rv1, rv2, ra] = await Promise.all([auditOutputAccessibility(html, true), auditOutputAccessibility(html, true), runAxeAudit(html)]);
                               if (ra && ra.totalViolations > 0) {
                                 const fr = await autoFixAxeViolations(html, ra, 1);
                                 html = fr.html;
                               }
-                              const [fv, fa] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
-                              const finalAi = fv || rv;
+                              const [fv1, fv2, fa] = await Promise.all([auditOutputAccessibility(html, true), auditOutputAccessibility(html, true), runAxeAudit(html)]);
+                              // Average the 2 AI scores for reliability
+                              const bestAiScores = [fv1, fv2, rv1, rv2].filter(Boolean).map(a => a?.score).filter(s => typeof s === 'number');
+                              const finalAi = fv1 || fv2 || rv1 || rv2;
+                              if (finalAi && bestAiScores.length > 0) finalAi.score = Math.round(bestAiScores.reduce((a,b) => a+b, 0) / bestAiScores.length);
                               const finalAxe = fa || ra;
                               const newCount = (finalAi?.issues?.length || 0) + (finalAxe?.totalViolations || 0);
                               totalPasses++;
@@ -49262,12 +49958,30 @@ Rules:
                                 if (pass > 0) break; // two consecutive non-improvements — stop
                               }
                             }
-                            const finalScore = (bestAi?.issues?.length === 0 && bestAxe?.totalViolations === 0) ? 100 : bestAi?.score;
+                            // Run 2 AI audits at the end and average for reliable scoring
+                            // 3 parallel AI audits + axe for reliable final score
+                            setPdfFixStep('Final verification (averaging 3 audits)...');
+                            const [endAi1, endAi2, endAi3, endAxe] = await Promise.all([
+                              auditOutputAccessibility(bestHtml),
+                              auditOutputAccessibility(bestHtml),
+                              auditOutputAccessibility(bestHtml),
+                              runAxeAudit(bestHtml)
+                            ]);
+                            const endScores = [endAi1, endAi2, endAi3].map(a => a?.score).filter(s => typeof s === 'number');
+                            let avgScore;
+                            // No tiebreaker needed — we already have 3
+                            avgScore = endScores.length > 0 ? Math.round(endScores.reduce((a,b) => a+b, 0) / endScores.length) : bestAi?.score;
+                            warnLog('[Fix Remaining] Final scores: ' + endScores.join(', ') + ' → avg ' + avgScore);
+                            const finalAxeResult = endAxe || bestAxe;
+                            const finalAiResult = endAi1 || bestAi;
+                            if (finalAiResult) finalAiResult.score = avgScore;
+                            const finalScore = ((finalAiResult?.issues?.length || 0) === 0 && (finalAxeResult?.totalViolations || 0) === 0) ? 100 : avgScore;
                             const startCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
-                            setPdfFixResult(p => ({...p, accessibleHtml: bestHtml, verificationAudit: bestAi, axeAudit: bestAxe, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0) + totalPasses, htmlChars: bestHtml.length}));
+                            setPdfFixResult(p => ({...p, accessibleHtml: bestHtml, verificationAudit: finalAiResult, axeAudit: finalAxeResult, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0) + totalPasses, htmlChars: bestHtml.length}));
                             addToast(bestIssueCount < startCount ? `Fixed! ${startCount} → ${bestIssueCount} issues (${totalPasses} passes).` : `${totalPasses} passes completed. ${bestIssueCount} issues may need manual remediation.`, bestIssueCount < startCount ? 'success' : 'info');
-                          } catch(e) { warnLog('Fix remaining failed:', e); addToast('Fix remaining issues failed', 'error'); }
-                          setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = '';
+                          } catch(e) { warnLog('Fix remaining failed:', e); addToast('Fix remaining failed: ' + (e?.message || 'unknown error'), 'error'); }
+                          // Always reset loading state — prevents button from getting stuck
+                          finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
                         }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                           {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : <><Wrench size={16} /> {((pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : 'Run Additional Fix Pass'}</>}
                         </button>
@@ -49942,6 +50656,222 @@ Rules:
                         </label>
                       </div>
 
+                      {/* Save Structure as Accessible Template */}
+                      <button onClick={() => {
+                        const html = pdfFixResult?.accessibleHtml;
+                        if (!html) return;
+                        // Extract structural skeleton — headings, sections, tables, lists
+                        const structure = [];
+                        const headings = [...html.matchAll(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi)];
+                        headings.forEach(m => {
+                          structure.push({ type: 'heading', level: parseInt(m[1]), text: m[2].replace(/<[^>]*>/g, '').trim().substring(0, 80) });
+                        });
+                        // Extract table structures
+                        const tables = [...html.matchAll(/<table[^>]*>([\s\S]*?)<\/table>/gi)];
+                        tables.forEach((t, i) => {
+                          const headers = [...t[1].matchAll(/<th[^>]*>([\s\S]*?)<\/th>/gi)].map(h => h[1].replace(/<[^>]*>/g, '').trim());
+                          const caption = (t[1].match(/<caption[^>]*>([\s\S]*?)<\/caption>/i) || [])[1] || '';
+                          structure.push({ type: 'table', index: i, headers, caption: caption.replace(/<[^>]*>/g, '').trim(), rowCount: (t[1].match(/<tr/gi) || []).length });
+                        });
+                        // Extract list structures
+                        const lists = [...html.matchAll(/<(ul|ol)[^>]*>([\s\S]*?)<\/\1>/gi)];
+                        lists.forEach((l, i) => {
+                          const items = (l[2].match(/<li/gi) || []).length;
+                          structure.push({ type: 'list', ordered: l[1] === 'ol', itemCount: items, index: i });
+                        });
+                        // Extract landmarks
+                        const landmarks = [];
+                        if (html.includes('<main')) landmarks.push('main');
+                        if (html.includes('<nav')) landmarks.push('nav');
+                        if (html.includes('<header')) landmarks.push('header');
+                        if (html.includes('<footer')) landmarks.push('footer');
+                        if (html.includes('<aside')) landmarks.push('aside');
+                        // Extract images (just count and alt text patterns)
+                        const images = [...html.matchAll(/<img[^>]*alt="([^"]*)"[^>]*>/gi)].map(m => m[1]);
+                        // Build template
+                        const templateName = prompt('Template name (e.g., "IEP Document", "Course Syllabus"):');
+                        if (!templateName) return;
+                        const template = {
+                          version: 1,
+                          type: 'alloflow-template',
+                          name: templateName,
+                          createdAt: new Date().toISOString(),
+                          sourceFile: pendingPdfFile?.name || 'document',
+                          structure,
+                          landmarks,
+                          imageCount: images.length,
+                          imageAlts: images.slice(0, 5),
+                          hasSkipNav: html.includes('Skip to'),
+                          hasLangAttr: /lang="[^"]*"/.test(html),
+                          lang: (html.match(/lang="([^"]*)"/) || [])[1] || 'en',
+                          styles: {
+                            headingColor: (html.match(/h1[^{]*\{[^}]*color:\s*([^;"]+)/i) || [])[1] || '#1e293b',
+                            fontFamily: (html.match(/font-family:\s*([^;"]+)/i) || [])[1] || 'system-ui, sans-serif',
+                          },
+                        };
+                        // Save to localStorage for Firebase persistence
+                        try {
+                          const saved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]');
+                          saved.push(template);
+                          localStorage.setItem('alloflow_templates', JSON.stringify(saved));
+                        } catch(e) {}
+                        // Also download as JSON file (universal, FERPA-safe)
+                        const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a'); a.href = url;
+                        a.download = templateName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() + '.alloflow-template.json';
+                        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                        addToast('📐 Template "' + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', 'success');
+                      }} className="w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2">
+                        📐 Save Structure as Template (for future documents)
+                      </button>
+
+                      {/* Alternative Formats (matching Anthology Ally feature set) */}
+                      <details className="group">
+                        <summary className="text-[10px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
+                          📑 Alternative Formats <span className="text-[8px] text-slate-400 group-open:hidden">▸</span>
+                        </summary>
+                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-3 space-y-1.5">
+                          <p className="text-[9px] text-slate-500">Download the remediated document in accessible alternative formats</p>
+
+                          {/* ePub */}
+                          <button onClick={() => {
+                            const html = pdfFixResult?.accessibleHtml;
+                            if (!html) return;
+                            const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
+                            const textContent = html.replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim();
+                            // Build minimal ePub (ZIP containing XHTML + OPF + NCX)
+                            if (!window.JSZip) { addToast('ZIP library loading...', 'info'); return; }
+                            const zip = new window.JSZip();
+                            zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+                            zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+                            const opf = `<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier>
+    <dc:title>${title}</dc:title>
+    <dc:language>en</dc:language>
+    <dc:creator>AlloFlow Document Pipeline</dc:creator>
+    <dc:date>${new Date().toISOString().split('T')[0]}</dc:date>
+    <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z/, 'Z')}</meta>
+  </metadata>
+  <manifest>
+    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>
+    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+  </manifest>
+  <spine><itemref idref="content"/></spine>
+</package>`;
+                            zip.file('OEBPS/content.opf', opf);
+                            // Clean HTML for XHTML compliance
+                            let xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+                            if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
+                            zip.file('OEBPS/content.xhtml', xhtml);
+                            // Navigation document
+                            const headings = [...html.matchAll(/<h([1-3])[^>]*id="([^"]*)"[^>]*>([^<]+)/gi)];
+                            const navItems = headings.length > 0
+                              ? headings.map(m => `<li><a href="content.xhtml#${m[2]}">${m[3].trim()}</a></li>`).join('\n')
+                              : '<li><a href="content.xhtml">Document</a></li>';
+                            zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head><title>Navigation</title></head>
+<body><nav epub:type="toc"><h1>Table of Contents</h1><ol>${navItems}</ol></nav></body>
+</html>`);
+                            zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' }).then(blob => {
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a'); a.href = url; a.download = title + '.epub';
+                              document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                              addToast('📚 ePub downloaded — open in any e-reader', 'success');
+                            });
+                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                            📚 ePub (e-readers, mobile, Kindle)
+                          </button>
+
+                          {/* Braille BRF */}
+                          <button onClick={() => {
+                            const html = pdfFixResult?.accessibleHtml;
+                            if (!html) return;
+                            const text = html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+                            // ASCII Braille mapping (Grade 1 — letter-by-letter)
+                            const brailleMap = {'a':'1','b':'12','c':'14','d':'145','e':'15','f':'124','g':'1245','h':'125','i':'24','j':'245','k':'13','l':'123','m':'134','n':'1345','o':'135','p':'1234','q':'12345','r':'1235','s':'234','t':'2345','u':'136','v':'1236','w':'2456','x':'1346','y':'13456','z':'1356',' ':' ','1':'1','2':'12','3':'14','4':'145','5':'15','6':'124','7':'1245','8':'125','9':'24','0':'245','.':'256',',':'2','?':'236','!':'235',':':'25',';':'23','-':'36',"'":"3"};
+                            const dotToAscii = (dots) => {
+                              const val = dots.split('').reduce((s, d) => s + (1 << (parseInt(d) - 1)), 0);
+                              return String.fromCharCode(0x2800 + val);
+                            };
+                            let brf = '';
+                            const lines = text.split('\n');
+                            for (const line of lines) {
+                              let brailleLine = '';
+                              const lower = line.toLowerCase();
+                              for (let i = 0; i < lower.length; i++) {
+                                const ch = lower[i];
+                                if (brailleMap[ch]) {
+                                  // Add capital indicator before uppercase
+                                  if (line[i] !== lower[i]) brailleLine += dotToAscii('6');
+                                  // Add number indicator before digits
+                                  if (/[0-9]/.test(ch) && (i === 0 || !/[0-9]/.test(lower[i-1]))) brailleLine += dotToAscii('3456');
+                                  brailleLine += dotToAscii(brailleMap[ch]);
+                                } else {
+                                  brailleLine += ch;
+                                }
+                              }
+                              brf += brailleLine + '\n';
+                            }
+                            const blob = new Blob([brf], { type: 'text/plain;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); a.href = url;
+                            a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            addToast('⠃⠗⠇ Braille file downloaded (Grade 1 BRF)', 'success');
+                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                            ⠃⠗⠇ Electronic Braille (BRF)
+                          </button>
+
+                          {/* Plain text */}
+                          <button onClick={() => {
+                            const html = pdfFixResult?.accessibleHtml;
+                            if (!html) return;
+                            const text = html.replace(/<h([1-6])[^>]*>/gi, (m, l) => '\n' + '#'.repeat(parseInt(l)) + ' ')
+                              .replace(/<\/h[1-6]>/gi, '\n').replace(/<li[^>]*>/gi, '  • ').replace(/<\/li>/gi, '\n')
+                              .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<[^>]*>/g, '')
+                              .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+                              .replace(/&#160;/g, ' ').replace(/\n{4,}/g, '\n\n\n').trim();
+                            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); a.href = url;
+                            a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.txt';
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            addToast('📝 Plain text downloaded', 'success');
+                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                            📝 Plain Text (screen readers, large print)
+                          </button>
+
+                          {/* Markdown */}
+                          <button onClick={() => {
+                            const html = pdfFixResult?.accessibleHtml;
+                            if (!html) return;
+                            let md = html.replace(/<h1[^>]*>/gi, '# ').replace(/<\/h1>/gi, '\n\n')
+                              .replace(/<h2[^>]*>/gi, '## ').replace(/<\/h2>/gi, '\n\n')
+                              .replace(/<h3[^>]*>/gi, '### ').replace(/<\/h3>/gi, '\n\n')
+                              .replace(/<h4[^>]*>/gi, '#### ').replace(/<\/h4>/gi, '\n\n')
+                              .replace(/<strong[^>]*>/gi, '**').replace(/<\/strong>/gi, '**')
+                              .replace(/<em[^>]*>/gi, '*').replace(/<\/em>/gi, '*')
+                              .replace(/<a[^>]*href="([^"]*)"[^>]*>/gi, '[').replace(/<\/a>/gi, (m, o, s) => { const href = s.substring(0, o).match(/href="([^"]*)"/); return '](' + (href ? href[1] : '') + ')'; })
+                              .replace(/<li[^>]*>/gi, '- ').replace(/<\/li>/gi, '\n')
+                              .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n')
+                              .replace(/<img[^>]*alt="([^"]*)"[^>]*>/gi, '![$1](image)')
+                              .replace(/<[^>]*>/g, '').replace(/\n{4,}/g, '\n\n\n').trim();
+                            const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); a.href = url;
+                            a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.md';
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            addToast('📋 Markdown downloaded', 'success');
+                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                            📋 Markdown (LMS, wiki, docs)
+                          </button>
+                        </div>
+                      </details>
+
                       {/* Differentiation Tools */}
                       <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-3 space-y-2">
                         <div className="text-[10px] font-bold text-violet-600 uppercase tracking-widest">📚 Differentiate This Document</div>
@@ -49969,6 +50899,41 @@ Rules:
                           }
                         }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preBionicHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-200 text-violet-700 hover:bg-violet-100'}`}>
                           <b>Bi</b>onic {pdfFixResult._preBionicHtml ? '✓ ON (click to remove)' : 'Reading'}
+                        </button>
+
+                        {/* Line Guide — alternating background stripes for reading tracking */}
+                        <button onClick={() => {
+                          const html = pdfFixResult.accessibleHtml;
+                          if (pdfFixResult._preLineGuideHtml) {
+                            setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }));
+                            addToast('Line guide removed', 'info');
+                          } else {
+                            const snapshot = html;
+                            // Inject CSS that alternates background colors on every other line
+                            const guideCSS = `<style id="alloflow-line-guide">
+                              p, li, dd, td, blockquote, .section, article > div {
+                                background-image: repeating-linear-gradient(
+                                  to bottom,
+                                  transparent 0,
+                                  transparent 1.6em,
+                                  rgba(99, 102, 241, 0.06) 1.6em,
+                                  rgba(99, 102, 241, 0.06) 3.2em
+                                );
+                                background-size: 100% 3.2em;
+                                line-height: 1.6em;
+                              }
+                              @media (prefers-color-scheme: dark) {
+                                p, li, dd, td { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 1.6em, rgba(165,180,252,0.08) 1.6em, rgba(165,180,252,0.08) 3.2em); }
+                              }
+                            </style>`;
+                            let fixed = html;
+                            if (fixed.includes('</head>')) { fixed = fixed.replace('</head>', guideCSS + '</head>'); }
+                            else { fixed = guideCSS + fixed; }
+                            setPdfFixResult(prev => ({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }));
+                            addToast('📏 Line guide applied — alternating stripes help eye tracking', 'success');
+                          }
+                        }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preLineGuideHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-200 text-violet-700 hover:bg-violet-100'}`}>
+                          📏 Line Guide {pdfFixResult._preLineGuideHtml ? '✓ ON (click to remove)' : '(reading tracker)'}
                         </button>
 
                         {/* Translate with free-text input + datalist suggestions */}
@@ -50749,6 +51714,77 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <option value="intervention">🎯 Intervention Plan</option>
                     <option value="parentletter">👪 Parent Communication</option>
                   </select>
+
+                  {/* Load saved accessibility templates */}
+                  {(() => {
+                    let savedTemplates = [];
+                    try { savedTemplates = JSON.parse(localStorage.getItem('alloflow_templates') || '[]'); } catch(e) {}
+                    return savedTemplates.length > 0 ? (
+                      <div className="mt-1.5">
+                        <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Saved Accessible Templates</div>
+                        <div className="space-y-1">
+                          {savedTemplates.map((tmpl, i) => (
+                            <button key={i} onClick={() => {
+                              const doc = (exportPreviewRef.current || pdfPreviewRef.current)?.contentDocument;
+                              if (!doc) return;
+                              // Generate accessible HTML from template structure
+                              let html = `<!DOCTYPE html><html lang="${tmpl.lang || 'en'}"><head><meta charset="UTF-8"><title>${tmpl.name}</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:${tmpl.styles?.fontFamily || 'system-ui, sans-serif'};max-width:800px;margin:0 auto;padding:2rem;line-height:1.7;color:#1e293b}h1,h2,h3{color:${tmpl.styles?.headingColor || '#1e293b'}}table{width:100%;border-collapse:collapse;margin:1rem 0}th{background:#f1f5f9;padding:8px 12px;text-align:left;font-weight:700;border:1px solid #e2e8f0}td{padding:8px 12px;border:1px solid #e2e8f0}@media print{body{max-width:100%}}</style></head><body>`;
+                              html += '<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>';
+                              html += '<main id="main-content" role="main">';
+                              tmpl.structure.forEach(s => {
+                                if (s.type === 'heading') {
+                                  html += `<h${s.level}>${s.text || '[Section Title]'}</h${s.level}>\n<p>[Content for this section]</p>\n`;
+                                } else if (s.type === 'table') {
+                                  html += `<table role="table"><caption>${s.caption || '[Table Description]'}</caption><thead><tr>`;
+                                  (s.headers || ['Column 1', 'Column 2', 'Column 3']).forEach(h => { html += `<th scope="col">${h}</th>`; });
+                                  html += '</tr></thead><tbody>';
+                                  for (let r = 0; r < Math.min(s.rowCount || 3, 5); r++) {
+                                    html += '<tr>' + (s.headers || ['','','']).map(() => '<td>[Data]</td>').join('') + '</tr>';
+                                  }
+                                  html += '</tbody></table>\n';
+                                } else if (s.type === 'list') {
+                                  const tag = s.ordered ? 'ol' : 'ul';
+                                  html += `<${tag} role="list">`;
+                                  for (let li = 0; li < Math.min(s.itemCount || 3, 8); li++) { html += '<li>[List item]</li>'; }
+                                  html += `</${tag}>\n`;
+                                }
+                              });
+                              html += '</main></body></html>';
+                              doc.open(); doc.write(html); doc.close();
+                              try { doc.designMode = 'on'; } catch(e) {}
+                              addToast('📐 Template "' + tmpl.name + '" applied — click any text to edit', 'success');
+                            }} className="w-full text-[9px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
+                              <span>📐 {tmpl.name}</span>
+                              <span className="text-[8px] text-amber-400">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
+
+                  {/* Upload template JSON file */}
+                  <label className="mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[9px] font-bold text-amber-600 hover:bg-amber-50 cursor-pointer transition-colors">
+                    📂 Load Template File (.json)
+                    <input type="file" accept=".json" className="hidden" onChange={(e) => {
+                      const file = e.target.files?.[0]; if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        try {
+                          const tmpl = JSON.parse(ev.target.result);
+                          if (tmpl.type !== 'alloflow-template' || !tmpl.structure) { addToast('Invalid template file', 'error'); return; }
+                          // Save to localStorage
+                          try {
+                            const saved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]');
+                            if (!saved.some(s => s.name === tmpl.name)) { saved.push(tmpl); localStorage.setItem('alloflow_templates', JSON.stringify(saved)); }
+                          } catch(e) {}
+                          addToast('📐 Template "' + tmpl.name + '" loaded! It now appears in Saved Templates above.', 'success');
+                        } catch(err) { addToast('Failed to load template: ' + err.message, 'error'); }
+                      };
+                      reader.readAsText(file);
+                      e.target.value = '';
+                    }} />
+                  </label>
                 </div>
               </details>
 
@@ -52882,6 +53918,62 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <p className="text-xs text-purple-600 mt-1">AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing</p>
                 </div>
               </button>
+              <button onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">📄</span>
+                <div>
+                  <h3 className="font-bold text-emerald-800">Document Hub</h3>
+                  <p className="text-xs text-emerald-600 mt-1">Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)</p>
+                </div>
+              </button>
+              <button onClick={() => {
+                  setShowEducatorHub(false);
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'application/pdf,.pdf,image/*,.docx,.pptx';
+                  input.multiple = true;
+                  input.onchange = (e) => {
+                      const files = [...e.target.files];
+                      if (files.length === 0) return;
+                      const pdfFiles = files.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+                      if (pdfFiles.length === 1 && files.length === 1) {
+                          const file = pdfFiles[0];
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                              const base64 = reader.result.split(',')[1];
+                              setPendingPdfBase64(base64);
+                              setPendingPdfFile(file);
+                              setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
+                          };
+                          reader.readAsDataURL(file);
+                      } else if (pdfFiles.length > 1) {
+                          const batchFiles = [];
+                          let loaded = 0;
+                          pdfFiles.forEach(file => {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                  batchFiles.push({ name: file.name, base64: reader.result.split(',')[1], size: file.size });
+                                  loaded++;
+                                  if (loaded === pdfFiles.length) {
+                                      setPdfBatchFiles(batchFiles);
+                                      setPdfBatchMode(true);
+                                      setPdfAuditResult({ _choosing: true, fileName: pdfFiles.length + ' files', fileSize: pdfFiles.reduce((s, f) => s + f.size, 0) });
+                                  }
+                              };
+                              reader.readAsDataURL(file);
+                          });
+                      } else {
+                          // Non-PDF file (image, docx) → go through main upload handler
+                          handleFileUpload(e);
+                      }
+                  };
+                  input.click();
+              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">♿</span>
+                <div>
+                  <h3 className="font-bold text-teal-800">PDF Accessibility</h3>
+                  <p className="text-xs text-teal-600 mt-1">Upload PDFs for WCAG accessibility audit & remediation with axe-core verification</p>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -52911,8 +54003,15 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <p className="text-xs text-rose-600 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
                 </div>
               </button>
+              <button onClick={() => { setShowLearningHub(false); setShowStoryStage(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                <span className="text-4xl">🎭</span>
+                <div>
+                  <h3 className="font-bold text-violet-800">StoryStage</h3>
+                  <p className="text-xs text-violet-600 mt-1">Bring stories to life with character voices & literary analysis</p>
+                </div>
+              </button>
               <button onClick={() => { setShowLearningHub(false); setShowSelHub(true); setSelHubTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
-                <span className="text-4xl">{'\u2764\uFE0F\u200D\uD83E\uDE79'}</span>
+                <span className="text-4xl">{'\uD83D\uDC96'}</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('learning_hub.sel_title') || 'SEL Hub'}</h3>
                   <p className="text-xs text-emerald-600 mt-1">{t('learning_hub.sel_desc') || 'Social-emotional learning for self-awareness & growth'}</p>
@@ -53065,6 +54164,37 @@ Return ONLY the plain language summary in ${lang}.`, false);
             </div>
             );
         })()}
+        {showStoryStage && (() => {
+            const SS = window.AlloModules && window.AlloModules.StoryStage;
+            if (SS) {
+                return React.createElement(SS, {
+                    isOpen: true,
+                    onClose: () => setShowStoryStage(false),
+                    onCallGemini: callGemini,
+                    onCallTTS: callTTS,
+                    onCallImagen: callImagen,
+                    onCallGeminiImageEdit: callGeminiImageEdit,
+                    onCallGeminiVision: callGeminiVision,
+                    selectedVoice,
+                    gradeLevel,
+                    addToast,
+                    geminiVoices: GEMINI_VOICES,
+                    kokoroVoices: KOKORO_VOICES,
+                    studentNickname,
+                    handleScoreUpdate,
+                });
+            }
+            return (
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryStage(false)}>
+                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-4xl mb-3">🎭</div>
+                    <p className="text-lg font-bold text-slate-700">Loading StoryStage...</p>
+                    <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <button onClick={() => setShowStoryStage(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                </div>
+            </div>
+            );
+        })()}
         {showSelHub && (() => {
             const SH = window.AlloModules && window.AlloModules.SelHub;
             if (SH) {
@@ -53083,7 +54213,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
             return (
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowSelHub(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">{'\u2764\uFE0F\u200D\uD83E\uDE79'}</div>
+                    <div className="text-4xl mb-3">{'\uD83D\uDC96'}</div>
                     <p className="text-lg font-bold text-slate-700">Loading SEL Hub...</p>
                     <p className="text-sm text-slate-500 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setShowSelHub(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
