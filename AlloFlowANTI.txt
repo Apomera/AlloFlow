@@ -50675,6 +50675,41 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                           <b>Bi</b>onic {pdfFixResult._preBionicHtml ? '✓ ON (click to remove)' : 'Reading'}
                         </button>
 
+                        {/* Line Guide — alternating background stripes for reading tracking */}
+                        <button onClick={() => {
+                          const html = pdfFixResult.accessibleHtml;
+                          if (pdfFixResult._preLineGuideHtml) {
+                            setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }));
+                            addToast('Line guide removed', 'info');
+                          } else {
+                            const snapshot = html;
+                            // Inject CSS that alternates background colors on every other line
+                            const guideCSS = `<style id="alloflow-line-guide">
+                              p, li, dd, td, blockquote, .section, article > div {
+                                background-image: repeating-linear-gradient(
+                                  to bottom,
+                                  transparent 0,
+                                  transparent 1.6em,
+                                  rgba(99, 102, 241, 0.06) 1.6em,
+                                  rgba(99, 102, 241, 0.06) 3.2em
+                                );
+                                background-size: 100% 3.2em;
+                                line-height: 1.6em;
+                              }
+                              @media (prefers-color-scheme: dark) {
+                                p, li, dd, td { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 1.6em, rgba(165,180,252,0.08) 1.6em, rgba(165,180,252,0.08) 3.2em); }
+                              }
+                            </style>`;
+                            let fixed = html;
+                            if (fixed.includes('</head>')) { fixed = fixed.replace('</head>', guideCSS + '</head>'); }
+                            else { fixed = guideCSS + fixed; }
+                            setPdfFixResult(prev => ({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }));
+                            addToast('📏 Line guide applied — alternating stripes help eye tracking', 'success');
+                          }
+                        }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preLineGuideHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-200 text-violet-700 hover:bg-violet-100'}`}>
+                          📏 Line Guide {pdfFixResult._preLineGuideHtml ? '✓ ON (click to remove)' : '(reading tracker)'}
+                        </button>
+
                         {/* Translate with free-text input + datalist suggestions */}
                         <div className="flex gap-1.5">
                           <input id="pdf-translate-lang" list="pdf-translate-suggestions" className="flex-1 text-[10px] border border-violet-200 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label="Translation language — type any language or pick from suggestions" placeholder="🌐 Type language (e.g. Spanish, Tagalog, Dari...)" />
