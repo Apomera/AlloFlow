@@ -1535,12 +1535,13 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       }
     }
 
-    // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
+    // ── Final authoritative audit: full audit (not quickMode) for accurate scoring ──
+    // quickMode only samples head+tail of long docs, missing violations in the middle
     try {
-      const batchFinalAudit = await auditOutputAccessibility(accessibleHtml, true);
+      const batchFinalAudit = await auditOutputAccessibility(accessibleHtml, false);
       if (batchFinalAudit) {
         curVerification = batchFinalAudit;
-        log(`Final audit: score ${batchFinalAudit.score}, ${(batchFinalAudit.issues || []).length} remaining issues`);
+        log(`Final audit: score ${batchFinalAudit.score}, ${(batchFinalAudit.issues || []).length} remaining issues, ${(batchFinalAudit.passes || []).length} passes`);
       }
     } catch (batchFinalErr) {
       log('Final audit failed (using loop result): ' + batchFinalErr.message);
@@ -3872,10 +3873,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // The verification from the fix loop may have stale issues from an earlier pass.
       // This ensures the issues list matches what the user actually gets.
       try {
-        const finalAudit = await auditOutputAccessibility(accessibleHtml, true);
+        // Full audit (not quickMode) for final score — quickMode misses mid-document violations
+        const finalAudit = await auditOutputAccessibility(accessibleHtml, false);
         if (finalAudit) {
           verification = finalAudit;
-          warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues`);
+          warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes`);
         }
       } catch (finalAuditErr) {
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
