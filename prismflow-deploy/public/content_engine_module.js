@@ -1461,18 +1461,20 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     } finally {}
   };
   const stopPlayback = () => {
-    // Invalidate the current playback session so any in-flight playSequence
-    // chain stops at its next iteration check
-    playbackSessionRef.current = -1;
-    if (audioRef.current) {
-      const currentSrc = audioRef.current.src;
-      audioRef.current.pause();
-      audioRef.current.onended = null; // prevent chained playback
-      if (currentSrc && currentSrc.startsWith('blob:')) {
+    var _state = window.__contentEngineState || window.__docPipelineState || {};
+    var _playbackRef = _state.playbackSessionRef || (typeof playbackSessionRef !== 'undefined' ? playbackSessionRef : null);
+    var _audioRef = _state.audioRef || (typeof audioRef !== 'undefined' ? audioRef : null);
+    var _blobUrlsRef = _state.activeBlobUrlsRef || (typeof activeBlobUrlsRef !== 'undefined' ? activeBlobUrlsRef : null);
+    if (_playbackRef) _playbackRef.current = -1;
+    if (_audioRef && _audioRef.current) {
+      const currentSrc = _audioRef.current.src;
+      _audioRef.current.pause();
+      _audioRef.current.onended = null;
+      if (currentSrc && currentSrc.startsWith('blob:') && _blobUrlsRef) {
         URL.revokeObjectURL(currentSrc);
-        activeBlobUrlsRef.current.delete(currentSrc);
+        _blobUrlsRef.current.delete(currentSrc);
       }
-      audioRef.current = null;
+      _audioRef.current = null;
     }
     // Stop any Kokoro streaming queue
     if (window._kokoroTTS && window._kokoroTTS.stop) {

@@ -88,10 +88,18 @@
       { id: 'short', label: 'Short', words: '200-400', desc: 'Quick read, 1-2 scenes' },
       { id: 'medium', label: 'Medium', words: '500-800', desc: 'Standard story arc' },
       { id: 'long', label: 'Long', words: '900-1500', desc: 'Detailed with subplots' },
+      { id: 'custom', label: 'Custom', words: '', desc: 'Specify exact word count' },
     ];
+    var _customWordCount = useState('600'); var customWordCount = _customWordCount[0]; var setCustomWordCount = _customWordCount[1];
 
     // Script state
     var _script = useState(null); var script = _script[0]; var setScript = _script[1];
+
+    // Storybook pages (group lines into pages for page-by-page navigation)
+    var _currentPage = useState(0); var currentPage = _currentPage[0]; var setCurrentPage = _currentPage[1];
+    var _pageImages = useState({}); var pageImages = _pageImages[0]; var setPageImages = _pageImages[1];
+    var _pageImgLoading = useState({}); var pageImgLoading = _pageImgLoading[0]; var setPageImgLoading = _pageImgLoading[1];
+    var LINES_PER_PAGE = 6;
     // script = { title, characters: [{id, name, voice, color, portrait}], lines: [{id, speaker, text, type:'dialogue'|'narration'|'stage-direction'}] }
 
     // Voice assignment

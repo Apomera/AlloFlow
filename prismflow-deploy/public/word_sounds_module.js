@@ -3745,7 +3745,7 @@
         },
       );
       const ts = React.useCallback(
-        (key, params = {}) => getWordSoundsString(t, key, params),
+        (key, params = {}) => typeof getWordSoundsString === 'function' ? getWordSoundsString(t, key, params) : (t(key) || key),
         [t],
       );
       const ALL_ACTIVITIES = [

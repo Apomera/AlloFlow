@@ -551,17 +551,31 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
     log('Phase 3: Generating accessible HTML...');
 
     let batchDocStyle = { headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', headerBg: '#1e3a5f', headerText: '#ffffff', bodyFont: 'system-ui, sans-serif', tableBg: '#f1f5f9', tableBorder: '#cbd5e1' };
-    try {
-      const styleRes = await callGeminiVision(
-        `Analyze the visual design of this PDF. Extract the exact color scheme.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex","bgColor":"hex","headerBg":"hex","headerText":"hex","tableBg":"hex","tableBorder":"hex"}`,
-        base64Data, 'application/pdf'
-      );
-      if (styleRes) {
-        let sc = styleRes.trim();
-        if (sc.indexOf('`' + '``') !== -1) { const ps = sc.split('`' + '``'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('`' + '``') !== -1) sc = sc.substring(0, sc.lastIndexOf('`' + '``')); }
-        batchDocStyle = { ...batchDocStyle, ...JSON.parse(sc) };
-      }
-    } catch(e) {}
+    // Check brand mode: 'auto' = extract from this PDF (default), 'upload' = use uploaded brand, 'none' = defaults only
+    const _brandMode = typeof window !== 'undefined' ? (window.__pdfBrandMode || 'auto') : 'auto';
+    const _brandOverride = typeof window !== 'undefined' ? window.__pdfBrandOverride : null;
+    if (_brandMode === 'upload' && _brandOverride) {
+      // Use colors extracted from uploaded brand reference
+      batchDocStyle = { ...batchDocStyle, ..._brandOverride };
+      log('Using uploaded brand colors');
+    } else if (_brandMode === 'none') {
+      // Skip brand extraction, use defaults
+      log('Using default palette (no branding)');
+    } else {
+      // Auto-extract from this PDF
+      try {
+        const styleRes = await callGeminiVision(
+          `Analyze the visual design of this PDF. Extract the exact color scheme.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex","bgColor":"hex","headerBg":"hex","headerText":"hex","tableBg":"hex","tableBorder":"hex"}`,
+          base64Data, 'application/pdf'
+        );
+        if (styleRes) {
+          let sc = styleRes.trim();
+          if (sc.indexOf('`' + '``') !== -1) { const ps = sc.split('`' + '``'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('`' + '``') !== -1) sc = sc.substring(0, sc.lastIndexOf('`' + '``')); }
+          batchDocStyle = { ...batchDocStyle, ...JSON.parse(sc) };
+          log('Extracted brand colors from original PDF');
+        }
+      } catch(e) {}
+    }
 
     // Check for user style preference (set via UI before remediation)
     const _stylePref = typeof window !== 'undefined' ? window.__pdfStylePreference : '';
