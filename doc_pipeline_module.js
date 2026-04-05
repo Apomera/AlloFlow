@@ -800,6 +800,102 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         return `id="${id}-${counter}"`;
       });
     });
+
+    // 14. Fix orphaned <li> elements not inside <ul> or <ol>
+    accessibleHtml = accessibleHtml.replace(/(?<!\n\s*<\/[uo]l>)\s*(<li[\s>])/gi, (match, li, offset) => {
+      // Check if this <li> is already inside a <ul> or <ol> by looking back
+      const before = accessibleHtml.substring(Math.max(0, offset - 200), offset);
+      const lastUlOl = Math.max(before.lastIndexOf('<ul'), before.lastIndexOf('<ol'));
+      const lastClose = Math.max(before.lastIndexOf('</ul'), before.lastIndexOf('</ol'));
+      if (lastUlOl > lastClose) return match; // already inside a list
+      aiFixCount++;
+      return '<ul>' + li;
+    });
+    // Close any unclosed <ul> we just opened (simplified — catches most cases)
+    const openUls = (accessibleHtml.match(/<ul[\s>]/gi) || []).length;
+    const closeUls = (accessibleHtml.match(/<\/ul>/gi) || []).length;
+    if (openUls > closeUls) {
+      for (let ui = 0; ui < openUls - closeUls; ui++) {
+        accessibleHtml = accessibleHtml.replace(/<\/li>(?![\s\S]*?<li[\s>])/, '</li></ul>');
+        aiFixCount++;
+      }
+    }
+
+    // 15. Fix form inputs without labels
+    accessibleHtml = accessibleHtml.replace(/<input([^>]*)>/gi, (match, attrs) => {
+      if (/aria-label|aria-labelledby|id="[^"]*"/.test(attrs) && /<label[^>]*for=/.test(accessibleHtml)) return match;
+      if (/aria-label/.test(attrs)) return match;
+      const type = (attrs.match(/type="([^"]*)"/i) || [])[1] || 'text';
+      const placeholder = (attrs.match(/placeholder="([^"]*)"/i) || [])[1] || '';
+      const name = (attrs.match(/name="([^"]*)"/i) || [])[1] || '';
+      const label = placeholder || name || type;
+      if (label && label !== 'hidden' && label !== 'submit') {
+        aiFixCount++;
+        return `<input aria-label="${label}"${attrs}>`;
+      }
+      return match;
+    });
+
+    // 16. Fix buttons without accessible names
+    accessibleHtml = accessibleHtml.replace(/<button([^>]*)>\s*<\/button>/gi, (match, attrs) => {
+      if (/aria-label/.test(attrs)) return match;
+      aiFixCount++;
+      return `<button aria-label="Button"${attrs}></button>`;
+    });
+
+    // 17. Fix iframes without titles
+    accessibleHtml = accessibleHtml.replace(/<iframe([^>]*)>/gi, (match, attrs) => {
+      if (/title=/.test(attrs)) return match;
+      const src = (attrs.match(/src="([^"]*)"/i) || [])[1] || '';
+      const domain = src.replace(/https?:\/\//, '').split('/')[0].substring(0, 30) || 'Embedded content';
+      aiFixCount++;
+      return `<iframe title="${domain}"${attrs}>`;
+    });
+
+    // 18. Fix positive tabindex values (should be 0 or -1)
+    accessibleHtml = accessibleHtml.replace(/tabindex="(\d+)"/gi, (match, val) => {
+      if (val === '0' || val === '-1') return match;
+      aiFixCount++;
+      return 'tabindex="0"';
+    });
+
+    // 19. Fix role="img" without alt/aria-label
+    accessibleHtml = accessibleHtml.replace(/role="img"([^>]*)>/gi, (match, attrs) => {
+      if (/aria-label|alt=/.test(attrs)) return match;
+      aiFixCount++;
+      return `role="img" aria-label="Image"${attrs}>`;
+    });
+
+    // 20. Fix <svg> without accessible name
+    accessibleHtml = accessibleHtml.replace(/<svg([^>]*)>/gi, (match, attrs) => {
+      if (/aria-label|aria-hidden|role="presentation"/.test(attrs)) return match;
+      if (/<title>/.test(accessibleHtml.substring(accessibleHtml.indexOf(match), accessibleHtml.indexOf(match) + 500))) return match;
+      aiFixCount++;
+      return `<svg aria-hidden="true"${attrs}>`;
+    });
+
+    // 21. Ensure <html> has both lang and dir attributes
+    if (accessibleHtml.includes('lang="ar"') || accessibleHtml.includes('lang="he"') || accessibleHtml.includes('lang="fa"') || accessibleHtml.includes('lang="ur"')) {
+      if (!accessibleHtml.includes('dir=')) {
+        accessibleHtml = accessibleHtml.replace(/<html([^>]*)>/, '<html dir="rtl"$1>');
+        aiFixCount++;
+      }
+    }
+
+    // 22. Ensure all <table> elements have role="table" for screen readers
+    accessibleHtml = accessibleHtml.replace(/<table(?![^>]*role=)([^>]*)>/gi, () => {
+      aiFixCount++;
+      return '<table role="table"$1>';
+    });
+
+    // 23. Add aria-current="page" to self-referencing links (common a11y best practice)
+    // (skipped — requires knowing the current page URL)
+
+    // 24. Ensure <nav> elements have aria-label
+    accessibleHtml = accessibleHtml.replace(/<nav(?![^>]*aria-label)([^>]*)>/gi, () => {
+      aiFixCount++;
+      return '<nav aria-label="Navigation"$1>';
+    });
     if (aiFixCount > 0) log(`Applied ${aiFixCount} deterministic fixes`);
 
     // ── Phase 4: Verify with both engines ──
