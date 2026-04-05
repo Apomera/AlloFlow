@@ -2459,7 +2459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = '#fffde0'; gfx.beginPath(); gfx.arc(sunX, sunY, 8, 0, Math.PI * 2); gfx.fill();
 
           // Lens flare (when looking toward sun)
-          if (!dayNight.isNight) {
+          if (typeof dayNight !== 'undefined' && dayNight && !dayNight.isNight) {
             var flareAlpha = Math.max(0, 0.12 - Math.abs(sunX - W / 2) / W * 0.3);
             if (flareAlpha > 0.01) {
               var flarePoints = [0.3, 0.5, 0.65, 0.8];
