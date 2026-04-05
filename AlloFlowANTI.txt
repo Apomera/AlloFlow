@@ -49762,6 +49762,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </div>
               </div>
+            ) : pdfAuditResult && pdfAuditResult.score < 0 ? (
+              /* Audit failed — show clear error with retry + proceed options */
+              <div role="alert" className="rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
+                <div className="p-6 text-center bg-gradient-to-r from-slate-600 to-slate-700 text-white">
+                  <div className="text-4xl mb-2">⚠️</div>
+                  <h3 className="text-lg font-bold">Audit Unavailable</h3>
+                  <p className="text-sm opacity-80 mt-1">The AI accessibility audit could not complete. This is usually caused by a temporary API issue, rate limiting, or a very large/complex PDF.</p>
+                </div>
+                <div className="p-4 bg-white space-y-3">
+                  <p className="text-xs text-slate-600 text-center">You can still proceed — Fix & Verify will transform the document and run a full audit afterward.</p>
+                  <div className="flex gap-2 justify-center">
+                    <button onClick={async () => { setPdfAuditResult(null); addToast('Retrying audit...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">🔄 Retry Audit</button>
+                    <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                  </div>
+                </div>
+              </div>
             ) : pdfAuditResult && (
               <div role="status" aria-live="polite" aria-label={`PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`}>
                 {/* Header with score */}
