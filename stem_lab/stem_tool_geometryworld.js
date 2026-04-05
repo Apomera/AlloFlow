@@ -2734,15 +2734,25 @@
             );
           })
         ),
-        // 3D Canvas container
-        el('div', {
-          ref: function(node) {
-            if (node && !window[engineKey] && threeReady) {
-              setTimeout(function() { initEngine(node); }, 100);
-            }
-          },
-          style: { flex: 1, position: 'relative' }
-        })
+        // 3D Canvas container (or fallback if WebGL unavailable)
+        window[engineKey + '_failed']
+          ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1e293b, #0f172a)', borderRadius: '12px', padding: '32px' } },
+              el('div', { style: { textAlign: 'center', maxWidth: '400px' } },
+                el('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83C\uDFAE'),
+                el('div', { style: { color: '#f1f5f9', fontSize: '16px', fontWeight: 700, marginBottom: '8px' } }, 'WebGL Not Available'),
+                el('div', { style: { color: '#94a3b8', fontSize: '12px', lineHeight: '1.6' } },
+                  'Geometry World requires WebGL for 3D rendering. This environment may not support it. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.'
+                )
+              )
+            )
+          : el('div', {
+              ref: function(node) {
+                if (node && !window[engineKey] && threeReady) {
+                  setTimeout(function() { initEngine(node); }, 100);
+                }
+              },
+              style: { flex: 1, position: 'relative' }
+            })
       );
     }
   });
