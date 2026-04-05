@@ -218,6 +218,9 @@
 
       // Life Skills Lab Global State
       var [stemState, setStemState] = React.useState({});
+      // d / upd — generic state shorthand used by the category filter and quest builder
+      var d = stemState;
+      var upd = function(key, val) { setStemState(function(prev) { var next = Object.assign({}, prev); next[key] = val; return next; }); };
 
       // ── Inject XP CSS Keyframes ──
       React.useEffect(function () {

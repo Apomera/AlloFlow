@@ -7171,27 +7171,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7207,7 +7207,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c64ce2e/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4d9f1de/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -25628,9 +25628,40 @@ Return ONLY JSON.`;
         const standardsBlock = standards && standards.trim().length > 0
             ? `Mandatory Standards: ${standards}`
             : "Mandatory Standards: None specific (Focus on general comprehension)";
-        const existingBlock = existingResources.length > 0
-            ? `ALREADY GENERATED: ${existingResources.join(', ')}`
-            : "ALREADY GENERATED: None";
+        // Build rich context about existing resources so the lesson plan can reference specifics
+        let existingBlock = "ALREADY GENERATED: None";
+        if (existingResources.length > 0) {
+            const resourceSummaries = history.filter(h => h.type && h.type !== 'lesson-plan').slice(-15).map(h => {
+                const type = h.type;
+                const data = h.data || h.content || {};
+                let summary = type;
+                try {
+                    if (type === 'persona' && Array.isArray(data)) {
+                        summary = `persona: Characters available for interview: ${data.map(c => c.name || c.title || 'Unknown').join(', ')}`;
+                    } else if (type === 'dbq' && data.title) {
+                        summary = `dbq: "${data.title}" with ${(data.documents || []).length} documents. Includes: ${(data.documents || []).map(d => d.title || d.id).join(', ')}`;
+                    } else if (type === 'quiz' && data.questions) {
+                        summary = `quiz: ${data.questions.length} questions covering: ${(data.questions.slice(0, 3).map(q => (q.question || '').substring(0, 50))).join('; ')}`;
+                    } else if (type === 'glossary' && data.terms) {
+                        summary = `glossary: ${data.terms.length} terms including: ${data.terms.slice(0, 5).map(t2 => t2.term || t2.word || '').join(', ')}`;
+                    } else if (type === 'timeline' && data.events) {
+                        summary = `timeline: ${data.events.length} events from "${(data.events[0]?.title || '').substring(0, 30)}" to "${(data.events[data.events.length - 1]?.title || '').substring(0, 30)}"`;
+                    } else if (type === 'adventure' && data.title) {
+                        summary = `adventure: "${data.title}" — ${data.mode || 'choice'} mode`;
+                    } else if (type === 'concept-sort' && data.categories) {
+                        summary = `concept-sort: Categories: ${data.categories.map(c => c.name || c.label || '').join(', ')}`;
+                    } else if (type === 'simplified' && typeof data === 'string') {
+                        summary = `simplified: ${data.substring(0, 80)}...`;
+                    } else if (type === 'analysis' && typeof data === 'string') {
+                        summary = `analysis: ${data.substring(0, 80)}...`;
+                    } else if (h.title) {
+                        summary = `${type}: "${h.title}"`;
+                    }
+                } catch(e) { summary = type; }
+                return summary;
+            });
+            existingBlock = `ALREADY GENERATED RESOURCES (reference these specifically in the lesson plan — tell teachers exactly which resource to use and what content it contains):\n${resourceSummaries.map((s, i) => `  ${i + 1}. ${s}`).join('\n')}`;
+        }
         const VALID_TOOLS_LIST = "analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, persona, dbq";
         let countConstraint = "";
         let allowDuplicates = false;
