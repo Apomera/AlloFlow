@@ -49292,6 +49292,138 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             {'\ud83d\udce5'} Download All (ZIP)
                           </button>
                           <button onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">New Batch</button>
+                          <button onClick={() => {
+                            const queue = pdfBatchQueue;
+                            const summary = pdfBatchSummary;
+                            const done = queue.filter(f => f.status === 'done');
+                            const failed = queue.filter(f => f.status === 'failed');
+                            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                            // Categorize by score ranges
+                            const excellent = done.filter(f => (f.result?.afterScore || 0) >= 90);
+                            const good = done.filter(f => (f.result?.afterScore || 0) >= 70 && (f.result?.afterScore || 0) < 90);
+                            const needsWork = done.filter(f => (f.result?.afterScore || 0) < 70);
+
+                            // Common violations across all documents
+                            const allViolations = {};
+                            done.forEach(f => {
+                              const issues = f.result?.verificationAudit?.issues || [];
+                              issues.forEach(i => {
+                                const key = (i.wcag || 'unknown') + ': ' + (i.issue || '').substring(0, 60);
+                                allViolations[key] = (allViolations[key] || 0) + 1;
+                              });
+                            });
+                            const topViolations = Object.entries(allViolations).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+                            const win = window.open('', '_blank');
+                            if (!win) { addToast('Pop-up blocked', 'error'); return; }
+                            win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Compliance Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.header{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:24px 32px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:20px;font-weight:800;color:#fff}
+.header .date{font-size:12px;color:#a5b4fc}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px 32px}
+.card{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155}
+.card-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;margin-bottom:8px}
+.card-value{font-size:36px;font-weight:900}
+.card-sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.section{padding:0 32px 24px}
+.section h2{font-size:14px;font-weight:800;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse}
+th{background:#1e293b;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:2px solid #334155}
+td{padding:10px 12px;border-bottom:1px solid #1e293b;font-size:13px}
+tr:hover{background:#1e293b50}
+.score-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-weight:800;font-size:12px}
+.excellent{background:#16a34a20;color:#4ade80}
+.good{background:#d9770620;color:#fbbf24}
+.needs-work{background:#dc262620;color:#f87171}
+.bar{height:8px;border-radius:4px;transition:width 0.5s}
+.chart{display:flex;gap:4px;height:40px;align-items:end}
+.chart-bar{flex:1;border-radius:3px 3px 0 0;min-width:8px;transition:height 0.5s}
+.violation-row{display:flex;justify-content:space-between;padding:8px 12px;background:#1e293b;border-radius:8px;margin-bottom:4px;font-size:12px}
+.footer{padding:24px 32px;text-align:center;font-size:11px;color:#475569;border-top:1px solid #1e293b}
+@media print{body{background:white;color:#1e293b}.header{background:#4f46e5;-webkit-print-color-adjust:exact;print-color-adjust:exact}.card{border:1px solid #e2e8f0}th{background:#f1f5f9;color:#1e293b;-webkit-print-color-adjust:exact;print-color-adjust:exact}.violation-row{background:#f8fafc}}
+</style></head><body>
+<div class="header">
+  <div><h1>♿ Accessibility Compliance Dashboard</h1><div class="date">${date} · ${queue.length} documents analyzed · AlloFlow Pipeline</div></div>
+  <button onclick="window.print()" style="background:white;color:#4f46e5;border:none;padding:8px 16px;border-radius:8px;font-weight:bold;cursor:pointer">🖨️ Print</button>
+</div>
+
+<div class="grid">
+  <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} succeeded · ${failed.length} failed</div></div>
+  <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: +${summary?.avgImprovement || 0}</div></div>
+  <div class="card"><div class="card-title">Compliance Rate</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+</div></div>
+  <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
+</div>
+
+<div class="section">
+  <h2>Score Distribution</h2>
+  <div style="display:flex;gap:24px;margin-bottom:16px">
+    <div style="flex:1;background:#1e293b;border-radius:12px;padding:16px;border:1px solid #334155">
+      <div class="chart">${done.map(f => {
+        const s = f.result?.afterScore || 0;
+        const color = s >= 90 ? '#4ade80' : s >= 70 ? '#fbbf24' : '#f87171';
+        return '<div class="chart-bar" style="height:' + Math.max(4, s) + '%;background:' + color + '" title="' + f.fileName + ': ' + s + '/100"></div>';
+      }).join('')}</div>
+      <div style="font-size:10px;color:#64748b;margin-top:8px;text-align:center">Each bar = one document (height = score)</div>
+    </div>
+    <div style="width:200px;display:flex;flex-direction:column;gap:8px">
+      <div style="background:#16a34a20;border:1px solid #16a34a40;border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:900;color:#4ade80">${excellent.length}</div>
+        <div style="font-size:10px;color:#4ade80;font-weight:700">EXCELLENT (90+)</div>
+      </div>
+      <div style="background:#d9770620;border:1px solid #d9770640;border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:900;color:#fbbf24">${good.length}</div>
+        <div style="font-size:10px;color:#fbbf24;font-weight:700">GOOD (70-89)</div>
+      </div>
+      <div style="background:#dc262620;border:1px solid #dc262640;border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:24px;font-weight:900;color:#f87171">${needsWork.length}</div>
+        <div style="font-size:10px;color:#f87171;font-weight:700">NEEDS WORK (<70)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Document Details</h2>
+  <table><thead><tr><th>#</th><th>Document</th><th>Before</th><th>After</th><th>Gain</th><th>Fix Passes</th><th>Status</th></tr></thead><tbody>
+  ${queue.map((f, i) => {
+    const r = f.result;
+    const after = r?.afterScore || 0;
+    const cls = after >= 90 ? 'excellent' : after >= 70 ? 'good' : 'needs-work';
+    return '<tr><td>' + (i+1) + '</td><td>' + f.fileName + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—') + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + (f.error || '')) + '</td></tr>';
+  }).join('')}
+  </tbody></table>
+</div>
+
+${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (Training Priorities)</h2>' +
+  topViolations.map(([v, count]) => '<div class="violation-row"><span>' + v + '</span><span style="font-weight:800;color:#f87171">' + count + ' docs</span></div>').join('') +
+  '<p style="font-size:11px;color:#64748b;margin-top:12px">These violations appeared across multiple documents — addressing them through faculty training would have the highest impact.</p></div>' : ''}
+
+<div class="section">
+  <h2>Compliance Summary</h2>
+  <div style="background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155">
+    <p style="font-size:13px;line-height:1.8;color:#cbd5e1">
+      Of <strong>${queue.length}</strong> documents analyzed, <strong>${excellent.length}</strong> (${done.length > 0 ? Math.round(excellent.length/done.length*100) : 0}%) meet WCAG 2.1 Level AA compliance (score ≥ 90).
+      ${good.length > 0 ? '<strong>' + good.length + '</strong> document' + (good.length > 1 ? 's are' : ' is') + ' partially compliant (70-89) and may meet requirements with minor additional remediation.' : ''}
+      ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's require' : ' requires') + ' significant remediation or expert review to meet compliance standards.' : ''}
+    </p>
+    <p style="font-size:11px;color:#64748b;margin-top:12px">Standards: WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
+    <p style="font-size:11px;color:#64748b">Methodology: AI multi-auditor triangulation + axe-core (Deque) automated verification · 39 deterministic fixes + 17 surgical AI-diagnosed fixes + iterative AI remediation loop</p>
+  </div>
+</div>
+
+<div class="footer">
+  Generated by AlloFlow Accessibility Pipeline · ${date} · <a href="https://prismflow-911fe.web.app" style="color:#6366f1">prismflow-911fe.web.app</a>
+</div>
+</body></html>`);
+                            win.document.close();
+                            addToast('📊 Dashboard opened', 'success');
+                          }} className="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
+                            📊 Dashboard
+                          </button>
                         </>
                       )}
                     </div>
