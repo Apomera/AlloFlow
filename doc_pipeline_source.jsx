@@ -31,7 +31,7 @@ var createDocPipeline = function(deps) {
       setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
       setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle,
       setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting,
-      setExportAuditLoading, setExportAuditResult;
+      exportAuditResult, setExportAuditLoading, setExportAuditResult;
   // Bind all vars from the state bag before each public function call
   var _bindState = function() {
     var s = _s();
@@ -61,6 +61,7 @@ var createDocPipeline = function(deps) {
     setIsGeneratingStyle = s.setIsGeneratingStyle; setCustomExportCSS = s.setCustomExportCSS;
     setInputText = s.setInputText; setGenerationStep = s.setGenerationStep;
     setIsExtracting = s.setIsExtracting;
+    exportAuditResult = s.exportAuditResult;
     setExportAuditLoading = s.setExportAuditLoading; setExportAuditResult = s.setExportAuditResult;
   };
 
@@ -2079,10 +2080,10 @@ HTML section ${chunkNum}/${chunks.length}:
           // Split content into segments: <li>...</li> blocks and everything else
           let newContent = content;
 
-          // Wrap bare <div>, <p>, <span>, <a> inside <li>
+          // Wrap bare <div>, <p>, <span>, <a> inside <li> (rewritten to avoid lookbehind for Safari < 16.4 compat)
           newContent = newContent.replace(
-            /(?<=<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)\s*(<(?:div|p|span|a|strong|em|b|i|h[1-6])\b[^>]*>[\s\S]*?<\/(?:div|p|span|a|strong|em|b|i|h[1-6])>)\s*(?=<li|<\/(?:ul|ol)>)/gi,
-            (bareEl, inner) => { fixCount++; return '<li>' + inner + '</li>'; }
+            /(<(?:ul|ol)(?:\s[^>]*)?>|<\/li>)(\s*)(<(?:div|p|span|a|strong|em|b|i|h[1-6])\b[^>]*>[\s\S]*?<\/(?:div|p|span|a|strong|em|b|i|h[1-6])>)(\s*)(?=<li|<\/(?:ul|ol)>)/gi,
+            (m, prefix, ws1, inner, ws2) => { fixCount++; return prefix + '<li>' + inner + '</li>'; }
           );
 
           // Wrap bare text nodes (non-whitespace text between closing </li> and opening <li>)
@@ -3327,6 +3328,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         beforeAxeScore,
         afterScore: finalAfterScore,
         axeScore: axeResults ? axeResults.score : null,
+        axeViolations: axeResults ? axeResults.totalViolations : 0,
         autoFixPasses,
         needsExpertReview,
         docStyle, // extracted color palette for auto brand match in preview

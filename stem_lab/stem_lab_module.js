@@ -227,7 +227,12 @@
         s.textContent = [
           '@keyframes stemXpShimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }',
           '@keyframes stemXpBadgePulse { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }',
-          '@keyframes stemXpFloat { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-38px); } }'
+          '@keyframes stemXpFloat { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-38px); } }',
+          // WCAG 2.4.7: Focus visible outlines for keyboard navigation
+          '.stem-lab-modal button:focus-visible, .stem-lab-modal input:focus-visible, .stem-lab-modal select:focus-visible, .stem-lab-modal textarea:focus-visible, .stem-lab-modal [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
+          '.stem-lab-modal canvas:focus-visible { outline: 3px solid #6366f1 !important; outline-offset: 2px !important; }',
+          // Skip mouse users — only show outlines for keyboard
+          '.stem-lab-modal :focus:not(:focus-visible) { outline: none !important; }'
         ].join('\n');
         document.head.appendChild(s);
         return function () { var el = document.getElementById('stem-xp-keyframes'); if (el) el.remove(); };

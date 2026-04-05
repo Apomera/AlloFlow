@@ -2918,9 +2918,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── MENU VIEW ──
       if (view === 'menu') {
         return h('div', { style: { minHeight: '500px', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', overflow: 'hidden' } },
+          // Back button
+          h('div', { style: { padding: '12px 16px 0', display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('button', {
+              onClick: function() { if (ctx.setStemLabTool) ctx.setStemLabTool(null); },
+              'aria-label': 'Back to STEM Lab',
+              style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '6px 12px', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }
+            }, '\u2190 STEM Lab')
+          ),
           // Header
-          h('div', { style: { textAlign: 'center', padding: '32px 24px 16px' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '✈️'),
+          h('div', { style: { textAlign: 'center', padding: '16px 24px 16px' } },
+            h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\u2708\uFE0F'),
             h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '2px' } }, 'SKYSCHOOL'),
             h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, 'Learn to fly. Learn the world.')
           ),

@@ -17975,6 +17975,7 @@ Return ONLY valid JSON:
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
     pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
+    exportAuditResult,
     // setters
     setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
     setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,

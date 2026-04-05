@@ -936,17 +936,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               gardenPollinators + ' pollinator plant' + (gardenPollinators !== 1 ? 's' : '') + ' detected in your Companion Planting garden. Your bees have ' + gardenBonus + '% better foraging. Plant more flowers to strengthen the connection!')),
 
           // Colony collapsed state
-          !colonySurvived && h('div', { className: 'bg-red-50 rounded-xl border-2 border-red-300 p-5 text-center space-y-3' },
-            h('div', { className: 'text-4xl' }, '💀'),
-            h('h3', { className: 'text-lg font-black text-red-800' }, 'Colony Collapse'),
-            h('p', { className: 'text-sm text-red-600' }, 'Your colony has fallen below 500 workers. The remaining bees cannot maintain brood temperature, defend against robbers, or forage enough to survive. This is Colony Collapse.'),
-            h('div', { className: 'bg-white rounded-lg p-3 text-xs text-slate-700 border border-red-200 text-left' },
-              h('strong', null, '🔬 What went wrong? '),
-              varroaLevel > 40 ? 'High varroa mite levels ('+varroaLevel+'%) weakened the colony through virus transmission. Earlier mite treatment might have saved them.' :
-              pesticideExposure > 25 ? 'Cumulative pesticide exposure ('+pesticideExposure+'%) poisoned foragers and impaired colony immunity. Advocating for no-spray zones protects bees.' :
-              honey < 5 ? 'Starvation — the colony ran out of honey stores. Supplemental feeding during dearth periods is critical.' :
-              'Multiple stressors combined — varroa, nutrition, and habitat loss create a "death spiral" where each problem amplifies the others.'),
-            h('button', { onClick: function() { updAll({ day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100, honey: 20, pollen: 15, wax: 5, varroaLevel: 5, morale: 80, foragingEfficiency: 70, score: 0, colonySurvived: true, pesticideExposure: 0, habitat: 50, actionPoints: 3, totalHoney: 0 }); }, className: 'px-4 py-2 bg-amber-600 text-white rounded-lg font-bold text-sm hover:bg-amber-700' }, '🔄 Start New Colony')),
+          !colonySurvived && h('div', { className: 'bg-gradient-to-b from-red-50 to-orange-50 rounded-xl border-2 border-red-300 p-5 space-y-3', role: 'alert' },
+            h('div', { className: 'text-center' },
+              h('div', { className: 'text-4xl mb-1' }, '\uD83D\uDC1D\uD83D\uDE22'),
+              h('h3', { className: 'text-lg font-black text-red-800' }, 'Colony Collapse'),
+              h('p', { className: 'text-sm text-red-600' }, 'Your colony has fallen below 500 workers and can no longer sustain itself.')
+            ),
+            // Stats summary
+            h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
+              [
+                ['\uD83D\uDCC5', 'Survived', day + ' days'],
+                ['\uD83C\uDF6F', 'Total Honey', totalHoney + ' lbs'],
+                ['\u2B50', 'Score', score + ' pts'],
+                ['\uD83C\uDF3F', 'Habitat', habitat + '%']
+              ].map(function(s) {
+                return h('div', { key: s[1], className: 'bg-white rounded-lg p-2 border border-red-200' },
+                  h('div', { className: 'text-sm' }, s[0]),
+                  h('p', { className: 'text-xs font-bold text-slate-700' }, s[2]),
+                  h('p', { className: 'text-[9px] text-slate-400' }, s[1])
+                );
+              })
+            ),
+            // Diagnosis
+            h('div', { className: 'bg-white rounded-lg p-3 text-xs text-slate-700 border border-red-200' },
+              h('p', { className: 'font-bold text-red-700 mb-1' }, '\uD83D\uDD2C Diagnosis: What went wrong?'),
+              h('p', null,
+                varroaLevel > 40 ? 'High varroa mite levels (' + varroaLevel + '%) weakened the colony through virus transmission (Deformed Wing Virus, ABPV). Earlier mite treatment with oxalic acid or formic acid might have saved them.' :
+                pesticideExposure > 25 ? 'Cumulative pesticide exposure (' + pesticideExposure + '%) poisoned foragers and impaired colony immunity. Neonicotinoids cause sub-lethal effects \u2014 disorientation, memory loss, and weakened immune response.' :
+                honey < 5 ? 'Starvation \u2014 the colony ran out of honey stores (' + honey + ' lbs remaining). In nature, a colony needs 60+ lbs of honey to survive winter. Supplemental feeding during dearth periods is critical.' :
+                'Multiple stressors combined \u2014 varroa (' + varroaLevel + '%), nutrition (' + honey + ' lbs), and habitat (' + habitat + '%) created a "death spiral" where each problem amplified the others. This is the reality of Colony Collapse Disorder.')
+              )
+            ),
+            // What to try differently
+            h('div', { className: 'bg-amber-50 rounded-lg p-3 text-xs border border-amber-200' },
+              h('p', { className: 'font-bold text-amber-800 mb-1' }, '\uD83D\uDCA1 Next time, try:'),
+              h('ul', { className: 'text-slate-600 space-y-0.5 pl-4 list-disc' },
+                varroaLevel > 30 && h('li', null, 'Treat varroa mites as soon as levels exceed 15\u201320%'),
+                honey < 10 && h('li', null, 'Feed sugar syrup before honey drops below 15 lbs'),
+                habitat < 40 && h('li', null, 'Plant wildflowers and build bee hotels to improve habitat'),
+                h('li', null, 'Monitor colony health every few days, not just when problems appear'),
+                h('li', null, 'Plant a companion garden (connects to the Companion Planting tool!)')
+              )
+            ),
+            // Restart button
+            h('div', { className: 'text-center' },
+              h('button', {
+                'aria-label': 'Start a new colony from scratch',
+                onClick: function() { updAll({ day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100, honey: 20, pollen: 15, wax: 5, varroaLevel: 5, morale: 80, foragingEfficiency: 70, score: 0, colonySurvived: true, pesticideExposure: 0, habitat: 50, actionPoints: 3, totalHoney: 0, eventsHandled: 0, eventLog: [] }); if (addToast) addToast('\uD83D\uDC1D New colony established! Apply what you learned.', 'success'); },
+                className: 'px-6 py-2.5 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 shadow-md transition-all hover:scale-[1.02]'
+              }, '\uD83D\uDD04 Start New Colony \u2014 Apply What You Learned')
+            )
+          ),
 
           // Seasonal goals
           colonySurvived && h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-3' },

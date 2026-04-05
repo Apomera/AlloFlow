@@ -1688,6 +1688,8 @@ const d = labToolData.solarSystem;
                   React.createElement("canvas", {
 
                     "data-surface-canvas": "true",
+                    role: "img",
+                    "aria-label": sel.name + " surface view. " + (sel.surfaceDesc || sel.fact) + " Diameter: " + sel.diameter + ". Gravity: " + (sel.gravity || "unknown") + ". " + sel.moons + " moon" + (sel.moons !== 1 ? "s" : "") + ". Click planet, atmosphere, or moons to explore. Drag to rotate.",
 
                     style: { width: '100%', height: '100%', display: 'block' },
 
