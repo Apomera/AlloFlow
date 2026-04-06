@@ -416,20 +416,92 @@ export default function AIConfig() {
                 </div>
               )}
 
-              {/* OAuth credentials (collapsible) */}
-              <details style={{ marginTop: '0.875rem' }}>
-                <summary style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
-                  OAuth credentials (required once)
+              {/* OAuth credentials */}
+              <details style={{ marginTop: '0.875rem' }} open={!googleClientId}>
+                <summary style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', cursor: 'pointer', fontWeight: 600 }}>
+                  {googleClientId ? '⚙ OAuth credentials (saved)' : '⚙ Setup required — get your OAuth credentials'}
                 </summary>
-                <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.5rem' }}>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                    1. Go to <strong>console.cloud.google.com</strong> → Create Project<br/>
-                    2. Enable <strong>"Generative Language API"</strong><br/>
-                    3. APIs &amp; Services → Credentials → Create OAuth 2.0 Client ID (Desktop app type)<br/>
-                    4. Copy Client ID and Client Secret below<br/>
-                    <br/>
-                    <strong>⚠ School accounts:</strong> Your Google Workspace admin may need to approve the app in Admin Console → Security → API Controls.
-                  </p>
+                <div style={{ marginTop: '0.875rem', display: 'grid', gap: '1rem' }}>
+
+                  {/* Step 1 */}
+                  <div style={{ padding: '0.75rem', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.4rem' }}>Step 1 — Create a Google Cloud project</div>
+                    <ol style={{ margin: '0 0 0.6rem 0', paddingLeft: '1.25rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.7 }}>
+                      <li>Click <strong>Open Google Cloud Console</strong> below — sign in with your Google account</li>
+                      <li>In the top bar, click the project dropdown (it says <strong>"Select a project"</strong>)</li>
+                      <li>Click <strong>New Project</strong> in the top-right of the popup</li>
+                      <li>Name it anything (e.g. <em>AlloFlow</em>) and click <strong>Create</strong></li>
+                      <li>Make sure the new project is selected in the top bar before continuing</li>
+                    </ol>
+                    <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/projectcreate')}
+                      style={{ fontSize: '0.8rem' }}>
+                      Open Google Cloud Console ↗
+                    </button>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div style={{ padding: '0.75rem', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.4rem' }}>Step 2 — Enable the Generative Language API</div>
+                    <ol style={{ margin: '0 0 0.6rem 0', paddingLeft: '1.25rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.7 }}>
+                      <li>Click <strong>Open API Library</strong> below</li>
+                      <li>Make sure your new project is still selected at the top</li>
+                      <li>Click the big blue <strong>Enable</strong> button</li>
+                      <li>Wait for it to turn green — done</li>
+                    </ol>
+                    <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com')}
+                      style={{ fontSize: '0.8rem' }}>
+                      Open API Library ↗
+                    </button>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div style={{ padding: '0.75rem', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.4rem' }}>Step 3 — Configure the OAuth consent screen</div>
+                    <ol style={{ margin: '0 0 0.6rem 0', paddingLeft: '1.25rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.7 }}>
+                      <li>Click <strong>Open Consent Screen</strong> below</li>
+                      <li>Choose <strong>External</strong> (or Internal if you have Google Workspace) → click <strong>Create</strong></li>
+                      <li>Fill in <strong>App name</strong> (e.g. <em>AlloFlow</em>) and your email in the support email field</li>
+                      <li>Scroll to the bottom and click <strong>Save and Continue</strong></li>
+                      <li>On the <strong>Scopes</strong> page, scroll down and click <strong>Save and Continue</strong> (no changes needed)</li>
+                      <li>On <strong>Test users</strong>, add your own Gmail address, then click <strong>Save and Continue</strong></li>
+                      <li>Click <strong>Back to Dashboard</strong></li>
+                    </ol>
+                    <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials/consent')}
+                      style={{ fontSize: '0.8rem' }}>
+                      Open Consent Screen ↗
+                    </button>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div style={{ padding: '0.75rem', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.4rem' }}>Step 4 — Create OAuth credentials</div>
+                    <ol style={{ margin: '0 0 0.6rem 0', paddingLeft: '1.25rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.7 }}>
+                      <li>Click <strong>Open Credentials</strong> below</li>
+                      <li>Click <strong>+ Create Credentials</strong> at the top → choose <strong>OAuth client ID</strong></li>
+                      <li>For <strong>Application type</strong>, select <strong>Desktop app</strong></li>
+                      <li>Name it anything (e.g. <em>AlloFlow Desktop</em>) → click <strong>Create</strong></li>
+                      <li>A popup shows your <strong>Client ID</strong> and <strong>Client secret</strong></li>
+                      <li>Copy them into the fields below, then click Save Configuration at the bottom of this page</li>
+                    </ol>
+                    <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials')}
+                      style={{ fontSize: '0.8rem' }}>
+                      Open Credentials ↗
+                    </button>
+                  </div>
+
+                  {/* School accounts note */}
+                  <div style={{ padding: '0.75rem', background: 'rgba(245,158,11,0.08)', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                    <strong>⚠ Using a school Google Workspace account?</strong><br/>
+                    Your IT admin needs to approve the app once. They go to: <strong>admin.google.com</strong> →
+                    Security → Access and data control → API controls → Manage third-party app access →
+                    Add app → search by OAuth Client ID → set access to <strong>Trusted</strong>.<br/>
+                    <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://admin.google.com/ac/owl/list?tab=apps')}
+                      style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                      Open Admin Console (for IT admin) ↗
+                    </button>
+                  </div>
+
+                  {/* Credential inputs */}
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.25rem' }}>Client ID</label>
                     <input
@@ -449,7 +521,7 @@ export default function AIConfig() {
                     />
                   </div>
                   <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                    Saved to <code>~/.alloflow/ai_config.json</code> (local only, never uploaded).
+                    Saved to <code>~/.alloflow/ai_config.json</code> — local only, never uploaded.
                   </p>
                 </div>
               </details>

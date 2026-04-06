@@ -76,6 +76,9 @@ contextBridge.exposeInMainWorld('alloAPI', {
   readAIConfig: () => ipcRenderer.invoke('config:read-ai'),
   writeAIConfig: (config) => ipcRenderer.invoke('config:write-ai', config),
 
+  // ── Shell utilities ──────────────────────────────────────────────────────
+  openExternal: (url) => ipcRenderer.invoke('shell:open-external', url),
+
   // ── Service health & status (used by Dashboard.jsx, Services.jsx) ────────
   getHealth:        () => ipcRenderer.invoke('services:health'),
   getServices:      () => ipcRenderer.invoke('services:list'),

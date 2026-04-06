@@ -614,16 +614,74 @@ export default function SetupWizard({ onComplete }) {
                         >
                           {geminiConnecting ? 'Opening browser...' : 'Sign in with Google'}
                         </button>
-                        <details style={{marginTop: '10px'}}>
-                          <summary style={{fontSize: '0.8rem', color: '#888', cursor: 'pointer'}}>Setup instructions</summary>
-                          <p style={{fontSize: '0.8rem', color: '#888', marginTop: '8px', marginBottom: 0}}>
-                            1. Go to <strong>console.cloud.google.com</strong> → Create Project<br/>
-                            2. Enable <strong>"Generative Language API"</strong><br/>
-                            3. APIs &amp; Services → Credentials → Create OAuth 2.0 Client ID (Desktop app type)<br/>
-                            4. Copy Client ID and Client Secret above<br/>
-                            <br/>
-                            <strong>⚠ School accounts:</strong> Your Google Workspace admin may need to approve the app in Admin Console → Security → API Controls.
-                          </p>
+                        <details style={{marginTop: '10px'}} open={!geminiClientId}>
+                          <summary style={{fontSize: '0.8rem', color: '#888', cursor: 'pointer', fontWeight: 600}}>
+                            {geminiClientId ? '⚙ Credentials saved — click to review steps' : '⚙ How to get your credentials (4 steps)'}
+                          </summary>
+                          <div style={{fontSize: '0.8rem', color: '#555', marginTop: '10px', display: 'grid', gap: '10px'}}>
+
+                            <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
+                              <strong>Step 1 — Create a Google Cloud project</strong>
+                              <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
+                                <li>Click <strong>Open Console</strong> below and sign in with your Google account</li>
+                                <li>Click the project dropdown at the top → <strong>New Project</strong></li>
+                                <li>Name it anything (e.g. <em>AlloFlow</em>) → <strong>Create</strong></li>
+                                <li>Make sure the new project is selected in the top bar</li>
+                              </ol>
+                              <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
+                                onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/projectcreate')}>
+                                Open Console ↗
+                              </button>
+                            </div>
+
+                            <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
+                              <strong>Step 2 — Enable the Generative Language API</strong>
+                              <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
+                                <li>Click <strong>Open API Library</strong> below</li>
+                                <li>Confirm your new project is selected at the top</li>
+                                <li>Click the blue <strong>Enable</strong> button</li>
+                              </ol>
+                              <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
+                                onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com')}>
+                                Open API Library ↗
+                              </button>
+                            </div>
+
+                            <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
+                              <strong>Step 3 — Configure the OAuth consent screen</strong>
+                              <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
+                                <li>Click <strong>Open Consent Screen</strong> below</li>
+                                <li>Choose <strong>External</strong> → <strong>Create</strong></li>
+                                <li>Fill in <strong>App name</strong> (e.g. <em>AlloFlow</em>) and your email → <strong>Save and Continue</strong></li>
+                                <li>Skip the Scopes page → <strong>Save and Continue</strong></li>
+                                <li>On <strong>Test users</strong>, add your own Gmail → <strong>Save and Continue</strong></li>
+                                <li>Click <strong>Back to Dashboard</strong></li>
+                              </ol>
+                              <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
+                                onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials/consent')}>
+                                Open Consent Screen ↗
+                              </button>
+                            </div>
+
+                            <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
+                              <strong>Step 4 — Create OAuth credentials</strong>
+                              <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
+                                <li>Click <strong>Open Credentials</strong> below</li>
+                                <li>Click <strong>+ Create Credentials</strong> → <strong>OAuth client ID</strong></li>
+                                <li>Application type: <strong>Desktop app</strong> → <strong>Create</strong></li>
+                                <li>A popup shows your <strong>Client ID</strong> and <strong>Client secret</strong> — paste them in the fields above</li>
+                              </ol>
+                              <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
+                                onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials')}>
+                                Open Credentials ↗
+                              </button>
+                            </div>
+
+                            <div style={{padding: '8px 10px', background: 'rgba(245,158,11,0.08)', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)'}}>
+                              <strong>⚠ School Google Workspace account?</strong><br/>
+                              Your IT admin needs to approve the app once: <strong>admin.google.com</strong> → Security → Access and data control → API controls → Manage third-party app access → Add app → search by Client ID → set to <strong>Trusted</strong>.
+                            </div>
+                          </div>
                         </details>
                       </>
                     )}

@@ -1468,6 +1468,13 @@ ipcMain.handle('config:write-ai', async (event, config) => {
   }
 });
 
+ipcMain.handle('shell:open-external', async (event, url) => {
+  // Only allow https:// URLs to prevent abuse
+  if (typeof url === 'string' && url.startsWith('https://')) {
+    shell.openExternal(url);
+  }
+});
+
 // ============================================================================
 // SERVICES HEALTH & STATUS  (used by Dashboard.jsx, Services.jsx)
 // ============================================================================
