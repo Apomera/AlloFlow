@@ -1862,7 +1862,7 @@ ipcMain.handle('oauth:gemini-start', async () => {
       authUrl.searchParams.set('client_id',             creds.clientId);
       authUrl.searchParams.set('redirect_uri',          redirectUri);
       authUrl.searchParams.set('response_type',         'code');
-      authUrl.searchParams.set('scope',                 'https://www.googleapis.com/auth/generative-language email profile');
+      authUrl.searchParams.set('scope',                 'https://www.googleapis.com/auth/cloud-platform openid email');
       authUrl.searchParams.set('code_challenge',        codeChallenge);
       authUrl.searchParams.set('code_challenge_method', 'S256');
       authUrl.searchParams.set('state',                 state);
