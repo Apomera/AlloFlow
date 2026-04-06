@@ -218,11 +218,44 @@
         { id: 'decisions',   icon: '\uD83E\uDD14', label: 'Decision Lab',        desc: 'Work through real-life scenarios using stop-think-act frameworks.', color: 'violet', recommendedRange: '3-12' },
         { id: 'journal',     icon: '\uD83D\uDCD3', label: 'Feelings Journal',    desc: 'Daily check-in journal — log moods, triggers, and reflections over time.', color: 'pink', recommendedRange: 'K-12' },
         { id: 'safety',      icon: '\uD83D\uDEE1\uFE0F', label: 'Safety & Boundaries', desc: 'Learn about personal boundaries, trusted adults, and safe vs. unsafe situations.', color: 'red', recommendedRange: 'K-8' },
-        { id: 'restorativeCircle', icon: '\uD83E\uDEB6', label: 'Restorative Circle', desc: 'Facilitate restorative and community-building circles. Explore talking pieces and Indigenous roots.', color: 'amber', recommendedRange: '3-12', category: 'relationship-skills' },
-        { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', category: 'responsible-decision-making' },
-        { id: 'ethicalReasoning', icon: '\u2696\uFE0F', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks, stakeholder mapping, and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', category: 'responsible-decision-making' },
-        { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations, audio, and respectful engagement.', color: 'cyan', recommendedRange: 'K-12', category: 'social-awareness' }
       ];
+      // Append dynamically registered tools into the correct category positions
+      var _dynamicTools = [
+        { id: 'restorativeCircle', icon: '\uD83E\uDEB6', label: 'Restorative Circle', desc: 'Facilitate restorative and community-building circles. Explore talking pieces and Indigenous roots.', color: 'amber', recommendedRange: '3-12', _cat: 'relationship-skills' },
+        { id: 'compassion', icon: '\uD83E\uDD7A', label: 'Compassion & Self-Talk', desc: 'Practice self-compassion, reframe inner critic, and build a kinder inner voice.', color: 'rose', recommendedRange: 'K-12', _cat: 'self-awareness' },
+        { id: 'friendship', icon: '\uD83E\uDD1D', label: 'Friendship Builder', desc: 'Explore friendship styles, repair strategies, and healthy relationship patterns.', color: 'amber', recommendedRange: 'K-12', _cat: 'relationship-skills' },
+        { id: 'transitions', icon: '\uD83C\uDF31', label: 'Life Transitions', desc: 'Navigate changes like moving, new schools, and growing up.', color: 'emerald', recommendedRange: 'K-12', _cat: 'self-management' },
+        { id: 'upstander', icon: '\uD83E\uDDB8', label: 'Upstander Training', desc: 'Learn to stand up for others safely — bystander to upstander skills.', color: 'red', recommendedRange: '2-12', _cat: 'social-awareness' },
+        { id: 'growthmindset', icon: '\uD83E\uDDE0', label: 'Growth Mindset', desc: 'Brain science, reframing challenges, and building resilience.', color: 'violet', recommendedRange: 'K-12', _cat: 'self-management' },
+        { id: 'advocacy', icon: '\uD83D\uDCE2', label: 'Self-Advocacy', desc: 'Learn to speak up for your needs, rights, and goals.', color: 'blue', recommendedRange: '3-12', _cat: 'self-awareness' },
+        { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'responsible-decision-making' },
+        { id: 'ethicalReasoning', icon: '\u2696\uFE0F', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', _cat: 'responsible-decision-making' },
+        { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations and audio.', color: 'cyan', recommendedRange: 'K-12', _cat: 'social-awareness' },
+        { id: 'voicedetective', icon: '\uD83D\uDD0A', label: 'Voice Detective', desc: 'Listen to voices and identify emotions from tone.', color: 'purple', recommendedRange: 'K-12', _cat: 'social-awareness' },
+        { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Lab', desc: 'Practice social scenarios and AI peer roleplay.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
+        { id: 'peersupport', icon: '\uD83E\uDD1D', label: 'Peer Support Coach', desc: 'Learn OARS listening skills and when to get adult help.', color: 'emerald', recommendedRange: '3-12', _cat: 'relationship-skills' },
+      ];
+      // Insert each dynamic tool after its category header
+      var _catPositions = { 'self-awareness': '_cat_SelfAwareness', 'self-management': '_cat_SelfManagement', 'social-awareness': '_cat_SocialAwareness', 'relationship-skills': '_cat_RelationshipSkills', 'responsible-decision-making': '_cat_DecisionMaking' };
+      _dynamicTools.forEach(function(dt) {
+        // Only add if the tool is actually registered in SelHub
+        if (!window.SelHub || !window.SelHub.isRegistered(dt.id)) return;
+        // Don't duplicate if already in the static list
+        if (_allSelTools.some(function(t) { return t.id === dt.id; })) return;
+        var catHeaderId = _catPositions[dt._cat];
+        if (catHeaderId) {
+          // Find the last tool in this category section
+          var catIdx = _allSelTools.findIndex(function(t) { return t.id === catHeaderId; });
+          if (catIdx >= 0) {
+            var insertIdx = catIdx + 1;
+            while (insertIdx < _allSelTools.length && !_allSelTools[insertIdx].category) insertIdx++;
+            _allSelTools.splice(insertIdx, 0, dt);
+            return;
+          }
+        }
+        // Fallback: append at end
+        _allSelTools.push(dt);
+      });
 
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
@@ -439,7 +472,12 @@
 
           // ── AI integration ──
           callGemini: typeof callGemini === 'function' ? callGemini : null,
-          callTTS: typeof callTTS === 'function' ? callTTS : null,
+          callTTS: typeof callTTS === 'function' ? function selSpeakTTS(text, voice, speed) {
+            return callTTS(text, voice, speed).then(function(url) {
+              if (url) { var a = new Audio(url); a.play().catch(function() {}); }
+              return url;
+            }).catch(function(e) { console.warn('[SEL TTS]', e && e.message); return null; });
+          } : null,
           callImagen: typeof callImagen === 'function' ? callImagen : null,
           callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
           onSafetyFlag: onSafetyFlag,

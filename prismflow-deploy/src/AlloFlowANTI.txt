@@ -7197,27 +7197,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/content_engine_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7233,7 +7233,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -22663,7 +22663,13 @@ Do NOT force all characters into every scene — let the narrative decide natura
        if (data.soundParams && data.scene) {
            data.scene.soundParams = data.soundParams;
        }
-      if (data.climaxResult === 'victory') {
+      // Strip climaxResult from AI response when climax isn't active
+      // (prevents AI from spontaneously ending the adventure)
+      if (!adventureState.climax?.isActive && data.climaxResult) {
+          warnLog('[Adventure] AI returned climaxResult=' + data.climaxResult + ' but climax is not active — ignoring');
+          delete data.climaxResult;
+      }
+      if (data.climaxResult === 'victory' && adventureState.climax?.isActive) {
           const victoryHistory = [
               ...adventureState.history,
               { type: 'scene', text: adventureState.currentScene.text },
@@ -22684,7 +22690,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
           addToast(t('adventure.climax.toast_victory'), "success");
           setShowGlobalLevelUp(true);
           return;
-      } else if (data.climaxResult === 'failure') {
+      } else if (data.climaxResult === 'failure' && adventureState.climax?.isActive) {
           const failureHistory = [
               ...adventureState.history,
               { type: 'scene', text: adventureState.currentScene.text },
@@ -52733,6 +52739,33 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 }
               }} className="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-200 hover:bg-indigo-100 transition-colors flex items-center gap-2">
                 🔬 Re-audit (axe-core)
+              </button>
+              <button onClick={async () => {
+                const html = getPdfPreviewHtml();
+                if (!html) { addToast('No preview content to audit', 'error'); return; }
+                addToast('Running full AI re-audit...', 'info');
+                try {
+                  const [aiResult, axeResult] = await Promise.all([
+                    auditOutputAccessibility(html),
+                    runAxeAudit(html).catch(() => null)
+                  ]);
+                  if (aiResult) {
+                    setPdfFixResult(prev => ({
+                      ...prev,
+                      verificationAudit: aiResult,
+                      accessibleHtml: html,
+                      afterScore: aiResult.score,
+                      ...(axeResult ? { axeAudit: axeResult, axeScore: axeResult.score } : {})
+                    }));
+                    const totalIssues = (aiResult.issues || []).length;
+                    const totalPasses = (aiResult.passes || []).length;
+                    addToast(totalIssues === 0
+                      ? `✅ Full re-audit complete! ${totalPasses} checks passing, 0 issues.`
+                      : `⚠️ Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? 'success' : 'info');
+                  }
+                } catch(e) { addToast('Re-audit failed: ' + e.message, 'error'); }
+              }} className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-2">
+                🤖 Full Re-audit (AI + axe-core)
               </button>
 
               {/* Export from preview */}

@@ -1809,7 +1809,7 @@ Return ONLY JSON:
   "score": <calculated score, minimum 0>,
   "summary": "One sentence assessment",
   "issues": [{"issue": "complete sentence describing violation", "wcag": "X.X.X", "severity": "critical|serious|moderate|minor", "deduction": <points deducted>}],
-  "passes": ["What passed the checklist"]
+  "passes": ["List EVERY checklist item (1-11) that passes. Be thorough — for each item that IS accessible, include a specific description of what was found. A longer passes list is better than a short one."]
 }`;
   const parseAuditJson = raw => {
     let cleaned = raw.trim();
@@ -3848,6 +3848,7 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
         if (remainingIssues.length > 0) {
           html += `<h2 style="color:#d97706">&#9888; Remaining Issues (${remainingIssues.length})</h2>
           <table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Severity</th></tr></thead><tbody>`;
+          var escHtml = function(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
           remainingIssues.forEach(i => {
             let wcag = i.wcag || '';
             if (!wcag) {
@@ -3856,7 +3857,7 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
             }
             let issueText = (i.issue || '').replace(/\s*\(?\s*(?:WCAG\s*)?\d+\.\d+\.\d+\s*\)?\s*$/gi, '').trim();
             if (issueText && !/[.!?)\]]$/.test(issueText)) issueText += '.';
-            html += `<tr><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:13px">${issueText}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center;font-family:monospace">${wcag || 'N/A'}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;text-align:center;font-size:12px;font-weight:bold;color:#d97706">${i.severity || 'review'}</td></tr>`;
+            html += `<tr><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:13px">${escHtml(issueText)}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center;font-family:monospace">${wcag || 'N/A'}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;text-align:center;font-size:12px;font-weight:bold;color:#d97706">${i.severity || 'review'}</td></tr>`;
           });
           html += `</tbody></table>`;
         } else {
@@ -3999,7 +4000,8 @@ th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: l
         doc.designMode = 'on';
       } catch (e) {}
       // Auto-run lightweight a11y audit on preview load
-      if (!exportAuditResult) {
+      var _ear = (_s && typeof _s === 'function') ? (_s().exportAuditResult) : (typeof exportAuditResult !== 'undefined' ? exportAuditResult : null);
+      if (!_ear) {
         setTimeout(async () => {
           try {
             setExportAuditLoading(true);

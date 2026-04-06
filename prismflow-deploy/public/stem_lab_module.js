@@ -389,6 +389,7 @@
         try { return JSON.parse(localStorage.getItem('alloflow_quest_progress') || '{}'); } catch(e) { return {}; }
       });
       var [_questHudCollapsed, _setQuestHudCollapsed] = React.useState(false);
+      var [_showXpPanel, _setShowXpPanel] = React.useState(false);
       var [_questFreeResponseOpen, _setQuestFreeResponseOpen] = React.useState(null); // qid of expanded free response
 
       // Quest progress persistence
@@ -886,7 +887,7 @@
         // Channel 2: AlloFlow TTS (only if Smart Detection says yes)
         var speakAloud = options.speak != null ? options.speak : _canvasNarrateTTSEnabled();
         if (speakAloud && callTTS) {
-          try { callTTS(msg); } catch(e) {}
+          try { callTTS(msg).then(function(url) { if (url) { var a = new Audio(url); a.play().catch(function() {}); } }).catch(function() {}); } catch(e) {}
         }
       }
 
@@ -1786,8 +1787,8 @@
         style: { background: isContrast ? '#000' : 'linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)', borderBottom: isContrast ? '3px solid #fbbf24' : 'none' }
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-3"
-      }, React.createElement("div", {
-        className: "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black relative",
+      }, React.createElement("button", {
+        className: "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black relative cursor-pointer border-none outline-none focus:ring-2 focus:ring-white/50",
         style: {
           background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)',
           backgroundSize: '200% 200%',
@@ -1796,7 +1797,9 @@
           color: '#1e293b',
           transition: 'box-shadow 0.3s ease'
         },
-        title: t('stem.solver.total_stem_lab_xp_earned')
+        title: 'View XP Progress',
+        'aria-label': 'View XP Progress — ' + totalStemXP + ' total XP',
+        onClick: function() { _setShowXpPanel(function(v) { return !v; }); }
       },
         React.createElement("span", { style: { filter: 'drop-shadow(0 0 3px rgba(255,200,0,0.8))', fontSize: '14px' } }, "\u2B50"),
         React.createElement("span", { style: { textShadow: '0 1px 2px rgba(0,0,0,0.15)' } }, totalStemXP + " XP"),
@@ -1920,6 +1923,134 @@
             React.createElement("span", { style: { color: _pal.textMuted } }, "Move between controls"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "?"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle this help panel")
+          )
+        ),
+        // ═══ XP Progress Overlay Panel ═══
+        _showXpPanel && React.createElement("div", {
+          role: "region", "aria-label": "STEM Lab XP Progress",
+          className: "relative",
+          style: { borderBottom: '2px solid ' + _pal.border }
+        },
+          React.createElement("div", { className: "p-4 max-w-4xl mx-auto", style: { background: 'linear-gradient(135deg, #fffbeb, #fef3c7, #fffbeb)' } },
+            React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+              React.createElement("span", { style: { fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255,200,0,0.7))' } }, "\u2B50"),
+              React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEM Lab XP Progress"),
+              React.createElement("span", { className: "ml-auto text-xs font-black text-amber-700 px-2.5 py-1 rounded-full", style: { background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', boxShadow: '0 2px 6px rgba(245,158,11,0.3)' } }, totalStemXP + " Total XP"),
+              React.createElement("button", { onClick: function() { _setShowXpPanel(false); }, "aria-label": "Close XP panel", className: "ml-2 p-1 rounded-full hover:bg-amber-200 transition-colors text-amber-600" }, "\u2715")
+            ),
+            (function () {
+              // ── Dynamic XP activity discovery ──
+              // Label + icon lookup for friendly display; any activityId not in this map
+              // gets an auto-generated label from its camelCase/snake_case id
+              var _xpLabelMap = {
+                behaviorLab: ['Behavior Lab', '\uD83D\uDC2D'], aquarium: ['Aquarium', '\uD83D\uDC20'],
+                ocean: ['Ocean', '\uD83D\uDC0B'], 'wave-match': ['Waves', '\uD83C\uDF0A'],
+                'wave-quiz': ['Wave Quiz', '\uD83C\uDFB6'], galaxy_quiz: ['Galaxy Quiz', '\uD83C\uDF0C'],
+                galaxy_explore: ['Galaxy Explorer', '\u2B50'], universe_explore: ['Universe', '\uD83C\uDF20'],
+                solarSystem: ['Solar System', '\u2600\uFE0F'], physicsQuiz: ['Physics', '\uD83C\uDFAF'],
+                chemBalance: ['Chemistry', '\uD83E\uDDEA'], circuit: ['Circuits', '\u26A1'],
+                calculus: ['Calculus', '\u222B'], inequality: ['Inequalities', '\u2696\uFE0F'],
+                molecule: ['Molecules', '\uD83E\uDDEC'], codingPlayground: ['Coding', '\uD83D\uDCBB'],
+                algebraCAS: ['Algebra', '\uD83D\uDCD0'], dissection: ['Dissection', '\uD83D\uDD2C'],
+                fractionChallenge: ['Fractions', '\uD83D\uDD22'], fractionViz: ['Fraction Lab', '\uD83C\uDF55'],
+                fractionWall: ['Fraction Wall', '\uD83E\uDDF1'], cyberDefense: ['Cyber Defense', '\uD83D\uDEE1\uFE0F'],
+                companion_planting_corn: ['Three Sisters', '\uD83C\uDF3D'], companion_planting_beans: ['Bean Planting', '\uD83E\uDED8'],
+                companion_planting_squash: ['Squash', '\uD83C\uDF83'], companion_planting_grow: ['Growing', '\uD83C\uDF31'],
+                companion_planting_harvest: ['Harvest', '\uD83C\uDF3E'], companion_planting_quiz: ['Garden Quiz', '\uD83D\uDCDD'],
+                volume: ['Volume', '\uD83D\uDCE6'], numberline: ['Number Line', '\uD83D\uDCCF'],
+                areamodel: ['Area Model', '\uD83D\uDFE7'], base10: ['Manipulatives', '\uD83E\uDDEE'],
+                coordinate: ['Coordinates', '\uD83D\uDCCD'], protractor: ['Angles', '\uD83D\uDCD0'],
+                geoSandbox: ['Geo Sandbox', '\uD83D\uDD37'], moneyMath: ['Money Math', '\uD83D\uDCB5'],
+                multtable: ['Times Table', '\u2716\uFE0F'], dataPlot: ['Data Plot', '\uD83D\uDCCA'],
+                dataStudio: ['Data Studio', '\uD83D\uDCC8'], funcGrapher: ['Graphing', '\uD83D\uDCC9'],
+                geometryProver: ['Geometry', '\uD83D\uDCD0'], logicLab: ['Logic Lab', '\uD83E\uDDE0'],
+                probability: ['Probability', '\uD83C\uDFB2'], unitConvert: ['Unit Convert', '\uD83D\uDD04'],
+                ecosystem: ['Ecosystem', '\uD83C\uDF3F'], waterCycle: ['Water Cycle', '\uD83D\uDCA7'],
+                plateTectonics: ['Plate Tectonics', '\uD83C\uDF0B'], dnaLab: ['DNA Lab', '\uD83E\uDDEC'],
+                cell: ['Cell Explorer', '\uD83D\uDD2C'], epidemicSim: ['Epidemic Sim', '\uD83E\uDDA0'],
+                titrationLab: ['Titration', '\uD83E\uDDEA'], climateExplorer: ['Climate', '\uD83C\uDF21\uFE0F'],
+                moonMission: ['Moon Mission', '\uD83C\uDF11'], appLab: ['App Lab', '\uD83D\uDCF1'],
+                gameStudio: ['Game Studio', '\uD83C\uDFAE'], lifeSkills: ['Life Skills', '\uD83D\uDD27'],
+                popSim: ['Population Sim', '\uD83D\uDC3E'], targetMode: ['Target Mode', '\uD83C\uDFAF'],
+                oratory_warmup: ['Oratory Warmup', '\uD83C\uDFA4'], oratory_phrase: ['Speech Practice', '\uD83D\uDDE3\uFE0F'],
+                oratory_smooth_pacing: ['Pacing', '\u23F1\uFE0F'], geoQuiz: ['Geo Quiz', '\uD83C\uDF0D'],
+                life: ['Life Sim', '\uD83C\uDF31']
+              };
+              function _xpLabel(id) {
+                if (_xpLabelMap[id]) return { id: id, label: _xpLabelMap[id][0], icon: _xpLabelMap[id][1] };
+                // Auto-generate from id: fire_sim_burn → Fire Sim Burn, circuitChallenge → Circuit Challenge
+                var nice = id.replace(/[-_]/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+                return { id: id, label: nice, icon: '\uD83E\uDDEA' };
+              }
+              // Build activity list dynamically from actual XP data
+              var _xpActivities = [];
+              var _xpKeys = Object.keys(stemXpData);
+              _xpKeys.forEach(function(key) {
+                if (key === '_total') return;
+                if (!stemXpData[key] || typeof stemXpData[key].earned !== 'number' || stemXpData[key].earned <= 0) return;
+                _xpActivities.push(_xpLabel(key));
+              });
+              // Sort: maxed first, then by earned descending
+              _xpActivities.sort(function(a, b) {
+                var ea = getStemXP(a.id), eb = getStemXP(b.id);
+                if (ea >= 100 && eb < 100) return -1;
+                if (eb >= 100 && ea < 100) return 1;
+                return eb - ea;
+              });
+              var _earnedCount = _xpActivities.length;
+              var _maxedCount = _xpActivities.filter(function(a) { return getStemXP(a.id) >= 100; }).length;
+              return React.createElement(React.Fragment, null,
+                React.createElement("div", { className: "mb-3" },
+                  React.createElement("div", { className: "flex justify-between items-center mb-1" },
+                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700 uppercase" },
+                      _earnedCount + " Active" + (_maxedCount > 0 ? " \u00B7 " + _maxedCount + " Maxed" : "")
+                    ),
+                    React.createElement("span", { className: "text-[10px] font-black text-amber-600" }, totalStemXP + " Total XP")
+                  ),
+                  React.createElement("div", { className: "w-full h-3 bg-amber-100 rounded-full overflow-hidden", style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
+                    React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: {
+                      width: Math.min(100, totalStemXP / 10) + '%',
+                      background: totalStemXP >= 1000 ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #eab308, #f59e0b)',
+                      backgroundSize: '200% 100%',
+                      animation: 'stemXpShimmer 2s ease-in-out infinite',
+                      boxShadow: '0 0 8px rgba(245,158,11,0.4)'
+                    } })
+                  )
+                ),
+                (function() {
+                  if (_xpActivities.length === 0) {
+                    return React.createElement("div", { className: "text-center py-6 text-amber-600" },
+                      React.createElement("p", { className: "text-sm font-bold mb-1" }, "No XP earned yet!"),
+                      React.createElement("p", { className: "text-xs text-amber-500" }, "Explore STEM tools and complete quizzes to earn XP. Your progress will appear here.")
+                    );
+                  }
+                  return React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-[10px]" },
+                    _xpActivities.map(function (act) {
+                      var earned = getStemXP(act.id);
+                      var pct = Math.min(100, earned);
+                      var isMaxed = pct >= 100;
+                      return React.createElement("div", { key: act.id, className: "bg-white rounded-lg p-2 border transition-all duration-200 hover:shadow-md", style: { borderColor: isMaxed ? '#10b981' : '#fde68a' } },
+                        React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                          React.createElement("span", { style: { fontSize: '12px' } }, act.icon),
+                          React.createElement("span", { className: "font-bold truncate", style: { color: isMaxed ? '#059669' : '#334155', fontSize: '10px' } }, act.label)
+                        ),
+                        React.createElement("div", { className: "w-full h-1.5 rounded-full overflow-hidden", style: { background: '#fef3c7', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)' } },
+                          React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: {
+                            width: pct + '%',
+                            background: isMaxed ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                            boxShadow: isMaxed ? '0 0 4px rgba(16,185,129,0.4)' : 'none'
+                          } })
+                        ),
+                        React.createElement("div", { className: "flex justify-between mt-0.5" },
+                          React.createElement("span", { style: { color: isMaxed ? '#059669' : '#d97706', fontWeight: 700 } }, earned + "/100"),
+                          isMaxed && React.createElement("span", { style: { color: '#059669', fontWeight: 900, fontSize: '11px' } }, "\u2714 MAX")
+                        )
+                      );
+                    })
+                  );
+                })()
+              );
+            })()
           )
         ),
         /*#__PURE__*/React.createElement("div", {
@@ -2255,89 +2386,7 @@
             addToast(t('stem.fluency.stem_assessment_saved_to_resources') + assessmentBlocks.length + ' blocks)', 'success');
           },
           className: "py-3 px-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
-        }, "\uD83D\uDCBE Save to Resources"), React.createElement("div", { className: "mt-4 rounded-xl border border-amber-200 p-4", style: { background: 'linear-gradient(135deg, #fffbeb, #fef3c7, #fffbeb)' } },
-          React.createElement("div", { className: "flex items-center gap-2 mb-3" },
-            React.createElement("span", { style: { fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255,200,0,0.7))' } }, "\u2B50"),
-            React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEM Lab XP Progress"),
-            React.createElement("span", { className: "ml-auto text-xs font-black text-amber-700 px-2.5 py-1 rounded-full", style: { background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', boxShadow: '0 2px 6px rgba(245,158,11,0.3)' } }, totalStemXP + " Total XP")
-          ),
-          // Total progress bar
-          (function () {
-            var _xpActivities = [
-              { id: 'behaviorLab', label: 'Behavior Lab', icon: '\uD83D\uDC2D' },
-              { id: 'aquarium', label: 'Aquarium', icon: '\uD83D\uDC20' },
-              { id: 'ocean', label: 'Ocean', icon: '\uD83D\uDC0B' },
-              { id: 'wave-match', label: 'Waves', icon: '\uD83C\uDF0A' },
-              { id: 'wave-quiz', label: 'Wave Quiz', icon: '\uD83C\uDFB6' },
-              { id: 'galaxy_quiz', label: 'Galaxy', icon: '\uD83C\uDF0C' },
-              { id: 'galaxy_explore', label: 'Discovery', icon: '\u2B50' },
-              { id: 'universe_explore', label: 'Universe', icon: '\uD83C\uDF20' },
-              { id: 'solarSystem', label: 'Solar System', icon: '\u2600\uFE0F' },
-              { id: 'physicsQuiz', label: 'Physics', icon: '\uD83C\uDFAF' },
-              { id: 'chemBalance', label: 'Chemistry', icon: '\uD83E\uDDEA' },
-              { id: 'circuit', label: 'Circuits', icon: '\u26A1' },
-              { id: 'calculus', label: 'Calculus', icon: '\u222B' },
-              { id: 'inequality', label: 'Inequalities', icon: '\u2696\uFE0F' },
-              { id: 'molecule', label: 'Molecules', icon: '\uD83E\uDDEC' },
-              { id: 'codingPlayground', label: 'Coding', icon: '\uD83D\uDCBB' },
-              { id: 'algebraCAS', label: 'Algebra', icon: '\uD83D\uDCD0' },
-              { id: 'dissection', label: 'Dissection', icon: '\uD83D\uDD2C' },
-              { id: 'fractionChallenge', label: 'Fractions', icon: '\uD83D\uDD22' },
-              { id: 'companion_planting_corn', label: 'Three Sisters', icon: '\uD83C\uDF3D' },
-              { id: 'companion_planting_beans', label: 'Bean Planting', icon: '\uD83E\uDED8' },
-              { id: 'companion_planting_squash', label: 'Squash', icon: '\uD83C\uDF83' },
-              { id: 'companion_planting_grow', label: 'Growing', icon: '\uD83C\uDF31' },
-              { id: 'companion_planting_harvest', label: 'Harvest', icon: '\uD83C\uDF3E' },
-              { id: 'companion_planting_quiz', label: 'Garden Quiz', icon: '\uD83D\uDCDD' },
-              { id: 'cyberDefense', label: 'Cyber Defense', icon: '\uD83D\uDEE1\uFE0F' }
-            ];
-            var _maxXP = _xpActivities.length * 100;
-            var _totalPct = _maxXP > 0 ? Math.min(100, (totalStemXP / _maxXP) * 100) : 0;
-            return React.createElement(React.Fragment, null,
-              // Total progress bar
-              React.createElement("div", { className: "mb-3" },
-                React.createElement("div", { className: "flex justify-between items-center mb-1" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-amber-700 uppercase" }, "Overall Progress"),
-                  React.createElement("span", { className: "text-[10px] font-black text-amber-600" }, totalStemXP + " / " + _maxXP + " XP (" + Math.round(_totalPct) + "%)")  
-                ),
-                React.createElement("div", { className: "w-full h-3 bg-amber-100 rounded-full overflow-hidden", style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
-                  React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: {
-                    width: _totalPct + '%',
-                    background: _totalPct >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #eab308, #f59e0b)',
-                    backgroundSize: '200% 100%',
-                    animation: 'stemXpShimmer 2s ease-in-out infinite',
-                    boxShadow: '0 0 8px rgba(245,158,11,0.4)'
-                  } })
-                )
-              ),
-              // Activity grid
-              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-[10px]" },
-                _xpActivities.map(function (act) {
-                  var earned = getStemXP(act.id);
-                  var pct = Math.min(100, earned);
-                  var isMaxed = pct >= 100;
-                  return React.createElement("div", { key: act.id, className: "bg-white rounded-lg p-2 border transition-all duration-200 hover:shadow-md", style: { borderColor: isMaxed ? '#10b981' : '#fde68a' } },
-                    React.createElement("div", { className: "flex items-center gap-1 mb-1" },
-                      React.createElement("span", { style: { fontSize: '12px' } }, act.icon),
-                      React.createElement("span", { className: "font-bold truncate", style: { color: isMaxed ? '#059669' : '#334155', fontSize: '10px' } }, act.label)
-                    ),
-                    React.createElement("div", { className: "w-full h-1.5 rounded-full overflow-hidden", style: { background: '#fef3c7', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: {
-                        width: pct + '%',
-                        background: isMaxed ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
-                        boxShadow: isMaxed ? '0 0 4px rgba(16,185,129,0.4)' : 'none'
-                      } })
-                    ),
-                    React.createElement("div", { className: "flex justify-between mt-0.5" },
-                      React.createElement("span", { style: { color: isMaxed ? '#059669' : '#d97706', fontWeight: 700 } }, earned + "/100"),
-                      isMaxed && React.createElement("span", { style: { color: '#059669', fontWeight: 900, fontSize: '11px' } }, "\u2714 MAX")
-                    )
-                  );
-                })
-              )
-            );
-          })()
-        ),
+        }, "\uD83D\uDCBE Save to Resources"),
           toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
             className: "mt-4 pt-4 border-t border-slate-200"
           }, /*#__PURE__*/React.createElement("div", {
@@ -3864,7 +3913,12 @@
             renderTutorial: typeof renderTutorial === 'function' ? renderTutorial : function() { return null; },
             _tutGalaxy: typeof _tutGalaxy !== 'undefined' ? _tutGalaxy : [],
             beep: typeof stemBeep === 'function' ? stemBeep : function() {},
-            callTTS: typeof callTTS === 'function' ? callTTS : null,
+            callTTS: typeof callTTS === 'function' ? function stemSpeakTTS(text, voice, speed) {
+              return callTTS(text, voice, speed).then(function(url) {
+                if (url) { var a = new Audio(url); a.play().catch(function() {}); }
+                return url;
+              }).catch(function(e) { console.warn('[STEM TTS]', e && e.message); return null; });
+            } : null,
             callImagen: typeof callImagen === 'function' ? callImagen : null,
             callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
             callGeminiImageEdit: typeof callGeminiImageEdit === 'function' ? callGeminiImageEdit : null,
@@ -3927,38 +3981,58 @@
                 var c = props._ctx;
                 // Defer any state updates that plugins call during render to after render
                 var pendingUpdates = React.useRef([]);
+                var renderingRef = React.useRef(false);
                 var originalUpdate = c.update;
                 var originalUpdateMulti = c.updateMulti;
+                var originalAwardXP = c.awardXP;
+                var originalAddToast = c.addToast;
                 var wrappedCtx = Object.assign({}, c, {
                   update: function(toolId, key, val) {
-                    if (c._isRendering) {
+                    if (renderingRef.current) {
                       pendingUpdates.current.push({ type: 'single', toolId: toolId, key: key, val: val });
                     } else {
                       originalUpdate(toolId, key, val);
                     }
                   },
                   updateMulti: function(toolId, obj) {
-                    if (c._isRendering) {
+                    if (renderingRef.current) {
                       pendingUpdates.current.push({ type: 'multi', toolId: toolId, obj: obj });
                     } else {
                       originalUpdateMulti(toolId, obj);
+                    }
+                  },
+                  awardXP: function(activityId, pts, reason) {
+                    if (renderingRef.current) {
+                      pendingUpdates.current.push({ type: 'xp', activityId: activityId, pts: pts, reason: reason });
+                    } else {
+                      originalAwardXP(activityId, pts, reason);
+                    }
+                  },
+                  addToast: function(msg, type) {
+                    if (renderingRef.current) {
+                      pendingUpdates.current.push({ type: 'toast', msg: msg, toastType: type });
+                    } else {
+                      originalAddToast(msg, type);
                     }
                   }
                 });
                 React.useEffect(function() {
                   if (pendingUpdates.current.length > 0) {
-                    pendingUpdates.current.forEach(function(u) {
+                    var batch = pendingUpdates.current.slice();
+                    pendingUpdates.current = [];
+                    batch.forEach(function(u) {
                       if (u.type === 'multi') originalUpdateMulti(u.toolId, u.obj);
+                      else if (u.type === 'xp') originalAwardXP(u.activityId, u.pts, u.reason);
+                      else if (u.type === 'toast') originalAddToast(u.msg, u.toastType);
                       else originalUpdate(u.toolId, u.key, u.val);
                     });
-                    pendingUpdates.current = [];
                   }
                 });
-                wrappedCtx._isRendering = true;
+                renderingRef.current = true;
                 try {
                   return window.StemLab.renderTool(props._toolId, wrappedCtx);
                 } finally {
-                  wrappedCtx._isRendering = false;
+                  renderingRef.current = false;
                 }
               };
             }

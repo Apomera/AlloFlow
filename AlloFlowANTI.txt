@@ -22663,7 +22663,13 @@ Do NOT force all characters into every scene — let the narrative decide natura
        if (data.soundParams && data.scene) {
            data.scene.soundParams = data.soundParams;
        }
-      if (data.climaxResult === 'victory') {
+      // Strip climaxResult from AI response when climax isn't active
+      // (prevents AI from spontaneously ending the adventure)
+      if (!adventureState.climax?.isActive && data.climaxResult) {
+          warnLog('[Adventure] AI returned climaxResult=' + data.climaxResult + ' but climax is not active — ignoring');
+          delete data.climaxResult;
+      }
+      if (data.climaxResult === 'victory' && adventureState.climax?.isActive) {
           const victoryHistory = [
               ...adventureState.history,
               { type: 'scene', text: adventureState.currentScene.text },
@@ -22684,7 +22690,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
           addToast(t('adventure.climax.toast_victory'), "success");
           setShowGlobalLevelUp(true);
           return;
-      } else if (data.climaxResult === 'failure') {
+      } else if (data.climaxResult === 'failure' && adventureState.climax?.isActive) {
           const failureHistory = [
               ...adventureState.history,
               { type: 'scene', text: adventureState.currentScene.text },
@@ -52733,6 +52739,33 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 }
               }} className="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-200 hover:bg-indigo-100 transition-colors flex items-center gap-2">
                 🔬 Re-audit (axe-core)
+              </button>
+              <button onClick={async () => {
+                const html = getPdfPreviewHtml();
+                if (!html) { addToast('No preview content to audit', 'error'); return; }
+                addToast('Running full AI re-audit...', 'info');
+                try {
+                  const [aiResult, axeResult] = await Promise.all([
+                    auditOutputAccessibility(html),
+                    runAxeAudit(html).catch(() => null)
+                  ]);
+                  if (aiResult) {
+                    setPdfFixResult(prev => ({
+                      ...prev,
+                      verificationAudit: aiResult,
+                      accessibleHtml: html,
+                      afterScore: aiResult.score,
+                      ...(axeResult ? { axeAudit: axeResult, axeScore: axeResult.score } : {})
+                    }));
+                    const totalIssues = (aiResult.issues || []).length;
+                    const totalPasses = (aiResult.passes || []).length;
+                    addToast(totalIssues === 0
+                      ? `✅ Full re-audit complete! ${totalPasses} checks passing, 0 issues.`
+                      : `⚠️ Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? 'success' : 'info');
+                  }
+                } catch(e) { addToast('Re-audit failed: ' + e.message, 'error'); }
+              }} className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-2">
+                🤖 Full Re-audit (AI + axe-core)
               </button>
 
               {/* Export from preview */}
