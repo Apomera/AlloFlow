@@ -3925,11 +3925,40 @@
             if (!window.__stemPluginComponents[stemLabTool]) {
               window.__stemPluginComponents[stemLabTool] = function StemPluginBridge(props) {
                 var c = props._ctx;
-                c._isRendering = true;
+                // Defer any state updates that plugins call during render to after render
+                var pendingUpdates = React.useRef([]);
+                var originalUpdate = c.update;
+                var originalUpdateMulti = c.updateMulti;
+                var wrappedCtx = Object.assign({}, c, {
+                  update: function(toolId, key, val) {
+                    if (c._isRendering) {
+                      pendingUpdates.current.push({ type: 'single', toolId: toolId, key: key, val: val });
+                    } else {
+                      originalUpdate(toolId, key, val);
+                    }
+                  },
+                  updateMulti: function(toolId, obj) {
+                    if (c._isRendering) {
+                      pendingUpdates.current.push({ type: 'multi', toolId: toolId, obj: obj });
+                    } else {
+                      originalUpdateMulti(toolId, obj);
+                    }
+                  }
+                });
+                React.useEffect(function() {
+                  if (pendingUpdates.current.length > 0) {
+                    pendingUpdates.current.forEach(function(u) {
+                      if (u.type === 'multi') originalUpdateMulti(u.toolId, u.obj);
+                      else originalUpdate(u.toolId, u.key, u.val);
+                    });
+                    pendingUpdates.current = [];
+                  }
+                });
+                wrappedCtx._isRendering = true;
                 try {
-                  return window.StemLab.renderTool(props._toolId, c);
+                  return window.StemLab.renderTool(props._toolId, wrappedCtx);
                 } finally {
-                  c._isRendering = false;
+                  wrappedCtx._isRendering = false;
                 }
               };
             }

@@ -10088,9 +10088,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           if (activeView === 'word-sounds-generator') {
               debugLog("🎯 Skipping auto-open — WordSoundsGenerator handles its own transition");
           } else {
-              debugLog("🚀 Auto-opening Word Sounds mode for", wsPreloadedWords.length, "preloaded words");
-              setIsWordSoundsMode(true);
-              setActiveView('word-sounds');
+              debugLog("🚀 Opening Word Sounds Studio for", wsPreloadedWords.length, "preloaded words");
+              // Go to studio first (word-sounds-generator) so user sees setup/review before activities
+              setActiveView('word-sounds-generator');
               setWordSoundsAutoReview(true);
           }
       }
@@ -25452,8 +25452,11 @@ Return ONLY JSON.`;
     }
   }, [personaInput, isPersonaChatOpen, isDictationMode, personaAutoSend]);
   useEffect(() => {
-      lastReadPersonaIndexRef.current = -1;
-  }, [personaState.selectedCharacter]);
+      // Only reset when character actually changes to a new value (not on null/undefined in panel mode)
+      if (personaState.selectedCharacter !== undefined && personaState.selectedCharacter !== null) {
+          lastReadPersonaIndexRef.current = -1;
+      }
+  }, [personaState.selectedCharacter?.name]);
   const handleSaveReflection = async () => {
       if ((!personaState.selectedCharacter && personaState.mode !== 'panel') || !personaReflectionInput.trim()) return;
       setIsGradingReflection(true);
@@ -32948,12 +32951,20 @@ Return ONLY JSON:
                                         const speakerLabel = isUser ? 'You' : msg.speakerName;
                                         return (
                                             <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`} aria-label={speakerLabel + ' said: ' + msg.text.substring(0, 100)}>
-                                                 <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border ${
+                                                 <div
+                                                    className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border ${
                                                     isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' :
-                                                    isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' :
-                                                    'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'
-                                                 }`}>
+                                                    isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2 cursor-pointer hover:shadow-md transition-shadow' :
+                                                    'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2 cursor-pointer hover:shadow-md transition-shadow'
+                                                    }`}
+                                                    onClick={!isUser ? () => handleSpeak(msg.text, `persona-message-${idx}`, 0) : undefined}
+                                                    role={!isUser ? 'button' : undefined}
+                                                    tabIndex={!isUser ? 0 : undefined}
+                                                    onKeyDown={!isUser ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSpeak(msg.text, `persona-message-${idx}`, 0); } } : undefined}
+                                                    aria-label={!isUser ? 'Click to hear ' + speakerLabel + ' speak this message aloud' : undefined}
+                                                 >
                                                     {msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')}
+                                                    {!isUser && <span className="block text-[8px] text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">🔊 Click to listen</span>}
                                                  </div>
                                                  <span className="text-[9px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider">
                                                     {speakerLabel}
