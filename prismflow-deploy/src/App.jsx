@@ -7192,27 +7192,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    loadModule('StoryForge', './story_forge_module.js');
-    loadModule('LitLab', './story_stage_module.js');
-    loadModule('VisualPanelModule', './visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
-    loadModule('AdventureModule', './adventure_module.js');
-    loadModule('StudentInteractionModule', './student_interaction_module.js');
-    loadModule('UIModalsModule', './ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
-    loadModule('PersonaUIModule', './persona_ui_module.js');
-    loadModule('DocPipelineModule', './doc_pipeline_module.js');
-    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7228,7 +7228,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25f12fc/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -25452,8 +25452,11 @@ Return ONLY JSON.`;
     }
   }, [personaInput, isPersonaChatOpen, isDictationMode, personaAutoSend]);
   useEffect(() => {
-      lastReadPersonaIndexRef.current = -1;
-  }, [personaState.selectedCharacter]);
+      // Only reset when character actually changes to a new value (not on null/undefined in panel mode)
+      if (personaState.selectedCharacter !== undefined && personaState.selectedCharacter !== null) {
+          lastReadPersonaIndexRef.current = -1;
+      }
+  }, [personaState.selectedCharacter?.name]);
   const handleSaveReflection = async () => {
       if ((!personaState.selectedCharacter && personaState.mode !== 'panel') || !personaReflectionInput.trim()) return;
       setIsGradingReflection(true);
@@ -32948,12 +32951,20 @@ Return ONLY JSON:
                                         const speakerLabel = isUser ? 'You' : msg.speakerName;
                                         return (
                                             <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`} aria-label={speakerLabel + ' said: ' + msg.text.substring(0, 100)}>
-                                                 <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border ${
+                                                 <div
+                                                    className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border ${
                                                     isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' :
-                                                    isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' :
-                                                    'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'
-                                                 }`}>
+                                                    isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2 cursor-pointer hover:shadow-md transition-shadow' :
+                                                    'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2 cursor-pointer hover:shadow-md transition-shadow'
+                                                    }`}
+                                                    onClick={!isUser ? () => handleSpeak(msg.text, `persona-message-${idx}`, 0) : undefined}
+                                                    role={!isUser ? 'button' : undefined}
+                                                    tabIndex={!isUser ? 0 : undefined}
+                                                    onKeyDown={!isUser ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSpeak(msg.text, `persona-message-${idx}`, 0); } } : undefined}
+                                                    aria-label={!isUser ? 'Click to hear ' + speakerLabel + ' speak this message aloud' : undefined}
+                                                 >
                                                     {msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')}
+                                                    {!isUser && <span className="block text-[8px] text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">🔊 Click to listen</span>}
                                                  </div>
                                                  <span className="text-[9px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider">
                                                     {speakerLabel}
