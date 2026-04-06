@@ -57,10 +57,10 @@ const isStaticExt = new Set([
  */
 function buildLocalConfigScript() {
     const DEFAULT = {
-        ollamaUrl:    'http://localhost:11434',
+        llmEngineUrl: 'http://localhost:1234',
         sqliteUrl:    'http://localhost:3747',
         piperEnabled: true,
-        defaultModel: 'llama3.2:3b',
+        defaultModel: 'default',
     };
 
     let cfg = DEFAULT;

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { HardDrive, Mic, Database, Save, RefreshCw } from 'lucide-react';
 
 export default function AIConfig() {
-  const [ollamaUrl, setOllamaUrl] = useState('http://localhost:11434');
+  const [llmUrl, setLlmUrl] = useState('http://localhost:1234');
   const [defaultModel, setDefaultModel] = useState('');
   const [piperEnabled, setPiperEnabled] = useState(true);
   const [installedModels, setInstalledModels] = useState([]);
-  const [ollamaStatus, setOllamaStatus] = useState('checking'); // 'ok' | 'error' | 'checking'
+  const [llmStatus, setLlmStatus] = useState('checking'); // 'ok' | 'error' | 'checking'
   const [sqliteStatus, setSqliteStatus] = useState('checking');
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ export default function AIConfig() {
       if (window.alloAPI?.localApp) {
         const cfg = await window.alloAPI.localApp.readConfig();
         if (cfg) {
-          setOllamaUrl(cfg.ollamaUrl || 'http://localhost:11434');
+          setLlmUrl(cfg.llmEngineUrl || cfg.ollamaUrl || 'http://localhost:1234');
           setDefaultModel(cfg.defaultModel || '');
           setPiperEnabled(cfg.piperEnabled !== false);
         }
@@ -34,21 +34,16 @@ export default function AIConfig() {
   };
 
   const checkStatuses = async () => {
-    // Check Ollama
+    // Check LM Studio
     try {
-      const result = await window.alloAPI?.ollama?.checkStatus?.();
-      // checkStatus returns { success, isRunning, ... } from checkOllamaStatus()
-      const running = result?.success ? result?.isRunning : false;
-      setOllamaStatus(running ? 'ok' : 'error');
-      if (running) {
-        const modelsResult = await window.alloAPI.ollama.getInstalledModels();
-        // Models come as { success, models: [{name, digest, size, ...}] }
-        if (modelsResult?.success) {
-          setInstalledModels(modelsResult.models || []);
-        }
+      const result = await window.alloAPI?.listModels?.();
+      const running = result?.success;
+      setLlmStatus(running ? 'ok' : 'error');
+      if (running && result.models) {
+        setInstalledModels(result.models || []);
       }
     } catch {
-      setOllamaStatus('error');
+      setLlmStatus('error');
     }
 
     // Check SQLite backend
@@ -63,7 +58,7 @@ export default function AIConfig() {
   const handleSave = async () => {
     try {
       if (window.alloAPI?.localApp) {
-        await window.alloAPI.localApp.writeConfig({ ollamaUrl, defaultModel, piperEnabled });
+        await window.alloAPI.localApp.writeConfig({ llmEngineUrl: llmUrl, defaultModel, piperEnabled });
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       }
@@ -90,7 +85,7 @@ export default function AIConfig() {
     <div className="page">
       <div className="page-header">
         <h2>AI Configuration</h2>
-        <p>Configure local AI services — Ollama and Piper TTS</p>
+        <p>Configure local AI services — LM Studio and Piper TTS</p>
       </div>
 
       {/* Service Status */}
@@ -103,11 +98,11 @@ export default function AIConfig() {
         </div>
         <div style={{ display: 'grid', gap: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', padding: '0.75rem', backgroundColor: 'var(--color-bg)', borderRadius: '6px' }}>
-            {statusDot(ollamaStatus)}
+            {statusDot(llmStatus)}
             <div>
-              <div style={{ fontWeight: 600 }}>🧠 Ollama (LLM Engine)</div>
+              <div style={{ fontWeight: 600 }}>🧠 LM Studio (llama.cpp)</div>
               <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                {ollamaStatus === 'ok' ? `Running — ${installedModels.length} model(s) installed` : ollamaStatus === 'error' ? 'Not running — start via Services tab' : 'Checking...'}
+                {llmStatus === 'ok' ? `Running — ${installedModels.length} model(s) loaded` : llmStatus === 'error' ? 'Not running — start via Services tab' : 'Checking...'}
               </div>
             </div>
           </div>
@@ -123,27 +118,27 @@ export default function AIConfig() {
         </div>
       </div>
 
-      {/* Ollama Settings */}
+      {/* LM Studio Settings */}
       <div className="card">
         <div className="card-header">
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <HardDrive size={18} /> Ollama Settings
+            <HardDrive size={18} /> LM Studio Settings
           </h3>
         </div>
         <div style={{ display: 'grid', gap: '1rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-              Ollama Server URL
+              LM Studio API URL
             </label>
             <input
               type="text"
-              value={ollamaUrl}
-              onChange={(e) => setOllamaUrl(e.target.value)}
-              placeholder="http://localhost:11434"
+              value={llmUrl}
+              onChange={(e) => setLlmUrl(e.target.value)}
+              placeholder="http://localhost:1234"
               style={{ width: '100%', fontFamily: 'monospace' }}
             />
             <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-              Default: http://localhost:11434 — only change if Ollama is on a different port
+              Default: http://localhost:1234 — OpenAI-compatible API provided by LM Studio
             </p>
           </div>
 
@@ -205,7 +200,7 @@ export default function AIConfig() {
           <ul style={{ paddingLeft: '1.25rem', color: 'var(--color-text-muted)', lineHeight: 1.8 }}>
             <li>SQLite database: <code>~/.alloflow/local.db</code></li>
             <li>Config: <code>~/.alloflow/local_config.json</code></li>
-            <li>Ollama models: <code>~/.alloflow/data/ollama/models/</code></li>
+            <li>LM Studio models: <code>~/.cache/lm-studio/models/</code></li>
             <li>Piper voices: <code>~/.alloflow/data/piper/</code></li>
           </ul>
           <p style={{ marginTop: '0.75rem', color: 'var(--color-success)', fontWeight: 500 }}>

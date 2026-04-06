@@ -5,18 +5,18 @@
  */
 
 const SERVICE_DEFINITIONS = {
-  ollama: {
-    id: 'ollama',
-    name: 'Ollama',
-    description: 'Local LLM inference engine for running chat models offline (llama2, mistral, neural-chat, etc.)',
-    icon: '🧠',
+  'llm-engine': {
+    id: 'llm-engine',
+    name: 'LM Studio (llama.cpp)',
+    description: 'Local LLM inference engine with universal GPU support (CUDA, ROCm, Metal, CPU)',
+    icon: '🦙',
     required: true,
     optional: false,
     defaultEnabled: true,
     native: true,
-    port: 11434,
+    port: 1234,
     healthCheck: {
-      endpoint: 'http://127.0.0.1:11434/api/tags',
+      endpoint: 'http://127.0.0.1:1234/v1/models',
       method: 'GET',
       timeout: 15000,
       maxRetries: 30,
@@ -31,28 +31,35 @@ const SERVICE_DEFINITIONS = {
     hardwareTiers: {
       entryLevel: {
         enabled: true,
+        gpuBackend: 'cpu',
         models: ['neural-chat:7b', 'tiny-llm:1.4b'],
         warning: 'Limited to smaller models (7B or less). Inference speed may be slow.'
       },
       midRange: {
         enabled: true,
+        gpuBackend: 'auto', // auto-detects GPU
         models: ['mistral:latest', 'llama2:13b', 'neural-chat:7b'],
         warning: null
       },
       workstation: {
         enabled: true,
+        gpuBackend: 'auto', // auto-detects GPU
         models: ['mistral:latest', 'llama2:13b', 'llama2:70b', 'code-llama:latest'],
         warning: null
       }
     },
     description_detailed: `
-      **AI Chat Model Engine**
+      **AI Chat Model Engine (Universal)**
       - Run LLMs completely offline, no API keys needed
-      - Models available: Mistral, Llama2, Neural Chat, Code Llama, and more
-      - GPU-accelerated on AMD (Vulkan) and NVIDIA (CUDA) automatically
-      - Pulls models from Ollama registry (automatic, on-demand)
+      - OpenAI-compatible API on port 1234
+      - Universal GPU support:
+        - **NVIDIA**: CUDA backend for GeForce/RTX cards
+        - **AMD**: ROCm backend for Radeon cards  
+        - **Apple Silicon**: Metal backend for M1/M2/M3/M4
+        - **CPU**: Fallback for all systems
+      - Models from Hugging Face (Mistral, Llama2, Code Llama, etc.)
       
-      *Entry-level systems limited to 7B models for performance*
+      *Automatically builds with the right GPU backend for your hardware*
     `
   },
 
@@ -193,7 +200,7 @@ const HARDWARE_PROFILES = {
       minDisk: 20000, // MB
       maxRAM: 4096
     },
-    servicesToInclude: ['ollama', 'piper', 'search'], // No Flux
+    servicesToInclude: ['llm-engine', 'piper', 'search'], // No Flux
     limitations: [
       'Smaller LLMs only (7B models)',
       'No image generation',
@@ -225,7 +232,7 @@ const HARDWARE_PROFILES = {
       maxRAM: 16384,
       optionalGPU_VRAM: 4000
     },
-    servicesToInclude: ['ollama', 'piper', 'search'],
+    servicesToInclude: ['llm-engine', 'piper', 'search'],
     limitations: [
       'Up to 13B LLMs recommended',,
       'Image generation optional (GPU-dependent)',
@@ -256,7 +263,7 @@ const HARDWARE_PROFILES = {
       recommendedRAM: 32768,
       recommendedGPU_VRAM: 12000
     },
-    servicesToInclude: ['ollama', 'piper', 'search', 'flux'],
+    servicesToInclude: ['llm-engine', 'piper', 'search', 'flux'],
     limitations: [],
     recommendations: [
       'Run large models (13B, 70B) for better quality',

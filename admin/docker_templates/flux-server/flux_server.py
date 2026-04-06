@@ -1,14 +1,16 @@
 """
-AlloFlow Flux Image Generation Server
+AlloFlow Image Generation Server
 OpenAI-compatible API for local image generation and editing.
 
 Endpoints:
-  POST /v1/images/generations  — text-to-image (Flux.1-schnell)
+  POST /v1/images/generations  — text-to-image
   POST /v1/images/edits        — image-to-image editing
   GET  /health                 — health check (includes GPU status + fallback reason)
 
 Uses ONNX Runtime + DirectML for GPU acceleration on AMD/Intel/NVIDIA.
 Falls back to CPU with clear reporting if GPU is unavailable.
+
+Default model: segmind/SSD-1B (SDXL-distilled, Apache 2.0, no auth required)
 """
 
 import asyncio
@@ -30,7 +32,7 @@ from typing import Optional
 from PIL import Image
 
 # ── Configuration ──────────────────────────────────────────────
-MODEL_ID = os.getenv("FLUX_MODEL", "black-forest-labs/FLUX.1-schnell")
+MODEL_ID = os.getenv("FLUX_MODEL", "segmind/SSD-1B")
 PORT = int(os.getenv("PORT", "7860"))
 MAX_SIZE = int(os.getenv("MAX_IMAGE_SIZE", "1024"))
 
@@ -134,7 +136,7 @@ pipe_img2img = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load models at startup, clean up at shutdown."""
-    global pipe_txt2img, pipe_img2img
+    global pipe_txt2img, pipe_img2img, FALLBACK_REASON, DEVICE
 
     log.info(f"🎨 Loading Flux model: {MODEL_ID}")
     log.info(f"   Device: {DEVICE} | Dtype: {DTYPE}")
@@ -142,13 +144,29 @@ async def lifespan(app: FastAPI):
     if USE_DIRECTML:
         # Use ONNX Runtime with DirectML — GPU-accelerated on AMD/Intel/NVIDIA
         try:
-            from optimum.onnxruntime import ORTFluxPipeline
-            pipe_txt2img = ORTFluxPipeline.from_pretrained(
-                MODEL_ID,
-                export=True,
-                provider="DmlExecutionProvider",
-            )
-            log.info("✅ ONNX+DirectML text-to-image pipeline ready (GPU accelerated)")
+            from optimum.onnxruntime import ORTStableDiffusionXLPipeline
+            import os as _os
+            _ONNX_CACHE_DIR = _os.path.join(_os.path.dirname(__file__), 'onnx_cache', MODEL_ID.replace('/', '_'))
+            _onnx_cached = _os.path.exists(_os.path.join(_ONNX_CACHE_DIR, 'unet', 'model.onnx'))
+            if _onnx_cached:
+                log.info(f"⚡ Loading from ONNX cache (fast start): {_ONNX_CACHE_DIR}")
+                pipe_txt2img = ORTStableDiffusionXLPipeline.from_pretrained(
+                    _ONNX_CACHE_DIR,
+                    export=False,
+                    provider="DmlExecutionProvider",
+                )
+                log.info("✅ ONNX+DirectML pipeline ready from cache (GPU accelerated)")
+            else:
+                log.info("🔄 First run: exporting model to ONNX (may take 5-10 minutes)...")
+                pipe_txt2img = ORTStableDiffusionXLPipeline.from_pretrained(
+                    MODEL_ID,
+                    export=True,
+                    provider="DmlExecutionProvider",
+                )
+                _os.makedirs(_ONNX_CACHE_DIR, exist_ok=True)
+                pipe_txt2img.save_pretrained(_ONNX_CACHE_DIR)
+                log.info(f"✅ ONNX model saved to cache: {_ONNX_CACHE_DIR}")
+                log.info("✅ ONNX+DirectML text-to-image pipeline ready (GPU accelerated)")
         except Exception as e:
             log.error(f"❌ Failed to load ONNX+DirectML pipeline: {e}")
             log.warning("=" * 60)
@@ -157,29 +175,28 @@ async def lifespan(app: FastAPI):
             log.warning("   Image generation will be EXTREMELY SLOW.")
             log.warning("   Check your GPU drivers are up to date.")
             log.warning("=" * 60)
-            global FALLBACK_REASON, DEVICE
             FALLBACK_REASON = f"DirectML pipeline failed to load: {e}. Fell back to CPU."
             DEVICE = "cpu"
-            from diffusers import FluxPipeline
-            pipe_txt2img = FluxPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
+            from diffusers import StableDiffusionXLPipeline
+            pipe_txt2img = StableDiffusionXLPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
             log.info("✅ CPU text-to-image pipeline ready (slow)")
     elif USE_CUDA:
-        from diffusers import FluxPipeline, FluxImg2ImgPipeline
-        pipe_txt2img = FluxPipeline.from_pretrained(MODEL_ID, torch_dtype=DTYPE)
+        from diffusers import StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline
+        pipe_txt2img = StableDiffusionXLPipeline.from_pretrained(MODEL_ID, torch_dtype=DTYPE)
         pipe_txt2img = pipe_txt2img.to("cuda")
         pipe_txt2img.enable_model_cpu_offload()
         log.info("✅ CUDA text-to-image pipeline ready")
 
         try:
-            pipe_img2img = FluxImg2ImgPipeline.from_pretrained(MODEL_ID, torch_dtype=DTYPE)
+            pipe_img2img = StableDiffusionXLImg2ImgPipeline.from_pretrained(MODEL_ID, torch_dtype=DTYPE)
             pipe_img2img = pipe_img2img.to("cuda")
             pipe_img2img.enable_model_cpu_offload()
             log.info("✅ CUDA image-to-image pipeline ready")
         except Exception as e:
             log.warning(f"⚠️ Img2Img pipeline not available: {e}")
     else:
-        from diffusers import FluxPipeline
-        pipe_txt2img = FluxPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
+        from diffusers import StableDiffusionXLPipeline
+        pipe_txt2img = StableDiffusionXLPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
         log.info("✅ CPU text-to-image pipeline ready (slow)")
 
     yield
@@ -190,17 +207,13 @@ async def lifespan(app: FastAPI):
         torch.cuda.empty_cache()
 
 
-app = FastAPI(title="AlloFlow Flux Image Server", lifespan=lifespan)
+app = FastAPI(title="AlloFlow Image Generation Server", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:",
-        "http://localhost",
-        "https://localhost",
-    ],
+    allow_origins=["*"],
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["*"],
 )
 
 
@@ -233,15 +246,16 @@ class ImageResponse(BaseModel):
 # ── Helpers ────────────────────────────────────────────────────
 
 def parse_size(size_str: str) -> tuple:
-    """Parse '512x512' into (width, height), clamped to MAX_SIZE."""
+    """Parse '512x512' into (width, height), clamped to MAX_SIZE, aligned to 64."""
     try:
         parts = size_str.lower().split("x")
         w = min(int(parts[0]), MAX_SIZE)
         h = min(int(parts[1]) if len(parts) > 1 else w, MAX_SIZE)
-        # Round to nearest 8 (required by most diffusion models)
-        w = (w // 8) * 8
-        h = (h // 8) * 8
-        return max(w, 64), max(h, 64)
+        # Round DOWN to nearest 64 (required by SDXL/DirectML — latent space needs
+        # dimensions divisible by 64 to avoid Concat shape mismatch in UNet blocks)
+        w = max((w // 64) * 64, 256)
+        h = max((h // 64) * 64, 256)
+        return w, h
     except:
         return 512, 512
 
@@ -285,21 +299,23 @@ async def generate_image(req: ImageGenerationRequest):
         raise HTTPException(503, "Model not loaded yet")
 
     width, height = parse_size(req.size)
-    steps = req.num_inference_steps or (4 if "schnell" in MODEL_ID else 20)
-    guidance = req.guidance_scale or (0.0 if "schnell" in MODEL_ID else 7.5)
+    steps = req.num_inference_steps or 25
+    guidance = req.guidance_scale or 7.0
 
     log.info(f"🖼️ Generating: '{req.prompt[:60]}...' @ {width}x{height}, steps={steps}")
     start = time.time()
 
     try:
-        result = pipe_txt2img(
+        gen_kwargs = dict(
             prompt=req.prompt,
             width=width,
             height=height,
             num_inference_steps=steps,
             guidance_scale=guidance,
-            max_sequence_length=256,
         )
+        if req.negative_prompt:
+            gen_kwargs["negative_prompt"] = req.negative_prompt
+        result = pipe_txt2img(**gen_kwargs)
         image = result.images[0]
         elapsed = time.time() - start
         log.info(f"✅ Generated in {elapsed:.1f}s")
@@ -333,8 +349,8 @@ async def edit_image(req: ImageEditRequest):
             prompt=req.prompt,
             image=source_image,
             strength=req.strength,
-            num_inference_steps=4 if "schnell" in MODEL_ID else 20,
-            guidance_scale=0.0 if "schnell" in MODEL_ID else 7.5,
+            num_inference_steps=25,
+            guidance_scale=7.0,
         )
         image = result.images[0]
         elapsed = time.time() - start
@@ -363,7 +379,7 @@ async def ollama_generate(body: dict):
         raise HTTPException(503, "Model not loaded yet")
 
     width, height = 512, 512
-    steps = 4 if "schnell" in MODEL_ID else 20
+    steps = 25
 
     log.info(f"🖼️ [Ollama compat] Generating: '{prompt[:60]}...'")
     start = time.time()
@@ -374,8 +390,7 @@ async def ollama_generate(body: dict):
             width=width,
             height=height,
             num_inference_steps=steps,
-            guidance_scale=0.0 if "schnell" in MODEL_ID else 7.5,
-            max_sequence_length=256,
+            guidance_scale=7.0,
         )
         image = result.images[0]
         elapsed = time.time() - start
@@ -389,7 +404,7 @@ async def ollama_generate(body: dict):
 
 
 if __name__ == "__main__":
-    log.info(f"🎨 Starting AlloFlow Flux Image Server on port {PORT}")
+    log.info(f"🎨 Starting AlloFlow Image Generation Server on port {PORT}")
     log.info(f"   Model: {MODEL_ID}")
     log.info(f"   Endpoints:")
     log.info(f"     POST /v1/images/generations (OpenAI-compatible)")

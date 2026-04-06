@@ -120,40 +120,7 @@ contextBridge.exposeInMainWorld('alloAPI', {
   onServicesStopped: (callback) =>
     ipcRenderer.on('docker:services-stopped', (event, data) => callback(data)),
 
-  // Ollama Model Management API
-  ollama: {
-    // Check Ollama status
-    checkStatus: () =>
-      ipcRenderer.invoke('ollama:check-status'),
-    
-    // Get installed models
-    getInstalledModels: () =>
-      ipcRenderer.invoke('ollama:get-installed-models'),
-    
-    // Get available models to pull
-    getAvailableModels: () =>
-      ipcRenderer.invoke('ollama:get-available-models'),
-    
-    // Pull a model
-    pullModel: (modelId) =>
-      ipcRenderer.invoke('ollama:pull-model', { modelId }),
-    
-    // Check for Ollama updates
-    checkUpdates: () =>
-      ipcRenderer.invoke('ollama:check-updates'),
-    
-    // Send model selection back to main process
-    selectModel: (modelId) =>
-      ipcRenderer.send('ollama:model-selected', modelId),
-    
-    // Event listeners
-    onNoModels: (callback) =>
-      ipcRenderer.on('ollama:no-models', (event, data) => callback(data)),
-    
-    onPullProgress: (callback) =>
-      ipcRenderer.on('ollama:pull-progress', (event, data) => callback(data)),
-    
-    onUpdateAvailable: (callback) =>
-      ipcRenderer.on('ollama:update-available', (event, data) => callback(data)),
-  },
+  // LLM Model Management API (LM Studio / llama.cpp)
+  listModels: () => ipcRenderer.invoke('llm:get-models'),
+  pullModel: (modelId) => ipcRenderer.invoke('llm:pull-model', { modelId }),
 });

@@ -22,7 +22,8 @@ export default function SetupWizard({ onComplete }) {
     serverIp: '',
     domain: '',
     enableSSL: false,
-    gpuType: null, // 'nvidia' | 'amd' | 'none'
+    hardware: null, // Full hardware detection results
+    gpuType: null, // 'AMD' | 'NVIDIA' | 'Intel' | null
     gpuDetecting: false,
     models: {
       text: ['deepseek-r1:1.5b', 'phi3.5'],
@@ -106,8 +107,25 @@ export default function SetupWizard({ onComplete }) {
   const detectGPU = async () => {
     setConfig(prev => ({ ...prev, gpuDetecting: true }));
     if (window.alloAPI) {
-      const gpu = await window.alloAPI.detectGPU();
-      setConfig(prev => ({ ...prev, gpuType: gpu, gpuDetecting: false }));
+      try {
+        const result = await window.alloAPI.setup.detectHardware();
+        if (result.success) {
+          const gpuType = result.hardware?.gpu?.type || null;
+          setConfig(prev => ({ 
+            ...prev, 
+            hardware: result.hardware,
+            gpuType,
+            gpuDetecting: false 
+          }));
+          console.log('[SetupWizard] Hardware detected:', result.hardware);
+        } else {
+          console.error('[SetupWizard] Hardware detection failed:', result.error);
+          setConfig(prev => ({ ...prev, gpuDetecting: false }));
+        }
+      } catch (err) {
+        console.error('[SetupWizard] detectHardware error:', err);
+        setConfig(prev => ({ ...prev, gpuDetecting: false }));
+      }
     }
   };
 
@@ -491,9 +509,9 @@ export default function SetupWizard({ onComplete }) {
 
   const renderGPUDetection = () => (
     <div className="setup-step">
-      <h2>GPU Detection</h2>
+      <h2>Hardware Detection</h2>
       <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
-        Detecting graphics card for accelerated image generation...
+        Detecting your system hardware to optimize AI service selection...
       </p>
 
       <div style={{
@@ -501,57 +519,131 @@ export default function SetupWizard({ onComplete }) {
         backgroundColor: 'var(--color-bg)',
         borderRadius: '8px',
         border: '1px solid var(--color-border)',
-        textAlign: 'center'
+        marginBottom: '1.5rem'
       }}>
         {config.gpuDetecting ? (
-          <>
+          <div style={{ textAlign: 'center' }}>
             <Download className="spin" size={48} style={{ margin: '0 auto 1rem' }} />
-            <p style={{ fontSize: '0.875rem' }}>Scanning for NVIDIA and AMD GPUs...</p>
-          </>
-        ) : config.gpuType ? (
+            <p style={{ fontSize: '0.875rem' }}>Detecting system hardware...</p>
+          </div>
+        ) : config.hardware ? (
           <>
-            <Check size={48} style={{ color: 'var(--color-success)', marginBottom: '1rem' }} />
-            <h3 style={{ color: 'var(--color-success)', marginBottom: '0.5rem' }}>
-              {config.gpuType === 'nvidia' ? 'NVIDIA GPU Detected' : config.gpuType === 'amd' ? 'AMD GPU Detected' : 'GPU Detected'}
-            </h3>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-              {config.gpuType === 'nvidia' 
-                ? 'Using CUDA for accelerated image generation with Flux'
-                : config.gpuType === 'amd'
-                ? 'Using ROCm for accelerated image generation with Flux'
-                : 'Using GPU acceleration for image generation'}
-            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ padding: '1rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: '6px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  Processor
+                </div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                  {config.hardware.cpuCores} Core{config.hardware.cpuCores > 1 ? 's' : ''}
+                </div>
+              </div>
+
+              <div style={{ padding: '1rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: '6px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  System RAM
+                </div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                  {config.hardware.ramGB} GB
+                </div>
+              </div>
+
+              <div style={{ padding: '1rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: '6px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  Free Disk Space
+                </div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                  {config.hardware.diskSpaceGB} GB
+                </div>
+              </div>
+
+              <div style={{ padding: '1rem', backgroundColor: config.gpuType ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', borderRadius: '6px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  GPU
+                </div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                  {config.hardware.gpu ? `${config.hardware.gpu.type}` : 'None'}
+                </div>
+              </div>
+            </div>
+
+            {config.hardware.gpu && (
+              <div style={{
+                padding: '1rem',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderRadius: '6px',
+                borderLeft: '4px solid rgb(16, 185, 129)',
+                marginBottom: '1.5rem'
+              }}>
+                <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                  <strong>{config.hardware.gpu.name}</strong>
+                </div>
+                {typeof config.hardware.gpu.vramGB === 'number' && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                    {config.hardware.gpu.vramGB} GB VRAM
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div style={{
+              padding: '1rem',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderLeft: '4px solid rgb(16, 185, 129)',
+              borderRadius: '6px'
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'rgb(16, 185, 129)' }}>
+                🦙 Will Install: LM Studio (llama.cpp)
+              </div>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                Universal LLM engine with automatic GPU detection:
+              </p>
+              <ul style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', margin: '0.5rem 0 0 1rem', paddingLeft: '1rem' }}>
+                <li><strong>NVIDIA:</strong> CUDA backend</li>
+                <li><strong>AMD:</strong> ROCm backend</li>
+                <li><strong>Apple Silicon:</strong> Metal backend</li>
+                <li><strong>CPU:</strong> Fallback for all systems</li>
+              </ul>
+            </div>
           </>
         ) : (
-          <>
+          <div style={{ textAlign: 'center' }}>
             <AlertCircle size={48} style={{ color: 'var(--color-warning)', marginBottom: '1rem' }} />
-            <h3 style={{ color: 'var(--color-warning)', marginBottom: '0.5rem' }}>No GPU detected</h3>
+            <h3 style={{ color: 'var(--color-warning)', marginBottom: '0.5rem' }}>
+              Unable to detect hardware
+            </h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-              Image generation will use CPU (slower, ~30s per 512x512 image)
+              Unable to determine system specifications. You can continue anyway.
             </p>
             <button className="btn btn-primary" onClick={detectGPU}>
-              Re-scan for GPU
+              Try Again
             </button>
-          </>
+          </div>
         )}
       </div>
 
-      {config.gpuType && (
+      {config.hardware && config.gpuType && (
         <div style={{
-          marginTop: '1.5rem',
           padding: '1rem',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
           borderRadius: '6px',
           fontSize: '0.875rem'
         }}>
           <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-success)' }}>
-            ✓ GPU-Accelerated Features Enabled
+            {config.gpuType === 'AMD' 
+              ? '⚡ AMD GPU Optimization'
+              : '✓ GPU Acceleration Enabled'}
           </div>
-          <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--color-text-muted)' }}>
-            <li>Flux Schnell image generation (512x512 in ~2s)</li>
-            <li>Flux Dev image generation (1024x1024 in ~8s)</li>
-            <li>Image editing and inpainting</li>
-          </ul>
+          {config.gpuType === 'AMD' ? (
+            <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+              Your AMD GPU will use LM Studio (llama.cpp with ROCm) for optimal GPU acceleration.
+            </p>
+          ) : (
+            <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+              <li>Flux image generation (~2s per image on GPU)</li>
+              <li>Fast text generation and inference</li>
+              <li>Optimized memory usage for your hardware</li>
+            </ul>
+          )}
         </div>
       )}
 
@@ -786,12 +878,12 @@ export default function SetupWizard({ onComplete }) {
               fontSize: '0.875rem',
               userSelect: 'all'
             }}>
-              http://{config.serverIp}:8000
+              http://{config.serverIp}:1234
             </code>
             <button 
               className="btn" 
               onClick={() => {
-                navigator.clipboard.writeText(`http://${config.serverIp}:8000`);
+                navigator.clipboard.writeText(`http://${config.serverIp}:1234`);
               }}
               style={{ minWidth: 'auto' }}
             >
@@ -829,8 +921,8 @@ export default function SetupWizard({ onComplete }) {
             🔓 Network Access & Firewall
           </div>
           <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--color-text-muted)' }}>
-            <li><strong>Firewall:</strong> Port 8000 will be opened automatically during setup (Windows firewall rules configured)</li>
-            <li><strong>Access:</strong> Any device on your network can reach http://{config.serverIp || '[ip]'}:8000</li>
+            <li><strong>Firewall:</strong> Port 1234 will be opened automatically during setup (Windows firewall rules configured)</li>
+            <li><strong>Access:</strong> Any device on your network can reach http://{config.serverIp || '[ip]'}:1234</li>
             <li><strong>Data:</strong> All traffic stays within your local network unless HTTPS is configured</li>
             <li><strong>Domain:</strong> Add a custom domain later in Settings → Network</li>
           </ul>
@@ -850,7 +942,7 @@ export default function SetupWizard({ onComplete }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Check size={16} style={{ color: 'var(--color-success)' }} />
-              <span><strong>Students/Teachers:</strong> Browse to http://{config.serverIp || '[ip]'}:8000</span>
+              <span><strong>Students/Teachers:</strong> Browse to http://{config.serverIp || '[ip]'}:1234</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Check size={16} style={{ color: 'var(--color-success)' }} />
@@ -883,6 +975,26 @@ export default function SetupWizard({ onComplete }) {
       <div style={{ display: 'grid', gap: '1rem' }}>
         {config.aiBackend !== 'cloud' && (
           <>
+            <div style={{
+              padding: '1rem',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderLeft: '4px solid rgb(16, 185, 129)',
+              borderRadius: '6px',
+              marginBottom: '0.5rem'
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'rgb(16, 185, 129)' }}>
+                🦙 Large Language Model (LLM) Service
+              </div>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                ✓ LM Studio (llama.cpp) will be installed with the optimal GPU backend for your hardware
+              </p>
+              {config.hardware && config.hardware.gpu && (
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                  <strong>Detected:</strong> {config.hardware.gpu.name} → Automatic {config.hardware.gpu.type} backend
+                </p>
+              )}
+            </div>
+
             <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
               <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Text Generation Models (required)</h4>
               <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
@@ -903,7 +1015,7 @@ export default function SetupWizard({ onComplete }) {
 
             <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
               <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>
-                Image Generation {config.gpuType && typeof config.gpuType === 'string' ? `(${config.gpuType.toUpperCase()} Accelerated)` : '(CPU)'}
+                Image Generation {config.gpuType && typeof config.gpuType === 'string' ? `(${config.gpuType === 'AMD' ? 'AMD' : config.gpuType} Accelerated)` : '(CPU)'}
               </h4>
               <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
                 Used for illustrations, diagrams, and visual learning
@@ -918,7 +1030,7 @@ export default function SetupWizard({ onComplete }) {
                   })}
                 />
                 <span>
-                  Flux Schnell (5GB)
+                  Flux SSD-1B (5GB)
                   {config.gpuType 
                     ? ` - GPU: ~2s per image` 
                     : ` - CPU: ~30s per image (slow)`}

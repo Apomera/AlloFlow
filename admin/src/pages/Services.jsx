@@ -27,6 +27,8 @@ export default function Services() {
       }
     };
     loadServices();
+    const interval = setInterval(loadServices, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleStartAll = async () => {

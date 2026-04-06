@@ -23,16 +23,16 @@ COPY prismflow-deploy/ ./
 COPY build.js ./build.js
 COPY AlloFlowANTI.txt ./AlloFlowANTI.txt
 
-# Copy external modules
-COPY stem_lab_module.js ./public/stem_lab_module.js
-COPY word_sounds_module.js ./public/word_sounds_module.js
-COPY behavior_lens_module.js ./public/behavior_lens_module.js
-COPY report_writer_module.js ./public/report_writer_module.js
+# Copy external modules from shared/
+COPY shared/modules/stem_lab/stem_lab_module.js ./public/shared/modules/stem_lab/stem_lab_module.js
+COPY shared/modules/word_sounds_module.js ./public/shared/modules/word_sounds_module.js
+COPY shared/modules/behavior_lens_module.js ./public/shared/modules/behavior_lens_module.js
+COPY shared/modules/report_writer_module.js ./public/shared/modules/report_writer_module.js
 
-# Copy supporting files
-COPY ui_strings.js ./public/ui_strings.js
-COPY help_strings.js ./public/help_strings.js
-COPY shared.css ./public/shared.css
+# Copy supporting files from shared/
+COPY shared/ui_strings.js ./public/shared/ui_strings.js
+COPY shared/help_strings.js ./public/shared/help_strings.js
+COPY shared/shared.css ./public/shared/shared.css
 COPY src/dataProvider.js ./public/dataProvider.js
 COPY src/dataLayer.js ./public/dataLayer.js
 
@@ -55,13 +55,7 @@ COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/build /usr/share/nginx/html
 
 # Copy external modules to be served statically
-COPY --from=builder /app/public/stem_lab_module.js /usr/share/nginx/html/
-COPY --from=builder /app/public/word_sounds_module.js /usr/share/nginx/html/
-COPY --from=builder /app/public/behavior_lens_module.js /usr/share/nginx/html/
-COPY --from=builder /app/public/report_writer_module.js /usr/share/nginx/html/
-COPY --from=builder /app/public/ui_strings.js /usr/share/nginx/html/
-COPY --from=builder /app/public/help_strings.js /usr/share/nginx/html/
-COPY --from=builder /app/public/shared.css /usr/share/nginx/html/
+COPY --from=builder /app/public/shared /usr/share/nginx/html/shared
 COPY --from=builder /app/public/dataProvider.js /usr/share/nginx/html/
 COPY --from=builder /app/public/dataLayer.js /usr/share/nginx/html/
 

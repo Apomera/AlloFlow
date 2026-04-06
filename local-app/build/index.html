@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0" />
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self' localhost:* 127.0.0.1:*;
-             script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net;
+             script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com;
              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
              font-src 'self' https://fonts.gstatic.com;
              img-src 'self' data: blob:;
@@ -24,12 +24,15 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
   <!-- Expose React globals for modules that read window.React -->
-  <script>window.React = React; window.ReactDOM = ReactDOM;</script>
+  <!-- __firebase_config is checked by the main app to decide whether to mount.
+       In the cloud (Google Canvas/IDX), it's injected automatically.
+       For the local app, we define it as an empty JSON object. -->
+  <script>window.__firebase_config = '{}'; window.React = React; window.ReactDOM = ReactDOM;</script>
 
   <!-- Shared context (must load first — defines window.__alloShared) -->
   <script src="./sharedContext_local.js" defer></script>
 
-  <!-- Local AI module (Ollama + Piper — no cloud) -->
+  <!-- Local AI module (LM Studio + Piper — no cloud) -->
   <script src="./ai_local_module.js" defer></script>
 
   <!-- Local DB module (SQLite REST client + IndexedDB cache + auth) -->
@@ -70,7 +73,7 @@
   </style>
 </head>
 <body>
-  <div id="offline-banner">⚠️ Ollama service offline — AI features unavailable. Start Ollama to restore.</div>
+  <div id="offline-banner">⚠️ LLM service offline — AI features unavailable. Start LM Studio to restore.</div>
 
   <div id="service-error">
     <div id="service-error-box">
@@ -87,10 +90,10 @@
     // The admin Electron app injects __alloLocalConfig into the served HTML.
     // Fallback values used when loading the file directly in dev mode.
     window.__alloLocalConfig = window.__alloLocalConfig || {
-      ollamaUrl: 'http://localhost:11434',
+      llmEngineUrl: 'http://localhost:1234',
       sqliteUrl: 'http://localhost:3747',
       piperEnabled: true,
-      defaultModel: 'llama3.2:3b',
+      defaultModel: 'default',
     };
 
     window.__alloLocalDBUrl = window.__alloLocalConfig.sqliteUrl;
@@ -100,12 +103,20 @@
       const config = window.__alloLocalConfig;
       const errors = [];
 
-      // Check Ollama
+      // Check LLM Engine (LM Studio) — also auto-detect the loaded model
       try {
-        const res = await fetch(config.ollamaUrl + '/api/tags', { signal: AbortSignal.timeout(3000) });
+        const llmUrl = config.llmEngineUrl || config.ollamaUrl || 'http://localhost:1234';
+        const res = await fetch(llmUrl + '/v1/models', { signal: AbortSignal.timeout(3000) });
         if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const firstModel = data?.data?.[0]?.id;
+        if (firstModel) {
+          window.__ollamaModel = firstModel;
+          window.__alloLocalConfig.defaultModel = firstModel;
+          console.log('[AlloFlow] Auto-detected LM Studio model:', firstModel);
+        }
       } catch {
-        errors.push({ service: 'Ollama', url: config.ollamaUrl, required: false });
+        errors.push({ service: 'LM Studio', url: config.llmEngineUrl || 'http://localhost:1234', required: false });
         document.getElementById('offline-banner').classList.add('visible');
       }
 

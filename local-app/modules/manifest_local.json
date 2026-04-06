@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-03T01:00:22.506Z",
+  "generatedAt": "2026-04-03T15:54:19.660Z",
   "sourceFile": "AlloFlowANTI.txt",
   "variant": "local",
   "sections": {
@@ -39,13 +39,13 @@
     "SAFETY_CHECKER": {
       "module": "core/safety",
       "file": "section_safety-checker.js",
-      "hash": "d941f18026d2498a",
+      "hash": "54b9e280728f909e",
       "sourceHash": "d941f18026d2498a",
       "startLine": 665,
       "endLine": 780,
       "lines": 117,
-      "cloudStripped": false,
-      "replacements": 0
+      "cloudStripped": true,
+      "replacements": 1
     },
     "WORD_SOUNDS_STRINGS": {
       "module": "modules/word_sounds",
@@ -61,13 +61,13 @@
     "PHONEME_DATA": {
       "module": "modules/word_sounds",
       "file": "section_phoneme-data.js",
-      "hash": "39450fd2246138d1",
+      "hash": "507f39dca5c86e22",
       "sourceHash": "39450fd2246138d1",
       "startLine": 962,
       "endLine": 1438,
-      "lines": 478,
-      "cloudStripped": false,
-      "replacements": 0
+      "lines": 471,
+      "cloudStripped": true,
+      "replacements": 2
     },
     "VISUAL_PANEL": {
       "module": "modules/visual_panel",
@@ -105,13 +105,13 @@
     "STUDENT_ANALYTICS": {
       "module": "modules/analytics",
       "file": "section_student-analytics.js",
-      "hash": "66dae6fbcc4f2af3",
+      "hash": "3ea92521f768b65e",
       "sourceHash": "66dae6fbcc4f2af3",
       "startLine": 4400,
       "endLine": 5788,
       "lines": 1390,
-      "cloudStripped": false,
-      "replacements": 0
+      "cloudStripped": true,
+      "replacements": 2
     },
     "STUDENT_SUBMIT": {
       "module": "modules/student_interaction",
@@ -193,13 +193,13 @@
     "ADVENTURE_SYSTEMS": {
       "module": "modules/adventure",
       "file": "section_adventure-systems.js",
-      "hash": "69d66e829ae2e548",
+      "hash": "0bc5073397579e45",
       "sourceHash": "69d66e829ae2e548",
       "startLine": 9602,
       "endLine": 10584,
       "lines": 984,
-      "cloudStripped": false,
-      "replacements": 0
+      "cloudStripped": true,
+      "replacements": 1
     },
     "INTERACTIVE_GAMES": {
       "module": "modules/games",
@@ -336,13 +336,13 @@
     "BILINGUAL_RENDERER": {
       "module": "modules/reader",
       "file": "section_bilingual-renderer.js",
-      "hash": "d736e3baa131a188",
+      "hash": "ca0653e0fa8e2a29",
       "sourceHash": "c4e564541b6eb0ad",
       "startLine": 25865,
       "endLine": 68820,
       "lines": 42957,
       "cloudStripped": true,
-      "replacements": 119
+      "replacements": 137
     },
     "__main_app__": {
       "module": "app/main",

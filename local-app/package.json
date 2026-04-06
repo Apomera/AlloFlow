@@ -14,7 +14,7 @@
     "clean": "node -e \"const fs=require('fs'); ['build','modules/local','src/LocalApp.jsx'].forEach(p => { try { fs.rmSync(p,{recursive:true}); } catch{} });\""
   },
   "devDependencies": {
+    "@mintplex-labs/piper-tts-web": "^1.0.4",
     "esbuild": "^0.25.0"
-  },
-  "dependencies": {}
+  }
 }

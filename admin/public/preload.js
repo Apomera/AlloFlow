@@ -66,37 +66,11 @@ contextBridge.exposeInMainWorld('alloAPI', {
       });
     }
   },
-  ollama: {
-    getInstalledModels: () => {
-      return ipcRenderer.invoke('ollama:get-installed-models');
-    },
-    getAvailableModels: () => {
-      return ipcRenderer.invoke('ollama:get-available-models');
-    },
-    pullModel: (modelId) => {
-      return ipcRenderer.invoke('ollama:pull-model', { modelId });
-    },
-    checkStatus: () => {
-      return ipcRenderer.invoke('ollama:check-status');
-    },
-    checkUpdates: () => {
-      return ipcRenderer.invoke('ollama:check-updates');
-    },
-    onPullProgress: (callback) => {
-      ipcRenderer.on('ollama:pull-progress', (event, data) => {
-        callback(data);
-      });
-    },
-    onUpdateAvailable: (callback) => {
-      ipcRenderer.on('ollama:update-available', (event, data) => {
-        callback(data);
-      });
-    }
-  },
 
   // ── Flat model API (used by Models.jsx) ──────────────────────────────────
-  listModels: () => ipcRenderer.invoke('ollama:get-installed-models'),
-  pullModel: (model) => ipcRenderer.invoke('ollama:pull-model', { modelId: model }),
+  // Now handled by LM Studio (llama.cpp)
+  listModels: () => ipcRenderer.invoke('llm:get-models'),
+  pullModel: (model) => ipcRenderer.invoke('llm:pull-model', { modelId: model }),
 
   // ── AI Config read/write (used by AIConfig.jsx) ──────────────────────────
   readAIConfig: () => ipcRenderer.invoke('config:read-ai'),
@@ -129,9 +103,9 @@ contextBridge.exposeInMainWorld('alloAPI', {
     onMainLogs: (callback) => {
       ipcRenderer.on('logs:main', (event, data) => callback(data));
     },
-    // Stream Ollama logs
-    onOllamaLogs: (callback) => {
-      ipcRenderer.on('logs:ollama', (event, data) => callback(data));
+    // Stream LLM engine logs
+    onLLMEngineLogs: (callback) => {
+      ipcRenderer.on('logs:llm-engine', (event, data) => callback(data));
     },
     // Stream Piper logs
     onPiperLogs: (callback) => {

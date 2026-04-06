@@ -50,62 +50,62 @@ const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
 const MODULES = [
     {
         name: 'StemLab',
-        filename: 'stem_lab/stem_lab_module.js',
+        filename: 'shared/modules/stem_lab/stem_lab_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'WordSoundsModal',
-        filename: 'word_sounds_module.js',
+        filename: 'shared/modules/word_sounds_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'BehaviorLens',
-        filename: 'behavior_lens_module.js',
+        filename: 'shared/modules/behavior_lens_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'ReportWriter',
-        filename: 'report_writer_module.js',
+        filename: 'shared/modules/report_writer_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'StudentAnalytics',
-        filename: 'student_analytics_module.js',
+        filename: 'shared/modules/student_analytics_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'SymbolStudio',
-        filename: 'symbol_studio_module.js',
+        filename: 'shared/modules/symbol_studio_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'GamesBundle',
-        filename: 'games_module.js',
+        filename: 'shared/modules/games_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'SelHub',
-        filename: 'sel_hub/sel_hub_module.js',
+        filename: 'shared/modules/sel_hub/sel_hub_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'QuickStartWizard',
-        filename: 'quickstart_module.js',
+        filename: 'shared/modules/quickstart_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'AlloBot',
-        filename: 'allobot_module.js',
+        filename: 'shared/modules/allobot_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'TeacherModule',
-        filename: 'teacher_module.js',
+        filename: 'shared/modules/teacher_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'StoryForge',
-        filename: 'story_forge_module.js',
+        filename: 'shared/modules/story_forge_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
@@ -113,62 +113,62 @@ const MODULES = [
 // Plugin files loaded via the setTimeout plugin loader (not loadModule)
 // build.js updates their CDN hash in the pluginCdnBase variable
 const PLUGIN_FILES = [
-    'stem_lab/stem_tool_dna.js',
-    'stem_lab/stem_tool_math.js',
-    'stem_lab/stem_tool_unitconvert.js',
-    'stem_lab/stem_tool_logiclab.js',
-    'stem_lab/stem_tool_probability.js',
-    'stem_lab/stem_tool_calculus.js',
-    'stem_lab/stem_tool_science.js', 'stem_lab/stem_tool_galaxy.js',
-    'stem_lab/stem_tool_creative.js',
-    'stem_lab/stem_tool_art.js',
-    'stem_lab/stem_tool_datastudio.js',
-    'stem_lab/stem_tool_dataplot.js',
-    'stem_lab/stem_tool_geo.js',
-    'stem_lab/stem_tool_fractions.js',
-    'stem_lab/stem_tool_manipulatives.js',
-    'stem_lab/stem_tool_money.js',
-    'stem_lab/stem_tool_coordgrid.js',
-    'stem_lab/stem_tool_angles.js',
-    'stem_lab/stem_tool_archstudio.js',
-    'stem_lab/stem_tool_cyberdefense.js',
-    'stem_lab/stem_tool_physics.js',
-    'stem_lab/stem_tool_watercycle.js',
-    'stem_lab/stem_tool_rocks.js',
-    'stem_lab/stem_tool_dissection.js',
-    'stem_lab/stem_tool_behaviorlab.js',
-    'stem_lab/stem_tool_anatomy.js',
-    'stem_lab/stem_tool_decomposer.js',
-    'stem_lab/stem_tool_companionplanting.js',
-    'stem_lab/stem_tool_aquarium.js',
-    'stem_lab/stem_tool_ecosystem.js',
-    'stem_lab/stem_tool_molecule.js',
-    'stem_lab/stem_tool_solarsystem.js',
-    'stem_lab/stem_tool_universe.js',
-    'stem_lab/stem_tool_economicslab.js',
-    'stem_lab/stem_tool_graphcalc.js',
-    'stem_lab/stem_tool_algebraCAS.js',
-    'stem_lab/stem_tool_circuit.js',
-    'stem_lab/stem_tool_a11yauditor.js',
-    'stem_lab/stem_tool_worldbuilder.js',
-    'stem_lab/stem_tool_climateExplorer.js',
-    'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
-    'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
-    'sel_hub/sel_tool_social.js',
-    'sel_hub/sel_tool_perspective.js',
-    'sel_hub/sel_tool_decisions.js',
-    'sel_hub/sel_tool_conflict.js',
-    'sel_hub/sel_tool_advocacy.js',
-    'sel_hub/sel_tool_strengths.js',
-    'sel_hub/sel_tool_goals.js',
-    'sel_hub/sel_tool_community.js',
-    'sel_hub/sel_tool_teamwork.js',
-    'sel_hub/sel_tool_journal.js',
-    'sel_hub/sel_tool_safety.js',
-    'sel_hub/sel_tool_restorativecircle.js',
-    'sel_hub/sel_tool_civicaction.js',
-    'sel_hub/sel_tool_ethicalreasoning.js',
-    'sel_hub/sel_tool_cultureexplorer.js'
+    'shared/modules/stem_lab/stem_tool_dna.js',
+    'shared/modules/stem_lab/stem_tool_math.js',
+    'shared/modules/stem_lab/stem_tool_unitconvert.js',
+    'shared/modules/stem_lab/stem_tool_logiclab.js',
+    'shared/modules/stem_lab/stem_tool_probability.js',
+    'shared/modules/stem_lab/stem_tool_calculus.js',
+    'shared/modules/stem_lab/stem_tool_science.js', 'shared/modules/stem_lab/stem_tool_galaxy.js',
+    'shared/modules/stem_lab/stem_tool_creative.js',
+    'shared/modules/stem_lab/stem_tool_art.js',
+    'shared/modules/stem_lab/stem_tool_datastudio.js',
+    'shared/modules/stem_lab/stem_tool_dataplot.js',
+    'shared/modules/stem_lab/stem_tool_geo.js',
+    'shared/modules/stem_lab/stem_tool_fractions.js',
+    'shared/modules/stem_lab/stem_tool_manipulatives.js',
+    'shared/modules/stem_lab/stem_tool_money.js',
+    'shared/modules/stem_lab/stem_tool_coordgrid.js',
+    'shared/modules/stem_lab/stem_tool_angles.js',
+    'shared/modules/stem_lab/stem_tool_archstudio.js',
+    'shared/modules/stem_lab/stem_tool_cyberdefense.js',
+    'shared/modules/stem_lab/stem_tool_physics.js',
+    'shared/modules/stem_lab/stem_tool_watercycle.js',
+    'shared/modules/stem_lab/stem_tool_rocks.js',
+    'shared/modules/stem_lab/stem_tool_dissection.js',
+    'shared/modules/stem_lab/stem_tool_behaviorlab.js',
+    'shared/modules/stem_lab/stem_tool_anatomy.js',
+    'shared/modules/stem_lab/stem_tool_decomposer.js',
+    'shared/modules/stem_lab/stem_tool_companionplanting.js',
+    'shared/modules/stem_lab/stem_tool_aquarium.js',
+    'shared/modules/stem_lab/stem_tool_ecosystem.js',
+    'shared/modules/stem_lab/stem_tool_molecule.js',
+    'shared/modules/stem_lab/stem_tool_solarsystem.js',
+    'shared/modules/stem_lab/stem_tool_universe.js',
+    'shared/modules/stem_lab/stem_tool_economicslab.js',
+    'shared/modules/stem_lab/stem_tool_graphcalc.js',
+    'shared/modules/stem_lab/stem_tool_algebraCAS.js',
+    'shared/modules/stem_lab/stem_tool_circuit.js',
+    'shared/modules/stem_lab/stem_tool_a11yauditor.js',
+    'shared/modules/stem_lab/stem_tool_worldbuilder.js',
+    'shared/modules/stem_lab/stem_tool_climateExplorer.js',
+    'shared/modules/sel_hub/sel_tool_zones.js', 'shared/modules/sel_hub/sel_tool_emotions.js',
+    'shared/modules/sel_hub/sel_tool_coping.js', 'shared/modules/sel_hub/sel_tool_mindfulness.js',
+    'shared/modules/sel_hub/sel_tool_social.js',
+    'shared/modules/sel_hub/sel_tool_perspective.js',
+    'shared/modules/sel_hub/sel_tool_decisions.js',
+    'shared/modules/sel_hub/sel_tool_conflict.js',
+    'shared/modules/sel_hub/sel_tool_advocacy.js',
+    'shared/modules/sel_hub/sel_tool_strengths.js',
+    'shared/modules/sel_hub/sel_tool_goals.js',
+    'shared/modules/sel_hub/sel_tool_community.js',
+    'shared/modules/sel_hub/sel_tool_teamwork.js',
+    'shared/modules/sel_hub/sel_tool_journal.js',
+    'shared/modules/sel_hub/sel_tool_safety.js',
+    'shared/modules/sel_hub/sel_tool_restorativecircle.js',
+    'shared/modules/sel_hub/sel_tool_civicaction.js',
+    'shared/modules/sel_hub/sel_tool_ethicalreasoning.js',
+    'shared/modules/sel_hub/sel_tool_cultureexplorer.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────
@@ -303,8 +303,8 @@ if (mode === 'dev') {
     // In dev mode, plugins load from local paths
     content = content.replace(PLUGIN_CDN_RE, () => {
         pluginReplaced = true;
-        console.log('  ✏️  pluginCdnBase: → local (./)'); 
-        return "var pluginCdnBase = './";
+        console.log('  ✏️  pluginCdnBase: → local (./shared/modules/)'); 
+        return "var pluginCdnBase = './shared/modules/";
     });
 } else {
     content = content.replace(PLUGIN_CDN_RE, () => {

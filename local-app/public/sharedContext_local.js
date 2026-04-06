@@ -42,13 +42,13 @@
 
     // ── Local config (injected by admin app) ──────────────────────────────────
     const config = global.__alloLocalConfig || {
-        ollamaUrl: 'http://localhost:11434',
+        llmEngineUrl: 'http://localhost:1234',
         sqliteUrl: 'http://localhost:3747',
         piperEnabled: true,
-        defaultModel: 'llama3.2:3b',
+        defaultModel: 'default',
     };
 
-    // ── AI Provider (Ollama-only) ─────────────────────────────────────────────
+    // ── AI Provider (LM Studio) ──────────────────────────────────────────────
     // Resolved after AIProvider loads from ai_local_module.js.
     // Any code that calls ai.chat()/ai.generate() before load gets a safe stub.
     const aiStub = {

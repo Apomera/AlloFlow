@@ -21,12 +21,32 @@ const path        = require('path');
 const fs          = require('fs');
 const os          = require('os');
 const { createServer } = require('http');
+const { execSync }     = require('child_process');
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const DEFAULT_PORT  = 3747;
 const RESTART_DELAY = 3000;   // ms before restarting a crashed backend
 const MAX_RESTARTS  = 5;      // give up after this many restarts in one session
+
+// ── Node.js discovery ─────────────────────────────────────────────────────────
+
+/**
+ * Find a system Node.js binary (NOT process.execPath, which is Electron).
+ * Returns the path to the node binary, or null if not found.
+ */
+function _findSystemNode() {
+    try {
+        const cmd = process.platform === 'win32' ? 'where.exe node' : 'which node';
+        const result = execSync(cmd, { encoding: 'utf-8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] });
+        const lines = result.trim().split(/\r?\n/);
+        for (const line of lines) {
+            const p = line.trim();
+            if (p && fs.existsSync(p)) return p;
+        }
+    } catch {}
+    return null;
+}
 
 let _proc         = null;
 let _port         = DEFAULT_PORT;
@@ -98,13 +118,24 @@ async function start(port, isPackaged, dataDir) {
 }
 
 function _spawn(scriptPath, dbDir, resolveOnce, rejectOnce) {
+    // In Electron, process.execPath is the Electron binary itself.
+    // Spawning it with a script path launches a FULL NEW APP INSTANCE.
+    // We must find the system Node.js binary instead.
+    const nodeExe = _findSystemNode();
+    if (!nodeExe) {
+        const msg = 'No system Node.js found — SQLite backend requires Node.js 22.5+ installed on this machine';
+        console.warn('[localBackend]', msg);
+        if (rejectOnce) { rejectOnce(new Error(msg)); resolveOnce = null; rejectOnce = null; }
+        return;
+    }
+
     const env = {
         ...process.env,
         SQLITE_PORT: String(_port),
         DATA_DIR:    dbDir,
     };
 
-    _proc = spawn(process.execPath, [scriptPath], {
+    _proc = spawn(nodeExe, [scriptPath], {
         stdio: ['ignore', 'pipe', 'pipe'],
         env,
         detached: false,

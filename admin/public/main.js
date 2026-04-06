@@ -3,9 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const nativePM = require('./nativeProcessManager');
-const ollamaManager = require('./ollamaManager');
+// Ollama manager removed — now using universal llm-engine (llama.cpp)
+const serviceUpdatesManager = require('./serviceUpdatesManager');
 const { startSearchServer, stopSearchServer } = require('./searchModule');
-const { startWebAppServer, stopWebAppServer, getWebAppPort } = require('./webAppServer');
 const { startLocalAppServer, stopLocalAppServer, getLocalAppPort } = require('./localAppServer');
 const localBackend = require('./localBackendManager');
 
@@ -13,11 +13,27 @@ const isDev = !app.isPackaged;
 let mainWindow;
 let updateDetectorInterval = null;
 
+// ── Single Instance Lock ────────────────────────────────────────────────────
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  // Another instance is already running — exit immediately
+  // Use app.exit() not app.quit() to prevent ready event from firing
+  app.exit(0);
+} else {
+  app.on('second-instance', () => {
+    // Someone tried to open a second instance — focus the existing window
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
+
 // ── Log streaming infrastructure ────────────────────────────────────────────
 const LOG_DIR = path.join(os.homedir(), '.alloflow', 'logs');
 const logBuffers = {
   main: [],
-  ollama: [],
+  'llm-engine': [],
   piper: [],
   flux: []
 };
@@ -83,36 +99,39 @@ console.warn = (...args) => {
   logToService('main', `WARN: ${message}`);
 };
 
-// Start Ollama update detector (runs every 24 hours)
-function startOllamaUpdateDetector() {
+// Start unified service update detector (checks LM Studio, Piper, Flux every 24 hours)
+function startServiceUpdateDetector() {
   if (updateDetectorInterval) return; // Already running
   
   const checkForUpdates = async () => {
     try {
-      const updates = await ollamaManager.checkForUpdates();
-      if (updates && mainWindow) {
-        mainWindow.webContents.send('ollama:update-available', updates);
-        console.log('[ollama:updates] New version available:', updates.latestVersion);
-      }
+      const updates = await serviceUpdatesManager.checkAllUpdates();
+      console.log('[updates] Update check completed:',
+        'llm-engine=' + (updates['llm-engine']?.available ? '✓' : '✗'),
+        'piper=' + (updates.piper?.available ? '✓' : '✗'),
+        'flux=' + (updates.flux?.available ? '✓' : '✗')
+      );
     } catch (err) {
       // Silently fail — update checks are non-critical
+      console.warn('[updates] Update check error:', err.message);
     }
   };
   
-  // Check immediately, then every 24 hours
-  checkForUpdates();
+  // Check immediately (with a small delay to not block startup), then every 24 hours
+  setTimeout(checkForUpdates, 5000); // Wait 5 seconds after startup to check
   updateDetectorInterval = setInterval(checkForUpdates, 24 * 60 * 60 * 1000);
-  console.log('[ollama:updates] Update detector started');
+  console.log('[updates] Service update detector started');
 }
 
 // Stop update detector on app quit
-function stopOllamaUpdateDetector() {
+function stopServiceUpdateDetector() {
   if (updateDetectorInterval) {
     clearInterval(updateDetectorInterval);
     updateDetectorInterval = null;
-    console.log('[ollama:updates] Update detector stopped');
+    console.log('[updates] Service update detector stopped');
   }
 }
+
 
 
 // AlloFlow config directory and files
@@ -125,7 +144,7 @@ const LOCAL_CONFIG_FILE    = path.join(ALLOFLOW_DIR, 'local_config.json');
 
 // ── Local config helpers (C3.1) ──────────────────────────────────────────────
 const LOCAL_CONFIG_DEFAULTS = {
-  ollamaUrl:    'http://localhost:11434',
+  llmEngineUrl: 'http://localhost:1234',
   sqliteUrl:    'http://localhost:3747',
   piperEnabled: true,
   defaultModel: 'llama3.2:3b',
@@ -260,6 +279,7 @@ const createWindow = () => {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -268,11 +288,27 @@ const createWindow = () => {
     },
   });
 
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
   const startURL = isDev
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html')}`;
 
   mainWindow.loadURL(startURL);
+
+  // Prevent renderer from opening new BrowserWindows (e.g. window.open)
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Open external URLs in the system browser instead
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      require('electron').shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
+
+  // Register main window with update manager
+  serviceUpdatesManager.setMainWindow(mainWindow);
 
   // DevTools disabled for production
   // mainWindow.webContents.openDevTools();
@@ -283,22 +319,27 @@ const createWindow = () => {
 };
 
 app.on('ready', async () => {
+  // Guard: if we didn't get the single-instance lock, do nothing
+  if (!gotTheLock) return;
+  
   console.log('[app:ready] AlloFlow Admin starting...');
   
+  // Show the window IMMEDIATELY so the user sees something
+  createWindow();
+
+  // Initialize services in the background (non-blocking)
+  initServices().catch(err => {
+    console.error('[app:ready] Service init error (non-fatal):', err.message);
+  });
+});
+
+async function initServices() {
   // Start the built-in search server
   try {
     const searchPort = await startSearchServer(8888);
     console.log('[app:ready] Search server started on port', searchPort);
   } catch (err) {
     console.error('[app:ready] Failed to start search server:', err.message);
-  }
-
-  // Start the web app server (serves AlloFlow locally)
-  try {
-    const webPort = await startWebAppServer(3000, app.isPackaged);
-    console.log('[app:ready] Web app server started on port', webPort);
-  } catch (err) {
-    console.error('[app:ready] Failed to start web app server:', err.message);
   }
 
   // Start the local app server + SQLite backend (B4.4)
@@ -324,7 +365,6 @@ app.on('ready', async () => {
     console.log('[app:ready] Existing local config found, auto-starting services...');
     const selectedServices = config.selectedServices || [];
     
-    // **IMPROVED**: Try to start each service, with better error handling
     for (const serviceId of selectedServices) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
       if (!svcDef) {
@@ -332,13 +372,11 @@ app.on('ready', async () => {
         continue;
       }
       
-      // Skip builtin services (they're already running in-process)
       if (svcDef.builtin) {
         console.log(`[app:ready] Skipping builtin service: ${serviceId}`);
         continue;
       }
       
-      // Check if service is installed before trying to start
       if (!nativePM.isServiceInstalled(serviceId)) {
         console.warn(`[app:ready] Service not installed (will skip): ${serviceId}`);
         continue;
@@ -350,20 +388,28 @@ app.on('ready', async () => {
         console.log(`[app:ready] ✓ ${serviceId} started`);
       } catch (err) {
         console.error(`[app:ready] Failed to start ${serviceId}:`, err.message);
-        // Non-fatal: continue with other services
       }
     }
     
-    // **NEW**: After starting services, wait a bit for them to become healthy
-    // This ensures they're ready when the admin app UI loads
-    console.log('[app:ready] Waiting for services to become healthy...');
-    if (selectedServices.includes('ollama')) {
+    // Wait for LM Studio (llm-engine) in background — no longer blocks window
+    if (selectedServices.includes('llm-engine')) {
       try {
-        await ollamaManager.waitForHealthy(30000, 1000);
-        console.log('[app:ready] ✓ Ollama is healthy');
+        // Give LM Studio time to start and become healthy
+        const maxAttempts = 30;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          try {
+            const response = await fetch('http://127.0.0.1:1234/v1/models', { timeout: 1000 });
+            if (response.ok) {
+              console.log('[app:ready] ✓ LM Studio is healthy');
+              break;
+            }
+          } catch (e) {
+            if (attempt === maxAttempts - 1) throw e;
+          }
+          await new Promise(r => setTimeout(r, 1000)); // Wait 1 second before retry
+        }
       } catch (err) {
-        console.warn('[app:ready] Ollama did not become healthy quickly:', err.message);
-        // Non-fatal: Ollama may still start in the background
+        console.warn('[app:ready] LM Studio did not become healthy quickly:', err.message);
       }
     }
   } else if (config) {
@@ -372,16 +418,16 @@ app.on('ready', async () => {
     console.log('[app:ready] No configuration found - will show setup wizard');
   }
 
-  createWindow();
-});
+  // Start service update detector
+  startServiceUpdateDetector();
+}
 
 app.on('window-all-closed', () => {
   nativePM.stopAllServices();
   stopSearchServer();
-  stopWebAppServer();
   stopLocalAppServer();
   localBackend.stop();
-  stopOllamaUpdateDetector();
+  stopServiceUpdateDetector();
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -390,10 +436,9 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   nativePM.stopAllServices();
   stopSearchServer();
-  stopWebAppServer();
   stopLocalAppServer();
   localBackend.stop();
-  stopOllamaUpdateDetector();
+  stopServiceUpdateDetector();
 });
 
 app.on('activate', () => {
@@ -442,7 +487,7 @@ ipcMain.handle('setup:save-config', async (event, setupData) => {
     // C3.2 — Write local_config.json when saving a local deployment
     if (success && (setupData.deploymentType === 'local' || setupData.deploymentType === 'hybrid')) {
       const localCfg = {
-        ollamaUrl:    setupData.ollamaUrl    || LOCAL_CONFIG_DEFAULTS.ollamaUrl,
+        llmEngineUrl: setupData.llmEngineUrl || LOCAL_CONFIG_DEFAULTS.llmEngineUrl,
         sqliteUrl:    setupData.sqliteUrl    || LOCAL_CONFIG_DEFAULTS.sqliteUrl,
         piperEnabled: setupData.piperEnabled !== false,
         defaultModel: setupData.defaultModel || LOCAL_CONFIG_DEFAULTS.defaultModel,
@@ -644,17 +689,39 @@ async function startDeployment(setupData, onProgress) {
       id => SERVICE_DEFINITIONS[id] && !SERVICE_DEFINITIONS[id].builtin
     );
 
-    // Detect GPU info to pass to Flux installer
+    // Detect GPU info to configure Flux and LM Studio with appropriate backend
     const hardware = detectHardware();
     const gpuInfo = hardware.gpu || null;
+    
+    // ─ SERVICE SELECTION ───────────────────────────────────────────────────────
+    // For all systems: Use llm-engine (LM Studio with llama.cpp)
+    // LM Studio automatically selects the right backend:
+    // - NVIDIA → CUDA backend
+    // - AMD → ROCm backend  
+    // - Apple Silicon → Metal backend
+    // - CPU → CPU inference fallback
+    
+    let finalServiceList = [...servicesToInstall];
+    
+    // Ensure llm-engine is always included for LLM functionality
+    if (!finalServiceList.includes('llm-engine')) {
+      finalServiceList.push('llm-engine');
+      console.log('[deploy:start] Added llm-engine (LM Studio with llama.cpp) for universal GPU support');
+    }
+    
+    // Remove deprecated Ollama or llama-studio references if they exist
+    finalServiceList = finalServiceList.filter(s => s !== 'ollama' && s !== 'llama-studio');
+    
+    // Use the universal service list
+    const servicesToInstallFinal = finalServiceList;
     
     // PHASE 0: Check if deployment is needed (skip if version unchanged and no new services)
     let needsInstallation = true;
     if (!versionChanged) {
       const manifest = getDeploymentManifest();
       if (manifest && manifest.services) {
-        const newServices = servicesToInstall.filter(s => !manifest.services.includes(s));
-        if (newServices.length === 0 && servicesToInstall.every(s => manifest.services.includes(s))) {
+        const newServices = servicesToInstallFinal.filter(s => !manifest.services.includes(s));
+        if (newServices.length === 0 && servicesToInstallFinal.every(s => manifest.services.includes(s))) {
           // All services already deployed — skip download/install but still start and health-check
           console.log('[deploy:start] All services already deployed at current version, skipping installation...');
           onProgress({ phase: 'preflight', status: 'Services already installed, starting them up...', progress: 10 });
@@ -664,12 +731,12 @@ async function startDeployment(setupData, onProgress) {
     }
     
     // PHASE 2: Install services (download binaries) - only if needed
-    const totalToInstall = servicesToInstall.length;
+    const totalToInstall = servicesToInstallFinal.length;
     let installed = 0;
     
     if (needsInstallation) {
     
-    for (const serviceId of servicesToInstall) {
+    for (const serviceId of servicesToInstallFinal) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
       if (!svcDef) continue;
       
@@ -682,6 +749,24 @@ async function startDeployment(setupData, onProgress) {
           status: `${svcDef.name} already installed`,
           progress: baseProgress + 60 / totalToInstall
         });
+        // Always re-copy flux_server.py to ensure latest version is deployed
+        if (serviceId === 'flux') {
+          try {
+            const updated = nativePM.updateFluxServerScript();
+            if (updated) {
+              // Stop the running flux process so Phase 3 restarts it with the updated script
+              try { nativePM.stopService('flux'); } catch {}
+            }
+          } catch (e) {
+            console.warn('[deploy] Failed to update flux_server.py:', e.message);
+          }
+        }
+        // Always ensure piper voice model is present (may be missing on update from older install)
+        if (serviceId === 'piper') {
+          nativePM.ensurePiperVoiceModel().catch((e) => {
+            console.warn('[deploy] Piper voice model check failed (non-fatal):', e.message);
+          });
+        }
       } else {
         onProgress({
           phase: 'install',
@@ -707,14 +792,14 @@ async function startDeployment(setupData, onProgress) {
     // PHASE 3: Start services (always runs — ensures services are up)
     onProgress({ phase: 'starting', status: 'Starting services...', progress: 70 });
     
-    for (const serviceId of servicesToInstall) {
+    for (const serviceId of servicesToInstallFinal) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
       if (!svcDef) continue;
       
       onProgress({
         phase: 'starting',
         status: `Starting ${svcDef.name}...`,
-        progress: 70 + (servicesToInstall.indexOf(serviceId) / servicesToInstall.length) * 15
+        progress: 70 + (servicesToInstallFinal.indexOf(serviceId) / servicesToInstallFinal.length) * 15
       });
       
       try {
@@ -765,150 +850,74 @@ async function startDeployment(setupData, onProgress) {
       }
     }
 
-    // PHASE 5: Set up Ollama models (pull models selected in wizard)
-    if (servicesToInstall.includes('ollama')) {
-      const modelsToPull = setupData.selectedModels && setupData.selectedModels.length > 0
-        ? setupData.selectedModels
-        : ['neural-chat:7b']; // Fallback if somehow no models were selected
-
-      console.log('[deploy:start] PHASE 5: Ollama model setup');
-      console.log('[deploy:start] setupData.selectedModels:', setupData.selectedModels);
-      console.log('[deploy:start] Models to pull:', modelsToPull);
-
-      // **CRITICAL FIX**: Wait for Ollama to be healthy before attempting to pull models
-      onProgress({ phase: 'models', status: 'Waiting for Ollama to be ready (this may take 10-30 seconds)...', progress: 86 });
-      let retryCount = 0;
-      const maxRetries = 3;
-      while (retryCount < maxRetries) {
-        try {
-          console.log(`[deploy:start] Waiting for Ollama to become healthy (attempt ${retryCount + 1}/${maxRetries})...`);
-          await ollamaManager.waitForHealthy(30000, 2000); // Wait up to 30s, retry every 2s
-          console.log('[deploy:start] Ollama is now healthy and ready for model pulls');
-          break;
-        } catch (err) {
-          retryCount++;
-          console.warn(`[deploy:start] Ollama health check failed (attempt ${retryCount}/${maxRetries}):`, err.message);
-          if (retryCount >= maxRetries) {
-            console.error('[deploy:start] CRITICAL: Ollama failed to start after 3 attempts. Continuing without models...');
-            onProgress({ 
-              phase: 'models', 
-              status: `Ollama did not start properly. You can pull models manually later from the admin panel. Error: ${err.message}`, 
-              progress: 87 
-            });
-            // Continue deployment without pulling models
-            break;
-          }
-          // Wait before retry
-          await new Promise(r => setTimeout(r, 2000));
-        }
-      }
-
-      // Check if models are already installed (only if Ollama became healthy)
-      let installedModels = [];
-      try {
-        installedModels = await ollamaManager.getInstalledModels();
-        console.log('[deploy:start] Currently installed Ollama models:', installedModels.map(m => m.name || m.model));
-      } catch (err) {
-        console.error('[deploy:start] CRITICAL: Could not connect to Ollama at http://127.0.0.1:11434:', err.message);
-        console.error('[deploy:start] This usually means:');
-        console.error('[deploy:start]   1. ollama.exe is not running');
-        console.error('[deploy:start]   2. Ollama is not installed or not in PATH');
-        console.error('[deploy:start]   3. OLLAMA_HOST environment variable is set differently');
-        console.warn('[deploy:start] Continuing without model pull - you can manually pull models later');
-        onProgress({ phase: 'models', status: `Could not connect to Ollama: ${err.message}. Models can be pulled manually later.`, progress: 88 });
-      }
-
-      const installedIds = installedModels.map(m => m.name || m.model);
-      const modelsNeeded = modelsToPull.filter(m => !installedIds.includes(m));
-
-      if (modelsNeeded.length > 0) {
-        console.log(`[deploy:start] Pulling ${modelsNeeded.length} model(s):`, modelsNeeded);
-
-        for (let i = 0; i < modelsNeeded.length; i++) {
-          const modelId = modelsNeeded[i];
-          onProgress({
-            phase: 'models',
-            status: `Downloading AI model ${i + 1}/${modelsNeeded.length}: ${modelId}\n(This may take several minutes on first run)`,
-            progress: 88 + (i / modelsNeeded.length) * 4
-          });
-
-          try {
-            await ollamaManager.pullModel(modelId, (progress) => {
-              const percent = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
-              if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('ollama:pull-progress', {
-                  modelId,
-                  ...progress
-                });
-              }
-              onProgress({
-                phase: 'models',
-                status: `${modelId}: ${progress.status}\n${Math.round(percent)}%`,
-                progress: 88 + ((i + percent / 100) / modelsNeeded.length) * 4
-              });
-            });
-            console.log(`[deploy:start] Model ${modelId} ready`);
-          } catch (err) {
-            console.warn(`[deploy:start] Model pull failed for ${modelId} (non-fatal):`, err.message);
-            onProgress({ phase: 'models', status: `Model download failed for ${modelId} — you can pull it later via the admin panel.`, progress: 92 });
-          }
-        }
-      } else {
-        console.log('[deploy:start] All selected models already installed — skipping pull');
-      }
-
-      // Write ai_config.json for the web app to auto-configure itself
-      const defaultModel = modelsToPull[0] || 'neural-chat:7b';
+    // PHASE 5: Configure LM Studio (llama.cpp) for web app
+    // LM Studio provides OpenAI-compatible API on port 1234 for all GPU types
+    if (servicesToInstallFinal.includes('llm-engine')) {
+      console.log('[deploy:start] PHASE 5: LM Studio configuration (llama.cpp)');
       
-      // Determine TTS provider based on what's installed
-      let ttsProvider = 'browser'; // Fallback
-      let piperPath = null;
-      
-      if (servicesToInstall.includes('piper')) {
-        try {
-          const piperBinPath = nativePM.getServiceBinaryPath('piper');
-          if (piperBinPath) {
-            ttsProvider = 'piper';
-            piperPath = piperBinPath;
-            console.log('[deploy:start] Piper installed at:', piperBinPath, '— configuring as TTS provider');
-          }
-        } catch (err) {
-          console.warn('[deploy:start] Piper is in servicesToInstall but binary path not found:', err.message);
+      onProgress({ 
+        phase: 'config', 
+        status: 'Configuring LM Studio with llama.cpp...\n(GPU backend automatically selected)', 
+        progress: 86 
+      });
+
+      // Determine GPU backend that LM Studio will use
+      let gpuBackend = 'cpu'; // Default to CPU
+      if (gpuInfo) {
+        if (gpuInfo.type === 'NVIDIA') {
+          gpuBackend = 'cuda';
+          console.log('[deploy:start] NVIDIA GPU detected — LM Studio configured for CUDA');
+        } else if (gpuInfo.type === 'AMD') {
+          gpuBackend = 'rocm';
+          console.log('[deploy:start] AMD GPU detected — LM Studio configured for ROCm');
+        } else if (gpuInfo.type === 'Intel') {
+          gpuBackend = 'igc';
+          console.log('[deploy:start] Intel GPU detected — LM Studio configured for Intel GPU');
+        } else if (gpuInfo.type === 'Apple') {
+          gpuBackend = 'metal';
+          console.log('[deploy:start] Apple Silicon detected — LM Studio configured for Metal');
         }
       }
       
+      // Write ai_config.json for the web app to use LM Studio
       const aiConfig = {
-        backend: 'ollama',
+        backend: 'lmstudio',
         apiKey: '',
-        baseUrl: 'http://localhost:11434',
+        baseUrl: 'http://localhost:1234',
         models: {
-          default: defaultModel,
-          flash: defaultModel,
-          fallback: defaultModel,
-          vision: defaultModel,
-          image: 'flux',
-          tts: defaultModel
+          default: 'neural-chat',
+          fallback: 'neural-chat',
+          LM_STUDIO_GPU_BACKEND: gpuBackend
         },
-        ttsProvider: ttsProvider,
-        piperPath: piperPath || undefined,
-        imageProvider: servicesToInstall.includes('flux') ? 'flux' : 'auto',
+        ttsProvider: 'browser', // Edge TTS fallback
+        imageProvider: servicesToInstallFinal.includes('flux') ? 'flux' : 'none',
+        gpuBackend: gpuBackend,
         configuredBy: 'alloflow-admin',
-        configuredAt: new Date().toISOString()
+        configuredAt: new Date().toISOString(),
+        llmEngine: {
+          name: 'LM Studio (llama.cpp)',
+          port: 1234,
+          type: 'openAI-compatible',
+          gpuBackend: gpuBackend,
+          gpuInfo: gpuInfo
+        }
       };
+      
       fs.writeFileSync(
         path.join(ALLOFLOW_DIR, 'ai_config.json'),
         JSON.stringify(aiConfig, null, 2)
       );
-      console.log('[deploy:start] Wrote ai_config.json for web app auto-configuration');
+      console.log('[deploy:start] Wrote ai_config.json with LM Studio (llama.cpp) configuration');
+      console.log('[deploy:start] GPU Backend:', gpuBackend);
       
       // Start update detector in background
-      startOllamaUpdateDetector();
+      startServiceUpdateDetector();
     }
 
 
     // PHASE 5c: Check Flux GPU status if Flux was deployed
     let fluxGpuStatus = null;
-    if (servicesToInstall.includes('flux')) {
+    if (servicesToInstallFinal.includes('flux')) {
       try {
         const httpMod = require('http');
         const fluxHealth = await new Promise((resolve, reject) => {
@@ -951,33 +960,33 @@ async function startDeployment(setupData, onProgress) {
     // Save deployment manifest for smart version checking
     saveDeploymentManifest({
       version: INSTALLER_VERSION,
-      services: servicesToInstall,
+      services: servicesToInstallFinal,
       timestamp: new Date().toISOString()
     });
-    console.log('[deploy:start] Deployment manifest saved with services:', servicesToInstall);
+    console.log('[deploy:start] Deployment manifest saved with services:', servicesToInstallFinal);
     
-    // PHASE 7: Open AlloFlow web app in user's browser
-    const webAppPort = getWebAppPort();
-    const webAppUrl = `http://localhost:${webAppPort}`;
-    onProgress({ phase: 'launching', status: `Launching AlloFlow at ${webAppUrl}...`, progress: 98 });
+    // PHASE 7: Open AlloFlow local app in user's browser
+    const localAppPort = getLocalAppPort();
+    const localAppUrl = `http://localhost:${localAppPort}`;
+    onProgress({ phase: 'launching', status: `Launching AlloFlow at ${localAppUrl}...`, progress: 98 });
     try {
       const { shell } = require('electron');
-      await shell.openExternal(webAppUrl);
-      console.log('[deploy:start] Opened AlloFlow web app in browser at', webAppUrl);
+      await shell.openExternal(localAppUrl);
+      console.log('[deploy:start] Opened AlloFlow local app in browser at', localAppUrl);
     } catch (err) {
       console.warn('[deploy:start] Could not open browser:', err.message);
     }
 
     onProgress({
       phase: 'complete',
-      status: `Setup complete! AlloFlow is running at ${webAppUrl}`,
+      status: `Setup complete! AlloFlow is running at ${localAppUrl}`,
       progress: 100,
       fluxGpuStatus,
-      webAppUrl
+      localAppUrl
     });
     
     console.log('[deploy:start] Native deployment completed successfully');
-    return { success: true, fluxGpuStatus, webAppUrl };
+    return { success: true, fluxGpuStatus, localAppUrl };
   } catch (err) {
     console.error('[deploy:start] Deployment failed:', err.message);
     return { success: false, error: err.message };
@@ -1193,7 +1202,7 @@ ipcMain.handle('setup:uninstall-services', async (event, { serviceIds, removeCon
 // IPC Handler: Get list of currently installed services
 ipcMain.handle('setup:get-installed-services', async (event) => {
   try {
-    const allServices = ['ollama', 'piper', 'flux'];
+    const allServices = ['llm-engine', 'piper', 'flux'];
     const installed = {};
     for (const serviceId of allServices) {
       installed[serviceId] = nativePM.isServiceInstalled(serviceId);
@@ -1205,73 +1214,123 @@ ipcMain.handle('setup:get-installed-services', async (event) => {
 });
 
 // ============================================================================
-// OLLAMA MODEL MANAGEMENT
+// LLM ENGINE MODEL MANAGEMENT (LM Studio / llama.cpp)
 // ============================================================================
 
-// IPC Handler: Get installed Ollama models
-ipcMain.handle('ollama:get-installed-models', async (event) => {
+// IPC Handler: Get available models from LM Studio
+ipcMain.handle('llm:get-models', async (event) => {
   try {
-    const models = await ollamaManager.getInstalledModels();
-    return { success: true, models };
+    const response = await fetch('http://127.0.0.1:1234/v1/models', {
+      method: 'GET',
+      timeout: 5000
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return { success: true, models: data.data || [] };
+    } else {
+      return { success: false, error: 'LM Studio not responding' };
+    }
   } catch (err) {
-    console.error('[ipc:ollama:get-installed-models] Error:', err.message);
+    console.error('[ipc:llm:get-models] Error:', err.message);
     return { success: false, error: err.message };
   }
 });
 
-// IPC Handler: Get available models to pull
-ipcMain.handle('ollama:get-available-models', async (event) => {
+// IPC Handler: Pull/Download a model via LM Studio UI
+// Note: LM Studio handle model downloads via UI; this handler triggers the download request
+ipcMain.handle('llm:pull-model', async (event, { modelId }) => {
   try {
-    const models = ollamaManager.getAvailableModels();
-    return { success: true, models };
-  } catch (err) {
-    console.error('[ipc:ollama:get-available-models] Error:', err.message);
-    return { success: false, error: err.message };
-  }
-});
-
-// IPC Handler: Pull an Ollama model
-ipcMain.handle('ollama:pull-model', async (event, { modelId }) => {
-  try {
-    console.log('[ipc:ollama:pull-model] Starting pull of:', modelId);
+    console.log('[ipc:llm:pull-model] Model download request for:', modelId);
     
-    // Start the pull and send progress updates to renderer
-    await ollamaManager.pullModel(modelId, (progress) => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('ollama:pull-progress', {
-          modelId,
-          ...progress
-        });
-      }
+    // Attempt to load a model via LM Studio's completion API
+    // The actual download happens through LM Studio UI, we just notify completion
+    const response = await fetch('http://127.0.0.1:1234/v1/models', {
+      method: 'GET',
+      timeout: 5000
     });
     
-    console.log('[ipc:ollama:pull-model] Model pull completed:', modelId);
-    return { success: true };
+    if (response.ok) {
+      console.log('[ipc:llm:pull-model] LM Studio is available - model can be downloaded via LM Studio UI');
+      return { success: true, message: 'Download model via LM Studio UI' };
+    } else {
+      return { success: false, error: 'LM Studio not responding' };
+    }
   } catch (err) {
-    console.error('[ipc:ollama:pull-model] Error:', err.message);
+    console.error('[ipc:llm:pull-model] Error:', err.message);
     return { success: false, error: err.message };
   }
 });
 
-// IPC Handler: Check Ollama status and update detector
-ipcMain.handle('ollama:check-status', async (event) => {
+// IPC Handler: Check LM Studio status
+ipcMain.handle('llm:check-status', async (event) => {
   try {
-    const status = await ollamaManager.checkOllamaStatus();
-    return { success: true, ...status };
+    const response = await fetch('http://127.0.0.1:1234/v1/models', {
+      method: 'GET',
+      timeout: 5000
+    });
+    const isRunning = response.ok;
+    return { 
+      success: true, 
+      isRunning,
+      port: 1234,
+      status: isRunning ? 'running' : 'not responding'
+    };
   } catch (err) {
-    console.error('[ipc:ollama:check-status] Error:', err.message);
+    console.error('[ipc:llm:check-status] Error:', err.message);
     return { success: false, isRunning: false, error: err.message };
   }
 });
 
-// IPC Handler: Check for Ollama updates
-ipcMain.handle('ollama:check-updates', async (event) => {
+// ============================================================================
+// SERVICE UPDATE CHECKING (LM Studio, Piper, Flux)
+// ============================================================================
+
+// IPC Handler: Check for updates for all services
+ipcMain.handle('services:check-updates', async (event) => {
   try {
-    const updates = await ollamaManager.checkForUpdates();
-    return { success: true, updates };
+    console.log('[ipc:services:check-updates] Checking all services for updates...');
+    const updates = await serviceUpdatesManager.checkAllUpdates();
+    return {
+      success: true,
+      updates: {
+        'llm-engine': updates['llm-engine'],
+        piper: updates.piper,
+        flux: updates.flux
+      }
+    };
   } catch (err) {
-    console.error('[ipc:ollama:check-updates] Error:', err.message);
-    return { success: false, updates: null };
+    console.error('[ipc:services:check-updates] Error:', err.message);
+    return { success: false, error: err.message, updates: null };
+  }
+});
+
+// IPC Handler: Check for update for a specific service
+ipcMain.handle('services:check-service-update', async (event, serviceId) => {
+  try {
+    console.log(`[ipc:services:check-service-update] Checking ${serviceId} for updates...`);
+    const update = await serviceUpdatesManager.checkServiceUpdate(serviceId);
+    return {
+      success: true,
+      serviceId,
+      update
+    };
+  } catch (err) {
+    console.error(`[ipc:services:check-service-update] Error for ${serviceId}:`, err.message);
+    return { success: false, serviceId, error: err.message, update: null };
+  }
+});
+
+// IPC Handler: Get cached update status for all services (no network call)
+ipcMain.handle('services:get-update-status', async (event) => {
+  try {
+    const statuses = serviceUpdatesManager.getAllUpdateStatuses();
+    return {
+      success: true,
+      statuses
+    };
+  } catch (err) {
+    console.error('[ipc:services:get-update-status] Error:', err.message);
+    return { success: false, error: err.message, statuses: null };
   }
 });
 
@@ -1341,31 +1400,47 @@ ipcMain.handle('config:write-ai', async (event, config) => {
 // SERVICES HEALTH & STATUS  (used by Dashboard.jsx, Services.jsx)
 // ============================================================================
 
-// Overall health — checks Ollama reachability
+// Overall health — checks LM Studio (llm-engine) reachability
 ipcMain.handle('services:health', async (event) => {
   try {
-    const status = await ollamaManager.checkOllamaStatus();
-    return status.running ? 'healthy' : 'offline';
+    const response = await fetch('http://127.0.0.1:1234/v1/models', {
+      method: 'GET',
+      timeout: 5000
+    });
+    return response.ok ? 'healthy' : 'offline';
   } catch (err) {
     return 'offline';
   }
 });
 
-// Service list — returns Ollama + Piper status with installed model count
+// Service list — returns LM Studio + Piper status
 ipcMain.handle('services:list', async (event) => {
   try {
-    const [ollamaStatus, models] = await Promise.all([
-      ollamaManager.checkOllamaStatus().catch(() => ({ running: false })),
-      ollamaManager.getInstalledModels().catch(() => [])
-    ]);
+    // Check LM Studio health
+    let llmStatus = { running: false };
+    try {
+      const response = await fetch('http://127.0.0.1:1234/v1/models', {
+        method: 'GET',
+        timeout: 5000
+      });
+      if (response.ok) {
+        const data = await response.json();
+        llmStatus = {
+          running: true,
+          modelCount: (data.data || []).length
+        };
+      }
+    } catch (e) {
+      // LM Studio not responding
+    }
 
     const services = [
       {
-        name: 'Ollama',
-        id: 'ollama',
-        status: ollamaStatus.running ? 'running' : 'stopped',
-        details: ollamaStatus.running ? `${models.length} model(s) installed` : 'Not running',
-        port: 11434
+        name: 'LM Studio (llama.cpp)',
+        id: 'llm-engine',
+        status: llmStatus.running ? 'running' : 'stopped',
+        details: llmStatus.running ? `LM Studio on port 1234` : 'Not running',
+        port: 1234
       }
     ];
 
@@ -1377,12 +1452,31 @@ ipcMain.handle('services:list', async (event) => {
         services.push({
           name: 'Piper TTS',
           id: 'piper',
-          status: piperStatus.running ? 'running' : 'stopped',
-          details: piperStatus.running ? 'TTS ready' : 'Not running',
+          status: piperStatus.installed ? 'running' : 'stopped',
+          details: piperStatus.installed ? 'TTS ready (on-demand)' : 'Not installed',
           port: null
         });
       }
     } catch (_) { /* Piper not configured */ }
+
+    // Check Flux (image generation)
+    try {
+      const fluxHealth = await nativePM.checkServiceHealth('flux');
+      const fluxInstalled = nativePM.isServiceInstalled('flux');
+      if (fluxInstalled) {
+        const fluxStatuses = nativePM.getServiceStatuses();
+        const fluxProcessRunning = fluxStatuses['flux']?.running || false;
+        const isRunningAndHealthy = fluxHealth.running && fluxHealth.healthy;
+        const isStarting = fluxProcessRunning && !isRunningAndHealthy;
+        services.push({
+          name: 'Flux Image Generation',
+          id: 'flux',
+          status: isRunningAndHealthy ? 'running' : isStarting ? 'running' : 'stopped',
+          details: isRunningAndHealthy ? 'Image generation on port 7860' : isStarting ? 'Loading model (first run may take 5-10 min)' : 'Installed but not responding',
+          port: 7860
+        });
+      }
+    } catch (_) { /* Flux not configured */ }
 
     return { success: true, containers: services };
   } catch (err) {
@@ -1408,7 +1502,20 @@ ipcMain.handle('services:metrics', async (event) => {
     const m = Math.floor((uptimeSec % 3600) / 60);
     const uptime = `${h}h ${m}m`;
 
-    const models = await ollamaManager.getInstalledModels().catch(() => []);
+    // Get model count from LM Studio
+    let modelCount = 0;
+    try {
+      const response = await fetch('http://127.0.0.1:1234/v1/models', {
+        method: 'GET',
+        timeout: 5000
+      });
+      if (response.ok) {
+        const data = await response.json();
+        modelCount = (data.data || []).length;
+      }
+    } catch (e) {
+      // LM Studio not responding, default to 0
+    }
 
     return {
       success: true,
@@ -1416,7 +1523,7 @@ ipcMain.handle('services:metrics', async (event) => {
       cpuUsage,
       memUsage: memUsagePct,
       diskUsage: 0, // not critical, skip for now
-      modelCount: models.length
+      modelCount
     };
   } catch (err) {
     console.error('[ipc:services:metrics] Error:', err.message);
@@ -1424,15 +1531,32 @@ ipcMain.handle('services:metrics', async (event) => {
   }
 });
 
-// Restart — restarts Ollama via native process manager
+// Restart — restarts LM Studio via native process manager
 ipcMain.handle('services:restart', async (event) => {
   try {
-    nativePM.stopService('ollama');
+    nativePM.stopService('llm-engine');
     // Give it a moment to fully stop
     await new Promise(r => setTimeout(r, 1000));
-    nativePM.startService('ollama');
-    await ollamaManager.waitForHealthy(15000, 1000);
-    return { success: true, message: 'Ollama restarted successfully' };
+    nativePM.startService('llm-engine');
+    
+    // Wait for LM Studio to be healthy
+    const maxAttempts = 15;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const response = await fetch('http://127.0.0.1:1234/v1/models', {
+          method: 'GET',
+          timeout: 1000
+        });
+        if (response.ok) {
+          return { success: true, message: 'LM Studio restarted successfully' };
+        }
+      } catch (e) {
+        if (attempt === maxAttempts - 1) break;
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    
+    return { success: false, error: 'LM Studio did not restart properly' };
   } catch (err) {
     console.error('[ipc:services:restart] Error:', err.message);
     return { success: false, error: err.message };
@@ -1443,7 +1567,7 @@ ipcMain.handle('services:restart', async (event) => {
 ipcMain.handle('services:start-all', async (event) => {
   try {
     const config = getConfig();
-    const selectedServices = config?.selectedServices || ['ollama'];
+    const selectedServices = config?.selectedServices || ['llm-engine'];
     const started = [];
     const failed = [];
 
@@ -1463,12 +1587,27 @@ ipcMain.handle('services:start-all', async (event) => {
       }
     }
 
-    // Wait for Ollama to be healthy if it was started
-    if (started.includes('ollama')) {
+    // Wait for LM Studio to be healthy if it was started
+    if (started.includes('llm-engine')) {
       try {
-        await ollamaManager.waitForHealthy(15000, 1000);
+        // Check LM Studio health
+        const maxAttempts = 15;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          try {
+            const response = await fetch('http://127.0.0.1:1234/v1/models', { timeout: 1000 });
+            if (response.ok) {
+              console.log('[ipc:services:start-all] LM Studio is now healthy');
+              break;
+            }
+          } catch (e) {
+            if (attempt === maxAttempts - 1) {
+              throw new Error('LM Studio health check failed after max attempts');
+            }
+          }
+          await new Promise(r => setTimeout(r, 1000));
+        }
       } catch (err) {
-        console.warn('[ipc:services:start-all] Ollama started but not yet healthy:', err.message);
+        console.warn('[ipc:services:start-all] LM Studio started but not yet healthy:', err.message);
       }
     }
 
@@ -1484,7 +1623,7 @@ ipcMain.handle('services:start-all', async (event) => {
 ipcMain.handle('services:stop-all', async (event) => {
   try {
     const config = getConfig();
-    const selectedServices = config?.selectedServices || ['ollama'];
+    const selectedServices = config?.selectedServices || ['llm-engine'];
     const stopped = [];
 
     for (const serviceId of selectedServices) {
@@ -1520,8 +1659,21 @@ ipcMain.handle('services:restart-one', async (event, serviceName) => {
     await new Promise(r => setTimeout(r, 1000));
     nativePM.startService(actualId);
 
-    if (actualId === 'ollama') {
-      await ollamaManager.waitForHealthy(15000, 1000);
+    // Wait for LM Studio to be healthy if restarting LM Engine
+    if (actualId === 'llm-engine') {
+      const maxAttempts = 15;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+          const response = await fetch('http://127.0.0.1:1234/v1/models', {
+            method: 'GET',
+            timeout: 1000
+          });
+          if (response.ok) break;
+        } catch (e) {
+          if (attempt === maxAttempts - 1) throw new Error('LM Studio health check failed');
+        }
+        await new Promise(r => setTimeout(r, 1000));
+      }
     }
 
     return { success: true, message: `${serviceName} restarted` };

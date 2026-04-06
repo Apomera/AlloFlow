@@ -1,7 +1,8 @@
 /**
  * AlloFlow Native Process Manager
  * Downloads, spawns, monitors, and stops native service binaries.
- * Runs Ollama, Piper, and Flux as native processes.
+ * Manages LM Studio (llama.cpp), Piper TTS, and Flux image generation.
+ * Also manages LM Studio (llama.cpp) as AMD GPU alternative.
  */
 
 const { spawn } = require('child_process');
@@ -12,6 +13,7 @@ const path = require('path');
 const os = require('os');
 const { URL } = require('url');
 const crypto = require('crypto');
+const llamaStudioManager = require('./llamaStudioManager');
 
 const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
 const BINARIES_DIR = path.join(ALLOFLOW_DIR, 'bin');
@@ -29,73 +31,219 @@ function getDownloadInfo() {
   const platform = os.platform(); // win32, linux, darwin
 
   return {
-    ollama: getOllamaDownload(platform, arch),
-    piper: getPiperDownload(platform, arch)
+    'llm-engine': getLLMEngineDownload(platform, arch),
+    piper: getPiperDownload(platform, arch),
+    flux: getFluxDownload(platform, arch)
   };
 }
 
-function getOllamaDownload(platform, arch) {
+function getLLMEngineDownload(platform, arch) {
+  // LM Studio bundles llama.cpp with universal GPU support
+  // Provides OpenAI-compatible API on port 1234 (LM Studio default)
+  // Supports: NVIDIA (CUDA), AMD (ROCm), Apple Silicon (Metal), CPU fallback
   if (platform === 'win32') {
     return {
-      url: 'https://ollama.com/download/OllamaSetup.exe',
-      // Ollama on Windows installs system-wide; we'll use the CLI after install
+      url: 'https://lmstudio.ai/download/latest/win32/x64',
       type: 'installer',
-      binary: 'ollama.exe',
-      // After installation, ollama.exe is on PATH (AppData/Local/Programs/Ollama)
-      systemBinary: path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Ollama', 'ollama.exe')
+      binary: 'LM Studio.exe',
+      name: 'LM Studio (llama.cpp)',
+      description: 'llama.cpp with GPU support. Provides OpenAI-compatible API on port 1234.',
+      portHint: 1234
+    };
+  } else if (platform === 'darwin') {
+    const isAppleSilicon = arch === 'arm64';
+    return {
+      url: isAppleSilicon 
+        ? 'https://lmstudio.ai/download/latest/osx/arm64' 
+        : 'https://lmstudio.ai/download/latest/osx/x64',
+      type: 'dmg',
+      binary: 'LMStudio.app',
+      name: 'LM Studio (llama.cpp)',
+      description: isAppleSilicon 
+        ? 'llama.cpp with Metal backend for Apple Silicon M1/M2/M3/M4'
+        : 'llama.cpp with Intel GPU support',
+      portHint: 1234
+    };
+  } else {
+    return {
+      url: 'https://lmstudio.ai/download/latest/linux/x64',
+      type: 'appimage',
+      binary: 'lm-studio',
+      name: 'LM Studio (llama.cpp)',
+      description: 'llama.cpp with CUDA/ROCm support. Provides OpenAI-compatible API on port 1234.',
+      portHint: 1234
     };
   }
-  // Linux/macOS: use the install script approach
-  return {
-    url: 'https://ollama.com/install.sh',
-    type: 'script',
-    binary: 'ollama'
-  };
 }
 
 function getPiperDownload(platform, arch) {
-  // Piper releases: https://github.com/rhasspy/piper/releases
-  const version = '2023.11.14-2';
-  let fname;
-  if (platform === 'win32') fname = `piper_windows_amd64.zip`;
-  else if (platform === 'darwin') fname = `piper_macos_${arch === 'arm64' ? 'aarch64' : 'x64'}.tar.gz`;
-  else fname = `piper_linux_${arch === 'arm64' ? 'aarch64' : 'x86_64'}.tar.gz`;
+  // Piper is a lightweight, offline TTS engine
+  // Latest stable release: 2023.11.14-2
+  // Supports multiple voice models and languages
+  if (platform === 'win32') {
+    return {
+      url: 'https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip',
+      type: 'zip',
+      binary: 'piper.exe',
+      name: 'Piper Text-to-Speech',
+      description: 'Offline TTS with multilingual support. Runs locally, no internet required after setup.',
+      voiceUrl: 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx',
+      voiceConfigUrl: 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json'
+    };
+  } else if (platform === 'darwin') {
+    const isAppleSilicon = arch === 'arm64';
+    return {
+      url: isAppleSilicon
+        ? 'https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_macos_aarch64.tar.gz'
+        : 'https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_macos_x64.tar.gz',
+      type: 'tar',
+      binary: 'piper',
+      name: 'Piper Text-to-Speech',
+      description: isAppleSilicon 
+        ? 'Offline TTS optimized for Apple Silicon M1/M2/M3/M4'
+        : 'Offline TTS for Intel Macs',
+      voiceUrl: 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx',
+      voiceConfigUrl: 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json'
+    };
+  } else {
+    return {
+      url: 'https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz',
+      type: 'tar',
+      binary: 'piper',
+      name: 'Piper Text-to-Speech',
+      description: 'Offline TTS with GPU support. No cloud dependency.',
+      voiceUrl: 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx',
+      voiceConfigUrl: 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json'
+    };
+  }
+}
 
+function getFluxDownload(platform, arch) {
+  // Flux is NOT downloaded as a pre-built binary.
+  // Instead, it's installed via Python venv + pip in the installFlux() function.
+  // This function returns metadata about the Flux setup.
   return {
-    url: `https://github.com/rhasspy/piper/releases/download/${version}/${fname}`,
-    type: platform === 'win32' ? 'zip' : 'tar',
-    binary: platform === 'win32' ? 'piper.exe' : 'piper',
-    // Default voice model
-    voiceUrl: 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx',
-    voiceConfigUrl: 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json'
+    type: 'python-venv',
+    binary: 'flux_server.py',
+    name: 'Flux Image Generation',
+    description: 'State-of-the-art image generation via local Python environment. Requires 6GB+ VRAM.',
+    requiresPython: true,
+    pythonVersion: '3.10+',
+    venvPath: path.join(BINARIES_DIR, 'flux', 'venv'),
+    scriptPath: path.join(BINARIES_DIR, 'flux', 'flux_server.py'),
+    portHint: 7860
   };
 }
 
+
 // ── Python / Flux helpers ──────────────────────────────────────────────────────
 
+const PYTHON_312_DIR = path.join(BINARIES_DIR, 'python312');
+const PYTHON_312_URL = 'https://www.python.org/ftp/python/3.12.8/python-3.12.8-embed-amd64.zip';
+const PIP_URL = 'https://bootstrap.pypa.io/get-pip.py';
+
 /**
- * Detect a usable Python 3 interpreter.
+ * Detect a usable Python 3 interpreter, preferring Python 3.10-3.12 for GPU compat.
+ * First checks bundled Python 3.12, then system Python.
  * Returns the absolute path or null.
  */
 function findPython() {
   const { execSync } = require('child_process');
-  const candidates = process.platform === 'win32'
-    ? ['python', 'python3', 'py -3']
-    : ['python3', 'python'];
 
+  // 1. Check bundled Python 3.12
+  const bundledPython = process.platform === 'win32'
+    ? path.join(PYTHON_312_DIR, 'python.exe')
+    : path.join(PYTHON_312_DIR, 'bin', 'python3');
+
+  if (fs.existsSync(bundledPython)) {
+    try {
+      const ver = execSync(`"${bundledPython}" --version`, { stdio: 'pipe', encoding: 'utf-8' }).trim();
+      if (ver.startsWith('Python 3.12')) {
+        console.log(`[native-pm] Found bundled Python: ${bundledPython} (${ver})`);
+        return bundledPython;
+      }
+    } catch { /* fall through */ }
+  }
+
+  // 2. Check system Python, preferring 3.10-3.12
+  const candidates = process.platform === 'win32'
+    ? ['python', 'python3', 'py -3.12', 'py -3.11', 'py -3.10', 'py -3']
+    : ['python3.12', 'python3.11', 'python3.10', 'python3', 'python'];
+
+  let fallbackPath = null;
   for (const cmd of candidates) {
     try {
       const ver = execSync(`${cmd} --version`, { stdio: 'pipe', encoding: 'utf-8' }).trim();
       if (ver.startsWith('Python 3')) {
-        // Resolve full path
         const which = process.platform === 'win32' ? 'where' : 'which';
         const full = execSync(`${which} ${cmd.split(' ')[0]}`, { stdio: 'pipe', encoding: 'utf-8' }).trim().split('\n')[0].trim();
-        console.log(`[native-pm] Found Python: ${full} (${ver})`);
-        return full;
+        const match = ver.match(/Python 3\.(\d+)/);
+        const minor = match ? parseInt(match[1]) : 0;
+        if (minor >= 10 && minor <= 12) {
+          console.log(`[native-pm] Found compatible Python: ${full} (${ver})`);
+          return full;
+        }
+        if (!fallbackPath) {
+          fallbackPath = full;
+          console.log(`[native-pm] Found Python (not ideal for GPU): ${full} (${ver})`);
+        }
       }
     } catch { /* next */ }
   }
-  return null;
+  return fallbackPath;
+}
+
+/**
+ * Download and install Python 3.12 embeddable package for Windows.
+ * Includes pip bootstrap since embeddable doesn't ship with pip.
+ */
+async function installBundledPython(onProgress) {
+  if (process.platform !== 'win32') {
+    console.log('[native-pm] Python 3.12 bundling only supported on Windows');
+    return null;
+  }
+
+  if (!fs.existsSync(PYTHON_312_DIR)) {
+    fs.mkdirSync(PYTHON_312_DIR, { recursive: true });
+  }
+
+  const pythonExe = path.join(PYTHON_312_DIR, 'python.exe');
+  if (fs.existsSync(pythonExe)) {
+    console.log('[native-pm] Bundled Python 3.12 already installed');
+    return pythonExe;
+  }
+
+  onProgress({ status: 'Downloading Python 3.12...', progress: 1 });
+  // IMPORTANT: Use a different name than python312.zip because the embeddable
+  // package itself contains a python312.zip (the stdlib). If we download to
+  // python312.zip, the cleanup unlinkSync would delete the stdlib zip.
+  const zipPath = path.join(PYTHON_312_DIR, 'python-embed-download.zip');
+  await downloadFile(PYTHON_312_URL, zipPath, (pct) => {
+    onProgress({ status: `Downloading Python 3.12... ${pct}%`, progress: 1 + pct * 0.3 });
+  });
+
+  onProgress({ status: 'Extracting Python 3.12...', progress: 32 });
+  await extractZip(zipPath, PYTHON_312_DIR);
+  try { fs.unlinkSync(zipPath); } catch {}
+
+  // Enable pip: the embeddable zip has a python312._pth file that restricts imports.
+  // We need to uncomment "import site" in it so pip works.
+  const pthFile = path.join(PYTHON_312_DIR, 'python312._pth');
+  if (fs.existsSync(pthFile)) {
+    let content = fs.readFileSync(pthFile, 'utf-8');
+    content = content.replace(/^#\s*import site/m, 'import site');
+    fs.writeFileSync(pthFile, content);
+  }
+
+  // Download and run get-pip.py
+  onProgress({ status: 'Installing pip for Python 3.12...', progress: 35 });
+  const getPipPath = path.join(PYTHON_312_DIR, 'get-pip.py');
+  await downloadFile(PIP_URL, getPipPath, () => {});
+  await runCommand(pythonExe, [getPipPath], { cwd: PYTHON_312_DIR });
+  try { fs.unlinkSync(getPipPath); } catch {}
+
+  console.log(`[native-pm] Bundled Python 3.12 installed at: ${pythonExe}`);
+  return pythonExe;
 }
 
 /**
@@ -233,11 +381,30 @@ function determineGpuStrategy(gpuInfo, platform, pyVer) {
  * @param {object|null} gpuInfo - GPU info from detectHardware() { type, name, vramGB }
  */
 async function installFlux(onProgress, gpuInfo) {
-  const pythonPath = findPython();
+  let pythonPath = findPython();
+
+  // If no compatible Python found, or system Python is too new (>= 3.13),
+  // download bundled Python 3.12
+  if (pythonPath) {
+    const pyVer = detectPythonVersion(pythonPath);
+    if (pyVer && pyVer.minor >= 13) {
+      console.log(`[native-pm] System Python ${pyVer.major}.${pyVer.minor} is too new for GPU packages. Installing bundled Python 3.12.`);
+      onProgress({ status: 'System Python too new for GPU support. Installing Python 3.12...', progress: 0 });
+      const bundled = await installBundledPython(onProgress);
+      if (bundled) {
+        pythonPath = bundled;
+      }
+    }
+  } else {
+    // No Python at all — install bundled
+    onProgress({ status: 'Python not found. Installing Python 3.12...', progress: 0 });
+    pythonPath = await installBundledPython(onProgress);
+  }
+
   if (!pythonPath) {
     throw new Error(
-      'Python 3 is required for Flux image generation but was not found.\n' +
-      'Please install Python 3.10+ from https://www.python.org/downloads/ and try again.'
+      'Python 3.12 is required for Flux image generation but could not be installed.\n' +
+      'Please install Python 3.12 from https://www.python.org/downloads/ and try again.'
     );
   }
 
@@ -266,9 +433,20 @@ async function installFlux(onProgress, gpuInfo) {
   if (!fs.existsSync(fluxDir)) fs.mkdirSync(fluxDir, { recursive: true });
 
   // 1. Create venv
+  // Note: Python embeddable packages don't include the venv module.
+  // We use virtualenv (pip-installable) instead.
   if (!fs.existsSync(venvDir)) {
     onProgress({ status: 'Creating Python environment...', progress: 5 });
-    await runCommand(pythonPath, ['-m', 'venv', venvDir]);
+    // Install virtualenv into the embeddable Python first
+    const embeddedPip = process.platform === 'win32'
+      ? path.join(path.dirname(pythonPath), 'Scripts', 'pip.exe')
+      : path.join(path.dirname(pythonPath), 'bin', 'pip');
+    if (fs.existsSync(embeddedPip)) {
+      await runCommand(embeddedPip, ['install', 'virtualenv']);
+    } else {
+      await runCommand(pythonPath, ['-m', 'pip', 'install', 'virtualenv']);
+    }
+    await runCommand(pythonPath, ['-m', 'virtualenv', venvDir]);
   }
 
   const pipBin = process.platform === 'win32'
@@ -293,7 +471,14 @@ async function installFlux(onProgress, gpuInfo) {
   // 4. Install GPU acceleration packages (strategy-dependent)
   if (gpuStrategy.strategy === 'directml' || gpuStrategy.strategy === 'cuda-limited') {
     onProgress({ status: 'Installing DirectML GPU support...', progress: 35 });
-    await pipInstall(pipBin, ['onnxruntime-directml', 'optimum[onnxruntime]']);
+    // Install optimum WITH the [onnxruntime] extra so the optimum.onnxruntime submodule
+    // is available (needed for ORTStableDiffusionXLPipeline). This also installs vanilla
+    // onnxruntime, which we keep installed for metadata. Then install onnxruntime-directml
+    // on top — its DLLs overwrite vanilla, adding DirectML GPU support, while the
+    // onnxruntime package metadata remains so optimum's internal checks pass.
+    await pipInstall(pipBin, ['optimum[onnxruntime]']);
+    onProgress({ status: 'Installing DirectML GPU acceleration...', progress: 40 });
+    await pipInstall(pipBin, ['onnxruntime-directml']);
   } else if (gpuStrategy.strategy === 'cuda') {
     onProgress({ status: 'Installing CUDA GPU support...', progress: 35 });
     // torch with CUDA is already installed above; nothing extra needed
@@ -342,6 +527,58 @@ async function installFlux(onProgress, gpuInfo) {
 }
 
 /**
+ * Always re-copy flux_server.py from source to the install directory.
+ * Called on every app start / deploy to ensure the latest script is deployed.
+ */
+/**
+ * Ensure the default Piper voice model is downloaded.
+ * Returns a promise — resolves with true if model already existed, false if downloaded or failed.
+ */
+async function ensurePiperVoiceModel() {
+  const info = getServiceInfo('piper');
+  if (!info || !info.voiceUrl) return false;
+  const voiceDir = path.join(BINARIES_DIR, 'piper', 'voices');
+  if (!fs.existsSync(voiceDir)) fs.mkdirSync(voiceDir, { recursive: true });
+  const voiceFile = path.join(voiceDir, 'en_US-lessac-medium.onnx');
+  const voiceConfigFile = path.join(voiceDir, 'en_US-lessac-medium.onnx.json');
+  if (fs.existsSync(voiceFile) && fs.existsSync(voiceConfigFile)) {
+    return true; // already present
+  }
+  try {
+    if (!fs.existsSync(voiceFile)) {
+      console.log('[native-pm] Downloading Piper voice model (en_US-lessac-medium)...');
+      await downloadFile(info.voiceUrl, voiceFile, () => {});
+      console.log('[native-pm] Piper voice model downloaded');
+    }
+    if (!fs.existsSync(voiceConfigFile) && info.voiceConfigUrl) {
+      await downloadFile(info.voiceConfigUrl, voiceConfigFile, () => {});
+    }
+    return false;
+  } catch (e) {
+    console.warn('[native-pm] Voice model download failed (non-fatal):', e.message);
+    return false;
+  }
+}
+
+function updateFluxServerScript() {
+  const fluxDir = path.join(BINARIES_DIR, 'flux');
+  const destScript = path.join(fluxDir, 'flux_server.py');
+  const isDev = !require('electron').app.isPackaged;
+  const srcScript = isDev
+    ? path.join(__dirname, '..', 'docker_templates', 'flux-server', 'flux_server.py')
+    : path.join(process.resourcesPath, 'docker_templates', 'flux-server', 'flux_server.py');
+
+  if (fs.existsSync(srcScript)) {
+    if (!fs.existsSync(fluxDir)) fs.mkdirSync(fluxDir, { recursive: true });
+    fs.copyFileSync(srcScript, destScript);
+    console.log('[native-pm] Updated flux_server.py from source');
+    return true;
+  }
+  console.warn('[native-pm] flux_server.py source not found at', srcScript);
+  return false;
+}
+
+/**
  * Run a command and return a promise. Logs output. Handles pip SSL errors.
  */
 function runCommand(cmd, args, opts = {}) {
@@ -376,6 +613,16 @@ function runCommand(cmd, args, opts = {}) {
           err.isSSLError = true;
           err.isFatal = false; // Mark as non-fatal
           reject(err);
+        } else if (stderr.includes('HASHES') || stderr.includes('hash')) {
+          // Hash mismatch errors (network intermediary or cache issue)
+          const err = new Error(
+            `Package hash verification failed during pip install. ` +
+            `This may be due to network corruption or firewall interference.\n` +
+            `Error details: ${stderr.slice(-200)}`
+          );
+          err.isSSLError = true;  // Treat as SSL-like error for retry logic
+          err.isFatal = false;
+          reject(err);
         } else {
           reject(new Error(`Command failed (exit ${code}): ${stderr.slice(-500)}`));
         }
@@ -403,17 +650,24 @@ function pipInstall(pipBin, packages, indexUrl = null) {
       await runCommand(pipBin, args, { timeout: 300000 });
       resolve();
     } catch (err) {
-      // Retry with trusted hosts if SSL error
-      if (err.isSSLError) {
-        console.warn(`[pip-install] SSL error detected, retrying with --trusted-host...`);
+      // Retry if SSL error OR hash mismatch (network/cache issues)
+      if (err.isSSLError || err.message.includes('hash') || err.message.includes('HASHES')) {
+        console.warn(`[pip-install] Network/hash error detected, retrying with lenient settings...`);
         try {
-          const retryArgs = ['install', ...packages, '--trusted-host', 'pypi.org', '--trusted-host', 'files.pythonhosted.org'];
+          const retryArgs = [
+            'install',
+            ...packages,
+            '--trusted-host', 'pypi.org',
+            '--trusted-host', 'files.pythonhosted.org',
+            '--no-cache-dir',  // Disable pip cache to avoid stale/corrupted entries
+            '--prefer-binary'  // Prefer binary wheels over source (faster, fewer hash issues)
+          ];
           if (indexUrl) {
             retryArgs.push('--index-url', indexUrl);
           }
           console.log(`[pip-install] Retry args: ${retryArgs.join(' ')}`);
           await runCommand(pipBin, retryArgs, { timeout: 300000 });
-          console.log(`[pip-install] Successfully installed ${packages.join(', ')} with trusted hosts`);
+          console.log(`[pip-install] Successfully installed ${packages.join(', ')} with lenient settings`);
           resolve();
         } catch (retryErr) {
           console.error(`[pip-install] Retry failed. This is non-fatal - Flux will not be available.`);
@@ -545,29 +799,90 @@ function extractTar(tarPath, destDir) {
 // ── Service Installation ──────────────────────────────────────────────────────
 
 /**
+ * Find the LM Studio executable path across standard install locations.
+ * Returns the path if found, null otherwise.
+ */
+function findLMStudioPath() {
+  if (process.platform === 'win32') {
+    const candidates = [
+      // Correct install path: "LM Studio" folder with space and capitals
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'LM Studio', 'LM Studio.exe'),
+      // Legacy/alternate paths
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'lm-studio', 'LM Studio.exe'),
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'lm-studio', 'lm-studio.exe'),
+      path.join(BINARIES_DIR, 'llm-engine', 'LM Studio.exe'),
+      path.join(BINARIES_DIR, 'lm-studio', 'LM Studio.exe'),
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p;
+    }
+  } else if (process.platform === 'darwin') {
+    if (fs.existsSync('/Applications/LM Studio.app')) return '/Applications/LM Studio.app/Contents/MacOS/LM Studio';
+    if (fs.existsSync('/Applications/LMStudio.app')) return '/Applications/LMStudio.app/Contents/MacOS/LMStudio';
+  } else {
+    // Linux: check standard locations
+    const candidates = [
+      path.join(os.homedir(), '.local', 'bin', 'lm-studio'),
+      path.join(BINARIES_DIR, 'llm-engine', 'lm-studio'),
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p;
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the lms CLI tool that ships with LM Studio.
+ * Returns the path if found, null otherwise.
+ */
+function findLmsCLI() {
+  if (process.platform === 'win32') {
+    const candidates = [
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'LM Studio', 'resources', 'app', '.webpack', 'lms.exe'),
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'lm-studio', 'resources', 'app', '.webpack', 'lms.exe'),
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p;
+    }
+  } else if (process.platform === 'darwin') {
+    const candidates = [
+      '/Applications/LM Studio.app/Contents/Resources/app/.webpack/lms',
+      '/Applications/LMStudio.app/Contents/Resources/app/.webpack/lms',
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p;
+    }
+  } else {
+    // Linux: lms may be on PATH or in the AppImage extracted directory
+    const candidates = [
+      path.join(os.homedir(), '.local', 'bin', 'lms'),
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p;
+    }
+  }
+  return null;
+}
+
+/**
  * Check if a service binary is already installed.
  */
 function isServiceInstalled(serviceId) {
   if (serviceId === 'flux') return isFluxInstalled();
   if (serviceId === 'search') return true; // built-in
+  if (serviceId === 'llm-engine') return !!findLMStudioPath();
 
   const downloads = getDownloadInfo();
   const info = downloads[serviceId];
   if (!info) return false;
 
-  if (serviceId === 'ollama') {
-    // Ollama: check if ollama.exe exists on system or in our bin dir
-    if (info.systemBinary && fs.existsSync(info.systemBinary)) return true;
-    // Also check PATH
-    try {
-      const { execSync } = require('child_process');
-      execSync('ollama --version', { stdio: 'pipe' });
-      return true;
-    } catch { return false; }
-  }
-
   const binaryPath = path.join(BINARIES_DIR, serviceId, info.binary);
-  return fs.existsSync(binaryPath);
+  if (fs.existsSync(binaryPath)) return true;
+
+  // Check one level deeper (piper extracts into a piper/ subdirectory)
+  const subPath = path.join(BINARIES_DIR, serviceId, serviceId, info.binary);
+  return fs.existsSync(subPath);
 }
 
 /**
@@ -593,24 +908,36 @@ async function installService(serviceId, onProgress, gpuInfo) {
 
   onProgress({ status: `Downloading ${serviceId}...`, progress: 0 });
 
-  if (serviceId === 'ollama' && info.type === 'installer') {
-    // Ollama on Windows: download the installer and run it silently
-    const installerPath = path.join(serviceDir, 'OllamaSetup.exe');
+  // LM Studio is handled differently (uses platform-specific installers, not generic archives)
+  if (serviceId === 'llm-engine' && info.type === 'installer') {
+    // Check if LM Studio is already installed at the standard location
+    const existingPath = findLMStudioPath();
+    if (existingPath) {
+      console.log(`[native-pm] LM Studio already installed at: ${existingPath}`);
+      onProgress({ status: 'LM Studio already installed — skipping download', progress: 100 });
+      return;
+    }
+
+    // LM Studio on Windows: download the installer and run it silently
+    const installerPath = path.join(serviceDir, 'LMStudioSetup.exe');
     await downloadFile(info.url, installerPath, (pct) => {
-      onProgress({ status: `Downloading Ollama... ${pct}%`, progress: pct * 0.8 });
+      onProgress({ status: `Downloading LM Studio... ${pct}%`, progress: pct * 0.8 });
     });
 
-    onProgress({ status: 'Installing Ollama...', progress: 80 });
+    onProgress({ status: 'Installing LM Studio...', progress: 80 });
     await new Promise((resolve, reject) => {
       const proc = spawn(installerPath, ['/VERYSILENT', '/NORESTART'], { windowsHide: true });
       proc.on('close', (code) => {
-        if (code !== 0) reject(new Error(`Ollama installer exited with code ${code}`));
+        if (code !== 0) reject(new Error(`LM Studio installer exited with code ${code}`));
         else resolve();
       });
       proc.on('error', reject);
     });
 
-    onProgress({ status: 'Ollama installed', progress: 100 });
+    // Clean up installer
+    try { fs.unlinkSync(installerPath); } catch {}
+
+    onProgress({ status: 'LM Studio installed', progress: 100 });
     return;
   }
 
@@ -633,18 +960,25 @@ async function installService(serviceId, onProgress, gpuInfo) {
   // Clean up archive
   try { fs.unlinkSync(archivePath); } catch {}
 
-  // Download voice model for Piper
+  // Download default voice model for Piper (en_US-lessac-medium, ~63MB)
   if (serviceId === 'piper' && info.voiceUrl) {
-    onProgress({ status: 'Downloading voice model...', progress: 85 });
+    onProgress({ status: 'Downloading Piper voice model (en_US-lessac-medium)...', progress: 85 });
     const voiceDir = path.join(serviceDir, 'voices');
     if (!fs.existsSync(voiceDir)) fs.mkdirSync(voiceDir, { recursive: true });
-
-    await downloadFile(info.voiceUrl, path.join(voiceDir, 'en_US-lessac-medium.onnx'), (pct) => {
-      onProgress({ status: `Downloading voice model... ${pct}%`, progress: 85 + pct * 0.1 });
-    });
-    await downloadFile(info.voiceConfigUrl, path.join(voiceDir, 'en_US-lessac-medium.onnx.json'), () => {});
+    const voiceFile = path.join(voiceDir, 'en_US-lessac-medium.onnx');
+    const voiceConfigFile = path.join(voiceDir, 'en_US-lessac-medium.onnx.json');
+    try {
+      if (!fs.existsSync(voiceFile)) {
+        await downloadFile(info.voiceUrl, voiceFile, () => {});
+        console.log('[native-pm] Piper voice model downloaded');
+      }
+      if (!fs.existsSync(voiceConfigFile) && info.voiceConfigUrl) {
+        await downloadFile(info.voiceConfigUrl, voiceConfigFile, () => {});
+      }
+    } catch (voiceErr) {
+      console.warn('[native-pm] Voice model download failed (non-fatal):', voiceErr.message);
+    }
   }
-
   // Make binary executable on Unix
   if (process.platform !== 'win32') {
     const binaryPath = path.join(serviceDir, info.binary);
@@ -662,21 +996,19 @@ async function installService(serviceId, onProgress, gpuInfo) {
  * Get the binary path for a service.
  */
 function getServiceBinaryPath(serviceId) {
+  if (serviceId === 'llm-engine') return findLMStudioPath();
+
   const downloads = getDownloadInfo();
   const info = downloads[serviceId];
   if (!info) return null;
 
-  if (serviceId === 'ollama') {
-    // Check system install first
-    if (info.systemBinary && fs.existsSync(info.systemBinary)) {
-      return info.systemBinary;
-    }
-    // Check PATH
-    try {
-      const { execSync } = require('child_process');
-      const result = execSync('where ollama', { stdio: 'pipe', encoding: 'utf-8' });
-      return result.trim().split('\n')[0].trim();
-    } catch { return null; }
+  if (serviceId === 'flux') {
+    // Flux: check for venv Python
+    const fluxDir = path.join(BINARIES_DIR, 'flux');
+    const venvPython = process.platform === 'win32'
+      ? path.join(fluxDir, 'venv', 'Scripts', 'python.exe')
+      : path.join(fluxDir, 'venv', 'bin', 'python');
+    return fs.existsSync(venvPython) ? venvPython : null;
   }
 
   // For piper, the binary might be inside a subdirectory after extraction
@@ -709,39 +1041,100 @@ function startService(serviceId) {
   let proc;
 
   switch (serviceId) {
-    case 'ollama':
-      // Ollama: start serve mode
-      // On Windows, ollama.exe is system-installed and auto-starts. Use it directly.
-      // On Unix, use the system binary if available.
-      console.log(`[native-pm] Starting Ollama from: ${binaryPath}`);
-      proc = spawn(binaryPath, ['serve'], {
-        env: {
-          ...process.env,
-          OLLAMA_HOST: '127.0.0.1:11434',
-          OLLAMA_MODELS: path.join(dataDir, 'models')
-        },
-        cwd: dataDir,
-        windowsHide: true,
-        stdio: ['ignore', 'pipe', 'pipe'],
-        detached: false
-      });
-      break;
+    case 'llm-engine': {
+      // LM Studio: use lms CLI to tell the LM Studio desktop app to start its API server.
+      // NOTE: `lms server start` is a ONE-SHOT command — it sends a message to the
+      // running LM Studio GUI and then exits immediately (code 0). The actual API server
+      // runs inside the LM Studio desktop app process, NOT as the lms.exe process.
+      // Therefore we do NOT track lms.exe as a persistent child process.
+      const lmsPath = findLmsCLI();
+      const lmPath = findLMStudioPath();
+      
+      if (lmsPath) {
+        // Preferred: use lms CLI for headless server mode
+        console.log(`[native-pm] Starting LM Studio server via CLI: ${lmsPath}`);
+        const cliProc = spawn(lmsPath, ['server', 'start', '--port', '1234', '--cors'], {
+          windowsHide: true,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          env: { ...process.env, HIP_VISIBLE_DEVICES: '0' },
+        });
+        
+        // Log CLI output but don't track as a running process
+        cliProc.stdout.on('data', (d) => console.log(`[llm-engine:cli] ${d.toString().trim()}`));
+        cliProc.stderr.on('data', (d) => console.log(`[llm-engine:cli:err] ${d.toString().trim()}`));
+        cliProc.on('exit', (code) => {
+          console.log(`[native-pm] lms CLI exited with code ${code} (expected — CLI is one-shot)`);
+        });
+        
+        // Mark LM Studio as "running" with a sentinel so health checks work.
+        // The actual server runs inside the LM Studio desktop app.
+        processes[serviceId] = { pid: -1, _lmStudioManaged: true };
+        console.log(`[native-pm] LM Studio server start requested via CLI`);
+        
+        return -1; // Sentinel: LM Studio manages its own server process
+      } else if (lmPath) {
+        // Fallback: launch LM Studio GUI (user must start server manually)
+        console.log(`[native-pm] lms CLI not found, launching LM Studio GUI: ${lmPath}`);
+        proc = spawn(lmPath, [], {
+          windowsHide: true,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          env: { ...process.env, HIP_VISIBLE_DEVICES: '0' },
+          detached: true,
+        });
+        proc.unref();
+        processes[serviceId] = proc;
+        console.log(`[native-pm] Started LM Studio GUI (PID ${proc.pid})`);
+        proc.stdout.on('data', (d) => console.log(`[llm-engine] ${d.toString().trim()}`));
+        proc.stderr.on('data', (d) => console.log(`[llm-engine:err] ${d.toString().trim()}`));
+        proc.on('exit', (code) => {
+          console.log(`[native-pm] llm-engine exited with code ${code}`);
+          delete processes[serviceId];
+        });
+        return proc.pid;
+      } else {
+        throw new Error('LM Studio not found. Install it first.');
+      }
+    }
 
     case 'piper': {
-      // Piper: TTS binary - add to PATH so web app can call it
-      // Piper is typically called via subprocess from webAppServer.js
-      // Make it available in PATH by adding its directory
       const piperDir = path.dirname(binaryPath);
       const pathEnv = process.env.PATH || '';
-      const newPath = `${piperDir}${path.delimiter}${pathEnv}`;
-      
-      console.log(`[native-pm] Piper is available at: ${binaryPath}`);
-      console.log(`[native-pm] Piper directory added to PATH: ${piperDir}`);
-      
-      // No persistent process needed - Piper is called on-demand via shell
-      // But we need to ensure it's available to the web app server
-      // Return a special marker so startup knows it's "running"
-      return -1; // Sentinel: no persistent process, but Piper is available
+      process.env.PATH = `${piperDir}${path.delimiter}${pathEnv}`;
+
+      // Start piper_server.py (OpenAI-compatible HTTP TTS on port 5500)
+      const isDev = !require('electron').app.isPackaged;
+      const piperServerScript = isDev
+        ? path.join(__dirname, '..', '..', 'tts-server', 'piper_server.py')
+        : path.join(process.resourcesPath, 'tts-server', 'piper_server.py');
+
+      const pythonCandidates = ['python3', 'python', 'python3.exe', 'python.exe'];
+      let pythonBin = null;
+      for (const p of pythonCandidates) {
+        try {
+          require('child_process').execFileSync(p, ['--version'], { windowsHide: true, stdio: 'ignore' });
+          pythonBin = p;
+          break;
+        } catch {}
+      }
+
+      if (pythonBin && fs.existsSync(piperServerScript)) {
+        const voicesDir = path.join(piperDir, 'voices');
+        const piperProc = spawn(pythonBin, [piperServerScript], {
+          windowsHide: true,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          env: { ...process.env, PIPER_BIN: binaryPath, PIPER_VOICES_DIR: voicesDir },
+        });
+        piperProc.stdout.on('data', (d) => console.log(`[piper-server] ${d.toString().trim()}`));
+        piperProc.stderr.on('data', (d) => console.log(`[piper-server:err] ${d.toString().trim()}`));
+        piperProc.on('exit', (code) => console.log(`[piper-server] exited with code ${code}`));
+        processes[serviceId] = piperProc;
+        console.log(`[native-pm] Piper HTTP server started (PID ${piperProc.pid}) on port 5500`);
+        return piperProc.pid;
+      } else {
+        console.log(`[native-pm] Piper binary available at ${binaryPath} (no Python for HTTP server)`);
+        processes[serviceId] = { pid: -1, _piperOnDemand: true };
+        return -1;
+      }
     }
 
     case 'flux': {
@@ -760,7 +1153,7 @@ function startService(serviceId) {
         env: {
           ...process.env,
           PORT: '7860',
-          FLUX_MODEL: 'black-forest-labs/FLUX.1-schnell',
+          FLUX_MODEL: 'segmind/SSD-1B',
           MAX_IMAGE_SIZE: '1024',
           HF_HOME: path.join(getServiceDataDir('flux'), 'models')
         },
@@ -798,31 +1191,34 @@ function startService(serviceId) {
 function stopService(serviceId) {
   const proc = processes[serviceId];
   
+  // LM Studio: use lms CLI to stop the server (it's managed by the LM Studio desktop app)
+  if (serviceId === 'llm-engine' && proc && proc._lmStudioManaged) {
+    const lmsPath = findLmsCLI();
+    if (lmsPath) {
+      console.log(`[native-pm] Stopping LM Studio server via CLI: lms server stop`);
+      try {
+        const stopProc = spawn(lmsPath, ['server', 'stop'], { windowsHide: true, stdio: 'ignore' });
+        stopProc.on('exit', (code) => console.log(`[native-pm] lms server stop exited with code ${code}`));
+      } catch (err) {
+        console.warn(`[native-pm] Failed to stop LM Studio via CLI:`, err.message);
+      }
+    }
+    delete processes[serviceId];
+    return;
+  }
+  
   if (process.platform === 'win32') {
-    // Windows: kill by process tree first, then by name as fallback
+    // Windows: kill by process tree first
     if (proc) {
       console.log(`[native-pm] Stopping ${serviceId} (PID ${proc.pid})`);
       try {
         spawn('taskkill', ['/PID', proc.pid.toString(), '/T', '/F'], { windowsHide: true });
       } catch {}
     }
-    
-    // Ollama installs a tray app + background runner — kill those too
-    if (serviceId === 'ollama') {
-      console.log('[native-pm] Killing Ollama system processes...');
-      for (const name of ['ollama.exe', 'ollama app.exe', 'ollama_runners.exe']) {
-        try {
-          spawn('taskkill', ['/IM', name, '/F'], { windowsHide: true });
-        } catch {}
-      }
-    }
   } else {
     if (proc) {
       console.log(`[native-pm] Stopping ${serviceId} (PID ${proc.pid})`);
       proc.kill('SIGTERM');
-    }
-    if (serviceId === 'ollama') {
-      try { spawn('pkill', ['-f', 'ollama']); } catch {}
     }
   }
   
@@ -839,12 +1235,6 @@ function stopAllServices() {
   for (const serviceId of Object.keys(processes)) {
     stopService(serviceId);
   }
-  
-  // Also force-kill Ollama even if we don't have a process handle 
-  // (it may have been started by the system installer tray app)
-  if (!processes['ollama']) {
-    stopService('ollama');
-  }
 }
 
 /**
@@ -852,7 +1242,7 @@ function stopAllServices() {
  */
 async function checkServiceHealth(serviceId) {
   const healthEndpoints = {
-    ollama: 'http://127.0.0.1:11434/api/tags',
+    'llm-engine': 'http://127.0.0.1:1234/v1/models',
     flux: 'http://127.0.0.1:7860/health'
   };
 
@@ -861,10 +1251,11 @@ async function checkServiceHealth(serviceId) {
 
   return new Promise((resolve) => {
     const req = http.get(endpoint, (res) => {
+      // For LM Studio, the API server is managed externally — if it responds, it's running
       resolve({ running: true, healthy: res.statusCode >= 200 && res.statusCode < 300 });
     });
-    req.on('error', () => resolve({ running: !!processes[serviceId], healthy: false }));
-    req.setTimeout(5000, () => { req.destroy(); resolve({ running: !!processes[serviceId], healthy: false }); });
+    req.on('error', () => resolve({ running: false, healthy: false }));
+    req.setTimeout(5000, () => { req.destroy(); resolve({ running: false, healthy: false }); });
   });
 }
 
@@ -896,33 +1287,6 @@ async function uninstallService(serviceId) {
   // Small delay to let processes die
   await new Promise(r => setTimeout(r, 1000));
   
-  if (serviceId === 'ollama') {
-    // Ollama on Windows was installed via its own installer — run silent uninstall
-    if (process.platform === 'win32') {
-      const uninstaller = path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Ollama', 'unins000.exe');
-      if (fs.existsSync(uninstaller)) {
-        console.log('[native-pm] Running Ollama uninstaller...');
-        await new Promise((resolve) => {
-          const proc = spawn(uninstaller, ['/VERYSILENT', '/NORESTART'], { windowsHide: true });
-          proc.on('close', resolve);
-          proc.on('error', () => resolve());
-        });
-        // Wait for uninstaller to finish
-        await new Promise(r => setTimeout(r, 3000));
-      }
-      // Clean up the Ollama AppData directory
-      const ollamaAppData = path.join(os.homedir(), '.ollama');
-      rmDirSafe(ollamaAppData);
-    } else {
-      // Linux/macOS: remove the binary
-      try {
-        const { execSync } = require('child_process');
-        const binPath = execSync('which ollama', { stdio: 'pipe', encoding: 'utf-8' }).trim();
-        if (binPath) fs.unlinkSync(binPath);
-      } catch {}
-    }
-  }
-  
   // Remove our binary directory
   const serviceDir = path.join(BINARIES_DIR, serviceId);
   rmDirSafe(serviceDir);
@@ -938,7 +1302,7 @@ async function uninstallService(serviceId) {
  * Uninstall ALL services and remove the ~/.alloflow directory entirely.
  */
 async function uninstallAll(onProgress) {
-  const allServices = ['ollama', 'piper', 'flux'];
+  const allServices = ['llm-engine', 'piper', 'flux'];
   const total = allServices.length;
   
   for (let i = 0; i < total; i++) {
@@ -980,51 +1344,6 @@ function rmDirSafe(dirPath) {
   } catch (err) {
     console.warn(`[native-pm] Could not fully remove ${dirPath}: ${err.message}`);
   }
-}
-
-/**
- * Pull an Ollama model (downloads it if not already cached).
- * Streams progress via onProgress({ status, progress }).
- * progress is 0-100 parsed from ollama's output.
- */
-async function pullOllamaModel(modelId, onProgress) {
-  const ollamaPath = getServiceBinaryPath('ollama');
-  if (!ollamaPath) throw new Error('Ollama binary not found — install Ollama first.');
-
-  return new Promise((resolve, reject) => {
-    console.log(`[native-pm] Pulling Ollama model: ${modelId}`);
-    const proc = spawn(ollamaPath, ['pull', modelId], {
-      windowsHide: true,
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
-
-    let lastPct = 0;
-    const handleOutput = (raw) => {
-      const text = raw.toString();
-      console.log(`[ollama:pull] ${text.trim()}`);
-      // Ollama outputs lines like: "pulling sha256...  42% ▕██████  ▏ 2.1 GB/4.9 GB"
-      const pctMatch = text.match(/(\d+)%/);
-      if (pctMatch) {
-        lastPct = parseInt(pctMatch[1]);
-        onProgress({ status: `Downloading ${modelId}... ${lastPct}%`, progress: lastPct });
-      } else if (text.trim()) {
-        onProgress({ status: text.trim(), progress: lastPct });
-      }
-    };
-
-    proc.stdout.on('data', handleOutput);
-    proc.stderr.on('data', handleOutput);
-
-    proc.on('close', (code) => {
-      if (code === 0) {
-        console.log(`[native-pm] Model ${modelId} pulled successfully`);
-        resolve();
-      } else {
-        reject(new Error(`ollama pull exited with code ${code}`));
-      }
-    });
-    proc.on('error', reject);
-  });
 }
 
 /**
@@ -1089,7 +1408,8 @@ module.exports = {
   getServiceBinaryPath,
   uninstallService,
   uninstallAll,
-  pullOllamaModel,
+  updateFluxServerScript,
+  ensurePiperVoiceModel,
   BINARIES_DIR,
   DATA_DIR,
   ALLOFLOW_DIR

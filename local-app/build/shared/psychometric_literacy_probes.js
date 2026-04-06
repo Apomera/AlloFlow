@@ -1,0 +1,270 @@
+// psychometric_literacy_probes.js
+// Standardized Literacy Probe Banks — NWF, LNF, RAN
+// Fixed Forms A/B/C per Grade Level
+// Aligned to DIBELS / AIMSweb CBM Standards
+// Generated: 2026-02-23
+
+// ====================================================================
+// NWF — Nonsense Word Fluency (K-1)
+// Student reads CVC pseudowords aloud. Scored as CLS (Correct Letter Sounds) per minute.
+// 50 words per form, 1-minute time limit
+// Tests phonetic decoding without sight word memory
+// ====================================================================
+window.NWF_PROBE_BANKS = {
+    'K': {
+        'A': {
+            timeLimit: 60, scoringUnit: 'CLS', words: [
+                'sig', 'rav', 'bim', 'tob', 'lup', 'zan', 'feg', 'hod', 'wip', 'kut',
+                'vab', 'jom', 'nif', 'ped', 'rug', 'cas', 'dol', 'mit', 'hep', 'fug',
+                'wob', 'kal', 'rit', 'ven', 'pog', 'tum', 'laf', 'jid', 'bes', 'cun',
+                'gop', 'hib', 'mev', 'nud', 'ral', 'siv', 'teg', 'wam', 'yob', 'zin',
+                'baf', 'cig', 'dop', 'fum', 'gev', 'hab', 'jik', 'lom', 'muv', 'nep'
+            ]
+        },
+        'B': {
+            timeLimit: 60, scoringUnit: 'CLS', words: [
+                'daf', 'bim', 'gol', 'rut', 'hep', 'vin', 'kal', 'sog', 'fem', 'nub',
+                'wip', 'taz', 'jod', 'lim', 'ceg', 'puf', 'rab', 'mot', 'hig', 'vel',
+                'zun', 'fob', 'kat', 'sig', 'dev', 'wam', 'lib', 'tog', 'pik', 'ren',
+                'guf', 'hab', 'mol', 'niv', 'sed', 'bup', 'cal', 'fig', 'jot', 'lum',
+                'rev', 'tik', 'wob', 'zan', 'ged', 'huf', 'mip', 'nal', 'sev', 'bor'
+            ]
+        },
+        'C': {
+            timeLimit: 60, scoringUnit: 'CLS', words: [
+                'hob', 'fin', 'kal', 'rud', 'sev', 'bam', 'tig', 'lop', 'wun', 'jef',
+                'mig', 'pal', 'vod', 'rib', 'cuf', 'gam', 'nol', 'tep', 'hiv', 'zub',
+                'fag', 'dol', 'kin', 'rup', 'bes', 'wom', 'jaf', 'lit', 'meg', 'pud',
+                'siv', 'beg', 'col', 'fip', 'hum', 'rav', 'tel', 'gob', 'nik', 'vut',
+                'zam', 'dif', 'kel', 'mop', 'rub', 'sil', 'bav', 'feg', 'hod', 'jun'
+            ]
+        }
+    },
+    '1': {
+        'A': {
+            timeLimit: 60, scoringUnit: 'CLS', words: [
+                'blim', 'crat', 'drev', 'flig', 'grop', 'snib', 'trav', 'pleg', 'bruf', 'clom',
+                'drin', 'frab', 'glep', 'stig', 'trul', 'blen', 'crid', 'flon', 'grib', 'snup',
+                'tref', 'plod', 'brig', 'claf', 'drup', 'fleg', 'grom', 'stib', 'tran', 'plin',
+                'brot', 'cleg', 'drif', 'frap', 'glun', 'snog', 'trib', 'plef', 'bral', 'clid',
+                'drep', 'frig', 'glab', 'stun', 'trod', 'plim', 'bref', 'clog', 'drit', 'frab'
+            ]
+        },
+        'B': {
+            timeLimit: 60, scoringUnit: 'CLS', words: [
+                'spig', 'tral', 'bref', 'clod', 'drin', 'fleg', 'grop', 'snab', 'trib', 'plef',
+                'brom', 'clif', 'dreg', 'frap', 'glum', 'stig', 'trun', 'plog', 'bral', 'crid',
+                'drup', 'flig', 'gref', 'snob', 'trel', 'plim', 'brog', 'claf', 'drip', 'freb',
+                'glob', 'snid', 'traf', 'plun', 'bref', 'clig', 'drom', 'frab', 'glep', 'stib',
+                'trul', 'pleg', 'brin', 'clop', 'dref', 'frig', 'grab', 'snuf', 'trib', 'plad'
+            ]
+        },
+        'C': {
+            timeLimit: 60, scoringUnit: 'CLS', words: [
+                'crab', 'flig', 'grop', 'snid', 'trel', 'blem', 'crod', 'drif', 'frap', 'glun',
+                'stob', 'trin', 'pleg', 'braf', 'clim', 'drup', 'fleg', 'grib', 'snup', 'tred',
+                'plof', 'brig', 'claf', 'dreg', 'frim', 'glob', 'stif', 'trab', 'plin', 'brot',
+                'clid', 'drap', 'frog', 'gleb', 'snig', 'trul', 'plef', 'brel', 'clog', 'drip',
+                'frab', 'grep', 'stun', 'trod', 'plim', 'bref', 'clid', 'drig', 'flib', 'grap'
+            ]
+        }
+    }
+};
+
+// ====================================================================
+// LNF — Letter Naming Fluency (K)
+// Student names randomly arranged letters (upper and lowercase mixed).
+// Scored as letters correct per minute.
+// 100 letters per form, 1-minute time limit
+// ====================================================================
+window.LNF_PROBE_BANKS = {
+    'K': {
+        'A': {
+            timeLimit: 60, scoringUnit: 'LPM', letters: [
+                'S', 'a', 'T', 'm', 'B', 'o', 'R', 'i', 'D', 'p',
+                'N', 'e', 'L', 'u', 'G', 's', 'K', 'a', 'F', 't',
+                'H', 'n', 'C', 'd', 'W', 'r', 'J', 'l', 'V', 'b',
+                'M', 'g', 'P', 'k', 'E', 'f', 'A', 'h', 'O', 'c',
+                'I', 'w', 'U', 'j', 'Y', 'v', 'Q', 'm', 'Z', 's',
+                'b', 'T', 'n', 'D', 'r', 'L', 'g', 'P', 'k', 'F',
+                'a', 'H', 'e', 'C', 'i', 'W', 'o', 'J', 'u', 'V',
+                'd', 'M', 'l', 'B', 'f', 'K', 's', 'A', 't', 'G',
+                'h', 'N', 'c', 'R', 'm', 'E', 'p', 'I', 'b', 'O',
+                'w', 'S', 'j', 'D', 'v', 'T', 'n', 'F', 'r', 'L'
+            ]
+        },
+        'B': {
+            timeLimit: 60, scoringUnit: 'LPM', letters: [
+                'M', 'e', 'P', 'a', 'D', 'o', 'K', 'i', 'T', 'u',
+                'B', 's', 'N', 'r', 'G', 'l', 'F', 't', 'H', 'c',
+                'W', 'm', 'J', 'd', 'V', 'n', 'C', 'g', 'R', 'p',
+                'L', 'b', 'S', 'k', 'A', 'f', 'E', 'h', 'I', 'w',
+                'O', 'j', 'U', 'v', 'Q', 's', 'Y', 'a', 'Z', 't',
+                'n', 'D', 'r', 'M', 'g', 'B', 'k', 'P', 'f', 'T',
+                'e', 'H', 'i', 'K', 'o', 'N', 'u', 'F', 'd', 'G',
+                'l', 'W', 's', 'C', 't', 'J', 'a', 'V', 'm', 'R',
+                'c', 'L', 'p', 'S', 'b', 'A', 'h', 'E', 'w', 'I',
+                'j', 'O', 'v', 'U', 'n', 'Q', 'r', 'Y', 'g', 'Z'
+            ]
+        },
+        'C': {
+            timeLimit: 60, scoringUnit: 'LPM', letters: [
+                'T', 'o', 'B', 'a', 'N', 'i', 'F', 'u', 'R', 'e',
+                'D', 's', 'K', 'm', 'G', 'l', 'H', 't', 'P', 'c',
+                'W', 'n', 'J', 'd', 'M', 'r', 'V', 'g', 'C', 'p',
+                'L', 'b', 'S', 'k', 'A', 'f', 'E', 'h', 'I', 'w',
+                'O', 'j', 'U', 'v', 'Q', 'a', 'Y', 's', 'Z', 't',
+                'r', 'D', 'm', 'B', 'g', 'N', 'k', 'F', 'f', 'T',
+                'e', 'R', 'i', 'K', 'o', 'G', 'u', 'H', 'd', 'P',
+                'l', 'W', 's', 'J', 't', 'M', 'a', 'V', 'n', 'C',
+                'c', 'L', 'p', 'S', 'b', 'A', 'h', 'E', 'w', 'I',
+                'j', 'O', 'v', 'U', 'r', 'Q', 'm', 'Y', 'g', 'Z'
+            ]
+        }
+    }
+};
+
+// ====================================================================
+// RAN — Rapid Automatized Naming (K-2)
+// Student names items (colors, numbers, letters, objects) as fast as possible.
+// Tests processing speed and automaticity — a key predictor of reading fluency.
+// 50 items per form, untimed (record completion time)
+// 5 items repeated in random order across rows
+// ====================================================================
+window.RAN_PROBE_BANKS = {
+    'K': {
+        // RAN Colors — 5 colors repeated 10x in random arrangement
+        'A': {
+            timeLimit: null, type: 'colors', scoringUnit: 'seconds', items: [
+                'red', 'blue', 'green', 'yellow', 'black',
+                'yellow', 'red', 'black', 'blue', 'green',
+                'blue', 'green', 'red', 'black', 'yellow',
+                'green', 'black', 'yellow', 'red', 'blue',
+                'black', 'yellow', 'blue', 'green', 'red',
+                'red', 'green', 'black', 'yellow', 'blue',
+                'yellow', 'blue', 'red', 'green', 'black',
+                'green', 'red', 'blue', 'black', 'yellow',
+                'blue', 'black', 'green', 'yellow', 'red',
+                'black', 'yellow', 'red', 'blue', 'green'
+            ]
+        },
+        'B': {
+            timeLimit: null, type: 'colors', scoringUnit: 'seconds', items: [
+                'blue', 'red', 'yellow', 'green', 'black',
+                'green', 'black', 'blue', 'red', 'yellow',
+                'red', 'yellow', 'green', 'black', 'blue',
+                'black', 'blue', 'red', 'yellow', 'green',
+                'yellow', 'green', 'black', 'blue', 'red',
+                'blue', 'red', 'green', 'black', 'yellow',
+                'green', 'yellow', 'blue', 'red', 'black',
+                'red', 'black', 'yellow', 'green', 'blue',
+                'black', 'green', 'red', 'yellow', 'blue',
+                'yellow', 'blue', 'black', 'green', 'red'
+            ]
+        },
+        'C': {
+            timeLimit: null, type: 'colors', scoringUnit: 'seconds', items: [
+                'green', 'yellow', 'black', 'red', 'blue',
+                'red', 'blue', 'green', 'yellow', 'black',
+                'black', 'red', 'yellow', 'blue', 'green',
+                'yellow', 'green', 'blue', 'black', 'red',
+                'blue', 'black', 'red', 'green', 'yellow',
+                'green', 'red', 'black', 'yellow', 'blue',
+                'black', 'yellow', 'blue', 'red', 'green',
+                'yellow', 'blue', 'green', 'black', 'red',
+                'red', 'green', 'yellow', 'blue', 'black',
+                'blue', 'black', 'red', 'green', 'yellow'
+            ]
+        }
+    },
+    '1': {
+        // RAN Letters — 5 lowercase letters repeated 10x
+        'A': {
+            timeLimit: null, type: 'letters', scoringUnit: 'seconds', items: [
+                'a', 's', 'd', 'o', 'p',
+                'o', 'a', 'p', 's', 'd',
+                'd', 'p', 'a', 'o', 's',
+                'p', 's', 'o', 'd', 'a',
+                's', 'd', 'p', 'a', 'o',
+                'a', 'o', 's', 'p', 'd',
+                'o', 'd', 'a', 's', 'p',
+                'd', 'a', 'p', 'o', 's',
+                'p', 's', 'd', 'a', 'o',
+                's', 'o', 'a', 'p', 'd'
+            ]
+        },
+        'B': {
+            timeLimit: null, type: 'letters', scoringUnit: 'seconds', items: [
+                's', 'o', 'a', 'd', 'p',
+                'd', 'p', 's', 'a', 'o',
+                'a', 'd', 'o', 'p', 's',
+                'o', 's', 'p', 'a', 'd',
+                'p', 'a', 'd', 'o', 's',
+                's', 'd', 'a', 'p', 'o',
+                'a', 'o', 'p', 's', 'd',
+                'd', 'p', 's', 'o', 'a',
+                'o', 'a', 'd', 'p', 's',
+                'p', 's', 'o', 'a', 'd'
+            ]
+        },
+        'C': {
+            timeLimit: null, type: 'letters', scoringUnit: 'seconds', items: [
+                'd', 'a', 'p', 'o', 's',
+                'o', 's', 'a', 'd', 'p',
+                's', 'p', 'd', 'a', 'o',
+                'a', 'd', 'o', 'p', 's',
+                'p', 'o', 's', 'd', 'a',
+                'd', 's', 'p', 'a', 'o',
+                'o', 'a', 'd', 's', 'p',
+                'a', 'p', 'o', 'd', 's',
+                's', 'd', 'a', 'p', 'o',
+                'p', 'o', 's', 'a', 'd'
+            ]
+        }
+    },
+    '2': {
+        // RAN Numbers — 5 single digits repeated 10x
+        'A': {
+            timeLimit: null, type: 'numbers', scoringUnit: 'seconds', items: [
+                2, 7, 4, 9, 3,
+                9, 2, 3, 7, 4,
+                4, 3, 2, 9, 7,
+                3, 7, 9, 4, 2,
+                7, 4, 3, 2, 9,
+                2, 9, 7, 3, 4,
+                9, 4, 2, 7, 3,
+                4, 2, 3, 9, 7,
+                3, 7, 4, 2, 9,
+                7, 9, 2, 4, 3
+            ]
+        },
+        'B': {
+            timeLimit: null, type: 'numbers', scoringUnit: 'seconds', items: [
+                7, 2, 9, 4, 3,
+                4, 3, 7, 2, 9,
+                2, 9, 4, 3, 7,
+                9, 7, 3, 4, 2,
+                3, 4, 2, 9, 7,
+                7, 9, 4, 2, 3,
+                2, 3, 7, 9, 4,
+                4, 7, 9, 3, 2,
+                9, 2, 3, 4, 7,
+                3, 4, 2, 7, 9
+            ]
+        },
+        'C': {
+            timeLimit: null, type: 'numbers', scoringUnit: 'seconds', items: [
+                4, 9, 2, 3, 7,
+                3, 7, 4, 9, 2,
+                9, 2, 7, 4, 3,
+                2, 4, 3, 7, 9,
+                7, 3, 9, 2, 4,
+                4, 2, 3, 9, 7,
+                9, 7, 4, 3, 2,
+                3, 4, 2, 7, 9,
+                2, 9, 7, 4, 3,
+                7, 3, 9, 2, 4
+            ]
+        }
+    }
+};

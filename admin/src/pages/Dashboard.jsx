@@ -84,7 +84,7 @@ export default function Dashboard({ onNavigateTab }) {
     if (!window.alloAPI) return;
     setActionLoading('logs');
     try {
-      const result = await window.alloAPI.getServiceLogs('ollama');
+      const result = await window.alloAPI.getServiceLogs('llm-engine');
       if (result.success) {
         // Open logs in a modal or new window
         const logsWindow = window.open('', '', 'width=800,height=600');

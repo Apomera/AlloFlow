@@ -1,31 +1,30 @@
 #!/usr/bin/env node
 /**
- * AlloFlow B2.3 — Local App Build
+ * AlloFlow — Local App Build
  *
- * Assembles the local-only AlloFlow app from cloud-stripped section files.
+ * Assembles the local-only AlloFlow app from local-app/modules/local/.
+ * These module files ARE the source of truth for the local app.
+ * No extraction from AlloFlowANTI.txt — that is the web app's source.
+ *
  * Pipeline:
- *   1. Run extract_modules_local.js (unless --skip-extract)
- *   2. Read section files from local-app/modules/local/ in SECTION_ORDER
- *   3. Concatenate into local-app/src/LocalApp.jsx
- *   4. Run esbuild to compile JSX → local-app/build/app.js
- *   5. Copy index.html + static assets into local-app/build/
+ *   1. Read section files from local-app/modules/local/ in SECTION_ORDER
+ *   2. Concatenate into local-app/src/LocalApp.jsx
+ *   3. Run esbuild to compile JSX → local-app/build/app.js
+ *   4. Copy index.html + static assets into local-app/build/
  *
  * Usage:
  *   node local_build.js
- *   node local_build.js --skip-extract   (use existing section files, skip re-extraction)
  *   node local_build.js --no-bundle      (stop after writing LocalApp.jsx, skip esbuild)
- *   node local_build.js --dev            (esbuild in watch mode, skips extract)
+ *   node local_build.js --dev            (esbuild with sourcemap, no minify)
  */
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
-const { execSync, spawnSync } = require('child_process');
 
 // ── CLI args ──────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
-const SKIP_EXTRACT = args.includes('--skip-extract') || args.includes('--dev');
 const NO_BUNDLE = args.includes('--no-bundle');
 const DEV_MODE = args.includes('--dev');
 
@@ -33,7 +32,6 @@ const DEV_MODE = args.includes('--dev');
 const ROOT = path.resolve(__dirname);
 const LOCAL_APP = path.join(ROOT, 'local-app');
 const MODULES_LOCAL = path.join(LOCAL_APP, 'modules', 'local');
-const MANIFEST_PATH = path.join(LOCAL_APP, 'modules', 'manifest_local.json');
 const SRC_DIR = path.join(LOCAL_APP, 'src');
 const BUILD_DIR = path.join(LOCAL_APP, 'build');
 const OUT_JSX = path.join(SRC_DIR, 'LocalApp.jsx');
@@ -85,40 +83,21 @@ function ensureDir(dir) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-// ── Step 1 — (Re-)extract local sections ─────────────────────────────────────
-function runExtract() {
-    console.log('\n── Step 1: Extracting local sections ──────────────────────────────────');
-    const extractScript = path.join(ROOT, 'scripts', 'extract_modules_local.js');
-    if (!fs.existsSync(extractScript)) {
-        console.error('❌ scripts/extract_modules_local.js not found');
-        process.exit(1);
-    }
-    const result = spawnSync(process.execPath, [extractScript], {
-        stdio: 'inherit',
-        cwd: ROOT,
-    });
-    if (result.status !== 0) {
-        console.error('❌ Extraction failed (exit code ' + result.status + ')');
-        process.exit(1);
-    }
-}
-
-// ── Step 2-3 — Concatenate sections → LocalApp.jsx ───────────────────────────
+// ── Step 1 — Concatenate sections → LocalApp.jsx ─────────────────────────────
 function assembleLocalApp() {
-    console.log('\n── Step 2-3: Assembling LocalApp.jsx ──────────────────────────────────');
+    console.log('\n── Step 1: Assembling LocalApp.jsx from local modules ────────────────');
 
-    if (!fs.existsSync(MANIFEST_PATH)) {
-        console.error('❌ Manifest not found: ' + MANIFEST_PATH);
-        console.error('   Run without --skip-extract to regenerate.');
+    if (!fs.existsSync(MODULES_LOCAL)) {
+        console.error('❌ Module source directory not found: ' + MODULES_LOCAL);
+        console.error('   local-app/modules/local/ is the source of truth for the local app.');
         process.exit(1);
     }
 
-    const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf-8'));
     const chunks = [];
 
     chunks.push([
         '// ╔══════════════════════════════════════════════════════════════════════╗',
-        '// ║  AlloFlow — Local App (cloud-stripped)                              ║',
+        '// ║  AlloFlow — Local App                                               ║',
         '// ║  Auto-assembled by local_build.js — DO NOT EDIT MANUALLY            ║',
         `// ║  Built: ${new Date().toISOString()}`,
         '// ╚══════════════════════════════════════════════════════════════════════╝',
@@ -128,16 +107,11 @@ function assembleLocalApp() {
 
     let missing = 0;
     for (const sectionName of SECTION_ORDER) {
-        const entry = manifest.sections[sectionName];
-        if (!entry) {
-            console.warn(`  ⚠️  Section not in manifest: ${sectionName} — skipping`);
-            missing++;
-            continue;
-        }
+        const fileName = sectionFilename(sectionName);
+        const filePath = path.join(MODULES_LOCAL, fileName);
 
-        const filePath = path.join(MODULES_LOCAL, entry.file);
         if (!fs.existsSync(filePath)) {
-            console.warn(`  ⚠️  Section file missing: ${entry.file} — skipping`);
+            console.warn(`  ⚠️  Section file missing: ${fileName} — skipping`);
             missing++;
             continue;
         }
@@ -150,12 +124,12 @@ function assembleLocalApp() {
 
         chunks.push(
             `\n// ─────────────────────────────────────────────────────────────────────\n` +
-            `// Section: ${sectionName}  [${entry.hash}]\n` +
+            `// Section: ${sectionName}\n` +
             `// ─────────────────────────────────────────────────────────────────────\n` +
             content
         );
 
-        console.log(`  ✅ ${sectionName.padEnd(25)} [${entry.hash}]${entry.cloudStripped ? ' 🔧stripped' : ''}`);
+        console.log(`  ✅ ${sectionName.padEnd(25)} ${fileName}`);
     }
 
     if (missing > 0) {
@@ -172,9 +146,9 @@ function assembleLocalApp() {
     console.log(`     → ${path.relative(ROOT, OUT_JSX)}`);
 }
 
-// ── Step 4 — esbuild ──────────────────────────────────────────────────────────
+// ── Step 2 — esbuild ──────────────────────────────────────────────────────────
 async function runEsbuild() {
-    console.log('\n── Step 4: Compiling with esbuild ─────────────────────────────────────');
+    console.log('\n── Step 2: Compiling with esbuild ─────────────────────────────────────');
     ensureDir(BUILD_DIR);
 
     // Use esbuild's JS API to avoid Node version compatibility issues with
@@ -200,12 +174,19 @@ async function runEsbuild() {
             platform: 'browser',
             format: 'iife',
             globalName: 'AlloFlowApp',
-            jsx: 'automatic',
+            jsx: 'transform',
+            jsxFactory: 'React.createElement',
+            jsxFragment: 'React.Fragment',
             loader: { '.js': 'jsx' },
             outfile: OUT_JS,
             sourcemap: true,
             // External packages loaded from CDN/window in index.html
-            external: ['react', 'react-dom', 'lucide-react'],
+            // Note: lucide-react is NOT external — it's bundled so icons resolve correctly
+            external: ['react', 'react-dom', 'react-dom/client'],
+            // Inject a require shim so IIFE externals resolve to window globals
+            banner: {
+                js: `var require = (function() { var map = { 'react': window.React, 'react/jsx-runtime': window.React, 'react-dom': window.ReactDOM, 'react-dom/client': window.ReactDOM }; return function(m) { if (map[m]) return map[m]; throw new Error('Module not found: ' + m); }; })();`
+            },
             minify: !DEV_MODE,
             logLevel: 'warning',
         });
@@ -238,9 +219,9 @@ async function runEsbuild() {
     }
 }
 
-// ── Step 5 — Copy static assets ───────────────────────────────────────────────
+// ── Step 3 — Copy static assets ───────────────────────────────────────────────
 function copyAssets() {
-    console.log('\n── Step 5: Copying static assets ──────────────────────────────────────');
+    console.log('\n── Step 3: Copying static assets ──────────────────────────────────────');
 
     const PUBLIC_DIR = path.join(LOCAL_APP, 'public');
     if (!fs.existsSync(PUBLIC_DIR)) {
@@ -260,28 +241,130 @@ function copyAssets() {
     }
 }
 
+// ── Step 4 — Copy shared assets ───────────────────────────────────────────────
+function copySharedAssets() {
+    console.log('\n── Step 4: Copying shared assets ──────────────────────────────────────');
+
+    const SHARED_DIR = path.join(ROOT, 'shared');
+    if (!fs.existsSync(SHARED_DIR)) {
+        console.warn('  ⚠️  shared/ directory not found — skipping');
+        return;
+    }
+
+    const SHARED_BUILD = path.join(BUILD_DIR, 'shared');
+    ensureDir(SHARED_BUILD);
+
+    // Copy root-level shared files (CSS, images, data, strings)
+    const rootFiles = fs.readdirSync(SHARED_DIR);
+    for (const file of rootFiles) {
+        const src = path.join(SHARED_DIR, file);
+        const stat = fs.statSync(src);
+        if (stat.isFile()) {
+            fs.copyFileSync(src, path.join(SHARED_BUILD, file));
+            console.log(`  📋 shared/${file}`);
+        }
+    }
+
+    // Copy audio_banks/ subdirectory
+    const AUDIO_BANKS_SRC = path.join(SHARED_DIR, 'audio_banks');
+    if (fs.existsSync(AUDIO_BANKS_SRC)) {
+        const AUDIO_BANKS_DST = path.join(SHARED_BUILD, 'audio_banks');
+        ensureDir(AUDIO_BANKS_DST);
+        for (const file of fs.readdirSync(AUDIO_BANKS_SRC)) {
+            const src = path.join(AUDIO_BANKS_SRC, file);
+            if (fs.statSync(src).isFile()) {
+                fs.copyFileSync(src, path.join(AUDIO_BANKS_DST, file));
+                console.log(`  📋 shared/audio_banks/${file}`);
+            }
+        }
+    }
+
+    // Copy modules/ subdirectory (CDN modules for web app, also usable locally)
+    const MODULES_SRC = path.join(SHARED_DIR, 'modules');
+    if (fs.existsSync(MODULES_SRC)) {
+        const MODULES_DST = path.join(SHARED_BUILD, 'modules');
+        ensureDir(MODULES_DST);
+        for (const entry of fs.readdirSync(MODULES_SRC)) {
+            const src = path.join(MODULES_SRC, entry);
+            const stat = fs.statSync(src);
+            if (stat.isFile()) {
+                fs.copyFileSync(src, path.join(MODULES_DST, entry));
+                console.log(`  📋 shared/modules/${entry}`);
+            } else if (stat.isDirectory()) {
+                // sel_hub/, stem_lab/ subdirs
+                const subDst = path.join(MODULES_DST, entry);
+                ensureDir(subDst);
+                for (const subFile of fs.readdirSync(src)) {
+                    const subSrc = path.join(src, subFile);
+                    if (fs.statSync(subSrc).isFile()) {
+                        fs.copyFileSync(subSrc, path.join(subDst, subFile));
+                    }
+                }
+                const count = fs.readdirSync(subDst).length;
+                console.log(`  📋 shared/modules/${entry}/ (${count} files)`);
+            }
+        }
+    }
+
+    console.log('  ✅ Shared assets copied to build/shared/');
+}
+
+// ── Copy shared/libs/ (third-party JS libraries + fonts) ──
+function copySharedLibs() {
+    console.log('\n── Step 5: Copying bundled third-party libraries ─────────────────────');
+
+    const LIBS_SRC = path.join(ROOT, 'shared', 'libs');
+    if (!fs.existsSync(LIBS_SRC)) {
+        console.warn('  ⚠️  shared/libs/ not found — skipping');
+        return;
+    }
+
+    const LIBS_DST = path.join(BUILD_DIR, 'shared', 'libs');
+    ensureDir(LIBS_DST);
+
+    for (const entry of fs.readdirSync(LIBS_SRC)) {
+        const src = path.join(LIBS_SRC, entry);
+        const stat = fs.statSync(src);
+        if (stat.isFile()) {
+            fs.copyFileSync(src, path.join(LIBS_DST, entry));
+            console.log(`  📋 shared/libs/${entry}`);
+        } else if (stat.isDirectory()) {
+            // fonts/ subdir
+            const subDst = path.join(LIBS_DST, entry);
+            ensureDir(subDst);
+            for (const subFile of fs.readdirSync(src)) {
+                const subSrc = path.join(src, subFile);
+                if (fs.statSync(subSrc).isFile()) {
+                    fs.copyFileSync(subSrc, path.join(subDst, subFile));
+                }
+            }
+            const count = fs.readdirSync(subDst).length;
+            console.log(`  📋 shared/libs/${entry}/ (${count} files)`);
+        }
+    }
+
+    console.log('  ✅ Third-party libraries copied to build/shared/libs/');
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
     console.log('┌──────────────────────────────────────────────────────────────────────┐');
     console.log('│  AlloFlow Local Build                                                │');
+    console.log('│  Source: local-app/modules/local/ (no monolith extraction)            │');
     console.log('└──────────────────────────────────────────────────────────────────────┘');
-
-    if (!SKIP_EXTRACT) {
-        runExtract();
-    } else {
-        console.log('\n── Step 1: Skipped (--skip-extract) ───────────────────────────────────');
-    }
 
     assembleLocalApp();
 
     if (NO_BUNDLE) {
-        console.log('\n── Step 4: Skipped (--no-bundle) ──────────────────────────────────────');
+        console.log('\n── Step 2: Skipped (--no-bundle) ──────────────────────────────────────');
         console.log('\n✅ LocalApp.jsx written. Run esbuild manually to compile.');
         return;
     }
 
     await runEsbuild();
     copyAssets();
+    copySharedAssets();
+    copySharedLibs();
 
     console.log('\n✅ Local build complete.');
     console.log('   Serve with: cd local-app && npm start');

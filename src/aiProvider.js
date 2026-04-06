@@ -625,9 +625,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'gemini':
                 return this._geminiTTS(text, voice, speed);
             case 'ollama':
+            case 'lmstudio':
             case 'pocketbase':
-                // Local backends without TTS endpoints — use browser fallback
-                return this._browserSpeechSynthesis(text, speed);
+                // Local backends without TTS endpoints — use Piper (offline TTS)
+                return this._piperTTS(text, voice, speed);
             case 'openai':
             case 'localai':
             case 'claude':

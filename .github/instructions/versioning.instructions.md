@@ -6,41 +6,11 @@ applyTo: ["admin/**", "admin/package.json"]
 
 # AlloFlow Admin - Versioning Rules
 
-## Version Increment Rules (Semantic Versioning)
+Uptick to x.x.x+1 for each bug fix, or minor change. This ensures clear version history and helps users track updates effectively.
 
-Current version: **v0.1.x** (Phase 0 iterations)
-
-### When to Increment
-
-| Change Type | Action | Example |
-|-------------|--------|---------|
-| **Bug fix** within same phase | Patch: `0.1.0` → `0.1.1` → `0.1.2` 
-| **New feature** completing next phase | Minor: `0.1.x` → `0.2.0`
-| **Major restructure** or breaking changes | Major: `1.0.0` (future) | Only after Phase 3+ complete |
-
-### Current Phase Info
-
-**Phase 0** (v0.1.x): Setup Wizard with 4 deployment types
-- Substeps:
-  1. Deployment selection UI ✅
-  2. Configuration forms ✅
-  3. Docker detection ✅
-  4. Folder browsing ✅
-
-Each completed substep = patch increment (v0.1.0 → v0.1.1 → v0.1.2, etc.)
-
-## Checklist: After Making Code Changes
-
-**DO NOT build the installer during active development phases.**
-The installer is only built once all phases in the current roadmap milestone are fully implemented and tested.
+Uptick to x.x+1.0 for new features or significant changes that don't break backward compatibility. This signals meaningful improvements while maintaining stability.
 
 **BEFORE** running build (only when all phases are complete):
-
-- [ ] **Confirm all phases done**: Every task in the milestone is implemented and tested
-- [ ] **Identify version increment**: Bug fix → patch, new phase milestone → minor
-- [ ] **Check current version**: Look at `admin/package.json` `"version"` field
-- [ ] **Update version**: `admin/package.json` `"version"` field only
-- [ ] **Then build**: `npm run dist` in `admin/`
 
 ## Keep in Sync with Upstream Repository
 

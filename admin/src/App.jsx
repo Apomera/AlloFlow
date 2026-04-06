@@ -8,7 +8,7 @@ import Services from './pages/Services';
 import './App.css';
 
 const SERVICE_LABELS = {
-  ollama: { name: 'Ollama', desc: 'AI models (LLM inference engine)' },
+  'llm-engine': { name: 'LM Studio', desc: 'AI models (llama.cpp LLM engine)' },
   piper: { name: 'Piper TTS', desc: 'Text-to-speech engine' },
   flux: { name: 'Flux', desc: 'AI image generation' },
 };

@@ -1,7 +1,8 @@
 /**
  * AlloFlow — Local AI Provider Module (C2.1)
  *
- * Ollama-only AIProvider for the local app.
+ * LM Studio (llama.cpp) AIProvider for the local app.
+ * Uses OpenAI-compatible API on port 8000.
  * Loaded by index.html BEFORE app.js so modules can do `new AIProvider(cfg)`.
  *
  * Cloud backends (Gemini, OpenAI, Claude) are intentionally absent.
@@ -21,15 +22,14 @@
     class LocalAIProvider {
         /**
          * @param {Object} [config]
-         * @param {string} [config.baseUrl]     - Ollama URL (default: __alloLocalConfig.ollamaUrl)
+         * @param {string} [config.baseUrl]     - LM Studio URL (default: __alloLocalConfig.llmEngineUrl)
          * @param {Object} [config.models]      - Model name overrides
          * @param {string} [config.ttsProvider] - 'piper' | 'browser' | 'off' (default: 'piper')
          * @param {Function} [config.debugLog]
          * @param {Function} [config.warnLog]
          */
         constructor(config = {}) {
-            // Always Ollama — ignore any cloud backend config
-            this.backend = 'ollama';
+            this.backend = 'lmstudio';
             this._ttsProvider = config.ttsProvider || 'piper';
             this._imageProvider = 'off'; // images disabled in local app
 
@@ -51,20 +51,21 @@
 
         get baseUrl() {
             return this._cfgBaseUrl
+                || global.__alloLocalConfig?.llmEngineUrl
                 || global.__alloLocalConfig?.ollamaUrl
-                || 'http://localhost:11434';
+                || 'http://localhost:1234';
         }
 
         get model() {
             return this.models.default
                 || global.__alloLocalConfig?.defaultModel
-                || 'llama3.2:3b';
+                || 'default';
         }
 
         // ── Text Generation ────────────────────────────────────────────────────
 
         /**
-         * Generate text from a prompt using Ollama's /api/chat endpoint.
+         * Generate text using OpenAI-compatible /v1/chat/completions endpoint.
          * @param {string} prompt
          * @param {Object} [opts]
          * @param {boolean} [opts.json=false]       - Request JSON output
@@ -75,16 +76,14 @@
         async generateText(prompt, { json = false, temperature = null, maxTokens = 8192 } = {}) {
             if (!prompt) return json ? '{}' : '';
 
-            const url = `${this.baseUrl}/api/chat`;
+            const url = `${this.baseUrl}/v1/chat/completions`;
             const payload = {
                 model: this.model,
                 messages: [{ role: 'user', content: prompt }],
                 stream: false,
-                options: {
-                    num_predict: maxTokens,
-                    ...(temperature !== null ? { temperature } : {}),
-                },
-                ...(json ? { format: 'json' } : {}),
+                max_tokens: maxTokens,
+                ...(temperature !== null ? { temperature } : {}),
+                ...(json ? { response_format: { type: 'json_object' } } : {}),
             };
 
             this._debugLog(`[LocalAI] generateText: model=${this.model}, json=${json}`);
@@ -96,11 +95,11 @@
             });
 
             if (!resp.ok) {
-                throw new Error(`Ollama error: HTTP ${resp.status} — is Ollama running at ${this.baseUrl}?`);
+                throw new Error(`LLM error: HTTP ${resp.status} — is LM Studio running at ${this.baseUrl}?`);
             }
 
             const data = await resp.json();
-            return data.message?.content || '';
+            return data.choices?.[0]?.message?.content || '';
         }
 
         // ── Text-to-Speech ────────────────────────────────────────────────────
@@ -118,7 +117,26 @@
             if (!text || this._ttsProvider === 'off') return null;
             if (this._ttsProvider === 'browser') return this._browserTTS(text, speed);
 
-            // Try Piper WASM first
+            // Try Piper HTTP server (port 5500 — started by nativeProcessManager)
+            const piperServerUrl = global.__alloLocalConfig?.ttsServerUrl || 'http://localhost:5500';
+            try {
+                const resp = await fetch(`${piperServerUrl}/v1/audio/speech`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: 'tts-1', input: text, voice: voice || 'nova', speed }),
+                    signal: AbortSignal.timeout(8000),
+                });
+                if (resp.ok) {
+                    const blob = await resp.blob();
+                    const url = URL.createObjectURL(blob);
+                    this._ttsCache.set(`piper-http:${text}:${voice}:${speed}`, url);
+                    return url;
+                }
+            } catch {
+                // Piper server not running — fall through
+            }
+
+            // Try Piper WASM if loaded
             if (global._piperTTS && global.__alloLocalConfig?.piperEnabled !== false) {
                 const cacheKey = `piper:${text}:${voice}:${speed}`;
                 if (this._ttsCache.has(cacheKey)) {
@@ -131,12 +149,12 @@
                         return audioUrl;
                     }
                 } catch (e) {
-                    this._warnLog('[LocalAI TTS] Piper failed:', e.message);
+                    this._warnLog('[LocalAI TTS] Piper WASM failed:', e.message);
                 }
             }
 
-            // Fallback: browser speech synthesis (no URL returned)
-            return this._browserTTS(text, speed);
+            // No local TTS available — return null so caller (AlloBot) handles browser fallback
+            return null;
         }
 
         _browserTTS(text, speed) {
@@ -183,21 +201,21 @@
 
         // ── Model Discovery ────────────────────────────────────────────────────
 
-        /** List installed Ollama models. */
+        /** List available LM Studio models. */
         async listAvailableModels() {
             try {
-                const resp = await fetch(`${this.baseUrl}/api/tags`, {
+                const resp = await fetch(`${this.baseUrl}/v1/models`, {
                     signal: AbortSignal.timeout(3000),
                 });
                 if (!resp.ok) return [];
                 const data = await resp.json();
-                return (data.models || []).map(m => ({ id: m.name, type: 'text', size: m.size }));
+                return (data.data || []).map(m => ({ id: m.id, type: 'text', size: null }));
             } catch {
                 return [];
             }
         }
 
-        /** Test Ollama connection. */
+        /** Test LM Studio connection. */
         async testConnection() {
             try {
                 const models = await this.listAvailableModels();

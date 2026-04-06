@@ -2,7 +2,7 @@
  * AlloFlow Web App Server
  * Serves the built AlloFlow web app on a local port (default 3000).
  * Injects local AI config auto-detection into the served HTML so the
- * web app auto-connects to local Ollama and Piper with zero setup.
+ * web app auto-connects to local LM Studio and Piper with zero setup.
  */
 
 const http = require('http');
@@ -69,7 +69,7 @@ function buildConfigScript() {
 /**
  * Build the cloud provider removal script.
  * Strips Gemini, OpenAI, Claude, Custom, ONNX-NPU, and LocalAI from the provider dropdown.
- * Only Ollama is shown for local deployment.
+ * Only LM Studio is shown for local deployment.
  */
 function buildCloudProviderRemovalScript() {
   return `<script>
@@ -93,12 +93,12 @@ function buildCloudProviderRemovalScript() {
       }
     });
     
-    // Ensure Ollama is selected (it's the only local provider left)
-    if (select.value === '' || !cloudProviders.includes(select.value)) {
-      select.value = 'ollama';
+    // Ensure LM Studio / local backend is selected
+    if (select.value === '' || cloudProviders.includes(select.value)) {
+      select.value = 'lmstudio';
     }
     
-    console.log('[AlloFlow] Cloud providers removed. Available backends: Ollama only');
+    console.log('[AlloFlow] Cloud providers removed. Available backends: LM Studio only');
   };
   
   // Try immediately for fast-path case, then watch for React mount
