@@ -7197,27 +7197,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7233,7 +7233,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e136bf8/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d28166b/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8772,6 +8772,48 @@ Return ONLY a valid JSON object:
   const [isPersonaChatOpen, setIsPersonaChatOpen] = useState(false);
   const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
   const personaScrollRef = useRef(null);
+  // ── Centralized persona interview reset ──
+  // Single source of truth for clearing ALL persona-related state when starting a new interview.
+  // Prevents stale state (chat history, harmony score, badges, refs, etc.) from leaking between interviews.
+  // Note: deliberately preserves personaAutoRead and personaAutoSend (user preferences).
+  const resetPersonaInterviewState = useCallback(() => {
+    setPersonaState({
+      mode: 'single',
+      options: [],
+      selectedCharacter: null,
+      selectedCharacters: [],
+      chatHistory: [],
+      isLoading: false,
+      avatarUrl: null,
+      isImageLoading: false,
+      avatarGenerationFailed: false,
+      suggestions: [],
+      panelSuggestions: [],
+      topicSparkCount: 0,
+      showReflection: false,
+      reflectionText: '',
+      reflectionSubmitted: false,
+      harmonyScore: 10,
+      earnedBadges: []
+    });
+    setPersonaInput('');
+    setPersonaReflectionInput('');
+    setReflectionFeedback(null);
+    setIsPersonaDefining(false);
+    setIsGradingReflection(false);
+    setIsGeneratingReflectionPrompt(false);
+    setPanelTtsPending([]);
+    setShowPersonaHints(false);
+    setPersonaTurnHintsViewed(false);
+    setIsPersonaReflectionOpen(false);
+    lastReadPersonaIndexRef.current = -1;
+    if (personaDefinitionCache.current && typeof personaDefinitionCache.current.clear === 'function') {
+      personaDefinitionCache.current.clear();
+    }
+    // Stop any in-flight TTS playback from a previous interview
+    setPlayingContentId(null);
+    setPlaybackState({ sentences: [], currentIdx: -1 });
+  }, []);
   const [showLedger, setShowLedger] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState(null);
   const fluencyModalRef = useRef(null);
@@ -24440,18 +24482,9 @@ Return ONLY JSON.`;
       if (!sourceText.trim() && !sourceTopic.trim()) return;
       setIsGeneratingPersona(true);
       setGeneratedContent(null);
-      setPersonaState({
-          mode: 'single',
-          options: [],
-          selectedCharacter: null,
-          selectedCharacters: [],
-          chatHistory: [],
-          isLoading: false,
-          avatarUrl: null,
-          isImageLoading: false,
-          suggestions: [],
-          topicSparkCount: 0
-      });
+      // Centralized reset clears ALL persona state (including stale chat history,
+      // harmony score, badges, refs, and definition cache) before starting fresh.
+      resetPersonaInterviewState();
       try {
           const customInstructionBlock = personaCustomInstructions
             ? `IMPORTANT CUSTOM INSTRUCTIONS: ${personaCustomInstructions}\n(Prioritize these instructions when selecting figures).`
@@ -24984,6 +25017,10 @@ Return ONLY JSON.`;
               role: 'model',
               text: character.greeting || `Greetings. I am ${character.name}. I am ready to discuss my time in ${character.year}.`
           }];
+          // Centralized reset BEFORE setting new character — prevents stale state from leaking
+          // (harmony score, badges, reflection text, panel suggestions, definition cache, etc.)
+          resetPersonaInterviewState();
+          // Use functional update so options array (set by handleGeneratePersonas) is preserved
           setPersonaState(prev => ({
               ...prev,
               selectedCharacter: character,
