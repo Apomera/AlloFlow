@@ -16,8 +16,8 @@ export default function AIConfig() {
 
   // Image generation
   const [imageProvider, setImageProvider] = useState('flux');
-  const [googleClientId, setGoogleClientId] = useState('');
-  const [googleClientSecret, setGoogleClientSecret] = useState('');
+  const [googleClientId, setGoogleClientId] = useState(process.env.REACT_APP_GOOGLE_CLIENT_ID || '');
+  const [googleClientSecret, setGoogleClientSecret] = useState(process.env.REACT_APP_GOOGLE_CLIENT_SECRET || '');
   const [geminiStatus, setGeminiStatus] = useState(null); // null | { connected, email, expiry }
   const [geminiConnecting, setGeminiConnecting] = useState(false);
 

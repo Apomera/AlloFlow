@@ -18,7 +18,10 @@ admin/node_modules/
 prismflow-deploy/.env
 prismflow-deploy/.env.local
 prismflow-deploy/.env.production
-*.env.local
+.env
+.env.local
+admin/.env
+admin/.env.local
 
 # Security: Never commit API key files
 api key.txt

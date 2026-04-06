@@ -39,8 +39,8 @@ export default function SetupWizard({ onComplete }) {
   const [webAppUrl, setWebAppUrl] = useState(null);
   const [geminiAuthDone, setGeminiAuthDone] = useState(false);
   const [geminiEmail, setGeminiEmail] = useState('');
-  const [geminiClientId, setGeminiClientId] = useState('');
-  const [geminiClientSecret, setGeminiClientSecret] = useState('');
+  const [geminiClientId, setGeminiClientId] = useState(process.env.REACT_APP_GEMINI_CLIENT_ID || '');
+  const [geminiClientSecret, setGeminiClientSecret] = useState(process.env.REACT_APP_GEMINI_CLIENT_SECRET || '');
   const [geminiConnecting, setGeminiConnecting] = useState(false);
   const [copilotAuthDone, setCopilotAuthDone] = useState(false);
   const [copilotEmail, setCopilotEmail] = useState('');
