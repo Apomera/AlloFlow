@@ -23,6 +23,7 @@ let _serverPort = 3730;
 const LOCAL_CONFIG_FILE  = path.join(os.homedir(), '.alloflow', 'local_config.json');
 const AI_CONFIG_FILE     = path.join(os.homedir(), '.alloflow', 'ai_config.json');
 const GEMINI_TOKEN_FILE  = path.join(os.homedir(), '.alloflow', 'gemini_token.json');
+const COPILOT_TOKEN_FILE = path.join(os.homedir(), '.alloflow', 'copilot_token.json');
 
 const MIME_TYPES = {
     '.html': 'text/html; charset=utf-8',
@@ -75,11 +76,13 @@ function buildLocalConfigScript() {
         console.warn('[localApp] Failed to read local_config.json:', err.message);
     }
 
-    // Merge AI config (imageProvider, OAuth state) into local config
+    // Merge AI config (aiProvider, imageProvider, OAuth state) into local config
     try {
         if (fs.existsSync(AI_CONFIG_FILE)) {
             const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+            if (ai.aiProvider) cfg.aiProvider = ai.aiProvider;
             if (ai.imageProvider) cfg.imageProvider = ai.imageProvider;
+            if (ai.copilot?.endpoint) cfg.copilotEndpoint = ai.copilot.endpoint;
         }
     } catch (_) {}
 
@@ -89,6 +92,17 @@ function buildLocalConfigScript() {
             const tok = JSON.parse(fs.readFileSync(GEMINI_TOKEN_FILE, 'utf-8'));
             if (tok?.access_token && (!tok.expiry || Date.now() < tok.expiry - 60 * 1000)) {
                 cfg.geminiAccessToken = tok.access_token;
+            }
+        }
+    } catch (_) {}
+
+    // Inject current Copilot access token if connected and not expired
+    try {
+        if (fs.existsSync(COPILOT_TOKEN_FILE)) {
+            const tok = JSON.parse(fs.readFileSync(COPILOT_TOKEN_FILE, 'utf-8'));
+            if (tok?.access_token && (!tok.expiry || Date.now() < tok.expiry - 60 * 1000)) {
+                cfg.copilotAccessToken = tok.access_token;
+                if (tok.endpoint) cfg.copilotEndpoint = tok.endpoint;
             }
         }
     } catch (_) {}

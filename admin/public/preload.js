@@ -111,6 +111,18 @@ contextBridge.exposeInMainWorld('alloAPI', {
     revoke:   () => ipcRenderer.invoke('oauth:gemini-revoke'),
   },
 
+  // ── Copilot / Azure OpenAI OAuth (via Microsoft Entra ID) ─────────────
+  copilotOAuth: {
+    // Start Entra ID OAuth flow — opens system browser, returns { success, email } or { success: false, error }
+    start:    () => ipcRenderer.invoke('oauth:copilot-start'),
+    // Check current connection status — returns { connected, email?, expiry? }
+    status:   () => ipcRenderer.invoke('oauth:copilot-status'),
+    // Get a valid access token (auto-refreshed) — returns token string or null
+    getToken: () => ipcRenderer.invoke('oauth:copilot-get-token'),
+    // Revoke and clear stored credentials
+    revoke:   () => ipcRenderer.invoke('oauth:copilot-revoke'),
+  },
+
   // ── Log Streaming ──────────────────────────────────────────────────────────
   logs: {
     // Stream main process logs (deployment, service startup, etc.)

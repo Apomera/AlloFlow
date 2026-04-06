@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const DEPLOYMENT_TYPES = [
   {
     id: 'local',
-    label: 'Local',
+    label: 'New Installation',
     description: 'Full local setup — AI services run natively on your machine',
     icon: '🏠',
     requires: [],
@@ -11,7 +11,7 @@ const DEPLOYMENT_TYPES = [
   },
   {
     id: 'cluster',
-    label: 'Join Cluster',
+    label: 'Join Existing Cluster',
     description: 'Connect to existing AlloFlow instance in your network',
     icon: '🌐',
     requires: ['clusterIP', 'clusterPort', 'clusterToken'],
@@ -19,7 +19,8 @@ const DEPLOYMENT_TYPES = [
   }
 ];
 
-const IMAGE_PROVIDER_SERVICES = ['flux', 'gemini-imagen'];
+const AI_PROVIDER_SERVICES = ['llm-engine', 'gemini', 'copilot'];
+const IMAGE_PROVIDER_SERVICES = ['flux', 'gemini', 'copilot'];
 
 export default function SetupWizard({ onComplete }) {
   // Step progression: deployment → hardware → services → config → deploying → success
@@ -41,6 +42,13 @@ export default function SetupWizard({ onComplete }) {
   const [geminiClientId, setGeminiClientId] = useState('');
   const [geminiClientSecret, setGeminiClientSecret] = useState('');
   const [geminiConnecting, setGeminiConnecting] = useState(false);
+  const [copilotAuthDone, setCopilotAuthDone] = useState(false);
+  const [copilotEmail, setCopilotEmail] = useState('');
+  const [copilotClientId, setCopilotClientId] = useState('');
+  const [copilotTenantId, setCopilotTenantId] = useState('');
+  const [copilotEndpoint, setCopilotEndpoint] = useState('');
+  const [copilotConnecting, setCopilotConnecting] = useState(false);
+  const [selectedAiProvider, setSelectedAiProvider] = useState('llm-engine');
 
   // Handle deployment type selection
   const handleSelectDeployment = async (typeId) => {
@@ -118,19 +126,38 @@ export default function SetupWizard({ onComplete }) {
     loadServices(tier);
   };
 
-  // Toggle service selection — radio behavior for image provider choices
+  // Select AI provider — radio behavior, mutually exclusive
+  const selectAiProvider = (providerId) => {
+    console.log('[SetupWizard] Selected AI provider:', providerId);
+    setSelectedAiProvider(providerId);
+    // Remove all AI provider services, then add the selected one
+    let updated = selectedServices.filter(s => !AI_PROVIDER_SERVICES.includes(s));
+    updated.push(providerId);
+    // When switching to a cloud provider, clear image provider selection (images bundled)
+    if (providerId !== 'llm-engine') {
+      updated = updated.filter(s => !IMAGE_PROVIDER_SERVICES.includes(s) || s === providerId);
+    }
+    setSelectedServices(updated);
+  };
+
+  // Toggle image provider — radio behavior (only when Local AI engine)
+  const selectImageProvider = (serviceId) => {
+    console.log('[SetupWizard] Selected image provider:', serviceId);
+    if (selectedServices.includes(serviceId)) {
+      // Deselect — no image provider
+      setSelectedServices(selectedServices.filter(s => !IMAGE_PROVIDER_SERVICES.includes(s)));
+    } else {
+      setSelectedServices([
+        ...selectedServices.filter(s => !IMAGE_PROVIDER_SERVICES.includes(s)),
+        serviceId
+      ]);
+    }
+  };
+
+  // Toggle add-on service (checkbox behavior)
   const toggleService = (serviceId) => {
     console.log('[SetupWizard] Toggling service:', serviceId);
-    if (IMAGE_PROVIDER_SERVICES.includes(serviceId)) {
-      if (selectedServices.includes(serviceId)) {
-        setSelectedServices(selectedServices.filter(s => s !== serviceId));
-      } else {
-        setSelectedServices([
-          ...selectedServices.filter(s => !IMAGE_PROVIDER_SERVICES.includes(s)),
-          serviceId
-        ]);
-      }
-    } else if (selectedServices.includes(serviceId)) {
+    if (selectedServices.includes(serviceId)) {
       setSelectedServices(selectedServices.filter(s => s !== serviceId));
     } else {
       setSelectedServices([...selectedServices, serviceId]);
@@ -375,88 +402,113 @@ export default function SetupWizard({ onComplete }) {
 
   // STEP 3: Service Selection
   if (step === 'services' && services) {
+    const addOnServices = services.filter(s => !AI_PROVIDER_SERVICES.includes(s.id) && !IMAGE_PROVIDER_SERVICES.includes(s.id));
+
     return (
       <div className="setup-wizard">
         <div className="setup-container">
           <button className="back-button" onClick={() => setStep('hardware')}>← Back</button>
           
           <h1>Select Services</h1>
-          <p className="setup-subtitle">Choose which AI services to install</p>
+          <p className="setup-subtitle">Choose your AI engine and services</p>
 
-          <div className="services-grid">
-            {services.filter(s => !IMAGE_PROVIDER_SERVICES.includes(s.id)).map(service => {
-              const isSelected = selectedServices.includes(service.id);
-              const isDisabled = service.required && !service.optional;
-
-              return (
-                <div
-                  key={service.id}
-                  className={`service-card ${isSelected ? 'selected' : ''} ${isDisabled ? 'required' : ''}`}
-                  onClick={() => !isDisabled && toggleService(service.id)}
-                >
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-                    <span className="service-icon">{service.icon}</span>
-                    {!isDisabled && (
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => {}}
-                        style={{cursor: 'pointer'}}
-                      />
-                    )}
-                    {isDisabled && (
-                      <span style={{fontSize: '0.8rem', color: '#999'}}>Required</span>
-                    )}
+          {/* Section 1: AI Engine (radio, mutually exclusive) */}
+          <div style={{marginBottom: '20px'}}>
+            <p style={{margin: '0 0 8px 0', fontSize: '0.85rem', color: '#666', fontWeight: 600}}>🧠 AI Engine — choose one</p>
+            <div className="services-grid">
+              {[
+                { id: 'llm-engine', name: 'Local AI (LM Studio)', icon: '🦙', description: 'Run LLMs locally on your machine using llama.cpp. No internet needed after setup.' },
+                { id: 'gemini', name: 'Google Gemini', icon: '✨', description: 'Cloud AI via Google Gemini — text + image generation. Requires Google sign-in.' },
+                { id: 'copilot', name: 'Microsoft Copilot', icon: '🤖', description: 'Cloud AI via Azure OpenAI — text + DALL-E images. Requires Microsoft Entra ID sign-in.' },
+              ].map(provider => {
+                const isSelected = selectedAiProvider === provider.id;
+                return (
+                  <div
+                    key={provider.id}
+                    className={`service-card ${isSelected ? 'selected' : ''}`}
+                    onClick={() => selectAiProvider(provider.id)}
+                  >
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                      <span className="service-icon">{provider.icon}</span>
+                      <input type="radio" name="aiProvider" checked={isSelected} onChange={() => {}} style={{cursor: 'pointer'}} />
+                    </div>
+                    <h3>{provider.name}</h3>
+                    <p className="service-description">{provider.description}</p>
                   </div>
-
-                  <h3>{service.name}</h3>
-                  <p className="service-description">{service.description}</p>
-
-                  {service.resources && service.resources.minRAM > 0 && (
-                    <p className="service-resources">
-                      Requires: {service.resources.minRAM}MB RAM, {service.resources.minDisk}MB disk
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-
-            {services.some(s => IMAGE_PROVIDER_SERVICES.includes(s.id)) && (
-              <div style={{gridColumn: '1 / -1', borderTop: '1px solid #ddd', paddingTop: '12px', marginTop: '4px'}}>
-                <p style={{margin: 0, fontSize: '0.85rem', color: '#666', fontWeight: 600}}>🎨 Image Generation — choose one (optional)</p>
-              </div>
-            )}
-
-            {services.filter(s => IMAGE_PROVIDER_SERVICES.includes(s.id)).map(service => {
-              const isSelected = selectedServices.includes(service.id);
-
-              return (
-                <div
-                  key={service.id}
-                  className={`service-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => toggleService(service.id)}
-                >
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-                    <span className="service-icon">{service.icon}</span>
-                    <input
-                      type="radio"
-                      name="imageProvider"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      style={{cursor: 'pointer'}}
-                    />
-                  </div>
-
-                  <h3>{service.name}</h3>
-                  <p className="service-description">{service.description}</p>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
-          {selectedServices.length === 0 && (
-            <div className="info-box error">
-              <strong>⚠️ Select at least one service</strong>
+          {/* Section 2: Image Generation (radio, only when Local AI engine) */}
+          {selectedAiProvider === 'llm-engine' && services.some(s => IMAGE_PROVIDER_SERVICES.includes(s.id)) && (
+            <div style={{marginBottom: '20px'}}>
+              <div style={{borderTop: '1px solid #ddd', paddingTop: '12px', marginTop: '4px'}}>
+                <p style={{margin: '0 0 8px 0', fontSize: '0.85rem', color: '#666', fontWeight: 600}}>🎨 Image Generation — choose one (optional)</p>
+              </div>
+              <div className="services-grid">
+                {[
+                  { id: 'flux', name: 'Local Flux', icon: '🎨', description: 'AI image generation on your GPU. Requires dedicated GPU with 8GB+ VRAM.' },
+                  { id: 'gemini', name: 'Google Gemini', icon: '✨', description: 'Cloud image generation via Google AI. Free tier: ~15 images/day.' },
+                  { id: 'copilot', name: 'Microsoft Copilot (DALL-E)', icon: '🤖', description: 'Cloud image generation via Azure OpenAI DALL-E 3.' },
+                ].filter(p => services.some(s => s.id === p.id || (p.id !== 'llm-engine'))).map(provider => {
+                  const isSelected = selectedServices.includes(provider.id) && selectedAiProvider !== provider.id;
+                  return (
+                    <div
+                      key={provider.id}
+                      className={`service-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => selectImageProvider(provider.id)}
+                    >
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                        <span className="service-icon">{provider.icon}</span>
+                        <input type="radio" name="imageProvider" checked={isSelected} onChange={() => {}} style={{cursor: 'pointer'}} />
+                      </div>
+                      <h3>{provider.name}</h3>
+                      <p className="service-description">{provider.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Section 3: Add-on Services (checkboxes) */}
+          {addOnServices.length > 0 && (
+            <div style={{marginBottom: '20px'}}>
+              <div style={{borderTop: '1px solid #ddd', paddingTop: '12px', marginTop: '4px'}}>
+                <p style={{margin: '0 0 8px 0', fontSize: '0.85rem', color: '#666', fontWeight: 600}}>📦 Additional Services</p>
+              </div>
+              <div className="services-grid">
+                {addOnServices.map(service => {
+                  const isSelected = selectedServices.includes(service.id);
+                  const isDisabled = service.required && !service.optional;
+
+                  return (
+                    <div
+                      key={service.id}
+                      className={`service-card ${isSelected ? 'selected' : ''} ${isDisabled ? 'required' : ''}`}
+                      onClick={() => !isDisabled && toggleService(service.id)}
+                    >
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                        <span className="service-icon">{service.icon}</span>
+                        {!isDisabled && (
+                          <input type="checkbox" checked={isSelected} onChange={() => {}} style={{cursor: 'pointer'}} />
+                        )}
+                        {isDisabled && (
+                          <span style={{fontSize: '0.8rem', color: '#999'}}>Required</span>
+                        )}
+                      </div>
+                      <h3>{service.name}</h3>
+                      <p className="service-description">{service.description}</p>
+                      {service.resources && service.resources.minRAM > 0 && (
+                        <p className="service-resources">
+                          Requires: {service.resources.minRAM}MB RAM, {service.resources.minDisk}MB disk
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -464,7 +516,7 @@ export default function SetupWizard({ onComplete }) {
             <button
               className="btn-primary"
               onClick={handleConfirmServices}
-              disabled={selectedServices.length === 0 || loading}
+              disabled={loading}
             >
               {loading ? 'Loading...' : 'Continue'}
             </button>
@@ -511,11 +563,12 @@ export default function SetupWizard({ onComplete }) {
                   </p>
                 </div>
 
-                {config.selectedServices && config.selectedServices.includes('gemini-imagen') && (
+                {/* Gemini OAuth — show when Gemini is selected as AI provider or image provider */}
+                {(selectedAiProvider === 'gemini' || (selectedAiProvider === 'llm-engine' && config.selectedServices?.includes('gemini'))) && (
                   <div className="info-box" style={{borderColor: '#4285f4', backgroundColor: 'rgba(66,133,244,0.05)'}}>
                     <strong>✨ Google Gemini — Sign in (optional)</strong>
                     <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '10px'}}>
-                      Sign in now so image generation works immediately after setup. You can also authenticate later via Settings → AI Config.
+                      Sign in now so AI features work immediately after setup. You can also authenticate later via Settings → AI Config.
                     </p>
                     {geminiAuthDone ? (
                       <p style={{color: '#28a745', fontWeight: 600, margin: 0}}>
@@ -561,9 +614,98 @@ export default function SetupWizard({ onComplete }) {
                         >
                           {geminiConnecting ? 'Opening browser...' : 'Sign in with Google'}
                         </button>
-                        <p style={{fontSize: '0.8rem', color: '#888', marginTop: '8px', marginBottom: 0}}>
-                          Need a Client ID? Visit <strong>console.cloud.google.com</strong> → APIs &amp; Services → Credentials → Create OAuth 2.0 Client ID (Desktop app type)
-                        </p>
+                        <details style={{marginTop: '10px'}}>
+                          <summary style={{fontSize: '0.8rem', color: '#888', cursor: 'pointer'}}>Setup instructions</summary>
+                          <p style={{fontSize: '0.8rem', color: '#888', marginTop: '8px', marginBottom: 0}}>
+                            1. Go to <strong>console.cloud.google.com</strong> → Create Project<br/>
+                            2. Enable <strong>"Generative Language API"</strong><br/>
+                            3. APIs &amp; Services → Credentials → Create OAuth 2.0 Client ID (Desktop app type)<br/>
+                            4. Copy Client ID and Client Secret above<br/>
+                            <br/>
+                            <strong>⚠ School accounts:</strong> Your Google Workspace admin may need to approve the app in Admin Console → Security → API Controls.
+                          </p>
+                        </details>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Copilot OAuth — show when Copilot is selected as AI provider or image provider */}
+                {(selectedAiProvider === 'copilot' || (selectedAiProvider === 'llm-engine' && config.selectedServices?.includes('copilot'))) && (
+                  <div className="info-box" style={{borderColor: '#0078d4', backgroundColor: 'rgba(0,120,212,0.05)'}}>
+                    <strong>🤖 Microsoft Copilot — Sign in (optional)</strong>
+                    <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '10px'}}>
+                      Sign in with your Microsoft organization account. You can also authenticate later via Settings → AI Config.
+                    </p>
+                    {copilotAuthDone ? (
+                      <p style={{color: '#28a745', fontWeight: 600, margin: 0}}>
+                        ✓ Signed in{copilotEmail ? ` as ${copilotEmail}` : ''}
+                      </p>
+                    ) : (
+                      <>
+                        <div style={{display: 'grid', gap: '8px', marginBottom: '10px'}}>
+                          <input
+                            type="text"
+                            value={copilotClientId}
+                            onChange={e => setCopilotClientId(e.target.value)}
+                            placeholder="Entra App (Client) ID"
+                            style={{width: '100%', fontFamily: 'monospace', fontSize: '0.85rem'}}
+                          />
+                          <input
+                            type="text"
+                            value={copilotTenantId}
+                            onChange={e => setCopilotTenantId(e.target.value)}
+                            placeholder="Directory (Tenant) ID"
+                            style={{width: '100%', fontFamily: 'monospace', fontSize: '0.85rem'}}
+                          />
+                          <input
+                            type="text"
+                            value={copilotEndpoint}
+                            onChange={e => setCopilotEndpoint(e.target.value)}
+                            placeholder="Azure OpenAI Endpoint (https://YOUR-RESOURCE.openai.azure.com)"
+                            style={{width: '100%', fontFamily: 'monospace', fontSize: '0.85rem'}}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          disabled={!copilotClientId || !copilotTenantId || !copilotEndpoint || copilotConnecting}
+                          onClick={async () => {
+                            setCopilotConnecting(true);
+                            try {
+                              await window.alloAPI.writeAIConfig({
+                                copilot: { clientId: copilotClientId.trim(), tenantId: copilotTenantId.trim(), endpoint: copilotEndpoint.trim() }
+                              });
+                              const result = await window.alloAPI?.copilotOAuth?.start?.();
+                              if (result?.success) {
+                                setCopilotAuthDone(true);
+                                setCopilotEmail(result.email || '');
+                              } else {
+                                alert('Sign-in failed: ' + (result?.error || 'Unknown error'));
+                              }
+                            } finally {
+                              setCopilotConnecting(false);
+                            }
+                          }}
+                        >
+                          {copilotConnecting ? 'Opening browser...' : 'Sign in with Microsoft'}
+                        </button>
+                        <details style={{marginTop: '10px'}}>
+                          <summary style={{fontSize: '0.8rem', color: '#888', cursor: 'pointer'}}>Setup instructions (IT Admin + Teacher)</summary>
+                          <div style={{fontSize: '0.8rem', color: '#888', marginTop: '8px'}}>
+                            <p style={{margin: '0 0 8px 0'}}><strong>IT Admin (one-time setup):</strong></p>
+                            <ol style={{margin: '0 0 12px 0', paddingLeft: '20px'}}>
+                              <li>Go to <strong>portal.azure.com</strong> → create an Azure OpenAI resource</li>
+                              <li>Deploy <strong>gpt-4o</strong> and <strong>dall-e-3</strong> models</li>
+                              <li>Go to <strong>entra.microsoft.com</strong> → App registrations → New registration</li>
+                              <li>Set redirect URI: <code>http://127.0.0.1</code> (type: Mobile/Desktop)</li>
+                              <li>API permissions → Add <strong>Azure Cognitive Services → user_impersonation</strong> → Grant admin consent</li>
+                              <li>On the Azure OpenAI resource → IAM → Add <strong>Cognitive Services OpenAI User</strong> role for teachers</li>
+                            </ol>
+                            <p style={{margin: '0 0 4px 0'}}><strong>Teacher:</strong></p>
+                            <p style={{margin: 0}}>Enter the App Client ID, Tenant ID, and Azure OpenAI Endpoint from your IT admin, then click "Sign in with Microsoft".</p>
+                          </div>
+                        </details>
                       </>
                     )}
                   </div>
@@ -758,7 +900,7 @@ export default function SetupWizard({ onComplete }) {
             </div>
           )}
 
-          {selectedServices.includes('gemini-imagen') && (
+          {selectedServices.includes('gemini') && (
             <div style={{
               background: geminiAuthDone ? '#d4edda' : '#fff3cd',
               border: `1px solid ${geminiAuthDone ? '#28a745' : '#ffc107'}`,
@@ -767,12 +909,32 @@ export default function SetupWizard({ onComplete }) {
             }}>
               {geminiAuthDone ? (
                 <>
-                  <p style={{fontWeight: 'bold', margin: '0 0 4px 0'}}>✨ Google Gemini Imagen connected</p>
+                  <p style={{fontWeight: 'bold', margin: '0 0 4px 0'}}>✨ Google Gemini connected</p>
                   {geminiEmail && <p style={{margin: 0, fontSize: '0.9em'}}>{geminiEmail}</p>}
                 </>
               ) : (
                 <p style={{margin: 0}}>
-                  ⚠️ Gemini image generation selected but not authenticated. Sign in via <strong>Settings → AI Config</strong> to activate it.
+                  ⚠️ Gemini selected but not authenticated. Sign in via <strong>Settings → AI Config</strong> to activate it.
+                </p>
+              )}
+            </div>
+          )}
+
+          {selectedServices.includes('copilot') && (
+            <div style={{
+              background: copilotAuthDone ? '#d4edda' : '#fff3cd',
+              border: `1px solid ${copilotAuthDone ? '#28a745' : '#ffc107'}`,
+              borderRadius: '8px', padding: '16px', margin: '16px 0',
+              color: copilotAuthDone ? '#155724' : '#856404'
+            }}>
+              {copilotAuthDone ? (
+                <>
+                  <p style={{fontWeight: 'bold', margin: '0 0 4px 0'}}>🤖 Microsoft Copilot connected</p>
+                  {copilotEmail && <p style={{margin: 0, fontSize: '0.9em'}}>{copilotEmail}</p>}
+                </>
+              ) : (
+                <p style={{margin: 0}}>
+                  ⚠️ Copilot selected but not authenticated. Sign in via <strong>Settings → AI Config</strong> to activate it.
                 </p>
               )}
             </div>

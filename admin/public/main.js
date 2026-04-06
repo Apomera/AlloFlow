@@ -141,6 +141,7 @@ const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
 const CONFIG_FILE = path.join(ALLOFLOW_DIR, 'config.json');
 const AI_CONFIG_FILE = path.join(ALLOFLOW_DIR, 'ai_config.json');
 const GEMINI_TOKEN_FILE = path.join(ALLOFLOW_DIR, 'gemini_token.json');
+const COPILOT_TOKEN_FILE = path.join(ALLOFLOW_DIR, 'copilot_token.json');
 
 // ── Google OAuth config — register at https://console.cloud.google.com/
 // Create a project → Enable "Generative Language API" → OAuth 2.0 → Desktop app type
@@ -152,6 +153,23 @@ function getGoogleOAuthCreds() {
     if (fs.existsSync(AI_CONFIG_FILE)) {
       const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf8'));
       if (ai.googleClientId) return { clientId: ai.googleClientId, clientSecret: ai.googleClientSecret || '' };
+    }
+  } catch (_) {}
+  return null;
+}
+
+// ── Microsoft Copilot / Azure OpenAI config ──────────────────────────────────
+// Entra ID app registration → client_id + tenant_id
+// Azure OpenAI resource → endpoint URL
+// Stored in ~/.alloflow/ai_config.json under "copilot" key:
+//   { "copilot": { "clientId": "...", "tenantId": "...", "endpoint": "https://..." } }
+function getCopilotOAuthCreds() {
+  try {
+    if (fs.existsSync(AI_CONFIG_FILE)) {
+      const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf8'));
+      if (ai.copilot?.clientId && ai.copilot?.tenantId) {
+        return { clientId: ai.copilot.clientId, tenantId: ai.copilot.tenantId, endpoint: ai.copilot.endpoint || '' };
+      }
     }
   } catch (_) {}
   return null;
@@ -721,10 +739,14 @@ async function startDeployment(setupData, onProgress) {
     
     let finalServiceList = [...servicesToInstall];
     
-    // Ensure llm-engine is always included for LLM functionality
-    if (!finalServiceList.includes('llm-engine')) {
+    // Determine AI provider from selected services
+    const AI_PROVIDERS = ['llm-engine', 'gemini', 'copilot'];
+    const selectedAiProvider = finalServiceList.find(s => AI_PROVIDERS.includes(s)) || 'llm-engine';
+    
+    // Ensure llm-engine is included when Local AI is the provider
+    if (selectedAiProvider === 'llm-engine' && !finalServiceList.includes('llm-engine')) {
       finalServiceList.push('llm-engine');
-      console.log('[deploy:start] Added llm-engine (LM Studio with llama.cpp) for universal GPU support');
+      console.log('[deploy:start] Added llm-engine (LM Studio with llama.cpp) for local AI');
     }
     
     // Remove deprecated Ollama or llama-studio references if they exist
@@ -918,17 +940,20 @@ async function startDeployment(setupData, onProgress) {
         backend: 'lmstudio',
         apiKey: '',
         baseUrl: 'http://localhost:1234',
+        aiProvider: selectedAiProvider,
         models: {
           default: 'neural-chat',
           fallback: 'neural-chat',
           LM_STUDIO_GPU_BACKEND: gpuBackend
         },
         ttsProvider: 'browser', // Edge TTS fallback
-        imageProvider: servicesToInstallFinal.includes('gemini-imagen')
+        imageProvider: servicesToInstallFinal.includes('gemini')
           ? 'gemini'
-          : servicesToInstallFinal.includes('flux')
-            ? 'flux'
-            : (existingAiConfig.imageProvider || 'none'),
+          : servicesToInstallFinal.includes('copilot')
+            ? 'copilot'
+            : servicesToInstallFinal.includes('flux')
+              ? 'flux'
+              : (existingAiConfig.imageProvider || 'none'),
         gpuBackend: gpuBackend,
         configuredBy: 'alloflow-admin',
         configuredAt: new Date().toISOString(),
@@ -941,6 +966,7 @@ async function startDeployment(setupData, onProgress) {
         },
         ...(existingAiConfig.googleClientId ? { googleClientId: existingAiConfig.googleClientId } : {}),
         ...(existingAiConfig.googleClientSecret ? { googleClientSecret: existingAiConfig.googleClientSecret } : {}),
+        ...(existingAiConfig.copilot ? { copilot: existingAiConfig.copilot } : {}),
       };
       
       fs.writeFileSync(
@@ -1859,6 +1885,203 @@ ipcMain.handle('oauth:gemini-revoke', async () => {
     fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token.access_token)}`, { method: 'POST' }).catch(() => {});
   }
   try { if (fs.existsSync(GEMINI_TOKEN_FILE)) fs.unlinkSync(GEMINI_TOKEN_FILE); } catch (_) {}
+  return { success: true };
+});
+
+// ============================================================================
+// COPILOT / AZURE OPENAI OAUTH 2.0  (Entra ID, PKCE, loopback — RFC 8252)
+// ============================================================================
+
+function readCopilotToken() {
+  try {
+    if (!fs.existsSync(COPILOT_TOKEN_FILE)) return null;
+    return JSON.parse(fs.readFileSync(COPILOT_TOKEN_FILE, 'utf8'));
+  } catch (_) { return null; }
+}
+
+function writeCopilotToken(tokenData) {
+  if (!fs.existsSync(ALLOFLOW_DIR)) fs.mkdirSync(ALLOFLOW_DIR, { recursive: true });
+  fs.writeFileSync(COPILOT_TOKEN_FILE, JSON.stringify(tokenData, null, 2), 'utf8');
+}
+
+async function refreshCopilotTokenIfNeeded() {
+  const token = readCopilotToken();
+  if (!token?.refresh_token) return null;
+  // Refresh if within 5 minutes of expiry
+  if (token.expiry && Date.now() < token.expiry - 5 * 60 * 1000) return token;
+  const creds = getCopilotOAuthCreds();
+  if (!creds) return token;
+  try {
+    const resp = await fetch(`https://login.microsoftonline.com/${creds.tenantId}/oauth2/v2.0/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: creds.clientId,
+        grant_type: 'refresh_token',
+        refresh_token: token.refresh_token,
+        scope: 'https://cognitiveservices.azure.com/.default offline_access',
+      }).toString()
+    });
+    if (!resp.ok) {
+      console.warn('[oauth:copilot] Token refresh failed:', resp.status);
+      return token;
+    }
+    const data = await resp.json();
+    const updated = {
+      ...token,
+      access_token: data.access_token,
+      expiry: Date.now() + (data.expires_in || 3600) * 1000,
+      ...(data.refresh_token ? { refresh_token: data.refresh_token } : {}),
+    };
+    writeCopilotToken(updated);
+    console.log('[oauth:copilot] Token refreshed, expires in', data.expires_in, 's');
+    return updated;
+  } catch (err) {
+    console.warn('[oauth:copilot] Refresh error:', err.message);
+    return token;
+  }
+}
+
+// Background refresh — runs every 45 minutes while app is open
+setInterval(async () => {
+  const token = readCopilotToken();
+  if (token?.refresh_token) await refreshCopilotTokenIfNeeded();
+}, 45 * 60 * 1000);
+
+// Start Copilot OAuth flow — opens system browser, listens on loopback for callback
+ipcMain.handle('oauth:copilot-start', async () => {
+  const creds = getCopilotOAuthCreds();
+  if (!creds) {
+    return { success: false, error: 'No Copilot/Azure OpenAI credentials configured. Add copilot.clientId and copilot.tenantId to ~/.alloflow/ai_config.json.' };
+  }
+
+  // PKCE (public client — no client_secret)
+  const codeVerifier = randomBytes(32).toString('base64url');
+  const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
+  const state = randomBytes(16).toString('hex');
+
+  return new Promise((resolve) => {
+    let callbackServer;
+    let settled = false;
+
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      try { callbackServer?.close(); } catch (_) {}
+      resolve(result);
+    };
+
+    // Timeout after 5 minutes
+    const timeout = setTimeout(() => finish({ success: false, error: 'OAuth timed out — no response after 5 minutes.' }), 5 * 60 * 1000);
+
+    callbackServer = http.createServer(async (req, res) => {
+      try {
+        const reqUrl = new URL(req.url, 'http://localhost');
+        if (reqUrl.pathname !== '/oauth/callback') { res.end(); return; }
+
+        const code  = reqUrl.searchParams.get('code');
+        const rstok = reqUrl.searchParams.get('state');
+        if (!code || rstok !== state) {
+          res.writeHead(400);
+          res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>Authorization failed</h2><p>Invalid state parameter. You can close this tab.</p></body></html>');
+          finish({ success: false, error: 'State mismatch — possible CSRF.' });
+          return;
+        }
+
+        // Exchange authorization code for tokens (public client — no client_secret)
+        const redirectUri = `http://127.0.0.1:${callbackServer.address().port}/oauth/callback`;
+        const tokenResp = await fetch(`https://login.microsoftonline.com/${creds.tenantId}/oauth2/v2.0/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: creds.clientId,
+            redirect_uri: redirectUri,
+            grant_type: 'authorization_code',
+            code,
+            code_verifier: codeVerifier,
+            scope: 'https://cognitiveservices.azure.com/.default offline_access',
+          }).toString()
+        });
+
+        if (!tokenResp.ok) {
+          const errText = await tokenResp.text().catch(() => '');
+          res.writeHead(400);
+          res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>Sign-in failed</h2><p>Could not exchange code. You can close this tab.</p></body></html>');
+          finish({ success: false, error: `Token exchange failed (${tokenResp.status}): ${errText.substring(0, 200)}` });
+          return;
+        }
+
+        const tokenData = await tokenResp.json();
+
+        // Fetch user email from Microsoft Graph
+        let email = 'Microsoft Account';
+        try {
+          // We need a separate Graph token or decode the id_token
+          // Entra ID returns id_token in the response — decode claims
+          if (tokenData.id_token) {
+            const payload = JSON.parse(Buffer.from(tokenData.id_token.split('.')[1], 'base64').toString());
+            email = payload.preferred_username || payload.email || payload.upn || email;
+          }
+        } catch (_) {}
+
+        const stored = {
+          access_token:  tokenData.access_token,
+          refresh_token: tokenData.refresh_token || null,
+          expiry: Date.now() + (tokenData.expires_in || 3600) * 1000,
+          email,
+          endpoint: creds.endpoint,
+        };
+        writeCopilotToken(stored);
+        clearTimeout(timeout);
+
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`<html><body style="font-family:sans-serif;padding:2rem;max-width:480px;margin:4rem auto;text-align:center">
+          <h2 style="color:#0078d4">\u2713 Connected to Microsoft!</h2>
+          <p>Signed in as <strong>${email}</strong>.</p>
+          <p style="color:#666">You can close this tab and return to AlloFlow.</p>
+        </body></html>`);
+
+        finish({ success: true, email });
+      } catch (err) {
+        res.writeHead(500);
+        res.end('<html><body>Internal error. You can close this tab.</body></html>');
+        finish({ success: false, error: err.message });
+      }
+    });
+
+    callbackServer.listen(0, '127.0.0.1', () => {
+      const port = callbackServer.address().port;
+      const redirectUri = `http://127.0.0.1:${port}/oauth/callback`;
+      const authUrl = new URL(`https://login.microsoftonline.com/${creds.tenantId}/oauth2/v2.0/authorize`);
+      authUrl.searchParams.set('client_id',             creds.clientId);
+      authUrl.searchParams.set('redirect_uri',          redirectUri);
+      authUrl.searchParams.set('response_type',         'code');
+      authUrl.searchParams.set('scope',                 'https://cognitiveservices.azure.com/.default offline_access openid profile email');
+      authUrl.searchParams.set('code_challenge',        codeChallenge);
+      authUrl.searchParams.set('code_challenge_method', 'S256');
+      authUrl.searchParams.set('state',                 state);
+      authUrl.searchParams.set('response_mode',         'query');
+      shell.openExternal(authUrl.toString());
+      console.log('[oauth:copilot] Opened browser, waiting on port', port);
+    });
+  });
+});
+
+ipcMain.handle('oauth:copilot-status', async () => {
+  const token = await refreshCopilotTokenIfNeeded();
+  if (!token?.access_token) return { connected: false };
+  return { connected: true, email: token.email || 'Microsoft Account', expiry: token.expiry };
+});
+
+ipcMain.handle('oauth:copilot-get-token', async () => {
+  const token = await refreshCopilotTokenIfNeeded();
+  return token?.access_token || null;
+});
+
+ipcMain.handle('oauth:copilot-revoke', async () => {
+  // Microsoft doesn't support token revocation via simple endpoint like Google,
+  // so just delete the local token file
+  try { if (fs.existsSync(COPILOT_TOKEN_FILE)) fs.unlinkSync(COPILOT_TOKEN_FILE); } catch (_) {}
   return { success: true };
 });
 

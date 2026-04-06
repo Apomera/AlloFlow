@@ -1687,13 +1687,53 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       return null;
     }
   };
-  /* [LOCAL] Image generation router — Gemini cloud or local Flux */
+  /* [LOCAL] Copilot / Azure OpenAI DALL-E 3 image generation */
+  const callCopilotImage = async (prompt, width = 512) => {
+    const token = window.__alloLocalConfig?.copilotAccessToken;
+    const endpoint = window.__alloLocalConfig?.copilotEndpoint;
+    if (!token || !endpoint) { warnLog('[Imagen/Copilot] No access token or endpoint available'); return null; }
+    try {
+      const size = width <= 256 ? '1024x1024' : width <= 512 ? '1024x1024' : '1024x1024';
+      const resp = await fetch(
+        `${endpoint.replace(/\/$/, '')}/openai/deployments/dall-e-3/images/generations?api-version=2024-02-01`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            prompt,
+            n: 1,
+            size,
+            response_format: 'b64_json',
+            quality: 'standard'
+          })
+        }
+      );
+      if (!resp.ok) {
+        const errBody = await resp.text().catch(() => '');
+        warnLog(`[Imagen/Copilot] API error ${resp.status}:`, errBody.substring(0, 200));
+        return null;
+      }
+      const data = await resp.json();
+      const b64 = data?.data?.[0]?.b64_json;
+      if (!b64) { warnLog('[Imagen/Copilot] No image data in response'); return null; }
+      return `data:image/png;base64,${b64}`;
+    } catch (err) {
+      warnLog('[Imagen/Copilot] Request failed:', err.message);
+      return null;
+    }
+  };
+  /* [LOCAL] Image generation router — Gemini cloud, Copilot, or local Flux */
   const callImagen = async (prompt, width = 300, qual = 0.7) => {
     const imageProvider = window.__alloLocalConfig?.imageProvider || 'flux';
     if (imageProvider === 'gemini') {
       const cloudUrl = await callGeminiImagen(prompt, width);
       if (cloudUrl) return cloudUrl;
       warnLog('[Imagen] Gemini failed, falling back to Flux');
+    }
+    if (imageProvider === 'copilot') {
+      const cloudUrl = await callCopilotImage(prompt, width);
+      if (cloudUrl) return cloudUrl;
+      warnLog('[Imagen] Copilot failed, falling back to Flux');
     }
     // Local Flux fallback
     const fluxUrl = (window.__alloLocalConfig?.fluxUrl || 'http://localhost:7860') + '/v1/images/generations';

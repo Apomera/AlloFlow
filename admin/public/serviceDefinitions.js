@@ -181,11 +181,27 @@ const SERVICE_DEFINITIONS = {
     `
   },
 
-  'gemini-imagen': {
-    id: 'gemini-imagen',
-    name: 'Google Gemini Imagen',
-    description: 'Cloud image generation via Google Gemini API — requires a Google account. Free tier: ~15 images per day.',
+  gemini: {
+    id: 'gemini',
+    name: 'Google Gemini',
+    description: 'Cloud AI via Google Gemini — LLM + image generation. Requires a Google account. Free tier available.',
     icon: '✨',
+    required: false,
+    optional: true,
+    defaultEnabled: false,
+    native: false,
+    needsPython: false,
+    needsAuth: true,
+    port: null,
+    healthCheck: null,
+    resources: { minRAM: 0, minDisk: 0 }
+  },
+
+  copilot: {
+    id: 'copilot',
+    name: 'Microsoft Copilot (Azure OpenAI)',
+    description: 'Cloud AI via Azure OpenAI — LLM + DALL-E image generation. Requires Microsoft Entra ID sign-in.',
+    icon: '🤖',
     required: false,
     optional: true,
     defaultEnabled: false,
@@ -216,7 +232,7 @@ const HARDWARE_PROFILES = {
       minDisk: 20000, // MB
       maxRAM: 4096
     },
-    servicesToInclude: ['llm-engine', 'piper', 'search'], // No Flux
+    servicesToInclude: ['llm-engine', 'piper', 'search', 'gemini', 'copilot'], // No Flux on entry-level
     limitations: [
       'Smaller LLMs only (7B models)',
       'No image generation',
@@ -248,7 +264,7 @@ const HARDWARE_PROFILES = {
       maxRAM: 16384,
       optionalGPU_VRAM: 4000
     },
-    servicesToInclude: ['llm-engine', 'piper', 'search', 'gemini-imagen'],
+    servicesToInclude: ['llm-engine', 'piper', 'search', 'flux', 'gemini', 'copilot'],
     limitations: [
       'Up to 13B LLMs recommended',,
       'Image generation optional (GPU-dependent)',
@@ -279,7 +295,7 @@ const HARDWARE_PROFILES = {
       recommendedRAM: 32768,
       recommendedGPU_VRAM: 12000
     },
-    servicesToInclude: ['llm-engine', 'piper', 'search', 'flux', 'gemini-imagen'],
+    servicesToInclude: ['llm-engine', 'piper', 'search', 'flux', 'gemini', 'copilot'],
     limitations: [],
     recommendations: [
       'Run large models (13B, 70B) for better quality',
