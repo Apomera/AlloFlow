@@ -7411,6 +7411,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setShowReviewPanel(true);
             return;
           }
+          // Guard: if user already started from review and we have preloaded words,
+          // don't re-trigger preload — the activity should be running with the first word
+          if (hasStartedFromReview.current && preloadedWords.length > 0) {
+            debugLog("🛡️ Skip preload re-trigger: user already started activity from review");
+            return;
+          }
           const prefetchTimer = setTimeout(() => {
             prefetchNextWords();
             if (typeof preloadInitialBatch === "function") {
@@ -12609,9 +12615,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               currentWordIndex % Math.max(1, preloadedWords.length)
               ];
             if (firstWord) {
-              setCurrentWordSoundsWord(firstWord.targetWord || firstWord.word);
-              setWordSoundsPhonemes(firstWord);
-              setIsLoadingPhonemes(false);
+              const wordText = firstWord.targetWord || firstWord.word || firstWord.term || firstWord.singleWord || firstWord.displayWord || "";
+              if (wordText) {
+                setCurrentWordSoundsWord(wordText);
+                setWordSoundsPhonemes(firstWord);
+                setIsLoadingPhonemes(false);
+              } else {
+                console.warn("[WS] First word has no usable text field:", firstWord);
+              }
             }
           },
           onClose: onClose,

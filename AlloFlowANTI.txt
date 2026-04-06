@@ -25017,12 +25017,19 @@ Return ONLY JSON.`;
               role: 'model',
               text: character.greeting || `Greetings. I am ${character.name}. I am ready to discuss my time in ${character.year}.`
           }];
+          // Capture options/mode/selectedCharacters from current state — these belong to the
+          // current persona-picker session and must be preserved when entering the chat.
+          const preservedOptions = personaState.options;
+          const preservedMode = personaState.mode;
+          const preservedSelectedCharacters = personaState.selectedCharacters;
           // Centralized reset BEFORE setting new character — prevents stale state from leaking
           // (harmony score, badges, reflection text, panel suggestions, definition cache, etc.)
           resetPersonaInterviewState();
-          // Use functional update so options array (set by handleGeneratePersonas) is preserved
           setPersonaState(prev => ({
               ...prev,
+              mode: preservedMode,
+              options: preservedOptions,
+              selectedCharacters: preservedSelectedCharacters,
               selectedCharacter: character,
               chatHistory: initialHistory,
               suggestions: character.suggestedQuestions || [],
@@ -25501,11 +25508,15 @@ Return ONLY JSON.`;
     }
   }, [personaInput, isPersonaChatOpen, isDictationMode, personaAutoSend]);
   useEffect(() => {
-      // Only reset when character actually changes to a new value (not on null/undefined in panel mode)
-      if (personaState.selectedCharacter !== undefined && personaState.selectedCharacter !== null) {
-          lastReadPersonaIndexRef.current = -1;
-      }
-  }, [personaState.selectedCharacter?.name]);
+      // Reset auto-read index whenever the active persona/mode changes — applies to BOTH
+      // single mode (selectedCharacter) and panel mode (selectedCharacters). Without this,
+      // auto-read would skip messages or read stale ones when switching modes/pairs.
+      lastReadPersonaIndexRef.current = -1;
+  }, [
+      personaState.selectedCharacter?.name,
+      personaState.mode,
+      (personaState.selectedCharacters || []).map(c => c?.name).join(',')
+  ]);
   const handleSaveReflection = async () => {
       if ((!personaState.selectedCharacter && personaState.mode !== 'panel') || !personaReflectionInput.trim()) return;
       setIsGradingReflection(true);
@@ -27986,15 +27997,8 @@ Return ONLY JSON:
           if (switchView || !generatedContent) {
               setActiveView('persona');
           }
-          setPersonaState({
-              options: [],
-              selectedCharacter: null,
-              chatHistory: [],
-              isLoading: false,
-              avatarUrl: null,
-              isImageLoading: false,
-              suggestions: []
-          });
+          // Centralized reset clears ALL persona state before regenerating from history.
+          resetPersonaInterviewState();
           try {
               const prompt = `
                 Analyze the following text about "${sourceTopic || "the current lesson topic"}".
@@ -33003,17 +33007,62 @@ Return ONLY JSON:
                                                  <div
                                                     className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border ${
                                                     isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' :
-                                                    isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2 cursor-pointer hover:shadow-md transition-shadow' :
-                                                    'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2 cursor-pointer hover:shadow-md transition-shadow'
+                                                    isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' :
+                                                    'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'
                                                     }`}
-                                                    onClick={!isUser ? () => handleSpeak(msg.text, `persona-message-${idx}`, 0) : undefined}
-                                                    role={!isUser ? 'button' : undefined}
-                                                    tabIndex={!isUser ? 0 : undefined}
-                                                    onKeyDown={!isUser ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSpeak(msg.text, `persona-message-${idx}`, 0); } } : undefined}
-                                                    aria-label={!isUser ? 'Click to hear ' + speakerLabel + ' speak this message aloud' : undefined}
+                                                    aria-label={!isUser ? 'Message from ' + speakerLabel + '. Click any sentence to hear it read aloud.' : undefined}
                                                  >
-                                                    {msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')}
-                                                    {!isUser && <span className="block text-[8px] text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">🔊 Click to listen</span>}
+                                                    {isUser ? (
+                                                        msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')
+                                                    ) : (
+                                                        // Karaoke-enabled sentence spans (matches single-mode pattern at line ~33480)
+                                                        (() => {
+                                                            const paragraphs = msg.text.split(/\n{2,}/);
+                                                            let sentenceCounter = 0;
+                                                            return paragraphs.map((para, pIdx) => {
+                                                                const sentences = splitTextToSentences(para);
+                                                                if (sentences.length === 0) return null;
+                                                                return (
+                                                                    <p key={pIdx} className="mb-2 last:mb-0">
+                                                                        {sentences.map((s, sIdx) => {
+                                                                            const currentGlobalIdx = sentenceCounter;
+                                                                            sentenceCounter++;
+                                                                            const isMessagePlaying = playingContentId === `persona-message-${idx}`;
+                                                                            const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
+                                                                            const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
+                                                                            const isHeader = s.trim().startsWith('#') || isHtmlHeader;
+                                                                            const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
+                                                                            return (
+                                                                                <span
+                                                                                    key={sIdx}
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
+                                                                                    }}
+                                                                                    onKeyDown={(e) => {
+                                                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                                                            e.preventDefault();
+                                                                                            e.stopPropagation();
+                                                                                            handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
+                                                                                        }
+                                                                                    }}
+                                                                                    role="button"
+                                                                                    tabIndex={0}
+                                                                                    className={`transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-300 text-black shadow-sm' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
+                                                                                    title={t('common.click_to_read')}
+                                                                                    aria-label={`Sentence ${currentGlobalIdx + 1}. Click to read aloud.`}
+                                                                                >
+                                                                                    {formatInteractiveText(cleanText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1'))}
+                                                                                    {" "}
+                                                                                </span>
+                                                                            );
+                                                                        })}
+                                                                    </p>
+                                                                );
+                                                            });
+                                                        })()
+                                                    )}
+                                                    {!isUser && <span className="block text-[8px] text-slate-400 mt-1 opacity-70">🔊 Click any sentence to listen</span>}
                                                  </div>
                                                  <span className="text-[9px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider">
                                                     {speakerLabel}

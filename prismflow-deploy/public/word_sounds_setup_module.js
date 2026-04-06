@@ -246,9 +246,23 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     setIsProcessing(true);
     setGeneratedCount(0);
     const processed = [];
+    const preloadedMap = {};
+    if (preloadedWords && preloadedWords.length > 0) {
+      preloadedWords.forEach((pw) => {
+        const key = (pw.targetWord || pw.word || pw.term || "").toLowerCase().trim();
+        if (key) preloadedMap[key] = pw;
+      });
+    }
     for (let i = 0; i < wordsToProcess.length; i++) {
       const rawWord = wordsToProcess[i];
+      const existing = preloadedMap[rawWord.toLowerCase().trim()];
+      if (existing && existing.phonemes && existing.phonemes.length > 0) {
+        processed.push(existing);
+        setGeneratedCount((prev) => prev + 1);
+        continue;
+      }
       try {
+
         const prompt = `
                          Analyze the word "${rawWord}" for phonemic awareness activities. Target Audience: ${gradeLevel || "Early Readers (K-2)"}.
                          PHONEME NOTATION (use EXACTLY these symbols):
