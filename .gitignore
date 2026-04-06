@@ -65,8 +65,6 @@ stem_test*.js
 search_results.txt
 tour.txt
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 # CIS security reference docs
 cis16.rtf
 
@@ -85,8 +83,7 @@ ACTION_PLAN.md
 # - GPU_AUTO_DETECTION_README.md
 # - architecture_extracted.md
 # - setup-local-ai.bat
-=======
-=======
+
 # Outreach & personal correspondence (emails, drafts, pitches)
 outreach_*.md
 *_draft.md
@@ -121,7 +118,6 @@ setup-local-ai.bat
 # Misc test files
 nonshareabletest.txt
 
->>>>>>> upstream/main
 # Agent-generated temp/debug files (one-off scripts, logs, diffs, backups)
 fix_*.py
 fix_*.js
@@ -156,4 +152,3 @@ nest_track.js
 star_code_map.txt
 add_features.js
 test_extract_query.js
->>>>>>> upstream/main
