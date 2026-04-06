@@ -158,8 +158,27 @@
              setIsProcessing(true);
              setGeneratedCount(0);
              const processed = [];
+
+             // Build a lookup map for already-processed preloaded words
+             const preloadedMap = {};
+             if (preloadedWords && preloadedWords.length > 0) {
+                 preloadedWords.forEach(pw => {
+                     const key = (pw.targetWord || pw.word || pw.term || '').toLowerCase().trim();
+                     if (key) preloadedMap[key] = pw;
+                 });
+             }
+
              for (let i = 0; i < wordsToProcess.length; i++) {
                  const rawWord = wordsToProcess[i];
+
+                 // ── Skip AI if this word was already generated ──
+                 const existing = preloadedMap[rawWord.toLowerCase().trim()];
+                 if (existing && existing.phonemes && existing.phonemes.length > 0) {
+                     processed.push(existing);
+                     setGeneratedCount(prev => prev + 1);
+                     continue;
+                 }
+
                  try {
                      const prompt = `
                          Analyze the word "${rawWord}" for phonemic awareness activities. Target Audience: ${gradeLevel || 'Early Readers (K-2)'}.
@@ -289,6 +308,7 @@
              onStartGame(processed, sequence, lessonPlanConfig, configSummary);
              setIsProcessing(false);
         };
+
         if (isMinimized) {
             return (
                 <div className="fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl border-2 border-violet-500 p-4 animate-in slide-in-from-bottom-10 fade-in w-80">

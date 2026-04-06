@@ -820,24 +820,14 @@
       var _canvasNarrateDedupe = {};
       var _canvasNarrateEncounters = {};
 
-      // Smart Detection: should TTS narration be active for this session?
+      // Canvas narration TTS — OFF by default, must be explicitly enabled
+      // The aria-live channel still works for screen readers (independent of TTS)
       function _canvasNarrateTTSEnabled() {
-        // Check URL override: ?a11y=tts
-        try { if (new URLSearchParams(window.location.search).get('a11y') === 'tts') return true; } catch(e) {}
-        // Check if global mute is on
+        // Global mute always wins
         if (window._alloGlobalMute) return false;
-        // Check if student profile has ttsSpeed configured (teacher-set)
-        try { if (props && props.ttsSpeed && props.ttsSpeed !== 1) return true; } catch(e) {}
-        // Check if Karaoke or Read-Aloud modes are active
-        try { if (props && (props.karaokeMode || props.readAloudActive)) return true; } catch(e) {}
-        // Check OS accessibility signals
-        try {
-          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-          if (window.matchMedia('(forced-colors: active)').matches) return true;
-        } catch(e) {}
-        // Check if a screen reader is likely active (heuristic)
-        try { if (document.querySelector('[aria-live="assertive"]') || navigator.userAgent.match(/NVDA|JAWS|VoiceOver/i)) return true; } catch(e) {}
-        // Check localStorage preference
+        // URL override: ?a11y=tts (for testing)
+        try { if (new URLSearchParams(window.location.search).get('a11y') === 'tts') return true; } catch(e) {}
+        // User explicitly enabled it via toggle button
         try { if (localStorage.getItem('alloflow_canvas_narrate') === 'on') return true; } catch(e) {}
         return false;
       }
@@ -1873,6 +1863,19 @@
           "aria-label": "Toggle theme",
           title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'
         }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
+        /*#__PURE__*/React.createElement("button", {
+          onClick: () => {
+            var current = localStorage.getItem('alloflow_canvas_narrate') === 'on';
+            var next = !current;
+            try { localStorage.setItem('alloflow_canvas_narrate', next ? 'on' : 'off'); } catch(e) {}
+            if (typeof addToast === 'function') addToast(next ? '🔊 Canvas narration ON — tools will speak descriptions' : '🔇 Canvas narration OFF', 'info');
+            // Force re-render to update button state
+            setStemLabTab(stemLabTab);
+          },
+          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
+          "aria-label": "Toggle canvas narration TTS",
+          title: (typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_canvas_narrate') === 'on') ? 'Canvas narration ON — click to disable' : 'Canvas narration OFF — click to enable spoken descriptions'
+        }, (typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_canvas_narrate') === 'on') ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, (typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_canvas_narrate') === 'on') ? 'TTS' : 'Mute')),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => _setShowKeyHelp(v => !v),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors text-xs font-bold",
