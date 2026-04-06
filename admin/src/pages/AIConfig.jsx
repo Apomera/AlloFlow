@@ -101,6 +101,8 @@ export default function AIConfig() {
       const result = await window.alloAPI?.geminiOAuth?.start?.();
       if (result?.success) {
         await checkGeminiStatus();
+        // Re-open local app so it picks up the new access token on page load
+        window.alloAPI?.localApp?.reload?.();
       } else {
         alert('Google sign-in failed: ' + (result?.error || 'Unknown error'));
       }

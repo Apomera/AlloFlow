@@ -95,6 +95,8 @@ contextBridge.exposeInMainWorld('alloAPI', {
     getUrl: () => ipcRenderer.invoke('local:get-url'),
     // Check if SQLite backend is running
     backendStatus: () => ipcRenderer.invoke('local:backend-status'),
+    // Re-open local app in system browser to reload config (picks up new OAuth tokens)
+    reload: () => ipcRenderer.invoke('localApp:reload'),
   },
 
   // ── Gemini OAuth (image generation via Google Sign-In) ──────────────────

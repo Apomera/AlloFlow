@@ -179,6 +179,22 @@ const SERVICE_DEFINITIONS = {
       
       *This is optional — you can run AlloFlow without it*
     `
+  },
+
+  'gemini-imagen': {
+    id: 'gemini-imagen',
+    name: 'Google Gemini Imagen',
+    description: 'Cloud image generation via Google Gemini API — requires a Google account. Free tier: ~15 images per day.',
+    icon: '✨',
+    required: false,
+    optional: true,
+    defaultEnabled: false,
+    native: false,
+    needsPython: false,
+    needsAuth: true,
+    port: null,
+    healthCheck: null,
+    resources: { minRAM: 0, minDisk: 0 }
   }
 };
 
@@ -232,7 +248,7 @@ const HARDWARE_PROFILES = {
       maxRAM: 16384,
       optionalGPU_VRAM: 4000
     },
-    servicesToInclude: ['llm-engine', 'piper', 'search'],
+    servicesToInclude: ['llm-engine', 'piper', 'search', 'gemini-imagen'],
     limitations: [
       'Up to 13B LLMs recommended',,
       'Image generation optional (GPU-dependent)',
@@ -263,7 +279,7 @@ const HARDWARE_PROFILES = {
       recommendedRAM: 32768,
       recommendedGPU_VRAM: 12000
     },
-    servicesToInclude: ['llm-engine', 'piper', 'search', 'flux'],
+    servicesToInclude: ['llm-engine', 'piper', 'search', 'flux', 'gemini-imagen'],
     limitations: [],
     recommendations: [
       'Run large models (13B, 70B) for better quality',

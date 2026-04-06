@@ -759,7 +759,14 @@ async function startDeployment(setupData, onProgress) {
       if (!svcDef) continue;
       
       const baseProgress = 10 + (installed / totalToInstall) * 60;
-      
+
+      // Cloud services (e.g. gemini-imagen) have no binary to install
+      if (!svcDef.native) {
+        onProgress({ phase: 'install', status: `${svcDef.name}: cloud service — no local install needed`, progress: baseProgress + 60 / totalToInstall });
+        installed++;
+        continue;
+      }
+
       if (nativePM.isServiceInstalled(serviceId)) {
         console.log(`[deploy:start] ${serviceId} already installed, skipping download`);
         onProgress({
@@ -813,7 +820,8 @@ async function startDeployment(setupData, onProgress) {
     for (const serviceId of servicesToInstallFinal) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
       if (!svcDef) continue;
-      
+      if (!svcDef.native) continue; // Cloud services (e.g. gemini-imagen) have no process to start
+
       onProgress({
         phase: 'starting',
         status: `Starting ${svcDef.name}...`,
@@ -898,6 +906,14 @@ async function startDeployment(setupData, onProgress) {
       }
       
       // Write ai_config.json for the web app to use LM Studio
+      // Read existing config first to preserve OAuth credentials from wizard setup
+      let existingAiConfig = {};
+      try {
+        if (fs.existsSync(AI_CONFIG_FILE)) {
+          existingAiConfig = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf8'));
+        }
+      } catch (_) {}
+
       const aiConfig = {
         backend: 'lmstudio',
         apiKey: '',
@@ -908,7 +924,11 @@ async function startDeployment(setupData, onProgress) {
           LM_STUDIO_GPU_BACKEND: gpuBackend
         },
         ttsProvider: 'browser', // Edge TTS fallback
-        imageProvider: servicesToInstallFinal.includes('flux') ? 'flux' : 'none',
+        imageProvider: servicesToInstallFinal.includes('gemini-imagen')
+          ? 'gemini'
+          : servicesToInstallFinal.includes('flux')
+            ? 'flux'
+            : (existingAiConfig.imageProvider || 'none'),
         gpuBackend: gpuBackend,
         configuredBy: 'alloflow-admin',
         configuredAt: new Date().toISOString(),
@@ -918,7 +938,9 @@ async function startDeployment(setupData, onProgress) {
           type: 'openAI-compatible',
           gpuBackend: gpuBackend,
           gpuInfo: gpuInfo
-        }
+        },
+        ...(existingAiConfig.googleClientId ? { googleClientId: existingAiConfig.googleClientId } : {}),
+        ...(existingAiConfig.googleClientSecret ? { googleClientSecret: existingAiConfig.googleClientSecret } : {}),
       };
       
       fs.writeFileSync(
@@ -1385,6 +1407,12 @@ ipcMain.handle('local:backend-status', async () => {
     running: localBackend.isRunning(),
     port:    localBackend.getPort(),
   };
+});
+
+ipcMain.handle('localApp:reload', async () => {
+  const url = `http://localhost:${getLocalAppPort()}`;
+  await shell.openExternal(url);
+  return { success: true, url };
 });
 
 // ============================================================================

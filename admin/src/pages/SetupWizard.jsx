@@ -19,6 +19,8 @@ const DEPLOYMENT_TYPES = [
   }
 ];
 
+const IMAGE_PROVIDER_SERVICES = ['flux', 'gemini-imagen'];
+
 export default function SetupWizard({ onComplete }) {
   // Step progression: deployment → hardware → services → config → deploying → success
   const [step, setStep] = useState('deployment');
@@ -34,6 +36,11 @@ export default function SetupWizard({ onComplete }) {
   const [deploymentProgress, setDeploymentProgress] = useState(null);
   const [gpuStatus, setGpuStatus] = useState(null); // { strategy, label, warning } or { gpu_accelerated, device, fallback_reason }
   const [webAppUrl, setWebAppUrl] = useState(null);
+  const [geminiAuthDone, setGeminiAuthDone] = useState(false);
+  const [geminiEmail, setGeminiEmail] = useState('');
+  const [geminiClientId, setGeminiClientId] = useState('');
+  const [geminiClientSecret, setGeminiClientSecret] = useState('');
+  const [geminiConnecting, setGeminiConnecting] = useState(false);
 
   // Handle deployment type selection
   const handleSelectDeployment = async (typeId) => {
@@ -111,10 +118,19 @@ export default function SetupWizard({ onComplete }) {
     loadServices(tier);
   };
 
-  // Toggle service selection
+  // Toggle service selection — radio behavior for image provider choices
   const toggleService = (serviceId) => {
     console.log('[SetupWizard] Toggling service:', serviceId);
-    if (selectedServices.includes(serviceId)) {
+    if (IMAGE_PROVIDER_SERVICES.includes(serviceId)) {
+      if (selectedServices.includes(serviceId)) {
+        setSelectedServices(selectedServices.filter(s => s !== serviceId));
+      } else {
+        setSelectedServices([
+          ...selectedServices.filter(s => !IMAGE_PROVIDER_SERVICES.includes(s)),
+          serviceId
+        ]);
+      }
+    } else if (selectedServices.includes(serviceId)) {
       setSelectedServices(selectedServices.filter(s => s !== serviceId));
     } else {
       setSelectedServices([...selectedServices, serviceId]);
@@ -368,10 +384,10 @@ export default function SetupWizard({ onComplete }) {
           <p className="setup-subtitle">Choose which AI services to install</p>
 
           <div className="services-grid">
-            {services.map(service => {
+            {services.filter(s => !IMAGE_PROVIDER_SERVICES.includes(s.id)).map(service => {
               const isSelected = selectedServices.includes(service.id);
               const isDisabled = service.required && !service.optional;
-              
+
               return (
                 <div
                   key={service.id}
@@ -392,15 +408,47 @@ export default function SetupWizard({ onComplete }) {
                       <span style={{fontSize: '0.8rem', color: '#999'}}>Required</span>
                     )}
                   </div>
-                  
+
                   <h3>{service.name}</h3>
                   <p className="service-description">{service.description}</p>
-                  
-                  {service.resources && (
+
+                  {service.resources && service.resources.minRAM > 0 && (
                     <p className="service-resources">
                       Requires: {service.resources.minRAM}MB RAM, {service.resources.minDisk}MB disk
                     </p>
                   )}
+                </div>
+              );
+            })}
+
+            {services.some(s => IMAGE_PROVIDER_SERVICES.includes(s.id)) && (
+              <div style={{gridColumn: '1 / -1', borderTop: '1px solid #ddd', paddingTop: '12px', marginTop: '4px'}}>
+                <p style={{margin: 0, fontSize: '0.85rem', color: '#666', fontWeight: 600}}>🎨 Image Generation — choose one (optional)</p>
+              </div>
+            )}
+
+            {services.filter(s => IMAGE_PROVIDER_SERVICES.includes(s.id)).map(service => {
+              const isSelected = selectedServices.includes(service.id);
+
+              return (
+                <div
+                  key={service.id}
+                  className={`service-card ${isSelected ? 'selected' : ''}`}
+                  onClick={() => toggleService(service.id)}
+                >
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                    <span className="service-icon">{service.icon}</span>
+                    <input
+                      type="radio"
+                      name="imageProvider"
+                      checked={isSelected}
+                      onChange={() => {}}
+                      style={{cursor: 'pointer'}}
+                    />
+                  </div>
+
+                  <h3>{service.name}</h3>
+                  <p className="service-description">{service.description}</p>
                 </div>
               );
             })}
@@ -462,6 +510,64 @@ export default function SetupWizard({ onComplete }) {
                     Data stored in <code>~/.alloflow/</code>
                   </p>
                 </div>
+
+                {config.selectedServices && config.selectedServices.includes('gemini-imagen') && (
+                  <div className="info-box" style={{borderColor: '#4285f4', backgroundColor: 'rgba(66,133,244,0.05)'}}>
+                    <strong>✨ Google Gemini — Sign in (optional)</strong>
+                    <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '10px'}}>
+                      Sign in now so image generation works immediately after setup. You can also authenticate later via Settings → AI Config.
+                    </p>
+                    {geminiAuthDone ? (
+                      <p style={{color: '#28a745', fontWeight: 600, margin: 0}}>
+                        ✓ Signed in{geminiEmail ? ` as ${geminiEmail}` : ''}
+                      </p>
+                    ) : (
+                      <>
+                        <div style={{display: 'grid', gap: '8px', marginBottom: '10px'}}>
+                          <input
+                            type="text"
+                            value={geminiClientId}
+                            onChange={e => setGeminiClientId(e.target.value)}
+                            placeholder="Google OAuth Client ID"
+                            style={{width: '100%', fontFamily: 'monospace', fontSize: '0.85rem'}}
+                          />
+                          <input
+                            type="password"
+                            value={geminiClientSecret}
+                            onChange={e => setGeminiClientSecret(e.target.value)}
+                            placeholder="Client Secret"
+                            style={{width: '100%', fontFamily: 'monospace', fontSize: '0.85rem'}}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          disabled={!geminiClientId || geminiConnecting}
+                          onClick={async () => {
+                            setGeminiConnecting(true);
+                            try {
+                              await window.alloAPI.writeAIConfig({ imageProvider: 'gemini', googleClientId: geminiClientId.trim(), googleClientSecret: geminiClientSecret.trim() });
+                              const result = await window.alloAPI?.geminiOAuth?.start?.();
+                              if (result?.success) {
+                                setGeminiAuthDone(true);
+                                setGeminiEmail(result.email || '');
+                              } else {
+                                alert('Sign-in failed: ' + (result?.error || 'Unknown error'));
+                              }
+                            } finally {
+                              setGeminiConnecting(false);
+                            }
+                          }}
+                        >
+                          {geminiConnecting ? 'Opening browser...' : 'Sign in with Google'}
+                        </button>
+                        <p style={{fontSize: '0.8rem', color: '#888', marginTop: '8px', marginBottom: 0}}>
+                          Need a Client ID? Visit <strong>console.cloud.google.com</strong> → APIs &amp; Services → Credentials → Create OAuth 2.0 Client ID (Desktop app type)
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
               </>
             )}
 
@@ -649,6 +755,26 @@ export default function SetupWizard({ onComplete }) {
             }}>
               <p style={{fontWeight: 'bold', margin: '0 0 8px 0'}}>⚠️ GPU Note</p>
               <p style={{margin: 0}}>{gpuStatus.warning}</p>
+            </div>
+          )}
+
+          {selectedServices.includes('gemini-imagen') && (
+            <div style={{
+              background: geminiAuthDone ? '#d4edda' : '#fff3cd',
+              border: `1px solid ${geminiAuthDone ? '#28a745' : '#ffc107'}`,
+              borderRadius: '8px', padding: '16px', margin: '16px 0',
+              color: geminiAuthDone ? '#155724' : '#856404'
+            }}>
+              {geminiAuthDone ? (
+                <>
+                  <p style={{fontWeight: 'bold', margin: '0 0 4px 0'}}>✨ Google Gemini Imagen connected</p>
+                  {geminiEmail && <p style={{margin: 0, fontSize: '0.9em'}}>{geminiEmail}</p>}
+                </>
+              ) : (
+                <p style={{margin: 0}}>
+                  ⚠️ Gemini image generation selected but not authenticated. Sign in via <strong>Settings → AI Config</strong> to activate it.
+                </p>
+              )}
             </div>
           )}
 
