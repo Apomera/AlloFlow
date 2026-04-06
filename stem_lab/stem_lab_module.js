@@ -3978,8 +3978,14 @@
             if (!window.__stemPluginComponents) window.__stemPluginComponents = {};
             if (!window.__stemPluginComponents[stemLabTool]) {
               window.__stemPluginComponents[stemLabTool] = function StemPluginBridge(props) {
+                return window.StemLab.renderTool(props._toolId, props._ctx);
+              };
+            }
+            // Note: deferred setState bridge was removed — it caused blank renders in some tools.
+            // The React warning "Cannot update a component while rendering" is cosmetic and non-breaking.
+            if (false) {
+              window.__stemPluginComponents['__unused'] = function(props) {
                 var c = props._ctx;
-                // Defer any state updates that plugins call during render to after render
                 var pendingUpdates = React.useRef([]);
                 var renderingRef = React.useRef(false);
                 var originalUpdate = c.update;
