@@ -462,14 +462,7 @@ window.StemLab = window.StemLab || {
       var gd = (labToolData && labToolData.geoSandbox) || {};
       var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox || {}, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
 
-          // ── Canvas narration: init ──
-          if (typeof canvasNarrate === 'function') {
-            canvasNarrate('geoSandbox', 'init', {
-              first: '3D Geometry Sandbox loaded. Build and explore 3D shapes, calculate volume and surface area interactively.',
-              repeat: 'Geometry Sandbox active.',
-              terse: 'Geo Sandbox.'
-            }, { debounce: 800 });
-          }
+          // Canvas narration removed — was firing on every render causing repeated TTS
       var updDim = function(key, val) {
         setLabToolData(function(prev) {
           var g = prev.geoSandbox || {};

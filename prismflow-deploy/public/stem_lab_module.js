@@ -854,6 +854,14 @@
         options = options || {};
         var debounceMs = options.debounce != null ? options.debounce : 2000;
 
+        // For 'init' events, only fire ONCE per tool session (re-renders should not re-narrate)
+        if (eventKey === 'init') {
+          var initKey = '__init__' + toolId;
+          if (_canvasNarrateDedupe[initKey]) return;
+          _canvasNarrateDedupe[initKey] = true;
+          // Don't auto-clear init flag — stays set until page reload
+        }
+
         // Resolve variants to the right verbosity level
         var msg;
         if (typeof variants === 'string') {
@@ -873,10 +881,10 @@
 
         if (!msg) return;
 
-        // Debounce: skip if same toolId+eventKey fired within window
+        // Debounce: skip if same toolId+eventKey fired within window (non-init events)
         var dedupeKey = toolId + ':' + eventKey;
-        if (debounceMs > 0 && _canvasNarrateDedupe[dedupeKey]) return;
-        if (debounceMs > 0) {
+        if (eventKey !== 'init' && debounceMs > 0 && _canvasNarrateDedupe[dedupeKey]) return;
+        if (eventKey !== 'init' && debounceMs > 0) {
           _canvasNarrateDedupe[dedupeKey] = true;
           setTimeout(function() { delete _canvasNarrateDedupe[dedupeKey]; }, debounceMs);
         }
