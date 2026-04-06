@@ -12610,20 +12610,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             hasStartedFromReview.current = true;
             setWordSoundsHistory([]);
             setShowReviewPanel(false);
-            const firstWord =
-              preloadedWords[
-              currentWordIndex % Math.max(1, preloadedWords.length)
-              ];
-            if (firstWord) {
-              const wordText = firstWord.targetWord || firstWord.word || firstWord.term || firstWord.singleWord || firstWord.displayWord || "";
-              if (wordText) {
-                setCurrentWordSoundsWord(wordText);
-                setWordSoundsPhonemes(firstWord);
-                setIsLoadingPhonemes(false);
-              } else {
-                console.warn("[WS] First word has no usable text field:", firstWord);
-              }
+            // Ensure an activity is selected — if none yet, default to first in sequence or 'counting'
+            const targetActivity = wordSoundsActivity || (activitySequence && activitySequence.length > 0 ? activitySequence[0] : 'counting');
+            if (!wordSoundsActivity && setWordSoundsActivity) {
+              setWordSoundsActivity(targetActivity);
             }
+            // Use startActivity to properly initialize the session queue and pick a word
+            setTimeout(() => {
+              if (typeof startActivity === 'function') {
+                startActivity(targetActivity);
+              } else {
+                // Fallback: manually set the first word
+                const firstWord = preloadedWords[currentWordIndex % Math.max(1, preloadedWords.length)];
+                if (firstWord) {
+                  const wordText = firstWord.targetWord || firstWord.word || firstWord.term || firstWord.singleWord || firstWord.displayWord || "";
+                  if (wordText) {
+                    setCurrentWordSoundsWord(wordText);
+                    setWordSoundsPhonemes(firstWord);
+                    setIsLoadingPhonemes(false);
+                  }
+                }
+              }
+            }, 50);
           },
           onClose: onClose,
           onBackToSetup: () => {

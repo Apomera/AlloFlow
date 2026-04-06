@@ -370,6 +370,11 @@
       // ── Keyboard Help State ──
       var [_showKeyHelp, _setShowKeyHelp] = React.useState(false);
 
+      // ── Canvas Narration Toggle (mirrors localStorage so the header button re-renders) ──
+      var [_narrationOn, _setNarrationOn] = React.useState(function () {
+        try { return localStorage.getItem('alloflow_canvas_narrate') === 'on'; } catch (e) { return false; }
+      });
+
       // ── Station Builder State ──
       var [_showStationBuilder, _setShowStationBuilder] = React.useState(false);
       var [_stationName, _setStationName] = React.useState('');
@@ -817,8 +822,10 @@
       }
 
       // ── Canvas Narration: Dual-Channel (aria-live + TTS) with Smart Detection & Adaptive Verbosity ──
-      var _canvasNarrateDedupe = {};
-      var _canvasNarrateEncounters = {};
+      // Dedupe + encounter maps MUST live on window so they persist across React renders
+      // (otherwise init/debounce guards reset every render → infinite repeat narration).
+      var _canvasNarrateDedupe = window._alloCanvasNarrateDedupe || (window._alloCanvasNarrateDedupe = {});
+      var _canvasNarrateEncounters = window._alloCanvasNarrateEncounters || (window._alloCanvasNarrateEncounters = {});
 
       // Canvas narration TTS — OFF by default, must be explicitly enabled
       // The aria-live channel still works for screen readers (independent of TTS)
@@ -1865,17 +1872,15 @@
         }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => {
-            var current = localStorage.getItem('alloflow_canvas_narrate') === 'on';
-            var next = !current;
+            var next = !_narrationOn;
             try { localStorage.setItem('alloflow_canvas_narrate', next ? 'on' : 'off'); } catch(e) {}
+            _setNarrationOn(next);
             if (typeof addToast === 'function') addToast(next ? '🔊 Canvas narration ON — tools will speak descriptions' : '🔇 Canvas narration OFF', 'info');
-            // Force re-render to update button state
-            setStemLabTab(stemLabTab);
           },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
           "aria-label": "Toggle canvas narration TTS",
-          title: (typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_canvas_narrate') === 'on') ? 'Canvas narration ON — click to disable' : 'Canvas narration OFF — click to enable spoken descriptions'
-        }, (typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_canvas_narrate') === 'on') ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, (typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_canvas_narrate') === 'on') ? 'TTS' : 'Mute')),
+          title: _narrationOn ? 'Canvas narration ON — click to disable' : 'Canvas narration OFF — click to enable spoken descriptions'
+        }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, _narrationOn ? 'TTS' : 'Mute')),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => _setShowKeyHelp(v => !v),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors text-xs font-bold",
@@ -3924,7 +3929,11 @@
             renderTutorial: typeof renderTutorial === 'function' ? renderTutorial : function() { return null; },
             _tutGalaxy: typeof _tutGalaxy !== 'undefined' ? _tutGalaxy : [],
             beep: typeof stemBeep === 'function' ? stemBeep : function() {},
-            callTTS: typeof callTTS === 'function' ? function stemSpeakTTS(text, voice, speed) {
+            callTTS: typeof callTTS === 'function' ? function stemSpeakTTS(text, voice, speed, opts) {
+              // Header mute button is the master gate. Tools can pass { force: true }
+              // to bypass it for explicit user-initiated speak actions.
+              opts = opts || {};
+              if (!opts.force && !_canvasNarrateTTSEnabled()) return Promise.resolve(null);
               return callTTS(text, voice, speed).then(function(url) {
                 if (url) { var a = new Audio(url); a.play().catch(function() {}); }
                 return url;
