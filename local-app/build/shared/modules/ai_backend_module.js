@@ -278,12 +278,12 @@ const WebSearchProvider = {
     _initSearchProxy() {
         if (this._serperInitialized) return;
         this._serperInitialized = true;
-        const FIREBASE_HOST = 'https://prismflow-911fe.web.app';
+        const FIREBASE_HOST = (typeof window !== 'undefined' && window.ALLOFLOW_HOST) || 'https://prismflow-911fe.web.app';
         if (this._isCanvas) {
             // Canvas: must use absolute URL (hosting rewrite → cloud function)
             this._serperProxyUrl = `${FIREBASE_HOST}/api/searchProxy`;
             console.log('[WebSearch] Canvas detected — using absolute Serper proxy URL:', this._serperProxyUrl);
-        } else if (typeof window !== 'undefined' && window.location.hostname.includes('prismflow')) {
+        } else if (typeof window !== 'undefined' && (window.location.hostname.includes('prismflow') || window.location.hostname.includes('.web.app'))) {
             // On the actual Firebase site: use relative URL (same-origin)
             this._serperProxyUrl = '/api/searchProxy';
             console.log('[WebSearch] Firebase site — using relative Serper proxy URL');

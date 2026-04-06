@@ -107,12 +107,68 @@ const MODULES = [
         name: 'StoryForge',
         filename: 'shared/modules/story_forge_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LitLab',
+        filename: 'story_stage_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'VisualPanelModule',
+        filename: 'visual_panel_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'WordSoundsSetupModule',
+        filename: 'word_sounds_setup_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AdventureModule',
+        filename: 'adventure_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StudentInteractionModule',
+        filename: 'student_interaction_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MathFluency',
+        filename: 'math_fluency_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'UIModalsModule',
+        filename: 'ui_modals_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ImmersiveReaderModule',
+        filename: 'immersive_reader_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PersonaUIModule',
+        filename: 'persona_ui_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'DocPipelineModule',
+        filename: 'doc_pipeline_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ContentEngineModule',
+        filename: 'content_engine_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
 // Plugin files loaded via the setTimeout plugin loader (not loadModule)
 // build.js updates their CDN hash in the pluginCdnBase variable
 const PLUGIN_FILES = [
+<<<<<<< HEAD
     'shared/modules/stem_lab/stem_tool_dna.js',
     'shared/modules/stem_lab/stem_tool_math.js',
     'shared/modules/stem_lab/stem_tool_unitconvert.js',
@@ -169,6 +225,98 @@ const PLUGIN_FILES = [
     'shared/modules/sel_hub/sel_tool_civicaction.js',
     'shared/modules/sel_hub/sel_tool_ethicalreasoning.js',
     'shared/modules/sel_hub/sel_tool_cultureexplorer.js'
+=======
+    'stem_lab/stem_tool_dna.js',
+    'stem_lab/stem_tool_unitconvert.js',
+    'stem_lab/stem_tool_logiclab.js',
+    'stem_lab/stem_tool_probability.js',
+    'stem_lab/stem_tool_calculus.js',
+    'stem_lab/stem_tool_galaxy.js',
+    'stem_lab/stem_tool_datastudio.js',
+    'stem_lab/stem_tool_dataplot.js',
+    'stem_lab/stem_tool_geo.js',
+    'stem_lab/stem_tool_fractions.js',
+    'stem_lab/stem_tool_manipulatives.js',
+    'stem_lab/stem_tool_money.js',
+    'stem_lab/stem_tool_coordgrid.js',
+    'stem_lab/stem_tool_angles.js',
+    'stem_lab/stem_tool_archstudio.js',
+    'stem_lab/stem_tool_geometryworld.js',
+    'stem_lab/stem_tool_cyberdefense.js',
+    'stem_lab/stem_tool_physics.js',
+    'stem_lab/stem_tool_watercycle.js',
+    'stem_lab/stem_tool_rocks.js',
+    'stem_lab/stem_tool_dissection.js',
+    'stem_lab/stem_tool_behaviorlab.js',
+    'stem_lab/stem_tool_anatomy.js',
+    'stem_lab/stem_tool_decomposer.js',
+    'stem_lab/stem_tool_companionplanting.js',
+    'stem_lab/stem_tool_aquarium.js',
+    'stem_lab/stem_tool_ecosystem.js',
+    'stem_lab/stem_tool_molecule.js',
+    'stem_lab/stem_tool_solarsystem.js',
+    'stem_lab/stem_tool_universe.js',
+    'stem_lab/stem_tool_economicslab.js',
+    'stem_lab/stem_tool_graphcalc.js',
+    'stem_lab/stem_tool_algebraCAS.js',
+    'stem_lab/stem_tool_circuit.js',
+    'stem_lab/stem_tool_a11yauditor.js',
+    'stem_lab/stem_tool_worldbuilder.js',
+    'stem_lab/stem_tool_flightsim.js',
+    'stem_lab/stem_tool_atctower.js',
+    'stem_lab/stem_tool_music.js',
+    'stem_lab/stem_tool_climateExplorer.js',
+    'stem_lab/stem_tool_fireecology.js',
+    'stem_lab/stem_tool_moonmission.js',
+    'stem_lab/stem_tool_beehive.js',
+    'stem_lab/stem_tool_spacecolony.js',
+    'stem_lab/stem_tool_areamodel.js',
+    'stem_lab/stem_tool_artstudio.js',
+    'stem_lab/stem_tool_brainatlas.js',
+    'stem_lab/stem_tool_cell.js',
+    'stem_lab/stem_tool_chembalance.js',
+    'stem_lab/stem_tool_coding.js',
+    'stem_lab/stem_tool_epidemic.js',
+    'stem_lab/stem_tool_funcgrapher.js',
+    'stem_lab/stem_tool_gamestudio.js',
+    'stem_lab/stem_tool_geosandbox.js',
+    'stem_lab/stem_tool_inequality.js',
+    'stem_lab/stem_tool_lifeskills.js',
+    'stem_lab/stem_tool_echolocation.js',
+    'stem_lab/stem_tool_multtable.js',
+    'stem_lab/stem_tool_numberline.js',
+    'stem_lab/stem_tool_platetectonics.js',
+    'stem_lab/stem_tool_punnett.js',
+    'stem_lab/stem_tool_semiconductor.js',
+    'stem_lab/stem_tool_titration.js',
+    'stem_lab/stem_tool_volume.js',
+    'stem_lab/stem_tool_wave.js',
+    'stem_lab/stem_tool_oratory.js',
+    'stem_lab/stem_tool_singing.js',
+    'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
+    'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
+    'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
+    'sel_hub/sel_tool_social.js',
+    'sel_hub/sel_tool_perspective.js',
+    'sel_hub/sel_tool_decisions.js',
+    'sel_hub/sel_tool_conflict.js',
+    'sel_hub/sel_tool_advocacy.js',
+    'sel_hub/sel_tool_strengths.js',
+    'sel_hub/sel_tool_goals.js',
+    'sel_hub/sel_tool_community.js',
+    'sel_hub/sel_tool_teamwork.js',
+    'sel_hub/sel_tool_journal.js',
+    'sel_hub/sel_tool_safety.js',
+    'sel_hub/sel_tool_restorativecircle.js',
+    'sel_hub/sel_tool_civicaction.js',
+    'sel_hub/sel_tool_ethicalreasoning.js',
+    'sel_hub/sel_tool_cultureexplorer.js',
+    'sel_hub/sel_tool_growthmindset.js',
+    'sel_hub/sel_tool_transitions.js',
+    'sel_hub/sel_tool_friendship.js',
+    'sel_hub/sel_tool_compassion.js',
+    'sel_hub/sel_tool_upstander.js'
+>>>>>>> upstream/main
 ];
 
 // ── Read source ─────────────────────────────────────────────────
@@ -353,6 +501,44 @@ if (dryRun) {
     }
 
     // NOTE: SW stamping moved to postbuild.js (runs AFTER CRA build copies public/sw.js → build/sw.js)
+
+    // ── Auto-copy module files to prismflow-deploy/public/ ──
+    const PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public');
+    const modulesToCopy = [
+        // Root-level modules
+        ...MODULES.map(m => m.filename),
+        'word_sounds_module.js',
+        'teacher_module.js',
+        'ui_strings.js',
+        'escape_room_module.js',
+        // stem_lab hub
+        'stem_lab/stem_lab_module.js'
+    ];
+    let copyCount = 0;
+    modulesToCopy.forEach(f => {
+        const src = path.join(ROOT, f);
+        const isSubdir = f.includes('/');
+        const destDir = isSubdir ? path.join(PUBLIC_DIR, path.dirname(f)) : PUBLIC_DIR;
+        const dest = path.join(destDir, path.basename(f));
+        // For stem_lab_module.js, copy to public root (not public/stem_lab/)
+        const finalDest = f === 'stem_lab/stem_lab_module.js' ? path.join(PUBLIC_DIR, 'stem_lab_module.js') : dest;
+        if (fs.existsSync(src)) {
+            if (!fs.existsSync(path.dirname(finalDest))) fs.mkdirSync(path.dirname(finalDest), { recursive: true });
+            fs.copyFileSync(src, finalDest);
+            copyCount++;
+        }
+    });
+    // Copy all stem_tool plugin files
+    PLUGIN_FILES.forEach(f => {
+        const src = path.join(ROOT, f);
+        const dest = path.join(PUBLIC_DIR, f);
+        if (fs.existsSync(src)) {
+            if (!fs.existsSync(path.dirname(dest))) fs.mkdirSync(path.dirname(dest), { recursive: true });
+            fs.copyFileSync(src, dest);
+            copyCount++;
+        }
+    });
+    console.log(`📦 Auto-copied ${copyCount} module/plugin files to prismflow-deploy/public/`);
 
     // Show next steps
     console.log('\n── Next Steps ──');

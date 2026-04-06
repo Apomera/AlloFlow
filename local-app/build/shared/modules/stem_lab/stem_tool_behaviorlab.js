@@ -33,15 +33,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-behaviorlab')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-behaviorlab';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   window.StemLab.registerTool('behaviorLab', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83E\uDDEC',
     label: 'behaviorLab',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'reach_level_3', label: 'Advance to level 3 in behavior analysis', icon: '\uD83D\uDCCA', check: function(d) { return (d.blLevel || 1) >= 3; }, progress: function(d) { return 'Level ' + (d.blLevel || 1) + '/3'; } },
+      { id: 'record_10_data', label: 'Record 10 data points on the cumulative record', icon: '\uD83D\uDCDD', check: function(d) { return (d.blCumRecord || []).length >= 10; }, progress: function(d) { return (d.blCumRecord || []).length + '/10 points'; } },
+      { id: 'run_50_ticks', label: 'Run the simulation for 50+ ticks', icon: '\u25B6\uFE0F', check: function(d) { return (d.blTick || 0) >= 50; }, progress: function(d) { return (d.blTick || 0) + '/50 ticks'; } }
+    ],
     render: function(ctx) {
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -73,16 +91,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
-      // â”€â”€ Tool body (behaviorLab) â”€â”€
+      // ── Tool body (behaviorLab) ──
       return (function() {
 var d = labToolData || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('behaviorLab', 'init', {
+              first: 'Behavior Lab loaded. Track and analyze behavioral data with visual charts and evidence-based intervention tools.',
+              repeat: 'Behavior Lab active.',
+              terse: 'Behavior Lab.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
 
 
 
-          // â”€â”€ Level definitions â”€â”€
+          // ── Level definitions ──
 
           var LEVELS = [
 
@@ -94,11 +122,11 @@ var d = labToolData || {};
 
               termDef: 'Positive Reinforcement (SR+): Adding a stimulus after a behavior that increases the future probability of that behavior.',
 
-              funFact: 'ðŸ§ª B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning â€” the project was called "Project Pigeon"!',
+              funFact: '🧪 B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning — the project was called "Project Pigeon"!',
 
               vocab: ['SR+ (Positive Reinforcement)', 'Operant Behavior', 'Consequence'],
 
-              contingency: { a: 'Chamber present', b: 'Presses lever', c: 'ðŸ• Food delivered (+SR)' }
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: '🍕 Food delivered (+SR)' }
 
             },
 
@@ -106,15 +134,15 @@ var d = labToolData || {};
 
               id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
 
-              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (â†ªï¸) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (â†©ï¸â†ªï¸) and reinforce those. (3) Finally, wait for full "Spinning" (ðŸŒ€) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
+              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (↪️) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (↩️↪️) and reinforce those. (3) Finally, wait for full "Spinning" (🌀) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
 
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
 
-              funFact: 'ðŸ¬ Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips â€” they start by reinforcing any upward movement!',
+              funFact: '🐬 Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips — they start by reinforcing any upward movement!',
 
               vocab: ['Successive Approximations', 'Terminal Behavior', 'Differential Reinforcement'],
 
-              contingency: { a: 'Trainer present', b: 'Closer to spin', c: 'ðŸ• Food (reinforce!)' }
+              contingency: { a: 'Trainer present', b: 'Closer to spin', c: '🍕 Food (reinforce!)' }
 
             },
 
@@ -122,15 +150,15 @@ var d = labToolData || {};
 
               id: 3, title: 'The Burst', concept: 'Extinction', target: 'pressLever', goal: 0,
 
-              intro: 'When reinforcement is suddenly withheld, the organism often shows an extinction burst â€” a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!',
+              intro: 'When reinforcement is suddenly withheld, the organism often shows an extinction burst — a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!',
 
               termDef: 'Extinction Burst: A temporary increase in frequency/intensity of a previously reinforced behavior when reinforcement is discontinued.',
 
-              funFact: 'ðŸ›— Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
+              funFact: '🛗 Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
 
               vocab: ['Extinction', 'Extinction Burst', 'Spontaneous Recovery'],
 
-              contingency: { a: 'Chamber present', b: 'Presses lever', c: 'âŒ No food (extinction)' }
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: '❌ No food (extinction)' }
 
             },
 
@@ -142,11 +170,11 @@ var d = labToolData || {};
 
               termDef: 'Fixed Ratio (FR): A schedule where reinforcement is delivered after a fixed number of responses.',
 
-              funFact: 'ðŸŽ° Slot machines use Variable Ratio (VR) schedules â€” the most resistant to extinction â€” which is why they\'re so addictive!',
+              funFact: '🎰 Slot machines use Variable Ratio (VR) schedules — the most resistant to extinction — which is why they\'re so addictive!',
 
               vocab: ['Fixed Ratio (FR)', 'Continuous Reinforcement (CRF)', 'Intermittent Reinforcement'],
 
-              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: 'ðŸ• Food (FR-3)' }
+              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: '🍕 Food (FR-3)' }
 
             },
 
@@ -158,11 +186,11 @@ var d = labToolData || {};
 
               termDef: 'SD (Discriminative Stimulus): A stimulus that signals reinforcement is available for a specific behavior.',
 
-              funFact: 'ðŸš¦ Traffic lights work as discriminative stimuli for drivers â€” green (SD) signals "go" and red (S-delta) signals "stop"!',
+              funFact: '🚦 Traffic lights work as discriminative stimuli for drivers — green (SD) signals "go" and red (S-delta) signals "stop"!',
 
-              vocab: ['SD (Discriminative Stimulus)', 'S-delta (Sâˆ†)', 'Stimulus Control'],
+              vocab: ['SD (Discriminative Stimulus)', 'S-delta (S∆)', 'Stimulus Control'],
 
-              contingency: { a: 'ðŸŸ¢ Green light (SD)', b: 'Presses lever', c: 'ðŸ• Food delivered' }
+              contingency: { a: '🟢 Green light (SD)', b: 'Presses lever', c: '🍕 Food delivered' }
 
             },
 
@@ -174,7 +202,7 @@ var d = labToolData || {};
 
               termDef: 'Applied Behavior Analysis (ABA): The science of applying behavioral principles to improve socially significant behavior.',
 
-              funFact: 'ðŸŒ ABA principles are used everywhere â€” from teaching children with autism to training service dogs, to designing better apps!',
+              funFact: '🌍 ABA principles are used everywhere — from teaching children with autism to training service dogs, to designing better apps!',
 
               vocab: ['Behavior Chain', 'Generalization', 'Maintenance'],
 
@@ -186,31 +214,31 @@ var d = labToolData || {};
 
               id: 7, title: 'Chain Reaction', concept: 'Behavior Chaining', target: 'pressLever', goal: 3,
 
-              intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff âžœ Rear Up âžœ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
+              intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff ➜ Rear Up ➜ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
 
               termDef: 'Behavior Chain: A sequence of responses where each response produces the discriminative stimulus (SD) for the next response, and the last response is followed by a reinforcer.',
 
-              funFact: 'ðŸ• Service dogs learn behavior chains of 20+ steps â€” like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
+              funFact: '🐕 Service dogs learn behavior chains of 20+ steps — like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
 
               vocab: ['Behavior Chain', 'Forward Chaining', 'Task Analysis', 'Terminal Reinforcer'],
 
-              contingency: { a: 'Chain cue', b: 'Sniffâ†’Rearâ†’Lever', c: 'ðŸ• Food (chain complete!)' }
+              contingency: { a: 'Chain cue', b: 'Sniff→Rear→Lever', c: '🍕 Food (chain complete!)' }
 
             },
 
             {
 
-              id: 8, title: 'Not That!', concept: 'DRO â€” Differential Reinforcement', target: null, goal: 5,
+              id: 8, title: 'Not That!', concept: 'DRO — Differential Reinforcement', target: null, goal: 5,
 
-              intro: 'DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a specific behavior for a set time interval. A countdown timer runs â€” if the mouse does NOT press the lever before the timer finishes, deliver food! If the mouse presses the lever, the timer resets. Deliver 5 successful DRO intervals!',
+              intro: 'DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a specific behavior for a set time interval. A countdown timer runs — if the mouse does NOT press the lever before the timer finishes, deliver food! If the mouse presses the lever, the timer resets. Deliver 5 successful DRO intervals!',
 
               termDef: 'DRO (Differential Reinforcement of Other Behavior): Reinforcement is delivered when a specified behavior does NOT occur for a predetermined interval of time.',
 
-              funFact: 'ðŸ« Teachers use DRO all the time â€” "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
+              funFact: '🏫 Teachers use DRO all the time — "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
 
               vocab: ['DRO', 'Differential Reinforcement', 'Interval', 'Target Behavior Reduction'],
 
-              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: 'ðŸ• Food (DRO interval met!)' }
+              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: '🍕 Food (DRO interval met!)' }
 
             },
 
@@ -218,15 +246,15 @@ var d = labToolData || {};
 
               id: 9, title: 'Pavlov\'s Bell', concept: 'Classical Conditioning', target: null, goal: 0,
 
-              intro: 'Classical conditioning pairs a neutral stimulus (bell) with an unconditioned stimulus (food) that naturally causes a response (salivation). After repeated pairings the bell ALONE triggers salivation! Phase 1: Ring the bell â€” nothing happens. Phase 2: Pair bell + food 5 times. Phase 3: Ring bell alone and watch for the conditioned response!',
+              intro: 'Classical conditioning pairs a neutral stimulus (bell) with an unconditioned stimulus (food) that naturally causes a response (salivation). After repeated pairings the bell ALONE triggers salivation! Phase 1: Ring the bell — nothing happens. Phase 2: Pair bell + food 5 times. Phase 3: Ring bell alone and watch for the conditioned response!',
 
               termDef: 'Classical Conditioning: A learning process where a neutral stimulus (CS) is repeatedly paired with an unconditioned stimulus (US) until the CS alone elicits a conditioned response (CR).',
 
-              funFact: 'ðŸ¶ Ivan Pavlov discovered classical conditioning accidentally while studying dog digestion in the 1890s. The dogs began salivating at the sight of lab coats because they associated them with food!',
+              funFact: '🐶 Ivan Pavlov discovered classical conditioning accidentally while studying dog digestion in the 1890s. The dogs began salivating at the sight of lab coats because they associated them with food!',
 
               vocab: ['US (Unconditioned Stimulus)', 'UR (Unconditioned Response)', 'CS (Conditioned Stimulus)', 'CR (Conditioned Response)', 'Acquisition', 'Extinction'],
 
-              contingency: { a: 'ðŸ”” Bell (CS)', b: 'Paired with food (US)', c: 'ðŸ¤¤ Salivation (CR)' }
+              contingency: { a: '🔔 Bell (CS)', b: 'Paired with food (US)', c: '🤤 Salivation (CR)' }
 
             }
 
@@ -234,7 +262,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Knowledge Quiz Questions â”€â”€
+          // ── Knowledge Quiz Questions ──
 
           var QUIZ_BANK = {
 
@@ -244,7 +272,7 @@ var d = labToolData || {};
 
             3: { q: 'What is an extinction burst?', opts: ['A permanent increase in behavior', 'A temporary increase before behavior decreases', 'When a new behavior appears', 'When reinforcement increases'], correct: 1, explain: 'An extinction burst is a temporary INCREASE in the frequency or intensity of a behavior when reinforcement is suddenly discontinued.' },
 
-            4: { q: 'In an FR-3 schedule, when is reinforcement delivered?', opts: ['After every response', 'After every 3rd response', 'After random responses', 'After 3 minutes'], correct: 1, explain: 'Fixed Ratio (FR-3) delivers reinforcement after every 3rd response â€” a fixed number of responses.' },
+            4: { q: 'In an FR-3 schedule, when is reinforcement delivered?', opts: ['After every response', 'After every 3rd response', 'After random responses', 'After 3 minutes'], correct: 1, explain: 'Fixed Ratio (FR-3) delivers reinforcement after every 3rd response — a fixed number of responses.' },
 
             5: { q: 'What does SD (discriminative stimulus) signal?', opts: ['Punishment is coming', 'Reinforcement is available', 'Extinction has started', 'The session is over'], correct: 1, explain: 'An SD signals that reinforcement is available for a specific behavior. It "sets the occasion" for that behavior.' },
 
@@ -258,7 +286,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Chain sequence for Level 7 â”€â”€
+          // ── Chain sequence for Level 7 ──
 
           var CHAIN_SEQ = ['sniff', 'rearUp', 'pressLever'];
 
@@ -501,7 +529,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ State initialization â”€â”€
+          // ── State initialization ──
 
           var blLevel = d.blLevel || 1;
 
@@ -587,7 +615,7 @@ var d = labToolData || {};
 
           var blChainHistory = d.blChainHistory || [];
 
-          var blMoodEmoji = d.blMoodEmoji || 'ðŸ˜';
+          var blMoodEmoji = d.blMoodEmoji || '😐';
 
           var blMoodTimer = d.blMoodTimer || 0;
 
@@ -659,7 +687,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Sound effects (Web Audio API) â”€â”€
+          // ── Sound effects (Web Audio API) ──
 
           var _blAudioCtx = null;
 
@@ -699,7 +727,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Contextual Hints â”€â”€
+          // ── Contextual Hints ──
 
           var blHint = '';
 
@@ -709,7 +737,7 @@ var d = labToolData || {};
 
             else if (blLevel === 1 && blLevelScore > 0 && blLevelScore < 3) blHint = '\uD83D\uDC4D Great! Keep reinforcing lever presses. Watch the probability bar grow!';
 
-            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Shape in stages: reinforce Turn Right (â†ªï¸) first, then Half-Turns, then full Spins!';
+            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Shape in stages: reinforce Turn Right (↪️) first, then Half-Turns, then full Spins!';
 
             else if (blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5) blHint = '\uD83D\uDCA1 You\'ve reinforced 5 times! Click "Start Extinction" to stop reinforcing.';
 
@@ -725,15 +753,15 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Action labels for display â”€â”€
+          // ── Action labels for display ──
 
           var ACTION_LABELS = {
 
-            explore: 'ðŸ” Exploring', groom: 'ðŸ§¹ Grooming', sniff: 'ðŸ‘ƒ Sniffing',
+            explore: '🔍 Exploring', groom: '🧹 Grooming', sniff: '👃 Sniffing',
 
-            pressLever: 'âš¡ Pressing Lever!', turnLeft: 'â†©ï¸ Turning Left', turnRight: 'â†ªï¸ Turning Right',
+            pressLever: '⚡ Pressing Lever!', turnLeft: '↩️ Turning Left', turnRight: '↪️ Turning Right',
 
-            rearUp: 'ðŸ­ Rearing Up', freeze: 'ðŸ§Š Frozen', spin: 'ðŸŒ€ Spinning!', touchWall: 'ðŸ§± Touching Wall'
+            rearUp: '🐭 Rearing Up', freeze: '🧊 Frozen', spin: '🌀 Spinning!', touchWall: '🧱 Touching Wall'
 
           };
 
@@ -751,7 +779,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Level accent colors â”€â”€
+          // ── Level accent colors ──
 
           var LEVEL_COLORS = { 1: '#f59e0b', 2: '#8b5cf6', 3: '#ef4444', 4: '#3b82f6', 5: '#22c55e', 6: '#ec4899', 7: '#a855f7', 8: '#06b6d4', 9: '#e11d48' };
 
@@ -759,7 +787,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Behavior Engine: Select next action based on weights â”€â”€
+          // ── Behavior Engine: Select next action based on weights ──
 
           function selectAction() {
 
@@ -787,7 +815,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Reinforce: increase weight of the last action â”€â”€
+          // ── Reinforce: increase weight of the last action ──
 
           function reinforceAction() {
 
@@ -819,13 +847,13 @@ var d = labToolData || {};
 
 
 
-            // Level 7: behavior chain check â€” only allow reinforce on completed chain
+            // Level 7: behavior chain check — only allow reinforce on completed chain
 
             if (blLevel === 7) {
 
               if (blChainStep < CHAIN_SEQ.length || actionToReinforce !== 'pressLever') {
 
-                if (addToast) addToast('\u26A0\uFE0F Wait for the full chain: Sniff âžœ Rear Up âžœ Lever!', 'warning');
+                if (addToast) addToast('\u26A0\uFE0F Wait for the full chain: Sniff ➜ Rear Up ➜ Lever!', 'warning');
 
                 return;
 
@@ -849,9 +877,9 @@ var d = labToolData || {};
 
 
 
-            // Mood update â€” happy!
+            // Mood update — happy!
 
-            upd('blMoodEmoji', 'ðŸ˜Š');
+            upd('blMoodEmoji', '😊');
 
             upd('blMoodTimer', Date.now());
 
@@ -880,6 +908,7 @@ var d = labToolData || {};
             if (isTargetAction) {
 
               upd('blLevelScore', blLevelScore + 1);
+              if (announceToSR) announceToSR('Reinforced! Score: ' + (blLevelScore + 1) + ' of ' + (currentLevel ? currentLevel.goal : '?'));
 
             }
 
@@ -927,13 +956,14 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Action dwell times (ticks an action persists) â”€â”€
+          // ── Action dwell times (ticks an action persists) ──
 
-          var ACTION_DWELL = { explore: 4, groom: 5, sniff: 3, approachLever: 4, pressLever: 3, turnLeft: 3, turnRight: 3, halfTurn: 4, rearUp: 3, freeze: 5, spin: 4, touchWall: 3 };
+          // Action dwell times (ticks an action persists) — increased for smoother observation
+          var ACTION_DWELL = { explore: 5, groom: 6, sniff: 4, approachLever: 5, pressLever: 4, turnLeft: 4, turnRight: 4, halfTurn: 5, rearUp: 4, freeze: 6, spin: 5, touchWall: 4 };
 
 
 
-          // â”€â”€ Advance simulation by one tick â”€â”€
+          // ── Advance simulation by one tick ──
 
           function advanceTick() {
 
@@ -1083,7 +1113,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Delta-based proximity shaping â”€â”€
+            // ── Delta-based proximity shaping ──
 
             // Track rolling position history (last 5 positions)
 
@@ -1113,7 +1143,7 @@ var d = labToolData || {};
 
 
 
-              // Apply shaping on levels 1, 2, and 6 (sandbox) â€” any proximity gain counts
+              // Apply shaping on levels 1, 2, and 6 (sandbox) — any proximity gain counts
 
               if ((blLevel === 1 || blLevel === 2 || blLevel === 6) && proxDelta > 5) {
 
@@ -1187,7 +1217,7 @@ var d = labToolData || {};
 
               } else if (CHAIN_SEQ.indexOf(action) >= 0 && action !== CHAIN_SEQ[curChainStep]) {
 
-                // Wrong order â€” reset chain
+                // Wrong order — reset chain
 
                 upd('blChainStep', 0);
 
@@ -1201,7 +1231,7 @@ var d = labToolData || {};
 
             if (blMoodTimer > 0 && (Date.now() - blMoodTimer) > 5000) {
 
-              upd('blMoodEmoji', blReinforcements > 3 ? 'ðŸ¤”' : 'ðŸ˜');
+              upd('blMoodEmoji', blReinforcements > 3 ? '🤔' : '😐');
 
               upd('blMoodTimer', 0);
 
@@ -1283,13 +1313,13 @@ var d = labToolData || {};
 
               if (action === 'pressLever') {
 
-                // Target behavior occurred â€” reset DRO timer
+                // Target behavior occurred — reset DRO timer
 
                 upd('blDroTimer', 0);
 
                 var droResetLog = blAbcLog.slice();
 
-                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: 'âš¡ Pressing Lever!', c: 'ðŸ”„ Timer reset (target occurred)', t: Date.now() });
+                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: '⚡ Pressing Lever!', c: '🔄 Timer reset (target occurred)', t: Date.now() });
 
                 upd('blAbcLog', droResetLog.slice(0, 50));
 
@@ -1315,7 +1345,7 @@ var d = labToolData || {};
 
                   upd('blLevelScore', blLevelScore + 1);
 
-                  upd('blMoodEmoji', 'ðŸ˜Š');
+                  upd('blMoodEmoji', '😊');
 
                   upd('blMoodTimer', Date.now());
 
@@ -1325,13 +1355,13 @@ var d = labToolData || {};
 
                   var droSuccessLog = blAbcLog.slice();
 
-                  droSuccessLog.unshift({ tick: newTick, a: 'DRO interval complete', b: 'No lever press for ' + blDroInterval + ' ticks', c: 'ðŸ• Food delivered (DRO success!)', t: Date.now() });
+                  droSuccessLog.unshift({ tick: newTick, a: 'DRO interval complete', b: 'No lever press for ' + blDroInterval + ' ticks', c: '🍕 Food delivered (DRO success!)', t: Date.now() });
 
                   upd('blAbcLog', droSuccessLog.slice(0, 50));
 
                   if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 2, 'DRO interval success');
 
-                  if (addToast) addToast('ðŸ• DRO interval met! Food delivered.', 'success');
+                  if (addToast) addToast('🍕 DRO interval met! Food delivered.', 'success');
 
                 } else {
 
@@ -1392,6 +1422,7 @@ var d = labToolData || {};
               if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level ' + blLevel + ': ' + currentLevel.title);
 
               if (addToast) addToast('\uD83C\uDF89 Level ' + blLevel + ' Complete! ' + currentLevel.concept + ' mastered!', 'success');
+              if (announceToSR) announceToSR('Congratulations! Level ' + blLevel + ' complete. ' + currentLevel.concept + ' mastered.');
 
               var newCompleted = blCompletedLevels.indexOf(blLevel) < 0 ? blCompletedLevels.concat([blLevel]) : blCompletedLevels;
 
@@ -1416,6 +1447,7 @@ var d = labToolData || {};
                 if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level 3: Observed extinction burst');
 
                 if (addToast) addToast('\uD83C\uDF89 Level 3 Complete! You observed the extinction burst!', 'success');
+                if (announceToSR) announceToSR('Level 3 complete! You observed the extinction burst.');
 
                 var newCompleted3 = blCompletedLevels.indexOf(3) < 0 ? blCompletedLevels.concat([3]) : blCompletedLevels;
 
@@ -1465,7 +1497,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Canvas Drawing â”€â”€
+          // ── Canvas Drawing ──
 
           function drawChamber(canvas) {
 
@@ -1473,9 +1505,13 @@ var d = labToolData || {};
 
             var ctx = canvas.getContext('2d');
 
-            var W = canvas.width = canvas.offsetWidth || 420;
-
-            var H = canvas.height = 280;
+            // Only resize canvas if dimensions changed (prevents flicker)
+            var targetW = canvas.offsetWidth || 420;
+            var targetH = 280;
+            if (canvas.width !== targetW) canvas.width = targetW;
+            if (canvas.height !== targetH) canvas.height = targetH;
+            var W = targetW;
+            var H = targetH;
 
 
 
@@ -1549,7 +1585,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ Light indicator (top-left) â”€
+            // ─ Light indicator (top-left) ─
 
             if (blLevel === 5 || blLevel === 6) {
 
@@ -1579,7 +1615,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ Lever (right side) with depression animation â”€
+            // ─ Lever (right side) with depression animation ─
 
             var leverX = W - 70;
 
@@ -1653,7 +1689,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ Food tray (bottom-left) â”€
+            // ─ Food tray (bottom-left) ─
 
             var trayX = 55;
 
@@ -1823,7 +1859,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ Dust motes (ambient particles) â”€
+            // ─ Dust motes (ambient particles) ─
 
             for (var dm = 0; dm < 6; dm++) {
 
@@ -1849,7 +1885,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ Mouse sprite â”€
+            // ─ Mouse sprite ─
 
             var mx = blMouseX;
 
@@ -2091,7 +2127,7 @@ var d = labToolData || {};
 
             var tailWag = Math.sin(Date.now() / tailBaseFreq) * 6;
 
-            var isHappy = blMoodEmoji === 'ðŸ˜Š';
+            var isHappy = blMoodEmoji === '😊';
 
             var recentFood = blFoodVisible || (blFoodTime && (Date.now() - blFoodTime) < 2000);
 
@@ -2197,7 +2233,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ Mood emoji indicator â”€
+            // ─ Mood emoji indicator ─
 
             ctx.font = '16px sans-serif';
 
@@ -2207,7 +2243,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ Action label â”€
+            // ─ Action label ─
 
             var actionLabel = ACTION_LABELS[blMouseAction] || blMouseAction;
 
@@ -2221,7 +2257,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ Tick counter â”€
+            // ─ Tick counter ─
 
             ctx.fillStyle = '#94a3b8';
 
@@ -2237,7 +2273,7 @@ var d = labToolData || {};
 
 
 
-            // â”€ PAUSED overlay â”€
+            // ─ PAUSED overlay ─
 
             if (blPaused) {
 
@@ -2259,7 +2295,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Cumulative Record Drawing â”€â”€
+          // ── Cumulative Record Drawing ──
 
           function drawCumRecord(canvas) {
 
@@ -2433,7 +2469,7 @@ var d = labToolData || {};
 
               var burstLabelX = W * 0.7;
 
-              ctx.fillText('EXTINCTION BURST â†‘', burstLabelX, 28);
+              ctx.fillText('EXTINCTION BURST ↑', burstLabelX, 28);
 
             }
 
@@ -2485,7 +2521,19 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Render canvases via setTimeout (no hooks in conditional IIFE) â”€â”€
+          // ── Keyboard shortcut: Spacebar to deliver food ──
+          if (!window._blKeyHandler) {
+            window._blKeyHandler = function (e) {
+              if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                if (typeof window._blReinforceFn === 'function') window._blReinforceFn();
+              }
+            };
+            document.addEventListener('keydown', window._blKeyHandler);
+          }
+          window._blReinforceFn = (blLastAction && blPhase === 'running' && blLevel !== 8 && blLevel !== 9) ? reinforceAction : null;
+
+          // ── Render canvases via setTimeout (no hooks in conditional IIFE) ──
 
           setTimeout(function () {
 
@@ -2497,15 +2545,15 @@ var d = labToolData || {};
 
             drawCumRecord(cumCv);
 
-            // â”€â”€ Smooth mouse interpolation (async to avoid render-phase setState) â”€â”€
+            // ── Smooth mouse interpolation (async to avoid render-phase setState) ──
 
-            var _lerpRate = 0.15;
+            var _lerpRate = 0.08; // Smoother: 8% per frame (was 15% — too jumpy)
 
             var _dxLerp = (d.blTargetX || 200) - (d.blMouseX || 200);
 
             var _dyLerp = (d.blTargetY || 150) - (d.blMouseY || 150);
 
-            if (Math.abs(_dxLerp) > 2 || Math.abs(_dyLerp) > 2) {
+            if (Math.abs(_dxLerp) > 1 || Math.abs(_dyLerp) > 1) {
 
               upd('blMouseX', (d.blMouseX || 200) + _dxLerp * _lerpRate);
 
@@ -2513,9 +2561,9 @@ var d = labToolData || {};
 
             }
 
-            // â”€â”€ Auto-advance timer (speed-adjusted, async) â”€â”€
-
-            var _tickDelay = (d.blSpeed || 1) === 3 ? 1200 : (d.blSpeed || 1) === 2 ? 2200 : 3200;
+            // ── Auto-advance timer (speed-adjusted, async) ──
+            // Slowed down all speeds for smoother, more observable behavior
+            var _tickDelay = (d.blSpeed || 1) === 3 ? 2000 : (d.blSpeed || 1) === 2 ? 3500 : 5000;
 
             if ((d.blPhase || 'intro') === 'running' && !d.blPaused) {
 
@@ -2527,7 +2575,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Weight bar chart data â”€â”€
+          // ── Weight bar chart data ──
 
           var sortedWeights = Object.keys(blWeights).map(function (k) {
 
@@ -2541,7 +2589,7 @@ var d = labToolData || {};
 
 
 
-          // â•â•â•â•â•â•â•â•â•â•â• RENDER â•â•â•â•â•â•â•â•â•â•â•
+          // ═══════════ RENDER ═══════════
 
           // Intro Phase
 
@@ -2583,7 +2631,7 @@ var d = labToolData || {};
 
                   var isComplete = blCompletedLevels.indexOf(lvl.id) >= 0;
 
-                  return React.createElement("button", { "aria-label": "Action",
+                  return React.createElement("button", { "aria-label": "Select level " + lvl.id + ": " + lvl.title,
 
                     key: lvl.id,
 
@@ -2655,7 +2703,7 @@ var d = labToolData || {};
 
               // Start button
 
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Start Experiment",
 
                 onClick: function () {
 
@@ -2713,7 +2761,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Pulsing helper: is the current action the target? â”€â”€
+          // ── Pulsing helper: is the current action the target? ──
 
           var isTargetActive = blPhase === 'running' && blLastAction === (blLevel === 6 ? blSandboxTarget : (currentLevel.target || 'pressLever'));
 
@@ -2721,7 +2769,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ FR counter for Level 4 â”€â”€
+          // ── FR counter for Level 4 ──
 
           var frRatio = 3;
 
@@ -2729,7 +2777,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Glass style shorthand â”€â”€
+          // ── Glass style shorthand ──
 
           var glass = { backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' };
 
@@ -2739,7 +2787,7 @@ var d = labToolData || {};
 
           return React.createElement("div", { className: "p-4 space-y-3", style: { maxWidth: 720, margin: '0 auto' } },
 
-            // â”€â”€ Inject keyframe animation for pulse â”€â”€
+            // ── Inject keyframe animation for pulse ──
 
             React.createElement("style", null,
 
@@ -2751,7 +2799,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Header row â”€â”€
+            // ── Header row ──
 
             React.createElement("div", {
 
@@ -2777,13 +2825,13 @@ var d = labToolData || {};
 
               ),
 
-              // â”€â”€ Speed segmented control â”€â”€
+              // ── Speed segmented control ──
 
               React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-slate-600/50", style: { fontSize: 11 } },
 
                 [1, 2, 3].map(function (sp) {
 
-                  return React.createElement("button", { "aria-label": "Change bl speed",
+                  return React.createElement("button", { "aria-label": "Set speed to " + (sp === 1 ? 'Slow' : sp === 2 ? 'Medium' : 'Fast'),
 
                     key: sp,
 
@@ -2799,7 +2847,7 @@ var d = labToolData || {};
 
               ),
 
-              // â”€â”€ Sound toggle â”€â”€
+              // ── Sound toggle ──
 
               React.createElement("button", {
 
@@ -2813,11 +2861,11 @@ var d = labToolData || {};
 
               }, blSoundOn ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
 
-              // â”€â”€ Pause button â”€â”€
+              // ── Pause button ──
 
-              React.createElement("button", { "aria-label": "Change bl paused",
+              React.createElement("button", { "aria-label": blPaused ? "Resume simulation" : "Pause simulation",
 
-                onClick: function () { upd('blPaused', !blPaused); },
+                onClick: function () { upd('blPaused', !blPaused); if (announceToSR) announceToSR(blPaused ? 'Simulation resumed' : 'Simulation paused'); },
 
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
 
@@ -2827,9 +2875,9 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Level progress bar â”€â”€
+            // ── Level progress bar ──
 
-            currentLevel.goal > 0 && React.createElement("div", { className: "relative", style: { height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(99,102,241,0.15)' } },
+            currentLevel.goal > 0 && React.createElement("div", { className: "relative", role: "progressbar", "aria-valuenow": blLevelScore, "aria-valuemin": 0, "aria-valuemax": currentLevel.goal, "aria-label": "Level progress: " + blLevelScore + " of " + currentLevel.goal, style: { height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(99,102,241,0.15)' } },
 
               React.createElement("div", {
 
@@ -2859,21 +2907,21 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Contextual hint banner â”€â”€
+            // ── Contextual hint banner ──
 
             blHint && React.createElement("div", {
-
-              style: Object.assign({ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 12, padding: '8px 14px' }, glass)
+              role: "status", "aria-live": "polite",
+              style: Object.assign({ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 12, padding: '10px 14px' }, glass)
 
             },
 
-              React.createElement("p", { className: "text-xs text-indigo-200 font-medium", style: { margin: 0 } }, blHint)
+              React.createElement("p", { className: "text-sm font-semibold", style: { margin: 0, color: '#c7d2fe', lineHeight: 1.5 } }, blHint)
 
             ),
 
 
 
-            // â”€â”€ Completion results card â”€â”€
+            // ── Completion results card ──
 
             blPhase === 'complete' && React.createElement("div", {
 
@@ -2891,7 +2939,7 @@ var d = labToolData || {};
 
                 return React.createElement("p", { className: "text-2xl text-center mb-1", style: { letterSpacing: 4, textShadow: '0 0 12px rgba(251,191,36,0.5)' } },
 
-                  'â­'.repeat(stars) + 'â˜†'.repeat(3 - stars)
+                  '⭐'.repeat(stars) + '☆'.repeat(3 - stars)
 
                 );
 
@@ -2961,11 +3009,11 @@ var d = labToolData || {};
 
               ),
 
-              // â”€â”€ Knowledge Quiz â”€â”€
+              // ── Knowledge Quiz ──
 
               QUIZ_BANK[blLevel] && React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/30 rounded-xl p-4 border border-indigo-500/30" },
 
-                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "ðŸ§  Knowledge Check"),
+                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "🧠 Knowledge Check"),
 
                 React.createElement("p", { className: "text-sm text-slate-200 font-semibold mb-3" }, QUIZ_BANK[blLevel].q),
 
@@ -2989,7 +3037,7 @@ var d = labToolData || {};
 
                     else btnClass += 'bg-slate-800/60 text-slate-300 border-slate-600/30 hover:bg-slate-700/60';
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": "Quiz answer: " + opt,
 
                       key: oi,
 
@@ -3009,11 +3057,11 @@ var d = labToolData || {};
 
                           if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 5, 'Quiz correct: Level ' + blLevel);
 
-                          if (addToast) addToast('âœ… Correct! +5 XP bonus!', 'success');
+                          if (addToast) addToast('✅ Correct! +5 XP bonus!', 'success');
 
                         } else {
 
-                          if (addToast) addToast('âŒ Not quite â€” read the explanation below.', 'error');
+                          if (addToast) addToast('❌ Not quite — read the explanation below.', 'error');
 
                         }
 
@@ -3033,7 +3081,7 @@ var d = labToolData || {};
 
                 },
 
-                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? 'âœ… Correct!' : 'âŒ Incorrect'),
+                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? '✅ Correct!' : '❌ Incorrect'),
 
                   React.createElement("p", null, QUIZ_BANK[blLevel].explain)
 
@@ -3051,7 +3099,7 @@ var d = labToolData || {};
 
               // Next level button
 
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Next Level",
 
                 onClick: function () {
 
@@ -3105,7 +3153,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Chamber Canvas â”€â”€
+            // ── Chamber Canvas ──
 
             React.createElement("div", {
 
@@ -3116,6 +3164,8 @@ var d = labToolData || {};
               React.createElement("canvas", {
 
                 id: "bl-chamber-canvas",
+                role: "img",
+                'aria-label': 'Behavior lab chamber showing a mouse. Current action: ' + (d.blAction || 'exploring') + '. Tick: ' + (d.blTick || 0),
 
                 style: { width: '100%', height: 280, display: 'block', cursor: 'crosshair' }
 
@@ -3125,7 +3175,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Behavior frequency heatmap strip â”€â”€
+            // ── Behavior frequency heatmap strip ──
 
             blRecentActions.length > 0 && React.createElement("div", {
 
@@ -3138,16 +3188,20 @@ var d = labToolData || {};
               React.createElement("div", { className: "flex gap-1 items-center flex-wrap" },
 
                 blRecentActions.map(function (act, ai) {
-
+                  var isLast = ai === blRecentActions.length - 1;
                   return React.createElement("div", {
 
                     key: ai,
 
                     title: ACTION_LABELS[act] || act,
+                    'aria-label': (ACTION_LABELS[act] || act) + (act === (currentLevel.target || 'pressLever') ? ' (target behavior)' : ''),
 
                     style: {
 
-                      width: 14, height: 14, borderRadius: '50%',
+                      width: isLast ? 'auto' : 14, height: isLast ? 'auto' : 14, borderRadius: isLast ? '8px' : '50%',
+                      padding: isLast ? '2px 8px' : 0,
+                      display: isLast ? 'flex' : 'block', alignItems: 'center', gap: '3px',
+                      fontSize: isLast ? '10px' : 0, fontWeight: 700, color: '#fff',
 
                       backgroundColor: ACTION_COLORS[act] || '#475569',
 
@@ -3161,7 +3215,7 @@ var d = labToolData || {};
 
                     }
 
-                  });
+                  }, isLast ? (ACTION_LABELS[act] || act) : null);
 
                 })
 
@@ -3171,7 +3225,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Controls row â”€â”€
+            // ── Controls row ──
 
             React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
 
@@ -3197,7 +3251,7 @@ var d = labToolData || {};
 
               }, "\uD83D\uDD14 Use the Classical Conditioning panel below") :
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Reinforce action",
 
                   onClick: function () {
 
@@ -3225,7 +3279,7 @@ var d = labToolData || {};
 
                   style: pulseStyle
 
-                }, "\uD83C\uDF55 Deliver Food" + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '')),
+                }, "\uD83C\uDF55 Deliver Food" + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '') + '  [Space]'),
 
               // Level 3: extinction trigger
 
@@ -3281,7 +3335,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Level 7: Chain Progress Tracker â”€â”€
+            // ── Level 7: Chain Progress Tracker ──
 
             blLevel === 7 && blPhase === 'running' && React.createElement("div", {
 
@@ -3299,7 +3353,7 @@ var d = labToolData || {};
 
                   var isCurrent = si === blChainStep;
 
-                  var stepLabel = step === 'sniff' ? 'ðŸ‘ƒ Sniff' : step === 'rearUp' ? 'ðŸ­ Rear Up' : 'âš¡ Press Lever';
+                  var stepLabel = step === 'sniff' ? '👃 Sniff' : step === 'rearUp' ? '🐭 Rear Up' : '⚡ Press Lever';
 
                   return React.createElement(React.Fragment, { key: si },
 
@@ -3307,7 +3361,7 @@ var d = labToolData || {};
 
                       className: "text-sm font-bold " + (isDone ? 'text-emerald-400' : 'text-slate-600')
 
-                    }, "âžœ"),
+                    }, "➜"),
 
                     React.createElement("div", {
 
@@ -3319,7 +3373,7 @@ var d = labToolData || {};
 
                             'bg-slate-800/60 text-slate-500 border border-slate-700/40')
 
-                    }, (isDone ? 'âœ… ' : isCurrent ? 'â³ ' : '') + stepLabel)
+                    }, (isDone ? '✅ ' : isCurrent ? '⏳ ' : '') + stepLabel)
 
                   );
 
@@ -3329,7 +3383,7 @@ var d = labToolData || {};
 
                   className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse shadow-lg shadow-amber-500/30"
 
-                }, "ðŸ• REINFORCE NOW!")
+                }, "🍕 REINFORCE NOW!")
 
               ),
 
@@ -3341,7 +3395,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Level 8: DRO Timer Panel â”€â”€
+            // ── Level 8: DRO Timer Panel ──
 
             blLevel === 8 && blPhase === 'running' && React.createElement("div", {
 
@@ -3393,7 +3447,7 @@ var d = labToolData || {};
 
                 React.createElement("p", { className: "text-[10px] text-cyan-300/60 italic" },
 
-                  blDroTimer === 0 ? 'Timer started â€” no lever presses needed!' : 'Keep waiting...')
+                  blDroTimer === 0 ? 'Timer started — no lever presses needed!' : 'Keep waiting...')
 
               )
 
@@ -3401,7 +3455,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Level 9: Classical Conditioning Panel â”€â”€
+            // ── Level 9: Classical Conditioning Panel ──
 
             blLevel === 9 && blPhase === 'running' && React.createElement("div", {
 
@@ -3531,7 +3585,7 @@ var d = labToolData || {};
 
                 // Ring Bell button
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Ring Bell",
 
                   onClick: function () {
 
@@ -3569,7 +3623,7 @@ var d = labToolData || {};
 
                     } else if (blCcPhase === 'test') {
 
-                      // Test phase: bell alone â€” if association > 30, CR occurs
+                      // Test phase: bell alone — if association > 30, CR occurs
 
                       if (blAssocStrength > 30) {
 
@@ -3577,7 +3631,7 @@ var d = labToolData || {};
 
                         upd('blSalivateTime', Date.now());
 
-                        bellLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell (CS)', b: 'Dog hears bell alone', c: '\uD83E\uDD24 Salivation! (CR â€” conditioned response!)', t: Date.now() });
+                        bellLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell (CS)', b: 'Dog hears bell alone', c: '\uD83E\uDD24 Salivation! (CR — conditioned response!)', t: Date.now() });
 
                         upd('blAbcLog', bellLog.slice(0, 50));
 
@@ -3671,7 +3725,7 @@ var d = labToolData || {};
 
                 // Pair Bell + Food button (only in pairing phase)
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Pair Bell with Food",
 
                   onClick: function () {
 
@@ -3711,11 +3765,11 @@ var d = labToolData || {};
 
                     var pairLog = blAbcLog.slice();
 
-                    pairLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell + \uD83C\uDF55 Food (US)', b: 'Dog eats food', c: '\uD83E\uDD24 Salivation (UR) â€” Pair ' + newPairCount + '/5', t: Date.now() });
+                    pairLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell + \uD83C\uDF55 Food (US)', b: 'Dog eats food', c: '\uD83E\uDD24 Salivation (UR) — Pair ' + newPairCount + '/5', t: Date.now() });
 
                     upd('blAbcLog', pairLog.slice(0, 50));
 
-                    if (addToast) addToast('\uD83D\uDD14 + \uD83C\uDF55 Pair ' + newPairCount + '/5 â€” association building (' + newAssocP + '%)', 'success');
+                    if (addToast) addToast('\uD83D\uDD14 + \uD83C\uDF55 Pair ' + newPairCount + '/5 — association building (' + newAssocP + '%)', 'success');
 
                     if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 1, 'CS-US pairing trial');
 
@@ -3751,7 +3805,7 @@ var d = labToolData || {};
 
                 blCcPhase === 'pairing' ? 'Pair the bell with food 5 times to build the association!' :
 
-                blCcPhase === 'test' ? 'Ring the bell ALONE â€” does the dog salivate? (Conditioned Response)' :
+                blCcPhase === 'test' ? 'Ring the bell ALONE — does the dog salivate? (Conditioned Response)' :
 
                 blCcPhase === 'extinction' ? 'Ring the bell WITHOUT food to weaken the association' : '')
 
@@ -3759,7 +3813,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Current action + stats â”€â”€
+            // ── Current action + stats ──
 
             React.createElement("div", { className: "grid grid-cols-2 gap-3" },
 
@@ -3803,7 +3857,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Probability Weights bar chart â”€â”€
+            // ── Probability Weights bar chart ──
 
             React.createElement("div", {
 
@@ -3859,7 +3913,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ Cumulative Record â”€â”€
+            // ── Cumulative Record ──
 
             React.createElement("div", {
 
@@ -3870,6 +3924,8 @@ var d = labToolData || {};
               React.createElement("canvas", {
 
                 id: "bl-cumrecord-canvas",
+                role: "img",
+                'aria-label': 'Cumulative response record chart. Score: ' + (d.blLevelScore || 0) + ' of ' + (currentLevel ? currentLevel.goal : 0),
 
                 style: { width: '100%', height: 130, display: 'block' }
 
@@ -3879,7 +3935,7 @@ var d = labToolData || {};
 
 
 
-            // â”€â”€ ABC Log with CSV export â”€â”€
+            // ── ABC Log with CSV export ──
 
             blAbcLog.length > 0 && React.createElement("div", {
 
@@ -3893,7 +3949,7 @@ var d = labToolData || {};
 
                 // CSV Export button
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Export ABC Data as CSV",
 
                   onClick: function () {
 
@@ -4241,11 +4297,11 @@ var d = labToolData || {};
                 }),
                 // Controls
                 React.createElement("div", { className: "flex gap-2 mt-2 justify-center" },
-                  React.createElement("button", { "aria-label": "Reset",
+                  React.createElement("button", { "aria-label": "Toggle schedule animation",
                     onClick: function() { upd('blSchedPaused', !blSchedPaused); },
                     className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (blSchedPaused ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-300')
                   }, blSchedPaused ? '\u25B6 Play' : '\u23F8 Pause'),
-                  React.createElement("button", { "aria-label": "Reset",
+                  React.createElement("button", { "aria-label": "Reset schedule animation",
                     onClick: function() { upd('blSchedTick', 0); upd('blSchedPaused', false); },
                     className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600"
                   }, '\u21BB Reset')

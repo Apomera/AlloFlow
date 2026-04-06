@@ -5,6 +5,19 @@
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-algebraCAS')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-algebraCAS';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   /* -- StemLab plugin guard -- */
   if (!window.StemLab) {
@@ -112,6 +125,13 @@
     desc: 'Interactive algebra with equation builder, balance scale, and step-by-step AI solving',
     color: 'amber',
     category: 'math',
+    questHooks: [
+      { id: 'solve_5', label: 'Solve 5 equations', icon: '\uD83D\uDD22', check: function(d) { return (d._solveCount || 0) >= 5; }, progress: function(d) { return (d._solveCount || 0) + '/5'; } },
+      { id: 'factor_3', label: 'Factor 3 expressions', icon: '\uD83E\uDDE9', check: function(d) { return (d._factorCount || 0) >= 3; }, progress: function(d) { return (d._factorCount || 0) + '/3'; } },
+      { id: 'scale_solve', label: 'Solve an equation on the balance scale', icon: '\u2696\uFE0F', check: function(d) { return (d._scaleSolves || 0) >= 1; }, progress: function(d) { return (d._scaleSolves || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'streak_3', label: 'Get a 3-answer correct streak', icon: '\uD83D\uDD25', check: function(d) { return (d._maxStreak || 0) >= 3; }, progress: function(d) { return (d._maxStreak || 0) + '/3 streak'; } },
+      { id: 'all_modes', label: 'Use all 4 CAS modes (solve, factor, simplify, expand)', icon: '\uD83C\uDF1F', check: function(d) { var m = d._modesUsed || {}; return !!(m.solve && m.factor && m.simplify && m.expand); }, progress: function(d) { var m = d._modesUsed || {}; return Object.keys(m).length + '/4 modes'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

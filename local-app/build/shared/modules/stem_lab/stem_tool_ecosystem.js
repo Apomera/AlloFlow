@@ -18,6 +18,19 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) {
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-ecosystem')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-ecosystem';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
@@ -176,6 +189,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     icon: '\uD83E\uDD8A', label: 'Ecosystem Simulator',
     desc: 'Model predator-prey dynamics with Lotka\u2013Volterra equations, live canvas, sandbox mode, event injection, quiz & AI tutor.',
     color: 'emerald', category: 'science',
+    questHooks: [
+      { id: 'run_100_steps', label: 'Run the simulation for 100+ steps', icon: '\u25B6\uFE0F', check: function(d) { d = d.ecosystem || d; return (d.steps || 0) >= 100; }, progress: function(d) { d = d.ecosystem || d; return (d.steps || 0) + '/100 steps'; } },
+      { id: 'quiz_3_correct', label: 'Answer 3+ ecology quiz questions correctly', icon: '\uD83E\uDDE0', check: function(d) { d = d.ecosystem || d; return (d.quizCorrect || 0) >= 3; }, progress: function(d) { d = d.ecosystem || d; return (d.quizCorrect || 0) + '/3'; } },
+      { id: 'use_3_presets', label: 'Try 3 different ecosystem presets', icon: '\uD83C\uDF0D', check: function(d) { d = d.ecosystem || d; return Object.keys(d.presetsUsed || {}).length >= 3; }, progress: function(d) { d = d.ecosystem || d; return Object.keys(d.presetsUsed || {}).length + '/3 presets'; } },
+      { id: 'use_all_graph_views', label: 'View all graph types (population, phase, energy)', icon: '\uD83D\uDCCA', check: function(d) { d = d.ecosystem || d; return Object.keys(d.graphViewsUsed || {}).length >= 3; }, progress: function(d) { d = d.ecosystem || d; return Object.keys(d.graphViewsUsed || {}).length + '/3 views'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -185,6 +204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
+      var canvasNarrate = ctx.canvasNarrate;
       var setToolSnapshots = ctx.setToolSnapshots;
       var callGemini = ctx.callGemini || window.callGemini;
       var callTTS = ctx.callTTS || window.callTTS;
@@ -679,11 +699,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         canvas.addEventListener('mouseup', onMouseUp);
         canvas.addEventListener('click', onClick);
 
+        // ── Ground level: animals stay on/below the terrain horizon ──
+        var groundY = Math.round(ch * 0.46);
+        var groundBottom = ch - 20;
+
         // ── Entities ──
         var preyEntities = [];
         for (var pi = 0; pi < 80; pi++) {
           preyEntities.push({
-            x: Math.random() * cw, y: 80 + Math.random() * (ch - 120),
+            x: Math.random() * cw, y: groundY + Math.random() * (groundBottom - groundY),
             vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 0.8,
             alive: pi < prey0, hop: Math.random() * Math.PI * 2, facing: Math.random() > 0.5 ? 1 : -1
           });
@@ -692,7 +716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var predEntities = [];
         for (var fi = 0; fi < 35; fi++) {
           predEntities.push({
-            x: Math.random() * cw, y: 80 + Math.random() * (ch - 120),
+            x: Math.random() * cw, y: groundY + Math.random() * (groundBottom - groundY),
             vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.5,
             alive: fi < pred0, facing: Math.random() > 0.5 ? 1 : -1, hunting: false
           });
@@ -801,7 +825,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 if (!preyEntities[fbs].alive) {
                   preyEntities[fbs].alive = true;
                   preyEntities[fbs].x = Math.random() * cw;
-                  preyEntities[fbs].y = 80 + Math.random() * (ch - 120);
+                  preyEntities[fbs].y = groundY + Math.random() * (groundBottom - groundY);
                   preyEntities[fbs].vx = (Math.random() - 0.5) * 1.2;
                   preyEntities[fbs].vy = (Math.random() - 0.5) * 0.8;
                   spawned++;
@@ -816,7 +840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 if (!predEntities[mgi2].alive) {
                   predEntities[mgi2].alive = true;
                   predEntities[mgi2].x = Math.random() * cw;
-                  predEntities[mgi2].y = 80 + Math.random() * (ch - 120);
+                  predEntities[mgi2].y = groundY + Math.random() * (groundBottom - groundY);
                   predEntities[mgi2].vx = (Math.random() - 0.5) * 0.8;
                   predEntities[mgi2].vy = (Math.random() - 0.5) * 0.5;
                   migrated++;
@@ -887,7 +911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if (!preyEntities[spr].alive) {
                     preyEntities[spr].alive = true;
                     preyEntities[spr].x = clickX;
-                    preyEntities[spr].y = Math.max(80, Math.min(ch - 20, clickY));
+                    preyEntities[spr].y = Math.max(groundY, Math.min(groundBottom, clickY));
                     preyEntities[spr].vx = (Math.random() - 0.5) * 1.2;
                     preyEntities[spr].vy = (Math.random() - 0.5) * 0.8;
                     playSound('place');
@@ -900,7 +924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if (!predEntities[spf].alive) {
                     predEntities[spf].alive = true;
                     predEntities[spf].x = clickX;
-                    predEntities[spf].y = Math.max(80, Math.min(ch - 20, clickY));
+                    predEntities[spf].y = Math.max(groundY, Math.min(groundBottom, clickY));
                     predEntities[spf].vx = (Math.random() - 0.5) * 0.8;
                     predEntities[spf].vy = (Math.random() - 0.5) * 0.5;
                     playSound('place');
@@ -997,8 +1021,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               p.y += p.vy;
               if (p.x < 10) { p.x = 10; p.vx = Math.abs(p.vx); p.facing = 1; }
               if (p.x > cw - 10) { p.x = cw - 10; p.vx = -Math.abs(p.vx); p.facing = -1; }
-              if (p.y < 80) { p.y = 80; p.vy = Math.abs(p.vy); }
-              if (p.y > ch - 20) { p.y = ch - 20; p.vy = -Math.abs(p.vy); }
+              if (p.y < groundY) { p.y = groundY; p.vy = Math.abs(p.vy); }
+              if (p.y > groundBottom) { p.y = groundBottom; p.vy = -Math.abs(p.vy); }
               if (Math.random() < 0.02) {
                 p.vx = (Math.random() - 0.5) * 1.5;
                 p.vy = (Math.random() - 0.5) * 0.8;
@@ -1014,8 +1038,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               f.y += f.vy;
               if (f.x < 15) { f.x = 15; f.vx = Math.abs(f.vx); f.facing = 1; }
               if (f.x > cw - 15) { f.x = cw - 15; f.vx = -Math.abs(f.vx); f.facing = -1; }
-              if (f.y < 80) { f.y = 80; f.vy = Math.abs(f.vy); }
-              if (f.y > ch - 20) { f.y = ch - 20; f.vy = -Math.abs(f.vy); }
+              if (f.y < groundY) { f.y = groundY; f.vy = Math.abs(f.vy); }
+              if (f.y > groundBottom) { f.y = groundBottom; f.vy = -Math.abs(f.vy); }
 
               f.hunting = false;
               var nearDist = 100;
@@ -1113,7 +1137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if (!preyEntities[rpi].alive) {
                     preyEntities[rpi].alive = true;
                     preyEntities[rpi].x = Math.random() * cw;
-                    preyEntities[rpi].y = 80 + Math.random() * (ch - 120);
+                    preyEntities[rpi].y = groundY + Math.random() * (groundBottom - groundY);
                     preyEntities[rpi].vx = (Math.random() - 0.5) * 1.2;
                     preyEntities[rpi].vy = (Math.random() - 0.5) * 0.8;
                     newPreyCount--;
@@ -1138,7 +1162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if (!predEntities[rfi].alive) {
                     predEntities[rfi].alive = true;
                     predEntities[rfi].x = Math.random() * cw;
-                    predEntities[rfi].y = 80 + Math.random() * (ch - 120);
+                    predEntities[rfi].y = groundY + Math.random() * (groundBottom - groundY);
                     predEntities[rfi].vx = (Math.random() - 0.5) * 0.8;
                     predEntities[rfi].vy = (Math.random() - 0.5) * 0.5;
                     playSound('birth');

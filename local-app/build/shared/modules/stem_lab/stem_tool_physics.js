@@ -38,14 +38,32 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-physics')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-physics';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ═══ 🔬 physics (physics) ═══
   window.StemLab.registerTool('physics', {
-    icon: '🔬',
+    icon: '\uD83D\uDE80',
     label: 'Physics Simulator',
     desc: 'Launch projectiles, explore kinematics, and learn Newtons laws',
     color: 'sky',
     category: 'science',
+    questHooks: [
+      { id: 'hit_3_targets', label: 'Hit 3 targets in target practice', icon: '\uD83C\uDFAF', check: function(d) { return (d.targetScore || 0) >= 3; }, progress: function(d) { return (d.targetScore || 0) + '/3 targets'; } },
+      { id: 'complete_target_round', label: 'Complete a full target round', icon: '\uD83C\uDFC6', check: function(d) { return (d.targetRound || 1) >= 2; }, progress: function(d) { return (d.targetRound || 1) >= 2 ? 'Done!' : 'Round ' + (d.targetRound || 1); } },
+      { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -78,6 +96,7 @@ window.StemLab = window.StemLab || {
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
+      var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
 
       // ── Tool body (physics) ──
@@ -223,6 +242,12 @@ const d = labToolData.physics;
 
             canvasEl._physInit = true;
             if (typeof canvasA11yDesc === 'function') canvasA11yDesc(canvasEl, 'Physics projectile simulator canvas. Cannon on left fires projectiles across a landscape with target flags at 50m, 100m, 200m, 300m. Shows trajectory trail, velocity vectors, and impact particles.');
+            // Canvas Narration: tool init
+            if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'init', {
+              first: 'Physics Simulator loaded. Cannon on the left fires projectiles. Adjust angle and velocity with sliders, then press Launch. Target flags at 50, 100, 200 and 300 meters.',
+              repeat: 'Physics Simulator ready. Adjust angle and velocity, then launch.',
+              terse: 'Physics Simulator ready.'
+            });
 
             canvasEl._physAnimActive = true;
 
@@ -340,6 +365,13 @@ const d = labToolData.physics;
 
               targets.forEach(function (t) { t.hit = false; });
 
+              // Canvas Narration: launch event
+              if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'launch', {
+                first: 'Projectile launched at ' + angle + ' degrees with a velocity of ' + vel + ' meters per second. Gravity is ' + grav + ' meters per second squared.' + (drag > 0 ? ' Air resistance is on.' : ''),
+                repeat: 'Launched. Angle: ' + angle + ' degrees, velocity: ' + vel + ' meters per second.',
+                terse: 'Launched: ' + angle + '°, ' + vel + ' m/s'
+              }, { debounce: 500 });
+
             }
 
             canvasEl._launch = launch;
@@ -355,15 +387,10 @@ const d = labToolData.physics;
             var dt = 0.035;
 
             function draw() {
-
               if (!canvasEl.isConnected) {
-
                 canvasEl._physAnimActive = false;
-
                 return;
-
               }
-
               tick++;
 
               ctx.clearRect(0, 0, cW, cH);
@@ -923,13 +950,21 @@ const d = labToolData.physics;
 
                   canvasEl.dataset.lastMaxH = '0';
 
+                  var _landMaxH = 0;
                   if (trails.length > 0) {
 
-                    var maxH = Math.max.apply(null, trails[trails.length - 1].map(function (p) { return p.mY; }));
+                    _landMaxH = Math.max.apply(null, trails[trails.length - 1].map(function (p) { return p.mY; }));
 
-                    canvasEl.dataset.lastMaxH = maxH.toFixed(1);
+                    canvasEl.dataset.lastMaxH = _landMaxH.toFixed(1);
 
                   }
+
+                  // Canvas Narration: landing event
+                  if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'landing', {
+                    first: 'Projectile landed at ' + exactLandX.toFixed(1) + ' meters. Maximum height was ' + _landMaxH.toFixed(1) + ' meters. Try changing the angle or velocity to see how the trajectory changes.',
+                    repeat: 'Landed at ' + exactLandX.toFixed(1) + ' meters. Max height: ' + _landMaxH.toFixed(1) + ' meters.',
+                    terse: exactLandX.toFixed(0) + ' meters, height ' + _landMaxH.toFixed(0) + ' meters'
+                  }, { debounce: 500 });
 
                   // ── Target Mode: check hit ──
                   if (canvasEl.dataset.targetMode === 'true') {
@@ -1645,7 +1680,14 @@ const d = labToolData.physics;
 
                   React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) { if (!isLocked) upd(s.k, parseFloat(e.target.value)); }, className: "w-full " + (isLocked ? 'accent-red-400 opacity-50 cursor-not-allowed' : 'accent-sky-600') })
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
+                    if (!isLocked) {
+                      var newVal = parseFloat(e.target.value);
+                      upd(s.k, newVal);
+                      // Canvas Narration: parameter change (high debounce to avoid spam during drag)
+                      if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'param_' + s.k, s.label.split(' ')[0] + ': ' + newVal, { debounce: 800 });
+                    }
+                  }, className: "w-full " + (isLocked ? 'accent-red-400 opacity-50 cursor-not-allowed' : 'accent-sky-600') })
 
                 );
 
@@ -1940,7 +1982,7 @@ const d = labToolData.physics;
 
                 React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF Predict the Landing"),
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Generate landing prediction quiz",
 
                   onClick: function () {
 

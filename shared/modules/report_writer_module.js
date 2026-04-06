@@ -3,6 +3,19 @@
 // Loaded from GitHub CDN via loadModule('ReportWriter', ...)
 // Version: 1.0.0 (Mar 2026)
 (function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-report-writer')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-report-writer';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
     if (window.AlloModules && window.AlloModules.ReportWriter) {
         console.log("[CDN] ReportWriter already loaded, skipping duplicate");
         return;
@@ -345,7 +358,13 @@
         const ageNorm = norms.find(n => studentAge >= n.ageMin && studentAge <= n.ageMax);
         if (!ageNorm) return null;
         if (ageNorm.typicalMin !== undefined) {
-            if (value >= ageNorm.typicalMin) return { type: 'appropriate', label: 'Developmentally Appropriate', color: 'green', explanation: `Value of ${value} ${ageNorm.unit} falls within the typical range of ${ageNorm.typicalMin}–${ageNorm.typicalMax} ${ageNorm.unit} for age ${studentAge}` };
+            // Check clinical threshold first (e.g., tantrum frequency above threshold is always clinical)
+            if (ageNorm.clinicalThreshold !== undefined && value >= ageNorm.clinicalThreshold) return { type: 'clinical', label: 'Clinically Elevated', color: 'red', explanation: `Value of ${value} ${ageNorm.unit} exceeds the clinical threshold of ${ageNorm.clinicalThreshold} ${ageNorm.unit} for age ${studentAge} (typical range: ${ageNorm.typicalMin}–${ageNorm.typicalMax})` };
+            // Within typical range
+            if (value >= ageNorm.typicalMin && value <= ageNorm.typicalMax) return { type: 'appropriate', label: 'Developmentally Appropriate', color: 'green', explanation: `Value of ${value} ${ageNorm.unit} falls within the typical range of ${ageNorm.typicalMin}–${ageNorm.typicalMax} ${ageNorm.unit} for age ${studentAge}` };
+            // Above typical max but below clinical threshold (elevated but not clinical)
+            if (value > ageNorm.typicalMax) return { type: 'borderline', label: 'Elevated', color: 'amber', explanation: `Value of ${value} ${ageNorm.unit} exceeds the typical range of ${ageNorm.typicalMin}–${ageNorm.typicalMax} ${ageNorm.unit} for age ${studentAge}` };
+            // Below typical min — check one year back
             const oneYearBack = norms.find(n => (studentAge - 1) >= n.ageMin && (studentAge - 1) <= n.ageMax);
             if (oneYearBack && value >= oneYearBack.typicalMin) return { type: 'borderline', label: 'Borderline', color: 'amber', explanation: `Value of ${value} ${ageNorm.unit} is below typical for age ${studentAge} (expected ${ageNorm.typicalMin}–${ageNorm.typicalMax}) but within range for age ${studentAge - 1}` };
             return { type: 'deficit', label: 'Significant Deficit', color: 'red', explanation: `Value of ${value} ${ageNorm.unit} is significantly below the typical range of ${ageNorm.typicalMin}–${ageNorm.typicalMax} ${ageNorm.unit} for age ${studentAge}` };

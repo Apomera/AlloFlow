@@ -34,13 +34,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-economicslab')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-economicslab';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   window.StemLab.registerTool('economicsLab', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83D\uDCB9',
     label: 'economicsLab',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'explore_supply_demand', label: 'Explore supply and demand curves', icon: '\uD83D\uDCC8', check: function(d) { return (d.sdDemandShift || 0) !== 0 || (d.sdSupplyShift || 0) !== 0; }, progress: function(d) { return (d.sdDemandShift || d.sdSupplyShift) ? 'Exploring!' : 'Shift a curve'; } },
+      { id: 'set_price_control', label: 'Set a price floor or ceiling', icon: '\uD83D\uDCB0', check: function(d) { return (d.sdPriceFloor || 0) > 0 || (d.sdPriceCeiling || 0) > 0; }, progress: function(d) { return (d.sdPriceFloor || d.sdPriceCeiling) ? 'Set!' : 'Not yet'; } },
+      { id: 'explore_3_tabs', label: 'Explore 3 economics topics', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 topics'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
@@ -74,10 +92,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // â”€â”€ Tool body (economicsLab) â”€â”€
       return (function() {
 var d = labToolData || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('economicsLab', 'init', {
+              first: 'Economics Lab loaded. Explore supply and demand, market simulations, and economic concepts with interactive models.',
+              repeat: 'Economics Lab active.',
+              terse: 'Economics.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
 
@@ -1778,9 +1806,11 @@ var d = labToolData || {};
                             upd('econStreak', ns);
                             if (ns > econBestStreak) upd('econBestStreak', ns);
                             if (addToast) addToast('\u2705 Correct! +1 streak', 'success');
+                            if (announceToSR) announceToSR('Correct! Streak is now ' + ns + '.');
                           } else {
                             upd('econStreak', 0);
                             if (addToast) addToast('\u274C Read the explanation!', 'info');
+                            if (announceToSR) announceToSR('Incorrect. Read the explanation below.');
                           }
                         },
                         className: 'w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all ' + cls,
@@ -2644,6 +2674,7 @@ var d = labToolData || {};
                       upd('sdTax', d.sdScenario.tax || 0);
 
                       if (addToast) addToast('\u2705 Scenario applied to graph!', 'success');
+                      if (announceToSR) announceToSR('Economic scenario applied. Supply and demand graph updated.');
 
                       if (d.sdScenario && d.sdScenario.lesson) {
 
@@ -3154,6 +3185,7 @@ var d = labToolData || {};
                         upd('smLoading', false);
 
                         if (addToast) addToast('\uD83D\uDCC8 Market open! 5 companies generated. Start trading!', 'success');
+                        if (announceToSR) announceToSR('Stock market simulation open. 5 companies generated.');
 
                       } catch (err) { upd('smLoading', false); if (addToast) addToast('Failed to generate market. Try again!', 'error'); console.error('[StockSim]', err); }
 

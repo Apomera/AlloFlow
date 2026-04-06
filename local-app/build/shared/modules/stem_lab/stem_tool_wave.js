@@ -11,6 +11,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-wave')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-wave';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   window.StemLab.registerTool('wave', {
     icon: '🔬',
@@ -18,6 +31,12 @@ window.StemLab = window.StemLab || {
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'adjust_frequency', label: 'Experiment with wave frequency', icon: '∿', check: function(d) { return d.frequency && d.frequency !== 1; }, progress: function(d) { return d.frequency !== 1 ? 'Adjusted!' : 'Change frequency'; } },
+      { id: 'try_doppler', label: 'Try Doppler effect mode', icon: '🚗', check: function(d) { return d.waveMode === 'doppler'; }, progress: function(d) { return d.waveMode === 'doppler' ? 'Exploring!' : 'Select Doppler'; } },
+      { id: 'compare_waves', label: 'Use wave comparison mode', icon: '🔊', check: function(d) { return d.waveMode === 'compare'; }, progress: function(d) { return d.waveMode === 'compare' ? 'Comparing!' : 'Select Compare'; } }
+    ],
+
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -50,6 +69,7 @@ window.StemLab = window.StemLab || {
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
+      var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
 
       // ── Tool body (wave) ──
@@ -112,27 +132,19 @@ const d = labToolData.wave;
 
           const canvasRef = function (canvasEl) {
 
-            if (!canvasEl) {
-
-              if (canvasRef._lastCanvas && canvasRef._lastCanvas._waveAnim) {
-
-                cancelAnimationFrame(canvasRef._lastCanvas._waveAnim);
-
-                canvasRef._lastCanvas._waveInit = false;
-
-                canvasRef._lastCanvas = null;
-
-              }
-
-              return;
-
-            }
+            if (!canvasEl) return;
 
             if (canvasEl._waveInit) return;
 
             canvasEl._waveInit = true;
 
             canvasRef._lastCanvas = canvasEl;
+            // Canvas Narration: tool init
+            if (typeof canvasNarrate === 'function') canvasNarrate('wave', 'init', {
+              first: 'Wave Simulator loaded. An underwater ocean scene shows animated waves. Adjust amplitude and frequency with sliders. Switch between Free Wave, Standing, Ripple Tank, Longitudinal, Doppler, and Spectrum modes.',
+              repeat: 'Wave Simulator ready.',
+              terse: 'Wave Simulator ready.'
+            });
 
             var cW = canvasEl.width = canvasEl.offsetWidth * 2;
 
@@ -199,7 +211,7 @@ const d = labToolData.wave;
 
 
             function draw() {
-
+              if (!document.body.contains(canvasEl)) return;
               tick++;
               var t = tick;
 
@@ -1363,7 +1375,18 @@ const d = labToolData.wave;
 
               [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
 
-                return React.createElement("button", { "aria-label": "Toggle Sound", key: m[0], onClick: function () { upd('waveMode', m[0]); }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
+                return React.createElement("button", { "aria-label": "Switch to " + m[1] + " mode", key: m[0], onClick: function () {
+                  upd('waveMode', m[0]);
+                  // Canvas Narration: mode switch
+                  if (typeof canvasNarrate === 'function') {
+                    var modeDescs = { free: 'Free wave mode. Observe sine, square, triangle, and sawtooth waveforms.', standing: 'Standing wave mode. See nodes and antinodes form on a vibrating string.', ripple: 'Ripple tank mode. Two point sources create interference patterns.', longitudinal: 'Longitudinal wave mode. See compression and rarefaction in a spring.', doppler: 'Doppler effect mode. A moving source shifts the observed frequency.', spectrum: 'Spectrum analysis mode. See the frequency components of your wave.' };
+                    canvasNarrate('wave', 'modeSwitch', {
+                      first: 'Switched to ' + m[1] + '. ' + (modeDescs[m[0]] || ''),
+                      repeat: m[1] + ' mode active.',
+                      terse: m[1]
+                    });
+                  }
+                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
 
               }),
 
@@ -1503,7 +1526,16 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.label, onChange: function (e) { var v = parseFloat(e.target.value); upd(s.k, v); if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); } }, className: "w-full accent-cyan-600" })
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.label, onChange: function (e) {
+                    var v = parseFloat(e.target.value); upd(s.k, v);
+                    if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); }
+                    // Canvas Narration: parameter change
+                    if (typeof canvasNarrate === 'function') {
+                      var wl = (s.k === 'frequency' || s.k === 'waveSpeed') ? (d.waveSpeed || 343) / (s.k === 'frequency' ? v : d.frequency || 1) : null;
+                      var msg = s.label + ': ' + v + (wl ? '. Wavelength: ' + wl.toFixed(1) + ' m' : '');
+                      canvasNarrate('wave', 'param_' + s.k, msg, { debounce: 800 });
+                    }
+                  }, className: "w-full accent-cyan-600" })
 
                 )
 
@@ -1826,7 +1858,7 @@ const d = labToolData.wave;
 
                   var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
 
-                  return React.createElement("button", { "aria-label": "Select option",
+                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                     key: opt, disabled: d.quiz.answered, onClick: function () {
 

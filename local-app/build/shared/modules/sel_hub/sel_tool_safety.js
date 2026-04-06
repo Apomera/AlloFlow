@@ -693,11 +693,7 @@ window.SelHub = window.SelHub || {
         }
 
         function speak(text) {
-          if (callTTS) {
-            callTTS(text).then(function(url) {
-              if (url) { var a = new Audio(url); a.play().catch(function() {}); }
-            }).catch(function() {});
-          }
+          if (callTTS) callTTS(text);
         }
 
         // ══════════════════════════════════════════════════════════

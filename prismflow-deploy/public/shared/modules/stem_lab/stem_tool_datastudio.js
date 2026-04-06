@@ -32,6 +32,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-datastudio')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-datastudio';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   window.StemLab.registerTool('dataStudio', {
     icon: '🔬',
@@ -72,10 +85,20 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (dataStudio) ──
       return (function() {
 var d = (labToolData && labToolData._dataStudio) || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('dataStudio', 'init', {
+              first: 'Data Studio loaded. Create charts, analyze datasets, and explore statistics with interactive visualization tools.',
+              repeat: 'Data Studio active.',
+              terse: 'Data Studio.'
+            }, { debounce: 800 });
+          }
 
           var updDS = function (key, val) {
 
@@ -932,7 +955,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2" },
 
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_datastudio.js
               React.createElement("button", { "aria-label": "Action",
+=======
+              React.createElement("button", { "aria-label": "Import CSV data file",
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_datastudio.js
 
                 onClick: function () {
 

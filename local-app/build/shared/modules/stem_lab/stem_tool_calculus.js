@@ -1,6 +1,19 @@
 window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-calculus')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-calculus';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   window.StemLab.registerTool('calculus', {
     icon: '\u222B',
@@ -8,6 +21,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     desc: 'Riemann sums, derivatives, and guided discovery missions',
     color: 'red',
     category: 'math',
+    questHooks: [
+      { id: 'explore_integral', label: 'Explore Riemann sum approximation', icon: '\u222B', check: function(d) { return (d.n || 20) !== 20 || d.mode !== 'left'; }, progress: function(d) { return d.mode && d.mode !== 'left' ? 'Exploring!' : 'Adjust rectangles'; } },
+      { id: 'try_all_methods', label: 'Try left, right, midpoint, and trapezoid methods', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.methodsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.methodsUsed || {}).length + '/4 methods'; } },
+      { id: 'predict_correctly', label: 'Make a correct prediction in predict mode', icon: '\uD83E\uDDE0', check: function(d) { return d.predictCorrect || false; }, progress: function(d) { return d.predictCorrect ? 'Correct!' : 'Try predicting'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

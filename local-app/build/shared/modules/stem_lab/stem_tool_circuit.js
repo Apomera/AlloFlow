@@ -15,6 +15,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-circuit')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-circuit';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
@@ -245,6 +258,13 @@ window.StemLab = window.StemLab || {
     desc: 'Build series & parallel circuits with Ohm\'s Law',
     color: 'yellow',
     category: 'science',
+    questHooks: [
+      { id: 'build_3_components', label: 'Build a circuit with 3+ components', icon: '\uD83D\uDD0C', check: function(d) { return (d.components || []).length >= 3; }, progress: function(d) { return (d.components || []).length + '/3 components'; } },
+      { id: 'build_5_components', label: 'Build a circuit with 5+ components', icon: '\u26A1', check: function(d) { return (d.components || []).length >= 5; }, progress: function(d) { return (d.components || []).length + '/5 components'; } },
+      { id: 'ohm_score_3', label: 'Score 3+ on Ohm\'s Law quiz', icon: '\uD83E\uDDE0', check: function(d) { return (d.ohmScore || 0) >= 3; }, progress: function(d) { return (d.ohmScore || 0) + '/3'; } },
+      { id: 'complete_challenge', label: 'Complete a circuit challenge', icon: '\uD83C\uDFAF', check: function(d) { return (d.challengesDone || 0) >= 1; }, progress: function(d) { return (d.challengesDone || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'complete_3_challenges', label: 'Complete 3 circuit challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.challengesDone || 0) >= 3; }, progress: function(d) { return (d.challengesDone || 0) + '/3'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

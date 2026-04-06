@@ -19,14 +19,33 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-logiclab')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-logiclab';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   var _drag = { sym: null, proofKey: null };
 
   window.StemLab.registerTool('logicLab', {
-    icon: '🧠',
+    icon: '\uD83E\uDDE0',
     label: 'Logic Lab',
     desc: 'Propositional Logic, Proofs & Reasoning',
     color: 'violet',
     category: 'math',
+    questHooks: [
+      { id: 'build_truth_table', label: 'Build a truth table for a logical expression', icon: '\uD83D\uDCCB', check: function(d) { return d.expression && d.expression !== 'P \u2192 Q'; }, progress: function(d) { return d.expression && d.expression !== 'P \u2192 Q' ? 'Built!' : 'Modify the expression'; } },
+      { id: 'complete_challenge', label: 'Complete a logic challenge', icon: '\uD83C\uDFAF', check: function(d) { return (d.currentChallenge || 0) >= 1; }, progress: function(d) { return (d.currentChallenge || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'write_3_proof_steps', label: 'Write 3 proof steps', icon: '\u270D\uFE0F', check: function(d) { return (d.proofSteps || []).length >= 3; }, progress: function(d) { return (d.proofSteps || []).length + '/3 steps'; } },
+      { id: 'complete_3_challenges', label: 'Complete 3 logic challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.currentChallenge || 0) >= 3; }, progress: function(d) { return (d.currentChallenge || 0) + '/3'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -60,12 +79,22 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (logicLab) ──
       return (function() {
 // ── state ──
 
           var d = labToolData.logicLab || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('logicLab', 'init', {
+              first: 'Logic Lab loaded. Explore logic gates, truth tables, and build digital circuits interactively.',
+              repeat: 'Logic Lab active.',
+              terse: 'Logic Lab.'
+            }, { debounce: 800 });
+          }
 
           var mode = d.mode || 'truth';
 
@@ -754,7 +783,7 @@ window.StemLab = window.StemLab || {
 
                   var active = mode === m[0];
 
-                  return React.createElement("button", { "aria-label": "Update setting",
+                  return React.createElement("button", { "aria-label": "Switch to " + m[2] + " mode",
 
                     key: m[0],
 
@@ -857,7 +886,7 @@ window.StemLab = window.StemLab || {
                     'aria-label': 'Logic expression input',
                     className: "flex-1 px-3 py-2 rounded-lg border border-violet-200 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
                   }),
-                  React.createElement("button", { "aria-label": "Update setting",
+                  React.createElement("button", { "aria-label": "Backspace last symbol",
                     onClick: function() { upd({ expression: expr.slice(0,-1).trimEnd() }); },
                     className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg text-sm"
                   }, "\u232B"),
@@ -871,7 +900,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "flex items-center gap-3 mb-4 p-3 bg-white rounded-xl border border-violet-200" },
                   React.createElement("code", { className: "text-lg font-mono font-bold text-violet-800 flex-1" }, expr),
 
-                  React.createElement("button", { "aria-label": "Update setting",
+                  React.createElement("button", { "aria-label": "Toggle English and Formal notation",
 
                     onClick: function() { upd({ showEnglish: !showEnglish }); },
 
@@ -911,7 +940,7 @@ window.StemLab = window.StemLab || {
 
                   Object.keys(CONN).map(function(sym) {
 
-                    return React.createElement("button", { "aria-label": "Update setting",
+                    return React.createElement("button", { "aria-label": "Insert connective: " + CONN[sym].eng,
 
                       key: sym,
 
@@ -933,7 +962,7 @@ window.StemLab = window.StemLab || {
 
                   ['P','Q','R','S','(',')'].map(function(v) {
 
-                    return React.createElement("button", { "aria-label": "Select option",
+                    return React.createElement("button", { "aria-label": "Insert symbol: " + v,
 
                       key: v,
 
@@ -945,7 +974,7 @@ window.StemLab = window.StemLab || {
 
                   }),
 
-                  React.createElement("button", { "aria-label": "Update setting",
+                  React.createElement("button", { "aria-label": "Backspace last symbol",
 
                     onClick: function() { upd({ expression: expr.length > 0 ? expr.slice(0, -1) : '' }); },
 
@@ -971,7 +1000,7 @@ window.StemLab = window.StemLab || {
 
                   PRESETS.map(function(p) {
 
-                    return React.createElement("button", { "aria-label": "Update setting",
+                    return React.createElement("button", { "aria-label": "Load preset: " + p.label,
 
                       key: p.label,
 
@@ -1037,7 +1066,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-black border " + typeBadge.bg + " " + typeBadge.text + " " + typeBadge.border, style: { boxShadow: typeBadge.glow } }, typeBadge.label),
 
-                    React.createElement("button", { "aria-label": "Logiclab action",
+                    React.createElement("button", { "aria-label": "AI explain truth table expression",
 
                       onClick: function() {
 
@@ -1153,7 +1182,7 @@ window.StemLab = window.StemLab || {
 
                     var isCompleted = ci < currentChallenge || (ci === currentChallenge && proofComplete);
 
-                    return React.createElement("button", { "aria-label": "Update setting",
+                    return React.createElement("button", { "aria-label": "Select proof challenge: Level " + (ci + 1),
 
                       key: ci,
 
@@ -1286,7 +1315,7 @@ window.StemLab = window.StemLab || {
 
                       var isSelected = (d.selectedSteps || []).indexOf('S' + si) !== -1;
 
-                      return React.createElement("button", { "aria-label": "Select option",
+                      return React.createElement("button", { "aria-label": "Select derivation step " + (si + 1) + ": " + step.result,
                         key: si,
                         style: { animation: si === proofSteps.length-1 ? 'logicPop 0.3s ease-out' : 'none' },
                         onClick: function() {
@@ -1335,7 +1364,7 @@ window.StemLab = window.StemLab || {
 
                       }, "\u21A9 Undo"),
 
-                      React.createElement("button", { "aria-label": "Reset",
+                      React.createElement("button", { "aria-label": "Reset proof steps",
 
                         onClick: function() { upd({ proofSteps: [], proofComplete: false, selectedSteps: [] }); },
 
@@ -1351,7 +1380,7 @@ window.StemLab = window.StemLab || {
 
                   // Hint
 
-                  React.createElement("button", { "aria-label": "Update setting",
+                  React.createElement("button", { "aria-label": "Toggle proof hint",
 
                     onClick: function() { upd({ showHint: !d.showHint }); },
 
@@ -1371,7 +1400,7 @@ window.StemLab = window.StemLab || {
 
                   RULES.map(function(rule) {
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": "Apply rule: " + rule.name,
 
                       key: rule.id,
 
@@ -1462,7 +1491,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("span", { className: "font-black text-violet-800 text-sm" }, "Score: " + score),
                 React.createElement("span", { className: "text-violet-300 font-bold" }, "|"),
                 React.createElement("span", { className: "font-black text-amber-600 text-sm" }, "\uD83D\uDD25 Streak: " + streak + " (Best: " + bestStreak + ")"),
-                React.createElement("button", { "aria-label": "Reset", onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[10px] text-slate-500 hover:text-red-400 font-bold" }, "Reset")
+                React.createElement("button", { "aria-label": "Reset challenge score", onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[10px] text-slate-500 hover:text-red-400 font-bold" }, "Reset")
               ),
 
               // Challenge type tabs
@@ -1472,7 +1501,7 @@ window.StemLab = window.StemLab || {
 
                   var active = challengeMode === ct[0];
 
-                  return React.createElement("button", { "aria-label": "Update setting",
+                  return React.createElement("button", { "aria-label": "Switch to " + ct[2] + " challenge mode",
 
                     key: ct[0],
 
@@ -1994,7 +2023,7 @@ window.StemLab = window.StemLab || {
                 // Gate selector
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   GATE_TYPES.map(function(gt) {
-                    return React.createElement("button", { "aria-label": "Update setting", key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,50);},
+                    return React.createElement("button", { "aria-label": "Select logic gate: " + gt, key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,50);},
                       className: "px-4 py-2 rounded-xl text-sm font-black transition-all",
                       style: { background: gateType===gt?'linear-gradient(135deg,#7c3aed,#a78bfa)':'#f5f3ff', color: gateType===gt?'white':'#7c3aed', boxShadow: gateType===gt?'0 4px 12px rgba(124,58,237,0.3)':'none' }
                     }, gt);
@@ -2008,7 +2037,7 @@ window.StemLab = window.StemLab || {
                       var val = gateInputs[inp];
                       return React.createElement("div", { key: inp, className: "flex items-center gap-2" },
                         React.createElement("span", { className: "text-xs font-black text-slate-500 w-4" }, inp),
-                        React.createElement("button", { "aria-label": "Logiclab action",
+                        React.createElement("button", { "aria-label": "Toggle gate input " + inp + ": " + (val ? 'True to False' : 'False to True'),
                           onClick: function() {
                             var ni = Object.assign({}, gateInputs); ni[inp] = !ni[inp];
                             upd({ gateInputs: ni });
@@ -2087,7 +2116,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-6" },
 
-              React.createElement("button", { "aria-label": "Update setting",
+              React.createElement("button", { "aria-label": "Toggle educational panel: What is Propositional Logic",
 
                 onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'First logic session'); },
 

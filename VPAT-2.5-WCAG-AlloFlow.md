@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | **Product Name** | AlloFlow (PrismFlow) |
-| **Product Version** | 0.9.0 |
-| **Report Date** | March 30, 2026 |
+| **Product Version** | 0.9.2 |
+| **Report Date** | April 3, 2026 (updated from April 2, 2026) |
 | **Contact** | Aaron Pomeranz, PsyD — apomeranz@alloflow.org |
 | **Evaluation Methods** | Static code analysis and automated pattern scanning across 80+ tool modules (~220K lines of code). **Runtime testing (screen reader, keyboard-only, zoom reflow) has not yet been completed.** Criteria marked "Supports (pending verification)" reflect code-level compliance that requires manual confirmation. |
 | **Applicable Standards** | WCAG 2.1 Level A & AA |
@@ -40,7 +40,7 @@
 | **1.3.5 Identify Input Purpose** | Supports | Form inputs use appropriate `type` attributes (`text`, `email`, `number`, `password`) and `autocomplete` where applicable. Input purpose is identifiable from `aria-label` attributes. |
 | **1.4.1 Use of Color** | Supports | Color is never the sole means of conveying information. Examples: writing quality scores display numeric values + emoji + tier label alongside color. T-score ranges include text labels. Vocabulary tracking shows "✓" checkmarks in addition to green color. Battle HP bars include numeric readout. |
 | **1.4.2 Audio Control** | Supports | All audio playback (TTS, narration, student recordings) has pause/stop controls. No audio plays automatically for more than 3 seconds. Background sounds in tools (beep effects) are brief (<1 second) notification tones. |
-| **2.1.1 Keyboard** | Partially Supports | Code-level: `a11yClick` utility applied across 57 STEM tools and 19 SEL tools ensures `onClick` handlers on non-button elements respond to Enter/Space via `onKeyDown`. `tabIndex={0}` applied to all custom interactive elements. Tab patterns use `tabIndex={-1}` for inactive tabs. **Pending verification:** Full keyboard-only walkthrough of all tools has not been completed. Some complex interactive tools (canvas-based visualizations, drag-and-drop interfaces) may have keyboard gaps that require runtime testing to identify. |
+| **2.1.1 Keyboard** | Partially Supports | Code-level: `a11yClick` utility applied across 57 STEM tools and 19 SEL tools ensures `onClick` handlers on non-button elements respond to Enter/Space via `onKeyDown`. `tabIndex={0}` applied to all custom interactive elements. Tab patterns use `tabIndex={-1}` for inactive tabs. **April 2 update:** Symbol Studio AAC Use mode now has full ARIA grid keyboard navigation (arrow keys, Enter/Space, Home/End) with roving tabindex. Standalone board exports include complete keyboard navigation and 1-switch/2-switch scanning. **Pending verification:** Full keyboard-only walkthrough of all 80+ tools has not been completed. Some complex interactive tools (canvas-based visualizations, drag-and-drop interfaces) may have keyboard gaps. |
 | **2.1.2 No Keyboard Trap** | Partially Supports | Code-level: Modal dialogs implement focus trapping with Escape key exit. `onKeyDown` handlers with `preventDefault()` are scoped to specific keys. **Pending verification:** Complete keyboard trap testing across all modal flows and tool transitions has not been performed. |
 | **2.1.4 Character Key Shortcuts** | Not Applicable | The application does not implement single-character keyboard shortcuts. |
 | **2.2.1 Timing Adjustable** | Partially Supports | The Escape Room timer can be paused. Session timeouts are configurable. However, some AI API calls have fixed timeouts that cannot be extended by the user (these result in retry options, not content loss). |
@@ -60,7 +60,7 @@
 | **3.3.1 Error Identification** | Supports | Form validation errors displayed inline with descriptive text. Export blocked with explanation when accuracy audit fails. Paste detection in WriteCraft provides clear error message. API failures show toast notifications with actionable messages. |
 | **3.3.2 Labels or Instructions** | Supports | All form fields have visible labels or descriptive placeholder text paired with `aria-label`. Complex interactions (WriteCraft crafting, StoryForge phases) include instructional text explaining expectations. |
 | **4.1.1 Parsing** | Supports | HTML output validated. Duplicate `alt` attribute issue identified and resolved (12 instances fixed). No duplicate IDs in static markup. React's virtual DOM ensures well-formed output. |
-| **4.1.2 Name, Role, Value** | Supports | All interactive elements have accessible names via text content, `aria-label`, or `aria-labelledby`. Roles assigned via semantic HTML (`<button>`, `<input>`, `<select>`) or ARIA (`role="tab"`, `role="dialog"`, `role="progressbar"`, `role="button"`, `role="tabpanel"`). Dynamic values communicated via `aria-valuenow`, `aria-selected`, `aria-expanded`, `aria-checked`. |
+| **4.1.2 Name, Role, Value** | Supports | All interactive elements have accessible names via text content, `aria-label`, or `aria-labelledby`. Roles assigned via semantic HTML (`<button>`, `<input>`, `<select>`) or ARIA (`role="tab"`, `role="dialog"`, `role="progressbar"`, `role="button"`, `role="tabpanel"`, `role="grid"`, `role="gridcell"`). Dynamic values communicated via `aria-valuenow`, `aria-selected`, `aria-expanded`, `aria-checked`. **April 2 update:** Symbol Studio AAC board cells now use `role="gridcell"` with descriptive `aria-label` (label + context). 7 malformed `aria-label` attributes across Symbol Studio corrected (were rendering Unicode escapes as literal text instead of meaningful labels). |
 
 ---
 
@@ -138,6 +138,24 @@ AlloFlow **substantially conforms** to WCAG 2.1 Level AA. The platform was built
 
 **Conformance claim: Partially conforms to WCAG 2.1 Level AA.** Of the 11 "Partially Supports" criteria, 8 are rated conservatively because they have been addressed at the code level but **runtime verification has not yet been completed** (keyboard-only testing, screen reader testing, zoom/reflow testing, contrast measurement). These 8 criteria are expected to upgrade to "Supports" upon manual verification. The remaining 3 are genuine partial gaps (reflow at 400% zoom, inline language tagging, API timing adjustability) with documented remediation plans.
 
+### April 3, 2026 Update — New Tools Added
+
+Three major tool additions were made on April 2-3, 2026 that require separate accessibility assessment:
+
+| New Tool | Module | ARIA Attrs | Keyboard | Status | Known Gaps |
+|---|---|---|---|---|---|
+| **Word Garden** (Symbol Studio) | symbol_studio_module.js | 295 | Full (role="progressbar", role="status", role="group", role="button", aria-pressed, aria-live) | **Strong** | Garden tab has 8 tabs — may exceed comfortable tab count for keyboard users. Student view word cards have role="button" + tabIndex + onKeyDown. Garden whisper uses aria-live="polite". Growth journey bar is a proper progressbar with aria-valuenow. |
+| **Community Garden Simulator** | stem_tool_companionplanting.js | 52 | Partial (grid cells have role="gridcell" + aria-label; action buttons labeled) | **Moderate** | Grid cells use `<button>` elements with aria-labels. Microscope mode has layered tab navigation. Plant picker buttons have title tooltips but some lack explicit aria-label. SEL reflection textarea is labeled. Challenge grid needs keyboard focus management. |
+| **Beehive Colony Simulator** | stem_tool_beehive.js | 11 | Minimal (buttons have aria-labels; status bar has aria-live) | **Needs Improvement** | Event popup has role="alert" + aria-live="assertive". Status bar has aria-live="polite". Action buttons have aria-labels. **Gaps:** Hive inspector layer tabs lack tabIndex/role="tab". Hive cross-section visual lacks alt text. Conservation action grid needs keyboard navigation. Science cards lack heading hierarchy. |
+
+**Recommendations for new tools:**
+
+1. **Beehive Inspector** — Add `role="tablist"` + `role="tab"` to layer tabs with arrow key navigation
+2. **Hive Cross-Section** — Add descriptive `aria-label` to the visual (e.g., "Hive cross-section: 2 frames honey, 2 frames pollen, 4 frames brood, queen in center")
+3. **Community Garden Grid** — Consider adding `role="grid"` wrapper with `aria-rowcount`/`aria-colcount` for screen reader spatial awareness
+4. **Community Garden Microscope** — Each science layer's content is text-heavy and accessible, but the layer tabs need `role="tablist"` semantics
+5. **All three tools** — Need complete keyboard-only walkthrough testing
+
 ### Verification Status
 
 This assessment is based on **static code analysis only**. The following runtime tests are recommended before claiming full conformance and are well-suited for university graduate student testers:
@@ -151,6 +169,24 @@ This assessment is based on **static code analysis only**. The following runtime
 | **WAVE automated scan** | Multiple | 30 min | WAVE browser extension (free) |
 
 These tests would make an excellent graduate student research project and could be conducted as part of a pilot study partnership.
+
+---
+
+---
+
+## Changelog
+
+### April 2, 2026 (v0.9.1)
+
+**Symbol Studio accessibility improvements:**
+- **Standalone board export rebuilt** as WCAG 2.1 AA exemplar: ARIA grid pattern with roving tabindex, arrow-key navigation, Enter/Space activation, skip-to-content link, semantic landmarks, visible focus indicators, `aria-live` sentence strip, high contrast toggle, `prefers-reduced-motion`/`forced-colors`/`prefers-color-scheme` support, print-optimized layout, embedded accessibility statement, multi-page board support with ARIA tab pattern, RTL language support with reversed arrow keys, 44x44px minimum touch targets, rich alt text (label + description)
+- **In-app AAC mode keyboard navigation added**: `role="grid"` on board container, `role="gridcell"` on cells with roving tabindex, full arrow key navigation, Enter/Space activation
+- **Two-switch scanning mode**: Toggle between 1-switch (automatic advance) and 2-switch (manual advance with Tab/ArrowRight) in both the in-app overlay and standalone exports
+- **7 malformed `aria-label` fixes**: Corrected attributes that were rendering Unicode escape sequences as literal text instead of descriptive labels
+- **First-Then Quick Board export**: New standalone accessible HTML export for First-Then behavioral support boards
+- **Interactive accessibility demo page**: Self-contained showcase at `/accessibility_demo.html` with working AAC board, scanning mode, keyboard navigation, high contrast, and live screen reader announcement panel
+
+**VPAT criteria affected:** 2.1.1 (Keyboard), 4.1.2 (Name, Role, Value)
 
 ---
 

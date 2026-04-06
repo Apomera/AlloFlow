@@ -2,10 +2,29 @@
 // Extracted and enhanced with Journey Mode
 (function(){
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-watercycle')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-watercycle';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'waterCycle', desc:'Interactive Water Cycle with Journey Mode',
     color:'sky', category:'science',
+    questHooks: [
+      { id: 'complete_journey', label: 'Complete a water droplet journey loop', icon: '\uD83D\uDCA7', check: function(d) { return (d.journeyLoops || 0) >= 1; }, progress: function(d) { return (d.journeyLoops || 0) >= 1 ? 'Complete!' : 'In journey'; } },
+      { id: 'complete_3_journeys', label: 'Complete 3 journey loops', icon: '\uD83C\uDFC6', check: function(d) { return (d.journeyLoops || 0) >= 3; }, progress: function(d) { return (d.journeyLoops || 0) + '/3 loops'; } },
+      { id: 'explore_all_stages', label: 'View all water cycle stages', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.stagesViewed || {}).length >= 5; }, progress: function(d) { return Object.keys(d.stagesViewed || {}).length + '/5 stages'; } },
+      { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } }
+    ],
     render:function(ctx){
       var React=ctx.React; var h=React.createElement;
       var labToolData=ctx.toolData; var setLabToolData=ctx.setToolData;
@@ -19,6 +38,7 @@
       var stemCelebrate=ctx.celebrate; var stemBeep=ctx.beep;
       var gradeLevel=ctx.gradeLevel;
       var callGemini=ctx.callGemini;
+      var canvasNarrate=ctx.canvasNarrate;
       return (function(){
 const d = labToolData.waterCycle;
 
@@ -100,6 +120,16 @@ const d = labToolData.waterCycle;
           // Resolve grade-tiered content
           var selDesc = sel ? (typeof sel.desc === 'object' ? (sel.desc[gradeBand] || sel.desc['3-5']) : sel.desc) : '';
           var selFunFact = sel ? (typeof sel.funFact === 'object' ? (sel.funFact[gradeBand] || sel.funFact['3-5']) : sel.funFact) : '';
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('waterCycle', 'init', {
+              first: 'Water Cycle Simulator loaded. Currently viewing ' + (sel ? sel.label : 'evaporation') + '. This interactive diagram shows evaporation, condensation, precipitation, collection, transpiration, and infiltration.',
+              repeat: 'Water Cycle, stage: ' + (sel ? sel.label : 'evaporation') + '.',
+              terse: 'Water Cycle.'
+            }, { debounce: 800 });
+          }
+
 
 
 
@@ -1602,7 +1632,7 @@ const d = labToolData.waterCycle;
 
                 return React.createElement("button", { "aria-label": "Change active stage",
 
-                  key: stage.id, onClick: function () { upd('activeStage', stage.id); },
+                  key: stage.id, onClick: function () { upd('activeStage', stage.id); if (typeof canvasNarrate === 'function') { canvasNarrate('waterCycle', 'stage_select', { first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''), repeat: stage.label + ' stage.', terse: stage.label + '.' }, { debounce: 500 }); } },
 
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.activeStage || 'evaporation') === stage.id ? 'text-white shadow-md' : 'border hover:opacity-80'),
 
@@ -1785,7 +1815,7 @@ const d = labToolData.waterCycle;
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
-              React.createElement("button", { "aria-label": "Action",
+              React.createElement("button", { "aria-label": "Start water cycle quiz",
 
                 onClick: function () {
                   // Grade-tiered static quiz banks
@@ -1829,7 +1859,7 @@ const d = labToolData.waterCycle;
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
-              callGemini && React.createElement("button", { "aria-label": "Action",
+              callGemini && React.createElement("button", { "aria-label": "Generate AI quiz question",
                 onClick: function() {
                   if (d.aiQuizLoading) return;
                   upd('aiQuizLoading', true);
@@ -1894,7 +1924,7 @@ const d = labToolData.waterCycle;
 
                     var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm' : isCorrect ? 'bg-emerald-100 border-emerald-400 shadow-sm' : wasChosen ? 'bg-red-100 border-red-400' : 'bg-slate-50 border-slate-200 opacity-40';
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                       key: opt, disabled: d.wcQuiz.answered, onClick: function () {
 

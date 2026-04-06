@@ -14,6 +14,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-punnett')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-punnett';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
@@ -405,6 +418,10 @@ window.StemLab = window.StemLab || {
     icon: '\uD83E\uDDEC', label: 'Punnett Square Lab',
     desc: 'Genetics lab: crosses, pedigrees, population genetics, DNA translation',
     color: 'violet', category: 'science',
+    questHooks: [
+      { id: 'do_3_crosses', label: 'Perform 3 genetic crosses', icon: '🧬', check: function(d) { return (d._crossCount || 0) >= 3; }, progress: function(d) { return (d._crossCount || 0) + '/3'; } },
+      { id: 'use_2_presets', label: 'Try 2 genetics presets', icon: '🔬', check: function(d) { return (d._presetsUsed || 0) >= 2; }, progress: function(d) { return (d._presetsUsed || 0) + '/2'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -1490,7 +1507,7 @@ window.StemLab = window.StemLab || {
                   onClick: function() { upd('_pedShowGeno', !pedShowGeno); },
                   className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200')
                 }, pedShowGeno ? '\uD83D\uDC41 Hide Genotypes' : '\uD83D\uDC41 Show Genotypes'),
-                h('button', { 'aria-label': 'Update setting',
+                h('button', { 'aria-label': 'Toggle pedigree solve mode',
                   onClick: function() { updMulti({ _pedSolveMode: !pedSolveMode, _pedSolveAnswer: '', _pedSolveFeedback: null, _pedShowGeno: pedSolveMode }); },
                   className: 'px-2 py-1 text-[10px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-slate-50 text-slate-500 border-slate-200')
                 }, pedSolveMode ? '\uD83E\uDDE9 Solve Mode ON' : '\uD83E\uDDE9 Solve Mode')
@@ -1715,7 +1732,7 @@ window.StemLab = window.StemLab || {
                         awardXP('popSim', 10, 'Population Simulation');
                       }
                     },
-                    className: 'px-4 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' + (popRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600')
+                    className: 'px-4 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' + (popRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-700 hover:bg-emerald-800')
                   }, popRunning ? '\u23F8 Pause' : '\u25B6 Simulate'),
                   h('button', { 'aria-label': 'Reset',
                     onClick: function() { updMulti({ popHistory: null, popRunning: false }); },
@@ -2112,7 +2129,7 @@ window.StemLab = window.StemLab || {
                 ['easy', 'medium', 'hard'].map(function(diff) {
                   var labels = { easy: '\uD83C\uDF31 Beginner', medium: '\uD83D\uDD2C Intermediate', hard: '\uD83E\uDDE0 Advanced' };
                   var colors = { easy: 'emerald', medium: 'amber', hard: 'red' };
-                  return h('button', { 'aria-label': 'Update setting',
+                  return h('button', { 'aria-label': 'Select challenge difficulty',
                     key: diff,
                     onClick: function() { updMulti({ _chalDiff: diff, _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); },
                     className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all ' +

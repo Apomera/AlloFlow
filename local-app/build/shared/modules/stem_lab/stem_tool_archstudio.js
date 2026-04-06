@@ -12,6 +12,19 @@
  */
 (function () {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-archstudio')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-archstudio';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   // ══════════════════════════════════════════════════════════════
@@ -201,6 +214,12 @@
     name: 'Architecture Studio',
     icon: '\uD83C\uDFD7\uFE0F',
     category: 'explore',
+    questHooks: [
+      { id: 'place_5_blocks', label: 'Place 5 building blocks', icon: '\uD83E\uDDF1', check: function(d) { return (d.blocks || []).length >= 5; }, progress: function(d) { return (d.blocks || []).length + '/5 blocks'; } },
+      { id: 'place_15_blocks', label: 'Build a structure with 15+ blocks', icon: '\uD83C\uDFD7\uFE0F', check: function(d) { return (d.blocks || []).length >= 15; }, progress: function(d) { return (d.blocks || []).length + '/15 blocks'; } },
+      { id: 'try_3_materials', label: 'Use 3 different building materials', icon: '\uD83E\uDEA8', check: function(d) { return Object.keys(d.materialsUsed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.materialsUsed || {}).length + '/3 materials'; } },
+      { id: 'try_2_styles', label: 'Try 2 architectural styles', icon: '\uD83C\uDFDB\uFE0F', check: function(d) { return Object.keys(d.stylesUsed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.stylesUsed || {}).length + '/2 styles'; } }
+    ],
     render: function (ctx) {
     var React = ctx.React;
     var el = React.createElement;
@@ -471,6 +490,7 @@
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: prev, undoStack: stack, redoStack: redo }) });
       });
       if (soundEnabled) sfxUndo();
+      if (announceToSR) announceToSR('Undo. ' + (prev ? prev.length : 0) + ' blocks.');
     };
 
     var doRedo = function () {
@@ -485,6 +505,7 @@
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: next, undoStack: undo, redoStack: stack }) });
       });
       if (soundEnabled) sfxRedo();
+      if (announceToSR) announceToSR('Redo. ' + (next ? next.length : 0) + ' blocks.');
     };
 
     // Clear all (with undo snapshot)
@@ -495,6 +516,7 @@
         var a = Object.assign({}, p.archStudio || {});
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [], undoStack: newUndo, redoStack: [] }) });
       });
+      if (announceToSR) announceToSR('All blocks cleared.');
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -519,6 +541,7 @@
       upd('_galleryRefresh', Date.now());
       if (ctx.addToast) ctx.addToast('\uD83D\uDCBE Build saved: ' + name, 'success');
       if (soundEnabled) sfxSave();
+      if (announceToSR) announceToSR('Build saved: ' + name + '. ' + blocks.length + ' blocks.');
     };
 
     var loadBuild = function (item) {
@@ -529,6 +552,7 @@
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Loaded: ' + item.name, 'info');
       if (soundEnabled) sfxLoad();
+      if (announceToSR) announceToSR('Loaded build: ' + item.name + '. ' + (item.blocks ? item.blocks.length : 0) + ' blocks.');
     };
 
     var deleteBuild = function (id) {
@@ -552,6 +576,7 @@
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCC2 Template loaded: ' + tpl.name, 'info');
       if (soundEnabled) sfxLoad();
+      if (announceToSR) announceToSR('Template loaded: ' + tpl.name + '. ' + newBlocks.length + ' blocks.');
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -856,7 +881,7 @@
       shapes: shapes.map(function (s) { return s.id; }),
       setShape: function (id) { upd('activeShape', id); },
       modes: ['place', 'erase', 'paint'],
-      setMode: function (id) { upd('mode', id); },
+      setMode: function (id) { upd('mode', id); if (announceToSR) announceToSR((id === 'place' ? 'Place' : id === 'erase' ? 'Erase' : 'Paint') + ' mode activated.'); },
       screenshot: takeScreenshot
     };
 

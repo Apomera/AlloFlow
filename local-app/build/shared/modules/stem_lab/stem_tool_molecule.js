@@ -33,11 +33,18 @@ window.StemLab = window.StemLab || {
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
 
   window.StemLab.registerTool('molecule', {
-    icon: 'ðŸ”¬',
+    icon: '\uD83E\uDDEA',
     label: 'molecule',
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'discover_compound', label: 'Discover a chemical compound', icon: '\uD83E\uDDEA', check: function(d) { return (d.discoveredCompounds || []).length >= 1; }, progress: function(d) { return (d.discoveredCompounds || []).length >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'discover_5_compounds', label: 'Discover 5 different compounds', icon: '\uD83D\uDD2C', check: function(d) { return (d.discoveredCompounds || []).length >= 5; }, progress: function(d) { return (d.discoveredCompounds || []).length + '/5'; } },
+      { id: 'balance_3_reactions', label: 'Balance 3 chemical reactions', icon: '\u2696\uFE0F', check: function(d) { return (d.reactionsBalanced || 0) >= 3; }, progress: function(d) { return (d.reactionsBalanced || 0) + '/3'; } },
+      { id: 'earn_50_rp', label: 'Earn 50 research points', icon: '\u2B50', check: function(d) { return (d.totalRP || 0) >= 50; }, progress: function(d) { return (d.totalRP || 0) + '/50 RP'; } },
+      { id: 'complete_3_challenges', label: 'Complete 3 chemistry challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.completedChallenges || []).length >= 3; }, progress: function(d) { return (d.completedChallenges || []).length + '/3'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
@@ -71,6 +78,7 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // â”€â”€ Tool body (molecule) â”€â”€
       return (function() {
@@ -81,6 +89,15 @@ const d = labToolData.molecule;
           const W = 400, H = 300;
 
           const mode = d.moleculeMode || 'viewer';
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('molecule', 'init', {
+              first: 'Molecule Lab loaded. ' + (mode === 'viewer' ? 'Viewer mode active. Choose a molecule preset to view its 3D model.' : 'Current mode: ' + mode + '.'),
+              repeat: 'Molecule Lab, mode: ' + mode + '.',
+              terse: 'Molecule Lab.'
+            }, { debounce: 800 });
+          }
 
           // ═══ Enhanced state ═══
           const researchPoints = d.researchPoints || 0;
@@ -779,7 +796,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['build', '\uD83E\uDDF1 Build'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table'], ['reactions', '⚗️ Reactions']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Upd", key: m, onClick: () => upd('moleculeMode', m), className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, label)
+                React.createElement("button", { "aria-label": "Switch to " + label + " mode", key: m, onClick: () => { upd('moleculeMode', m); if (typeof canvasNarrate === 'function') { canvasNarrate('molecule', 'mode_switch', { first: 'Switched to ' + label + ' mode.', repeat: label + ' mode.', terse: label + '.' }, { debounce: 500 }); } }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, label)
 
               )
 
@@ -789,7 +806,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             mode === 'viewer' && React.createElement("div", null,
 
-              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "Upd", key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200') }, p.name))),
+              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200') }, p.name))),
 
               React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
 
@@ -954,7 +971,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   { sym: 'Si', color: '#34d399', label: 'Silicon' },
 
-                ].map(a => React.createElement("button", { "aria-label": "Action",
+                ].map(a => React.createElement("button", { "aria-label": "Add " + a.label + " atom to canvas",
 
                   key: a.sym,
 
@@ -1200,7 +1217,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 // Bond draw button
 
-                React.createElement("button", { "aria-label": "Molecule action",
+                React.createElement("button", { "aria-label": (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? "Cancel bond drawing" : "Enter bond drawing mode"),
 
                   onClick: () => {
 
@@ -1228,7 +1245,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 (d.buildAtoms || []).length >= 2 && d.buildBondFrom === null && React.createElement("div", { className: "flex gap-1" },
 
-                  (d.buildAtoms || []).map((a, i) => React.createElement("button", { "aria-label": "Upd",
+                  (d.buildAtoms || []).map((a, i) => React.createElement("button", { "aria-label": "Start bond from atom " + a.el,
 
                     key: 'bf' + i,
 
@@ -1305,7 +1322,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               (d.buildAtoms || []).length > 0 && React.createElement("div", { className: "mt-3 flex gap-2" },
 
-                React.createElement("button", { "aria-label": "Action",
+                React.createElement("button", { "aria-label": "Check built molecule",
 
                   onClick: () => {
 
@@ -1523,7 +1540,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Upd", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
 
                       )
 
@@ -1853,7 +1870,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       if (!el) return React.createElement("div", { key: ri + '-' + ci });
 
-                      return React.createElement("button", { "aria-label": "Upd", key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[8px] font-bold border transition-all hover:scale-125 hover:z-10 hover:shadow-lg " + (catColors[el.cat] || 'bg-slate-50 border-slate-200'), title: el.name, style: { minWidth: '28px' } },
+                      return React.createElement("button", { "aria-label": "Select element: " + el.name + " (" + el.s + ")", key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[8px] font-bold border transition-all hover:scale-125 hover:z-10 hover:shadow-lg " + (catColors[el.cat] || 'bg-slate-50 border-slate-200'), title: el.name, style: { minWidth: '28px' } },
 
                         React.createElement("span", { className: "font-black text-[10px] leading-none" }, el.s),
 
@@ -1917,7 +1934,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                    React.createElement("button", { "aria-label": "Change el quiz", onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? 'ðŸ”„ Next Question' : 'ðŸ”¬ Element Quiz'),
+                    React.createElement("button", { "aria-label": "Start element quiz or get next question", onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? 'ðŸ”„ Next Question' : 'ðŸ”¬ Element Quiz'),
 
                     elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, 'â­ ' + elScore + ' | ðŸ”¥ ' + elStreak)
 
@@ -1931,7 +1948,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       elQuiz.opts.map(function (opt) {
 
-                        return React.createElement("button", { "aria-label": "Select option",
+                        return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
                           key: opt, onClick: function () {
 
@@ -1971,7 +1988,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               // Reaction selector
               React.createElement("div", { className: "flex gap-1 mb-4 flex-wrap" },
-                REACTIONS.map((r, idx) => React.createElement("button", { "aria-label": "Init Reaction",
+                REACTIONS.map((r, idx) => React.createElement("button", { "aria-label": "Select reaction: " + r.name,
                   key: r.id,
                   onClick: () => initReaction(idx),
                   className: "px-2 py-1 rounded-lg text-xs font-bold transition-all " +
@@ -2008,12 +2025,12 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                         i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-500 mx-1" }, "+"),
                         React.createElement("div", { className: "flex flex-col items-center" },
                           React.createElement("div", { className: "flex items-center gap-0.5" },
-                            React.createElement("button", { "aria-label": "Set Coeff",
+                            React.createElement("button", { "aria-label": "Decrease coefficient for " + term.formula,
                               onClick: () => setCoeff(i, -1),
                               className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
                             }, "−"),
                             React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700" }, coeffs[i]),
-                            React.createElement("button", { "aria-label": "Set Coeff",
+                            React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(i, 1),
                               className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
                             }, "+")
@@ -2030,12 +2047,12 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                         i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-500 mx-1" }, "+"),
                         React.createElement("div", { className: "flex flex-col items-center" },
                           React.createElement("div", { className: "flex items-center gap-0.5" },
-                            React.createElement("button", { "aria-label": "Set Coeff",
+                            React.createElement("button", { "aria-label": "Decrease coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, -1),
                               className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
                             }, "−"),
                             React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700" }, coeffs[r.left.length + i]),
-                            React.createElement("button", { "aria-label": "Set Coeff",
+                            React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, 1),
                               className: "w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center"
                             }, "+")
@@ -2142,7 +2159,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   ),
                   React.createElement("div", { className: "flex gap-1 mb-2 flex-wrap" },
                     ["What is an ionic bond?", "Why is water a polar molecule?", "How does rust form?", "What is pH?"].map(q =>
-                      React.createElement("button", { "aria-label": "Upd",
+                      React.createElement("button", { "aria-label": "Ask: " + q,
                         key: q,
                         onClick: () => { upd('aiQuestion', q); askChemTutor(q); },
                         className: "px-2 py-1 rounded text-[10px] font-medium bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"

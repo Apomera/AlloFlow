@@ -1,0 +1,1 @@
+        accessibleHtml = accessibleHtml.replace(/<h([1-6])[^>]*>\\s*<\\/h\\1>/gi, () => { aiFixCount++; return ''; });

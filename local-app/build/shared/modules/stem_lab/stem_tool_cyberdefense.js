@@ -9,12 +9,31 @@
  */
 (function () {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-cyberdefense')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-cyberdefense';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   window.StemLab.registerTool('cyberDefense', {
     name: 'Cyber Defense Lab',
     icon: '\uD83D\uDEE1\uFE0F',
     category: 'tech',
+    questHooks: [
+      { id: 'phish_score_3', label: 'Identify 3 phishing emails correctly', icon: '\uD83C\uDFA3', check: function(d) { return (d.phishScore || 0) >= 3; }, progress: function(d) { return (d.phishScore || 0) + '/3'; } },
+      { id: 'phish_score_5', label: 'Identify 5 phishing emails correctly', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return (d.phishScore || 0) >= 5; }, progress: function(d) { return (d.phishScore || 0) + '/5'; } },
+      { id: 'phish_streak_3', label: 'Get a 3-answer phishing streak', icon: '\uD83D\uDD25', check: function(d) { return (d.phishStreak || 0) >= 3; }, progress: function(d) { return (d.phishStreak || 0) + '/3 streak'; } },
+      { id: 'test_password', label: 'Test a password in the strength checker', icon: '\uD83D\uDD10', check: function(d) { return !!(d.pwInput && d.pwInput.length > 0); }, progress: function(d) { return d.pwInput ? 'Tested!' : 'Enter a password'; } }
+    ],
     render: function (ctx) {
     var React = ctx.React;
     var el = React.createElement;
@@ -865,7 +884,7 @@
                   !pwChallengeDone && pwStrength.entropy > 60 && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
                     el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
                     el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your password would take ' + pwStrength.crackTime + ' to crack!'),
-                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); },
+                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); if (announceToSR) announceToSR('Password challenge complete! Plus 5 XP.'); },
                       style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
                   ),
                   // Tips
@@ -952,7 +971,7 @@
                   el('input', { value: cipherChallenge, onChange: function(e) {
                     var val = e.target.value.toUpperCase();
                     upd('cipherChallenge', val);
-                    if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); }
+                    if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); if (announceToSR) announceToSR('Cipher cracked! Plus 5 XP.'); }
                     else { upd('challengeSolved', false); }
                   }, placeholder: 'Type the decoded message...', 'aria-label': 'Cipher challenge answer', disabled: challengeSolved,
                     style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),

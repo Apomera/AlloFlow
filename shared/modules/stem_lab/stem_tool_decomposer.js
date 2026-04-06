@@ -4,6 +4,19 @@
 //   AI tutor, TTS read-aloud, grade-band content, 15 materials
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-decomposer')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-decomposer';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   /* ── StemLab plugin guard ───────────────────────────────── */
   if (!window.StemLab) {
@@ -346,6 +359,12 @@
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'explore_5_materials', label: 'Explore 5 decomposable materials', icon: '\uD83E\uDDEB', check: function(d) { return (d.materialsExplored || []).length >= 5; }, progress: function(d) { return (d.materialsExplored || []).length + '/5'; } },
+      { id: 'explore_15_materials', label: 'Explore 15 materials (master decomposer!)', icon: '\uD83C\uDFC6', check: function(d) { return (d.materialsExplored || []).length >= 15; }, progress: function(d) { return (d.materialsExplored || []).length + '/15'; } },
+      { id: 'quiz_score_5', label: 'Score 5+ on the decomposition quiz', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizScore || 0) >= 5; }, progress: function(d) { return (d.quizScore || 0) + '/5'; } },
+      { id: 'streak_3', label: 'Get a 3-answer correct streak', icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 3; }, progress: function(d) { return (d.bestStreak || 0) + '/3'; } }
+    ],
     render: function(ctx) {
       /* ── Aliases ── */
       var React = ctx.React;
@@ -378,6 +397,7 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       /* ═══════════════════════════════════════════════════════
          Tool Body
@@ -386,6 +406,15 @@
 
         /* ── State ── */
         var d = labToolData.decomposer || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('decomposer', 'init', {
+              first: 'Decomposer Lab loaded. Explore how fungi, bacteria, and invertebrates break down organic matter and recycle nutrients.',
+              repeat: 'Decomposer Lab active.',
+              terse: 'Decomposer Lab.'
+            }, { debounce: 800 });
+          }
 
         var upd = function(key, val) {
           setLabToolData(function(prev) {
@@ -1600,7 +1629,7 @@
               return h('div', null,
                 // Scene header
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
-                  h('button', { 'aria-label': 'Update setting', onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+                  h('button', { 'aria-label': 'Exit decomposition scene', onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
                   h('div', {
                     className: 'flex items-center justify-center shrink-0 rounded-xl',
                     style: { width: 44, height: 44, background: 'white', border: '2px solid ' + scene.accent + '40', boxShadow: '0 2px 8px ' + scene.accent + '20' }

@@ -6,6 +6,10 @@
     desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.',
     color: 'orange',
     category: 'science',
+    questHooks: [
+      { id: 'explore_3_tabs', label: 'Explore 3 tectonics topics', icon: '🌋', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3'; } },
+      { id: 'select_plate', label: 'Study a tectonic plate', icon: '🌍', check: function(d) { return !!d.selectedPlate; }, progress: function(d) { return d.selectedPlate ? 'Selected!' : 'Pick a plate'; } }
+    ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
@@ -39,10 +43,20 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // â”€â”€ Tool body (plateTectonics) â”€â”€
       return (function() {
 var d = labToolData.plateTectonics || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('plateTectonics', 'init', {
+              first: 'Plate Tectonics Simulator loaded. Drag tectonic plates to explore convergent, divergent, and transform boundaries. Watch earthquakes and eruptions in real time.',
+              repeat: 'Plate Tectonics active.',
+              terse: 'Plate Tectonics.'
+            }, { debounce: 800 });
+          }
 
           var simTab = d.simTab || 'sim';
 
@@ -1132,11 +1146,11 @@ var d = labToolData.plateTectonics || {};
 
                   var active = simTab === tab[0];
 
-                  return React.createElement("button", { "aria-label": "Update setting",
+                  return React.createElement("button", { "aria-label": "Switch to " + tab[2] + " tab",
 
                     key: tab[0],
 
-                    onClick: function() { upd({ simTab: tab[0] }); },
+                    onClick: function() { upd({ simTab: tab[0] }); if (typeof canvasNarrate === 'function') { canvasNarrate('plateTectonics', 'tab_switch', { first: 'Switched to ' + tab[2] + ' view. ' + (tab[0] === 'sim' ? 'Drag plates to explore boundaries.' : tab[0] === 'earthquake' ? 'Set magnitude and trigger earthquakes.' : tab[0] === 'timeline' ? 'Explore geological time periods.' : 'Test your knowledge.'), repeat: tab[2] + ' tab active.', terse: tab[2] + '.' }, { debounce: 500 }); } },
 
                     className: "px-4 py-2 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg scale-105" : "text-red-800 bg-red-50 hover:bg-red-100"),
 
@@ -1381,7 +1395,7 @@ var d = labToolData.plateTectonics || {};
                     var isActive = ei === timelineEra;
                     return React.createElement('button', {
                       key: ei,
-                      onClick: function() { upd({ timelineEra: ei, timelapsePlaying: false }); if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 2, 'Timeline explored'); },
+                      onClick: function() { upd({ timelineEra: ei, timelapsePlaying: false }); if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 2, 'Timeline explored'); if (typeof canvasNarrate === 'function') { canvasNarrate('plateTectonics', 'era_select', { first: era.name + ' era, ' + era.mya + '. ' + era.keyEvent, repeat: era.name + ', ' + era.mya + '.', terse: era.name + '.' }, { debounce: 500 }); } },
                       className: 'p-2 rounded-xl text-center transition-all ' + (isActive ? 'ring-2 ring-red-500 shadow-lg scale-105' : 'hover:shadow-md hover:scale-102'),
                       style: { background: isActive ? 'linear-gradient(135deg, #fecaca, #fca5a5)' : 'white', border: '2px solid ' + (isActive ? '#ef4444' : '#fecaca') }
                     },
@@ -1457,6 +1471,19 @@ var d = labToolData.plateTectonics || {};
             // â”€â”€â”€ Earth canvas renderer (async) â”€â”€â”€
 
             (function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-platetectonics')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-platetectonics';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
               setTimeout(function () {
 
@@ -1919,7 +1946,7 @@ var d = labToolData.plateTectonics || {};
 
             React.createElement("div", { className: "mt-6" },
 
-              React.createElement("button", { "aria-label": "Update setting",
+              React.createElement("button", { "aria-label": "Toggle educational panel: Earth Layers and Plate Boundaries",
 
                 onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('plateTectonics', 5, 'Learned about tectonics'); },
 

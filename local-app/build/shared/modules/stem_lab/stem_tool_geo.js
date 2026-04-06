@@ -32,14 +32,33 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-geo')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-geo';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ═══ 🔬 geoQuiz (geoQuiz) ═══
   window.StemLab.registerTool('geoQuiz', {
-    icon: '🔬',
+    icon: '\uD83D\uDDFA\uFE0F',
     label: 'geoQuiz',
     desc: '',
     color: 'slate',
     category: 'geo',
+    questHooks: [
+      { id: 'score_5', label: 'Score 5+ on geography quiz', icon: '\uD83C\uDF0D', check: function(d) { return (d.geoScore || 0) >= 5; }, progress: function(d) { return (d.geoScore || 0) + '/5'; } },
+      { id: 'score_10', label: 'Score 10+ on geography quiz', icon: '\uD83C\uDFC6', check: function(d) { return (d.geoScore || 0) >= 10; }, progress: function(d) { return (d.geoScore || 0) + '/10'; } },
+      { id: 'streak_3', label: 'Get a 3-answer streak', icon: '\uD83D\uDD25', check: function(d) { return (d.geoStreak || 0) >= 3; }, progress: function(d) { return (d.geoStreak || 0) + '/3 streak'; } },
+      { id: 'answer_10', label: 'Answer 10 geography questions', icon: '\uD83D\uDCDA', check: function(d) { return (d.geoAnswered || []).length >= 10; }, progress: function(d) { return (d.geoAnswered || []).length + '/10'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -73,10 +92,20 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (geoQuiz) ──
       return (function() {
 var d = labToolData || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('geo', 'init', {
+              first: 'Geography Explorer loaded. Explore world maps, countries, capitals, and geographic features with interactive quizzes.',
+              repeat: 'Geography active.',
+              terse: 'Geography.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
 

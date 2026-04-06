@@ -352,6 +352,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           case 'simplified': return 'book';
           case 'concept-sort': return 'pointer';
           case 'behavior-lens': return 'clipboard';
+          case 'dbq': return 'pencil';
+          case 'storyforge-config': return 'book';
+          case 'storyforge-submission': return 'book';
           default: return null;
       }
   };
@@ -1517,6 +1520,21 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  [class*="animate-"], [class*="transition-"] {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* WCAG 2.4.7 Focus Visible — ensure all interactive elements show focus */
+*:focus-visible {
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25) !important;
+}
+[role="button"]:focus-visible, button:focus-visible, a:focus-visible,
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px !important;
 }
 `}</style>
     <div
@@ -1640,7 +1658,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                                 onMicClick();
                             }}
                             onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                            className={`absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-500 text-white border-red-400 animate-pulse' : 'bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-500 border-slate-100'}`}
+                            className={`absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 animate-pulse' : 'bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-500 border-slate-100'}`}
                             title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
                             aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
                         >
@@ -1666,7 +1684,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                     aria-label={t('bot.wake_title')}
                   ></div>
               )}
-              <svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="select-none overflow-visible">
+              <svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="select-none overflow-visible" aria-hidden="true">
                 {activeView === 'image' && !isFlightActive && !isDragging && (
                    <g transform="translate(110, 30) scale(0.85) rotate(8)" className="animate-in fade-in zoom-in-95 duration-500" opacity="0.95">
                       <rect x="8" y="5" width="4" height="55" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />

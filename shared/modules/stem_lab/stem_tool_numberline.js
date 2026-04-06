@@ -14,6 +14,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-numberline')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-numberline';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   window.StemLab.registerTool('numberline', {
     icon: '\uD83D\uDCCF', label: 'Number Line',
@@ -674,7 +687,7 @@ window.StemLab = window.StemLab || {
             return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
               h('div', { className: 'flex items-center justify-between' },
                 h('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDD16 AI Number Line Tutor'),
-                h('button', { 'aria-label': 'Update setting',
+                h('button', { 'aria-label': 'Toggle number line option',
                   onClick: function() { upd({ showAITutor: false }); },
                   className: 'text-sky-400 hover:text-sky-600 text-lg font-bold'
                 }, '\u00D7')

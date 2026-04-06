@@ -15,6 +15,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-manipulatives')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-manipulatives';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects ──
@@ -789,7 +802,7 @@ window.StemLab = window.StemLab || {
 
           // Culture cards
           h('div', null,
-            h('button', { 'aria-label': 'Update setting', onClick: function() { upd({ showCulture: !showCulture }); }, className: 'text-[10px] font-bold ' + (showCulture ? 'text-amber-600' : 'text-slate-500') + ' hover:text-amber-600' }, (showCulture ? '\u25B2' : '\u25BC') + ' \uD83C\uDF0F Abacus Around the World'),
+            h('button', { 'aria-label': 'Toggle cultural context panel', onClick: function() { upd({ showCulture: !showCulture }); }, className: 'text-[10px] font-bold ' + (showCulture ? 'text-amber-600' : 'text-slate-500') + ' hover:text-amber-600' }, (showCulture ? '\u25B2' : '\u25BC') + ' \uD83C\uDF0F Abacus Around the World'),
             showCulture && h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
               abacusFacts.map(function(fact) {
                 return h('div', { key: fact.name, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
@@ -919,7 +932,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs text-slate-500' }, 'Test your understanding of place value, expanded form, and number comparison')
           ),
 
-          h('button', { 'aria-label': 'Update setting', onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); },
+          h('button', { 'aria-label': 'Generate new place value quiz', onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); },
             className: 'w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md'
           }, pvQuiz ? '\uD83D\uDD04 Next Question' : '\uD83C\uDFAF Start Quiz'),
 

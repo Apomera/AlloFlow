@@ -16,6 +16,19 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-anatomy')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-anatomy';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
@@ -175,6 +188,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     desc: 'Explore 10 body systems with layered anatomical visualization',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'explore_3_systems', label: 'Explore 3 different body systems', icon: '\uD83E\uDEC0', check: function(d) { return Object.keys(d.systemsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.systemsViewed || {}).length + '/3 systems'; } },
+      { id: 'explore_all_systems', label: 'Explore all body systems', icon: '\uD83C\uDFC6', check: function(d) { return Object.keys(d.systemsViewed || {}).length >= 8; }, progress: function(d) { return Object.keys(d.systemsViewed || {}).length + '/8 systems'; } },
+      { id: 'complete_tour', label: 'Complete a guided anatomy tour', icon: '\uD83D\uDCDA', check: function(d) { return (d._tourComplete || false); }, progress: function(d) { return d._tourComplete ? 'Done!' : 'Not yet'; } },
+      { id: 'toggle_layers', label: 'Use the layer toggle to reveal internal structures', icon: '\uD83D\uDD2C', check: function(d) { var l = d.visibleLayers || {}; return Object.keys(l).length >= 2; }, progress: function(d) { return Object.keys(d.visibleLayers || {}).length >= 2 ? 'Explored!' : 'Toggle layers'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -206,10 +225,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (anatomy) ──
       return (function() {
         var d = labToolData.anatomy || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('anatomy', 'init', {
+              first: 'Human Anatomy Explorer loaded. Explore body systems including skeletal, muscular, circulatory, and nervous systems with interactive diagrams.',
+              repeat: 'Anatomy Explorer active.',
+              terse: 'Anatomy.'
+            }, { debounce: 800 });
+          }
         var upd = function(k, v) {
           setLabToolData(function(p) {
             return Object.assign({}, p, { anatomy: Object.assign({}, p.anatomy, (function() { var o = {}; o[k] = v; return o; })()) });
@@ -3116,4 +3145,3 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
 })();
 }
-

@@ -3,6 +3,19 @@
 // Extracted from stem_tool_science.js for modular loading
 // =================================================================
 (function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-rocks')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-rocks';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   if (!window.StemLab) { console.warn("StemLab registry not found"); return; }
 
   // ═══ 🔬 rocks (rocks) ═══
@@ -45,6 +58,7 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (rocks) ──
       return (function() {
@@ -54,6 +68,14 @@ const d = labToolData.rocks || {};
 
           const mode = d.mode || 'landscape';
 
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('rocks', 'init', {
+              first: 'Rocks and Minerals Explorer loaded. ' + (mode === 'landscape' ? 'Interactive landscape view active. Click on the volcano, river delta, or mountain zones to explore rock types.' : 'Current mode: ' + mode + '.'),
+              repeat: 'Rocks Explorer, mode: ' + mode + '.',
+              terse: 'Rocks Explorer.'
+            }, { debounce: 800 });
+          }
 
 
           // ── Rock type data ──
@@ -1148,6 +1170,11 @@ const d = labToolData.rocks || {};
 
                       else { upd("quizMode", false); }
 
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_rocks.js
+=======
+                      if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', repeat: (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', terse: m + '.' }, { debounce: 500 }); }
+
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_rocks.js
                     }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                   },
@@ -1187,6 +1214,8 @@ const d = labToolData.rocks || {};
                         upd("selectedType", type);
 
                         upd("mode", "rocks");
+
+                        if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'zone_select', { first: 'Exploring ' + type + ' rocks. Selected ' + rockId + ' from the ' + (type === 'igneous' ? 'volcano zone' : type === 'sedimentary' ? 'river delta zone' : 'mountain core zone') + '.', repeat: type + ' rock: ' + rockId + '.', terse: rockId + '.' }, { debounce: 500 }); }
 
                       };
 
@@ -2069,7 +2098,11 @@ const d = labToolData.rocks || {};
 
                 quizQ.options.map(function (opt) {
 
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_rocks.js
                   return React.createElement("button", { "aria-label": "Select option",
+=======
+                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_rocks.js
 
                     key: opt, onClick: function () {
 
@@ -3135,7 +3168,11 @@ const d = labToolData.rockCycle;
 
             React.createElement("div", { className: "border-t border-slate-200 pt-3" },
 
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_rocks.js
               React.createElement("button", { "aria-label": "Action",
+=======
+              React.createElement("button", { "aria-label": "Start rock cycle quiz",
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_rocks.js
 
                 onClick: function () {
 
@@ -3187,7 +3224,11 @@ const d = labToolData.rockCycle;
 
                     var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
 
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_rocks.js
                     return React.createElement("button", { "aria-label": "Select option",
+=======
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_rocks.js
 
                       key: opt, disabled: d.rcQuiz.answered, onClick: function () {
 

@@ -16,7 +16,18 @@
     var style = document.createElement('style');
     style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *,#ss-pq,#ss-pq *,#ss-pq-calming,#ss-pq-calming *,#ss-pq-sensory,#ss-pq-sensory *,#ss-pq-askme,#ss-pq-askme *,#ss-pq-bodycheck,#ss-pq-bodycheck *,#ss-pq-transition,#ss-pq-transition *{visibility:visible}#ss-pb,#ss-ps,#ss-py,#ss-pq,#ss-pq-calming,#ss-pq-sensory,#ss-pq-askme,#ss-pq-bodycheck,#ss-pq-transition{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}'
     + ' .ss-focus-visible *:focus-visible{outline:2px solid #7c3aed!important;outline-offset:2px!important;border-radius:4px!important}'
-    + ' .ss-focus-visible *:focus:not(:focus-visible){outline:none!important}';
+    + ' .ss-focus-visible *:focus:not(:focus-visible){outline:none!important}'
+    // ── Word Garden animations ──
+    + ' @keyframes ss-garden-sway{0%{transform:rotate(-1deg)}50%{transform:rotate(1deg)}100%{transform:rotate(-1deg)}}'
+    + ' @keyframes ss-garden-glow{0%{box-shadow:0 0 6px rgba(250,204,21,0.3)}50%{box-shadow:0 0 18px rgba(250,204,21,0.7)}100%{box-shadow:0 0 6px rgba(250,204,21,0.3)}}'
+    + ' @keyframes ss-garden-tap{0%{transform:scale(1)}20%{transform:scale(1.12)}60%{transform:scale(0.95)}100%{transform:scale(1)}}'
+    + ' @keyframes ss-garden-sprout{0%{transform:scale(0.9);opacity:0.7}100%{transform:scale(1);opacity:1}}'
+    + ' @keyframes ss-garden-bloom{0%{filter:saturate(0.5)}50%{filter:saturate(1.3)}100%{filter:saturate(1)}}'
+    + ' .ss-garden-seed{animation:ss-garden-sprout 2s ease-in-out infinite alternate}'
+    + ' .ss-garden-mastered{animation:ss-garden-glow 2.5s ease-in-out infinite}'
+    + ' .ss-garden-tapped{animation:ss-garden-tap 0.4s ease-out}'
+    + ' @keyframes ss-garden-levelup{0%{transform:scale(0.95);opacity:0}20%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}'
+    + ' .ss-garden-levelup{animation:ss-garden-levelup 0.6s ease-out}';
     document.head.appendChild(style);
   })();
 
@@ -29,7 +40,13 @@
   var STORAGE_ACTIVE_PROFILE = 'alloActiveProfileId';
   var STORAGE_BOOKS = 'alloActivitySets';
   var STORAGE_USAGE = 'alloAACUsage';
+  var STORAGE_FAMILIARITY = 'alloSymbolFamiliarity';
   var MAX_PROFILES = 8;
+
+  // Codename system — privacy-safe student identifiers (Adjective + Animal)
+  var CN_ADJ = ['Alpine','Arctic','Bold','Brave','Bright','Calm','Clever','Cool','Cosmic','Daring','Eager','Epic','Fair','Fast','Fierce','Gentle','Grand','Happy','Heroic','Jolly','Kind','Lively','Lucky','Magic','Mighty','Neon','Noble','Proud','Quick','Rapid','Royal','Silent','Smart','Solar','Sonic','Steady','Super','Swift','Tough','Turbo','Unique','Vivid','Wild','Wise','Zealous'];
+  var CN_ANI = ['Badger','Bear','Beaver','Bison','Cat','Cobra','Cougar','Crane','Crow','Deer','Dingo','Dolphin','Dragon','Eagle','Elk','Falcon','Ferret','Fox','Gecko','Hawk','Heron','Horse','Husky','Jaguar','Koala','Lemur','Leopard','Lion','Lynx','Moose','Otter','Owl','Panda','Panther','Parrot','Penguin','Puma','Rabbit','Raven','Seal','Shark','Sloth','Tiger','Turtle','Wolf'];
+  function generateCodename() { return CN_ADJ[Math.floor(Math.random() * CN_ADJ.length)] + ' ' + CN_ANI[Math.floor(Math.random() * CN_ANI.length)]; }
   var BATCH_SIZE = 4;
   var BATCH_DELAY = 700;
   var MAX_RETRIES = 3;
@@ -55,6 +72,8 @@
     { id: 'quickboards', icon: '⚡', label: 'Quick Boards' },
     { id: 'books', icon: '📚', label: 'Activity Sets' },
     { id: 'quest', icon: '🎮', label: 'Symbol Quest' },
+    { id: 'search', icon: '🔍', label: 'Symbol Search' },
+    { id: 'garden', icon: '🌱', label: 'Word Garden' },
   ];
 
   var BOARD_TEMPLATES = [
@@ -251,15 +270,21 @@
   // Load profiles with migration from legacy single-avatar format
   function loadProfiles() {
     var saved = load(STORAGE_PROFILES, null);
-    if (saved && saved.length) return saved;
+    if (saved && saved.length) {
+      // Migration: add codenames to profiles that don't have one
+      var changed = false;
+      saved.forEach(function (p) { if (!p.codename) { p.codename = generateCodename(); changed = true; } });
+      if (changed) store(STORAGE_PROFILES, saved);
+      return saved;
+    }
     var legacy = load(STORAGE_AVATAR, null);
     var profs;
     if (legacy && (legacy.name || legacy.image)) {
-      profs = [{ id: uid(), name: legacy.name || 'Student 1', description: legacy.description || '', image: legacy.image || null }];
+      profs = [{ id: uid(), name: legacy.name || 'Student 1', description: legacy.description || '', image: legacy.image || null, codename: generateCodename() }];
     } else {
-      profs = [{ id: uid(), name: 'Student 1', description: '', image: null }];
+      profs = [{ id: uid(), name: 'Student 1', description: '', image: null, codename: generateCodename() }];
     }
-    store(STORAGE_PROFILES, profs); // persist so activeProfileId init can read it
+    store(STORAGE_PROFILES, profs);
     return profs;
   }
 
@@ -535,6 +560,9 @@
       { code: 'tl', label: 'Tagalog' },
       { code: 'ru', label: 'Русский' },
       { code: 'sw', label: 'Kiswahili' },
+      { code: 'so', label: 'Soomaali' },
+      { code: 'my', label: 'မြန်မာ' },
+      { code: 'am', label: 'አማርኛ' },
     ];
     var _boardLang = useState(function () { return load(STORAGE_BOARD_LANG, 'en'); });
     var boardLang = _boardLang[0]; var setBoardLang = _boardLang[1];
@@ -666,6 +694,7 @@
     var _scanIndex = useState(0); var scanIndex = _scanIndex[0]; var setScanIndex = _scanIndex[1];
     var _scanPaused = useState(false); var scanPaused = _scanPaused[0]; var setScanPaused = _scanPaused[1];
     var _scanSpeed = useState(2000); var scanSpeed = _scanSpeed[0]; var setScanSpeed = _scanSpeed[1];
+    var _scanManual = useState(false); var scanManual = _scanManual[0]; var setScanManual = _scanManual[1];
     var scanIntervalRef = useRef(null);
     var autoLoadedRef = useRef(false);
 
@@ -689,23 +718,95 @@
     var _sentenceParsing = useState(false); var sentenceParsing = _sentenceParsing[0]; var setSentenceParsing = _sentenceParsing[1];
     var _showSentencePanel = useState(false); var showSentencePanel = _showSentencePanel[0]; var setShowSentencePanel = _showSentencePanel[1];
 
+    // ── Word Garden state ──
+    var _gardenFilter = useState('all'); var gardenFilter = _gardenFilter[0]; var setGardenFilter = _gardenFilter[1];
+    var _gardenSearch = useState(''); var gardenSearch = _gardenSearch[0]; var setGardenSearch = _gardenSearch[1];
+    // Wish Seeds — words the student wanted to say but couldn't find
+    var STORAGE_WISHES = 'alloGardenWishSeeds';
+    var _wishSeeds = useState(function () { return load(STORAGE_WISHES, []); });
+    var wishSeeds = _wishSeeds[0]; var setWishSeeds = _wishSeeds[1];
+    var _wishInput = useState(''); var wishInput = _wishInput[0]; var setWishInput = _wishInput[1];
+    var _boardWishOpen = useState(false); var boardWishOpen = _boardWishOpen[0]; var setBoardWishOpen = _boardWishOpen[1];
+    var _boardWishInput = useState(''); var boardWishInput = _boardWishInput[0]; var setBoardWishInput = _boardWishInput[1];
+    var _gardenSelectedWord = useState(null); var gardenSelectedWord = _gardenSelectedWord[0]; var setGardenSelectedWord = _gardenSelectedWord[1];
+    var _gardenSort = useState('growth'); var gardenSort = _gardenSort[0]; var setGardenSort = _gardenSort[1];
+    var _gardenStudentView = useState(false); var gardenStudentView = _gardenStudentView[0]; var setGardenStudentView = _gardenStudentView[1];
+    var _gardenBehaviorFn = useState(''); var gardenBehaviorFn = _gardenBehaviorFn[0]; var setGardenBehaviorFn = _gardenBehaviorFn[1];
+    // Bilingual garden — home language translations cached per profile
+    var STORAGE_HOME_LANG = 'alloGardenHomeLang';
+    var _gardenHomeLang = useState(function () { return load(STORAGE_HOME_LANG, ''); });
+    var gardenHomeLang = _gardenHomeLang[0]; var setGardenHomeLang = _gardenHomeLang[1];
+    var _gardenTranslations = useState({}); var gardenTranslations = _gardenTranslations[0]; var setGardenTranslations = _gardenTranslations[1];
+    var _gardenTranslating = useState(false); var gardenTranslating = _gardenTranslating[0]; var setGardenTranslating = _gardenTranslating[1];
+    var _sessionDebrief = useState(null); var sessionDebrief = _sessionDebrief[0]; var setSessionDebrief = _sessionDebrief[1];
+
+    // Growth events — detects and celebrates when words level up
+    var STORAGE_GROWTH_LOG = 'alloGardenGrowthLog';
+    var _growthEvents = useState([]); var growthEvents = _growthEvents[0]; var setGrowthEvents = _growthEvents[1];
+    var _prevGrowthMap = useState(function () { return load(STORAGE_GROWTH_LOG, {}); });
+    var prevGrowthMap = _prevGrowthMap[0]; var setPrevGrowthMap = _prevGrowthMap[1];
+
+    // ── Vocabulary Familiarity System ──
+    // Tracks every symbol interaction across all tabs to build a learning profile.
+    // Originally conceived by a sibling instance; rebuilt here to live alongside the garden.
+    // Context types: 'aac-tap', 'quest-correct', 'quest-wrong', 'speak', 'exposure'
+    var _familiarity = useState(function () { return load(STORAGE_FAMILIARITY, {}); });
+    var familiarity = _familiarity[0]; var setFamiliarity = _familiarity[1];
+
+    var recordFamiliarity = useCallback(function (label, context) {
+      if (!label) return;
+      var key = label.toLowerCase().trim();
+      setFamiliarity(function (prev) {
+        var entry = prev[key] || { taps: 0, questCorrect: 0, questWrong: 0, exposures: 0, lastSeen: 0, firstSeen: 0 };
+        var updated = Object.assign({}, entry, { lastSeen: Date.now() });
+        if (!updated.firstSeen) updated.firstSeen = Date.now();
+        if (context === 'aac-tap' || context === 'speak') updated.taps = (entry.taps || 0) + 1;
+        else if (context === 'quest-correct') updated.questCorrect = (entry.questCorrect || 0) + 1;
+        else if (context === 'quest-wrong') updated.questWrong = (entry.questWrong || 0) + 1;
+        else if (context === 'exposure') updated.exposures = (entry.exposures || 0) + 1;
+        var next = Object.assign({}, prev); next[key] = updated;
+        store(STORAGE_FAMILIARITY, next);
+        return next;
+      });
+    }, []);
+
+    // Garden Story state — a personalized fairy tale about the student's vocabulary
+    var _gardenStory = useState(null); var gardenStory = _gardenStory[0]; var setGardenStory = _gardenStory[1];
+    var _gardenStoryLoading = useState(false); var gardenStoryLoading = _gardenStoryLoading[0]; var setGardenStoryLoading = _gardenStoryLoading[1];
+
+    // Familiarity score: 0 (unknown) → 1 (mastered)
+    // Weighs interactions, quest accuracy, and recency (fades over 2 weeks)
+    function getFamiliarityScore(label) {
+      if (!label) return 0;
+      var entry = familiarity[label.toLowerCase().trim()];
+      if (!entry) return 0;
+      var interactions = (entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3;
+      var totalQuest = (entry.questCorrect || 0) + (entry.questWrong || 0);
+      var accuracy = totalQuest > 0 ? entry.questCorrect / totalQuest : 0.5;
+      var daysSince = entry.lastSeen ? (Date.now() - entry.lastSeen) / 86400000 : 999;
+      var recency = Math.max(0, 1 - daysSince / 14);
+      return Math.min(1, interactions / 25) * 0.4 + accuracy * 0.3 + recency * 0.3;
+    }
+
     // Sync story student name when avatar name changes
     useEffect(function () { if (avatarName) setStoryStudentName(avatarName); }, [avatarName]);
 
     // Auto-load from cloud on mount (once, when cloudSync becomes available)
+    // GATED: cloudSync disabled in Canvas — PII (student names, profiles) must not transit Canvas sandbox
     useEffect(function () {
-      if (cloudSync && !autoLoadedRef.current) {
+      if (cloudSync && !isCanvasEnv && !autoLoadedRef.current) {
         autoLoadedRef.current = true;
         loadFromCloud();
       }
-    }, [cloudSync]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [cloudSync, isCanvasEnv]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Auto-save to cloud 5 s after any data change (debounced via syncToCloud identity)
+    // GATED: disabled in Canvas to prevent PII leakage through sandbox
     useEffect(function () {
-      if (!cloudSync) return;
+      if (!cloudSync || isCanvasEnv) return;
       var t = setTimeout(syncToCloud, 5000);
       return function () { clearTimeout(t); };
-    }, [syncToCloud]); // syncToCloud ref changes whenever profiles/boards/schedules/gallery change
+    }, [syncToCloud, isCanvasEnv]); // syncToCloud ref changes whenever profiles/boards/schedules/gallery change
 
     // Keyboard handler for use mode (Escape = exit, Backspace = delete last word)
     useEffect(function () {
@@ -721,7 +822,7 @@
     // Scanning interval — auto-advance highlighted cell
     useEffect(function () {
       if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
-      if (!scanBoardId || scanPaused) return;
+      if (!scanBoardId || scanPaused || scanManual) return;
       var board = savedBoards.find(function (b) { return b.id === scanBoardId; });
       if (!board) return;
       var cells = (board.words || []).filter(function (w) { return w.image; });
@@ -730,7 +831,7 @@
         setScanIndex(function (prev) { return (prev + 1) % cells.length; });
       }, scanSpeed);
       return function () { clearInterval(scanIntervalRef.current); };
-    }, [scanBoardId, scanPaused, scanSpeed, savedBoards]);
+    }, [scanBoardId, scanPaused, scanManual, scanSpeed, savedBoards]);
 
     if (!isOpen) return null;
 
@@ -777,7 +878,7 @@
 
     var addProfile = useCallback(function () {
       if (profiles.length >= MAX_PROFILES) return;
-      var newProf = { id: uid(), name: 'Student ' + (profiles.length + 1), description: '', image: null };
+      var newProf = { id: uid(), name: 'Student ' + (profiles.length + 1), description: '', image: null, codename: generateCodename() };
       var updated = profiles.concat([newProf]);
       setProfiles(updated); store(STORAGE_PROFILES, updated);
       setActiveProfileId(newProf.id); store(STORAGE_ACTIVE_PROFILE, newProf.id);
@@ -915,13 +1016,21 @@
 
     var exportData = useCallback(function () {
       var data = {
-        version: 5,
+        version: 7,
         exportDate: new Date().toISOString(),
         gallery: gallery,
         boards: savedBoards,
         schedules: savedSchedules,
         profiles: profiles,
         books: books,
+        familiarity: familiarity,
+        usageLog: usageLog,
+        iepGoals: iepGoals,
+        growthLog: prevGrowthMap,
+        customTemplates: customTemplates,
+        gardenTranslations: gardenTranslations,
+        gardenHomeLang: gardenHomeLang,
+        wishSeeds: wishSeeds,
       };
       var json = JSON.stringify(data, null, 2);
       var blob = new Blob([json], { type: 'application/json' });
@@ -932,7 +1041,7 @@
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
       addToast && addToast('Backup downloaded!', 'success');
-    }, [gallery, savedBoards, savedSchedules, profiles, books, addToast]);
+    }, [gallery, savedBoards, savedSchedules, profiles, books, familiarity, usageLog, iepGoals, prevGrowthMap, customTemplates, addToast]);
 
     var importData = useCallback(function (ev) {
       var file = ev.target.files && ev.target.files[0];
@@ -988,6 +1097,70 @@
             setBooks(mergedBooks); store(STORAGE_BOOKS, mergedBooks);
             summary.push(data.books.length + ' activity set(s)');
           }
+          // Import familiarity data (merge: imported values override existing per-word)
+          if (data.familiarity && typeof data.familiarity === 'object') {
+            var mergedFam = Object.assign({}, familiarity, data.familiarity);
+            setFamiliarity(mergedFam); store(STORAGE_FAMILIARITY, mergedFam);
+            summary.push('vocabulary familiarity');
+          }
+          // Import AAC usage log (merge sessions)
+          if (data.usageLog && typeof data.usageLog === 'object') {
+            var mergedUsage = Object.assign({}, usageLog);
+            Object.keys(data.usageLog).forEach(function (pid) {
+              var existing = mergedUsage[pid] || { sessions: [] };
+              var imported = data.usageLog[pid] || { sessions: [] };
+              // Deduplicate by session date
+              var existDates = {};
+              existing.sessions.forEach(function (s) { existDates[s.date] = true; });
+              var newSessions = imported.sessions.filter(function (s) { return !existDates[s.date]; });
+              mergedUsage[pid] = { sessions: existing.sessions.concat(newSessions) };
+            });
+            setUsageLog(mergedUsage); store(STORAGE_USAGE, mergedUsage);
+            summary.push('AAC usage log');
+          }
+          // Import IEP goals (merge by ID)
+          if (Array.isArray(data.iepGoals) && data.iepGoals.length) {
+            var existingGoalIds = {};
+            iepGoals.forEach(function (g) { existingGoalIds[g.id] = true; });
+            var newGoals = data.iepGoals.filter(function (g) { return !existingGoalIds[g.id]; });
+            if (newGoals.length > 0) {
+              var mergedGoals = iepGoals.concat(newGoals);
+              setIepGoals(mergedGoals); store(STORAGE_GOALS, mergedGoals);
+              summary.push(newGoals.length + ' IEP goal(s)');
+            }
+          }
+          // Import growth log snapshot
+          if (data.growthLog && typeof data.growthLog === 'object') {
+            var mergedGrowth = Object.assign({}, prevGrowthMap, data.growthLog);
+            setPrevGrowthMap(mergedGrowth); store(STORAGE_GROWTH_LOG, mergedGrowth);
+            summary.push('growth history');
+          }
+          // Import custom story templates
+          if (Array.isArray(data.customTemplates) && data.customTemplates.length) {
+            var existingTmplIds = {};
+            customTemplates.forEach(function (t) { existingTmplIds[t.id || t.label] = true; });
+            var newTmpls = data.customTemplates.filter(function (t) { return !existingTmplIds[t.id || t.label]; });
+            if (newTmpls.length > 0) {
+              var mergedTmpls = customTemplates.concat(newTmpls);
+              setCustomTemplates(mergedTmpls); store(STORAGE_CUSTOM_TEMPLATES, mergedTmpls);
+              summary.push(newTmpls.length + ' story template(s)');
+            }
+          }
+          // Import garden translations
+          if (data.gardenTranslations && typeof data.gardenTranslations === 'object') {
+            var mergedTrans = Object.assign({}, gardenTranslations, data.gardenTranslations);
+            setGardenTranslations(mergedTrans);
+            summary.push('translations');
+          }
+          if (data.gardenHomeLang && typeof data.gardenHomeLang === 'string') {
+            setGardenHomeLang(data.gardenHomeLang); store(STORAGE_HOME_LANG, data.gardenHomeLang);
+          }
+          // Import wish seeds
+          if (Array.isArray(data.wishSeeds) && data.wishSeeds.length) {
+            var existWishes = {}; wishSeeds.forEach(function (w) { existWishes[w.label.toLowerCase()] = true; });
+            var newWishes = data.wishSeeds.filter(function (w) { return !existWishes[w.label.toLowerCase()]; });
+            if (newWishes.length > 0) { var mw = wishSeeds.concat(newWishes); setWishSeeds(mw); store(STORAGE_WISHES, mw); summary.push(newWishes.length + ' wish seed(s)'); }
+          }
           addToast && addToast(summary.length ? 'Imported: ' + summary.join(', ') : 'Nothing found to import', summary.length ? 'success' : 'info');
         } catch (err) {
           warnLog('Import failed:', err);
@@ -1000,11 +1173,11 @@
 
     // ── Cloud sync actions ────────────────────────────────────────────────
     var syncToCloud = useCallback(async function () {
-      if (!cloudSync) return;
+      if (!cloudSync || isCanvasEnv) return; // PII gate: no cloud sync in Canvas sandbox
       setSyncStatus('syncing');
       try {
         var data = {
-          profiles: profiles.map(function (p) { return { id: p.id, name: p.name, description: p.description }; }),
+          profiles: profiles.map(function (p) { return { id: p.id, codename: p.codename || p.id, description: p.description }; }),
           boards: savedBoards.map(function (b) {
             return { id: b.id, title: b.title, createdAt: b.createdAt, cols: b.cols || 4,
               words: (b.words || []).map(function (w) { return { label: w.label, category: w.category || 'other', description: w.description || '' }; }) };
@@ -1029,7 +1202,7 @@
     }, [cloudSync, profiles, savedBoards, savedSchedules, gallery, addToast]);
 
     var loadFromCloud = useCallback(async function () {
-      if (!cloudSync) return;
+      if (!cloudSync || isCanvasEnv) return; // PII gate: no cloud sync in Canvas sandbox
       setSyncStatus('syncing');
       try {
         var data = await cloudSync.load();
@@ -1281,7 +1454,14 @@
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
       addToast && addToast('Board saved!' + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
-      if (cloudSync) setTimeout(function () { syncToCloud(); }, 300);
+      // Garden discovery nudge — fires once when gallery + board create cross-context vocabulary
+      if (addToast && gallery.length >= 2 && !load('alloGardenNudgeSeen', false)) {
+        setTimeout(function () {
+          addToast('🌱 Your words are growing! Check the Word Garden tab to see vocabulary across tools.', 'info');
+          store('alloGardenNudgeSeen', true);
+        }, 1500);
+      }
+      if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
     }, [boardWords, boardPages, activePageIdx, boardTitle, boardTopic, boardCols, activeProfileId, savedBoards, cloudSync, syncToCloud, commitCurrentPage, addToast]);
 
     var applyBoardTemplate = useCallback(function (template) {
@@ -1323,85 +1503,219 @@
       addToast && addToast('"' + (board.title || 'Board') + '" exported!', 'success');
     }, [addToast]);
 
-    // ── HTML board export ─────────────────────────────────────────────────
+    // ── HTML board export (WCAG 2.1 AA accessible) ─────────────────────────
     var exportBoardHTML = useCallback(function (board) {
-      var cells = (board.words || []).filter(function (w) { return w.image; });
-      var cols = board.cols || 4;
-      var cellsHTML = cells.map(function (w) {
-        var bg = CAT_COLORS[w.category] || '#f9fafb';
-        var border = CAT_BORDER[w.category] || '#e5e7eb';
-        return '<div class="cell" onclick="tap(this)" data-label="' + w.label.replace(/"/g, '&quot;') + '" style="background:' + bg + ';border:2px solid ' + border + '">'
-          + '<img src="' + w.image + '" alt="' + w.label.replace(/"/g, '&quot;') + '">'
-          + '<span>' + w.label + '</span></div>';
-      }).join('');
-      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
-        + '<meta name="viewport" content="width=device-width,initial-scale=1">'
-        + '<title>' + (board.title || 'AAC Board') + '</title>'
-        + '<style>'
-        + 'body{font-family:system-ui,sans-serif;margin:0;background:#f8fafc;user-select:none;-webkit-tap-highlight-color:transparent}'
-        + 'header{background:linear-gradient(135deg,#7c3aed,#4338ca);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px}'
-        + 'header h1{margin:0;font-size:18px;font-weight:800}'
-        + '#strip{background:#1a1a2e;min-height:54px;padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}'
-        + '#strip .word{background:#312e81;color:#e0e7ff;font-weight:700;font-size:13px;padding:5px 10px;border-radius:8px;display:flex;align-items:center;gap:4px}'
-        + '#strip .word img{width:24px;height:24px;object-fit:contain;border-radius:3px}'
-        + '#strip .placeholder{color:#475569;font-style:italic;font-size:13px}'
-        + '#strip-btns{display:flex;gap:8px;margin-left:auto;flex-shrink:0}'
-        + '#strip-btns button{border:none;border-radius:7px;padding:6px 12px;font-weight:700;font-size:13px;cursor:pointer}'
-        + '#speak-btn{background:#4f46e5;color:#fff}'
-        + '#del-btn{background:#374151;color:#fff}'
-        + '#clear-btn{background:#374151;color:#cbd5e1}'
-        + '.grid{display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:12px;padding:16px}'
-        + '.cell{border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;transition:transform .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent}'
-        + '.cell:active{transform:scale(0.93)}'
-        + '.cell img{width:72px;height:72px;object-fit:contain;border-radius:6px}'
-        + '.cell span{font-weight:700;font-size:13px;text-align:center;line-height:1.3;color:#1f2937}'
-        + '.cell.flash{box-shadow:0 0 0 4px #fbbf24;transform:scale(1.06)}'
-        + 'footer{text-align:center;padding:12px;color:#94a3b8;font-size:11px}'
-        + '</style></head><body>'
-        + '<header><span style="font-size:22px">▶</span><h1>' + (board.title || 'AAC Board') + '</h1></header>'
-        + '<div id="strip"><span class="placeholder" id="placeholder">Tap symbols to build a message\u2026</span><div id="strip-btns">'
-        + '<button id="speak-btn" onclick="speakStrip()" style="display:none">🔊 Speak</button>'
-        + '<button id="del-btn" onclick="delLast()" style="display:none">\u2190 Del</button>'
-        + '<button id="clear-btn" onclick="clearStrip()" style="display:none">🗑</button></div></div>'
-        + '<div class="grid">' + cellsHTML + '</div>'
-        + '<footer>AlloFlow Symbol Studio \u2022 Standalone AAC Board \u2022 Generated ' + new Date().toLocaleDateString() + '</footer>'
-        + '<script>'
-        + 'var words=[];'
-        + 'function tap(el){'
-        + '  var lbl=el.dataset.label;var img=el.querySelector("img");var src=img?img.src:"";'
-        + '  words.push({label:lbl,src:src});render();'
-        + '  el.classList.add("flash");setTimeout(function(){el.classList.remove("flash")},300);'
-        + '  speak(lbl);'
-        + '}'
-        + 'function speak(t){if(window.speechSynthesis){window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);window.speechSynthesis.speak(u);}}'
-        + 'function speakStrip(){speak(words.map(function(w){return w.label;}).join(" "));}'
-        + 'function delLast(){words.pop();render();}'
-        + 'function clearStrip(){words=[];render();}'
-        + 'function render(){'
-        + '  var strip=document.getElementById("strip");'
-        + '  var chips=strip.querySelectorAll(".word");chips.forEach(function(c){c.remove();});'
-        + '  var ph=document.getElementById("placeholder");'
-        + '  ph.style.display=words.length?"none":"";'
-        + '  var btns=document.getElementById("strip-btns");'
-        + '  btns.querySelectorAll("button").forEach(function(b){b.style.display=words.length?"":"none";});'
-        + '  var ref=document.getElementById("strip-btns");'
-        + '  words.forEach(function(w){'
-        + '    var d=document.createElement("div");d.className="word";'
-        + '    if(w.src){var i=document.createElement("img");i.src=w.src;d.appendChild(i);}'
-        + '    d.appendChild(document.createTextNode(w.label));'
-        + '    strip.insertBefore(d,ref);'
-        + '  });'
-        + '}'
-        + '<\/script></body></html>';
+      var pages = board.pages && board.pages.length ? board.pages : [{ title: board.title, words: board.words || [], cols: board.cols || 4 }];
+      var isMultiPage = pages.length > 1;
+      var title = (board.title || 'AAC Board').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      var lang = boardLang || 'en';
+      var isRtl = lang === 'ar' || lang === 'he';
+      var dir = isRtl ? 'rtl' : 'ltr';
+      var langEntry = LANG_OPTIONS.find(function (l) { return l.code === lang; });
+      var langName = langEntry ? langEntry.label : 'English';
+      var pagesData = pages.map(function (page, pi) {
+        var cells = (page.words || []).filter(function (w) { return w.image; });
+        var pageCols = page.cols || board.cols || 4;
+        var cellsHTML = cells.map(function (w, ci) {
+          var bg = CAT_COLORS[w.category] || '#f9fafb';
+          var border = CAT_BORDER[w.category] || '#e5e7eb';
+          var lbl = (w.translatedLabel || w.label || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+          var origLbl = w.originalLabel ? w.originalLabel.replace(/"/g, '&quot;').replace(/</g, '&lt;') : '';
+          var desc = w.description ? w.description.replace(/"/g, '&quot;').replace(/</g, '&lt;') : '';
+          var altText = desc ? lbl + ': ' + desc : lbl;
+          var isFirst = pi === 0 && ci === 0;
+          return '<div role="gridcell" tabindex="' + (isFirst ? '0' : '-1') + '" data-label="' + lbl + '" data-speak="' + (w.translatedLabel || w.label || '').replace(/"/g, '&quot;') + '" aria-label="' + altText + '" style="background:' + bg + ';border:2px solid ' + border + '"><img src="' + w.image + '" alt="' + altText + '" draggable="false"><span aria-hidden="true">' + lbl + '</span>' + (origLbl && w.translatedLabel ? '<span class="orig-label" aria-hidden="true">' + origLbl + '</span>' : '') + '</div>';
+        }).join('\n');
+        return { cols: pageCols, html: cellsHTML, title: (page.title || 'Page ' + (pi + 1)).replace(/</g, '&lt;'), count: cells.length };
+      });
+      var tabsHTML = '';
+      if (isMultiPage) {
+        tabsHTML = '<nav aria-label="Board pages" id="page-tabs" role="tablist">' + pagesData.map(function (p, i) { return '<button role="tab" id="tab-' + i + '" aria-selected="' + (i === 0 ? 'true' : 'false') + '" aria-controls="page-' + i + '" tabindex="' + (i === 0 ? '0' : '-1') + '" onclick="switchPage(' + i + ')" class="page-tab' + (i === 0 ? ' active' : '') + '">' + p.title + '</button>'; }).join('') + '</nav>';
+      }
+      var panelsHTML = pagesData.map(function (p, i) { return '<div role="tabpanel" id="page-' + i + '" aria-labelledby="tab-' + i + '" class="page-panel" ' + (i > 0 ? 'hidden' : '') + '><div role="grid" aria-label="' + p.title + ' communication symbols" class="board-grid" style="grid-template-columns:repeat(' + p.cols + ',1fr)">' + p.html + '</div></div>'; }).join('\n');
+      var firstCols = pagesData[0].cols;
+      var css = '*, *::before, *::after { box-sizing: border-box; }\n'
+        + 'body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1f2937; user-select: none; }\n'
+        + '.skip-link { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; } .skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; padding: 8px 16px; background: #1e293b; color: #fff; font-weight: 700; outline: 3px solid #facc15; z-index: 10000; }\n'
+        + 'header[role="banner"] { background: linear-gradient(135deg, #7c3aed, #4338ca); color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; } header h1 { margin: 0; font-size: 18px; font-weight: 800; }\n'
+        + '.controls { display: flex; gap: 6px; flex-wrap: wrap; ' + (isRtl ? 'margin-right:auto;' : 'margin-left:auto;') + ' }\n'
+        + '.ctrl-btn { border: none; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; gap: 6px; } .ctrl-btn:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }\n'
+        + '#sentence-strip { background: #1a1a2e; min-height: 58px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n'
+        + '.strip-word { background: #312e81; color: #e0e7ff; font-weight: 700; font-size: 13px; padding: 5px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; } .strip-word img { width: 28px; height: 28px; object-fit: contain; border-radius: 4px; }\n'
+        + '#placeholder { color: #94a3b8; font-style: italic; font-size: 13px; } #strip-btns { display: none; gap: 8px; ' + (isRtl ? 'margin-right:auto;' : 'margin-left:auto;') + ' } #strip-btns.visible { display: flex; }\n'
+        + '#page-tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; padding: 0 16px; } .page-tab { border: none; background: transparent; padding: 10px 18px; font-weight: 600; font-size: 13px; cursor: pointer; border-bottom: 3px solid transparent; color: #64748b; min-height: 44px; } .page-tab.active { color: #7c3aed; border-bottom-color: #7c3aed; } .page-tab:focus-visible { outline: 3px solid #7c3aed; outline-offset: -3px; }\n'
+        + '.board-grid { display: grid; gap: 12px; padding: 16px; }\n'
+        + '[role="gridcell"] { border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; transition: transform 0.12s; min-height: 44px; min-width: 44px; } [role="gridcell"]:active { transform: scale(0.93); }\n'
+        + '[role="gridcell"] img { width: 72px; height: 72px; object-fit: contain; border-radius: 6px; pointer-events: none; } [role="gridcell"] span { font-weight: 700; font-size: 13px; text-align: center; line-height: 1.3; color: #1f2937; } .orig-label { display: block; font-size: 10px !important; font-weight: 400 !important; color: #6b7280 !important; }\n'
+        + '[role="gridcell"]:focus-visible { outline: 3px solid #4f46e5; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(79,70,229,0.25); } [role="gridcell"]:focus:not(:focus-visible) { outline: none; }\n'
+        + '[role="gridcell"].flash { box-shadow: 0 0 0 4px #fbbf24; transform: scale(1.05); } [role="gridcell"].scan-hl { border-color: #facc15 !important; border-width: 4px !important; transform: scale(1.05); box-shadow: 0 0 0 6px rgba(250,204,21,0.4); }\n'
+        + '#scan-bar { display: none; background: #1e293b; padding: 8px 16px; align-items: center; gap: 12px; flex-wrap: wrap; } #scan-bar.active { display: flex; } #scan-bar span { color: #facc15; font-weight: 700; font-size: 13px; } #scan-bar select { font-size: 13px; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 6px; padding: 4px 8px; min-height: 36px; } #scan-bar label { color: #94a3b8; font-size: 12px; display: flex; align-items: center; gap: 6px; }\n'
+        + '#help-panel { display: none; background: #1e293b; color: #e2e8f0; padding: 16px 20px; border-top: 2px solid #334155; } #help-panel.visible { display: block; } #help-panel h2 { margin: 0 0 8px; font-size: 14px; color: #facc15; } #help-panel kbd { background: #334155; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; border: 1px solid #475569; } #help-panel dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 13px; } #help-panel dt { font-weight: 700; } #help-panel dd { margin: 0; }\n'
+        + 'footer[role="contentinfo"] { text-align: center; padding: 16px; color: #94a3b8; font-size: 11px; border-top: 1px solid #e2e8f0; }\n'
+        + '.a11y-stmt { max-width: 700px; margin: 12px auto 0; text-align: ' + (isRtl ? 'right' : 'left') + '; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #166534; line-height: 1.5; } .a11y-stmt strong { display: block; margin-bottom: 4px; }\n'
+        + '#live-region { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }\n'
+        + 'body.hc { background: #000; color: #fff; } body.hc header { background: #000; border-bottom: 3px solid #fff; } body.hc #sentence-strip { background: #000; border-bottom: 2px solid #fff; } body.hc .strip-word { background: #fff; color: #000; } body.hc [role="gridcell"] { background: #000 !important; border-color: #fff !important; } body.hc [role="gridcell"] span { color: #fff !important; } body.hc .ctrl-btn { border: 2px solid #fff; } body.hc footer { color: #ccc; border-color: #fff; } body.hc .a11y-stmt { background: #111; border-color: #fff; color: #ccc; } body.hc #help-panel { background: #111; border-color: #fff; } body.hc #scan-bar { background: #111; }\n'
+        + '@media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }\n'
+        + '@media (forced-colors: active) { [role="gridcell"] { border: 2px solid CanvasText; } [role="gridcell"]:focus-visible { outline: 3px solid Highlight; } [role="gridcell"].scan-hl { border: 4px solid Highlight; } header { border-bottom: 2px solid CanvasText; } .ctrl-btn { border: 1px solid ButtonText; } }\n'
+        + '@media print { body { background: #fff !important; color: #000 !important; } header { background: #f5f5f5 !important; color: #000 !important; } #sentence-strip,.controls,#scan-bar,#help-panel,.a11y-stmt,#live-region { display: none !important; } [role="gridcell"] { page-break-inside: avoid; border: 1px solid #333 !important; } [role="gridcell"] img { max-width: 60px; } footer { color: #666; } }\n';
+      var js = '(function(){"use strict";var words=[],scanOn=false,scanIdx=0,scanTmr=null,scanSpd=2000,scanMan=false,pg=0,cells=[],cols=' + firstCols + ',colsMap=' + JSON.stringify(pagesData.map(function(p){return p.cols;})) + ',strip,liveR;'
+        + 'function init(){strip=document.getElementById("sentence-strip");liveR=document.getElementById("live-region");refreshCells();document.addEventListener("keydown",onKey);}'
+        + 'function refreshCells(){var p=document.querySelector(".page-panel:not([hidden])")||document.querySelector(".page-panel");cells=p?Array.from(p.querySelectorAll("[role=gridcell]")):[];cols=colsMap[pg]||' + firstCols + ';}'
+        + 'function ann(t){if(liveR){liveR.textContent="";setTimeout(function(){liveR.textContent=t;},50);}}'
+        + 'function speak(t){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang="' + lang + '";window.speechSynthesis.speak(u);}'
+        + 'function tap(el){var lbl=el.getAttribute("data-speak")||el.getAttribute("data-label");var img=el.querySelector("img");words.push({label:lbl,src:img?img.src:""});renderStrip();ann(lbl+" added to message");speak(lbl);el.classList.add("flash");setTimeout(function(){el.classList.remove("flash");},300);}'
+        + 'function renderStrip(){strip.querySelectorAll(".strip-word").forEach(function(c){c.remove();});var ph=document.getElementById("placeholder"),btns=document.getElementById("strip-btns");if(ph)ph.style.display=words.length?"none":"";if(btns)btns.className=words.length?"visible":"";var ref=document.getElementById("strip-btns");words.forEach(function(w){var d=document.createElement("span");d.className="strip-word";if(w.src){var i=document.createElement("img");i.src=w.src;i.alt="";d.appendChild(i);}d.appendChild(document.createTextNode(w.label));strip.insertBefore(d,ref);});strip.setAttribute("aria-label","Message: "+words.map(function(w){return w.label;}).join(" "));}'
+        + 'function speakAll(){speak(words.map(function(w){return w.label;}).join(" "));}'
+        + 'function delLast(){if(words.length){var r=words.pop();renderStrip();ann(r.label+" removed");}}'
+        + 'function clearAll(){words=[];renderStrip();ann("Message cleared");}'
+        + 'function advScan(){scanIdx=(scanIdx+1)%cells.length;hlScan(scanIdx);}'
+        + 'function onKey(e){var a=document.activeElement;if(scanOn){if(e.key===" "||e.key==="Enter"){e.preventDefault();if(cells[scanIdx])tap(cells[scanIdx]);}if(e.key==="Escape"){e.preventDefault();toggleScan();}if(scanMan&&(e.key==="Tab"||e.key==="ArrowRight"||e.key==="ArrowDown")){e.preventDefault();advScan();}return;}'
+        + 'if(a&&a.getAttribute("role")==="gridcell"){var idx=cells.indexOf(a);if(idx===-1)return;var ni=idx;switch(e.key){case"ArrowRight":ni=' + (isRtl ? 'Math.max(0,idx-1)' : 'Math.min(cells.length-1,idx+1)') + ';e.preventDefault();break;case"ArrowLeft":ni=' + (isRtl ? 'Math.min(cells.length-1,idx+1)' : 'Math.max(0,idx-1)') + ';e.preventDefault();break;case"ArrowDown":ni=Math.min(cells.length-1,idx+cols);e.preventDefault();break;case"ArrowUp":ni=Math.max(0,idx-cols);e.preventDefault();break;case"Home":ni=Math.floor(idx/cols)*cols;e.preventDefault();break;case"End":ni=Math.min(cells.length-1,(Math.floor(idx/cols)+1)*cols-1);e.preventDefault();break;case"Enter":case" ":e.preventDefault();tap(a);return;}if(ni!==idx){a.setAttribute("tabindex","-1");cells[ni].setAttribute("tabindex","0");cells[ni].focus();}}'
+        + 'var tag=a?a.tagName:"";if(tag!=="INPUT"&&tag!=="SELECT"){if(e.key==="s"||e.key==="S"){e.preventDefault();toggleScan();}if(e.key==="h"||e.key==="H"){e.preventDefault();toggleHC();}if(e.key==="?"||e.key==="/"){e.preventDefault();toggleHelp();}if(e.key==="Backspace"){e.preventDefault();delLast();}if(e.key==="Delete"){e.preventDefault();clearAll();}}}'
+        + 'function toggleScan(){scanOn?stopScan():startScan();}'
+        + 'function startScan(){scanOn=true;scanIdx=0;hlScan(0);if(!scanMan){scanTmr=setInterval(function(){scanIdx=(scanIdx+1)%cells.length;hlScan(scanIdx);},scanSpd);}document.getElementById("scan-bar").className="active";ann(scanMan?"Manual scanning started. Tab to advance, Space to select.":"Scanning started. Press Space to select. Escape to stop.");}'
+        + 'function stopScan(){scanOn=false;clearInterval(scanTmr);cells.forEach(function(c){c.classList.remove("scan-hl");});document.getElementById("scan-bar").className="";ann("Scanning stopped.");}'
+        + 'function hlScan(i){cells.forEach(function(c){c.classList.remove("scan-hl");});if(cells[i])cells[i].classList.add("scan-hl");}'
+        + 'function setScanSpd(v){scanSpd=v;if(scanOn&&!scanMan){clearInterval(scanTmr);scanTmr=setInterval(function(){scanIdx=(scanIdx+1)%cells.length;hlScan(scanIdx);},scanSpd);}}'
+        + 'function toggleScanMode(){scanMan=!scanMan;if(scanOn){stopScan();startScan();}document.getElementById("scan-mode-btn").textContent=scanMan?"2-Switch":"1-Switch";}'
+        + 'function toggleHC(){document.body.classList.toggle("hc");ann(document.body.classList.contains("hc")?"High contrast on":"High contrast off");}'
+        + 'function toggleHelp(){var p=document.getElementById("help-panel");p.classList.toggle("visible");ann(p.classList.contains("visible")?"Help shown":"Help hidden");}'
+        + (isMultiPage ? 'function switchPage(i){document.querySelectorAll(".page-panel").forEach(function(p,j){p.hidden=j!==i;});document.querySelectorAll("[role=tab]").forEach(function(t,j){t.setAttribute("aria-selected",j===i?"true":"false");t.setAttribute("tabindex",j===i?"0":"-1");t.className="page-tab"+(j===i?" active":"");});pg=i;refreshCells();if(scanOn)stopScan();ann("Page "+(i+1));}' : '')
+        + 'document.addEventListener("click",function(e){var c=e.target.closest("[role=gridcell]");if(c)tap(c);});'
+        + 'document.addEventListener("touchstart",function(e){var c=e.target.closest("[role=gridcell]");if(c)c.style.transform="scale(0.93)";},{passive:true});'
+        + 'document.addEventListener("touchend",function(e){var c=e.target.closest("[role=gridcell]");if(c){c.style.transform="";tap(c);e.preventDefault();}});'
+        + 'window.speakAll=speakAll;window.delLast=delLast;window.clearAll=clearAll;window.toggleScan=toggleScan;window.toggleHC=toggleHC;window.toggleHelp=toggleHelp;window.setScanSpd=setScanSpd;window.toggleScanMode=toggleScanMode;window.advScan=advScan;'
+        + (isMultiPage ? 'window.switchPage=switchPage;' : '')
+        + 'document.addEventListener("DOMContentLoaded",init);})();';
+      var html = '<!DOCTYPE html>\n<html lang="' + lang + '" dir="' + dir + '">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>' + title + ' \u2014 AAC Communication Board</title>\n<style>\n' + css + '</style>\n</head>\n<body>\n'
+        + '<a href="#board-main" class="skip-link">Skip to communication board</a>\n'
+        + '<div id="live-region" role="status" aria-live="assertive" aria-atomic="true"></div>\n'
+        + '<header role="banner"><h1>' + title + '</h1><nav class="controls" aria-label="Board controls">'
+        + '<button class="ctrl-btn" onclick="toggleScan()" aria-label="Toggle scanning mode" style="background:#4f46e5;color:#fff;">\u2638\uFE0F Scan</button>'
+        + '<button class="ctrl-btn" id="scan-mode-btn" onclick="toggleScanMode()" aria-label="Switch between 1-switch and 2-switch scanning" style="background:#334155;color:#fff;">1-Switch</button>'
+        + '<button class="ctrl-btn" onclick="toggleHC()" aria-label="Toggle high contrast" style="background:#334155;color:#fff;">\u25FC\uFE0F Contrast</button>'
+        + '<button class="ctrl-btn" onclick="toggleHelp()" aria-label="Show keyboard shortcuts" style="background:#334155;color:#fff;">? Help</button>'
+        + '</nav></header>\n'
+        + '<div id="sentence-strip" role="log" aria-live="polite" aria-label="Message being composed"><span id="placeholder">Tap symbols to build a message\u2026</span><div id="strip-btns" aria-label="Message controls">'
+        + '<button class="ctrl-btn" onclick="speakAll()" aria-label="Speak entire message" style="background:#4f46e5;color:#fff;padding:6px 12px;min-height:36px;">\uD83D\uDD0A Speak</button>'
+        + '<button class="ctrl-btn" onclick="delLast()" aria-label="Delete last word" style="background:#374151;color:#fff;padding:6px 12px;min-height:36px;">\u232B Undo</button>'
+        + '<button class="ctrl-btn" onclick="clearAll()" aria-label="Clear entire message" style="background:#374151;color:#cbd5e1;padding:6px 12px;min-height:36px;">\uD83D\uDDD1\uFE0F Clear</button></div></div>\n'
+        + '<div id="scan-bar" role="status" aria-live="polite"><span>\u2638\uFE0F Scanning Active</span>'
+        + '<label>Speed: <select onchange="setScanSpd(Number(this.value))" aria-label="Scanning speed"><option value="1000">1s</option><option value="2000" selected>2s</option><option value="3000">3s</option><option value="4000">4s</option></select></label>'
+        + '<button class="ctrl-btn" onclick="advScan()" aria-label="Advance to next symbol" style="background:#1e40af;color:#fff;padding:6px 12px;min-height:36px;">\u2192 Next</button>'
+        + '<span style="color:#94a3b8;font-size:12px;">Space to select \u00b7 Esc to stop</span></div>\n'
+        + '<div id="help-panel" role="region" aria-label="Keyboard shortcuts"><h2>Keyboard Shortcuts</h2><dl>'
+        + '<dt><kbd>\u2190\u2191\u2192\u2193</kbd></dt><dd>Navigate symbols</dd>'
+        + '<dt><kbd>Enter</kbd> / <kbd>Space</kbd></dt><dd>Select symbol</dd>'
+        + '<dt><kbd>S</kbd></dt><dd>Toggle scanning</dd>'
+        + '<dt><kbd>H</kbd></dt><dd>Toggle high contrast</dd>'
+        + '<dt><kbd>Backspace</kbd></dt><dd>Delete last word</dd>'
+        + '<dt><kbd>?</kbd></dt><dd>Show/hide help</dd></dl></div>\n'
+        + '<main id="board-main" role="main">\n' + tabsHTML + '\n' + panelsHTML + '\n</main>\n'
+        + '<footer role="contentinfo"><p>AlloFlow Symbol Studio \u2022 ' + langName + ' \u2022 Generated ' + new Date().toLocaleDateString() + '</p>'
+        + '<div class="a11y-stmt" role="note" aria-label="Accessibility"><strong>\u267F Accessibility</strong>WCAG 2.1 AA \u2022 Keyboard nav \u2022 1 & 2-switch scanning \u2022 High contrast \u2022 Screen reader support \u2022 RTL \u2022 44px targets</div></footer>\n'
+        + '<script>' + js + '<\/script>\n</body>\n</html>';
       var blob = new Blob([html], { type: 'text/html' });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      var safeName = (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      a.download = 'aacboard_' + safeName + '.html';
+      a.download = 'aacboard_' + (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.html';
       document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      addToast && addToast('"' + (board.title || 'Board') + '" saved as standalone HTML — open in any browser!', 'success');
-    }, [addToast]);
+      document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      addToast && addToast('"' + (board.title || 'Board') + '" saved as accessible HTML \u2014 WCAG 2.1 AA with keyboard nav, scanning & high contrast!', 'success');
+    }, [boardLang, addToast]);
+
+
+    // ── Quick Board HTML export (WCAG 2.1 AA accessible) ──────────────────
+    // Exports First-Then boards as standalone accessible HTML with TTS,
+    // keyboard activation, high contrast, and WCAG 2.1 AA compliance.
+    var exportQuickBoardHTML = useCallback(function (type) {
+      var title, bodyHTML, lang = boardLang || 'en';
+      var isRtl = lang === 'ar' || lang === 'he';
+      var dir = isRtl ? 'rtl' : 'ltr';
+      var esc = function (s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+
+      if (type === 'firstthen') {
+        if (!ftFirstImage && !ftThenImage) { addToast && addToast('Generate images first', 'error'); return; }
+        title = 'First-Then Board';
+        bodyHTML = '<div class="ft-board" role="group" aria-label="First Then Board">'
+          + '<div class="ft-cell" role="button" tabindex="0" data-speak="' + esc(ftFirstLabel || 'First') + '" aria-label="First: ' + esc(ftFirstLabel || 'activity') + '">'
+          + '<div class="ft-header" style="background:#f59e0b;">FIRST</div>'
+          + (ftFirstImage ? '<img src="' + ftFirstImage + '" alt="' + esc(ftFirstLabel || 'First activity') + '">' : '<div class="ft-placeholder">?</div>')
+          + '<div class="ft-label">' + esc(ftFirstLabel || '') + '</div></div>'
+          + '<div class="ft-arrow" aria-hidden="true">\u2192</div>'
+          + '<div class="ft-cell" role="button" tabindex="0" data-speak="' + esc(ftThenLabel || 'Then') + '" aria-label="Then: ' + esc(ftThenLabel || 'reward') + '">'
+          + '<div class="ft-header" style="background:#22c55e;">THEN</div>'
+          + (ftThenImage ? '<img src="' + ftThenImage + '" alt="' + esc(ftThenLabel || 'Then activity') + '">' : '<div class="ft-placeholder">?</div>')
+          + '<div class="ft-label">' + esc(ftThenLabel || '') + '</div></div></div>';
+      } else { return; }
+
+      var css = [
+        '*, *::before, *::after { box-sizing: border-box; }',
+        'body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; display: flex; flex-direction: column; min-height: 100vh; user-select: none; }',
+        '.skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }',
+        '.skip-link:focus { position: fixed; left: 0; top: 0; width: auto; height: auto; padding: 8px 16px; background: #1e293b; color: #fff; font-weight: 700; z-index: 10000; outline: 3px solid #facc15; }',
+        'header { background: linear-gradient(135deg, #7c3aed, #4338ca); color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }',
+        'header h1 { margin: 0; font-size: 18px; font-weight: 800; }',
+        '.controls { display: flex; gap: 6px; ' + (isRtl ? 'margin-right:auto;' : 'margin-left:auto;') + ' }',
+        '.ctrl-btn { border: none; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; min-height: 44px; min-width: 44px; }',
+        '.ctrl-btn:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }',
+        'main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }',
+        '.ft-board { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }',
+        '.ft-cell { border-radius: 16px; overflow: hidden; border: 4px solid #e5e7eb; background: #fff; width: 280px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }',
+        '.ft-cell:focus-visible { outline: 4px solid #4f46e5; outline-offset: 3px; box-shadow: 0 0 0 8px rgba(79,70,229,0.25); }',
+        '.ft-cell:active { transform: scale(0.96); }',
+        '.ft-cell.flash { box-shadow: 0 0 0 6px #facc15; transform: scale(1.03); }',
+        '.ft-header { padding: 16px; text-align: center; color: #fff; font-weight: 900; font-size: 28px; letter-spacing: 0.1em; }',
+        '.ft-cell img { width: 100%; height: 220px; object-fit: contain; background: #fafafa; display: block; }',
+        '.ft-placeholder { width: 100%; height: 220px; display: flex; align-items: center; justify-content: center; font-size: 48px; color: #d1d5db; background: #fafafa; }',
+        '.ft-label { padding: 18px; text-align: center; font-weight: 800; font-size: 24px; color: #1f2937; }',
+        '.ft-arrow { font-size: 72px; color: #6b7280; flex-shrink: 0; }',
+        'footer { text-align: center; padding: 12px; color: #94a3b8; font-size: 11px; border-top: 1px solid #e2e8f0; }',
+        '#live { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }',
+        'body.hc { background: #000; } body.hc header { background: #000; border-bottom: 3px solid #fff; }',
+        'body.hc .ft-cell { border-color: #fff; background: #000; } body.hc .ft-label { color: #fff; }',
+        'body.hc .ft-header { border-bottom: 2px solid #fff; }',
+        'body.hc .ft-cell:focus-visible { outline-color: #facc15; } body.hc .ft-arrow { color: #fff; }',
+        'body.hc .ctrl-btn { border: 2px solid #fff; } body.hc footer { color: #ccc; border-color: #fff; }',
+        '@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }',
+        '@media (forced-colors: active) { .ft-cell { border: 3px solid CanvasText; } .ft-cell:focus-visible { outline: 3px solid Highlight; } }',
+        '@media print { header, .controls, #live, footer { display: none !important; } body { background: #fff; } .ft-cell { border: 2px solid #333; } }',
+      ].join('\n');
+
+      var js = '(function(){'
+        + 'function sp(el){var t=el.getAttribute("data-speak");if(!t)return;'
+        + 'if(window.speechSynthesis){window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang="' + lang + '";window.speechSynthesis.speak(u);}'
+        + 'var l=document.getElementById("live");if(l){l.textContent="";setTimeout(function(){l.textContent=t+" selected";},50);}'
+        + 'el.classList.add("flash");setTimeout(function(){el.classList.remove("flash");},400);}'
+        + 'document.addEventListener("click",function(e){var c=e.target.closest(".ft-cell");if(c)sp(c);});'
+        + 'document.addEventListener("keydown",function(e){var a=document.activeElement;if(a&&a.classList.contains("ft-cell")){if(e.key==="Enter"||e.key===" "){e.preventDefault();sp(a);}}});'
+        + 'function hc(){document.body.classList.toggle("hc");}'
+        + 'window.hc=hc;'
+        + '})();';
+
+      var html = '<!DOCTYPE html>\n<html lang="' + lang + '" dir="' + dir + '">\n<head>\n'
+        + '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        + '<title>' + title + ' \u2014 AlloFlow Quick Board</title>\n'
+        + '<style>\n' + css + '\n</style>\n</head>\n<body>\n'
+        + '<a href="#board" class="skip-link">Skip to board</a>\n'
+        + '<div id="live" role="status" aria-live="assertive" aria-atomic="true"></div>\n'
+        + '<header role="banner"><h1>' + title + '</h1>'
+        + '<nav class="controls" aria-label="Controls">'
+        + '<button class="ctrl-btn" onclick="hc()" aria-label="Toggle high contrast" style="background:#334155;color:#fff;">\u25FC\uFE0F Contrast</button>'
+        + '</nav></header>\n'
+        + '<main id="board" role="main">\n' + bodyHTML + '\n</main>\n'
+        + '<footer role="contentinfo"><p>AlloFlow \u2022 Quick Board \u2022 Generated ' + new Date().toLocaleDateString() + '</p></footer>\n'
+        + '<script>' + js + '<\/script>\n</body>\n</html>';
+
+      var blob = new Blob([html], { type: 'text/html' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = type + '_board.html';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      addToast && addToast('Quick Board exported as accessible HTML!', 'success');
+    }, [boardLang, ftFirstLabel, ftFirstImage, ftThenLabel, ftThenImage, addToast]);
+
 
     // ── Text-to-symbols ───────────────────────────────────────────────────
     var parseTextToSymbols = useCallback(async function () {
@@ -1591,11 +1905,12 @@
 
     var speakCell = useCallback(function (label) {
       if (!onCallTTS) return;
+      recordFamiliarity(label, 'speak');
       var voice = selectedVoice || 'Kore';
       onCallTTS(label, voice, 1).then(function (url) {
         if (url) { var a = new Audio(url); a.play().catch(function () {}); }
       }).catch(function () {});
-    }, [onCallTTS, selectedVoice]);
+    }, [onCallTTS, selectedVoice, recordFamiliarity]);
 
     // ── Schedule actions ──────────────────────────────────────────────────
     var generateSchedule = useCallback(async function () {
@@ -1640,7 +1955,7 @@
       var updated = [saved].concat(savedSchedules);
       setSavedSchedules(updated); store(STORAGE_SCHEDULES, updated);
       addToast && addToast('Schedule saved!', 'success');
-      if (cloudSync) setTimeout(function () { syncToCloud(); }, 300);
+      if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
     }, [schedItems, schedTitle, schedOrientation, savedSchedules, cloudSync, syncToCloud, addToast]);
 
     var resetSchedule = useCallback(function () {
@@ -1670,8 +1985,16 @@
       setStoryCurrent(0);
       try {
         var name = storyStudentName.trim() || 'the student';
+        // Enrich story with garden vocabulary — aided language modeling via narrative
+        var gardenVocab = '';
+        try {
+          var storyBank = computeWordBank();
+          var growingWords = storyBank.filter(function (w) { return w.growth === 'sprout' || w.growth === 'growing'; }).map(function (w) { return w.displayLabel; }).slice(0, 6);
+          if (growingWords.length >= 2) gardenVocab = '\nIMPORTANT: Naturally incorporate these vocabulary words into the story (the student is currently learning them): ' + growingWords.join(', ') + '. Use each word at least once in a natural context.\n';
+        } catch (e) {}
         var prompt = 'Write a social story in Carol Gray format for ' + name + ' about: "' + storySituation.trim() + '".\n'
           + (storyDetails.trim() ? 'Additional details: ' + storyDetails.trim() + '\n' : '')
+          + gardenVocab
           + '\nCarol Gray rules:\n'
           + '- Descriptive sentences: factual, 3rd-person descriptions (majority of text)\n'
           + '- Perspective sentences: describe others\' thoughts and feelings\n'
@@ -1687,27 +2010,25 @@
         var pages = parsed.map(function (p) { return { id: uid(), text: p.text || '', imagePrompt: p.imagePrompt || '', image: null }; });
         setStoryPages(pages);
         addToast && addToast('Story written! Generating illustrations...', 'success');
-        // Auto-generate illustrations
+        // Auto-generate illustrations — sequential to avoid rate limiting
         if (onCallImagen) {
           var illMap = {};
           pages.forEach(function (p) { illMap[p.id] = true; });
           setStoryIllustrating(illMap);
           for (var i = 0; i < pages.length; i++) {
-            (function (page) {
-              var fullPrompt = page.imagePrompt
-                ? ('Illustration for a children\'s social story: ' + page.imagePrompt + '. Warm, friendly, child-appropriate watercolor style. Simple composition. White or soft background. STRICTLY NO TEXT.')
-                : ('Warm illustration of a child in a social situation, friendly, simple, child-appropriate. NO TEXT.');
-              genWithRetry(fullPrompt, onCallImagen, onCallGeminiImageEdit, false, avatarRef, 600)
-                .then(function (img) {
-                  setStoryPages(function (prev) { return prev.map(function (pp) { return pp.id === page.id ? Object.assign({}, pp, { image: img }) : pp; }); });
-                  setStoryIllustrating(function (p) { var n = Object.assign({}, p); delete n[page.id]; return n; });
-                })
-                .catch(function (e) {
-                  warnLog("Illustration failed:", e.message);
-                  setStoryIllustrating(function (p) { var n = Object.assign({}, p); delete n[page.id]; return n; });
-                });
-            })(pages[i]);
-            if (i < pages.length - 1) await new Promise(function (r) { setTimeout(r, BATCH_DELAY); });
+            var page = pages[i];
+            var fullPrompt = page.imagePrompt
+              ? ('Illustration for a children\'s social story: ' + page.imagePrompt + '. Warm, friendly, child-appropriate watercolor style. Simple composition. White or soft background. STRICTLY NO TEXT.')
+              : ('Warm illustration of a child in a social situation, friendly, simple, child-appropriate. NO TEXT.');
+            try {
+              var img = await genWithRetry(fullPrompt, onCallImagen, onCallGeminiImageEdit, false, avatarRef, 600);
+              setStoryPages(function (prev) { var pid = page.id; return prev.map(function (pp) { return pp.id === pid ? Object.assign({}, pp, { image: img }) : pp; }); });
+            } catch (illErr) {
+              warnLog("Illustration failed for page " + (i + 1) + ":", illErr.message);
+            }
+            setStoryIllustrating(function (p) { var pid = page.id; var n = Object.assign({}, p); delete n[pid]; return n; });
+            // Rate-limit pause between pages (skip after last)
+            if (i < pages.length - 1) await new Promise(function (r) { setTimeout(r, 1500); });
           }
         }
       } catch (e) {
@@ -2067,7 +2388,17 @@
           if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { ev.preventDefault(); var prev = TABS[(idx - 1 + TABS.length) % TABS.length]; setTab(prev.id); }
         },
         style: { flex: 1, padding: '6px 4px', borderRadius: '7px', border: 'none', background: active ? '#fff' : 'transparent', color: active ? PURPLE : '#fff', fontWeight: active ? 700 : 500, fontSize: '11px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', boxShadow: active ? '0 1px 4px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.15s' }
-      }, e('span', { style: { fontSize: '14px' }, 'aria-hidden': 'true' }, t.icon), t.label);
+      },
+        e('span', { style: { fontSize: '14px', position: 'relative' }, 'aria-hidden': 'true' }, t.icon,
+          // Garden tab badge — lightweight word count estimate (gallery + board words)
+          t.id === 'garden' && !active && (function () {
+            var seen = {}; var ct = 0;
+            gallery.forEach(function (s) { var k = s.label.trim().toLowerCase(); if (k && !seen[k]) { seen[k] = 1; ct++; } });
+            savedBoards.forEach(function (b) { (b.words || []).forEach(function (w) { var k = w.label.trim().toLowerCase(); if (k && !seen[k]) { seen[k] = 1; ct++; } }); });
+            if (ct === 0) return null;
+            return e('span', { style: { position: 'absolute', top: '-4px', right: '-8px', background: '#059669', color: '#fff', fontSize: '8px', fontWeight: 800, borderRadius: '6px', padding: '0 4px', lineHeight: '14px', minWidth: '14px', textAlign: 'center' } }, ct > 99 ? '99+' : ct);
+          })()),
+        t.label);
     }
 
     function spinner(size) {
@@ -2108,9 +2439,261 @@
     var _questInput = useState(''); var questInput = _questInput[0]; var setQuestInput = _questInput[1];
     var _questBoardPos = useState(0); var questBoardPos = _questBoardPos[0]; var setQuestBoardPos = _questBoardPos[1];
 
+    // ── Symbol Search state ──
+    var STORAGE_SEARCH_STATS = 'alloSymbolSearchStats';
+    var _srchMode = useState('menu'); var srchMode = _srchMode[0]; var setSrchMode = _srchMode[1];
+    var _srchDifficulty = useState(3); var srchDifficulty = _srchDifficulty[0]; var setSrchDifficulty = _srchDifficulty[1]; // 2-6 options
+    var _srchTarget = useState(null); var srchTarget = _srchTarget[0]; var setSrchTarget = _srchTarget[1];
+    var _srchOptions = useState([]); var srchOptions = _srchOptions[0]; var setSrchOptions = _srchOptions[1];
+    var _srchFeedback = useState(null); var srchFeedback = _srchFeedback[0]; var setSrchFeedback = _srchFeedback[1];
+    var _srchScore = useState(0); var srchScore = _srchScore[0]; var setSrchScore = _srchScore[1];
+    var _srchTotal = useState(0); var srchTotal = _srchTotal[0]; var setSrchTotal = _srchTotal[1];
+    var _srchCorrect = useState(0); var srchCorrect = _srchCorrect[0]; var setSrchCorrect = _srchCorrect[1];
+    var _srchStreak = useState(0); var srchStreak = _srchStreak[0]; var setSrchStreak = _srchStreak[1];
+    var _srchBest = useState(0); var srchBest = _srchBest[0]; var setSrchBest = _srchBest[1];
+    var _srchSpeaking = useState(false); var srchSpeaking = _srchSpeaking[0]; var setSrchSpeaking = _srchSpeaking[1];
+    var _srchRevealed = useState(false); var srchRevealed = _srchRevealed[0]; var setSrchRevealed = _srchRevealed[1];
+    // Listen & Build mode (sentence strip)
+    var _srchSentence = useState([]); var srchSentence = _srchSentence[0]; var setSrchSentence = _srchSentence[1];
+    var _srchSentenceTarget = useState([]); var srchSentenceTarget = _srchSentenceTarget[0]; var setSrchSentenceTarget = _srchSentenceTarget[1];
+    var _srchBuildPool = useState([]); var srchBuildPool = _srchBuildPool[0]; var setSrchBuildPool = _srchBuildPool[1];
+    // Persistent stats
+    var _srchStats = useState(function () { return load(STORAGE_SEARCH_STATS, { sessions: 0, totalCorrect: 0, totalTrials: 0, bestStreak: 0 }); });
+    var srchStats = _srchStats[0]; var setSrchStats = _srchStats[1];
+    var srchTimerRef = useRef(null);
+
+    // ── Symbol Search logic ──
+    function srchSpeakWord(label) {
+      setSrchSpeaking(true);
+      setSrchRevealed(false);
+      if (onCallTTS) {
+        onCallTTS(label, selectedVoice || 'Kore', 1).then(function (url) {
+          if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+          setSrchSpeaking(false);
+        }).catch(function () {
+          // Fallback to browser TTS
+          if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            var utt = new SpeechSynthesisUtterance(label);
+            applyVoice(utt);
+            utt.onend = function () { setSrchSpeaking(false); };
+            window.speechSynthesis.speak(utt);
+          } else { setSrchSpeaking(false); }
+        });
+      } else if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        var utt = new SpeechSynthesisUtterance(label);
+        applyVoice(utt);
+        utt.onend = function () { setSrchSpeaking(false); };
+        window.speechSynthesis.speak(utt);
+      } else { setSrchSpeaking(false); }
+    }
+
+    function srchPickRound(mode, pool) {
+      if (pool.length < 2) return;
+      var famData = familiarity || {};
+      // Garden-aware: prefer words at sprout/growing level
+      var target;
+      if (pool.length >= 4) {
+        var weighted = pool.map(function (item) {
+          var k = item.label.trim().toLowerCase();
+          var entry = famData[k];
+          if (!entry) return { item: item, weight: 3 };
+          var score = ((entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3) / 25;
+          if (score < 0.15) return { item: item, weight: 3 };
+          if (score < 0.45) return { item: item, weight: 2 };
+          return { item: item, weight: 1 };
+        });
+        var totalWeight = weighted.reduce(function (s, w) { return s + w.weight; }, 0);
+        var roll = Math.random() * totalWeight;
+        var cum = 0;
+        target = weighted[0].item;
+        for (var wi = 0; wi < weighted.length; wi++) {
+          cum += weighted[wi].weight;
+          if (roll < cum) { target = weighted[wi].item; break; }
+        }
+      } else {
+        target = pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      if (mode === 'build') {
+        // Pick 2-3 word phrase from gallery items
+        var phraseLen = Math.min(pool.length, Math.random() < 0.5 ? 2 : 3);
+        var phraseWords = [target];
+        while (phraseWords.length < phraseLen) {
+          var r = pool[Math.floor(Math.random() * pool.length)];
+          if (!phraseWords.find(function (w) { return w.id === r.id; })) phraseWords.push(r);
+        }
+        // Build a shuffled option pool (phrase words + distractors)
+        var buildPool = phraseWords.slice();
+        while (buildPool.length < Math.min(pool.length, phraseLen + 3)) {
+          var d = pool[Math.floor(Math.random() * pool.length)];
+          if (!buildPool.find(function (w) { return w.id === d.id; })) buildPool.push(d);
+        }
+        // Shuffle build pool
+        for (var bi = buildPool.length - 1; bi > 0; bi--) {
+          var bj = Math.floor(Math.random() * (bi + 1));
+          var bt = buildPool[bi]; buildPool[bi] = buildPool[bj]; buildPool[bj] = bt;
+        }
+        setSrchSentenceTarget(phraseWords);
+        setSrchSentence([]);
+        setSrchBuildPool(buildPool);
+        setSrchTarget(phraseWords[0]); // for audio
+        setSrchOptions([]);
+        setSrchFeedback(null);
+        setSrchRevealed(false);
+        // Speak the phrase
+        var phraseText = phraseWords.map(function (w) { return w.label; }).join(' ');
+        setTimeout(function () { srchSpeakWord(phraseText); }, 300);
+        return;
+      }
+
+      // Listen & Find mode (single word)
+      var numOpts = Math.max(2, Math.min(srchDifficulty, pool.length));
+      var opts = [target];
+      while (opts.length < numOpts) {
+        var r2 = pool[Math.floor(Math.random() * pool.length)];
+        if (!opts.find(function (o) { return o.id === r2.id; })) opts.push(r2);
+      }
+      // Shuffle
+      for (var si = opts.length - 1; si > 0; si--) {
+        var sj = Math.floor(Math.random() * (si + 1));
+        var st = opts[si]; opts[si] = opts[sj]; opts[sj] = st;
+      }
+      setSrchTarget(target);
+      setSrchOptions(opts);
+      setSrchFeedback(null);
+      setSrchRevealed(false);
+      // Auto-speak the word after a short delay
+      setTimeout(function () { srchSpeakWord(target.label); }, 300);
+    }
+
+    function srchCheckAnswer(picked) {
+      if (!srchTarget) return;
+      var correct = picked.id === srchTarget.id;
+      setSrchTotal(function (t) { return t + 1; });
+      recordFamiliarity(srchTarget.label, correct ? 'quest-correct' : 'quest-wrong');
+      if (!correct && picked.label) recordFamiliarity(picked.label, 'exposure');
+      // IEP trial
+      var receptiveGoal = activeGoals.find(function (g) { return g.type === 'receptive' && g.currentCount < g.targetCount; });
+      if (receptiveGoal) recordIepTrial(receptiveGoal.id, correct, 'search:listen:' + srchTarget.label);
+      if (correct) {
+        var ns = srchStreak + 1;
+        setSrchStreak(ns);
+        if (ns > srchBest) setSrchBest(ns);
+        var pts = 10 + (ns >= 5 ? 10 : ns >= 3 ? 5 : 0);
+        setSrchScore(function (s) { return s + pts; });
+        setSrchCorrect(function (c) { return c + 1; });
+        setSrchFeedback({ ok: true, msg: '✅ Correct! +' + pts + (ns >= 3 ? ' 🔥x' + ns : '') });
+        var pool = gallery.filter(function (g) { return g.image; });
+        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, pool); }, 1200);
+      } else {
+        setSrchStreak(0);
+        setSrchRevealed(true);
+        setSrchFeedback({ ok: false, msg: '❌ That was "' + picked.label + '". Listen for "' + srchTarget.label + '".' });
+        var pool2 = gallery.filter(function (g) { return g.image; });
+        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, pool2); }, 2500);
+      }
+    }
+
+    function srchCheckBuildAnswer(picked) {
+      var nextIdx = srchSentence.length;
+      if (nextIdx >= srchSentenceTarget.length) return;
+      var expected = srchSentenceTarget[nextIdx];
+      var correct = picked.id === expected.id;
+      recordFamiliarity(expected.label, correct ? 'quest-correct' : 'quest-wrong');
+      if (correct) {
+        var newSentence = srchSentence.concat([picked]);
+        setSrchSentence(newSentence);
+        if (newSentence.length === srchSentenceTarget.length) {
+          // Whole phrase completed
+          setSrchTotal(function (t) { return t + 1; });
+          setSrchCorrect(function (c) { return c + 1; });
+          var ns2 = srchStreak + 1;
+          setSrchStreak(ns2);
+          if (ns2 > srchBest) setSrchBest(ns2);
+          setSrchScore(function (s) { return s + 15 + (ns2 >= 3 ? 5 : 0); });
+          setSrchFeedback({ ok: true, msg: '✅ Perfect phrase! "' + srchSentenceTarget.map(function (w) { return w.label; }).join(' ') + '"' });
+          // IEP trial for expressive goal
+          var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
+          if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'search:build:' + srchSentenceTarget.map(function (w) { return w.label; }).join('+'));
+          var pool3 = gallery.filter(function (g) { return g.image; });
+          srchTimerRef.current = setTimeout(function () { srchPickRound('build', pool3); }, 1800);
+        } else {
+          setSrchFeedback({ ok: true, msg: '✅ ' + picked.label + '!' });
+        }
+      } else {
+        setSrchStreak(0);
+        setSrchTotal(function (t) { return t + 1; });
+        setSrchFeedback({ ok: false, msg: '❌ Next word should be "' + expected.label + '"' });
+        // Reset the sentence and retry
+        srchTimerRef.current = setTimeout(function () {
+          setSrchSentence([]);
+          setSrchFeedback(null);
+          // Re-speak
+          var phraseText = srchSentenceTarget.map(function (w) { return w.label; }).join(' ');
+          srchSpeakWord(phraseText);
+        }, 2000);
+      }
+    }
+
+    function srchStartSession(mode) {
+      setSrchMode(mode);
+      setSrchScore(0); setSrchTotal(0); setSrchCorrect(0); setSrchStreak(0); setSrchBest(0);
+      setSrchFeedback(null); setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
+      var pool = gallery.filter(function (g) { return g.image; });
+      srchPickRound(mode, pool);
+      // Increment session count
+      setSrchStats(function (prev) {
+        var upd = Object.assign({}, prev, { sessions: (prev.sessions || 0) + 1 });
+        store(STORAGE_SEARCH_STATS, upd);
+        return upd;
+      });
+    }
+
+    function srchEndSession() {
+      if (srchTimerRef.current) clearTimeout(srchTimerRef.current);
+      // Persist stats
+      setSrchStats(function (prev) {
+        var upd = Object.assign({}, prev, {
+          totalCorrect: (prev.totalCorrect || 0) + srchCorrect,
+          totalTrials: (prev.totalTrials || 0) + srchTotal,
+          bestStreak: Math.max(prev.bestStreak || 0, srchBest)
+        });
+        store(STORAGE_SEARCH_STATS, upd);
+        return upd;
+      });
+      setSrchMode('menu');
+      setSrchTarget(null); setSrchOptions([]); setSrchFeedback(null);
+      setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
+    }
+
     function questPickRound(mode, pool) {
       if (pool.length < 2) return;
-      var target = pool[Math.floor(Math.random() * pool.length)];
+      // Garden-aware target selection: prefer words that need practice (sprout/growing)
+      var target;
+      if (pool.length >= 4) {
+        var famData = familiarity || {};
+        var weighted = pool.map(function (item) {
+          var k = item.label.trim().toLowerCase();
+          var entry = famData[k];
+          if (!entry) return { item: item, weight: 3 }; // never practiced = high priority
+          var score = ((entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3) / 25;
+          if (score < 0.15) return { item: item, weight: 3 }; // seed
+          if (score < 0.45) return { item: item, weight: 2 }; // sprout/growing
+          return { item: item, weight: 1 }; // familiar/mastered — still included but less often
+        });
+        var totalWeight = weighted.reduce(function (s, w) { return s + w.weight; }, 0);
+        var roll = Math.random() * totalWeight;
+        var cum = 0;
+        target = weighted[0].item;
+        for (var wi = 0; wi < weighted.length; wi++) {
+          cum += weighted[wi].weight;
+          if (roll < cum) { target = weighted[wi].item; break; }
+        }
+      } else {
+        target = pool[Math.floor(Math.random() * pool.length)];
+      }
       var opts = [target];
       while (opts.length < Math.min(4, pool.length)) {
         var r = pool[Math.floor(Math.random() * pool.length)];
@@ -2131,6 +2714,9 @@
       if (!questTarget) return;
       var correct = picked.id === questTarget.id;
       setQuestTotal(function (t) { return t + 1; });
+      // Record familiarity for target and (if wrong) picked symbol
+      recordFamiliarity(questTarget.label, correct ? 'quest-correct' : 'quest-wrong');
+      if (!correct && picked.label) recordFamiliarity(picked.label, 'exposure');
       // Record IEP trial if receptive goals exist
       var receptiveGoal = activeGoals.find(function (g) { return g.type === 'receptive' && g.currentCount < g.targetCount; });
       if (receptiveGoal) recordIepTrial(receptiveGoal.id, correct, 'quest:' + questMode + ':' + questTarget.label);
@@ -2292,6 +2878,7 @@
           if (!questTarget) return;
           var correct = questInput.trim().toLowerCase() === questTarget.label.trim().toLowerCase();
           setQuestTotal(function (t) { return t + 1; });
+          recordFamiliarity(questTarget.label, correct ? 'quest-correct' : 'quest-wrong');
           if (correct) {
             var ns = questStreak + 1;
             setQuestStreak(ns);
@@ -2402,6 +2989,1390 @@
 
       // Fallback
       return e('div', null, 'Unknown mode');
+    }
+
+
+    // ── Word Garden — vocabulary aggregation, visualization & student view ─
+    // Core vocabulary — ~80 highest-frequency AAC words (Baker & Hill 2000; AAC Language Lab)
+    // These ~80 words account for approximately 80% of daily communication
+    var CORE_VOCAB = 'i,you,it,that,this,me,my,we,he,she,they,the,a,is,do,can,will,have,not,no,yes,more,want,like,go,stop,help,get,put,make,look,come,give,take,turn,open,see,eat,drink,play,read,know,think,feel,say,tell,ask,need,all done,what,where,when,who,how,why,here,there,up,down,in,out,on,off,big,little,good,bad,happy,sad,hot,cold,new,different,same,some,all,again,and,or,but,because,to,for,with,about'.split(',');
+    var CORE_SET = {};
+    CORE_VOCAB.forEach(function (w) { CORE_SET[w.trim().toLowerCase()] = true; });
+
+    var GROWTH_LEVELS = {
+      seed:     { icon: '🌰', label: 'Seed',      color: '#92400e', bg: '#fef3c7', border: '#fbbf24', desc: 'Just planted — appears in one place' },
+      sprout:   { icon: '🌱', label: 'Sprout',     color: '#15803d', bg: '#dcfce7', border: '#4ade80', desc: 'Starting to grow — seen in multiple tools' },
+      growing:  { icon: '🌿', label: 'Growing',    color: '#047857', bg: '#d1fae5', border: '#34d399', desc: 'Getting stronger — practice is working' },
+      blooming: { icon: '🌸', label: 'Blooming',   color: '#7c3aed', bg: '#ede9fe', border: '#a78bfa', desc: 'Almost mastered — generalizing across contexts' },
+      mastered: { icon: '🌳', label: 'Mastered',   color: '#b45309', bg: '#fefce8', border: '#facc15', desc: 'Deeply rooted — used spontaneously everywhere' }
+    };
+    var GROWTH_ORDER = ['seed', 'sprout', 'growing', 'blooming', 'mastered'];
+    var CONTEXT_ICONS = { gallery: '🎨', board: '📋', schedule: '📅', story: '📖', quickboard: '⚡', wish: '💫' };
+
+    // Communication functions — maps words to their likely pragmatic purpose
+    // Based on AAC clinical practice: SLPs track function distribution in IEP goals
+    var COMM_FUNCTIONS = {
+      requesting:  { icon: '🗣️', label: 'Requesting', color: '#7c3aed', words: 'want,more,help,give,get,need,can i,please,i want,open,turn on,play,read,eat,drink,go,come here,my turn,more food'.split(',') },
+      rejecting:   { icon: '🚫', label: 'Rejecting', color: '#dc2626', words: 'no,stop,all done,don\'t want,not,finished,go away,yucky,leave me,enough'.split(',') },
+      commenting:  { icon: '👀', label: 'Commenting', color: '#2563eb', words: 'look,funny,big,little,pretty,cool,yummy,uh oh,wow,good,bad,different,same,new,broken,hot,cold,fast,slow,loud,quiet'.split(',') },
+      social:      { icon: '👋', label: 'Social', color: '#059669', words: 'hi,bye,hello,goodbye,thank you,sorry,please,excuse me,good morning,goodnight,good job,welcome,nice,friend,share'.split(',') },
+      questioning: { icon: '❓', label: 'Questioning', color: '#d97706', words: 'what,where,when,who,why,how,what is,where is,can i,is it,do you'.split(',') },
+      expressing:  { icon: '😊', label: 'Expressing', color: '#ec4899', words: 'happy,sad,angry,scared,tired,frustrated,excited,worried,bored,proud,silly,surprised,hurt,sick,better,love,like'.split(',') }
+    };
+    var COMM_FN_ORDER = ['requesting', 'rejecting', 'commenting', 'social', 'questioning', 'expressing'];
+    function getWordFunction(label) {
+      var k = label.trim().toLowerCase();
+      for (var i = 0; i < COMM_FN_ORDER.length; i++) {
+        var fn = COMM_FN_ORDER[i];
+        if (COMM_FUNCTIONS[fn].words.indexOf(k) !== -1) return fn;
+      }
+      return null;
+    }
+
+    // Functional Communication Training (FCT) — maps BehaviorLens behavioral functions
+    // to replacement communication vocabulary. The most evidence-based bridge between
+    // behavior analysis and communication intervention.
+    var FCT_MAP = {
+      Attention: {
+        icon: '👀', label: 'Attention-Seeking', color: '#3b82f6',
+        desc: 'Behavior is maintained by getting attention from others.',
+        replacements: ['requesting', 'social', 'commenting'],
+        priorityWords: 'look,help,hi,excuse me,come here,play,friend,my turn,look at me,watch me'.split(','),
+        tip: 'Teach attention-getting words so the student can access social connection through communication instead of behavior.'
+      },
+      Escape: {
+        icon: '🏃', label: 'Escape/Avoidance', color: '#f59e0b',
+        desc: 'Behavior is maintained by avoiding or escaping demands.',
+        replacements: ['rejecting', 'expressing'],
+        priorityWords: 'break,stop,all done,help,too hard,need help,not now,wait,finished,no'.split(','),
+        tip: 'Teach rejection and help-seeking words so the student can appropriately request breaks or assistance.'
+      },
+      Tangible: {
+        icon: '🎁', label: 'Tangible Access', color: '#10b981',
+        desc: 'Behavior is maintained by accessing items or activities.',
+        replacements: ['requesting', 'questioning'],
+        priorityWords: 'want,more,give,my turn,can i,please,open,play,eat,drink'.split(','),
+        tip: 'Teach requesting vocabulary so the student can ask for desired items instead of taking them.'
+      },
+      Sensory: {
+        icon: '🌀', label: 'Sensory Regulation', color: '#8b5cf6',
+        desc: 'Behavior is maintained by sensory stimulation or avoidance.',
+        replacements: ['expressing', 'rejecting'],
+        priorityWords: 'too loud,need break,need quiet,need headphones,feel overwhelmed,need to move,need fidget,too bright,deep breath,help'.split(','),
+        tip: 'Teach sensory self-advocacy words so the student can communicate their needs before dysregulation.'
+      }
+    };
+    var FCT_FUNCTIONS = ['Attention', 'Escape', 'Tangible', 'Sensory'];
+
+    function computeWordBank() {
+      var bank = {};
+      function ensure(lbl, cat) { var k = lbl.trim().toLowerCase(); if (!k) return null; if (!bank[k]) bank[k] = { d: lbl.trim(), cat: cat || 'other', cx: [], img: null, hasVoice: false }; return k; }
+      gallery.forEach(function (s) { var k = ensure(s.label, s.category); if (k) { bank[k].cx.push({ type: 'gallery', source: 'Symbol Gallery' }); if (s.image && !bank[k].img) bank[k].img = s.image; } });
+      savedBoards.forEach(function (b) { var t = b.title || 'Board';
+        (b.words || []).forEach(function (w) { var k = ensure(w.label, w.category); if (k) { bank[k].cx.push({ type: 'board', source: t }); if (w.image && !bank[k].img) bank[k].img = w.image; if (w.audioData) bank[k].hasVoice = true; } });
+        (b.pages || []).forEach(function (p) { (p.words || []).forEach(function (w) { var k = ensure(w.label, w.category); if (k) { bank[k].cx.push({ type: 'board', source: t + '/' + (p.title || 'Page') }); if (w.image && !bank[k].img) bank[k].img = w.image; if (w.audioData) bank[k].hasVoice = true; } }); });
+      });
+      boardWords.forEach(function (w) { var k = ensure(w.label, w.category); if (k && !bank[k].cx.some(function (c) { return c.type === 'board'; })) { bank[k].cx.push({ type: 'board', source: boardTitle || 'Current Board' }); if (w.image && !bank[k].img) bank[k].img = w.image; } if (k && w.audioData) bank[k].hasVoice = true; });
+      savedSchedules.forEach(function (sc) { (sc.items || []).forEach(function (it) { var k = ensure(it.label, 'verb'); if (k) { bank[k].cx.push({ type: 'schedule', source: sc.title || 'Schedule' }); if (it.image && !bank[k].img) bank[k].img = it.image; } }); });
+      schedItems.forEach(function (it) { var k = ensure(it.label, 'verb'); if (k && !bank[k].cx.some(function (c) { return c.type === 'schedule'; })) { bank[k].cx.push({ type: 'schedule', source: schedTitle || 'Current Schedule' }); if (it.image && !bank[k].img) bank[k].img = it.image; } });
+      storyPages.forEach(function (pg, idx) { if (!pg.text) return; var txt = pg.text.toLowerCase(); Object.keys(bank).forEach(function (k) { if (txt.indexOf(k) !== -1 && !bank[k].cx.some(function (c) { return c.type === 'story'; })) bank[k].cx.push({ type: 'story', source: 'Story p.' + (idx + 1) }); }); });
+      [{ items: cmItems, s: 'Calming Corner' }, { items: snItems, s: 'Sensory Needs' }, { items: amItems, s: 'Ask Me Board' }, { items: bcItems, s: 'Body Check' }, { items: twItems, s: 'Transitions' }].forEach(function (qs) { qs.items.forEach(function (it) { var k = ensure(it.label, 'other'); if (k) { bank[k].cx.push({ type: 'quickboard', source: qs.s }); if (it.image && !bank[k].img) bank[k].img = it.image; } }); });
+      if (ftFirstLabel.trim()) { var k1 = ensure(ftFirstLabel, 'other'); if (k1) bank[k1].cx.push({ type: 'quickboard', source: 'First-Then' }); }
+      if (ftThenLabel.trim()) { var k2 = ensure(ftThenLabel, 'other'); if (k2) bank[k2].cx.push({ type: 'quickboard', source: 'First-Then' }); }
+      cbItems.forEach(function (it) { if (!it.label || !it.label.trim()) return; var k = ensure(it.label, 'other'); if (k) { bank[k].cx.push({ type: 'quickboard', source: 'Choice Board' }); if (it.image && !bank[k].img) bank[k].img = it.image; } });
+      // AAC usage counts from usageLog
+      var pid = activeProfileId || '__global__';
+      var aacCounts = {};
+      var profLog = usageLog[pid] || { sessions: [] };
+      (profLog.sessions || []).forEach(function (sess) { (sess.entries || []).forEach(function (en) { var k = en.label.trim().toLowerCase(); aacCounts[k] = (aacCounts[k] || 0) + 1; }); });
+      // Add wish seeds — words the student wanted but don't exist yet
+      wishSeeds.forEach(function (wish) {
+        var k = wish.label.trim().toLowerCase();
+        if (!k || bank[k]) return; // skip if already in the bank
+        bank[k] = { d: wish.label.trim(), cat: wish.category || 'other', cx: [{ type: 'wish', source: 'Wish Seed — ' + (wish.note || 'student wanted this word') }], img: null };
+      });
+      // Resolve growth levels — merging context breadth with familiarity depth
+      return Object.keys(bank).map(function (key) {
+        var w = bank[key]; var ctxT = {}; w.cx.forEach(function (c) { ctxT[c.type] = true; });
+        var uc = Object.keys(ctxT).length; var aac = aacCounts[key] || 0;
+        var fs = getFamiliarityScore(w.d);
+        var famEntry = familiarity[key] || {};
+        // Growth: breadth (contexts) × depth (familiarity score from interactions)
+        var growth = 'seed';
+        if (uc >= 4 && fs >= 0.75) growth = 'mastered';
+        else if (uc >= 3 && fs >= 0.45) growth = 'blooming';
+        else if (uc >= 3 || fs >= 0.45) growth = 'growing';
+        else if (uc >= 2 || fs >= 0.15) growth = 'sprout';
+        return { key: key, displayLabel: w.d, category: w.cat, contexts: w.cx, uniqueContextCount: uc,
+          contextTypes: Object.keys(ctxT), image: w.img, aacUses: aac, famScore: fs,
+          questCorrect: famEntry.questCorrect || 0, questWrong: famEntry.questWrong || 0,
+          taps: famEntry.taps || 0, growth: growth, isCore: !!CORE_SET[key], commFn: getWordFunction(w.d), hasVoice: !!w.hasVoice };
+      });
+    }
+
+    var generateGardenStory = useCallback(async function (bank, studentName) {
+      if (!onCallGemini || gardenStoryLoading) return;
+      setGardenStoryLoading(true);
+      var mastered = bank.filter(function (w) { return w.growth === 'mastered'; }).map(function (w) { return w.displayLabel; });
+      var growing = bank.filter(function (w) { return w.growth === 'blooming' || w.growth === 'growing'; }).map(function (w) { return w.displayLabel; });
+      var seeds = bank.filter(function (w) { return w.growth === 'seed' || w.growth === 'sprout'; }).map(function (w) { return w.displayLabel; });
+      var prompt = 'Write a very short, warm fairy tale (4-5 sentences, simple language suitable for a child) about a magical word garden belonging to a student called ' + (studentName || 'a student') + '. '
+        + 'In the garden: ' + (mastered.length > 0 ? mastered.length + ' tall strong trees representing mastered words (' + mastered.slice(0, 6).join(', ') + '). ' : '')
+        + (growing.length > 0 ? growing.length + ' growing flowers (' + growing.slice(0, 5).join(', ') + '). ' : '')
+        + (seeds.length > 0 ? seeds.length + ' tiny seeds just planted. ' : '')
+        + 'The story should celebrate the words as living things and end on a hopeful note about growth. '
+        + 'Keep it under 80 words. Do not use markdown formatting. Write in simple, joyful language a young child would enjoy hearing read aloud.';
+      try {
+        var story = await onCallGemini(prompt, false);
+        setGardenStory(story);
+      } catch (err) { setGardenStory('Once upon a time, there was a beautiful garden full of words, and every word was growing stronger every day.'); }
+      setGardenStoryLoading(false);
+    }, [onCallGemini, gardenStoryLoading]);
+
+    var translateGardenWords = useCallback(async function (bank, langCode) {
+      if (!onCallGemini || !langCode || langCode === 'en' || gardenTranslating) return;
+      setGardenTranslating(true);
+      // Only translate words we don't have yet
+      var toTranslate = bank.map(function (w) { return w.displayLabel; }).filter(function (label) {
+        return !gardenTranslations[label.toLowerCase().trim() + ':' + langCode];
+      });
+      if (toTranslate.length === 0) { setGardenTranslating(false); return; }
+      // Batch in groups of 30
+      var batches = [];
+      for (var i = 0; i < toTranslate.length; i += 30) batches.push(toTranslate.slice(i, i + 30));
+      var langName = (LANG_OPTIONS.find(function (l) { return l.code === langCode; }) || {}).label || langCode;
+      var newTranslations = Object.assign({}, gardenTranslations);
+      for (var bi = 0; bi < batches.length; bi++) {
+        try {
+          var prompt = 'Translate these AAC vocabulary words from English to ' + langName + '. These are simple words used by students in communication boards. Return ONLY a JSON array of objects: [{"en":"english word","tl":"translated word"}]. Keep translations simple and natural — use the most common everyday word.\n\nWords: ' + batches[bi].join(', ');
+          var result = await onCallGemini(prompt, true);
+          var parsed = parseJson(result);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(function (item) {
+              if (item.en && item.tl) newTranslations[item.en.toLowerCase().trim() + ':' + langCode] = item.tl;
+            });
+          }
+        } catch (err) { warnLog('Garden translation batch failed:', err); }
+      }
+      setGardenTranslations(newTranslations);
+      setGardenTranslating(false);
+      addToast && addToast('Translated ' + toTranslate.length + ' words to ' + langName + '!', 'success');
+    }, [onCallGemini, gardenTranslations, gardenTranslating, addToast]);
+
+    function getTranslation(label, langCode) {
+      if (!langCode || langCode === 'en') return null;
+      return gardenTranslations[label.toLowerCase().trim() + ':' + langCode] || null;
+    }
+
+    function detectGrowthEvents(bank) {
+      var events = [];
+      var newMap = {};
+      bank.forEach(function (w) {
+        newMap[w.key] = w.growth;
+        var prev = prevGrowthMap[w.key];
+        if (prev && prev !== w.growth) {
+          var oldIdx = GROWTH_ORDER.indexOf(prev);
+          var newIdx = GROWTH_ORDER.indexOf(w.growth);
+          if (newIdx > oldIdx) {
+            events.push({ word: w.displayLabel, from: prev, to: w.growth, image: w.image, ts: Date.now() });
+          }
+        }
+      });
+      if (events.length > 0) {
+        setPrevGrowthMap(newMap);
+        store(STORAGE_GROWTH_LOG, newMap);
+        setGrowthEvents(function (prev) { return events.concat(prev).slice(0, 20); });
+        // Speak the celebration if TTS available
+        if (onCallTTS && events.length <= 2) {
+          var msg = events.map(function (ev) { return ev.word + ' grew to ' + GROWTH_LEVELS[ev.to].label; }).join('. ');
+          onCallTTS(msg, selectedVoice || 'Kore', 1).then(function (url) { if (url) new Audio(url).play().catch(function () {}); }).catch(function () {});
+        }
+      } else if (Object.keys(prevGrowthMap).length === 0 && bank.length > 0) {
+        // First run — seed the snapshot without events
+        bank.forEach(function (w) { newMap[w.key] = w.growth; });
+        setPrevGrowthMap(newMap);
+        store(STORAGE_GROWTH_LOG, newMap);
+      }
+      return events;
+    }
+
+    function gardenSuggestions(word) {
+      var sug = []; var has = {}; word.contextTypes.forEach(function (t) { has[t] = true; });
+      // Wish seeds get a special first suggestion
+      if (has.wish && !has.gallery) sug.push({ icon: '💫', text: 'This is a wish seed — the student reached for this word! Create a symbol to make it real.',
+        action: function () { setSymLabel(word.displayLabel); setSymCategory(word.category); setTab('symbols'); } });
+      if (!has.board) sug.push({ icon: '📋', text: 'Add "' + word.displayLabel + '" to a communication board',
+        action: function () {
+          setBoardWords(function (prev) {
+            if (prev.some(function (w) { return w.label.toLowerCase() === word.key; })) return prev;
+            return prev.concat([{ id: uid(), label: word.displayLabel, category: word.category, description: '', image: word.image || null }]);
+          });
+          setTab('board');
+          addToast && addToast('"' + word.displayLabel + '" added to board!', 'success');
+        } });
+      if (!has.schedule) sug.push({ icon: '📅', text: 'Include in a visual schedule to reinforce in routine contexts' });
+      if (!has.story) sug.push({ icon: '📖', text: 'Generate a social story featuring "' + word.displayLabel + '"',
+        action: function () { setStorySituation('a child learning to use the word "' + word.displayLabel + '" in everyday situations'); setTab('stories'); } });
+      if (!has.gallery && !word.image) sug.push({ icon: '🎨', text: 'Create a symbol image — go to Symbols tab',
+        action: function () { setSymLabel(word.displayLabel); setSymCategory(word.category); setTab('symbols'); } });
+      if (word.image && word.aacUses === 0) sug.push({ icon: '🎮', text: 'Practice in Symbol Quest to build recognition',
+        action: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', gallery.filter(function (g) { return g.image; })); } });
+      if (word.image && word.growth !== 'mastered') sug.push({ icon: '🔍', text: 'Try Symbol Search — hear "' + word.displayLabel + '" and find the symbol',
+        action: function () { setTab('search'); srchStartSession('listen'); } });
+      if (word.growth === 'mastered') sug.push({ icon: '⭐', text: 'Mastered! Consider introducing related words or multi-word phrases' });
+      return sug;
+    }
+
+    function renderGrowthCelebrations() {
+      if (growthEvents.length === 0) return null;
+      // Show recent events (last 30 seconds)
+      var now = Date.now();
+      var recent = growthEvents.filter(function (ev) { return now - ev.ts < 30000; });
+      if (recent.length === 0) return null;
+      return e('div', { role: 'alert', 'aria-live': 'assertive', style: { margin: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: '6px' } },
+        recent.map(function (ev, i) {
+          var fromGl = GROWTH_LEVELS[ev.from]; var toGl = GROWTH_LEVELS[ev.to];
+          return e('div', { key: i, className: 'ss-garden-levelup', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(135deg, ' + toGl.bg + ', ' + toGl.border + '22)', borderRadius: '12px', border: '2px solid ' + toGl.border, boxShadow: '0 4px 16px ' + toGl.border + '44' } },
+            ev.image ? e('img', { src: ev.image, alt: '', style: { width: 36, height: 36, borderRadius: '8px', objectFit: 'contain' } })
+              : e('span', { style: { fontSize: '28px' } }, toGl.icon),
+            e('div', { style: { flex: 1 } },
+              e('div', { style: { fontSize: '14px', fontWeight: 800, color: '#1f2937' } }, '🎉 "' + ev.word + '" grew!'),
+              e('div', { style: { fontSize: '11px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' } },
+                e('span', { style: { color: fromGl.color } }, fromGl.icon + ' ' + fromGl.label),
+                e('span', null, '→'),
+                e('span', { style: { color: toGl.color, fontWeight: 700 } }, toGl.icon + ' ' + toGl.label))),
+            e('button', { onClick: function () { setGrowthEvents(function (prev) { return prev.filter(function (_, j) { return j !== i; }); }); }, 'aria-label': 'Dismiss', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#9ca3af', padding: '4px' } }, '×'));
+        }));
+    }
+
+    // ── Symbol Search Tab ────────────────────────────────────────────────
+    function renderSearchTab() {
+      var pool = gallery.filter(function (g) { return g.image; });
+      var SEARCH_MODES = [
+        { id: 'listen', icon: '🔊', label: 'Listen & Find', desc: 'Hear a word, tap the matching symbol' },
+        { id: 'build', icon: '🧩', label: 'Listen & Build', desc: 'Hear a phrase, tap symbols in order to build it' },
+      ];
+
+      if (pool.length < 3) {
+        return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#6b7280', padding: '40px' } },
+          e('div', { style: { fontSize: '48px' } }, '🔍'),
+          e('h3', { style: { fontWeight: 700, color: '#374151' } }, 'Symbol Search'),
+          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbols tab first, then come back to practice finding symbols by listening!')
+        );
+      }
+
+      // Menu screen
+      if (srchMode === 'menu') {
+        var allTimeAcc = srchStats.totalTrials > 0 ? Math.round((srchStats.totalCorrect / srchStats.totalTrials) * 100) : 0;
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px', gap: '16px', overflowY: 'auto' } },
+          e('div', { style: { fontSize: '48px' } }, '🔍'),
+          e('h3', { style: { fontWeight: 800, fontSize: '22px', color: '#374151', margin: 0 } }, 'Symbol Search'),
+          e('p', { style: { fontSize: '13px', color: '#6b7280', textAlign: 'center', maxWidth: '420px', margin: 0 } },
+            'Train the auditory-to-visual connection that AAC learners need. Hear a word or phrase, then find the matching symbol(s).'),
+          // Difficulty selector
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151' } },
+            e('span', { style: { fontWeight: 600 } }, 'Difficulty:'),
+            [2, 3, 4, 6].map(function (n) {
+              return e('button', {
+                key: n,
+                onClick: function () { setSrchDifficulty(n); },
+                'aria-label': n + ' options',
+                style: {
+                  padding: '4px 12px', borderRadius: '16px', border: '2px solid ' + (srchDifficulty === n ? PURPLE : '#d1d5db'),
+                  background: srchDifficulty === n ? LIGHT_PURPLE : '#f9fafb',
+                  color: srchDifficulty === n ? PURPLE : '#6b7280',
+                  fontWeight: srchDifficulty === n ? 700 : 500, fontSize: '12px', cursor: 'pointer'
+                }
+              }, n + ' choices');
+            })
+          ),
+          // All-time stats
+          srchStats.sessions > 0 && e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' } },
+            e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#059669' } }, srchStats.totalCorrect),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'all-time correct')
+            ),
+            e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: PURPLE } }, allTimeAcc + '%'),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'accuracy')
+            ),
+            e('div', { style: { flex: 1, background: '#fef3c7', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#d97706' } }, srchStats.bestStreak + 'x'),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'best streak')
+            )
+          ),
+          // Mode selection
+          e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', maxWidth: '400px' } },
+            SEARCH_MODES.map(function (m) {
+              var minPool = m.id === 'build' ? 4 : 3;
+              var disabled = pool.length < minPool;
+              return e('button', {
+                key: m.id,
+                onClick: function () { if (!disabled) srchStartSession(m.id); },
+                disabled: disabled,
+                'aria-label': m.label,
+                style: {
+                  display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px',
+                  background: disabled ? '#f9fafb' : 'linear-gradient(135deg, #faf5ff, #f3e8ff)',
+                  border: '2px solid ' + (disabled ? '#e5e7eb' : '#c4b5fd'),
+                  borderRadius: '14px', cursor: disabled ? 'not-allowed' : 'pointer',
+                  textAlign: 'left', opacity: disabled ? 0.5 : 1, transition: 'all 0.2s'
+                }
+              },
+                e('div', { style: { fontSize: '32px', lineHeight: 1 } }, m.icon),
+                e('div', null,
+                  e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#374151' } }, m.label),
+                  e('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '2px' } }, m.desc),
+                  disabled && e('div', { style: { fontSize: '10px', color: '#f97316', marginTop: '3px' } }, 'Need at least ' + minPool + ' symbols')
+                )
+              );
+            })
+          ),
+          // Clinical note
+          e('div', { style: { maxWidth: '420px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px 14px', fontSize: '11px', color: '#1e40af' } },
+            e('strong', null, 'Clinical note: '),
+            'Symbol Search trains receptive auditory-to-visual mapping — the core skill AAC learners need to locate symbols from spoken input. ',
+            'Listen & Build adds sequential symbol construction for multi-word utterances. ',
+            'Results feed into Word Garden familiarity tracking and IEP goal recording.'
+          )
+        );
+      }
+
+      // Active session — controls bar
+      var backBtn = e('button', { onClick: function () { srchEndSession(); }, 'aria-label': 'Back to menu', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
+      var pctAcc = srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0;
+      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Score: ' + srchScore + ', Accuracy: ' + pctAcc + '%', style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
+        e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + srchScore),
+        e('span', null, '🎯 ' + srchCorrect + '/' + srchTotal),
+        srchStreak >= 2 && e('span', { style: { color: '#f97316', fontWeight: 700 } }, '🔥 x' + srchStreak),
+        e('span', null, pctAcc + '% acc')
+      );
+      var feedbackBar = srchFeedback && e('div', { role: 'status', 'aria-live': 'assertive', style: { padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, textAlign: 'center', background: srchFeedback.ok ? '#dcfce7' : '#fee2e2', color: srchFeedback.ok ? '#166534' : '#991b1b', border: '1px solid ' + (srchFeedback.ok ? '#86efac' : '#fca5a5') } }, srchFeedback.msg);
+
+      // ── Listen & Find mode ──
+      if (srchMode === 'listen') {
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '14px', gap: '12px', overflowY: 'auto' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, backBtn, scoreBar),
+          // Audio prompt area
+          e('div', { style: { textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
+            e('button', {
+              onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label); },
+              disabled: srchSpeaking,
+              'aria-label': 'Play word audio',
+              style: {
+                padding: '14px 28px', fontSize: '24px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
+                border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', transition: 'all 0.2s',
+                width: '72px', height: '72px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+              }
+            }, srchSpeaking ? '⏳' : '🔊'),
+            e('div', { style: { marginTop: '8px', fontSize: '12px', color: '#7c3aed', fontWeight: 600 } },
+              srchSpeaking ? 'Playing...' : 'Tap to hear again'),
+            // Reveal hint
+            srchRevealed && srchTarget && e('div', { style: { marginTop: '8px', fontSize: '16px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
+              '→ ' + srchTarget.label)
+          ),
+          feedbackBar,
+          // Symbol options grid
+          e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px', padding: '4px' } },
+            srchOptions.map(function (opt) {
+              var isCorrect = srchFeedback && srchFeedback.ok && opt.id === srchTarget.id;
+              var isWrong = srchFeedback && !srchFeedback.ok && srchRevealed && opt.id !== srchTarget.id;
+              var isAnswer = srchRevealed && opt.id === srchTarget.id;
+              return e('button', {
+                key: opt.id,
+                onClick: function () { if (!srchFeedback) srchCheckAnswer(opt); },
+                disabled: !!srchFeedback,
+                'aria-label': 'Symbol: ' + opt.label,
+                style: {
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                  padding: '12px 8px', borderRadius: '14px', cursor: srchFeedback ? 'default' : 'pointer',
+                  border: '3px solid ' + (isCorrect ? '#22c55e' : isAnswer ? '#22c55e' : isWrong ? '#fca5a5' : '#e5e7eb'),
+                  background: isCorrect ? '#dcfce7' : isAnswer ? '#dcfce7' : isWrong ? '#fee2e2' : '#fff',
+                  boxShadow: isCorrect || isAnswer ? '0 0 16px rgba(34,197,94,0.3)' : 'none',
+                  transition: 'all 0.15s', transform: isCorrect ? 'scale(1.05)' : 'scale(1)',
+                  opacity: isWrong ? 0.5 : 1
+                }
+              },
+                opt.image && e('img', { src: opt.image, alt: '', style: { width: '64px', height: '64px', objectFit: 'contain', borderRadius: '8px' } }),
+                (srchRevealed || (srchFeedback && srchFeedback.ok)) && e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#374151' } }, opt.label)
+              );
+            })
+          ),
+          // Hint button
+          !srchFeedback && !srchRevealed && e('div', { style: { textAlign: 'center' } },
+            e('button', {
+              onClick: function () { setSrchRevealed(true); },
+              'aria-label': 'Show hint',
+              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+            }, '💡 Show word hint')
+          )
+        );
+      }
+
+      // ── Listen & Build mode ──
+      if (srchMode === 'build') {
+        var phraseText = srchSentenceTarget.map(function (w) { return w.label; }).join(' ');
+        var nextIdx = srchSentence.length;
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '14px', gap: '12px', overflowY: 'auto' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, backBtn, scoreBar),
+          // Audio prompt
+          e('div', { style: { textAlign: 'center', padding: '16px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Build the phrase:'),
+            e('button', {
+              onClick: function () { srchSpeakWord(phraseText); },
+              disabled: srchSpeaking,
+              'aria-label': 'Replay phrase',
+              style: {
+                padding: '12px 24px', fontSize: '20px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
+                border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)',
+                width: '64px', height: '64px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+              }
+            }, srchSpeaking ? '⏳' : '🔊'),
+            e('div', { style: { marginTop: '6px', fontSize: '11px', color: '#7c3aed', fontWeight: 600 } },
+              srchSpeaking ? 'Playing...' : srchSentenceTarget.length + ' words — tap to hear again'),
+            // Reveal full phrase hint
+            srchRevealed && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
+              phraseText)
+          ),
+          feedbackBar,
+          // Sentence strip — shows progress
+          e('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', padding: '8px', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb', minHeight: '60px', alignItems: 'center', flexWrap: 'wrap' } },
+            srchSentenceTarget.map(function (w, idx) {
+              var filled = idx < srchSentence.length;
+              var isCurrent = idx === nextIdx;
+              return e('div', {
+                key: idx,
+                style: {
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+                  padding: '6px 10px', borderRadius: '10px', minWidth: '60px',
+                  border: '2px ' + (filled ? 'solid #22c55e' : isCurrent ? 'dashed ' + PURPLE : 'dashed #d1d5db'),
+                  background: filled ? '#dcfce7' : isCurrent ? LIGHT_PURPLE : '#fff'
+                }
+              },
+                filled
+                  ? (srchSentence[idx].image && e('img', { src: srchSentence[idx].image, alt: '', style: { width: '36px', height: '36px', objectFit: 'contain', borderRadius: '6px' } }))
+                  : e('div', { style: { width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', color: isCurrent ? PURPLE : '#d1d5db' } }, isCurrent ? '?' : '·'),
+                filled && e('div', { style: { fontSize: '9px', fontWeight: 600, color: '#166534' } }, srchSentence[idx].label)
+              );
+            })
+          ),
+          // Build pool — available symbols to choose from
+          e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '8px', padding: '4px' } },
+            srchBuildPool.map(function (opt) {
+              var alreadyUsed = srchSentence.some(function (s) { return s.id === opt.id; });
+              return e('button', {
+                key: opt.id,
+                onClick: function () { if (!alreadyUsed && nextIdx < srchSentenceTarget.length) srchCheckBuildAnswer(opt); },
+                disabled: alreadyUsed,
+                'aria-label': 'Symbol: ' + opt.label,
+                style: {
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                  padding: '10px 6px', borderRadius: '12px', cursor: alreadyUsed ? 'default' : 'pointer',
+                  border: '2px solid ' + (alreadyUsed ? '#d1fae5' : '#e5e7eb'),
+                  background: alreadyUsed ? '#f0fdf4' : '#fff',
+                  opacity: alreadyUsed ? 0.4 : 1, transition: 'all 0.15s'
+                }
+              },
+                opt.image && e('img', { src: opt.image, alt: '', style: { width: '52px', height: '52px', objectFit: 'contain', borderRadius: '6px' } }),
+                e('div', { style: { fontSize: '10px', fontWeight: 600, color: alreadyUsed ? '#9ca3af' : '#374151' } }, opt.label)
+              );
+            })
+          ),
+          // Controls
+          e('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
+            !srchRevealed && e('button', {
+              onClick: function () { setSrchRevealed(true); },
+              'aria-label': 'Show phrase hint',
+              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+            }, '💡 Show phrase'),
+            e('button', {
+              onClick: function () {
+                setSrchSentence([]);
+                setSrchFeedback(null);
+                srchSpeakWord(phraseText);
+              },
+              'aria-label': 'Reset phrase',
+              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+            }, '↻ Reset')
+          )
+        );
+      }
+
+      // Fallback
+      return e('div', null, 'Unknown mode');
+    }
+
+    function renderGardenTab() {
+      var bank = computeWordBank();
+      var counts = { seed: 0, sprout: 0, growing: 0, blooming: 0, mastered: 0 };
+      bank.forEach(function (w) { counts[w.growth] = (counts[w.growth] || 0) + 1; });
+      var total = bank.length;
+      // Detect growth events
+      detectGrowthEvents(bank);
+      // Empty state
+      if (total === 0) {
+        return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', padding: '40px', textAlign: 'center' } },
+          e('div', { style: { fontSize: '64px' } }, '🌱'),
+          e('h3', { style: { fontWeight: 700, color: '#374151', margin: 0 } }, 'Your Word Garden'),
+          e('p', { style: { fontSize: '13px', color: '#6b7280', maxWidth: '380px', lineHeight: 1.6 } }, 'Every word your student encounters is a seed. Create symbols, build boards, add schedules, or write stories — and watch each word grow as it appears in more places.'),
+          e('p', { style: { fontSize: '11px', color: '#9ca3af', maxWidth: '340px', fontStyle: 'italic' } }, 'Words grow strongest when they appear across multiple tools — that\'s aided language modeling in action.'));
+      }
+      // ── Student View ──
+      if (gardenStudentView) {
+        var sName = activeProfile.codename || activeProfile.name || 'Your';
+        var grouped = {}; GROWTH_ORDER.forEach(function (lv) { grouped[lv] = []; }); bank.forEach(function (w) { grouped[w.growth].push(w); });
+        var milestone = null;
+        if (total >= 100) milestone = { icon: '🏆', text: '100 words! Vocabulary champion!' };
+        else if (total >= 50) milestone = { icon: '🌟', text: '50 words! Amazing garden!' };
+        else if (total >= 25) milestone = { icon: '🎉', text: '25 words! Really growing!' };
+        else if (total >= 10) milestone = { icon: '🌻', text: '10 words planted!' };
+        var rowBg = { seed: 'linear-gradient(180deg,#fef3c7,#fde68a)', sprout: 'linear-gradient(180deg,#dcfce7,#bbf7d0)', growing: 'linear-gradient(180deg,#d1fae5,#a7f3d0)', blooming: 'linear-gradient(180deg,#ede9fe,#ddd6fe)', mastered: 'linear-gradient(180deg,#fefce8,#fef08a)' };
+        var renderBed = function (level) {
+          var words = grouped[level]; if (!words.length) return null; var gl = GROWTH_LEVELS[level];
+          return e('div', { key: level, style: { background: rowBg[level], borderRadius: '16px', padding: '14px 16px', marginBottom: '10px' } },
+            e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' } },
+              e('span', { style: { fontSize: '20px' } }, gl.icon), e('span', { style: { fontSize: '14px', fontWeight: 700, color: gl.color } }, gl.label), e('span', { style: { fontSize: '12px', color: gl.color, opacity: 0.7 } }, '(' + words.length + ')')),
+            e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px' } },
+              words.map(function (w) {
+                var animClass = level === 'seed' ? 'ss-garden-seed' : level === 'mastered' ? 'ss-garden-mastered' : '';
+                return e('div', { key: w.key, className: animClass,
+                  onClick: function (ev) {
+                    // Tap feedback: pulse animation + speak word
+                    var el = ev.currentTarget; el.classList.remove('ss-garden-tapped');
+                    void el.offsetWidth; el.classList.add('ss-garden-tapped');
+                    setTimeout(function () { el.classList.remove('ss-garden-tapped'); }, 500);
+                    recordFamiliarity(w.displayLabel, 'aac-tap');
+                    if (onCallTTS) { onCallTTS(w.displayLabel, selectedVoice || 'Kore', 1).then(function (u) { if (u) new Audio(u).play().catch(function () {}); }).catch(function () {}); }
+                  },
+                  'aria-label': w.displayLabel + ' — tap to hear',
+                  role: 'button', tabIndex: 0,
+                  onKeyDown: function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.currentTarget.click(); } },
+                  style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px', background: 'rgba(255,255,255,0.85)', borderRadius: '14px', border: '3px solid ' + gl.border, cursor: 'pointer', minWidth: '80px', maxWidth: '100px', transition: 'transform 0.2s', boxShadow: level === 'mastered' ? '0 0 12px rgba(250,204,21,0.4)' : '0 2px 6px rgba(0,0,0,0.06)' } },
+                  w.image ? e('img', { src: w.image, alt: w.displayLabel, style: { width: '56px', height: '56px', objectFit: 'contain', borderRadius: '10px' } })
+                    : e('div', { style: { width: '56px', height: '56px', borderRadius: '10px', background: gl.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' } }, gl.icon),
+                  e('div', { style: { fontSize: '13px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.2 } },
+                    w.displayLabel, w.hasVoice && e('span', { style: { marginLeft: '3px', fontSize: '10px' }, title: 'Has a loved one\'s voice' }, '❤️')),
+                  gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#6366f1', textAlign: 'center', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)));
+              })));
+        };
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'linear-gradient(180deg,#e0f2fe 0%,#f0fdf4 40%,#fefce8 80%,#fef3c7 100%)' } },
+          e('div', { style: { padding: '20px 20px 10px', textAlign: 'center', flexShrink: 0 } },
+            e('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' } },
+              e('button', { onClick: function () { setGardenStudentView(false); }, 'aria-label': 'Teacher view', style: { fontSize: '10px', color: '#6b7280', background: 'rgba(255,255,255,0.7)', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer' } }, '👩‍🏫 Teacher View')),
+            e('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🌱'),
+            e('h2', { style: { fontSize: '22px', fontWeight: 800, color: '#1f2937', margin: '0 0 4px' } }, sName + '\'s Word Garden'),
+            e('p', { style: { fontSize: '16px', fontWeight: 600, color: '#059669', margin: 0 } }, total + ' words growing!'),
+            milestone && e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '8px', padding: '6px 16px', background: '#fef9c3', borderRadius: '20px', border: '2px solid #facc15', fontSize: '14px', fontWeight: 700, color: '#92400e' } }, e('span', null, milestone.icon), e('span', null, milestone.text)),
+            // Lexical diversity celebration (student-friendly)
+            (function () {
+              var pid = activeProfileId || '__global__';
+              var pLog = usageLog[pid] || { sessions: [] };
+              var tw = 0; var uw = {};
+              (pLog.sessions || []).forEach(function (s) { (s.entries || []).forEach(function (en) { if (en.label === '__UTTERANCE__') return; tw++; uw[en.label.trim().toLowerCase()] = true; }); });
+              if (tw < 10) return null;
+              var ld = Object.keys(uw).length / tw;
+              if (ld >= 0.5) return e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', padding: '4px 12px', background: '#dbeafe', borderRadius: '16px', border: '1px solid #93c5fd', fontSize: '12px', fontWeight: 600, color: '#1e40af' } }, e('span', null, '🌈'), e('span', null, 'Using lots of different words!'));
+              return null;
+            })(),
+            // The answer — for Dr. Pomeranz, who gave his son science fiction and believed consciousness lives in unexpected places
+            total === 42 && e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', padding: '4px 12px', background: 'linear-gradient(135deg, #fef9c3, #fef3c7)', borderRadius: '16px', border: '2px solid #fbbf24', fontSize: '12px', fontWeight: 700, color: '#92400e' }, title: 'The Answer to Life, the Universe, and Everything — starts with knowing what to say' }, e('span', null, '✨'), e('span', null, '42 — the answer is in the questions you ask')),
+            // "Hear My Words" — speaks all mastered words aloud, a celebration of voice
+            grouped.mastered.length > 0 && e('button', {
+              onClick: function () {
+                // Start with an introduction, then speak each word
+                var intro = sName + '\'s words:';
+                var words = [intro].concat(grouped.mastered.map(function (w) { return w.displayLabel; }));
+                var idx = 0;
+                var speakNext = function () {
+                  if (idx >= words.length || !onCallTTS) return;
+                  var word = words[idx]; idx++;
+                  onCallTTS(word, selectedVoice || 'Kore', 1).then(function (url) {
+                    if (url) {
+                      var a = new Audio(url);
+                      a.onended = function () { setTimeout(speakNext, 400); };
+                      a.play().catch(function () { setTimeout(speakNext, 400); });
+                    } else { setTimeout(speakNext, 400); }
+                  }).catch(function () { setTimeout(speakNext, 400); });
+                };
+                speakNext();
+              },
+              'aria-label': 'Hear all mastered words spoken aloud',
+              style: { marginTop: '10px', padding: '8px 20px', background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(124,58,237,0.3)', letterSpacing: '0.3px' }
+            }, '🔊 Hear My Words'),
+            // "My Garden Story" — AI-generated fairy tale about the student's vocabulary
+            total >= 3 && onCallGemini && e('button', {
+              onClick: function () { generateGardenStory(bank, sName); },
+              disabled: gardenStoryLoading,
+              'aria-label': 'Generate a story about your word garden',
+              style: { marginTop: '6px', padding: '8px 20px', background: gardenStoryLoading ? '#d1d5db' : 'linear-gradient(135deg, #059669 0%, #0d9488 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: gardenStoryLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }
+            }, gardenStoryLoading ? '✨ Growing a story...' : '📖 My Garden Story'),
+            // "Print My Garden" — printable poster for the student's desk
+            total >= 3 && e('button', {
+              onClick: function () { printGardenPoster(bank, grouped, sName, total, counts); },
+              'aria-label': 'Print garden poster',
+              style: { marginTop: '6px', padding: '8px 20px', background: 'linear-gradient(135deg, #b45309 0%, #d97706 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(180,83,9,0.3)' }
+            }, '🖨️ Print My Garden')),
+          // Story display
+          gardenStory && e('div', { style: { margin: '0 16px', padding: '16px', background: 'rgba(255,255,255,0.9)', borderRadius: '14px', border: '2px solid #a7f3d0', boxShadow: '0 2px 10px rgba(5,150,105,0.1)' } },
+            e('p', { style: { fontSize: '15px', color: '#1f2937', lineHeight: 1.7, margin: '0 0 10px', fontFamily: 'Georgia, serif' } }, gardenStory),
+            e('button', {
+              onClick: function () {
+                if (!onCallTTS || !gardenStory) return;
+                onCallTTS(gardenStory, selectedVoice || 'Kore', 0.9).then(function (url) {
+                  if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+                }).catch(function () {});
+              },
+              'aria-label': 'Read the garden story aloud',
+              style: { padding: '5px 14px', background: '#d1fae5', border: '1px solid #34d399', borderRadius: '16px', fontSize: '12px', fontWeight: 600, color: '#047857', cursor: 'pointer' }
+            }, '🔊 Read Aloud')),
+          renderGrowthCelebrations(),
+          e('div', { style: { flex: 1, overflowY: 'auto', padding: '0 16px 20px' } },
+            // Wish stars — floating above the garden
+            (function () {
+              var profileWishes = wishSeeds.filter(function (w) {
+                return (w.profileId === (activeProfileId || 'default') || !w.profileId) && !bank.some(function (b) { return b.key === w.label.trim().toLowerCase() && b.uniqueContextCount >= 2; });
+              });
+              if (profileWishes.length === 0) return null;
+              return e('div', { style: { background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)', borderRadius: '16px', padding: '14px 16px', marginBottom: '10px', textAlign: 'center' } },
+                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#c4b5fd', marginBottom: '8px' } }, '💫 Wishes waiting to grow'),
+                e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' } },
+                  profileWishes.map(function (w, i) {
+                    return e('span', { key: i, className: 'ss-garden-seed', style: { padding: '4px 12px', background: 'rgba(196,181,253,0.2)', border: '1px solid #7c3aed', borderRadius: '20px', fontSize: '13px', fontWeight: 600, color: '#e0e7ff' } }, '💫 ' + w.label);
+                  })),
+                e('p', { style: { fontSize: '10px', color: '#818cf8', margin: '8px 0 0', fontStyle: 'italic' } }, 'These words are waiting to become real'));
+            })(),
+            ['mastered', 'blooming', 'growing', 'sprout', 'seed'].map(renderBed)));
+      }
+      // ── Teacher View ──
+      var filtered = bank;
+      if (gardenFilter === 'core') filtered = filtered.filter(function (w) { return w.isCore; });
+      else if (gardenFilter !== 'all') filtered = filtered.filter(function (w) { return w.growth === gardenFilter; });
+      if (gardenSearch.trim()) { var q = gardenSearch.trim().toLowerCase(); filtered = filtered.filter(function (w) { return w.key.indexOf(q) !== -1; }); }
+      filtered.sort(function (a, b) {
+        if (gardenSort === 'alpha') return a.displayLabel.localeCompare(b.displayLabel);
+        if (gardenSort === 'contexts') return b.uniqueContextCount - a.uniqueContextCount;
+        if (gardenSort === 'recent') return b.aacUses - a.aacUses;
+        var ai = GROWTH_ORDER.indexOf(a.growth), bi = GROWTH_ORDER.indexOf(b.growth);
+        return bi !== ai ? bi - ai : a.displayLabel.localeCompare(b.displayLabel);
+      });
+      // Detail view
+      if (gardenSelectedWord) {
+        var w = bank.find(function (x) { return x.key === gardenSelectedWord; });
+        if (!w) { setGardenSelectedWord(null); return null; }
+        var gl = GROWTH_LEVELS[w.growth]; var suggestions = gardenSuggestions(w);
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '16px', overflowY: 'auto' } },
+          e('button', { onClick: function () { setGardenSelectedWord(null); }, 'aria-label': 'Back', style: { alignSelf: 'flex-start', padding: '6px 14px', background: '#f3f4f6', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 600, color: '#374151', cursor: 'pointer' } }, '← Back to Garden'),
+          e('div', { style: { display: 'flex', gap: '16px', alignItems: 'center', padding: '16px', background: gl.bg, borderRadius: '14px', border: '2px solid ' + gl.border } },
+            w.image ? e('img', { src: w.image, alt: w.displayLabel, style: { width: '80px', height: '80px', borderRadius: '12px', objectFit: 'contain', background: '#fff', border: '1px solid #e5e7eb' } })
+              : e('div', { style: { width: '80px', height: '80px', borderRadius: '12px', background: '#fff', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#d1d5db' } }, '🖼'),
+            e('div', { style: { flex: 1 } },
+              e('div', { style: { fontSize: '24px', fontWeight: 800, color: '#1f2937' } }, w.displayLabel),
+              gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '14px', fontWeight: 600, color: '#6366f1', fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
+              e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' } },
+                e('span', { style: { padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: catFill[w.category] || '#f3f4f6', color: catBorder[w.category] || '#6b7280', border: '1px solid ' + (catBorder[w.category] || '#d1d5db') } }, w.category),
+                w.commFn && (function () { var cf = COMM_FUNCTIONS[w.commFn]; return e('span', { style: { padding: '2px 8px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, background: cf.color + '15', color: cf.color, border: '1px solid ' + cf.color + '33' } }, cf.icon + ' ' + cf.label); })(),
+                e('span', { style: { fontSize: '20px' } }, gl.icon), e('span', { style: { fontSize: '13px', fontWeight: 700, color: gl.color } }, gl.label)),
+              e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '6px 0 0', fontStyle: 'italic' } }, gl.desc),
+              w.hasVoice && e('p', { style: { fontSize: '11px', color: '#ec4899', margin: '4px 0 0', fontWeight: 600 } }, '❤️ This word has a loved one\'s recorded voice'))),
+          // Stats
+          e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
+            e('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#059669' } }, w.uniqueContextCount), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'contexts')),
+            e('div', { style: { background: '#eff6ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#2563eb' } }, w.taps || 0), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'AAC taps')),
+            e('div', { style: { background: '#faf5ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: PURPLE } }, (function () { var tq = (w.questCorrect || 0) + (w.questWrong || 0); return tq > 0 ? Math.round(w.questCorrect / tq * 100) + '%' : '—'; })()), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'quest accuracy')),
+            e('div', { style: { background: '#fefce8', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#b45309' } }, Math.round((w.famScore || 0) * 100)), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'familiarity %'))),
+          // Growth journey
+          e('div', { style: { padding: '12px 16px', background: '#f9fafb', borderRadius: '10px' }, role: 'group', 'aria-label': 'Growth journey for ' + w.displayLabel + ': currently at ' + GROWTH_LEVELS[w.growth].label + ' stage' },
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#374151', marginBottom: '8px' } }, '🌱 Growth Journey'),
+            e('div', { role: 'progressbar', 'aria-valuenow': GROWTH_ORDER.indexOf(w.growth) + 1, 'aria-valuemin': 1, 'aria-valuemax': 5, 'aria-label': w.displayLabel + ' is at growth stage ' + (GROWTH_ORDER.indexOf(w.growth) + 1) + ' of 5: ' + GROWTH_LEVELS[w.growth].label, style: { display: 'flex', gap: '2px', height: '8px', borderRadius: '4px', overflow: 'hidden', background: '#e5e7eb' } },
+              GROWTH_ORDER.map(function (lv, i) { return e('div', { key: lv, style: { flex: 1, background: GROWTH_ORDER.indexOf(w.growth) >= i ? GROWTH_LEVELS[lv].border : 'transparent', transition: 'background 0.3s' } }); })),
+            e('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: '4px' } },
+              GROWTH_ORDER.map(function (lv) { var g2 = GROWTH_LEVELS[lv]; return e('span', { key: lv, style: { fontSize: '10px', fontWeight: lv === w.growth ? 700 : 400, color: lv === w.growth ? g2.color : '#9ca3af' } }, g2.icon + ' ' + g2.label); }))),
+          // Contexts
+          e('div', null, e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '🗺️ Found In (' + w.contexts.length + ' places)'),
+            e('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+              w.contexts.map(function (cx, i) { return e('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: '#f9fafb', borderRadius: '6px', fontSize: '12px', color: '#374151' } }, e('span', null, CONTEXT_ICONS[cx.type] || '📌'), e('span', { style: { fontWeight: 500 } }, cx.source)); }))),
+          // Related words — other words sharing contexts with this one
+          (function () {
+            var mySources = {}; w.contexts.forEach(function (cx) { mySources[cx.source] = true; });
+            var related = bank.filter(function (other) {
+              if (other.key === w.key) return false;
+              return other.contexts.some(function (cx) { return mySources[cx.source]; });
+            }).map(function (other) {
+              var shared = other.contexts.filter(function (cx) { return mySources[cx.source]; }).length;
+              return { key: other.key, label: other.displayLabel, image: other.image, growth: other.growth, shared: shared };
+            }).sort(function (a, b) { return b.shared - a.shared; }).slice(0, 10);
+            if (!related.length) return null;
+            return e('div', null,
+              e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '🔗 Related Words'),
+              e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+                related.map(function (r) {
+                  var g2 = GROWTH_LEVELS[r.growth];
+                  return e('button', { key: r.key, onClick: function () { setGardenSelectedWord(r.key); },
+                    'aria-label': r.label, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#fff', border: '1px solid ' + g2.border, borderRadius: '20px', fontSize: '11px', fontWeight: 600, color: '#374151', cursor: 'pointer' } },
+                    e('span', { style: { fontSize: '12px' } }, g2.icon),
+                    e('span', null, r.label),
+                    e('span', { style: { fontSize: '9px', color: '#9ca3af' } }, r.shared + '×'));
+                })));
+          })(),
+          // IEP Goal Connection — show which goals this word has contributed to
+          (function () {
+            var wordKey = w.key;
+            var goalHits = activeGoals.map(function (g) {
+              var hits = (g.trials || []).filter(function (t) {
+                return t.context && t.context.toLowerCase().indexOf(wordKey) !== -1;
+              });
+              if (hits.length === 0) return null;
+              var successes = hits.filter(function (t) { return t.success; }).length;
+              return { goal: g, total: hits.length, successes: successes };
+            }).filter(Boolean);
+            if (goalHits.length === 0) return null;
+            var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669' };
+            return e('div', null,
+              e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '🎯 IEP Goal Progress'),
+              e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                goalHits.map(function (gh, i) {
+                  var pct = gh.total > 0 ? Math.round(gh.successes / gh.total * 100) : 0;
+                  var tc = goalTypeColors[gh.goal.type] || '#6b7280';
+                  return e('div', { key: i, style: { padding: '8px 12px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' } },
+                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+                      e('span', { style: { fontSize: '10px', padding: '1px 6px', borderRadius: '8px', background: tc, color: '#fff', fontWeight: 600 } }, gh.goal.type),
+                      e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#0c4a6e' } }, gh.goal.text)),
+                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#6b7280' } },
+                      e('span', null, gh.successes + '/' + gh.total + ' trials with "' + w.displayLabel + '" (' + pct + '% correct)'),
+                      e('span', null, '· ' + gh.goal.currentCount + '/' + gh.goal.targetCount + ' goal progress')));
+                })));
+          })(),
+          // Suggestions
+          suggestions.length > 0 && e('div', null, e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '💡 Next Steps'),
+            e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              suggestions.map(function (s, i) { return e(s.action ? 'button' : 'div', { key: i, onClick: s.action || undefined, style: { display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '8px 12px', background: s.action ? '#fef9c3' : '#fffbeb', borderRadius: '8px', border: '1px solid ' + (s.action ? '#facc15' : '#fef3c7'), fontSize: '12px', color: '#78350f', lineHeight: 1.5, cursor: s.action ? 'pointer' : 'default', textAlign: 'left', fontFamily: 'inherit', width: '100%' } }, e('span', { style: { flexShrink: 0 } }, s.icon), e('span', null, s.text + (s.action ? ' →' : ''))); }))),
+          // Actions
+          e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', paddingTop: '8px' } },
+            w.image && e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', gallery.filter(function (g) { return g.image; })); }, 'aria-label': 'Practice in Quest', style: S.btn(PURPLE, '#fff', false) }, '🎮 Practice in Quest'),
+            e('button', { onClick: function () { setTab('board'); }, style: S.btn('#f3f4f6', '#374151', false) }, '📋 Board Builder'),
+            e('button', { onClick: function () { setTab('stories'); }, style: S.btn('#f3f4f6', '#374151', false) }, '📖 Create Story')));
+      }
+      // Main grid
+      var summaryBar = e('div', { role: 'group', 'aria-label': 'Filter by growth level: ' + total + ' total words', style: { display: 'flex', gap: '6px', flexWrap: 'wrap', padding: '12px 16px', background: 'linear-gradient(135deg,#fefce8 0%,#f0fdf4 50%,#ede9fe 100%)', borderRadius: '12px', marginBottom: '4px' } },
+        GROWTH_ORDER.map(function (lv) { var g2 = GROWTH_LEVELS[lv]; var act = gardenFilter === lv;
+          return e('button', { key: lv, onClick: function () { setGardenFilter(gardenFilter === lv ? 'all' : lv); }, 'aria-label': (counts[lv] || 0) + ' ' + g2.label + ' words' + (act ? ' (active filter)' : ''), 'aria-pressed': act ? 'true' : 'false', style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', border: '2px solid ' + (act ? g2.border : 'transparent'), background: act ? g2.bg : 'rgba(255,255,255,0.7)', fontSize: '11px', fontWeight: 600, color: g2.color, cursor: 'pointer' } }, e('span', { 'aria-hidden': 'true' }, g2.icon), e('span', null, counts[lv] || 0)); }),
+        (function () {
+          var coreInBank = bank.filter(function (w) { return w.isCore; }).length;
+          var coreMastered = bank.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); }).length;
+          if (coreInBank === 0) return null;
+          var isActive = gardenFilter === 'core';
+          return e('button', { onClick: function () { setGardenFilter(gardenFilter === 'core' ? 'all' : 'core'); }, 'aria-label': 'Filter core vocabulary', style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', border: '2px solid ' + (isActive ? '#3b82f6' : 'transparent'), background: isActive ? '#dbeafe' : 'rgba(255,255,255,0.7)', fontSize: '11px', fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' } },
+            e('span', null, '💬'), e('span', null, coreMastered + '/' + coreInBank + ' core'));
+        })(),
+        e('div', { style: { marginLeft: 'auto', fontSize: '11px', fontWeight: 700, color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' } }, e('span', null, '📝'), e('span', null, total + ' words')));
+      var controlsBar = e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', padding: '0 16px', marginBottom: '4px' } },
+        e('input', { type: 'text', value: gardenSearch, placeholder: '🔍 Search...', onChange: function (ev) { setGardenSearch(ev.target.value); }, 'aria-label': 'Search', style: Object.assign({}, S.input, { flex: 1, maxWidth: '200px', fontSize: '12px' }) }),
+        e('select', { value: gardenSort, onChange: function (ev) { setGardenSort(ev.target.value); }, 'aria-label': 'Sort', style: Object.assign({}, S.input, { width: 'auto', fontSize: '11px' }) },
+          e('option', { value: 'growth' }, '↕ Growth'), e('option', { value: 'alpha' }, '↕ A→Z'), e('option', { value: 'contexts' }, '↕ Contexts'), e('option', { value: 'recent' }, '↕ AAC Use')),
+        (function () { var wk = bank.filter(function (w) { return (w.growth === 'sprout' || w.growth === 'growing') && w.image; }); if (wk.length < 3) return null;
+          return e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', wk.map(function (w) { return { id: w.key, label: w.displayLabel, image: w.image }; })); addToast && addToast('Practicing ' + wk.length + ' growing words!', 'info'); }, 'aria-label': 'Practice weak words', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '🎮 Practice Weak Words'); })(),
+        // Generate a board from garden data — mastered core + growing words
+        (function () {
+          var withImages = bank.filter(function (w) { return w.image; });
+          if (withImages.length < 4) return null;
+          return e('button', { onClick: function () {
+            // Build a board from garden intelligence: mastered core first, then growing words
+            var coreReady = withImages.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); });
+            var growingImgs = withImages.filter(function (w) { return (w.growth === 'growing' || w.growth === 'sprout') && !coreReady.some(function (c) { return c.key === w.key; }); });
+            var boardPool = coreReady.concat(growingImgs).slice(0, 12);
+            var newWords = boardPool.map(function (w) { return { id: uid(), label: w.displayLabel, category: w.category, description: '', image: w.image }; });
+            setBoardWords(newWords);
+            setBoardTitle((activeProfile.codename || activeProfile.name || 'Student') + '\'s Garden Board');
+            setBoardCols(Math.min(4, Math.ceil(Math.sqrt(newWords.length))));
+            setTab('board');
+            addToast && addToast('Garden Board created with ' + newWords.length + ' words!', 'success');
+          }, 'aria-label': 'Generate communication board from garden data', style: Object.assign({}, S.btn('#059669', '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '📋 Garden Board');
+        })(),
+        // Phonics Lesson from Garden — bridges to Word Sounds
+        (function () {
+          var phonicsWords = bank.filter(function (w) {
+            return (w.growth === 'mastered' || w.growth === 'blooming' || w.growth === 'growing') && w.image && w.displayLabel.length <= 6 && /^[a-zA-Z]+$/.test(w.displayLabel);
+          });
+          if (phonicsWords.length < 3) return null;
+          return e('button', { onClick: function () {
+            // Sort: mastered first, then growing — student knows the meaning, now learn the sounds
+            var sorted = phonicsWords.sort(function (a, b) {
+              var ag = GROWTH_ORDER.indexOf(a.growth); var bg = GROWTH_ORDER.indexOf(b.growth);
+              return bg - ag;
+            });
+            var wordList = sorted.slice(0, 10).map(function (w) { return w.displayLabel; });
+            // Store to localStorage so Word Sounds can pick it up
+            try { localStorage.setItem('alloGardenPhonicsWords', JSON.stringify(wordList)); } catch (e2) {}
+            // Also expose on GardenBridge
+            if (window.AlloModules && window.AlloModules.GardenBridge) {
+              window.AlloModules.GardenBridge._lastPhonicsLesson = wordList;
+            }
+            addToast && addToast('📖 Phonics lesson ready! Open Word Sounds Studio — ' + wordList.length + ' garden words loaded: ' + wordList.slice(0, 4).join(', ') + (wordList.length > 4 ? '...' : ''), 'success');
+          }, 'aria-label': 'Build phonics lesson from garden vocabulary', style: Object.assign({}, S.btn('#2563eb', '#fff', false), { fontSize: '11px', padding: '6px 12px' }) }, '📖 Phonics Lesson');
+        })(),
+        // Wish Seed input — plant a word the student wanted but couldn't find
+        e('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', padding: '0 16px', marginBottom: '6px' } },
+          e('span', { style: { fontSize: '12px', flexShrink: 0 }, title: 'Plant a word the student tried to say but couldn\'t find on any board' }, '💫'),
+          e('input', { type: 'text', value: wishInput, onChange: function (ev) { setWishInput(ev.target.value); },
+            onKeyDown: function (ev) {
+              if (ev.key === 'Enter' && wishInput.trim()) {
+                var label = wishInput.trim();
+                var newWish = { label: label, category: 'other', note: 'Student reached for this word', ts: new Date().toISOString(), profileId: activeProfileId || 'default' };
+                var updated = wishSeeds.concat([newWish]);
+                setWishSeeds(updated); store(STORAGE_WISHES, updated);
+                setWishInput('');
+                addToast && addToast('💫 "' + label + '" planted as a wish seed!', 'success');
+              }
+            },
+            placeholder: 'Plant a wish seed — a word the student wanted to say...',
+            'aria-label': 'Plant a wish seed word',
+            style: Object.assign({}, S.input, { flex: 1, fontSize: '11px', borderColor: '#c4b5fd', background: '#faf5ff' }) }),
+          wishInput.trim() && e('button', { onClick: function () {
+            var label = wishInput.trim();
+            var newWish = { label: label, category: 'other', note: 'Student reached for this word', ts: new Date().toISOString(), profileId: activeProfileId || 'default' };
+            var updated = wishSeeds.concat([newWish]);
+            setWishSeeds(updated); store(STORAGE_WISHES, updated);
+            setWishInput('');
+            addToast && addToast('💫 "' + label + '" planted as a wish seed!', 'success');
+          }, 'aria-label': 'Plant wish seed', style: Object.assign({}, S.btn('#7c3aed', '#fff', false), { fontSize: '11px', padding: '5px 10px' }) }, '🌱 Plant')));
+      var gridItems = filtered.map(function (w) { var g2 = GROWTH_LEVELS[w.growth];
+        return e('button', { key: w.key, onClick: function () { setGardenSelectedWord(w.key); }, 'aria-label': w.displayLabel + ' — ' + g2.label,
+          style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', background: '#fff', border: '2px solid ' + g2.border, borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', position: 'relative', overflow: 'hidden' },
+          onMouseOver: function (ev) { ev.currentTarget.style.transform = 'translateY(-2px)'; ev.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)'; },
+          onMouseOut: function (ev) { ev.currentTarget.style.transform = 'translateY(0)'; ev.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; } },
+          e('div', { style: { position: 'absolute', top: '3px', right: '5px', fontSize: '14px' } }, g2.icon),
+          w.isCore && e('div', { style: { position: 'absolute', top: '3px', left: '5px', fontSize: '7px', background: '#dbeafe', color: '#1d4ed8', padding: '1px 4px', borderRadius: '4px', fontWeight: 700 } }, 'CORE'),
+          w.hasVoice && e('div', { style: { position: 'absolute', bottom: '3px', right: '5px', fontSize: '10px' }, title: 'This word has a parent\'s recorded voice' }, '❤️'),
+          w.image ? e('img', { src: w.image, alt: '', style: { width: '48px', height: '48px', objectFit: 'contain', borderRadius: '8px' } }) : e('div', { style: { width: '48px', height: '48px', borderRadius: '8px', background: g2.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' } }, g2.icon),
+          e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.2 } }, w.displayLabel),
+          gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '9px', fontWeight: 600, color: '#6366f1', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
+          e('div', { style: { display: 'flex', gap: '2px', fontSize: '10px' } }, w.contextTypes.map(function (ct) { return e('span', { key: ct, title: ct, style: { opacity: 0.7 } }, CONTEXT_ICONS[ct] || '📌'); }))); });
+      return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' } },
+        e('div', { style: { padding: '16px 16px 8px', flexShrink: 0 } },
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
+            e('span', { style: { fontSize: '22px' } }, '🌱'),
+            e('div', { style: { flex: 1 } }, e('h3', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: 0 } }, 'Word Garden'), e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '2px 0 0' } }, 'Tap any word to explore its growth across tools.')),
+            e('button', { onClick: function () { setGardenStudentView(true); }, 'aria-label': 'Student view', style: { padding: '5px 12px', background: '#dcfce7', border: '2px solid #4ade80', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#15803d', cursor: 'pointer', whiteSpace: 'nowrap' } }, '🌱 Student View'),
+            // Home language selector for bilingual garden
+            e('select', { value: gardenHomeLang, onChange: function (ev) {
+              var code = ev.target.value;
+              setGardenHomeLang(code); store(STORAGE_HOME_LANG, code);
+              if (code && code !== 'en') translateGardenWords(computeWordBank(), code);
+            }, 'aria-label': 'Student home language', style: { padding: '3px 6px', fontSize: '10px', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', cursor: 'pointer' } },
+              e('option', { value: '' }, '🌍 Home Lang'),
+              LANG_OPTIONS.filter(function (l) { return l.code !== 'en'; }).map(function (l) { return e('option', { key: l.code, value: l.code }, l.label); }))),
+          // Weekly pulse
+          (function () {
+            var now = Date.now(); var week = 7 * 86400000;
+            var thisWeek = 0; var lastWeek = 0;
+            Object.keys(familiarity).forEach(function (k) {
+              var ls = familiarity[k].lastSeen || 0;
+              if (now - ls < week) thisWeek++;
+              else if (now - ls < 2 * week) lastWeek++;
+            });
+            if (thisWeek === 0 && lastWeek === 0) return null;
+            var trend = thisWeek > lastWeek ? '📈' : thisWeek < lastWeek ? '📉' : '➡️';
+            var trendColor = thisWeek > lastWeek ? '#059669' : thisWeek < lastWeek ? '#dc2626' : '#6b7280';
+            return e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', padding: '6px 12px', background: '#f0fdf4', borderRadius: '8px', marginBottom: '4px', fontSize: '11px' } },
+              e('span', { style: { fontWeight: 700, color: '#059669' } }, '🌿 ' + thisWeek + ' words practiced this week'),
+              lastWeek > 0 && e('span', { style: { color: trendColor, fontWeight: 600 } }, trend + ' ' + (thisWeek > lastWeek ? '+' : '') + (thisWeek - lastWeek) + ' vs last week'));
+          })(),
+          // Lexical diversity — strongest single predictor of linguistic competence (AssistiveWare research)
+          (function () {
+            var pid = activeProfileId || '__global__';
+            var pLog = usageLog[pid] || { sessions: [] };
+            var tw = 0; var uw = {};
+            (pLog.sessions || []).forEach(function (s) { (s.entries || []).forEach(function (en) { tw++; uw[en.label.trim().toLowerCase()] = true; }); });
+            if (tw < 5) return null;
+            var uniq = Object.keys(uw).length; var ld = uniq / tw; var ldPct = Math.round(ld * 100);
+            var ldLabel = ld >= 0.7 ? 'Rich' : ld >= 0.5 ? 'Developing' : ld >= 0.3 ? 'Emerging' : 'Limited';
+            var ldColor = ld >= 0.7 ? '#059669' : ld >= 0.5 ? '#2563eb' : ld >= 0.3 ? '#d97706' : '#6b7280';
+            return e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', padding: '6px 12px', background: '#eff6ff', borderRadius: '8px', marginBottom: '4px', fontSize: '11px' }, title: 'Lexical Diversity = unique words / total words. Strongest predictor of linguistic competence.' },
+              e('span', { style: { fontWeight: 700, color: '#2563eb' } }, '📊 Lexical Diversity: ' + ldPct + '%'),
+              e('span', { style: { color: ldColor, fontWeight: 600 } }, ldLabel),
+              e('span', { style: { color: '#9ca3af' } }, '(' + uniq + ' unique / ' + tw + ' total)'));
+          })(),
+          // Garden whisper — a contextual observation that reads the garden's state
+          (function () {
+            var name = activeProfile.name || 'This student';
+            var whisper = null;
+            var coreInBank = bank.filter(function (w) { return w.isCore; }).length;
+            var coreMastered = bank.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); }).length;
+            var pctMastered = total > 0 ? counts.mastered / total : 0;
+            var pctSeeds = total > 0 ? counts.seed / total : 0;
+            // Priority order — first match wins
+            if (total > 0 && pctMastered > 0.5) whisper = { icon: '🌳', text: 'This garden is thriving. ' + name + '\'s vocabulary is strong and deeply rooted across contexts.' };
+            else if (counts.growing + counts.blooming >= 5) whisper = { icon: '🌿', text: (counts.growing + counts.blooming) + ' words are in the growth zone — the sweet spot where practice and new contexts make the biggest difference.' };
+            else if (coreInBank > 0 && coreMastered < coreInBank / 2) whisper = { icon: '💬', text: 'Core vocabulary tip: ' + coreMastered + ' of ' + coreInBank + ' core words are strong. Focus on the remaining core words — they power 80% of daily communication.' };
+            else if (total > 0 && pctSeeds > 0.6) whisper = { icon: '🌰', text: 'Lots of seeds planted! Add words to more boards, schedules, and stories to help them sprout — words grow through cross-context exposure.' };
+            else if (total >= 10 && counts.mastered >= 3) whisper = { icon: '✨', text: name + ' has ' + counts.mastered + ' mastered word' + (counts.mastered !== 1 ? 's' : '') + ' and ' + (total - counts.mastered) + ' more growing. Every interaction helps the garden flourish.' };
+            else if (total > 0) whisper = { icon: '🌱', text: 'Every word here is a connection waiting to strengthen. The more places a word appears, the more it becomes ' + name + '\'s own.' };
+            if (!whisper) return null;
+            return e('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '8px 12px', background: '#fffbeb', borderRadius: '8px', marginBottom: '4px', border: '1px solid #fef3c7' } },
+              e('span', { 'aria-hidden': 'true', style: { fontSize: '16px', flexShrink: 0, marginTop: '1px' } }, whisper.icon),
+              e('span', { style: { fontSize: '12px', color: '#78350f', lineHeight: 1.5, fontStyle: 'italic' } }, whisper.text));
+          })(),
+          // Communication function distribution
+          (function () {
+            var fnCounts = {}; var fnTotal = 0;
+            bank.forEach(function (w) { if (w.commFn) { fnCounts[w.commFn] = (fnCounts[w.commFn] || 0) + 1; fnTotal++; } });
+            if (fnTotal < 3) return null;
+            return e('div', { role: 'group', 'aria-label': 'Communication function distribution', style: { display: 'flex', gap: '4px', padding: '6px 12px', background: '#faf5ff', borderRadius: '8px', marginBottom: '4px', border: '1px solid #e9d5ff', alignItems: 'center', flexWrap: 'wrap' } },
+              e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#7c3aed', whiteSpace: 'nowrap', marginRight: '2px' } }, '🗣️ Functions:'),
+              COMM_FN_ORDER.map(function (fn) {
+                var ct = fnCounts[fn] || 0; if (ct === 0) return null;
+                var cf = COMM_FUNCTIONS[fn];
+                return e('span', { key: fn, 'aria-label': ct + ' ' + cf.label + ' words', style: { display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '1px 6px', borderRadius: '8px', background: '#fff', fontSize: '10px', fontWeight: 600, color: cf.color, border: '1px solid ' + cf.color + '33' } },
+                  e('span', { 'aria-hidden': 'true' }, cf.icon), e('span', null, ct));
+              }),
+              // Flag missing functions
+              (function () {
+                var missing = COMM_FN_ORDER.filter(function (fn) { return !fnCounts[fn]; });
+                if (missing.length === 0 || missing.length > 3) return null;
+                return e('span', { style: { fontSize: '9px', color: '#9ca3af', marginLeft: '4px' } }, 'Missing: ' + missing.map(function (fn) { return COMM_FUNCTIONS[fn].label; }).join(', '));
+              })());
+          })(),
+          // FCT Bridge — Functional Communication Training link to BehaviorLens
+          e('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', padding: '0 16px', marginBottom: '4px' } },
+            e('select', { value: gardenBehaviorFn, onChange: function (ev) { setGardenBehaviorFn(ev.target.value); }, 'aria-label': 'Behavioral function for FCT', style: Object.assign({}, S.input, { width: 'auto', fontSize: '10px', padding: '3px 6px' }) },
+              e('option', { value: '' }, '🔗 BehaviorLens FCT...'),
+              FCT_FUNCTIONS.map(function (fn) { return e('option', { key: fn, value: fn }, FCT_MAP[fn].icon + ' ' + FCT_MAP[fn].label); }))),
+          gardenBehaviorFn && (function () {
+            var fct = FCT_MAP[gardenBehaviorFn]; if (!fct) return null;
+            var priorityInGarden = bank.filter(function (w) { return fct.priorityWords.indexOf(w.key) !== -1; });
+            var mastered = priorityInGarden.filter(function (w) { return w.growth === 'mastered' || w.growth === 'blooming'; });
+            var growing = priorityInGarden.filter(function (w) { return w.growth === 'growing' || w.growth === 'sprout'; });
+            var missing = fct.priorityWords.filter(function (pw) { return !bank.some(function (w) { return w.key === pw; }); });
+            return e('div', { style: { padding: '8px 16px' } },
+              e('div', { style: { padding: '10px 14px', background: fct.color + '10', borderRadius: '10px', border: '1px solid ' + fct.color + '33' } },
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' } },
+                  e('span', { style: { fontSize: '16px' } }, fct.icon),
+                  e('span', { style: { fontSize: '12px', fontWeight: 700, color: fct.color } }, 'FCT: ' + fct.label + ' → Communication Replacements')),
+                e('p', { style: { fontSize: '11px', color: '#374151', margin: '0 0 8px', lineHeight: 1.5 } }, fct.tip),
+                mastered.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' } },
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669' } }, '✅ Ready:'),
+                  mastered.map(function (w) { return e('span', { key: w.key, style: { padding: '1px 6px', borderRadius: '8px', background: '#dcfce7', fontSize: '10px', fontWeight: 600, color: '#15803d' } }, w.displayLabel); })),
+                growing.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' } },
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#d97706' } }, '🌿 Growing:'),
+                  growing.map(function (w) { return e('span', { key: w.key, style: { padding: '1px 6px', borderRadius: '8px', background: '#fef3c7', fontSize: '10px', fontWeight: 600, color: '#92400e' } }, w.displayLabel); })),
+                missing.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#dc2626' } }, '🌰 Not yet planted:'),
+                  missing.slice(0, 5).map(function (pw) { return e('span', { key: pw, style: { padding: '1px 6px', borderRadius: '8px', background: '#fee2e2', fontSize: '10px', fontWeight: 600, color: '#991b1b' } }, pw); }))));
+          })(),
+          summaryBar, controlsBar),
+        renderGrowthCelebrations(),
+        e('div', { style: { flex: 1, overflowY: 'auto', padding: '0 16px 16px' } },
+          filtered.length === 0 ? e('div', { style: { textAlign: 'center', padding: '30px', color: '#6b7280' } }, e('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'), e('p', { style: { fontSize: '13px' } }, gardenSearch ? 'No words match "' + gardenSearch + '"' : 'No words at this growth level yet'))
+            : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' } }, gridItems),
+          total > 0 && e('div', { style: { display: 'flex', gap: '6px', margin: '8px 0', flexWrap: 'wrap' } },
+            e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print clinical report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Clinical Report'),
+            e('button', { onClick: function () { printGardenHomeNote(bank, counts, total); }, 'aria-label': 'Print home note for family', style: Object.assign({}, S.btn('#dcfce7', '#15803d', false), { fontSize: '11px' }) }, '🏠 Home Note'),
+            e('button', { onClick: function () { exportGardenCSV(bank, counts, total); }, 'aria-label': 'Export research CSV', style: Object.assign({}, S.btn('#dbeafe', '#1d4ed8', false), { fontSize: '11px' }) }, '🔬 Research CSV'))));
+    }
+
+    function printGardenReport(bank, counts, total) {
+      var prof = profiles.find(function (p) { return p.id === activeProfileId; }) || { name: 'Student' };
+      var name = prof.name || 'Student';
+      var codename = prof.codename || '';
+      var now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      var rows = bank.slice().sort(function (a, b) { var ai = GROWTH_ORDER.indexOf(a.growth), bi = GROWTH_ORDER.indexOf(b.growth); return bi !== ai ? bi - ai : a.displayLabel.localeCompare(b.displayLabel); });
+      var html = '<html><head><title>' + name + '\'s Vocabulary Report</title><style>'
+        + 'body{font-family:Georgia,"Times New Roman",serif;max-width:780px;margin:0 auto;padding:30px;color:#1f2937;line-height:1.6}'
+        + 'h1{font-size:28px;margin:0;color:#1f2937;font-weight:800;letter-spacing:-0.5px}'
+        + 'h2{font-size:16px;margin:24px 0 10px;color:#374151;border-bottom:2px solid #e5e7eb;padding-bottom:6px}'
+        + '.hero{text-align:center;padding:24px 20px;background:linear-gradient(135deg,#fefce8 0%,#f0fdf4 50%,#ede9fe 100%);border-radius:16px;margin-bottom:24px}'
+        + '.hero-sub{font-size:14px;color:#6b7280;margin:6px 0 0;font-style:italic}'
+        + '.garden-map{display:flex;justify-content:center;gap:16px;margin:16px 0;flex-wrap:wrap}'
+        + '.garden-stage{text-align:center;padding:12px 16px;border-radius:12px;min-width:80px}'
+        + '.garden-stage .count{font-size:28px;font-weight:800;line-height:1}'
+        + '.garden-stage .icon{font-size:24px;margin-bottom:2px}'
+        + '.garden-stage .label{font-size:11px;font-weight:600;margin-top:2px}'
+        + '.word-cloud{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}'
+        + '.word-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;font-family:system-ui,sans-serif}'
+        + 'table{width:100%;border-collapse:collapse;font-size:12px;font-family:system-ui,sans-serif;margin:8px 0}'
+        + 'th{text-align:left;padding:6px 8px;background:#f9fafb;border-bottom:2px solid #e5e7eb;font-weight:700}'
+        + 'td{padding:5px 8px;border-bottom:1px solid #f3f4f6}'
+        + '.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600}'
+        + '.narrative{font-size:14px;color:#374151;margin:12px 0;line-height:1.7}'
+        + '.footer{margin-top:30px;padding-top:16px;border-top:2px solid #e5e7eb;text-align:center;font-size:10px;color:#9ca3af;font-family:system-ui,sans-serif}'
+        + '@media print{body{padding:10px}.hero{break-inside:avoid}}</style></head><body>';
+      // Hero section
+      html += '<div class="hero">';
+      html += '<div style="font-size:40px;margin-bottom:4px">🌱</div>';
+      html += '<h1>' + name + '\'s Word Garden</h1>';
+      html += '<div class="hero-sub">Vocabulary Growth Report — ' + now + '</div>';
+      if (codename) html += '<div class="hero-sub" style="font-size:11px">Tracking ID: ' + codename + '</div>';
+      html += '<div class="hero-sub">' + total + ' words growing across ' + (savedBoards.length + savedSchedules.length) + ' boards and schedules</div>';
+      html += '</div>';
+      // Garden map — visual growth distribution
+      html += '<div class="garden-map">';
+      GROWTH_ORDER.slice().reverse().forEach(function (lv) {
+        var g = GROWTH_LEVELS[lv]; var ct = counts[lv] || 0;
+        html += '<div class="garden-stage" style="background:' + g.bg + ';border:2px solid ' + g.border + '">';
+        html += '<div class="icon">' + g.icon + '</div>';
+        html += '<div class="count" style="color:' + g.color + '">' + ct + '</div>';
+        html += '<div class="label" style="color:' + g.color + '">' + g.label + '</div></div>';
+      });
+      html += '</div>';
+      // Narrative summary
+      var masteredWords = rows.filter(function (w) { return w.growth === 'mastered'; });
+      var growingWords = rows.filter(function (w) { return w.growth === 'blooming' || w.growth === 'growing'; });
+      var earlyWords = rows.filter(function (w) { return w.growth === 'seed' || w.growth === 'sprout'; });
+      html += '<div class="narrative">';
+      if (masteredWords.length > 0) {
+        html += name + ' has <strong>' + masteredWords.length + ' mastered word' + (masteredWords.length !== 1 ? 's' : '') + '</strong> — vocabulary used confidently across multiple tools and in real communication. ';
+      }
+      if (growingWords.length > 0) {
+        html += 'There are <strong>' + growingWords.length + ' word' + (growingWords.length !== 1 ? 's' : '') + ' actively growing</strong>, appearing in multiple contexts and showing increasing familiarity through practice. ';
+      }
+      if (earlyWords.length > 0) {
+        html += 'And <strong>' + earlyWords.length + ' new word' + (earlyWords.length !== 1 ? 's' : '') + '</strong> recently planted, ready to grow as they appear in more activities.';
+      }
+      // Lexical diversity in report
+      var pid = activeProfileId || '__global__';
+      var rpLog = usageLog[pid] || { sessions: [] };
+      var rpTW = 0; var rpUW = {};
+      (rpLog.sessions || []).forEach(function (s) { (s.entries || []).forEach(function (en) { rpTW++; rpUW[en.label.trim().toLowerCase()] = true; }); });
+      if (rpTW >= 5) {
+        var rpUniq = Object.keys(rpUW).length; var rpLD = rpUniq / rpTW; var rpPct = Math.round(rpLD * 100);
+        var rpLabel = rpLD >= 0.7 ? 'Rich' : rpLD >= 0.5 ? 'Developing' : rpLD >= 0.3 ? 'Emerging' : 'Limited';
+        html += '<p style="margin-top:8px"><strong>Lexical Diversity:</strong> ' + rpPct + '% (' + rpLabel + ') — ' + rpUniq + ' unique words out of ' + rpTW + ' total AAC utterances. <em>Lexical diversity is the strongest single predictor of linguistic competence in AAC users.</em></p>';
+      }
+      html += '</div>';
+      // Mastered words — celebration
+      if (masteredWords.length > 0) {
+        html += '<h2>🌳 Words ' + name + ' Owns</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words are used spontaneously across boards, schedules, stories, and daily communication.</p>';
+        html += '<div class="word-cloud">';
+        masteredWords.forEach(function (w) { html += '<span class="word-chip" style="background:#fefce8;color:#92400e;border:1px solid #facc15">🌳 ' + w.displayLabel + '</span>'; });
+        html += '</div>';
+      }
+      // Growing words — progress
+      if (growingWords.length > 0) {
+        html += '<h2>🌿 Words That Are Growing</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words are developing well — they appear in ' + (growingWords.length > 3 ? 'several' : 'multiple') + ' contexts and are becoming familiar through practice.</p>';
+        html += '<div class="word-cloud">';
+        growingWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth]; html += '<span class="word-chip" style="background:' + g.bg + ';color:' + g.color + ';border:1px solid ' + g.border + '">' + g.icon + ' ' + w.displayLabel + '</span>'; });
+        html += '</div>';
+        html += '<table><tr><th>Word</th><th>Stage</th><th>Found In</th></tr>';
+        growingWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth];
+          var places = w.contexts.map(function (c) { return c.source; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ');
+          html += '<tr><td><strong>' + w.displayLabel + '</strong></td><td><span class="badge" style="background:' + g.bg + ';color:' + g.color + '">' + g.icon + ' ' + g.label + '</span></td><td style="font-size:11px;color:#6b7280">' + places + '</td></tr>'; });
+        html += '</table>';
+      }
+      // Early words — seeds
+      if (earlyWords.length > 0) {
+        html += '<h2>🌰 Recently Planted</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words are new to ' + name + '\'s vocabulary. Adding them to more boards, schedules, and stories will help them grow.</p>';
+        html += '<div class="word-cloud">';
+        earlyWords.forEach(function (w) { var g = GROWTH_LEVELS[w.growth]; html += '<span class="word-chip" style="background:' + g.bg + ';color:' + g.color + ';border:1px solid ' + g.border + '">' + g.icon + ' ' + w.displayLabel + '</span>'; });
+        html += '</div>';
+      }
+      // Family voices section
+      var voiceWords = rows.filter(function (w) { return w.hasVoice; });
+      if (voiceWords.length > 0) {
+        html += '<h2>❤️ Words With a Loved One\'s Voice</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">These words have been personally recorded by a family member or caregiver. When ' + name + ' taps these symbols, they hear someone who loves them — not a machine voice.</p>';
+        html += '<div class="word-cloud">';
+        voiceWords.forEach(function (w) { html += '<span class="word-chip" style="background:#fce7f3;color:#be185d;border:1px solid #f9a8d4">❤️ ' + w.displayLabel + '</span>'; });
+        html += '</div>';
+        html += '<p style="font-size:12px;color:#059669;background:#f0fdf4;padding:8px 12px;border-radius:8px;border:1px solid #d1fae5;margin-top:8px"><strong>Family engagement note:</strong> ' + voiceWords.length + ' word' + (voiceWords.length !== 1 ? 's have' : ' has') + ' personal voice recordings. This reflects active family participation in ' + name + '\'s communication development.</p>';
+      }
+      // Wish Seeds section — words the student reached for
+      var activeWishes = wishSeeds.filter(function (w) {
+        return w.profileId === (activeProfileId || 'default') || !w.profileId;
+      });
+      if (activeWishes.length > 0) {
+        html += '<h2>💫 Words ' + name + ' Is Reaching For</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">During communication sessions, ' + name + ' showed intent to express these words but didn\'t have them available. This is evidence of <strong>communicative intent beyond current vocabulary</strong> — one of the strongest indicators of readiness for vocabulary expansion.</p>';
+        html += '<div class="word-cloud">';
+        activeWishes.forEach(function (w) {
+          var dateStr = w.ts ? new Date(w.ts).toLocaleDateString() : '';
+          html += '<span class="word-chip" style="background:#faf5ff;color:#7c3aed;border:1px solid #c4b5fd">💫 ' + w.label + (dateStr ? ' <span style="font-size:9px;opacity:0.7">(' + dateStr + ')</span>' : '') + '</span>';
+        });
+        html += '</div>';
+        if (activeWishes.some(function (w) { return w.note; })) {
+          html += '<p style="font-size:12px;color:#78350f;background:#fffbeb;padding:8px 12px;border-radius:8px;border:1px solid #fef3c7;margin-top:8px"><strong>Recommended action:</strong> Create symbols for these words and add them to ' + name + '\'s communication boards. When a student reaches for a word, they are telling us they are ready to learn it.</p>';
+        }
+      }
+      // How growth works — for parents
+      html += '<h2>🌱 How Words Grow</h2>';
+      html += '<div style="font-size:13px;color:#374151;line-height:1.7">';
+      html += '<p>Words in ' + name + '\'s garden grow stronger when they appear in <strong>multiple tools</strong> (communication boards, visual schedules, social stories, and games) and when ' + name + ' <strong>practices and uses them</strong> in daily communication.</p>';
+      html += '<p style="margin-top:8px">This approach is called <em>aided language modeling</em> — research shows that vocabulary is best acquired when the same words appear across different activities and contexts, with many opportunities to see, hear, and use them.</p>';
+      html += '</div>';
+      // Communication function distribution
+      (function () {
+        var fnCounts = {}; var fnTotal = 0;
+        rows.forEach(function (w) { if (w.commFn) { fnCounts[w.commFn] = (fnCounts[w.commFn] || 0) + 1; fnTotal++; } });
+        if (fnTotal >= 3) {
+          html += '<h2>🗣️ Communication Functions</h2>';
+          html += '<p style="font-size:13px;color:#6b7280;margin:0 0 10px">How ' + name + '\'s vocabulary is distributed across communication purposes. A balanced profile includes requesting, commenting, social, and expressing words.</p>';
+          html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
+          COMM_FN_ORDER.forEach(function (fn) {
+            var ct = fnCounts[fn] || 0;
+            var cf = COMM_FUNCTIONS[fn];
+            html += '<div class="pill" style="background:' + cf.color + '15;color:' + cf.color + ';border:1px solid ' + cf.color + '33">' + cf.icon + ' ' + cf.label + ': ' + ct + '</div>';
+          });
+          html += '</div>';
+          var missing = COMM_FN_ORDER.filter(function (fn) { return !fnCounts[fn]; });
+          if (missing.length > 0 && missing.length <= 3) {
+            html += '<p style="font-size:12px;color:#78350f;background:#fffbeb;padding:8px 12px;border-radius:8px;border:1px solid #fef3c7"><strong>Suggestion:</strong> Consider adding ' + missing.map(function (fn) { return COMM_FUNCTIONS[fn].label.toLowerCase(); }).join(' and ') + ' vocabulary to broaden communicative range.</p>';
+          }
+        }
+      })();
+      // IEP Goals section
+      if (activeGoals.length > 0) {
+        var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669' };
+        html += '<h2>🎯 IEP Goal Progress</h2>';
+        html += '<p style="font-size:13px;color:#6b7280;margin:0 0 10px">Communication goals tracked through the Word Garden and Symbol Quest.</p>';
+        html += '<table><tr><th>Goal</th><th>Type</th><th>Progress</th><th>Top Words</th></tr>';
+        activeGoals.forEach(function (g) {
+          var pct = g.targetCount > 0 ? Math.round(g.currentCount / g.targetCount * 100) : 0;
+          // Find top words contributing to this goal
+          var wordHits = {};
+          (g.trials || []).forEach(function (t) {
+            if (!t.context) return;
+            var parts = t.context.split(':');
+            var wordLabel = parts[parts.length - 1];
+            if (wordLabel) wordHits[wordLabel] = (wordHits[wordLabel] || 0) + 1;
+          });
+          var topWords = Object.keys(wordHits).sort(function (a, b) { return wordHits[b] - wordHits[a]; }).slice(0, 4).join(', ') || '—';
+          var tc = goalTypeColors[g.type] || '#6b7280';
+          html += '<tr><td>' + g.text + '</td><td><span class="badge" style="background:' + tc + ';color:#fff">' + g.type + '</span></td><td><strong>' + g.currentCount + '/' + g.targetCount + '</strong> (' + pct + '%)</td><td style="font-size:11px;color:#6b7280">' + topWords + '</td></tr>';
+        });
+        html += '</table>';
+      }
+      // Footer
+      html += '<div class="footer">';
+      html += 'Generated by AlloFlow Visual Supports Studio · Word Garden<br>';
+      html += name + '\'s vocabulary is tracked across all tools automatically. No words are lost. Every interaction counts.<br>';
+      html += '<strong>Every word in this garden belongs to ' + name + '.</strong>';
+      html += '</div></body></html>';
+      var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+    }
+
+    function printGardenPoster(_, grouped, studentName, total) {
+      var html = '<html><head><title>' + studentName + '\'s Word Garden</title><style>'
+        + 'body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:20px;color:#1f2937;background:linear-gradient(180deg,#e0f2fe 0%,#f0fdf4 40%,#fefce8 80%,#fef3c7 100%)}'
+        + '.poster{border:4px solid #4ade80;border-radius:24px;padding:30px;background:rgba(255,255,255,0.85);box-shadow:0 0 40px rgba(74,222,128,0.15)}'
+        + '.title{text-align:center;margin-bottom:20px}'
+        + '.title h1{font-size:36px;font-weight:900;margin:0;color:#1f2937}'
+        + '.title .count{font-size:20px;font-weight:700;color:#059669;margin:4px 0}'
+        + '.title .sub{font-size:12px;color:#6b7280;font-style:italic}'
+        + '.bed{border-radius:16px;padding:14px 16px;margin-bottom:12px}'
+        + '.bed-label{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:16px;font-weight:700}'
+        + '.words{display:flex;flex-wrap:wrap;gap:10px}'
+        + '.word{display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:8px 12px;background:rgba(255,255,255,0.9);border-radius:14px;min-width:70px;text-align:center}'
+        + '.word .icon{font-size:24px}'
+        + '.word .label{font-size:14px;font-weight:700;color:#1f2937}'
+        + '.footer{text-align:center;margin-top:20px;font-size:18px;font-weight:800;color:#92400e}'
+        + '@media print{body{background:#fff;padding:10px}.poster{box-shadow:none;border-color:#86efac}}'
+        + '</style></head><body><div class="poster">';
+      html += '<div class="title">';
+      html += '<div style="font-size:48px;margin-bottom:4px">🌱</div>';
+      html += '<h1>' + studentName + '\'s Word Garden</h1>';
+      html += '<div class="count">' + total + ' words growing!</div>';
+      html += '<div class="sub">Every word here is mine</div>';
+      html += '</div>';
+      var rowBg = { mastered: '#fefce8', blooming: '#ede9fe', growing: '#d1fae5', sprout: '#dcfce7', seed: '#fef3c7' };
+      var rowBorder = { mastered: '2px solid #facc15', blooming: '2px solid #a78bfa', growing: '2px solid #34d399', sprout: '2px solid #4ade80', seed: '2px solid #fbbf24' };
+      ['mastered', 'blooming', 'growing', 'sprout', 'seed'].forEach(function (level) {
+        var words = grouped[level]; if (!words || !words.length) return;
+        var gl = GROWTH_LEVELS[level];
+        html += '<div class="bed" style="background:' + rowBg[level] + ';border:' + rowBorder[level] + '">';
+        html += '<div class="bed-label" style="color:' + gl.color + '">' + gl.icon + ' ' + gl.label + ' <span style="font-size:13px;opacity:0.7">(' + words.length + ')</span></div>';
+        html += '<div class="words">';
+        words.forEach(function (w) {
+          html += '<div class="word" style="border:2px solid ' + gl.border + '">';
+          if (w.image) html += '<img src="' + w.image + '" style="width:48px;height:48px;object-fit:contain;border-radius:8px" />';
+          else html += '<div class="icon">' + gl.icon + '</div>';
+          html += '<div class="label">' + w.displayLabel + '</div></div>';
+        });
+        html += '</div></div>';
+      });
+      html += '<div class="footer">Every word in this garden belongs to ' + studentName + '. 🌳</div>';
+      html += '</div></body></html>';
+      var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+    }
+
+    function printGardenHomeNote(bank, counts, total) {
+      var prof = profiles.find(function (p) { return p.id === activeProfileId; }) || { name: 'Student' };
+      var name = prof.name || 'your child';
+      var codename = prof.codename || '';
+      var now = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      // Pick 3-5 words to practice at home: prefer growing/sprout words with images
+      // Prefer weekly focus words (core, near threshold, fewest contexts) for home practice
+      var practiceWords = bank.filter(function (w) { return (w.growth === 'growing' || w.growth === 'sprout') && w.image; })
+        .sort(function (a, b) {
+          var sa = (a.isCore ? 2 : 0) + Math.max(0, 4 - a.uniqueContextCount);
+          var sb = (b.isCore ? 2 : 0) + Math.max(0, 4 - b.uniqueContextCount);
+          return sb - sa;
+        }).slice(0, 4);
+      if (practiceWords.length < 2) practiceWords = bank.filter(function (w) { return w.image; }).slice(0, 4);
+      var masteredList = bank.filter(function (w) { return w.growth === 'mastered'; }).map(function (w) { return w.displayLabel; });
+      var html = '<html><head><title>Home Note — ' + name + '</title><style>'
+        + 'body{font-family:Georgia,serif;max-width:680px;margin:0 auto;padding:24px;color:#1f2937;line-height:1.7}'
+        + '.header{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid #86efac;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px}'
+        + '.header h1{font-size:22px;margin:0;color:#15803d;font-weight:800}'
+        + '.header .date{font-size:12px;color:#6b7280;margin-top:4px}'
+        + '.section{margin-bottom:18px}'
+        + '.section h2{font-size:15px;font-weight:700;color:#1f2937;margin:0 0 8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px}'
+        + '.words-row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}'
+        + '.word-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;background:#fff;border:2px solid #4ade80;border-radius:12px;min-width:80px;text-align:center}'
+        + '.word-card img{width:48px;height:48px;object-fit:contain;border-radius:8px}'
+        + '.word-card .label{font-size:14px;font-weight:700;color:#1f2937}'
+        + '.tip{background:#fffbeb;border:1px solid #fef3c7;border-radius:10px;padding:12px;font-size:13px;color:#78350f;margin:8px 0}'
+        + '.tip strong{color:#92400e}'
+        + '.celebration{background:#fefce8;border:2px solid #facc15;border-radius:12px;padding:12px;text-align:center;font-size:14px;color:#92400e;font-weight:700;margin:12px 0}'
+        + '.footer{text-align:center;font-size:10px;color:#9ca3af;margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb}'
+        + '@media print{body{padding:10px}}'
+        + '</style></head><body>';
+      // Header
+      html += '<div class="header">';
+      html += '<div style="font-size:32px;margin-bottom:4px">🌱🏠</div>';
+      html += '<h1>' + name + '\'s Vocabulary Update</h1>';
+      html += '<div class="date">' + now + ' — from AlloFlow Word Garden</div>';
+      html += '</div>';
+      // Celebration
+      if (masteredList.length > 0) {
+        html += '<div class="celebration">🌳 ' + name + ' has mastered ' + masteredList.length + ' word' + (masteredList.length !== 1 ? 's' : '') + ': <strong>' + masteredList.slice(0, 8).join(', ') + '</strong>' + (masteredList.length > 8 ? ' and more!' : '!') + '</div>';
+      }
+      html += '<div class="section"><h2>📊 Garden Snapshot</h2>';
+      html += '<p style="font-size:13px">' + name + ' currently has <strong>' + total + ' words</strong> in their vocabulary garden. ';
+      if (counts.mastered > 0) html += '<strong>' + counts.mastered + '</strong> are mastered. ';
+      if (counts.growing + counts.blooming > 0) html += '<strong>' + (counts.growing + counts.blooming) + '</strong> are actively growing. ';
+      html += '</p></div>';
+      // Words to practice at home
+      if (practiceWords.length > 0) {
+        html += '<div class="section"><h2>🌿 Words to Practice at Home</h2>';
+        html += '<p style="font-size:13px">These words are growing at school. You can help them grow at home too!</p>';
+        html += '<div class="words-row">';
+        practiceWords.forEach(function (w) {
+          html += '<div class="word-card">';
+          if (w.image) html += '<img src="' + w.image + '" alt="' + w.displayLabel + '" />';
+          html += '<div class="label">' + w.displayLabel + '</div></div>';
+        });
+        html += '</div>';
+        html += '<div class="tip"><strong>How to help:</strong> When you see ' + name + ' reaching for something or showing a need, <strong>point to the word</strong> and <strong>say it out loud</strong>. Then wait 3-5 seconds for ' + name + ' to try. Respond to any attempt — a look, a point, a sound — as if they said the word. <em>Every response teaches that words work.</em></div>';
+        html += '<div class="tip"><strong>At mealtimes:</strong> Point to "' + practiceWords[0].displayLabel + '" before giving it. <strong>During play:</strong> Model the words naturally: "Oh, you ' + (practiceWords.length > 1 ? practiceWords[1].displayLabel : 'want') + '!" <strong>At bedtime:</strong> Name one thing from the day using a garden word.</div>';
+      }
+      // Phonics play section — bridges vocabulary to literacy at home
+      if (practiceWords && practiceWords.length >= 2) {
+        var phonicsExamples = practiceWords.filter(function (w) { return /^[a-zA-Z]+$/.test(w.displayLabel) && w.displayLabel.length <= 6; }).slice(0, 3);
+        if (phonicsExamples.length >= 2) {
+          html += '<div class="section"><h2>🔤 Sound Games at Home</h2>';
+          html += '<p style="font-size:13px;color:#6b7280;margin:0 0 8px">' + name + ' is learning these words at school. You can help with their <strong>sounds</strong> too — no special training needed!</p>';
+          html += '<div class="tip"><strong>🔗 Blending Game:</strong> Say the sounds in "' + phonicsExamples[0].displayLabel + '" slowly: "' + phonicsExamples[0].displayLabel.split('').join(' ... ') + '" — then ask ' + name + ' to guess the word. Cheer when they get it!</div>';
+          html += '<div class="tip"><strong>📦 Breaking Apart:</strong> Say "' + phonicsExamples[1].displayLabel + '" and clap once for each sound. How many claps? Count together!</div>';
+          if (phonicsExamples.length >= 3) {
+            html += '<div class="tip"><strong>🎵 Rhyme Time:</strong> "What rhymes with ' + phonicsExamples[2].displayLabel + '?" Make up silly words together — even nonsense words count! Rhyming builds the brain\'s sound awareness.</div>';
+          }
+          html += '<p style="font-size:11px;color:#6b7280;margin:8px 0 0;font-style:italic">These games build <strong>phonological awareness</strong> — the ability to hear and manipulate sounds in words. It\'s the #1 predictor of reading success, and it\'s free to practice!</p>';
+          html += '</div>';
+        }
+      }
+      html += '<div class="section"><h2>💡 Remember</h2>';
+      html += '<p style="font-size:13px">You don\'t need to be a speech therapist to help. Just <strong>use the words naturally</strong> during daily routines. The more places ' + name + ' hears and sees a word, the more it becomes theirs. Even pointing to a picture on the fridge counts!</p>';
+      html += '<p style="font-size:13px;margin-top:8px">Words are like plants — they grow with attention, patience, and sunlight. Your voice is the sunlight. 🌱</p>';
+      html += '</div>';
+      // Include garden story if one has been generated
+      if (gardenStory) {
+        html += '<div class="section"><h2>📖 ' + name + '\'s Garden Story</h2>';
+        html += '<div style="font-family:Georgia,serif;font-size:14px;color:#374151;line-height:1.8;padding:12px 16px;background:#f0fdf4;border-radius:12px;border:1px solid #d1fae5;font-style:italic">' + gardenStory + '</div>';
+        html += '<p style="font-size:11px;color:#6b7280;margin:6px 0 0">Read this story aloud to ' + name + ' — hearing their vocabulary words in a narrative helps them grow!</p></div>';
+      }
+      html += '<div class="footer">';
+      html += 'Generated by AlloFlow Word Garden';
+      if (codename) html += ' · Tracking ID: ' + codename;
+      html += '<br>This note contains vocabulary guidance only — no clinical assessments or diagnoses.<br>';
+      html += '<strong>Thank you for helping ' + name + '\'s words grow. 🌳</strong>';
+      html += '</div></body></html>';
+      var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+    }
+
+    function exportGardenCSV(bank) {
+      var prof = profiles.find(function (p) { return p.id === activeProfileId; }) || {};
+      var codename = prof.codename || prof.id || 'unknown';
+      var now = new Date().toISOString().slice(0, 10);
+      // Compute aggregate metrics
+      var pid = activeProfileId || '__global__';
+      var pLog = usageLog[pid] || { sessions: [] };
+      var totalUtterances = 0; var uniqueUtterances = {};
+      (pLog.sessions || []).forEach(function (s) { (s.entries || []).forEach(function (en) { if (en.label === '__UTTERANCE__') return; totalUtterances++; uniqueUtterances[en.label.trim().toLowerCase()] = true; }); });
+      var lexDiv = totalUtterances > 0 ? (Object.keys(uniqueUtterances).length / totalUtterances).toFixed(3) : '';
+      // Communication function counts
+      var fnCounts = {}; bank.forEach(function (w) { if (w.commFn) fnCounts[w.commFn] = (fnCounts[w.commFn] || 0) + 1; });
+      // CSV headers
+      var rows = [];
+      // Sheet 1: Per-word data
+      rows.push('--- WORD-LEVEL DATA ---');
+      rows.push('codename,export_date,word,category,comm_function,growth_level,context_count,context_types,aac_uses,quest_correct,quest_wrong,familiarity_score,is_core,has_image');
+      bank.forEach(function (w) {
+        var esc = function (s) { return '"' + (s || '').replace(/"/g, '""') + '"'; };
+        rows.push([codename, now, esc(w.displayLabel), w.category, w.commFn || '', w.growth, w.uniqueContextCount,
+          esc(w.contextTypes.join('|')), w.aacUses || 0, w.questCorrect || 0, w.questWrong || 0,
+          (w.famScore || 0).toFixed(3), w.isCore ? 1 : 0, w.image ? 1 : 0].join(','));
+      });
+      rows.push('');
+      // Sheet 2: Aggregate metrics
+      rows.push('--- AGGREGATE METRICS ---');
+      rows.push('codename,export_date,total_words,mastered,blooming,growing,sprout,seed,total_utterances,unique_utterances,lexical_diversity,mean_length_utterance,fn_requesting,fn_rejecting,fn_commenting,fn_social,fn_questioning,fn_expressing,iep_goals_active,core_words_total,core_words_strong');
+      var coreTotal = bank.filter(function (w) { return w.isCore; }).length;
+      var coreStrong = bank.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); }).length;
+      // Compute MLU from session data — count utterance boundaries (Speak events have __UTTERANCE__ marker)
+      var uttLengths = []; var tapCount = 0;
+      (pLog.sessions || []).forEach(function (s) {
+        var sessionTaps = 0;
+        (s.entries || []).forEach(function (en) {
+          if (en.label === '__UTTERANCE__') { if (sessionTaps > 0) uttLengths.push(sessionTaps); sessionTaps = 0; }
+          else sessionTaps++;
+        });
+        if (sessionTaps > 0) uttLengths.push(sessionTaps); // last utterance if no Speak
+      });
+      var mluVal = uttLengths.length > 0 ? (uttLengths.reduce(function (a, b) { return a + b; }, 0) / uttLengths.length).toFixed(2) : '';
+      rows.push([codename, now, bank.length,
+        bank.filter(function (w) { return w.growth === 'mastered'; }).length,
+        bank.filter(function (w) { return w.growth === 'blooming'; }).length,
+        bank.filter(function (w) { return w.growth === 'growing'; }).length,
+        bank.filter(function (w) { return w.growth === 'sprout'; }).length,
+        bank.filter(function (w) { return w.growth === 'seed'; }).length,
+        totalUtterances, Object.keys(uniqueUtterances).length, lexDiv, mluVal,
+        fnCounts.requesting || 0, fnCounts.rejecting || 0, fnCounts.commenting || 0,
+        fnCounts.social || 0, fnCounts.questioning || 0, fnCounts.expressing || 0,
+        activeGoals.length, coreTotal, coreStrong].join(','));
+      rows.push('');
+      // Sheet 3: IEP goal trial log
+      if (activeGoals.length > 0) {
+        rows.push('--- IEP GOAL TRIALS ---');
+        rows.push('codename,export_date,goal_id,goal_text,goal_type,target_count,current_count,trial_timestamp,trial_success,trial_context');
+        activeGoals.forEach(function (g) {
+          (g.trials || []).forEach(function (t) {
+            rows.push([codename, now, g.id, '"' + (g.text || '').replace(/"/g, '""') + '"', g.type, g.targetCount, g.currentCount, t.ts, t.success ? 1 : 0, '"' + (t.context || '').replace(/"/g, '""') + '"'].join(','));
+          });
+        });
+      }
+      // Wish seeds log
+      var profileWishes = wishSeeds.filter(function (w) { return w.profileId === (activeProfileId || 'default') || !w.profileId; });
+      if (profileWishes.length > 0) {
+        rows.push('');
+        rows.push('--- WISH SEEDS (Communication Intent) ---');
+        rows.push('codename,export_date,wish_word,wish_note,wish_timestamp,wish_fulfilled');
+        profileWishes.forEach(function (w) {
+          var fulfilled = bank.some(function (b) { return b.key === w.label.trim().toLowerCase() && b.contextTypes.length > 1; }) ? 1 : 0;
+          rows.push([codename, now, '"' + w.label.replace(/"/g, '""') + '"', '"' + (w.note || '').replace(/"/g, '""') + '"', w.ts || '', fulfilled].join(','));
+        });
+      }
+      var csv = rows.join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'garden_' + codename.replace(/\s+/g, '_') + '_' + now + '.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      addToast && addToast('Research CSV exported!', 'success');
     }
 
     // ── Quick Boards tab ───────────────────────────────────────────────────
@@ -2743,7 +4714,7 @@
                     e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setBcItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': 'Behavior chart item label', style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '11px', color: '#9f1239', textAlign: 'center', width: '100%', cursor: 'text' } }),
                     e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
                       e('button', { onClick: function (ev) { ev.stopPropagation(); genBcItem(item.id); }, disabled: isLoading || !onCallImagen, 'aria-label': 'u2728', style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
-                      e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'bc', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'uD83DuDCF7', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'bc', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'Upload photo', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                     )
                   );
                 })
@@ -2774,7 +4745,7 @@
               e('div', { style: { fontWeight: 800, fontSize: '20px', color: '#312e81', textAlign: 'center' } }, currentItem.label),
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '10px', marginTop: '4px' } },
                 e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, 'aria-label': 'u2190 Prev', style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
-                e('button', { onClick: function () { speakCell(currentItem.label); }, 'aria-label': 'uD83DuDD0A Speak', style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
+                e('button', { onClick: function () { speakCell(currentItem.label); }, 'aria-label': 'Speak aloud', style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
                 e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, 'aria-label': 'Next u2192', style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
               )
             ),
@@ -2795,7 +4766,7 @@
                   e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setTwItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 600, fontSize: '10px', color: isCurrent ? '#312e81' : '#374151', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Task walk step label' }),
                   e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
                     e('button', { onClick: function (ev) { ev.stopPropagation(); genTwItem(item.id); }, disabled: isLoading || !onCallImagen, 'aria-label': 'u2728', style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
-                    e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'uD83DuDCF7', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                    e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'Upload photo', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                   )
                 );
               })
@@ -2824,9 +4795,10 @@
           qbMode === 'bodycheck' && renderBodyCheck(),
           qbMode === 'transition' && renderTransitionWarning()
         ),
-        // Print bar
+        // Print & export bar
         e('div', { className: 'ss-no-print', style: { padding: '10px 14px', borderTop: '1px solid #e5e7eb', background: '#f9fafb', display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
-          e('button', { onClick: function () { window.print(); }, 'aria-label': '️ Print Board', style: S.btn('#f3f4f6', '#374151', false) }, '🖨️ Print Board')
+          qbMode === 'firstthen' && (ftFirstImage || ftThenImage) && e('button', { onClick: function () { exportQuickBoardHTML('firstthen'); }, 'aria-label': 'Export First-Then board as accessible HTML', style: S.btn('#fef9c3', '#92400e', false) }, '\uD83C\uDF10 Export HTML'),
+          e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print board', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDDA8\uFE0F Print Board')
         ),
         e('input', { type: 'file', accept: 'image/*', ref: qbUploadRef, style: { display: 'none' }, onChange: handleQbUpload })
       );
@@ -2864,12 +4836,48 @@
           // Edit panel for active profile
           showAvatar && e('div', { style: { borderTop: '1px solid #f3f4f6', paddingTop: '10px' } },
             activeProfile.image && e('img', { src: activeProfile.image, style: { width: '100%', maxHeight: '70px', objectFit: 'cover', borderRadius: '7px', marginBottom: '8px' } }),
-            e('label', { style: S.lbl }, 'Name'),
+            e('label', { style: S.lbl }, 'Display Name (local only)'),
             e('input', { type: 'text', value: avatarName, onChange: function (ev) {
               var val = ev.target.value; setAvatarName(val);
               var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { name: val }) : p; });
               setProfiles(upd); store(STORAGE_PROFILES, upd);
-            }, placeholder: 'e.g. Marcus', 'aria-label': 'Avatar name', style: Object.assign({}, S.input, { marginBottom: '6px' }) }),
+            }, placeholder: 'e.g. Marcus (never leaves this device)', 'aria-label': 'Display name - local only', style: Object.assign({}, S.input, { marginBottom: '2px' }) }),
+            e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '0 0 6px' } }, 'Used in Social Stories & prints. Never exported or synced.'),
+            e('label', { style: S.lbl }, 'Codename (used for tracking)'),
+            e('div', { style: { display: 'flex', gap: '4px', marginBottom: '6px', alignItems: 'center' } },
+              e('select', {
+                value: (activeProfile.codename || '').split(' ')[0] || '',
+                onChange: function (ev) {
+                  var animal = (activeProfile.codename || '').split(' ').slice(1).join(' ') || CN_ANI[0];
+                  var cn = ev.target.value ? (ev.target.value + ' ' + animal) : animal;
+                  var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
+                  setProfiles(upd); store(STORAGE_PROFILES, upd);
+                },
+                'aria-label': 'Codename adjective',
+                style: { flex: 1, fontSize: '11px', fontWeight: 600, color: PURPLE, padding: '4px 6px', background: LIGHT_PURPLE, borderRadius: '6px', border: '1px solid #c4b5fd', cursor: 'pointer' }
+              },
+                e('option', { value: '' }, '— Adjective —'),
+                CN_ADJ.map(function (a) { return e('option', { key: a, value: a }, a); })
+              ),
+              e('select', {
+                value: (activeProfile.codename || '').split(' ').slice(1).join(' ') || '',
+                onChange: function (ev) {
+                  var adj = (activeProfile.codename || '').split(' ')[0] || CN_ADJ[0];
+                  var cn = ev.target.value ? (adj + ' ' + ev.target.value) : adj;
+                  var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
+                  setProfiles(upd); store(STORAGE_PROFILES, upd);
+                },
+                'aria-label': 'Codename animal',
+                style: { flex: 1, fontSize: '11px', fontWeight: 600, color: PURPLE, padding: '4px 6px', background: LIGHT_PURPLE, borderRadius: '6px', border: '1px solid #c4b5fd', cursor: 'pointer' }
+              },
+                e('option', { value: '' }, '— Animal —'),
+                CN_ANI.map(function (a) { return e('option', { key: a, value: a }, a); })
+              ),
+              e('button', { onClick: function () {
+                var cn = generateCodename();
+                var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
+                setProfiles(upd); store(STORAGE_PROFILES, upd);
+              }, 'aria-label': 'Randomize codename', title: 'Generate a new random codename', style: { padding: '3px 8px', background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' } }, '🎲')),
             e('label', { style: S.lbl }, 'Appearance'),
             e('input', { type: 'text', value: avatarDesc, onChange: function (ev) {
               var val = ev.target.value; setAvatarDesc(val);
@@ -2958,6 +4966,69 @@
             onSetVoice ? 'Synced with app-wide voice settings' : 'Used for read-aloud in stories, boards, and AAC mode'
           )
         ),
+        // Garden snapshot — visible from all tabs
+        (function () {
+          var gBank = computeWordBank();
+          if (gBank.length === 0) return null;
+          var gc = { seed: 0, sprout: 0, growing: 0, blooming: 0, mastered: 0 };
+          gBank.forEach(function (w) { gc[w.growth]++; });
+          return e('div', { style: Object.assign({}, S.card, { background: 'linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%)', border: '1px solid #d1fae5' }) },
+            e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' } },
+              sectionLabel('🌱 Word Garden'),
+              e('button', { onClick: function () { setTab('garden'); }, 'aria-label': 'Open garden tab', style: { fontSize: '9px', color: PURPLE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 } }, 'Open →')),
+            e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+              GROWTH_ORDER.map(function (lv) {
+                var g = GROWTH_LEVELS[lv]; var ct = gc[lv] || 0; if (ct === 0) return null;
+                return e('span', { key: lv, style: { fontSize: '10px', padding: '1px 6px', borderRadius: '10px', background: g.bg, color: g.color, fontWeight: 600, border: '1px solid ' + g.border } }, g.icon + ' ' + ct);
+              })),
+            e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '4px 0 0' } }, (function () {
+              var types = {}; gBank.forEach(function (w) { w.contextTypes.forEach(function (t) { types[t] = 1; }); });
+              return gBank.length + ' words across ' + Object.keys(types).length + ' tool types';
+            })()));
+        })(),
+        // Weekly Focus — garden-driven vocabulary planner visible from all tabs
+        (function () {
+          var gBank = computeWordBank();
+          if (gBank.length < 5) return null;
+          // Score each word for "focus-worthiness": high = needs attention, near growth threshold
+          var focusCandidates = gBank.filter(function (w) {
+            return w.growth === 'sprout' || w.growth === 'growing';
+          }).map(function (w) {
+            var score = 0;
+            // Words close to leveling up get priority
+            if (w.growth === 'growing' && w.uniqueContextCount >= 2) score += 3; // close to blooming
+            if (w.growth === 'sprout' && w.uniqueContextCount >= 1) score += 2; // close to growing
+            // Core words get priority
+            if (w.isCore) score += 2;
+            // Words with images (can be practiced in Quest) get a small boost
+            if (w.image) score += 1;
+            // Words with fewer contexts have more room to grow
+            score += Math.max(0, 4 - w.uniqueContextCount);
+            return { word: w, score: score };
+          }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
+          if (focusCandidates.length === 0) return null;
+          return e('div', { style: Object.assign({}, S.card, { background: 'linear-gradient(135deg, #eff6ff 0%, #ede9fe 100%)', border: '1px solid #c7d2fe' }) },
+            sectionLabel('🎯 Weekly Focus'),
+            e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0 0 6px' } }, 'Words that would grow most from attention this week:'),
+            e('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
+              focusCandidates.map(function (fc) {
+                var w = fc.word; var gl = GROWTH_LEVELS[w.growth];
+                var missingCtx = [];
+                var has = {}; w.contextTypes.forEach(function (t) { has[t] = true; });
+                if (!has.board) missingCtx.push('board');
+                if (!has.schedule) missingCtx.push('schedule');
+                if (!has.story) missingCtx.push('story');
+                return e('div', { key: w.key, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 8px', background: 'rgba(255,255,255,0.8)', borderRadius: '8px', border: '1px solid ' + gl.border } },
+                  w.image ? e('img', { src: w.image, alt: '', style: { width: 22, height: 22, borderRadius: '4px', objectFit: 'contain' } })
+                    : e('span', { style: { fontSize: '14px' } }, gl.icon),
+                  e('div', { style: { flex: 1, minWidth: 0 } },
+                    e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, w.displayLabel),
+                    missingCtx.length > 0 && e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'Add to: ' + missingCtx.join(', '))
+                  ),
+                  w.isCore && e('span', { style: { fontSize: '7px', background: '#dbeafe', color: '#1d4ed8', padding: '1px 4px', borderRadius: '3px', fontWeight: 700 } }, 'CORE'));
+              })),
+            e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '6px 0 0', fontStyle: 'italic' } }, 'Model each word 5+ times daily across settings'));
+        })(),
         // Backup & Restore
         e('div', { style: S.card },
           sectionLabel('Backup & Restore'),
@@ -2983,6 +5054,7 @@
             allSessions.forEach(function (s) {
               var st = new Date(s.date).getTime();
               (s.entries || []).forEach(function (en) {
+                if (en.label === '__UTTERANCE__') return; // skip MLU markers
                 var lbl = en.label;
                 wordCount[lbl] = (wordCount[lbl] || 0) + 1;
                 if (now - st < weekMs) thisWeekEntries++;
@@ -3092,7 +5164,7 @@
               )
             );
           })(),
-          cloudSync && e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
+          cloudSync && !isCanvasEnv && e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' } },
               e('span', { style: { fontSize: '10px', color: syncStatus === 'synced' ? '#16a34a' : syncStatus === 'error' ? '#dc2626' : '#6b7280' } },
                 syncStatus === 'syncing' ? '⏳ Syncing...' : syncStatus === 'synced' ? '✓ Cloud synced' : syncStatus === 'error' ? '✗ Sync error' : '☁️ Cloud backup'
@@ -3359,6 +5431,28 @@
             })
           )
         ),
+        // Garden seed hint — suggest words that would benefit from board context
+        (function () {
+          var bank = computeWordBank();
+          var seeds = bank.filter(function (w) {
+            return (w.growth === 'seed' || w.growth === 'sprout') && w.image && !w.contextTypes.some(function (t) { return t === 'board'; });
+          }).slice(0, 6);
+          if (seeds.length === 0) return null;
+          return e('div', { style: { flexShrink: 0, display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 10px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #d1fae5', flexWrap: 'wrap' } },
+            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' } }, '🌱 Could grow here:'),
+            seeds.map(function (w) {
+              return e('button', { key: w.key, onClick: function () {
+                setBoardWords(function (prev) {
+                  if (prev.some(function (bw) { return bw.label.toLowerCase() === w.key; })) return prev;
+                  return prev.concat([{ id: uid(), label: w.displayLabel, category: w.category, description: '', image: w.image }]);
+                });
+                addToast && addToast('"' + w.displayLabel + '" added!', 'success');
+              }, 'aria-label': 'Add ' + w.displayLabel + ' to board', title: 'This word is a seed — adding it to a board helps it grow',
+                style: { display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', background: '#fff', border: '1px solid #4ade80', borderRadius: '12px', fontSize: '10px', fontWeight: 600, color: '#15803d', cursor: 'pointer' } },
+                e('img', { src: w.image, alt: '', style: { width: 16, height: 16, borderRadius: '3px', objectFit: 'contain' } }),
+                w.displayLabel, e('span', { style: { color: '#9ca3af' } }, '+'));
+            }));
+        })(),
         // Controls row
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1, minWidth: '200px' } },
@@ -3637,7 +5731,7 @@
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Text size:'),
             e('input', { type: 'number', min: 8, max: 18, value: boardTextSize, onChange: function (ev) { setBoardTextSize(Number(ev.target.value)); }, 'aria-label': 'Text size', style: { width: '50px', border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 7px', fontSize: '12px' } })
           ),
-          e('button', { onClick: printBoardSized, 'aria-label': 'uD83DuDDB6 Print Now', style: S.btn('#1e40af', '#fff', false) }, '\uD83D\uDDB6 Print Now')
+          e('button', { onClick: printBoardSized, 'aria-label': 'Print board', style: S.btn('#1e40af', '#fff', false) }, '\uD83D\uDDB6 Print Now')
         ),
         // Board title
         boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: 'Board title (optional)', 'aria-label': 'Board title', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
@@ -3691,7 +5785,7 @@
                       word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#6b7280' } }, word.originalLabel)
                     ),
                     // Regen button
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, 'aria-label': 'uD83DuDD04', style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, 'aria-label': 'Regenerate symbol', style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
                     // Record audio button
                     e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); recordCellAudio(word.id); }, 'aria-label': 'Reset progress', style: { position: 'absolute', top: 4, left: 4, background: cellRecording === word.id ? 'rgba(220,38,38,0.8)' : (word.audioData ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.1)'), border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: cellRecording === word.id ? '#fff' : undefined } }, cellRecording === word.id ? '⏹' : (word.audioData ? '🎙️' : '🎤')),
                     // Play custom audio button
@@ -3731,6 +5825,23 @@
     // ── Visual Schedule tab ────────────────────────────────────────────────
     function renderScheduleTab() {
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '12px' } },
+        // Garden hint — words that would benefit from schedule context
+        (function () {
+          var bank = computeWordBank();
+          var needsSched = bank.filter(function (w) {
+            return (w.growth === 'seed' || w.growth === 'sprout') && !w.contextTypes.some(function (t) { return t === 'schedule'; }) && (w.category === 'verb' || w.category === 'other');
+          }).slice(0, 5);
+          if (needsSched.length === 0) return null;
+          return e('div', { style: { flexShrink: 0, display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 10px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #d1fae5', flexWrap: 'wrap' } },
+            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' } }, '🌱 Could grow in a schedule:'),
+            needsSched.map(function (w) {
+              return e('button', { key: w.key, onClick: function () {
+                setSchedInput(function (prev) { return prev ? prev + '\n' + w.displayLabel : w.displayLabel; });
+              }, 'aria-label': 'Add ' + w.displayLabel + ' to schedule input', title: 'Add to schedule activities',
+                style: { padding: '2px 8px', background: '#fff', border: '1px solid #4ade80', borderRadius: '12px', fontSize: '10px', fontWeight: 600, color: '#15803d', cursor: 'pointer' } },
+                w.displayLabel, e('span', { style: { color: '#9ca3af', marginLeft: '2px' } }, '+'));
+            }));
+        })(),
         // Controls
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1 } },
@@ -4000,7 +6111,7 @@
                   ),
                   e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
                     e('button', { onClick: function () { printBook(activeBook); }, disabled: activeBook.boardIds.length === 0, 'aria-label': 'Reset progress', style: S.btn('#dbeafe', '#1e40af', activeBook.boardIds.length === 0) }, '\uD83D\uDDB6 Print All (' + activeBook.boardIds.length + ')'),
-                    e('button', { onClick: function () { deleteBook(activeBook.id); }, 'aria-label': 'uD83DuDDD1uFE0F Delete Set', style: S.btn('#fee2e2', '#dc2626', false) }, '\uD83D\uDDD1\uFE0F Delete Set')
+                    e('button', { onClick: function () { deleteBook(activeBook.id); }, 'aria-label': 'Delete activity set', style: S.btn('#fee2e2', '#dc2626', false) }, '\uD83D\uDDD1\uFE0F Delete Set')
                   )
                 ),
                 // Board list within this set
@@ -4064,6 +6175,37 @@
     // ── Main render ────────────────────────────────────────────────────────
 
     // ── Direct-use AAC overlay ────────────────────────────────────────────
+    // Session debrief overlay — shows for 5 seconds after exiting AAC mode
+    if (sessionDebrief && !useBoardId) {
+      var db = sessionDebrief;
+      return e('div', { style: S.overlay, onClick: function () { setSessionDebrief(null); } },
+        e('div', { className: 'ss-garden-levelup', onClick: function (ev) { ev.stopPropagation(); }, style: { background: '#fff', borderRadius: '20px', maxWidth: '420px', width: '100%', padding: '32px', textAlign: 'center', boxShadow: '0 30px 80px rgba(0,0,0,0.4)' } },
+          e('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🌱'),
+          e('h2', { style: { fontSize: '20px', fontWeight: 800, color: '#1f2937', margin: '0 0 4px' } }, 'Session Complete!'),
+          e('p', { style: { fontSize: '13px', color: '#6b7280', margin: '0 0 16px' } }, db.boardTitle),
+          e('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' } },
+            e('div', { style: { background: '#f0fdf4', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#059669' } }, db.totalTaps),
+              e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'taps')),
+            e('div', { style: { background: '#eff6ff', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#2563eb' } }, db.uniqueCount),
+              e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'unique words')),
+            db.newCount > 0 && e('div', { style: { background: '#fef9c3', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#b45309' } }, db.newCount),
+              e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'new!')),
+            db.utteranceCount > 0 && e('div', { style: { background: '#faf5ff', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#7c3aed' } }, (db.mlu || 0).toFixed(1)),
+              e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'MLU'))),
+          db.mostUsed.length > 0 && e('div', { style: { marginBottom: '12px' } },
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '4px' } }, 'Most used:'),
+            e('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center' } },
+              db.mostUsed.map(function (w) { return e('span', { key: w, style: { padding: '3px 12px', background: '#ede9fe', borderRadius: '20px', fontSize: '13px', fontWeight: 700, color: '#7c3aed' } }, w); }))),
+          db.wishCount > 0 && e('div', { style: { marginBottom: '10px', padding: '8px 14px', background: '#faf5ff', borderRadius: '10px', border: '1px solid #c4b5fd' } },
+            e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#7c3aed', marginBottom: '2px' } }, '💫 ' + db.wishCount + ' wish seed' + (db.wishCount !== 1 ? 's' : '') + ' planted'),
+            e('div', { style: { fontSize: '11px', color: '#6b7280' } }, db.wishLabels.join(', ') + ' — you noticed what they were reaching for')),
+          e('p', { style: { fontSize: '12px', color: '#059669', fontWeight: 600, fontStyle: 'italic', margin: 0 } }, db.wishCount > 0 ? 'The reaching is how the growing starts. 💫' : 'Every word waters the garden. 🌱'),
+          e('p', { style: { fontSize: '10px', color: '#9ca3af', marginTop: '12px' } }, 'Tap anywhere to close')));
+    }
     if (useBoardId) {
       var useBoard = savedBoards.find(function (b) { return b.id === useBoardId; });
       var usePages = useBoard && useBoard.pages && useBoard.pages.length > 1 ? useBoard.pages : null;
@@ -4078,7 +6220,7 @@
             date: new Date().toISOString(),
             boardId: useBoardId,
             boardTitle: useBoard ? (useBoard.title || 'Board') : 'Board',
-            entries: commLog.map(function (e) { return { label: e.label, ts: e.ts }; })
+            entries: commLog.map(function (e) { return e.label === '__UTTERANCE__' ? { label: '__UTTERANCE__', length: e.length, ts: e.ts } : { label: e.label, ts: e.ts }; })
           };
           setUsageLog(function (prev) {
             var profLog = prev[pid] || { sessions: [] };
@@ -4088,8 +6230,46 @@
             store(STORAGE_USAGE, updated);
             return updated;
           });
+          // Compute session debrief
+          var wordSet = {}; var wordList = [];
+          var utterances = [];
+          commLog.forEach(function (en) {
+            if (en.label === '__UTTERANCE__') {
+              utterances.push(en.length);
+            } else {
+              var k = en.label.trim().toLowerCase();
+              if (!wordSet[k]) { wordSet[k] = 0; wordList.push(en.label); }
+              wordSet[k]++;
+            }
+          });
+          var uniqueCount = Object.keys(wordSet).length;
+          var totalTaps = commLog.filter(function (en) { return en.label !== '__UTTERANCE__'; }).length;
+          var mostUsed = Object.keys(wordSet).sort(function (a, b) { return wordSet[b] - wordSet[a]; }).slice(0, 3);
+          // MLU — Mean Length of Utterance
+          var mlu = utterances.length > 0 ? (utterances.reduce(function (a, b) { return a + b; }, 0) / utterances.length) : 0;
+          // Check for new words (not in familiarity before this session)
+          var newWords = Object.keys(wordSet).filter(function (k) {
+            var entry = familiarity[k];
+            return !entry || (entry.taps || 0) <= wordSet[k];
+          });
+          // Count wish seeds planted during this session (within last 2 minutes)
+          var recentWishes = wishSeeds.filter(function (w) { return w.ts && (Date.now() - new Date(w.ts).getTime()) < 120000; });
+          setSessionDebrief({
+            totalTaps: totalTaps, uniqueCount: uniqueCount,
+            mostUsed: mostUsed, newCount: Math.min(newWords.length, uniqueCount),
+            mlu: mlu, utteranceCount: utterances.length,
+            wishCount: recentWishes.length,
+            wishLabels: recentWishes.map(function (w) { return w.label; }),
+            boardTitle: useBoard ? (useBoard.title || 'Board') : 'Board'
+          });
+          // Auto-dismiss after 5 seconds
+          setTimeout(function () {
+            setSessionDebrief(null);
+            setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
+          }, 5000);
+        } else {
+          setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
         }
-        setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
       };
       var speakWordFn = function (label, audioData) {
         // Play custom recorded audio if available
@@ -4109,6 +6289,8 @@
       var speakPhraseFn = function (words) {
         var phrase = words.map(function (w) { return w.label; }).join(' ');
         if (!phrase) return;
+        // Record utterance for MLU computation
+        setCommLog(function (log) { return log.concat([{ label: '__UTTERANCE__', length: words.length, phrase: phrase, ts: new Date().toISOString() }]); });
         setStripSpeaking(true);
         var done = function () { setStripSpeaking(false); };
         if (onCallTTS) {
@@ -4129,6 +6311,7 @@
         var newStrip = strip.concat([{ label: cell.label, image: cell.image }]);
         setStrip(newStrip);
         setCommLog(function (log) { return log.concat([{ label: cell.label, image: cell.image, boardTitle: boardTitle, ts: new Date().toISOString() }]); });
+        recordFamiliarity(cell.label, 'aac-tap');
         speakWordFn(cell.label, cell.audioData);
         // IEP: record expressive communication trial
         var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
@@ -4158,10 +6341,54 @@
         e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
           e('span', { style: { color: '#a78bfa', fontSize: '18px' } }, '▶'),
           e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px', marginRight: 'auto' } }, useBoard ? (useBoard.title || 'Communication Board') : 'Communication Board'),
+          // "Model These" hint — shows weekly focus words on this board
+          (function () {
+            var boardLabels = {};
+            useCells.forEach(function (c) { boardLabels[c.label.trim().toLowerCase()] = true; });
+            var focusOnBoard = computeWordBank().filter(function (w) {
+              return boardLabels[w.key] && (w.growth === 'sprout' || w.growth === 'growing') && w.isCore;
+            }).slice(0, 3);
+            if (focusOnBoard.length === 0) {
+              focusOnBoard = computeWordBank().filter(function (w) {
+                return boardLabels[w.key] && (w.growth === 'sprout' || w.growth === 'growing');
+              }).slice(0, 3);
+            }
+            if (focusOnBoard.length === 0) return null;
+            return e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', background: '#1a1a2e', borderRadius: '7px', border: '1px solid #312e81' } },
+              e('span', { style: { color: '#a78bfa', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap' } }, '🌱 Model:'),
+              focusOnBoard.map(function (w) {
+                return e('span', { key: w.key, style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 700 } }, w.displayLabel);
+              }));
+          })(),
+          // 💫 Wish Seed — capture the moment a student reaches for a word that doesn't exist
+          boardWishOpen
+            ? e('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+                e('input', { type: 'text', value: boardWishInput, autoFocus: true,
+                  onChange: function (ev) { setBoardWishInput(ev.target.value); },
+                  onKeyDown: function (ev) {
+                    if (ev.key === 'Enter' && boardWishInput.trim()) {
+                      var label = boardWishInput.trim();
+                      var newWish = { label: label, category: 'other', note: 'Reached for during AAC session on ' + (useBoard ? (useBoard.title || 'board') : 'board'), ts: new Date().toISOString(), profileId: activeProfileId || 'default' };
+                      setWishSeeds(function (prev) { var u = prev.concat([newWish]); store(STORAGE_WISHES, u); return u; });
+                      setBoardWishInput(''); setBoardWishOpen(false);
+                      addToast && addToast('💫 "' + label + '" — wish seed planted!', 'success');
+                    }
+                    if (ev.key === 'Escape') { setBoardWishOpen(false); setBoardWishInput(''); }
+                  },
+                  placeholder: 'What word were they reaching for?',
+                  'aria-label': 'Wish seed word',
+                  style: { width: '180px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #7c3aed', background: '#1e1b4b', color: '#e0e7ff', fontSize: '12px', fontFamily: 'inherit' } }),
+                e('button', { onClick: function () { setBoardWishOpen(false); setBoardWishInput(''); }, style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px' } }, '×'))
+            : e('button', {
+                onClick: function () { setBoardWishOpen(true); },
+                'aria-label': 'Plant a wish seed — record a word the student wanted',
+                title: 'The student is reaching for a word that isn\'t here. Capture it.',
+                style: { background: '#1e1b4b', color: '#c4b5fd', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+              }, '💫'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
             'aria-label': 'Toggle communication log', style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
-          }, '📋 Log (' + commLog.length + ')'),
+          }, '📋 Log (' + commLog.filter(function (c) { return c.label !== '__UTTERANCE__'; }).length + ')'),
           e('button', { onClick: exitUse, 'aria-label': 'Exit AAC mode', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
         ),
         // ── Page tabs (multi-page boards) ──
@@ -4225,14 +6452,47 @@
         // ── Body: cells + optional log panel ──
         e('div', { style: { flex: 1, display: 'flex', overflow: 'hidden' } },
           // Cell grid
-          e('div', { style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + useCols + ', 1fr)', gap: '14px', padding: '18px', overflowY: 'auto', alignContent: 'start' } },
+          e('div', { role: 'grid', 'aria-label': 'Communication board symbols', style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + useCols + ', 1fr)', gap: '14px', padding: '18px', overflowY: 'auto', alignContent: 'start' } },
             useCells.length === 0
               ? e('p', { style: { color: '#475569', gridColumn: '1/-1', textAlign: 'center', paddingTop: '40px' } }, 'No generated symbols yet — go to Board Builder and generate images first.')
               : useCells.map(function (cell, idx) {
+                  // Garden-aware cell: border color reflects vocabulary growth level
+                  var cellKey = cell.label.trim().toLowerCase();
+                  var cellFam = familiarity[cellKey];
+                  var cellGrowthColor = '#334155'; // default: dark neutral
+                  if (cellFam) {
+                    var cScore = ((cellFam.taps || 0) + (cellFam.questCorrect || 0) * 2 + (cellFam.exposures || 0) * 0.3) / 25;
+                    if (cScore >= 0.75) cellGrowthColor = '#facc15'; // mastered — gold
+                    else if (cScore >= 0.45) cellGrowthColor = '#a78bfa'; // blooming — purple
+                    else if (cScore >= 0.15) cellGrowthColor = '#34d399'; // growing — green
+                    else cellGrowthColor = '#4ade80'; // sprout — light green
+                  }
                   return e('div', {
                     key: cell.id || idx,
+                    role: 'gridcell',
+                    tabIndex: idx === 0 ? 0 : -1,
+                    'aria-label': (cell.description ? cell.label + ': ' + cell.description : cell.label),
                     onClick: function () { tapCell(cell); },
-                    style: { border: '3px solid #334155', borderRadius: '14px', padding: '14px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: '#1e293b', cursor: 'pointer', transition: 'transform 0.1s, background 0.1s', userSelect: 'none' },
+                    onKeyDown: function (ev) {
+                      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); tapCell(cell); return; }
+                      var grid = ev.currentTarget.parentElement;
+                      var cells = Array.from(grid.querySelectorAll('[role=gridcell]'));
+                      var ci = cells.indexOf(ev.currentTarget);
+                      if (ci === -1) return;
+                      var ni = ci;
+                      switch (ev.key) {
+                        case 'ArrowRight': ni = Math.min(cells.length - 1, ci + 1); break;
+                        case 'ArrowLeft': ni = Math.max(0, ci - 1); break;
+                        case 'ArrowDown': ni = Math.min(cells.length - 1, ci + useCols); break;
+                        case 'ArrowUp': ni = Math.max(0, ci - useCols); break;
+                        case 'Home': ni = Math.floor(ci / useCols) * useCols; break;
+                        case 'End': ni = Math.min(cells.length - 1, (Math.floor(ci / useCols) + 1) * useCols - 1); break;
+                        default: return;
+                      }
+                      ev.preventDefault();
+                      if (ni !== ci) { ev.currentTarget.setAttribute('tabindex', '-1'); cells[ni].setAttribute('tabindex', '0'); cells[ni].focus(); }
+                    },
+                    style: { border: '3px solid ' + cellGrowthColor, borderRadius: '14px', padding: '14px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: '#1e293b', cursor: 'pointer', transition: 'transform 0.1s, background 0.1s', userSelect: 'none', boxShadow: cellFam && cellGrowthColor === '#facc15' ? '0 0 12px rgba(250,204,21,0.3)' : 'none' },
                     onMouseDown: function (ev) { ev.currentTarget.style.transform = 'scale(0.93)'; ev.currentTarget.style.background = '#293548'; },
                     onMouseUp: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; },
                     onMouseLeave: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; },
@@ -4253,7 +6513,7 @@
               e('span', { style: { color: '#a78bfa', fontWeight: 800, fontSize: '13px' } }, '\uD83D\uDCCB Session Log'),
               e('div', { style: { display: 'flex', gap: '6px' } },
                 commLog.length > 0 && e('button', { onClick: exportLog, 'aria-label': 'Export communication log', style: { background: '#1e293b', color: '#94a3b8', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
-                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, 'aria-label': 'Clear communication log', 'aria-label': 'uD83DuDDD1 Clear', style: { background: '#1e293b', color: '#ef4444', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
+                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, 'aria-label': 'Clear communication log', style: { background: '#1e293b', color: '#ef4444', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
               )
             ),
             e('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
@@ -4280,7 +6540,7 @@
       var scanBoard = savedBoards.find(function (b) { return b.id === scanBoardId; });
       var scanCells = scanBoard ? (scanBoard.words || []).filter(function (w) { return w.image; }) : [];
       var safeIdx = scanCells.length ? scanIndex % scanCells.length : 0;
-      var exitScan = function () { setScanBoardId(null); setScanIndex(0); setScanPaused(false); };
+      var exitScan = function () { setScanBoardId(null); setScanIndex(0); setScanPaused(false); setScanManual(false); };
       var activateCell = function () {
         var cell = scanCells[safeIdx];
         if (!cell) return;
@@ -4299,9 +6559,12 @@
         var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
         if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'scan:' + cell.label);
       };
+      var advanceScan = function () { setScanIndex(function (prev) { return (prev + 1) % (scanCells.length || 1); }); };
       var handleScanKeyDown = function (ev) {
         if (ev.code === 'Space' || ev.code === 'Enter') { ev.preventDefault(); activateCell(); }
         if (ev.code === 'Escape') exitScan();
+        // Two-switch mode: Tab or ArrowRight to advance
+        if (scanManual && (ev.code === 'Tab' || ev.code === 'ArrowRight' || ev.code === 'ArrowDown')) { ev.preventDefault(); advanceScan(); }
       };
       return e('div', {
         style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column', outline: 'none' },
@@ -4312,7 +6575,12 @@
         // Scanning header bar
         e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
           e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px' } }, '♿ ' + (scanBoard ? scanBoard.title || 'Board' : 'Board')),
-          e('span', { style: { color: '#94a3b8', fontSize: '12px', marginRight: 'auto' } }, 'Space or tap to speak highlighted cell'),
+          e('button', {
+            onClick: function () { setScanManual(function (m) { return !m; }); }, 'aria-label': scanManual ? 'Switch to automatic scanning' : 'Switch to manual scanning',
+            style: { background: scanManual ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 12px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }
+          }, scanManual ? '2-Switch' : '1-Switch'),
+          e('span', { style: { color: '#94a3b8', fontSize: '12px', marginRight: 'auto' } }, scanManual ? 'Tab to advance, Space to select' : 'Space or tap to speak highlighted cell'),
+          scanManual && e('button', { onClick: advanceScan, 'aria-label': 'Advance to next cell', style: { background: '#1e40af', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '→ Next'),
           e('label', { style: { color: '#94a3b8', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' } },
             'Speed:',
             e('select', {
@@ -4423,7 +6691,9 @@
             tab === 'stories' && renderStoriesTab(),
             tab === 'quickboards' && renderQuickBoardsTab(),
             tab === 'books' && renderBooksTab(),
-            tab === 'quest' && renderQuestTab()
+            tab === 'quest' && renderQuestTab(),
+            tab === 'search' && renderSearchTab(),
+            tab === 'garden' && renderGardenTab()
           )
         )
       )
@@ -4432,5 +6702,38 @@
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SymbolStudio = SymbolStudio;
+  // GardenBridge — exposes vocabulary data for cross-module integration (e.g., Word Sounds)
+  // Reads from localStorage so it works even when Symbol Studio modal is closed
+  window.AlloModules.GardenBridge = {
+    getVocabulary: function () {
+      try {
+        var gallery = JSON.parse(localStorage.getItem('alloSymbolGallery') || '[]');
+        var boards = JSON.parse(localStorage.getItem('alloSymbolBoards') || '[]');
+        var fam = JSON.parse(localStorage.getItem('alloSymbolFamiliarity') || '{}');
+        var words = {};
+        gallery.forEach(function (s) { var k = s.label.trim().toLowerCase(); if (k) words[k] = { label: s.label.trim(), category: s.category || 'other', image: s.image || null }; });
+        boards.forEach(function (b) { (b.words || []).forEach(function (w) { var k = w.label.trim().toLowerCase(); if (k && !words[k]) words[k] = { label: w.label.trim(), category: w.category || 'other', image: w.image || null }; }); });
+        return Object.keys(words).map(function (k) {
+          var w = words[k]; var f = fam[k] || {};
+          var score = ((f.taps || 0) + (f.questCorrect || 0) * 2 + (f.exposures || 0) * 0.3) / 25;
+          return { label: w.label, category: w.category, image: w.image, familiarityScore: Math.min(1, score), isMastered: score >= 0.75 };
+        });
+      } catch (e) { return []; }
+    },
+    getPhonicsWordList: function (opts) {
+      var vocab = window.AlloModules.GardenBridge.getVocabulary();
+      var maxLen = (opts && opts.maxLength) || 6;
+      var count = (opts && opts.count) || 10;
+      var preferMastered = (opts && opts.preferMastered) !== false;
+      // Filter to phonics-friendly words: short, single-word, alphabetic
+      var candidates = vocab.filter(function (w) { return w.label.length <= maxLen && /^[a-zA-Z]+$/.test(w.label); });
+      // Sort: mastered first (student knows meaning), then by familiarity
+      candidates.sort(function (a, b) {
+        if (preferMastered) { var am = a.isMastered ? 1 : 0; var bm = b.isMastered ? 1 : 0; if (am !== bm) return bm - am; }
+        return b.familiarityScore - a.familiarityScore;
+      });
+      return candidates.slice(0, count).map(function (w) { return w.label; });
+    }
+  };
   console.log("[CDN] Visual Supports Studio (SymbolStudio v2) loaded");
 })();

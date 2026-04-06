@@ -1,0 +1,23 @@
+Topic: Digital Rights and Accessibility Advocacy
+Grade Level: 9-12
+Standards: ISTE 7.1, C3 Framework D2.Civ.1-3, Common Core ELA SL.9-12.4
+
+Focus: How students can use technology to identify and address accessibility barriers in their communities, connecting digital rights to civil rights history.
+
+Content Outline:
+1. Historical context: ADA (1990) → Section 508 (1998) → WCAG 2.0 (2008) → DOJ Title II Final Rule (2024)
+2. The digital equivalent of physical barriers: stairs = no alt text, narrow doors = no keyboard access
+3. Case studies: Target lawsuit (2006), Domino's v. Robles (2019), school district settlements
+4. Tools for advocacy: AlloFlow Digital Accessibility Lab, Knowbility's AIR rally, community auditing
+5. Student action project: Audit a local government/school website and present findings to administration
+
+Key Partnership: Knowbility (knowbility.org) - nonprofit dedicated to creating an inclusive digital world. Founded in 1999. Programs: AccessU (training), AIR (Accessibility Internet Rally), community outreach.
+
+Activities:
+- "Know Your Rights" worksheet analyzing ADA Title II requirements for school websites
+- Live audit of a local school or government website using the AlloFlow tool
+- Draft a constructive letter to site administrators with specific, actionable recommendations
+- Create an accessible infographic explaining one accessibility barrier and its solution
+- Peer review: Students audit each other's digital projects for accessibility compliance
+
+Assessment: Advocacy portfolio + community presentation to school administration

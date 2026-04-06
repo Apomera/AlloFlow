@@ -37,12 +37,22 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
       var _codingCanvasRef = ctx._codingCanvasRef;
 
       // ── Tool body (codingPlayground) ──
     return (function() {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('coding', 'init', {
+              first: 'Coding Playground loaded. Write and run code with a visual canvas output. Create programs with blocks or text-based coding.',
+              repeat: 'Coding Playground active.',
+              terse: 'Coding.'
+            }, { debounce: 800 });
+          }
           var upd = function (key, val) {
             setLabToolData(function (prev) {
               var cp = Object.assign({}, (prev && prev._codingPlayground) || {});
@@ -519,6 +529,19 @@
             var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
             updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: true });
             setTimeout(function () {
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-coding')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-coding';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
               executeRobotBlocks(robotBlocks, ch.start, ch.startDir, grid, function (finalPos, trail, finalGrid, goalReached) {
                 updMulti({ robotPos: finalPos, robotTrail: trail, robotGrid: finalGrid, robotRunning: false });
                 if (ch.check(finalPos, trail, finalGrid)) {
@@ -1669,7 +1692,7 @@
                 cdef ? cdef.label : child.type,
                 cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
               ),
-              React.createElement("button", { "aria-label": "Multiply", onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
+              React.createElement("button", { "aria-label": "Remove child block", onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
             );
           }
 
@@ -1696,7 +1719,7 @@
             },
               React.createElement("div", { className: "flex items-center justify-between mb-3" },
                 React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
-                React.createElement("button", { "aria-label": "Multiply",
+                React.createElement("button", { "aria-label": "Close templates panel",
                   onClick: function () { upd('showTemplates', false); },
                   className: "text-slate-400 hover:text-white text-lg px-2"
                 }, "×")
@@ -1767,7 +1790,7 @@
               // Playground Mode Tabs (Turtle / Robot)
               React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20 mr-2" },
                 [{ key: 'turtle', icon: '\uD83D\uDC22', label: 'Turtle' }, { key: 'robot', icon: '\uD83E\uDD16', label: 'Robot' }].map(function(tab) {
-                  return React.createElement("button", { "aria-label": "Change playground mode",
+                  return React.createElement("button", { "aria-label": "Switch to " + tab.label + " playground mode",
                     key: tab.key,
                     onClick: function() { upd('playgroundMode', tab.key); },
                     className: "px-3 py-1.5 text-xs font-bold transition-all " +
@@ -1779,7 +1802,7 @@
               React.createElement("button", { "aria-label": "Toggle Mode",
                 onClick: toggleMode,
                 className: "coding-mode-toggle flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
-                  (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-500/90 text-white hover:bg-amber-500')
+                  (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-700 text-white hover:bg-amber-600')
               },
                 React.createElement("span", null, codeMode === 'blocks' ? '🧩' : '📝'),
                 codeMode === 'blocks' ? 'Switch to Code' : 'Switch to Blocks'
@@ -1859,7 +1882,7 @@
 
 
               // 3D Mode toggle
-              React.createElement("button", { "aria-label": "Change show3 d",
+              React.createElement("button", { "aria-label": "Toggle 3D rendering mode",
                 onClick: function() { upd('show3D', !show3D); if (!show3D) { upd('pitchAngle', 0); upd('yawAngle', 0); } },
                 title: show3D ? 'Switch to 2D mode' : 'Switch to 3D isometric mode',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
@@ -1910,20 +1933,20 @@
                   (canvasLayer === 'background' ? "bg-purple-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, canvasLayer === 'background' ? "🎨 BG" : "🎨 FG"),
               // Canvas controls
-              React.createElement("button", { "aria-label": "Change show grid",
+              React.createElement("button", { "aria-label": "Toggle canvas grid overlay",
                 onClick: function () { upd('showGrid', !showGrid); },
                 title: showGrid ? 'Hide grid' : 'Show grid',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showGrid ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "⊞"),
-              React.createElement("button", { "aria-label": "Show tutorial",
+              React.createElement("button", { "aria-label": "Toggle canvas coordinate display",
                 onClick: function () { upd('showCoords', !showCoords); },
                 title: showCoords ? 'Hide coordinates' : 'Show coordinates',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showCoords ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "📐"),
               // Tutorial help button
-              tutorialDismissed && React.createElement("button", { "aria-label": "Show tutorial",
+              tutorialDismissed && React.createElement("button", { "aria-label": "Reopen coding tutorial",
                 onClick: function () { upd('tutorialDismissed', false); },
                 title: 'Show tutorial',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
@@ -1939,7 +1962,7 @@
                 React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
                 React.createElement("div", { className: "space-y-1" },
                   ROBOT_BLOCKS.map(function(rb) {
-                    return React.createElement("button", { "aria-label": "Add",
+                    return React.createElement("button", { "aria-label": "Add robot command: " + rb.label,
                       key: rb.type,
                       onClick: function() { addRobotBlock(rb.type); },
                       disabled: robotRunning,
@@ -2049,7 +2072,7 @@
                         disabled: robotBlocks.length === 0,
                         className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\uD83D\uDDD1 Clear"),
-                      React.createElement("button", { "aria-label": "Reset",
+                      React.createElement("button", { "aria-label": "Reset robot grid",
                         onClick: function() {
                           if (robotChallengeIdx >= 0) {
                             var ch = ROBOT_CHALLENGES[robotChallengeIdx];
@@ -2081,7 +2104,7 @@
                               onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
                               className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
                             }),
-                            React.createElement("button", { "aria-label": "Select option",
+                            React.createElement("button", { "aria-label": "Remove robot block",
                               onClick: function() { removeRobotBlock(bi); },
                               className: "text-white/60 hover:text-white text-xs px-1"
                             }, "\u2715")
@@ -2092,7 +2115,7 @@
                                 var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
                                 return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
                                   React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                  React.createElement("button", { "aria-label": "Select option", onClick: function() {
+                                  React.createElement("button", { "aria-label": "Remove child block", onClick: function() {
                                     var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                     upd('robotBlocks', updated);
                                   }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
@@ -2100,7 +2123,7 @@
                               }),
                               React.createElement("div", { className: "flex gap-1 flex-wrap" },
                                 ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                  return React.createElement("button", { "aria-label": "ELSE:",
+                                  return React.createElement("button", { "aria-label": "Add child command: " + rb.label,
                                     key: rb.type,
                                     onClick: function() { addRobotChildBlock(bi, rb.type, false); },
                                     className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
@@ -2114,7 +2137,7 @@
                                   var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
                                   return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
                                     React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                    React.createElement("button", { "aria-label": "Select option", onClick: function() {
+                                    React.createElement("button", { "aria-label": "Remove else block", onClick: function() {
                                       var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                       upd('robotBlocks', updated);
                                     }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
@@ -2122,7 +2145,7 @@
                                 }),
                                 React.createElement("div", { className: "flex gap-1 flex-wrap mt-1" },
                                   ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                    return React.createElement("button", { "aria-label": "Add",
+                                    return React.createElement("button", { "aria-label": "Add else block: " + rb.label,
                                       key: 'e' + rb.type,
                                       onClick: function() { addRobotChildBlock(bi, rb.type, true); },
                                       className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
@@ -2322,9 +2345,9 @@
                           placeholder: "x > 250"
                         }),
                         // Move / Remove buttons
-                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
-                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
+                        React.createElement("button", { "aria-label": "Move block up", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
+                        React.createElement("button", { "aria-label": "Move block down", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
+                        React.createElement("button", { "aria-label": "Remove block", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
                       ),
                       // ── Repeat children ──
                       b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
@@ -2405,12 +2428,12 @@
 
               // Options bar (turtle toggle + cumulative mode)
               React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-                React.createElement("button", { "aria-label": "Change show turtle",
+                React.createElement("button", { "aria-label": "Toggle turtle cursor visibility",
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
-                React.createElement("button", { "aria-label": "Change cumulative mode",
+                React.createElement("button", { "aria-label": "Toggle cumulative drawing mode",
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -2430,7 +2453,7 @@
                   CHALLENGES.map(function (ch, ci) {
                     var done = completed.indexOf(ch.id) >= 0;
                     var active = challengeIdx === ci;
-                    return React.createElement("button", { "aria-label": "Change challenge idx",
+                    return React.createElement("button", { "aria-label": "Select challenge: " + ch.title,
                       key: ch.id,
                       onClick: function () { upd('challengeIdx', active ? -1 : ci); },
                       className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all " +
@@ -2515,7 +2538,7 @@
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
                       (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
                   }, "\u{1F4CD} Axes"),
-                  React.createElement("button", { "aria-label": "Reset",
+                  React.createElement("button", { "aria-label": "Reset 3D camera view",
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold bg-slate-700/50 text-slate-300 hover:text-white transition-all"
                   }, "\u{1F504} Reset")
@@ -2575,7 +2598,7 @@
 
               // ── Accessibility Controls ──
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("button", { "aria-label": "Change high contrast mode",
+                React.createElement("button", { "aria-label": "Toggle high contrast mode",
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
                   className: "flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " +
                     (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-400 hover:text-white")
@@ -2587,7 +2610,7 @@
                   React.createElement("h4", { className: "text-xs font-bold text-blue-300 flex items-center gap-1" },
                     React.createElement("span", null, "🤖"), " AI Assistant"
                   ),
-                  React.createElement("button", { "aria-label": "Thinking...",
+                  React.createElement("button", { "aria-label": "Close AI assistant panel",
                     onClick: function() { updMulti({ showAIPanel: false, aiExplanation: '' }); },
                     className: "text-slate-400 hover:text-white text-sm px-1"
                   }, "×")

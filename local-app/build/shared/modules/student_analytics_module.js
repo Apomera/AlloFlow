@@ -159,7 +159,7 @@
     // Countdown overlay
     if (countdown > 0) {
       return ReactDOM.createPortal(
-        h('div', {
+        h('div', { role: 'dialog', 'aria-modal': 'true',
           className: 'fixed inset-0 z-[250] bg-slate-900/95 flex items-center justify-center',
           style: { backdropFilter: 'blur(8px)' }
         },
@@ -177,7 +177,7 @@
 
     // Active probe overlay
     return ReactDOM.createPortal(
-      h('div', {
+      h('div', { role: 'dialog', 'aria-modal': 'true',
         className: 'fixed inset-0 z-[250] bg-white flex flex-col',
         style: { minHeight: '100vh' }
       },
@@ -212,14 +212,14 @@
         ),
         // Timer progress bar
         timer !== undefined && h('div', { className: 'w-full bg-slate-100 h-1.5 shrink-0' },
-          h('div', {
+          h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
             className: 'h-full transition-all duration-1000 rounded-r ' + (isTimeLow ? 'bg-red-500' : 'bg-indigo-500'),
             style: { width: timerPct + '%' }
           })
         ),
         // Progress bar
         h('div', { className: 'w-full bg-slate-100 h-1 shrink-0' },
-          h('div', {
+          h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
             className: 'h-full bg-emerald-400 transition-all',
             style: { width: progressPct + '%' }
           })
@@ -329,6 +329,7 @@
     const [showSurveyModal, setShowSurveyModal] = React.useState(false);
     const [showResearchSetup, setShowResearchSetup] = React.useState(false);
     const [researchFirstVisit, setResearchFirstVisit] = React.useState(true);
+    const [showAssessmentGuide, setShowAssessmentGuide] = React.useState(false);
     React.useEffect(() => {
       if (typeof loadPsychometricProbes === 'function') {
         loadPsychometricProbes();
@@ -975,6 +976,304 @@
         recommendations: recs
       };
     };
+    // ── CBM Benchmark Norms (Hasbrouck & Tindal 2017, DIBELS 8th Ed) ──
+    var CBM_NORMS = {
+      orf: { '1': { fall: 0, winter: 23, spring: 53 }, '2': { fall: 51, winter: 72, spring: 89 }, '3': { fall: 71, winter: 92, spring: 107 }, '4': { fall: 94, winter: 112, spring: 123 }, '5': { fall: 110, winter: 127, spring: 139 }, '6': { fall: 127, winter: 140, spring: 150 } },
+      nwf_cls: { 'K': { fall: 0, winter: 17, spring: 35 }, '1': { fall: 35, winter: 55, spring: 65 } },
+      lnf: { 'K': { fall: 7, winter: 30, spring: 47 } },
+      math_dcpm: { '1': { fall: 8, winter: 15, spring: 25 }, '2': { fall: 15, winter: 25, spring: 35 }, '3': { fall: 25, winter: 35, spring: 45 }, '4': { fall: 30, winter: 40, spring: 50 }, '5': { fall: 35, winter: 45, spring: 55 }, '6': { fall: 40, winter: 50, spring: 60 } }
+    };
+    var getSeason = function() { var m = new Date().getMonth(); if (m >= 7 && m <= 10) return 'fall'; if (m >= 11 || m <= 1) return 'winter'; return 'spring'; };
+
+    var interpretProbeResult = function(probeType, score, grade, season) {
+      season = season || getSeason(); grade = String(grade || '1');
+      var norms = CBM_NORMS[probeType]; if (!norms || !norms[grade]) return { tier: 0, status: 'No norms available', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
+      var benchmark = norms[grade][season]; if (benchmark === undefined || benchmark === null) return { tier: 0, status: 'No norms for this season', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
+      var pct = benchmark > 0 ? Math.round((score / benchmark) * 100) : (score > 0 ? 200 : 0);
+      var tier, status, statusColor, interpretation, recs = [];
+      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '.'; recs = ['Continue current instruction.', 'Re-assess at next screening window.']; }
+      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '.'; recs = ['Monitor informally.', 'Additional practice within Tier 1.']; }
+      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '. Strategic intervention recommended.'; recs = ['Begin Tier 2 intervention.', 'Monitor bi-weekly.', 'Aim for 8+ data points.']; }
+      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '. Intensive intervention needed.'; recs = ['Begin Tier 3 intensive intervention.', 'Monitor weekly.', 'Consider referral if insufficient growth after 6-8 weeks.']; }
+      if (probeType === 'orf' && tier >= 2) recs.push('Implement repeated reading with corrective feedback.');
+      if (probeType === 'nwf_cls' && tier >= 2) recs.push('Focus on phonics: CVC blending, sound-symbol correspondence.');
+      if (probeType === 'lnf' && tier >= 2) recs.push('Increase letter exposure through multisensory activities.');
+      if (probeType === 'math_dcpm' && tier >= 2) recs.push('Short daily fact fluency sessions (5-10 min).');
+      return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recs, season: season, grade: grade };
+    };
+
+    var renderProbeInterpretation = function(probeType, score, grade, season) {
+      var result = interpretProbeResult(probeType, score, grade, season);
+      if (result.tier === 0) return null;
+      return React.createElement("div", { className: "mt-3 rounded-lg border p-3", style: { borderColor: result.statusColor + '40', background: result.statusColor + '08' } },
+        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+          React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: result.statusColor } }),
+          React.createElement("span", { className: "text-xs font-bold", style: { color: result.statusColor } }, result.status),
+          React.createElement("span", { className: "text-[10px] text-slate-500 ml-auto" }, result.pctOfBenchmark + "% of " + result.season + " benchmark (" + result.benchmark50 + ")")
+        ),
+        React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, result.interpretation),
+        result.recommendations.length > 0 ? React.createElement("div", { className: "space-y-1" },
+          React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Recommendations:"),
+          result.recommendations.map(function(rec, i) { return React.createElement("p", { key: i, className: "text-[10px] text-slate-600 pl-3 border-l-2", style: { borderColor: result.statusColor + '60' } }, rec); })
+        ) : null
+      );
+    };
+
+    // ── RTI Meeting Summary ──
+    var printMeetingSummary = function(studentName) {
+      var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      var season = getSeason(); var seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
+      var student = importedStudents.find(function(s) { return (s.nickname || s.name) === studentName; });
+      var stats = student ? student.stats || {} : {};
+      var tierResult = classifyRTITier(stats);
+      var probes = (probeHistory && probeHistory[studentName]) || [];
+      var interventions = (interventionLogs && interventionLogs[studentName]) || [];
+      var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
+      var benchRows = Object.keys(probesByType).map(function(type) {
+        var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0;
+        var nt = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm';
+        var interp = interpretProbeResult(nt, score, p.grade||'1', season);
+        var tl = {orf:'ORF',nwf:'NWF',lnf:'LNF',math:'Math',fluency:'ORF',missing_number:'MN',quantity_discrimination:'QD'};
+        return '<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(tl[type]||type)+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center">'+(interp.pctOfBenchmark||'--')+'%</td><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:12px;color:'+interp.statusColor+';font-weight:700">'+interp.status+'</td></tr>';
+      }).join('');
+      var intvRows = interventions.map(function(iv) { return '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(iv.program||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(iv.frequency||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(iv.minutes||'--')+' min</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(iv.startDate||'--')+'</td></tr>'; }).join('');
+      var rec = tierResult.tier === 1 ? '<span style="color:#16a34a;font-weight:700">Continue Tier 1.</span> Student is on track.' : tierResult.tier === 2 ? '<span style="color:#d97706;font-weight:700">Tier 2 strategic support.</span> ' + tierResult.recommendations.slice(0,2).join(' ') : '<span style="color:#dc2626;font-weight:700">Tier 3 intensive.</span> ' + tierResult.recommendations.slice(0,2).join(' ');
+      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>RTI Meeting Summary</title><style>body{font-family:system-ui,sans-serif;max-width:750px;margin:0 auto;padding:1.5rem;color:#1e293b;font-size:12px;line-height:1.5}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px;margin:0 0 4px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 10px;border:1px solid #e2e8f0;font-size:10px;text-transform:uppercase;color:#64748b;text-align:left}.footer{margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center}@media print{body{padding:0.4in;font-size:11px}}</style></head><body>' +
+        '<h1>RTI Data Team Meeting Summary</h1>' +
+        '<div style="color:#64748b;font-size:11px;margin-bottom:12px"><strong>Student:</strong> '+studentName+' &bull; <strong>Date:</strong> '+dateStr+' &bull; <strong>Season:</strong> '+seasonLabel+'</div>' +
+        '<div style="margin:8px 0 12px"><span style="display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;font-size:13px;background:'+(tierResult.bg||'#f1f5f9')+';color:'+(tierResult.color||'#334155')+';border:2px solid '+(tierResult.border||'#cbd5e1')+'">'+(tierResult.emoji||'')+' '+(tierResult.label||'Not Classified')+'</span></div>' +
+        (benchRows ? '<h2>Benchmark Status</h2><table><thead><tr><th>Measure</th><th style="text-align:center">Score</th><th style="text-align:center">50th %ile</th><th style="text-align:center">% of Benchmark</th><th>Status</th></tr></thead><tbody>'+benchRows+'</tbody></table>' : '') +
+        (intvRows ? '<h2>Intervention History</h2><table><thead><tr><th>Program</th><th>Frequency</th><th>Duration</th><th>Start</th></tr></thead><tbody>'+intvRows+'</tbody></table>' : '<h2>Intervention History</h2><p style="color:#94a3b8;font-style:italic">No interventions logged.</p>') +
+        '<h2>Recommendation</h2><div style="padding:10px 14px;border-radius:8px;background:'+(tierResult.bg||'#f1f5f9')+';border-left:4px solid '+(tierResult.color||'#64748b')+';font-size:12px">'+rec+'</div>' +
+        '<h2>Team Decision</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px"><div style="font-size:10px;text-transform:uppercase;color:#64748b;margin:0 0 4px;font-weight:700">Decision</div><label style="font-size:11px;display:block;margin:3px 0"><input type="checkbox" style="margin-right:4px">Continue current</label><label style="font-size:11px;display:block;margin:3px 0"><input type="checkbox" style="margin-right:4px">Modify intervention</label><label style="font-size:11px;display:block;margin:3px 0"><input type="checkbox" style="margin-right:4px">Move to higher tier</label><label style="font-size:11px;display:block;margin:3px 0"><input type="checkbox" style="margin-right:4px">Refer for evaluation</label></div><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px"><div style="font-size:10px;text-transform:uppercase;color:#64748b;margin:0 0 4px;font-weight:700">Next Steps</div><div style="margin:4px 0"><span style="font-size:10px;color:#64748b">New Intervention:</span><div style="border-bottom:1px solid #e2e8f0;min-height:14px"></div></div><div style="margin:4px 0"><span style="font-size:10px;color:#64748b">Next Review:</span><div style="border-bottom:1px solid #e2e8f0;min-height:14px"></div></div></div></div>' +
+        '<div style="display:flex;gap:20px;margin-top:16px"><div style="flex:1;border-top:1px solid #cbd5e1;padding-top:3px;font-size:10px;color:#64748b">Team Members</div><div style="flex:1;border-top:1px solid #cbd5e1;padding-top:3px;font-size:10px;color:#64748b">Date</div></div>' +
+        '<div class="footer"><p>AlloFlow Assessment Center &bull; '+dateStr+'</p></div></body></html>';
+      var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); }
+    };
+
+    // ── Class Screening Report ──
+    var printClassScreeningReport = function() {
+      var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      var season = getSeason(); var seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
+      var studentData = importedStudents.map(function(s) {
+        var name = s.nickname || s.name; var stats = s.stats || {}; var tier = classifyRTITier(stats);
+        var sp = (probeHistory && probeHistory[name]) || []; var latest = {};
+        sp.forEach(function(p) { var t = p.type||p.activity||'unknown'; if (!latest[t] || new Date(p.date) > new Date(latest[t].date)) latest[t] = p; });
+        var scores = {};
+        ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) {
+          var p = latest[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0;
+          var nt = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm';
+          scores[type] = { score: score, interp: interpretProbeResult(nt, score, p.grade||'1', season) };
+        });
+        return { name: name, tier: tier, scores: scores };
+      });
+      studentData.sort(function(a,b) { return b.tier.tier !== a.tier.tier ? b.tier.tier - a.tier.tier : a.name.localeCompare(b.name); });
+      var t3=studentData.filter(function(s){return s.tier.tier===3;}), t2=studentData.filter(function(s){return s.tier.tier===2;}), t1=studentData.filter(function(s){return s.tier.tier===1;});
+      var n = studentData.length;
+      var rows = studentData.map(function(s) {
+        var cells = ['orf','fluency','nwf','lnf','math','missing_number','quantity_discrimination'].map(function(t) { var d=s.scores[t]; return d ? '<td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:12px;color:'+d.interp.statusColor+'">'+d.score+'</td>' : '<td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;color:#cbd5e1">\u2014</td>'; }).join('');
+        return '<tr><td style="padding:4px 8px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+s.name+'</td><td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:'+s.tier.bg+';color:'+s.tier.color+'">T'+s.tier.tier+'</span></td>'+cells+'</tr>';
+      }).join('');
+      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Class Screening</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:1.5rem;color:#1e293b;font-size:12px}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 8px;border:1px solid #e2e8f0;font-size:9px;text-transform:uppercase;color:#64748b;text-align:center}th:first-child{text-align:left}@media print{body{padding:0.3in}}</style></head><body>' +
+        '<h1>\uD83C\uDFEB Class Screening \u2014 '+seasonLabel+'</h1><div style="color:#64748b;font-size:11px;margin-bottom:12px">'+dateStr+' &bull; '+n+' students</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">' +
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #86efac;background:#dcfce7"><div style="font-size:28px;font-weight:900;color:#16a34a">'+t1.length+'</div><div style="font-size:11px;font-weight:700;color:#16a34a">Tier 1</div><div style="font-size:10px;color:#166534">'+(n?Math.round(t1.length/n*100):0)+'%</div></div>' +
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fcd34d;background:#fef9c3"><div style="font-size:28px;font-weight:900;color:#d97706">'+t2.length+'</div><div style="font-size:11px;font-weight:700;color:#d97706">Tier 2</div><div style="font-size:10px;color:#92400e">'+(n?Math.round(t2.length/n*100):0)+'%</div></div>' +
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fca5a5;background:#fee2e2"><div style="font-size:28px;font-weight:900;color:#dc2626">'+t3.length+'</div><div style="font-size:11px;font-weight:700;color:#dc2626">Tier 3</div><div style="font-size:10px;color:#991b1b">'+(n?Math.round(t3.length/n*100):0)+'%</div></div>' +
+        '</div>' +
+        '<h2>Scores by Measure</h2><table><thead><tr><th style="min-width:100px">Student</th><th>Tier</th><th>ORF</th><th>NWF</th><th>LNF</th><th>Math</th><th>MN</th><th>QD</th></tr></thead><tbody>'+rows+'</tbody></table>' +
+        (t3.length > 0 ? '<h2>Priority (Tier 3)</h2>' + t3.map(function(s) { return '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin:4px 0"><strong style="color:#991b1b">'+s.name+'</strong> <span style="font-size:10px;color:#7f1d1d">'+ s.tier.reasons.slice(0,3).join('; ')+'</span></div>'; }).join('') : '') +
+        '<h2>Notes</h2><div style="border:1px solid #e2e8f0;border-radius:8px;min-height:60px;padding:8px"></div>' +
+        '<div style="margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center">AlloFlow Assessment Center &bull; '+dateStr+'</div></body></html>';
+      var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // ASSESSMENT CENTER CLINICAL INTELLIGENCE (Instance #5)
+    // CBM norms, probe interpretation, progress monitoring,
+    // clinical reports, meeting summaries, screening reports
+    // ═══════════════════════════════════════════════════════════════
+
+    // ── CBM Benchmark Norms ──
+    // Hasbrouck & Tindal (2017) for ORF, DIBELS 8th Ed for NWF/LNF, research consensus for math.
+    var CBM_NORMS = {
+      orf: { '1': { fall: 0, winter: 23, spring: 53 }, '2': { fall: 51, winter: 72, spring: 89 }, '3': { fall: 71, winter: 92, spring: 107 }, '4': { fall: 94, winter: 112, spring: 123 }, '5': { fall: 110, winter: 127, spring: 139 }, '6': { fall: 127, winter: 140, spring: 150 } },
+      nwf_cls: { 'K': { fall: 0, winter: 17, spring: 35 }, '1': { fall: 35, winter: 55, spring: 65 } },
+      lnf: { 'K': { fall: 7, winter: 30, spring: 47 } },
+      math_dcpm: { '1': { fall: 8, winter: 15, spring: 25 }, '2': { fall: 15, winter: 25, spring: 35 }, '3': { fall: 25, winter: 35, spring: 45 }, '4': { fall: 30, winter: 40, spring: 50 }, '5': { fall: 35, winter: 45, spring: 55 }, '6': { fall: 40, winter: 50, spring: 60 } }
+    };
+    var getSeason = function() { var m = new Date().getMonth(); if (m >= 7 && m <= 10) return 'fall'; if (m >= 11 || m <= 1) return 'winter'; return 'spring'; };
+
+    // ── Probe Interpretation Engine ──
+    var interpretProbeResult = function(probeType, score, grade, season) {
+      season = season || getSeason(); grade = String(grade || '1');
+      var norms = CBM_NORMS[probeType]; if (!norms || !norms[grade]) return { tier: 0, status: 'No norms available', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
+      var benchmark = norms[grade][season]; if (benchmark === undefined || benchmark === null) return { tier: 0, status: 'No norms for this season', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
+      var pct = benchmark > 0 ? Math.round((score / benchmark) * 100) : (score > 0 ? 200 : 0);
+      var tier, status, statusColor, interpretation, recommendations;
+      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Continue current instruction.', 'Consider enrichment or increased challenge.', 'Re-assess at next screening window.']; }
+      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Monitor informally.', 'Provide additional practice within Tier 1.']; }
+      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '. Strategic intervention recommended.'; recommendations = ['Begin Tier 2 intervention.', 'Monitor progress bi-weekly.', 'Aim for 8+ data points before evaluating effectiveness.']; }
+      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '. Intensive intervention needed.'; recommendations = ['Begin Tier 3 intensive intervention immediately.', 'Monitor progress weekly.', 'Consider referral for comprehensive evaluation if insufficient growth after 6-8 weeks.']; }
+      if (probeType === 'orf' && tier >= 2) { recommendations.push('Implement repeated reading with corrective feedback.'); if (tier === 3) recommendations.push('Check decoding with NWF — if < 90% accuracy, fluency deficit may be driven by decoding problem.'); }
+      if (probeType === 'nwf_cls' && tier >= 2) { recommendations.push('Focus on phonics: CVC blending, vowel sounds, sound-symbol correspondence.'); if (tier === 3) recommendations.push('Assess letter-sound knowledge with LNF.'); }
+      if (probeType === 'lnf' && tier >= 2) { recommendations.push('Increase letter exposure through multisensory activities.'); if (tier === 3) recommendations.push('Prioritize high-frequency letters. Consider vision screening.'); }
+      if (probeType === 'math_dcpm' && tier >= 2) { recommendations.push('Short daily fact fluency practice (5-10 min) with corrective feedback.'); if (tier === 3) recommendations.push('Check conceptual understanding vs. automaticity.'); }
+      return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recommendations, season: season, grade: grade };
+    };
+
+    // ── Render Probe Interpretation UI ──
+    var renderProbeInterpretation = function(probeType, score, grade, season) {
+      var result = interpretProbeResult(probeType, score, grade, season);
+      if (result.tier === 0) return null;
+      return React.createElement("div", { className: "mt-3 rounded-lg border p-3", style: { borderColor: result.statusColor + '40', background: result.statusColor + '08' } },
+        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+          React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: result.statusColor } }),
+          React.createElement("span", { className: "text-xs font-bold", style: { color: result.statusColor } }, result.status),
+          React.createElement("span", { className: "text-[10px] text-slate-500 ml-auto" }, result.pctOfBenchmark + "% of " + result.season + " benchmark (" + result.benchmark50 + ")")
+        ),
+        React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, result.interpretation),
+        result.recommendations.length > 0 ? React.createElement("div", { className: "space-y-1" },
+          React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Recommendations:"),
+          ...result.recommendations.map(function(rec, i) { return React.createElement("p", { key: i, className: "text-[10px] text-slate-600 pl-3 border-l-2", style: { borderColor: result.statusColor + '60' } }, rec); })
+        ) : null
+      );
+    };
+
+    // ── Clinical Probe Report Generator ──
+    var printClinicalProbeReport = function(probeType, results, grade, form, studentName) {
+      var season = getSeason(); var seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
+      var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      var typeLabels = { nwf: 'Nonsense Word Fluency (NWF)', lnf: 'Letter Naming Fluency (LNF)', orf: 'Oral Reading Fluency (ORF)', math: 'Math Computation Fluency', missing_number: 'Missing Number Fluency', quantity_discrimination: 'Quantity Discrimination' };
+      var probeLabel = typeLabels[probeType] || probeType;
+      var formLabel = form === 'A' ? 'Fall' : form === 'B' ? 'Winter' : form === 'C' ? 'Spring' : (form || '');
+      var primaryScore, primaryLabel, secondaryRows = '';
+      if (probeType === 'nwf') { primaryScore = results.cls; primaryLabel = 'Correct Letter Sounds (CLS)'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Words Correct</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.correctWords + '</td></tr><tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Accuracy</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + (results.totalScored > 0 ? Math.round(results.correctWords / results.totalScored * 100) : 0) + '%</td></tr>'; }
+      else if (probeType === 'lnf') { primaryScore = results.correct; primaryLabel = 'Letters Named Correctly'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Accuracy</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + (results.totalScored > 0 ? Math.round(results.correct / results.totalScored * 100) : 0) + '%</td></tr>'; }
+      else if (probeType === 'orf') { primaryScore = results.wcpm; primaryLabel = 'Words Correct Per Minute (WCPM)'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Words Attempted</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.wordsAttempted + '</td></tr><tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Errors</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.errors + '</td></tr>'; }
+      else { primaryScore = results.correct || 0; primaryLabel = 'Items Correct'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Attempted</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + (results.total || 0) + '</td></tr>'; }
+      var normType = probeType === 'orf' ? 'orf' : probeType === 'nwf' ? 'nwf_cls' : probeType === 'lnf' ? 'lnf' : 'math_dcpm';
+      var interp = interpretProbeResult(normType, primaryScore, grade, season);
+      var recsHtml = interp.recommendations.length > 0 ? '<h3 style="font-size:14px;font-weight:700;color:#1e3a5f;margin:20px 0 8px;border-left:4px solid ' + interp.statusColor + ';padding-left:8px">Recommendations</h3><ul style="margin:0;padding-left:20px">' + interp.recommendations.map(function(r) { return '<li style="font-size:12px;color:#334155;margin:4px 0;line-height:1.5">' + r + '</li>'; }).join('') + '</ul>' : '';
+      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Probe Report - ' + probeLabel + '</title><style>body{font-family:system-ui,sans-serif;max-width:700px;margin:0 auto;padding:2rem;color:#1e293b;line-height:1.6}h1{font-size:1.25rem;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:0.5rem;margin:0 0 4px}h2{font-size:1rem;color:#334155;margin:16px 0 8px}.meta{color:#64748b;font-size:12px;margin-bottom:16px}.score-box{text-align:center;padding:20px;border-radius:12px;margin:16px 0}.score-num{font-size:3rem;font-weight:900}.status-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:12px;margin-top:8px}table{width:100%;border-collapse:collapse;margin:8px 0}th{background:#f1f5f9;padding:6px 12px;border:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b;text-align:left}.sig-line{margin-top:24px;display:flex;gap:24px}.sig-line div{flex:1;border-top:1px solid #cbd5e1;padding-top:4px;font-size:11px;color:#64748b}.footer{margin-top:24px;padding-top:12px;border-top:2px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}@media print{body{padding:0.5in}}</style></head><body>' +
+        '<h1>' + probeLabel + ' \u2014 Probe Report</h1>' +
+        '<div class="meta"><strong>Student:</strong> ' + (studentName || '________________') + ' &bull; <strong>Date:</strong> ' + dateStr + ' &bull; <strong>Grade:</strong> ' + (grade || '___') + ' &bull; <strong>Form:</strong> ' + (formLabel || '___') + ' &bull; <strong>Season:</strong> ' + seasonLabel + '</div>' +
+        '<div class="score-box" style="background:' + interp.statusColor + '10"><div class="score-num" style="color:' + interp.statusColor + '">' + primaryScore + '</div><div style="font-size:13px;color:#475569;margin-top:4px">' + primaryLabel + '</div><div class="status-badge" style="background:' + interp.statusColor + '20;color:' + interp.statusColor + '">' + interp.status + '</div>' + (interp.benchmark50 !== null ? '<div style="font-size:11px;color:#64748b;margin-top:8px">' + interp.pctOfBenchmark + '% of ' + seasonLabel + ' benchmark (50th %ile: ' + interp.benchmark50 + ')</div>' : '') + '</div>' +
+        '<h2>Score Details</h2><table><thead><tr><th>Metric</th><th style="text-align:center;width:120px">Value</th></tr></thead><tbody><tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;color:#1e3a5f">' + primaryLabel + '</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center;color:' + interp.statusColor + '">' + primaryScore + '</td></tr>' + secondaryRows + '</tbody></table>' +
+        '<h2>Interpretation</h2><p style="font-size:12px;color:#334155;background:' + interp.statusColor + '08;padding:10px 14px;border-radius:8px;border-left:4px solid ' + interp.statusColor + '">' + interp.interpretation + '</p>' + recsHtml +
+        '<div class="sig-line"><div>Examiner Signature</div><div>Date</div><div>Title</div></div>' +
+        '<div class="footer"><p>Generated by AlloFlow Assessment Center \u2022 ' + dateStr + '</p><p>Norms: Hasbrouck & Tindal (2017), DIBELS 8th Ed. This is a screening tool, not a comprehensive evaluation.</p></div></body></html>';
+      var w = window.open('', '_blank');
+      if (w) { w.document.write(html); w.document.close(); w.print(); }
+    };
+
+    // ── Progress Monitoring Summary ──
+    var renderProbeProgressSummary = function(studentName) {
+      var probes = (probeHistory && probeHistory[studentName]) || [];
+      if (probes.length < 2) return null;
+      var byType = {}; probes.forEach(function(p) { var type = p.type || p.activity || 'unknown'; if (!byType[type]) byType[type] = []; byType[type].push(p); });
+      var expectedRates = { orf: 1.5, nwf: 1.0, lnf: 0.8, math: 0.5, fluency: 1.5, missing_number: 0.5, quantity_discrimination: 0.5 };
+      var typeLabels = { orf: 'Oral Reading Fluency', nwf: 'Nonsense Word Fluency', lnf: 'Letter Naming Fluency', math: 'Math Computation', fluency: 'Reading Fluency', missing_number: 'Missing Number', quantity_discrimination: 'Quantity Discrimination' };
+      var getScore = function(item) { return item.wcpm || item.cls || item.correct || item.dcpm || item.itemsPerMin || item.score || 0; };
+      var sections = [];
+      Object.keys(byType).forEach(function(type) {
+        var items = byType[type].sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+        if (items.length < 2) return;
+        var first = items[0], last = items[items.length - 1];
+        var firstScore = getScore(first), lastScore = getScore(last), change = lastScore - firstScore;
+        var weeks = Math.max(1, Math.round((new Date(last.date) - new Date(first.date)) / (7 * 24 * 60 * 60 * 1000)));
+        var weeklyGrowth = change / weeks;
+        var expectedRate = expectedRates[type] || 1.0;
+        var adequacy = weeklyGrowth >= expectedRate * 1.5 ? 'strong' : weeklyGrowth >= expectedRate * 0.75 ? 'adequate' : weeklyGrowth >= 0 ? 'insufficient' : 'declining';
+        var growthColor = { strong: '#16a34a', adequate: '#65a30d', insufficient: '#d97706', declining: '#dc2626' };
+        var growthLabel = { strong: 'Strong Growth', adequate: 'Adequate Growth', insufficient: 'Insufficient Growth', declining: 'Declining' };
+        sections.push(React.createElement("div", { key: type, className: "bg-white rounded-lg border border-slate-200 p-3" },
+          React.createElement("div", { className: "flex items-center justify-between mb-2" },
+            React.createElement("h5", { className: "text-xs font-bold text-slate-700" }, typeLabels[type] || type),
+            React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold", style: { background: growthColor[adequacy] + '15', color: growthColor[adequacy] } }, growthLabel[adequacy])
+          ),
+          React.createElement("div", { className: "grid grid-cols-4 gap-2 text-center mb-2" },
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-slate-700" }, firstScore), React.createElement("div", { className: "text-[10px] text-slate-500" }, "Baseline")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: growthColor[adequacy] } }, lastScore), React.createElement("div", { className: "text-[10px] text-slate-500" }, "Latest")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: change >= 0 ? '#16a34a' : '#dc2626' } }, (change >= 0 ? '+' : '') + Math.round(change * 10) / 10), React.createElement("div", { className: "text-[10px] text-slate-500" }, "Change")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-indigo-600" }, '+' + (Math.round(weeklyGrowth * 10) / 10) + '/wk'), React.createElement("div", { className: "text-[10px] text-slate-500" }, "Growth Rate"))
+          ),
+          React.createElement("div", { className: "flex justify-between text-[9px] text-slate-400" },
+            React.createElement("span", null, items.length + " probes over " + Math.round(weeks) + " weeks"),
+            React.createElement("span", null, "Expected: +" + expectedRate + "/wk")
+          ),
+          (adequacy === 'insufficient' || adequacy === 'declining') ? React.createElement("div", { className: "mt-2 text-[10px] px-2 py-1 rounded bg-amber-50", style: { borderLeft: '3px solid #d97706', color: '#92400e' } }, adequacy === 'declining' ? 'Performance declining. Consider changing intervention or diagnostic assessment.' : 'Growth rate below expected. Consider increasing intensity or changing approach.') : null
+        ));
+      });
+      if (sections.length === 0) return null;
+      return React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4 mt-4" },
+        React.createElement("h5", { className: "text-xs font-bold text-slate-600 uppercase mb-3" }, "\uD83D\uDCC8 Progress Monitoring Summary"),
+        React.createElement("div", { className: "space-y-3" }, ...sections)
+      );
+    };
+
+    // ── RTI Meeting Summary Generator ──
+    var printMeetingSummary = function(studentName) {
+      var insights = generateStudentInsights(studentName);
+      var probes = (probeHistory && probeHistory[studentName]) || [];
+      var interventions = (interventionLogs && interventionLogs[studentName]) || [];
+      var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      var season = getSeason(); var seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
+      var student = importedStudents.find(function(s) { return (s.nickname || s.name) === studentName; });
+      var stats = student ? student.stats || {} : {};
+      var tierResult = classifyRTITier(stats);
+      var benchmarkRows = '', growthRows = '', interventionRows = '';
+      var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
+      var typeLabels = { orf: 'ORF (WCPM)', nwf: 'NWF (CLS)', lnf: 'LNF', math: 'Math (DCPM)', fluency: 'ORF (WCPM)', missing_number: 'Missing Number', quantity_discrimination: 'Quantity Disc.' };
+      Object.keys(probesByType).forEach(function(type) { var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm'; var interp = interpretProbeResult(normType, score, p.grade||'1', season); benchmarkRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(typeLabels[type]||type)+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px"><span style="color:'+interp.statusColor+';font-weight:700">'+interp.status+'</span></td></tr>'; });
+      interventions.forEach(function(intv) { interventionRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(intv.program||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(intv.frequency||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(intv.minutes||'--')+' min</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(intv.startDate||'--')+'</td></tr>'; });
+      var recommendation = tierResult.tier === 1 ? '<span style="color:#16a34a;font-weight:700">Continue Tier 1.</span> Reassess at next screening window.' : tierResult.tier === 2 ? '<span style="color:#d97706;font-weight:700">Tier 2 intervention needed.</span> Begin evidence-based program, monitor bi-weekly.' : '<span style="color:#dc2626;font-weight:700">Tier 3 intensive intervention.</span> Monitor weekly. Consider evaluation referral if insufficient growth.';
+      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>RTI Meeting Summary - ' + studentName + '</title><style>body{font-family:system-ui,sans-serif;max-width:750px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5;font-size:12px}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px;margin:0 0 4px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}.tier-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;font-size:13px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 10px;border:1px solid #e2e8f0;font-size:10px;text-transform:uppercase;color:#64748b;text-align:left}.rec-box{padding:10px 14px;border-radius:8px;margin:10px 0;font-size:12px}.sig-line{display:flex;gap:20px;margin-top:16px}.sig-line div{flex:1;border-top:1px solid #cbd5e1;padding-top:3px;font-size:10px;color:#64748b}.footer{margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center}@media print{body{padding:0.4in}}</style></head><body>' +
+        '<h1>RTI Data Team Meeting Summary</h1><div style="color:#64748b;font-size:11px;margin-bottom:8px"><strong>Student:</strong> ' + studentName + ' &bull; <strong>Date:</strong> ' + dateStr + ' &bull; <strong>Season:</strong> ' + seasonLabel + '</div>' +
+        '<div style="margin:8px 0 12px"><span class="tier-badge" style="background:' + (tierResult.bg||'#f1f5f9') + ';color:' + (tierResult.color||'#334155') + ';border:2px solid ' + (tierResult.border||'#cbd5e1') + '">' + (tierResult.emoji||'') + ' ' + (tierResult.label||'Not Classified') + '</span></div>' +
+        (benchmarkRows ? '<h2>Current Benchmark Status</h2><table><thead><tr><th>Measure</th><th>Score</th><th>50th %ile</th><th>Status</th></tr></thead><tbody>' + benchmarkRows + '</tbody></table>' : '') +
+        (interventionRows ? '<h2>Intervention History</h2><table><thead><tr><th>Program</th><th>Frequency</th><th>Duration</th><th>Start Date</th></tr></thead><tbody>' + interventionRows + '</tbody></table>' : '<h2>Intervention History</h2><p style="color:#94a3b8;font-style:italic">No interventions logged.</p>') +
+        '<h2>Recommendation</h2><div class="rec-box" style="background:' + (tierResult.bg||'#f1f5f9') + ';border-left:4px solid ' + (tierResult.color||'#64748b') + '">' + recommendation + '</div>' +
+        '<h2>Team Decision</h2><div style="font-size:11px;line-height:2"><label><input type="checkbox" style="margin-right:4px"> Continue current intervention</label><br><label><input type="checkbox" style="margin-right:4px"> Modify intervention</label><br><label><input type="checkbox" style="margin-right:4px"> Move to higher tier</label><br><label><input type="checkbox" style="margin-right:4px"> Refer for comprehensive evaluation</label><br><label><input type="checkbox" style="margin-right:4px"> Other: _______________</label></div>' +
+        '<div class="sig-line"><div>Team Members Present</div><div>Date</div></div><div style="border-bottom:1px solid #e2e8f0;min-height:20px;margin-top:4px"></div>' +
+        '<div class="footer"><p>AlloFlow Assessment Center &bull; ' + dateStr + '</p><p>Norms: Hasbrouck & Tindal (2017), DIBELS 8th Ed. Not a comprehensive evaluation.</p></div></body></html>';
+      var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); w.print(); }
+    };
+
+    // ── Class Screening Report Generator ──
+    var printClassScreeningReport = function() {
+      if (importedStudents.length === 0) { addToast && addToast('No students imported', 'info'); return; }
+      var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      var season = getSeason(); var seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
+      var studentData = importedStudents.map(function(s) {
+        var name = s.nickname || s.name; var stats = s.stats || {}; var tier = classifyRTITier(stats);
+        var studentProbes = (probeHistory && probeHistory[name]) || []; var latestByType = {};
+        studentProbes.forEach(function(p) { var type = p.type || p.activity || 'unknown'; if (!latestByType[type] || new Date(p.date) > new Date(latestByType[type].date)) latestByType[type] = p; });
+        var scores = {}; ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) { var p = latestByType[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm'; scores[type] = { score: score, interp: interpretProbeResult(normType, score, p.grade||'1', season) }; });
+        return { name: name, tier: tier, scores: scores };
+      });
+      studentData.sort(function(a,b) { return b.tier.tier !== a.tier.tier ? b.tier.tier - a.tier.tier : a.name.localeCompare(b.name); });
+      var tier3=studentData.filter(function(s){return s.tier.tier===3;}), tier2=studentData.filter(function(s){return s.tier.tier===2;}), tier1=studentData.filter(function(s){return s.tier.tier===1;}), n=studentData.length;
+      var allRows = studentData.map(function(s) {
+        var cells=['orf','fluency','nwf','lnf','math','missing_number','quantity_discrimination'].map(function(t){var d=s.scores[t];if(!d)return'<td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;color:#cbd5e1;font-size:11px">\u2014</td>';return'<td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:12px;color:'+d.interp.statusColor+'">'+d.score+'</td>';}).join('');
+        return'<tr><td style="padding:4px 8px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+s.name+'</td><td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:'+s.tier.bg+';color:'+s.tier.color+'">'+s.tier.emoji+' T'+s.tier.tier+'</span></td>'+cells+'</tr>';
+      }).join('');
+      var html='<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Class Screening Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5;font-size:12px}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px;margin:0 0 4px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 8px;border:1px solid #e2e8f0;font-size:9px;text-transform:uppercase;color:#64748b;text-align:center}th:first-child{text-align:left}.footer{margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center}@media print{body{padding:0.3in;font-size:10px}}</style></head><body>'+
+        '<h1>\uD83C\uDFEB Class Screening Report \u2014 '+seasonLabel+'</h1>'+
+        '<div style="color:#64748b;font-size:11px;margin-bottom:12px"><strong>Date:</strong> '+dateStr+' &bull; <strong>Students:</strong> '+n+'</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">'+
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #86efac;background:#dcfce7"><div style="font-size:28px;font-weight:900;color:#16a34a">'+tier1.length+'</div><div style="font-size:10px;font-weight:700;color:#16a34a">\uD83D\uDFE2 Tier 1 ('+(n?Math.round(tier1.length/n*100):0)+'%)</div></div>'+
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fcd34d;background:#fef9c3"><div style="font-size:28px;font-weight:900;color:#d97706">'+tier2.length+'</div><div style="font-size:10px;font-weight:700;color:#d97706">\uD83D\uDFE1 Tier 2 ('+(n?Math.round(tier2.length/n*100):0)+'%)</div></div>'+
+          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fca5a5;background:#fee2e2"><div style="font-size:28px;font-weight:900;color:#dc2626">'+tier3.length+'</div><div style="font-size:10px;font-weight:700;color:#dc2626">\uD83D\uDD34 Tier 3 ('+(n?Math.round(tier3.length/n*100):0)+'%)</div></div>'+
+        '</div>'+
+        '<h2>All Students by Measure</h2><table><thead><tr><th style="min-width:100px">Student</th><th>Tier</th><th>ORF</th><th>NWF</th><th>LNF</th><th>Math</th><th>MN</th><th>QD</th></tr></thead><tbody>'+allRows+'</tbody></table>'+
+        '<div style="margin-top:4px;font-size:9px;color:#94a3b8">Color: <span style="color:#16a34a;font-weight:700">green</span>=at/above, <span style="color:#d97706;font-weight:700">amber</span>=below, <span style="color:#dc2626;font-weight:700">red</span>=well below benchmark</div>'+
+        (tier3.length>0?'<h2>\uD83D\uDD34 Priority Students (Tier 3)</h2>'+tier3.map(function(s){return'<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin:4px 0"><strong style="color:#991b1b">'+s.name+'</strong><span style="font-size:10px;color:#7f1d1d;margin-left:8px">'+s.tier.reasons.slice(0,2).join('; ')+'</span></div>';}).join(''):'')+
+        '<h2>Notes</h2><div style="border:1px solid #e2e8f0;border-radius:8px;min-height:60px;padding:8px"></div>'+
+        '<div class="footer"><p>AlloFlow Assessment Center &bull; '+dateStr+'</p><p>Norms: Hasbrouck & Tindal (2017), DIBELS 8th Ed.</p></div></body></html>';
+      var w=window.open('','_blank'); if(w){w.document.write(html);w.document.close();w.print();}
+    };
+
     const classifyScreeningRisk = results => {
       if (!results || results.length === 0) return {
         tier: 0,
@@ -1314,6 +1613,74 @@
       URL.revokeObjectURL(link.href);
       addToast && addToast('Research CSV exported with ' + students.length + ' students', 'success');
     };
+    // ── Session-level CSV export (fidelity log data) ──
+    const exportSessionLogCSV = () => {
+      var log;
+      try { log = JSON.parse(localStorage.getItem('alloflow_fidelity_log') || '[]'); } catch { log = []; }
+      if (!log.length) { addToast && addToast('No session log data to export', 'info'); return; }
+      var headers = ['Date', 'Weekday', 'Student', 'Activity', 'Duration_Minutes', 'Study_Name'];
+      var rows = log.map(function(s) {
+        var d = s.date ? new Date(s.date) : new Date();
+        var weekday = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()] || '';
+        return [
+          s.date || d.toISOString(),
+          weekday,
+          '"' + String(s.student || '').replace(/"/g, '""') + '"',
+          '"' + String(s.activity || '').replace(/"/g, '""') + '"',
+          s.duration || '',
+          '"' + String(s.researchStudy || '').replace(/"/g, '""') + '"'
+        ].join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow_Session_Log_' + new Date().toISOString().split('T')[0] + '.csv';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      addToast && addToast('Session log exported (' + log.length + ' sessions)', 'success');
+    };
+
+    // ── Survey responses CSV export (with timepoints) ──
+    const exportSurveyCSV = () => {
+      var allResponses = [];
+      Object.keys(surveyResponses).forEach(function(key) {
+        var entries = surveyResponses[key] || [];
+        entries.forEach(function(entry) {
+          allResponses.push(entry);
+        });
+      });
+      if (!allResponses.length) { addToast && addToast('No survey responses to export', 'info'); return; }
+      var headers = ['Timestamp', 'Type', 'Respondent', 'Timepoint', 'Study_Name'];
+      var questionIds = new Set();
+      allResponses.forEach(function(r) {
+        Object.keys(r).forEach(function(k) {
+          if (!['timestamp','type','respondent','timepoint','studyName'].includes(k)) questionIds.add(k);
+        });
+      });
+      var qids = Array.from(questionIds).sort();
+      headers = headers.concat(qids);
+      var rows = allResponses.map(function(r) {
+        var base = [
+          r.timestamp || '',
+          r.type || '',
+          '"' + String(r.respondent || '').replace(/"/g, '""') + '"',
+          r.timepoint || 'unspecified',
+          '"' + String(r.studyName || '').replace(/"/g, '""') + '"'
+        ];
+        var answers = qids.map(function(q) { return r[q] !== undefined ? r[q] : ''; });
+        return base.concat(answers).join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow_Survey_Responses_' + new Date().toISOString().split('T')[0] + '.csv';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      addToast && addToast('Survey responses exported (' + allResponses.length + ' responses)', 'success');
+    };
+
     const [externalCBMScores, setExternalCBMScores] = React.useState(() => {
       try {
         return JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}');
@@ -1525,7 +1892,9 @@
           ...responses,
           timestamp: new Date().toISOString(),
           type,
-          respondent
+          respondent,
+          timepoint: surveyTimepoint || 'unspecified',
+          studyName: (researchMode && researchMode.studyName) || 'No active study'
         }]
       };
       setSurveyResponses(updated);
@@ -1535,6 +1904,7 @@
     };
     const [surveyAnswers, setSurveyAnswers] = React.useState({});
     const [surveyRespondent, setSurveyRespondent] = React.useState('');
+    const [surveyTimepoint, setSurveyTimepoint] = React.useState('pre');
     const SURVEY_QUESTIONS = {
       student: [{
         id: 'engagement',
@@ -1658,6 +2028,16 @@
         onChange: e => setSurveyRespondent(e.target.value),
         placeholder: 'Enter name...'
       })), React.createElement('div', {
+        className: 'mb-4'
+      }, React.createElement('label', {
+        className: 'text-xs font-bold text-slate-600 uppercase'
+      }, 'Survey Timepoint'), React.createElement('div', {
+        className: 'flex gap-2 mt-1'
+      }, ...['pre', 'mid', 'post'].map(tp => React.createElement('button', {
+        key: tp,
+        className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' + (surveyTimepoint === tp ? 'bg-indigo-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-indigo-50'),
+        onClick: () => setSurveyTimepoint(tp)
+      }, tp === 'pre' ? 'Pre-Study' : tp === 'mid' ? 'Mid-Study' : 'Post-Study')))), React.createElement('div', {
         className: 'space-y-4'
       }, ...questions.map(q => React.createElement('div', {
         key: q.id,
@@ -1842,6 +2222,12 @@
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-medium text-slate-700',
         onClick: exportResearchCSV
       }, React.createElement('span', null, '\u{1F4C4}'), 'Export Research CSV'), React.createElement('button', {
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
+        onClick: exportSessionLogCSV
+      }, React.createElement('span', null, '\u{1F4C5}'), 'Session Log CSV'), React.createElement('button', {
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all text-xs font-medium text-slate-700',
+        onClick: exportSurveyCSV
+      }, React.createElement('span', null, '\u{1F4DD}'), 'Survey CSV'), React.createElement('button', {
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowCBMModal(true)
       }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', {
@@ -3733,7 +4119,69 @@
       }
     }, /*#__PURE__*/React.createElement("canvas", {
       ref: flagsChartRef
-    }))), /*#__PURE__*/React.createElement("div", {
+    }))),
+    /* ── Assessment Workflow Guide ── */
+    React.createElement("div", { className: "mb-4 bg-gradient-to-br from-slate-50 to-indigo-50/50 rounded-xl border border-slate-200 overflow-hidden" },
+      React.createElement("button", { onClick: function() { setShowAssessmentGuide(function(p) { return !p; }); }, className: "w-full px-4 py-3 flex items-center justify-between hover:bg-white/50 transition-colors", "aria-expanded": showAssessmentGuide ? "true" : "false" },
+        React.createElement("div", { className: "flex items-center gap-2" },
+          React.createElement("span", { className: "text-base" }, "\uD83E\uDDED"),
+          React.createElement("span", { className: "text-sm font-bold text-slate-700" }, "Assessment Workflow Guide"),
+          React.createElement("span", { className: "text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" }, "Which probe should I use?")
+        ),
+        React.createElement("span", { className: "text-slate-400 text-xs" }, showAssessmentGuide ? "\u25B2 Hide" : "\u25BC Show")
+      ),
+      showAssessmentGuide ? React.createElement("div", { className: "px-4 pb-4 space-y-3 animate-in fade-in duration-200" },
+        React.createElement("div", { className: "bg-white rounded-lg p-3 border border-emerald-200" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("span", { className: "w-2 h-2 rounded-full bg-emerald-500" }),
+            React.createElement("h4", { className: "text-xs font-bold text-emerald-800 uppercase tracking-wide" }, "Universal Screening (Fall / Winter / Spring)")
+          ),
+          React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "Administer to ALL students 3x per year to identify who needs intervention. ~15 min per student."),
+          React.createElement("div", { className: "flex flex-wrap gap-1" },
+            React.createElement("span", { className: "text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "K-1: LNF + NWF + ORF"),
+            React.createElement("span", { className: "text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "2-3: ORF + Math Fluency"),
+            React.createElement("span", { className: "text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "4+: ORF + Math Fluency")
+          ),
+          React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "Use Form A (Fall), Form B (Winter), Form C (Spring) to avoid practice effects.")
+        ),
+        React.createElement("div", { className: "bg-white rounded-lg p-3 border border-amber-200" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("span", { className: "w-2 h-2 rounded-full bg-amber-500" }),
+            React.createElement("h4", { className: "text-xs font-bold text-amber-800 uppercase tracking-wide" }, "Progress Monitoring (Bi-Weekly or Weekly)")
+          ),
+          React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "For Tier 2/3 students. Track growth to evaluate whether the intervention is working."),
+          React.createElement("div", { className: "flex flex-wrap gap-1" },
+            React.createElement("span", { className: "text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-semibold border border-amber-200" }, "Reading: ORF (same grade-level passages)"),
+            React.createElement("span", { className: "text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-semibold border border-amber-200" }, "Math: DCPM (same operation type)")
+          ),
+          React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "Aim for 8+ data points before making instructional decisions.")
+        ),
+        React.createElement("div", { className: "bg-white rounded-lg p-3 border border-violet-200" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("span", { className: "w-2 h-2 rounded-full bg-violet-500" }),
+            React.createElement("h4", { className: "text-xs font-bold text-violet-800 uppercase tracking-wide" }, "Diagnostic Deep-Dive")
+          ),
+          React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "When screening identifies a concern \u2014 pinpoint the specific skill deficit."),
+          React.createElement("div", { className: "flex flex-wrap gap-1" },
+            React.createElement("span", { className: "text-[10px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Decoding: NWF"),
+            React.createElement("span", { className: "text-[10px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Letter knowledge: LNF"),
+            React.createElement("span", { className: "text-[10px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Naming speed: RAN"),
+            React.createElement("span", { className: "text-[10px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Full battery: Benchmark Battery")
+          ),
+          React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "Low ORF + adequate NWF = fluency deficit (practice). Low ORF + low NWF = decoding deficit (phonics).")
+        ),
+        React.createElement("div", { className: "bg-slate-100 rounded-lg p-3" },
+          React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83D\uDCCA Quick Interpretation"),
+          React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
+            React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2 border border-emerald-200" }, React.createElement("div", { className: "text-[10px] font-bold text-emerald-700" }, "\u2265 40th %ile"), React.createElement("div", { className: "text-[10px] text-emerald-600" }, "Tier 1: On Track")),
+            React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" }, React.createElement("div", { className: "text-[10px] font-bold text-amber-700" }, "15th-39th %ile"), React.createElement("div", { className: "text-[10px] text-amber-600" }, "Tier 2: Strategic")),
+            React.createElement("div", { className: "bg-red-50 rounded-lg p-2 border border-red-200" }, React.createElement("div", { className: "text-[10px] font-bold text-red-700" }, "< 15th %ile"), React.createElement("div", { className: "text-[10px] text-red-600" }, "Tier 3: Intensive"))
+          ),
+          React.createElement("p", { className: "text-[10px] text-slate-500 mt-2 italic" }, "General guidelines. Use RTI Settings to customize for your district norms.")
+        )
+      ) : null
+    ),
+    /*#__PURE__*/React.createElement("div", {
       className: "mb-4 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl",
       "data-help-key": "assessment_probe_launcher"
     }, /*#__PURE__*/React.createElement("div", {
@@ -4044,7 +4492,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-6"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-emerald-500 h-2 rounded-full transition-all",
       style: {
         width: `${nwfProbeIndex / nwfProbeWords.length * 100}%`
@@ -4178,18 +4626,12 @@
         addToast('NWF results saved for ' + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition-colors"
-    }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
-      onClick: (event) => {
-        const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
-        if (el) {
-          const w = window.open("", "_blank");
-          w.document.write("<html><head><title>Probe Results - AlloFlow</title><style>body{font-family:system-ui;padding:2rem}h4{margin:0 0 1rem}.grid{display:grid;gap:0.75rem}.bg-white{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}.text-2xl,.text-3xl{font-size:1.5rem;font-weight:bold}</style></head><body>" + el.innerHTML + "<p style=\"color:gray;margin-top:2rem;font-size:12px\">AlloFlow Assessment Center • " + new Date().toLocaleDateString() + "</p></body></html>");
-          w.document.close();
-          w.print();
-        }
-      },
+    }, "\uD83D\uDCBE Save to Student Record"),
+    renderProbeInterpretation('nwf_cls', nwfProbeResults.cls, nwfProbeGrade),
+    /*#__PURE__*/React.createElement("button", {
+      onClick: () => printClinicalProbeReport('nwf', nwfProbeResults, nwfProbeGrade, nwfForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
-    }, "\uD83D\uDDA8\uFE0F Print Results"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setNwfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
     }, "Dismiss Results")), lnfProbeActive && /*#__PURE__*/React.createElement("div", {
@@ -4226,7 +4668,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-blue-500 h-2 rounded-full transition-all",
       style: {
         width: `${lnfProbeIndex / lnfProbeLetters.length * 100}%`
@@ -4348,18 +4790,12 @@
         addToast('LNF results saved for ' + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-blue-700 text-white rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors"
-    }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
-      onClick: (event) => {
-        const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
-        if (el) {
-          const w = window.open("", "_blank");
-          w.document.write("<html><head><title>Probe Results - AlloFlow</title><style>body{font-family:system-ui;padding:2rem}h4{margin:0 0 1rem}.grid{display:grid;gap:0.75rem}.bg-white{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}.text-2xl,.text-3xl{font-size:1.5rem;font-weight:bold}</style></head><body>" + el.innerHTML + "<p style=\"color:gray;margin-top:2rem;font-size:12px\">AlloFlow Assessment Center • " + new Date().toLocaleDateString() + "</p></body></html>");
-          w.document.close();
-          w.print();
-        }
-      },
+    }, "\uD83D\uDCBE Save to Student Record"),
+    renderProbeInterpretation('lnf', lnfProbeResults.correct, 'K'),
+    /*#__PURE__*/React.createElement("button", {
+      onClick: () => printClinicalProbeReport('lnf', lnfProbeResults, 'K', lnfForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
-    }, "\uD83D\uDDA8\uFE0F Print Results"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setLnfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
     }, "Dismiss Results")), ranProbeActive && /*#__PURE__*/React.createElement("div", {
@@ -4401,7 +4837,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-amber-500 h-2 rounded-full transition-all",
       style: {
         width: `${ranProbeIndex / ranProbeItems.length * 100}%`
@@ -4553,17 +4989,9 @@
       },
       className: "w-full mt-2 px-4 py-2 bg-amber-700 text-white rounded-lg font-bold text-sm hover:bg-amber-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
-      onClick: (event) => {
-        const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
-        if (el) {
-          const w = window.open("", "_blank");
-          w.document.write("<html><head><title>Probe Results - AlloFlow</title><style>body{font-family:system-ui;padding:2rem}h4{margin:0 0 1rem}.grid{display:grid;gap:0.75rem}.bg-white{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}.text-2xl,.text-3xl{font-size:1.5rem;font-weight:bold}</style></head><body>" + el.innerHTML + "<p style=\"color:gray;margin-top:2rem;font-size:12px\">AlloFlow Assessment Center • " + new Date().toLocaleDateString() + "</p></body></html>");
-          w.document.close();
-          w.print();
-        }
-      },
+      onClick: () => printClinicalProbeReport('ran', ranProbeResults, ranProbeGrade, ranForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
-    }, "\uD83D\uDDA8\uFE0F Print Results"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setRanProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
     }, "Dismiss Results")), orfProbeActive && /*#__PURE__*/React.createElement("div", {
@@ -4591,7 +5019,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-rose-500 h-2 rounded-full transition-all",
       style: {
         width: `${orfProbeTimer > 0 ? (60 - orfProbeTimer) / 60 * 100 : 100}%`
@@ -4709,18 +5137,12 @@
       }, opt, " ", opt === q.answer ? '✅' : ''))))), /*#__PURE__*/React.createElement("p", {
         className: "text-[10px] text-slate-500 mt-2 italic"
       }, "Ask each question orally. Correct answers highlighted."));
-    })(), /*#__PURE__*/React.createElement("button", {
-      onClick: (event) => {
-        const el = event.currentTarget.closest("[data-probe-results]") || event.currentTarget.parentElement;
-        if (el) {
-          const w = window.open("", "_blank");
-          w.document.write("<html><head><title>Probe Results - AlloFlow</title><style>body{font-family:system-ui;padding:2rem}h4{margin:0 0 1rem}.grid{display:grid;gap:0.75rem}.bg-white{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}.text-2xl,.text-3xl{font-size:1.5rem;font-weight:bold}</style></head><body>" + el.innerHTML + "<p style=\"color:gray;margin-top:2rem;font-size:12px\">AlloFlow Assessment Center • " + new Date().toLocaleDateString() + "</p></body></html>");
-          w.document.close();
-          w.print();
-        }
-      },
+    })(),
+    renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade),
+    /*#__PURE__*/React.createElement("button", {
+      onClick: () => printClinicalProbeReport('orf', orfProbeResults, orfProbeGrade, mathProbeForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
-    }, "\uD83D\uDDA8\uFE0F Print Results"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setOrfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
     }, "Dismiss Results")), /*#__PURE__*/React.createElement("div", {
@@ -4841,7 +5263,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-purple-500 h-2 rounded-full transition-all",
       style: {
         width: `${mnProbeIndex / mnProbeProblems.length * 100}%`
@@ -5080,7 +5502,7 @@
       className: "text-xs text-red-500 hover:text-red-700 font-bold"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
       className: "bg-cyan-500 h-2 rounded-full transition-all",
       style: {
         width: `${qdProbeIndex / qdProbeProblems.length * 100}%`
@@ -6683,18 +7105,49 @@
     }, "\uD83D\uDCDD Teacher Survey"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowResearchSetup(true),
       className: "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1"
-    }, "\u2699\uFE0F Settings")), typeof renderAutoSurveyPrompt === 'function' && renderAutoSurveyPrompt(), importedStudents.length === 0 ? /*#__PURE__*/React.createElement("div", {
-      className: "bg-slate-50 rounded-xl p-8 text-center border border-slate-200"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "text-4xl mb-3"
-    }, "\uD83D\uDCCA"), /*#__PURE__*/React.createElement("h4", {
-      className: "text-lg font-bold text-slate-700 mb-2"
-    }, t('class_analytics.no_student_data')), /*#__PURE__*/React.createElement("p", {
-      className: "text-sm text-slate-500 mb-4"
-    }, "Import student assessment data to unlock research insights and growth tracking."), /*#__PURE__*/React.createElement("button", {
-      onClick: () => setAssessmentCenterTab('assessments'),
-      className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700"
-    }, "Go to Assessments \u2192")) : /*#__PURE__*/React.createElement("div", {
+    }, "\u2699\uFE0F Settings")), typeof renderAutoSurveyPrompt === 'function' && renderAutoSurveyPrompt(), importedStudents.length === 0 ? React.createElement("div", { className: "space-y-4" },
+      React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-violet-50 to-purple-50 rounded-xl p-6 border border-indigo-200" },
+        React.createElement("div", { className: "flex items-start gap-4" },
+          React.createElement("div", { className: "text-4xl shrink-0" }, "\uD83D\uDD2C"),
+          React.createElement("div", null,
+            React.createElement("h4", { className: "text-lg font-bold text-slate-800 mb-1" }, "Embedded Research Suite"),
+            React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, "AlloFlow includes complete research infrastructure for pilot studies, RTI progress monitoring, and program evaluation \u2014 all with zero PII and local-only data storage.")
+          )
+        )
+      ),
+      React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCCA"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Research Mode")),
+          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, "Start a named study with auto-session logging, configurable survey prompts, and IRB tracking.")
+        ),
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCDD"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Built-In Surveys")),
+          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, "Student, teacher, and parent surveys with pre/mid/post timepoints. Responses export as CSV for analysis.")
+        ),
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC8"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Growth Tracking & Insights")),
+          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, "Import student data to unlock longitudinal growth, practice-to-outcome correlations, and RTI tier recommendations.")
+        ),
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC4"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Data Export")),
+          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, "Three CSV exports: student-level research data, session-level fidelity log, and survey responses with timepoints. Plus CBM import.")
+        )
+      ),
+      React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+        React.createElement("h5", { className: "text-sm font-bold text-slate-700 mb-3" }, "\uD83D\uDE80 Getting Started"),
+        React.createElement("div", { className: "space-y-2" },
+          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "1"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Start Research Mode"), " above to begin tracking sessions automatically.")),
+          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "2"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Run probes"), " from the Administer tab to collect baseline data.")),
+          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "3"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Import student files"), " from the Student Data tab to unlock growth tracking.")),
+          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "4"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Administer surveys"), " at pre/mid/post timepoints to collect stakeholder perspectives."))
+        )
+      ),
+      React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
+        React.createElement("button", { onClick: function() { if (!(researchMode && researchMode.active)) setShowResearchSetup(true); }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700 transition-all" }, researchMode && researchMode.active ? '\u2705 Research Mode Active' : '\uD83D\uDD2C Start Research Mode'),
+        React.createElement("button", { onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-200 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
+        React.createElement("button", { onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-200 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
+      )
+    ) : /*#__PURE__*/React.createElement("div", {
       className: "space-y-4"
     }, researchStudent ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-4"
@@ -6705,11 +7158,15 @@
       className: "text-sm text-slate-500"
     }, "|"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-slate-700"
-    }, researchStudent)), renderInsightsPanel(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
+    }, researchStudent),
+    React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary")),
+    renderInsightsPanel(researchStudent), renderProbeProgressSummary(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border border-slate-200 p-4"
     }, /*#__PURE__*/React.createElement("h5", {
       className: "text-xs font-bold text-slate-600 uppercase mb-3"
-    }, "\uD83D\uDCC8 Practice vs Outcome"), renderScatterPlot())) : /*#__PURE__*/React.createElement("div", null, typeof renderClassInsights === 'function' && renderClassInsights(), /*#__PURE__*/React.createElement("div", {
+    }, "\uD83D\uDCC8 Practice vs Outcome"), renderScatterPlot())) : /*#__PURE__*/React.createElement("div", null,
+    importedStudents.length > 0 && React.createElement("div", { className: "mb-3 flex justify-end" }, React.createElement("button", { onClick: printClassScreeningReport, className: "px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-2" }, "\uD83C\uDFEB Print Class Screening Report")),
+    typeof renderClassInsights === 'function' && renderClassInsights(), /*#__PURE__*/React.createElement("div", {
       className: "mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
     }, importedStudents.map(s => {
       const name = s.name || s;

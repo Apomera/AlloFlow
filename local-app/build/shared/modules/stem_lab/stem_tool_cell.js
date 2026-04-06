@@ -29,6 +29,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-cell')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-cell';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   window.StemLab.registerTool('cell', {
     icon: '\uD83D\uDD2C',
@@ -36,6 +49,12 @@ window.StemLab = window.StemLab || {
     desc: 'Explore 11 living micro-organisms in a simulated petri dish',
     color: 'green',
     category: 'science',
+    questHooks: [
+      { id: 'discover_5', label: 'Discover 5 organisms', icon: '\uD83D\uDD2C', check: function(d) { var e = d._cellExt || {}; return (e.organismsObserved || []).length >= 5; }, progress: function(d) { var e = d._cellExt || {}; return (e.organismsObserved || []).length + '/5'; } },
+      { id: 'discover_10', label: 'Discover 10 organisms', icon: '\uD83C\uDFC6', check: function(d) { return (d.discoveries || []).length >= 10; }, progress: function(d) { return (d.discoveries || []).length + '/10'; } },
+      { id: 'quiz_3', label: 'Answer 3 cell biology quiz questions correctly', icon: '\uD83E\uDDE0', check: function(d) { var e = d._cellExt || {}; return (e.quizCorrect || 0) >= 3; }, progress: function(d) { var e = d._cellExt || {}; return (e.quizCorrect || 0) + '/3'; } },
+      { id: 'earn_50_xp', label: 'Earn 50 Cell Explorer XP', icon: '\u2B50', check: function(d) { return (d.xpEarned || 0) >= 50; }, progress: function(d) { return (d.xpEarned || 0) + '/50 XP'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -68,10 +87,20 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (cell) ──
       return (function() {
 var d = labToolData.cell;
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('cell', 'init', {
+              first: 'Cell Explorer loaded. Examine plant and animal cell structures. Click organelles to learn about their functions.',
+              repeat: 'Cell Explorer active.',
+              terse: 'Cell Explorer.'
+            }, { debounce: 800 });
+          }
 
           var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { cell: Object.assign({}, prev.cell, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
 
@@ -3496,7 +3525,7 @@ var d = labToolData.cell;
 
                 ),
 
-                d.mode === 'play' && React.createElement("button", { "aria-label": "Action",
+                d.mode === 'play' && React.createElement("button", { "aria-label": "Play as " + selDef.label,
 
                   onClick: function () {
 
@@ -3649,7 +3678,7 @@ var d = labToolData.cell;
 
                   quizQuestion.options.map(function (opt) {
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": "Select quiz answer: " + opt,
 
                       key: opt, onClick: function () {
 
@@ -3685,7 +3714,7 @@ var d = labToolData.cell;
 
                   ORGANISMS.map(function (org) {
 
-                    return React.createElement("button", { "aria-label": "Action",
+                    return React.createElement("button", { "aria-label": "Select answer: " + org.label,
 
                       key: org.id, onClick: function () {
 

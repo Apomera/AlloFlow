@@ -16,6 +16,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-dataplot')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-dataplot';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects ──
@@ -181,6 +194,11 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDCCA', label: 'Data Plotter',
     desc: 'Plot data, calculate regression & R\u00B2',
     color: 'slate', category: 'creative',
+    questHooks: [
+      { id: 'plot_5_points', label: 'Plot 5+ data points', icon: '\uD83D\uDCCD', check: function(d) { return (d.points || []).length >= 5; }, progress: function(d) { return (d.points || []).length + '/5 points'; } },
+      { id: 'plot_10_points', label: 'Plot 10+ data points for regression analysis', icon: '\uD83D\uDCC8', check: function(d) { return (d.points || []).length >= 10; }, progress: function(d) { return (d.points || []).length + '/10 points'; } },
+      { id: 'view_residuals', label: 'View residuals to evaluate fit quality', icon: '\uD83D\uDD2C', check: function(d) { return d.showResiduals || false; }, progress: function(d) { return d.showResiduals ? 'Viewing!' : 'Toggle residuals'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

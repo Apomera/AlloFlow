@@ -2,6 +2,19 @@
 // Extracted and enhanced with Journey Mode
 (function(){
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-watercycle')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-watercycle';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'waterCycle', desc:'Interactive Water Cycle with Journey Mode',
@@ -19,6 +32,7 @@
       var stemCelebrate=ctx.celebrate; var stemBeep=ctx.beep;
       var gradeLevel=ctx.gradeLevel;
       var callGemini=ctx.callGemini;
+      var canvasNarrate=ctx.canvasNarrate;
       return (function(){
 const d = labToolData.waterCycle;
 
@@ -100,6 +114,16 @@ const d = labToolData.waterCycle;
           // Resolve grade-tiered content
           var selDesc = sel ? (typeof sel.desc === 'object' ? (sel.desc[gradeBand] || sel.desc['3-5']) : sel.desc) : '';
           var selFunFact = sel ? (typeof sel.funFact === 'object' ? (sel.funFact[gradeBand] || sel.funFact['3-5']) : sel.funFact) : '';
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('waterCycle', 'init', {
+              first: 'Water Cycle Simulator loaded. Currently viewing ' + (sel ? sel.label : 'evaporation') + '. This interactive diagram shows evaporation, condensation, precipitation, collection, transpiration, and infiltration.',
+              repeat: 'Water Cycle, stage: ' + (sel ? sel.label : 'evaporation') + '.',
+              terse: 'Water Cycle.'
+            }, { debounce: 800 });
+          }
+
 
 
 
@@ -1602,7 +1626,7 @@ const d = labToolData.waterCycle;
 
                 return React.createElement("button", { "aria-label": "Change active stage",
 
-                  key: stage.id, onClick: function () { upd('activeStage', stage.id); },
+                  key: stage.id, onClick: function () { upd('activeStage', stage.id); if (typeof canvasNarrate === 'function') { canvasNarrate('waterCycle', 'stage_select', { first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''), repeat: stage.label + ' stage.', terse: stage.label + '.' }, { debounce: 500 }); } },
 
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.activeStage || 'evaporation') === stage.id ? 'text-white shadow-md' : 'border hover:opacity-80'),
 
@@ -1785,7 +1809,11 @@ const d = labToolData.waterCycle;
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_watercycle.js
               React.createElement("button", { "aria-label": "Action",
+=======
+              React.createElement("button", { "aria-label": "Start water cycle quiz",
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_watercycle.js
 
                 onClick: function () {
                   // Grade-tiered static quiz banks
@@ -1829,7 +1857,11 @@ const d = labToolData.waterCycle;
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_watercycle.js
               callGemini && React.createElement("button", { "aria-label": "Action",
+=======
+              callGemini && React.createElement("button", { "aria-label": "Generate AI quiz question",
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_watercycle.js
                 onClick: function() {
                   if (d.aiQuizLoading) return;
                   upd('aiQuizLoading', true);
@@ -1894,7 +1926,11 @@ const d = labToolData.waterCycle;
 
                     var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm' : isCorrect ? 'bg-emerald-100 border-emerald-400 shadow-sm' : wasChosen ? 'bg-red-100 border-red-400' : 'bg-slate-50 border-slate-200 opacity-40';
 
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_watercycle.js
                     return React.createElement("button", { "aria-label": "Action",
+=======
+                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_watercycle.js
 
                       key: opt, disabled: d.wcQuiz.answered, onClick: function () {
 

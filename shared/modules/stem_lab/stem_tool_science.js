@@ -1,10 +1,10 @@
-﻿// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// stem_tool_science.js â€” STEM Lab Science Tools
+// ═══════════════════════════════════════════
+// stem_tool_science.js — STEM Lab Science Tools
 // 5 registered tools (aquarium, ecosystem, molecule, solarSystem, universe, behaviorLab, economicsLab, companionPlanting extracted) (cell, chemBalance, punnett, fractionViz, gameStudio extracted)
 // Auto-extracted (Phase 2 modularization)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 
-// â•â•â• Defensive StemLab guard â•â•â•
+// ═══ Defensive StemLab guard ═══
 // Ensure window.StemLab is available before registering tools.
 // If stem_lab_module.js hasn't loaded yet, create the registry stub.
 window.StemLab = window.StemLab || {
@@ -28,10 +28,23 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
-// â•â•â• End Guard â•â•â•
+// ═══ End Guard ═══
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-science')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-science';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
 
   /* molecule tool extracted to stem_tool_molecule.js */
@@ -39,7 +52,7 @@ window.StemLab = window.StemLab || {
 
   /* solarSystem tool extracted to stem_tool_solarsystem.js */
 
-  // â•â•â• ðŸ”¬ universe (universe) â•â•â•
+  // ═══ 🔬 universe (universe) ═══
 
   /* universe tool extracted to stem_tool_universe.js */
 
@@ -48,26 +61,26 @@ window.StemLab = window.StemLab || {
   /* anatomy tool extracted to stem_tool_anatomy.js */
 
 
-  /* dissection: removed — see stem_tool_dissection.js */
+  /* dissection: removed � see stem_tool_dissection.js */
 
 
 
-  /* brainAtlas: removed â€” see stem_tool_brainatlas.js */
+  /* brainAtlas: removed — see stem_tool_brainatlas.js */
 
 
   /* graphCalc tool extracted to stem_tool_graphcalc.js */
 
   /* algebraCAS tool extracted to stem_tool_algebraCAS.js */
 
-  // â•â•â• ðŸ”¬ circuit (circuit) â•â•â•
+  // ═══ 🔬 circuit (circuit) ═══
   window.StemLab.registerTool('circuit', {
-    icon: 'ðŸ”¬',
+    icon: '🔬',
     label: 'circuit',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -99,12 +112,22 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
-      // â”€â”€ Tool body (circuit) â”€â”€
+      // ── Tool body (circuit) ──
       return (function() {
 var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_isCircuit) { React.useEffect(function(){}, []); return null; }
 
           const d = labToolData.circuit;
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('science', 'init', {
+              first: 'Science Lab loaded. Explore physics, chemistry, and biology experiments with interactive simulations.',
+              repeat: 'Science Lab active.',
+              terse: 'Science Lab.'
+            }, { debounce: 800 });
+          }
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, circuit: { ...prev.circuit, [key]: val } }));
 
@@ -270,7 +293,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
               ),
 
-              // Components â€” Series
+              // Components — Series
 
               mode === 'series'
 
@@ -402,7 +425,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                 })
 
-                // Components â€” Parallel
+                // Components — Parallel
 
                 : d.components.map(function (comp, i) {
 
@@ -736,7 +759,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
             ),
 
-            // â”€â”€ Ohm's Law Quiz â”€â”€
+            // ── Ohm's Law Quiz ──
 
             (() => {
 
@@ -750,17 +773,17 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                 var qTypes = [
 
-                  function () { var V = [3, 5, 6, 9, 12, 24][Math.floor(Math.random() * 6)]; var R = [10, 20, 50, 100, 200, 500][Math.floor(Math.random() * 6)]; var I = V / R; return { q: 'A ' + V + 'V battery drives current through a ' + R + 'Î© resistor. What is the current?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = V/R = ' + V + '/' + R + ' = ' + I.toFixed(3) + 'A' }; },
+                  function () { var V = [3, 5, 6, 9, 12, 24][Math.floor(Math.random() * 6)]; var R = [10, 20, 50, 100, 200, 500][Math.floor(Math.random() * 6)]; var I = V / R; return { q: 'A ' + V + 'V battery drives current through a ' + R + 'Ω resistor. What is the current?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = V/R = ' + V + '/' + R + ' = ' + I.toFixed(3) + 'A' }; },
 
-                  function () { var I2 = [0.1, 0.2, 0.5, 1, 2, 3][Math.floor(Math.random() * 6)]; var R2 = [10, 20, 50, 100, 200][Math.floor(Math.random() * 5)]; var V2 = I2 * R2; return { q: 'A current of ' + I2 + 'A flows through a ' + R2 + 'Î© resistor. What voltage is required?', a: parseFloat(V2.toFixed(1)), unit: 'V', formula: 'V = IR = ' + I2 + 'Ã—' + R2 + ' = ' + V2.toFixed(1) + 'V' }; },
+                  function () { var I2 = [0.1, 0.2, 0.5, 1, 2, 3][Math.floor(Math.random() * 6)]; var R2 = [10, 20, 50, 100, 200][Math.floor(Math.random() * 5)]; var V2 = I2 * R2; return { q: 'A current of ' + I2 + 'A flows through a ' + R2 + 'Ω resistor. What voltage is required?', a: parseFloat(V2.toFixed(1)), unit: 'V', formula: 'V = IR = ' + I2 + '×' + R2 + ' = ' + V2.toFixed(1) + 'V' }; },
 
-                  function () { var V3 = [6, 9, 12, 24][Math.floor(Math.random() * 4)]; var I3 = [0.1, 0.2, 0.5, 1, 2][Math.floor(Math.random() * 5)]; var R3 = V3 / I3; return { q: 'A ' + V3 + 'V source pushes ' + I3 + 'A of current. What is the resistance?', a: parseFloat(R3.toFixed(1)), unit: 'Î©', formula: 'R = V/I = ' + V3 + '/' + I3 + ' = ' + R3.toFixed(1) + 'Î©' }; },
+                  function () { var V3 = [6, 9, 12, 24][Math.floor(Math.random() * 4)]; var I3 = [0.1, 0.2, 0.5, 1, 2][Math.floor(Math.random() * 5)]; var R3 = V3 / I3; return { q: 'A ' + V3 + 'V source pushes ' + I3 + 'A of current. What is the resistance?', a: parseFloat(R3.toFixed(1)), unit: 'Ω', formula: 'R = V/I = ' + V3 + '/' + I3 + ' = ' + R3.toFixed(1) + 'Ω' }; },
 
-                  function () { var V4 = [6, 9, 12][Math.floor(Math.random() * 3)]; var I4 = [0.5, 1, 2, 3][Math.floor(Math.random() * 4)]; var P4 = V4 * I4; return { q: 'A ' + V4 + 'V circuit draws ' + I4 + 'A. What is the power consumed?', a: parseFloat(P4.toFixed(1)), unit: 'W', formula: 'P = IV = ' + I4 + 'Ã—' + V4 + ' = ' + P4.toFixed(1) + 'W' }; },
+                  function () { var V4 = [6, 9, 12][Math.floor(Math.random() * 3)]; var I4 = [0.5, 1, 2, 3][Math.floor(Math.random() * 4)]; var P4 = V4 * I4; return { q: 'A ' + V4 + 'V circuit draws ' + I4 + 'A. What is the power consumed?', a: parseFloat(P4.toFixed(1)), unit: 'W', formula: 'P = IV = ' + I4 + '×' + V4 + ' = ' + P4.toFixed(1) + 'W' }; },
 
-                  function () { var R5a = [50, 100, 200][Math.floor(Math.random() * 3)]; var R5b = [50, 100, 200][Math.floor(Math.random() * 3)]; var Rtot = R5a + R5b; return { q: 'Two resistors (' + R5a + 'Î© and ' + R5b + 'Î©) are in series. What is the total resistance?', a: parseFloat(Rtot.toFixed(1)), unit: 'Î©', formula: 'R_total = Râ‚ + Râ‚‚ = ' + R5a + ' + ' + R5b + ' = ' + Rtot + 'Î©' }; },
+                  function () { var R5a = [50, 100, 200][Math.floor(Math.random() * 3)]; var R5b = [50, 100, 200][Math.floor(Math.random() * 3)]; var Rtot = R5a + R5b; return { q: 'Two resistors (' + R5a + 'Ω and ' + R5b + 'Ω) are in series. What is the total resistance?', a: parseFloat(Rtot.toFixed(1)), unit: 'Ω', formula: 'R_total = R₁ + R₂ = ' + R5a + ' + ' + R5b + ' = ' + Rtot + 'Ω' }; },
 
-                  function () { var R6a = [100, 200, 300][Math.floor(Math.random() * 3)]; var R6b = [100, 200, 300][Math.floor(Math.random() * 3)]; var Rpar = (R6a * R6b) / (R6a + R6b); return { q: 'Two resistors (' + R6a + 'Î© and ' + R6b + 'Î©) are in parallel. What is the total resistance?', a: parseFloat(Rpar.toFixed(1)), unit: 'Î©', formula: 'R = (Râ‚Ã—Râ‚‚)/(Râ‚+Râ‚‚) = (' + R6a + 'Ã—' + R6b + ')/(' + R6a + '+' + R6b + ') = ' + Rpar.toFixed(1) + 'Î©' }; }
+                  function () { var R6a = [100, 200, 300][Math.floor(Math.random() * 3)]; var R6b = [100, 200, 300][Math.floor(Math.random() * 3)]; var Rpar = (R6a * R6b) / (R6a + R6b); return { q: 'Two resistors (' + R6a + 'Ω and ' + R6b + 'Ω) are in parallel. What is the total resistance?', a: parseFloat(Rpar.toFixed(1)), unit: 'Ω', formula: 'R = (R₁×R₂)/(R₁+R₂) = (' + R6a + '×' + R6b + ')/(' + R6a + '+' + R6b + ') = ' + Rpar.toFixed(1) + 'Ω' }; }
 
                 ];
 
@@ -790,11 +813,11 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cq ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700')
 
-                  }, cq ? 'ðŸ”„ Next Question' : 'âš¡ Ohm\'s Law Quiz'),
+                  }, cq ? '🔄 Next Question' : '⚡ Ohm\'s Law Quiz'),
 
-                  cqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, 'â­ ' + cqScore + ' correct'),
+                  cqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + cqScore + ' correct'),
 
-                  cqStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, 'ðŸ”¥ ' + cqStreak + ' streak')
+                  cqStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, '🔥 ' + cqStreak + ' streak')
 
                 ),
 
@@ -818,9 +841,9 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                           upd('ohmStreak', correct ? cqStreak + 1 : 0);
 
-                          if (correct) { addToast('âš¡ Correct! ' + cq.formula, 'success'); awardStemXP('circuit', 10, 'Ohm\'s Law Quiz'); }
+                          if (correct) { addToast('⚡ Correct! ' + cq.formula, 'success'); awardStemXP('circuit', 10, 'Ohm\'s Law Quiz'); }
 
-                          else { addToast('âŒ ' + cq.formula, 'error'); }
+                          else { addToast('❌ ' + cq.formula, 'error'); }
 
                         }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all"
 
@@ -834,9 +857,9 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                 cq && cq.answered && React.createElement("div", { className: "p-3 rounded-lg text-sm font-bold " + (Math.abs(cq.chosen - cq.answer) < 0.01 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
 
-                  Math.abs(cq.chosen - cq.answer) < 0.01 ? 'âœ… Correct!' : 'âŒ Answer: ' + cq.answer + cq.unit,
+                  Math.abs(cq.chosen - cq.answer) < 0.01 ? '✅ Correct!' : '❌ Answer: ' + cq.answer + cq.unit,
 
-                  React.createElement("p", { className: "text-xs font-normal mt-1 " + (Math.abs(cq.chosen - cq.answer) < 0.01 ? 'text-emerald-600' : 'text-red-600') }, 'ðŸ“ ' + cq.formula)
+                  React.createElement("p", { className: "text-xs font-normal mt-1 " + (Math.abs(cq.chosen - cq.answer) < 0.01 ? 'text-emerald-600' : 'text-red-600') }, '📐 ' + cq.formula)
 
                 )
 
@@ -851,5 +874,5 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
     }
   });
 
-  console.log('[StemLab] stem_tool_science.js loaded â€” 29 tools');
+  console.log('[StemLab] stem_tool_science.js loaded — 29 tools');
 })();

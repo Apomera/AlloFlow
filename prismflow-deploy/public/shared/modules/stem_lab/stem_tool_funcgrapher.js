@@ -29,6 +29,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-funcgrapher')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-funcgrapher';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ═══ 📈 Function Grapher ═══
   window.StemLab.registerTool('funcGrapher', {
@@ -70,6 +83,7 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
 
       // ── Tool body (funcGrapher) ──
       return (function() {
@@ -88,6 +102,15 @@ window.StemLab = window.StemLab || {
           }
 
           const d = labToolData.funcGrapher;
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('funcGrapher', 'init', {
+              first: 'Function Grapher loaded. Plot mathematical functions, explore transformations, and visualize equations on an interactive coordinate plane.',
+              repeat: 'Function Grapher active.',
+              terse: 'Grapher.'
+            }, { debounce: 800 });
+          }
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
 
@@ -970,7 +993,11 @@ window.StemLab = window.StemLab || {
 
                     fgQuiz.opts.map(function (opt) {
 
+<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_funcgrapher.js
                       return React.createElement("button", { "aria-label": "Action",
+=======
+                      return React.createElement("button", { "aria-label": "Select answer: " + String(opt),
+>>>>>>> upstream/main:prismflow-deploy/public/stem_tool_funcgrapher.js
 
                         key: String(opt), onClick: function () {
 

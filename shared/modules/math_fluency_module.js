@@ -4,6 +4,19 @@
 // ═══════════════════════════════════════════════════════════════
 (function () {
   'use strict';
+  // WCAG 4.1.3: Status live region for dynamic content announcements
+  (function() {
+    if (document.getElementById('allo-live-math-fluency')) return;
+    var liveRegion = document.createElement('div');
+    liveRegion.id = 'allo-live-math-fluency';
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.className = 'sr-only';
+    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(liveRegion);
+  })();
+
 
   // ── Grade-Normed DCPM Benchmarks (Research-Based) ──
   // Sources: AIMSweb, NWEA, Fuchs & Fuchs (2004)
@@ -28,8 +41,9 @@
   }
 
   function getBenchmark(grade, operation) {
-    var g = String(grade || '3').replace(/\D/g, '') || '3';
-    if (g === '0') g = 'K';
+    var raw = String(grade || '3').trim();
+    if (raw.toUpperCase() === 'K') { var g = 'K'; }
+    else { var g = raw.replace(/\D/g, '') || '3'; if (g === '0') g = 'K'; }
     var gradeData = BENCHMARKS[g] || BENCHMARKS['3'];
     var op = operation === 'mixed' ? 'add' : operation;
     var opData = gradeData[op] || gradeData.add || { fall: 30, winter: 40, spring: 50 };
@@ -406,7 +420,7 @@
               '#' + (currentIndex + 1) + ' \u2022 \u2705 ' + correctCount)
           ),
           h('div', { style: { height: '12px', background: '#e2e8f0', borderRadius: '9999px', overflow: 'hidden' } },
-            h('div', { style: {
+            h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: {
               height: '100%', borderRadius: '9999px', transition: 'width 1s linear',
               background: isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #f59e0b, #f97316)',
               width: timerPct + '%'
@@ -414,7 +428,7 @@
           )
         ),
         // Problem card
-        h('div', {
+        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
           style: {
             background: '#fff', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.1)', border: '2px solid #fde68a',
             padding: '2rem 3rem', width: '100%', maxWidth: '28rem', textAlign: 'center'
@@ -589,14 +603,14 @@
           h(Zap, { size: 16 }),
           h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 800, fontSize: '14px', color: '#92400e' } }, '\u26a1 Math Fluency Probe')
         ),
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '6px' } },
-          h('button', {
+        h('div', { 'aria-expanded': String(soundEnabled), role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '6px' } },
+          h('button', { 'aria-expanded': String(soundEnabled),
             onClick: function () { setSoundEnabled(!soundEnabled); },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
             'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects',
             style: { padding: '4px 8px', borderRadius: '8px', border: '1px solid #fde68a', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }
           }, soundEnabled ? h(Volume2, { size: 14 }) : h(VolumeX, { size: 14 })),
-          h('button', {
+          h('button', { 'aria-expanded': String(autoAdvance),
             onClick: function () { setAutoAdvance(!autoAdvance); },
             title: autoAdvance ? 'Disable auto-advance' : 'Enable auto-advance (moves to next on correct answer)',
             'aria-label': autoAdvance ? 'Disable auto-advance' : 'Enable auto-advance',
