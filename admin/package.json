@@ -1,6 +1,6 @@
 {
   "name": "alloflow-admin",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "AlloFlow Admin - Setup Wizard & Management",
   "main": "public/main.js",
   "author": "AlloFlow Team",
