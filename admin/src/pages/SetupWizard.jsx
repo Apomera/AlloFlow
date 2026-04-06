@@ -654,13 +654,19 @@ export default function SetupWizard({ onComplete }) {
                                 <li>Choose <strong>External</strong> → <strong>Create</strong></li>
                                 <li>Fill in <strong>App name</strong> (e.g. <em>AlloFlow</em>) and your email → <strong>Save and Continue</strong></li>
                                 <li>Skip the Scopes page → <strong>Save and Continue</strong></li>
-                                <li><strong style={{color: '#d32f2f'}}>MUST DO:</strong> On <strong>Test users</strong> page, click <strong>+ Add users</strong> and add your own Gmail address (the one you'll use to sign in to AlloFlow) → <strong>Save and Continue</strong></li>
-                                <li>Click <strong>Back to Dashboard</strong></li>
+                                <li><strong style={{color: '#d32f2f'}}>MUST DO:</strong> Click <strong>Open Test Users</strong> below → click <strong>+ Add users</strong> and add your own Gmail address (the one you'll use to sign in to AlloFlow) → <strong>Save and Continue</strong></li>
+                                <li>Go back to Dashboard</li>
                               </ol>
-                              <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
-                                onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials/consent')}>
-                                Open Consent Screen ↗
-                              </button>
+                              <div style={{display: 'grid', gap: '6px', gridTemplateColumns: '1fr 1fr'}}>
+                                <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
+                                  onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials/consent')}>
+                                  Open Consent Screen ↗
+                                </button>
+                                <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer', background: '#d32f2f', color: 'white', border: 'none', borderRadius: '4px'}}
+                                  onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/auth/audience')}>
+                                  Open Test Users ↗
+                                </button>
+                              </div>
                             </div>
 
                             <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>

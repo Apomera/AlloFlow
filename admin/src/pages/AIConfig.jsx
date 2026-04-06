@@ -463,13 +463,19 @@ export default function AIConfig() {
                       <li>Fill in <strong>App name</strong> (e.g. <em>AlloFlow</em>) and your email in the support email field</li>
                       <li>Scroll to the bottom and click <strong>Save and Continue</strong></li>
                       <li>On the <strong>Scopes</strong> page, scroll down and click <strong>Save and Continue</strong> (no changes needed)</li>
-                      <li><strong style={{ color: '#d32f2f' }}>⚠ CRITICAL:</strong> On <strong>Test users</strong> page, click <strong>+ Add users</strong> button and enter your own Gmail address (the email you'll use to sign in to AlloFlow), then click <strong>Save and Continue</strong></li>
+                      <li><strong style={{ color: '#d32f2f' }}>⚠ CRITICAL:</strong> Click <strong>Open Test Users</strong> below → click <strong>+ Add users</strong> button and enter your own Gmail address (the email you'll use to sign in to AlloFlow), then click <strong>Save and Continue</strong></li>
                       <li>Click <strong>Back to Dashboard</strong></li>
                     </ol>
-                    <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials/consent')}
-                      style={{ fontSize: '0.8rem' }}>
-                      Open Consent Screen ↗
-                    </button>
+                    <div style={{ display: 'grid', gap: '0.5rem', gridTemplateColumns: '1fr 1fr' }}>
+                      <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials/consent')}
+                        style={{ fontSize: '0.8rem' }}>
+                        Open Consent Screen ↗
+                      </button>
+                      <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/auth/audience')}
+                        style={{ fontSize: '0.8rem', background: '#d32f2f', color: 'white', border: 'none' }}>
+                        Open Test Users ↗
+                      </button>
+                    </div>
                   </div>
 
                   {/* Step 4 */}

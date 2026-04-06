@@ -117,7 +117,11 @@
         }
       } catch {
         errors.push({ service: 'LM Studio', url: config.llmEngineUrl || 'http://localhost:1234', required: false });
-        document.getElementById('offline-banner').classList.add('visible');
+        // Only show offline banner if user selected local as AI provider (or it's undefined/legacy)
+        const aiProvider = config.aiProvider || 'local';
+        if (aiProvider === 'local' || aiProvider === 'llm-engine') {
+          document.getElementById('offline-banner').classList.add('visible');
+        }
       }
 
       // Check SQLite backend
