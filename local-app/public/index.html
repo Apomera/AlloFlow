@@ -16,17 +16,8 @@
              connect-src 'self' localhost:* 127.0.0.1:* ws://localhost:*;" />
   <title>AlloFlow — Local</title>
 
-  <!-- Tailwind CSS - served from build or CDN for dev -->
-  <!-- In production, this should be replaced with a build-time CSS file -->
-  <!-- For now, using CDN with note that it should not be used in production -->
-  <link rel="stylesheet" href="./tailwind.css" onerror="console.warn('[Tailwind] CSS file not found, falling back to CDN'); loadTailwindCDN()">
-
-  <!-- React + ReactDOM from CDN (pinned to same version as web app) -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
   <script>
-    // Tailwind CDN fallback for development
+    // Tailwind CDN fallback for development (define before link tag)
     function loadTailwindCDN() {
       if (!document.querySelector('script[src*="tailwindcss.com"]')) {
         const script = document.createElement('script');
@@ -36,6 +27,15 @@
       }
     }
   </script>
+
+  <!-- Tailwind CSS - served from build or CDN for dev -->
+  <!-- In production, this should be replaced with a build-time CSS file -->
+  <!-- For now, using CDN with note that it should not be used in production -->
+  <link rel="stylesheet" href="./tailwind.css" onerror="console.warn('[Tailwind] CSS file not found, falling back to CDN'); loadTailwindCDN()">
+
+  <!-- React + ReactDOM from CDN (pinned to same version as web app) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
   <!-- Shared context (must load first — defines window.__alloShared) -->
   <script src="./sharedContext_local.js" defer></script>
