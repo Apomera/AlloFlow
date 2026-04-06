@@ -97,6 +97,18 @@ contextBridge.exposeInMainWorld('alloAPI', {
     backendStatus: () => ipcRenderer.invoke('local:backend-status'),
   },
 
+  // ── Gemini OAuth (image generation via Google Sign-In) ──────────────────
+  geminiOAuth: {
+    // Start Google OAuth flow — opens system browser, returns { success, email } or { success: false, error }
+    start:    () => ipcRenderer.invoke('oauth:gemini-start'),
+    // Check current connection status — returns { connected, email?, expiry? }
+    status:   () => ipcRenderer.invoke('oauth:gemini-status'),
+    // Get a valid access token (auto-refreshed) — returns token string or null
+    getToken: () => ipcRenderer.invoke('oauth:gemini-get-token'),
+    // Revoke and clear stored credentials
+    revoke:   () => ipcRenderer.invoke('oauth:gemini-revoke'),
+  },
+
   // ── Log Streaming ──────────────────────────────────────────────────────────
   logs: {
     // Stream main process logs (deployment, service startup, etc.)

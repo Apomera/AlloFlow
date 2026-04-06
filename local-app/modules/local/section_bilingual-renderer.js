@@ -1161,10 +1161,39 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
     return changes;
   };
-  /* [LOCAL] Image editing not available in local mode */
+  /* [LOCAL] Image editing via Gemini cloud (requires imageProvider=gemini + access token) */
   const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null) => {
-    warnLog('[ImageEdit] Image editing is not available in local mode.');
-    return null;
+    const token = window.__alloLocalConfig?.geminiAccessToken;
+    if (!token) {
+      warnLog('[ImageEdit] No Gemini access token — image editing unavailable');
+      return null;
+    }
+    try {
+      const parts = [
+        { text: prompt },
+        { inline_data: { mime_type: 'image/png', data: base64Image } },
+      ];
+      if (referenceBase64) parts.push({ inline_data: { mime_type: 'image/png', data: referenceBase64 } });
+      const resp = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
+          })
+        }
+      );
+      if (!resp.ok) { warnLog('[ImageEdit] Gemini error', resp.status); return null; }
+      const data = await resp.json();
+      const imgPart = (data?.candidates?.[0]?.content?.parts || []).find(p => p.inlineData?.mimeType?.startsWith('image/'));
+      if (!imgPart) { warnLog('[ImageEdit] No image in Gemini response'); return null; }
+      return `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
+    } catch (err) {
+      warnLog('[ImageEdit] Request failed:', err.message);
+      return null;
+    }
   };
   /* [LOCAL] Vision via LM Studio (requires a vision model like llava) */
   const callGeminiVision = async (prompt, base64Data, mimeType) => {
@@ -1628,8 +1657,45 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   }, [apiKey, leveledTextLanguage, currentUiLanguage]);
   const imagenQueueRef = React.useRef(Promise.resolve());
   const imagenRateLimitedRef = React.useRef(false);
-  /* [LOCAL] Image generation via Flux server at port 7860 */
+  /* [LOCAL] Gemini cloud image generation (requires imageProvider=gemini + access token) */
+  const callGeminiImagen = async (prompt, width = 512) => {
+    const token = window.__alloLocalConfig?.geminiAccessToken;
+    if (!token) { warnLog('[Imagen/Gemini] No access token available'); return null; }
+    try {
+      const resp = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
+          })
+        }
+      );
+      if (!resp.ok) {
+        const errBody = await resp.text().catch(() => '');
+        warnLog(`[Imagen/Gemini] API error ${resp.status}:`, errBody.substring(0, 200));
+        return null;
+      }
+      const data = await resp.json();
+      const imgPart = (data?.candidates?.[0]?.content?.parts || []).find(p => p.inlineData?.mimeType?.startsWith('image/'));
+      if (!imgPart) { warnLog('[Imagen/Gemini] No image in response'); return null; }
+      return `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
+    } catch (err) {
+      warnLog('[Imagen/Gemini] Request failed:', err.message);
+      return null;
+    }
+  };
+  /* [LOCAL] Image generation router — Gemini cloud or local Flux */
   const callImagen = async (prompt, width = 300, qual = 0.7) => {
+    const imageProvider = window.__alloLocalConfig?.imageProvider || 'flux';
+    if (imageProvider === 'gemini') {
+      const cloudUrl = await callGeminiImagen(prompt, width);
+      if (cloudUrl) return cloudUrl;
+      warnLog('[Imagen] Gemini failed, falling back to Flux');
+    }
+    // Local Flux fallback
     const fluxUrl = (window.__alloLocalConfig?.fluxUrl || 'http://localhost:7860') + '/v1/images/generations';
     try {
       const response = await fetch(fluxUrl, {

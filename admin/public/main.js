@@ -1,7 +1,9 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const http = require('http');
+const { randomBytes, createHash } = require('crypto');
 const nativePM = require('./nativeProcessManager');
 // Ollama manager removed — now using universal llm-engine (llama.cpp)
 const serviceUpdatesManager = require('./serviceUpdatesManager');
@@ -138,6 +140,22 @@ function stopServiceUpdateDetector() {
 const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
 const CONFIG_FILE = path.join(ALLOFLOW_DIR, 'config.json');
 const AI_CONFIG_FILE = path.join(ALLOFLOW_DIR, 'ai_config.json');
+const GEMINI_TOKEN_FILE = path.join(ALLOFLOW_DIR, 'gemini_token.json');
+
+// ── Google OAuth config — register at https://console.cloud.google.com/
+// Create a project → Enable "Generative Language API" → OAuth 2.0 → Desktop app type
+// Then paste your client_id and client_secret in ~/.alloflow/ai_config.json:
+//   { "googleClientId": "...", "googleClientSecret": "..." }
+// Or set them here as defaults (Desktop app secrets are not truly secret).
+function getGoogleOAuthCreds() {
+  try {
+    if (fs.existsSync(AI_CONFIG_FILE)) {
+      const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf8'));
+      if (ai.googleClientId) return { clientId: ai.googleClientId, clientSecret: ai.googleClientSecret || '' };
+    }
+  } catch (_) {}
+  return null;
+}
 const VERSION_FILE = path.join(ALLOFLOW_DIR, 'version.json');
 const DEPLOYMENT_MANIFEST  = path.join(ALLOFLOW_DIR, 'deployment.json');
 const LOCAL_CONFIG_FILE    = path.join(ALLOFLOW_DIR, 'local_config.json');
@@ -1617,6 +1635,203 @@ ipcMain.handle('services:start-all', async (event) => {
     console.error('[ipc:services:start-all] Error:', err.message);
     return { success: false, error: err.message };
   }
+});
+
+// ============================================================================
+// GEMINI OAUTH 2.0  (PKCE, loopback redirect — RFC 8252)
+// ============================================================================
+
+function readGeminiToken() {
+  try {
+    if (!fs.existsSync(GEMINI_TOKEN_FILE)) return null;
+    return JSON.parse(fs.readFileSync(GEMINI_TOKEN_FILE, 'utf8'));
+  } catch (_) { return null; }
+}
+
+function writeGeminiToken(tokenData) {
+  if (!fs.existsSync(ALLOFLOW_DIR)) fs.mkdirSync(ALLOFLOW_DIR, { recursive: true });
+  fs.writeFileSync(GEMINI_TOKEN_FILE, JSON.stringify(tokenData, null, 2), 'utf8');
+}
+
+async function refreshGeminiTokenIfNeeded() {
+  const token = readGeminiToken();
+  if (!token?.refresh_token) return null;
+  // Refresh if within 5 minutes of expiry
+  if (token.expiry && Date.now() < token.expiry - 5 * 60 * 1000) return token;
+  const creds = getGoogleOAuthCreds();
+  if (!creds) return token; // can't refresh without creds
+  try {
+    const resp = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: creds.clientId,
+        client_secret: creds.clientSecret,
+        grant_type: 'refresh_token',
+        refresh_token: token.refresh_token,
+      }).toString()
+    });
+    if (!resp.ok) {
+      console.warn('[oauth:gemini] Token refresh failed:', resp.status);
+      return token;
+    }
+    const data = await resp.json();
+    const updated = {
+      ...token,
+      access_token: data.access_token,
+      expiry: Date.now() + (data.expires_in || 3600) * 1000,
+    };
+    writeGeminiToken(updated);
+    console.log('[oauth:gemini] Token refreshed, expires in', data.expires_in, 's');
+    return updated;
+  } catch (err) {
+    console.warn('[oauth:gemini] Refresh error:', err.message);
+    return token;
+  }
+}
+
+// Background refresh — runs every 45 minutes while app is open
+setInterval(async () => {
+  const token = readGeminiToken();
+  if (token?.refresh_token) await refreshGeminiTokenIfNeeded();
+}, 45 * 60 * 1000);
+
+// Start OAuth flow — opens system browser, listens on loopback for callback
+ipcMain.handle('oauth:gemini-start', async () => {
+  const creds = getGoogleOAuthCreds();
+  if (!creds) {
+    return { success: false, error: 'No Google OAuth credentials configured. Add googleClientId and googleClientSecret to ~/.alloflow/ai_config.json.' };
+  }
+
+  // PKCE — no client_secret needed in auth request, only in token exchange
+  const codeVerifier = randomBytes(32).toString('base64url');
+  const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
+  const state = randomBytes(16).toString('hex');
+
+  return new Promise((resolve) => {
+    let callbackServer;
+    let settled = false;
+
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      try { callbackServer?.close(); } catch (_) {}
+      resolve(result);
+    };
+
+    // Timeout after 5 minutes
+    const timeout = setTimeout(() => finish({ success: false, error: 'OAuth timed out — no response after 5 minutes.' }), 5 * 60 * 1000);
+
+    callbackServer = http.createServer(async (req, res) => {
+      try {
+        const reqUrl = new URL(req.url, 'http://localhost');
+        if (reqUrl.pathname !== '/oauth/callback') { res.end(); return; }
+
+        const code  = reqUrl.searchParams.get('code');
+        const rstok = reqUrl.searchParams.get('state');
+        if (!code || rstok !== state) {
+          res.writeHead(400);
+          res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>Authorization failed</h2><p>Invalid state parameter. You can close this tab.</p></body></html>');
+          finish({ success: false, error: 'State mismatch — possible CSRF.' });
+          return;
+        }
+
+        // Exchange authorization code for tokens
+        const redirectUri = `http://127.0.0.1:${callbackServer.address().port}/oauth/callback`;
+        const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: creds.clientId,
+            client_secret: creds.clientSecret,
+            redirect_uri: redirectUri,
+            grant_type: 'authorization_code',
+            code,
+            code_verifier: codeVerifier,
+          }).toString()
+        });
+
+        if (!tokenResp.ok) {
+          const errText = await tokenResp.text().catch(() => '');
+          res.writeHead(400);
+          res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>Sign-in failed</h2><p>Could not exchange code. You can close this tab.</p></body></html>');
+          finish({ success: false, error: `Token exchange failed (${tokenResp.status}): ${errText.substring(0, 200)}` });
+          return;
+        }
+
+        const tokenData = await tokenResp.json();
+
+        // Fetch user email from Google userinfo
+        let email = 'Google Account';
+        try {
+          const uinfoResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` }
+          });
+          if (uinfoResp.ok) { const u = await uinfoResp.json(); email = u.email || email; }
+        } catch (_) {}
+
+        const stored = {
+          access_token:  tokenData.access_token,
+          refresh_token: tokenData.refresh_token || null,
+          expiry: Date.now() + (tokenData.expires_in || 3600) * 1000,
+          email,
+        };
+        writeGeminiToken(stored);
+        clearTimeout(timeout);
+
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`<html><body style="font-family:sans-serif;padding:2rem;max-width:480px;margin:4rem auto;text-align:center">
+          <h2 style="color:#1a73e8">✓ Connected to Google!</h2>
+          <p>Signed in as <strong>${email}</strong>.</p>
+          <p style="color:#666">You can close this tab and return to AlloFlow.</p>
+        </body></html>`);
+
+        finish({ success: true, email });
+      } catch (err) {
+        res.writeHead(500);
+        res.end('<html><body>Internal error. You can close this tab.</body></html>');
+        finish({ success: false, error: err.message });
+      }
+    });
+
+    callbackServer.listen(0, '127.0.0.1', () => {
+      const port = callbackServer.address().port;
+      const redirectUri = `http://127.0.0.1:${port}/oauth/callback`;
+      const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+      authUrl.searchParams.set('client_id',             creds.clientId);
+      authUrl.searchParams.set('redirect_uri',          redirectUri);
+      authUrl.searchParams.set('response_type',         'code');
+      authUrl.searchParams.set('scope',                 'https://www.googleapis.com/auth/generative-language email profile');
+      authUrl.searchParams.set('code_challenge',        codeChallenge);
+      authUrl.searchParams.set('code_challenge_method', 'S256');
+      authUrl.searchParams.set('state',                 state);
+      authUrl.searchParams.set('access_type',           'offline');
+      authUrl.searchParams.set('prompt',                'consent');
+      shell.openExternal(authUrl.toString());
+      console.log('[oauth:gemini] Opened browser, waiting on port', port);
+    });
+  });
+});
+
+ipcMain.handle('oauth:gemini-status', async () => {
+  const token = await refreshGeminiTokenIfNeeded();
+  if (!token?.access_token) return { connected: false };
+  return { connected: true, email: token.email || 'Google Account', expiry: token.expiry };
+});
+
+ipcMain.handle('oauth:gemini-get-token', async () => {
+  const token = await refreshGeminiTokenIfNeeded();
+  return token?.access_token || null;
+});
+
+ipcMain.handle('oauth:gemini-revoke', async () => {
+  const token = readGeminiToken();
+  // Best-effort revoke at Google
+  if (token?.access_token) {
+    fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token.access_token)}`, { method: 'POST' }).catch(() => {});
+  }
+  try { if (fs.existsSync(GEMINI_TOKEN_FILE)) fs.unlinkSync(GEMINI_TOKEN_FILE); } catch (_) {}
+  return { success: true };
 });
 
 // Stop all services
