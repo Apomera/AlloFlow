@@ -648,13 +648,13 @@ export default function SetupWizard({ onComplete }) {
                             </div>
 
                             <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
-                              <strong>Step 3 — Configure the OAuth consent screen</strong>
+                              <strong>Step 3 — Configure the OAuth consent screen (IMPORTANT)</strong>
                               <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
                                 <li>Click <strong>Open Consent Screen</strong> below</li>
                                 <li>Choose <strong>External</strong> → <strong>Create</strong></li>
                                 <li>Fill in <strong>App name</strong> (e.g. <em>AlloFlow</em>) and your email → <strong>Save and Continue</strong></li>
                                 <li>Skip the Scopes page → <strong>Save and Continue</strong></li>
-                                <li>On <strong>Test users</strong>, add your own Gmail → <strong>Save and Continue</strong></li>
+                                <li><strong style={{color: '#d32f2f'}}>MUST DO:</strong> On <strong>Test users</strong> page, click <strong>+ Add users</strong> and add your own Gmail address (the one you'll use to sign in to AlloFlow) → <strong>Save and Continue</strong></li>
                                 <li>Click <strong>Back to Dashboard</strong></li>
                               </ol>
                               <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
@@ -680,6 +680,11 @@ export default function SetupWizard({ onComplete }) {
                             <div style={{padding: '8px 10px', background: 'rgba(245,158,11,0.08)', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)'}}>
                               <strong>⚠ School Google Workspace account?</strong><br/>
                               Your IT admin needs to approve the app once: <strong>admin.google.com</strong> → Security → Access and data control → API controls → Manage third-party app access → Add app → search by Client ID → set to <strong>Trusted</strong>.
+                            </div>
+
+                            <div style={{padding: '10px', background: 'rgba(211,47,47,0.08)', borderRadius: '6px', border: '1px solid rgba(211,47,47,0.3)'}}>
+                              <strong style={{color: '#d32f2f'}}>⚠ Getting "Error 403: access_denied"?</strong><br/>
+                              <span style={{fontSize: '0.85rem', color: '#555'}}>You did not add yourself as a Test User in Step 3. Go back and complete Step 3, item 5 (click <strong>+ Add users</strong> and add your email), then try signing in again.</span>
                             </div>
                           </div>
                         </details>

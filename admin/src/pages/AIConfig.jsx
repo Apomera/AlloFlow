@@ -456,14 +456,14 @@ export default function AIConfig() {
 
                   {/* Step 3 */}
                   <div style={{ padding: '0.75rem', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)' }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.4rem' }}>Step 3 — Configure the OAuth consent screen</div>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.4rem', color: '#d32f2f' }}>Step 3 — Configure OAuth consent (MUST ADD YOURSELF AS TEST USER)</div>
                     <ol style={{ margin: '0 0 0.6rem 0', paddingLeft: '1.25rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.7 }}>
                       <li>Click <strong>Open Consent Screen</strong> below</li>
                       <li>Choose <strong>External</strong> (or Internal if you have Google Workspace) → click <strong>Create</strong></li>
                       <li>Fill in <strong>App name</strong> (e.g. <em>AlloFlow</em>) and your email in the support email field</li>
                       <li>Scroll to the bottom and click <strong>Save and Continue</strong></li>
                       <li>On the <strong>Scopes</strong> page, scroll down and click <strong>Save and Continue</strong> (no changes needed)</li>
-                      <li>On <strong>Test users</strong>, add your own Gmail address, then click <strong>Save and Continue</strong></li>
+                      <li><strong style={{ color: '#d32f2f' }}>⚠ CRITICAL:</strong> On <strong>Test users</strong> page, click <strong>+ Add users</strong> button and enter your own Gmail address (the email you'll use to sign in to AlloFlow), then click <strong>Save and Continue</strong></li>
                       <li>Click <strong>Back to Dashboard</strong></li>
                     </ol>
                     <button className="btn btn-small" onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials/consent')}
@@ -499,6 +499,12 @@ export default function AIConfig() {
                       style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}>
                       Open Admin Console (for IT admin) ↗
                     </button>
+                  </div>
+
+                  {/* Error 403 troubleshooting */}
+                  <div style={{ padding: '0.75rem', background: 'rgba(211,47,47,0.08)', borderRadius: '6px', border: '1px solid rgba(211,47,47,0.3)', fontSize: '0.8rem', color: '#d32f2f' }}>
+                    <strong>⚠ Getting "Error 403: access_denied"?</strong><br/>
+                    <span style={{ color: 'var(--color-text-muted)' }}>You did not add yourself as a Test User in Step 3. Review the setup steps above, complete Step 3 item 6 (click <strong>+ Add users</strong> and enter your email), then restart AlloFlow and sign in again.</span>
                   </div>
 
                   {/* Credential inputs */}
