@@ -16,18 +16,26 @@
              connect-src 'self' localhost:* 127.0.0.1:* ws://localhost:*;" />
   <title>AlloFlow — Local</title>
 
-  <!-- Tailwind (optional — served from build or CDN for dev) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS - served from build or CDN for dev -->
+  <!-- In production, this should be replaced with a build-time CSS file -->
+  <!-- For now, using CDN with note that it should not be used in production -->
+  <link rel="stylesheet" href="./tailwind.css" onerror="console.warn('[Tailwind] CSS file not found, falling back to CDN'); loadTailwindCDN()">
 
   <!-- React + ReactDOM from CDN (pinned to same version as web app) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-  <!-- Expose React globals for modules that read window.React -->
-  <!-- __firebase_config is checked by the main app to decide whether to mount.
-       In the cloud (Google Canvas/IDX), it's injected automatically.
-       For the local app, we define it as an empty JSON object. -->
-  <script>window.__firebase_config = '{}'; window.React = React; window.ReactDOM = ReactDOM;</script>
+  <script>
+    // Tailwind CDN fallback for development
+    function loadTailwindCDN() {
+      if (!document.querySelector('script[src*="tailwindcss.com"]')) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.tailwindcss.com';
+        document.head.appendChild(script);
+        console.warn('[Tailwind] Loaded CDN fallback. In production, use: npm run build:css');
+      }
+    }
+  </script>
 
   <!-- Shared context (must load first — defines window.__alloShared) -->
   <script src="./sharedContext_local.js" defer></script>
