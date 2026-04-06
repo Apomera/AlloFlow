@@ -1,3 +1,15 @@
+const LABEL_POSITIONS = {
+    'top-left': { position: 'absolute', top: '6%', left: '6%', zIndex: 4 },
+    'top-center': { position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)', zIndex: 4 },
+    'top-right': { position: 'absolute', top: '6%', right: '6%', zIndex: 4 },
+    'center-left': { position: 'absolute', top: '50%', left: '6%', transform: 'translateY(-50%)', zIndex: 4 },
+    'center': { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 4 },
+    'center-right': { position: 'absolute', top: '50%', right: '6%', transform: 'translateY(-50%)', zIndex: 4 },
+    'bottom-left': { position: 'absolute', top: '85%', left: '6%', zIndex: 4 },
+    'bottom-center': { position: 'absolute', top: '85%', left: '50%', transform: 'translateX(-50%)', zIndex: 4 },
+    'bottom-right': { position: 'absolute', top: '85%', right: '6%', zIndex: 4 },
+};
+
 const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
     const [labelsHidden, setLabelsHidden] = React.useState(false);
     const [editingLabel, setEditingLabel] = React.useState(null);

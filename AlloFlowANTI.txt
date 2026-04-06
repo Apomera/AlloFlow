@@ -1521,14 +1521,14 @@ const VisualPanelGrid = React.memo((props) => {
 // @section WORD_SOUNDS_GENERATOR — CDN wrapper (source: word_sounds_module.js)
 // Note: WordSoundsReviewPanel remains inline below — word_sounds_module.js depends on window.WordSoundsReviewPanel.
 const WordSoundsGenerator = React.memo((props) => {
-    const Ext = window.AlloModules && window.AlloModules.WordSoundsModal;
+    const Ext = window.AlloModules && window.AlloModules.WordSoundsGenerator;
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen && !props.onClose) return null;
     return (
         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl">
                 <div className="text-4xl mb-3">🔤</div>
-                <p className="text-lg font-bold text-slate-700">Loading Word Sounds...</p>
+                <p className="text-lg font-bold text-slate-700">Loading Word Sounds Studio...</p>
                 <p className="text-sm text-slate-500 mt-2">Module loading from CDN.</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
@@ -13411,6 +13411,7 @@ Return only the corrected version of this exact text:`;
       setTargetStandards(prev => prev.filter((_, i) => i !== index));
   };
   const handleOpenWordSounds = () => {
+        setIsWordSoundsMode(false);
         setActiveView('word-sounds-generator');
         const rawText = sourceVocabulary || "";
         const derivedTerms = typeof rawText === 'string'
@@ -19924,7 +19925,7 @@ ${t('export.readme_json_desc')}`;
   const handleRestoreView = (item) => {
       console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
-      setActiveView(item.type);
+      setActiveView(item.type === 'word-sounds' ? 'word-sounds-generator' : item.type);
       setIsMapLocked(false);
       if (item.type === 'word-sounds') {
           console.error("[WS-DBG] handleRestoreView: word-sounds detected. Mode:", isTeacherMode ? "teacher" : "student");

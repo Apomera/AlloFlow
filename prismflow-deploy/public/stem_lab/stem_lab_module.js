@@ -3978,41 +3978,67 @@
             if (!window.__stemPluginComponents) window.__stemPluginComponents = {};
             if (!window.__stemPluginComponents[stemLabTool]) {
               window.__stemPluginComponents[stemLabTool] = function StemPluginBridge(props) {
+                return window.StemLab.renderTool(props._toolId, props._ctx);
+              };
+            }
+            // Note: deferred setState bridge was removed — it caused blank renders in some tools.
+            // The React warning "Cannot update a component while rendering" is cosmetic and non-breaking.
+            if (false) {
+              window.__stemPluginComponents['__unused'] = function(props) {
                 var c = props._ctx;
-                // Defer any state updates that plugins call during render to after render
                 var pendingUpdates = React.useRef([]);
+                var renderingRef = React.useRef(false);
                 var originalUpdate = c.update;
                 var originalUpdateMulti = c.updateMulti;
+                var originalAwardXP = c.awardXP;
+                var originalAddToast = c.addToast;
                 var wrappedCtx = Object.assign({}, c, {
                   update: function(toolId, key, val) {
-                    if (c._isRendering) {
+                    if (renderingRef.current) {
                       pendingUpdates.current.push({ type: 'single', toolId: toolId, key: key, val: val });
                     } else {
                       originalUpdate(toolId, key, val);
                     }
                   },
                   updateMulti: function(toolId, obj) {
-                    if (c._isRendering) {
+                    if (renderingRef.current) {
                       pendingUpdates.current.push({ type: 'multi', toolId: toolId, obj: obj });
                     } else {
                       originalUpdateMulti(toolId, obj);
+                    }
+                  },
+                  awardXP: function(activityId, pts, reason) {
+                    if (renderingRef.current) {
+                      pendingUpdates.current.push({ type: 'xp', activityId: activityId, pts: pts, reason: reason });
+                    } else {
+                      originalAwardXP(activityId, pts, reason);
+                    }
+                  },
+                  addToast: function(msg, type) {
+                    if (renderingRef.current) {
+                      pendingUpdates.current.push({ type: 'toast', msg: msg, toastType: type });
+                    } else {
+                      originalAddToast(msg, type);
                     }
                   }
                 });
                 React.useEffect(function() {
                   if (pendingUpdates.current.length > 0) {
-                    pendingUpdates.current.forEach(function(u) {
+                    var batch = pendingUpdates.current.slice();
+                    pendingUpdates.current = [];
+                    batch.forEach(function(u) {
                       if (u.type === 'multi') originalUpdateMulti(u.toolId, u.obj);
+                      else if (u.type === 'xp') originalAwardXP(u.activityId, u.pts, u.reason);
+                      else if (u.type === 'toast') originalAddToast(u.msg, u.toastType);
                       else originalUpdate(u.toolId, u.key, u.val);
                     });
-                    pendingUpdates.current = [];
                   }
                 });
-                wrappedCtx._isRendering = true;
+                renderingRef.current = true;
                 try {
                   return window.StemLab.renderTool(props._toolId, wrappedCtx);
                 } finally {
-                  wrappedCtx._isRendering = false;
+                  renderingRef.current = false;
                 }
               };
             }

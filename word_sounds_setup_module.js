@@ -177,6 +177,11 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
   }, []);
   const previewList = React.useMemo(() => {
     let list = [];
+    // Include already-generated words so they appear in the Lesson Preview grid
+    if (preloadedWords && preloadedWords.length > 0) {
+      const preloadedWordStrings = preloadedWords.map((w) => w.targetWord || w.word || w.term || (typeof w === "string" ? w : ""));
+      list = [...list, ...preloadedWordStrings.filter((w) => w)];
+    }
     if (includeGlossary && Array.isArray(glossaryTerms)) {
       const glossaryWords = glossaryTerms.map((t2) => t2.term || t2.word || t2);
       list = [...list, ...glossaryWords];
@@ -200,7 +205,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       list = [...list, ...aiTerms];
     }
     return [...new Set(list)];
-  }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms]);
+  }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms, preloadedWords]);
   React.useEffect(() => {
     const limit = Math.min(previewList.length, wordCount);
     const indices = /* @__PURE__ */ new Set();
