@@ -43,8 +43,44 @@
   var LanguageContext = window.AlloLanguageContext;
   var _shared = window.__alloShared || {};
   // Word family and sight word presets — exposed by AlloFlowANTI.txt
-  var WORD_FAMILY_PRESETS = window.WORD_FAMILY_PRESETS || {};
-  var SIGHT_WORD_PRESETS = window.SIGHT_WORD_PRESETS || {};
+  // Use Proxy/getter pattern so we read from window at USE time, not at module-load time
+  // (the module IIFE runs before AlloFlowANTI.txt populates window.WORD_FAMILY_PRESETS)
+  var WORD_FAMILY_PRESETS = new Proxy({}, {
+    get: function(target, prop) {
+      var src = window.WORD_FAMILY_PRESETS || {};
+      return src[prop];
+    },
+    ownKeys: function() {
+      var src = window.WORD_FAMILY_PRESETS || {};
+      return Object.keys(src);
+    },
+    getOwnPropertyDescriptor: function(target, prop) {
+      var src = window.WORD_FAMILY_PRESETS || {};
+      if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
+    },
+    has: function(target, prop) {
+      var src = window.WORD_FAMILY_PRESETS || {};
+      return prop in src;
+    }
+  });
+  var SIGHT_WORD_PRESETS = new Proxy({}, {
+    get: function(target, prop) {
+      var src = window.SIGHT_WORD_PRESETS || {};
+      return src[prop];
+    },
+    ownKeys: function() {
+      var src = window.SIGHT_WORD_PRESETS || {};
+      return Object.keys(src);
+    },
+    getOwnPropertyDescriptor: function(target, prop) {
+      var src = window.SIGHT_WORD_PRESETS || {};
+      if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
+    },
+    has: function(target, prop) {
+      var src = window.SIGHT_WORD_PRESETS || {};
+      return prop in src;
+    }
+  });
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
