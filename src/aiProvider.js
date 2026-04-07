@@ -119,8 +119,7 @@ class AIProvider {
     async _geminiGenerateText(prompt, { json, search, temperature, maxTokens }) {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-            return `${this.baseUrl}/models/${model}:generateContent${keyParam}`;
+            return `${this.baseUrl}/models/${model}:generateContent`;
         };
 
         const payload = {
@@ -147,6 +146,10 @@ class AIProvider {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         };
+
+        if (this.apiKey) {
+            fetchOpts.headers['Authorization'] = `Bearer ${this.apiKey}`;
+        }
 
         let response;
         try {
@@ -305,8 +308,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiGenerateImage(prompt, width, quality) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.imagen}:predict${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.imagen}:predict`;
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.apiKey) {
+            headers['Authorization'] = `Bearer ${this.apiKey}`;
+        }
         const payload = {
             instances: [{ prompt }],
             parameters: { sampleCount: 1 },
@@ -315,7 +321,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const executeRequest = async () => {
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(payload),
             });
 
@@ -435,8 +441,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.image}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.image}:generateContent`;
 
         const parts = [
             { text: prompt },
@@ -611,15 +616,21 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         if (_ttsOvr === 'off') return null;
         if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed);
         if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed);
+        if (_ttsOvr === 'piper') return this._piperTTS(text, voice, speed);
         if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed);
 
         // Default: route by backend
+        // NOTE: Ollama doesn't have a TTS endpoint, so fall back to browser
         switch (this.backend) {
             case 'gemini':
                 return this._geminiTTS(text, voice, speed);
+            case 'ollama':
+            case 'lmstudio':
+            case 'pocketbase':
+                // Local backends without TTS endpoints — use Piper (offline TTS)
+                return this._piperTTS(text, voice, speed);
             case 'openai':
             case 'localai':
-            case 'ollama':
             case 'claude':
             case 'custom':
             default:
@@ -711,6 +722,37 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         });
         this._ttsQueue = task.catch(() => { });
         return task;
+    }
+
+    async _piperTTS(text, voice, speed) {
+        // Use Piper WASM TTS library (offline, 40+ languages)
+        if (!window._piperTTS) {
+            this._warnLog('[AIProvider TTS] Piper library not available, falling back to browser');
+            return this._browserSpeechSynthesis(text, speed);
+        }
+
+        try {
+            // Cache check
+            const cacheKey = `piper_${(text || '').toLowerCase().trim()}__${voice}__${speed}`;
+            if (this._ttsCache.has(cacheKey)) {
+                this._debugLog('⚡ Piper TTS cache HIT:', text?.substring(0, 30));
+                return this._ttsCache.get(cacheKey);
+            }
+
+            // Call Piper WASM library
+            this._debugLog(`[AIProvider] Piper TTS: "${text?.substring(0, 30)}..." lang=${voice}`);
+            const audioUrl = await window._piperTTS.speak(text, voice, speed);
+            
+            if (audioUrl) {
+                this._ttsCache.set(cacheKey, audioUrl);
+                return audioUrl;
+            }
+        } catch (e) {
+            this._warnLog('[AIProvider TTS] Piper error:', e.message);
+        }
+
+        // Fallback to browser speech synthesis if Piper fails
+        return this._browserSpeechSynthesis(text, speed);
     }
 
     async _openaiTTS(text, voice, speed) {

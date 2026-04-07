@@ -1,0 +1,91 @@
+{
+  "name": "alloflow-admin",
+  "version": "0.7.8",
+  "description": "AlloFlow Admin - Setup Wizard & Management",
+  "main": "public/main.js",
+  "author": "AlloFlow Team",
+  "license": "MIT",
+  "homepage": "./",
+  "dependencies": {
+    "lucide-react": "^1.7.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "electron": "^27.3.11",
+    "electron-builder": "^24.13.3",
+    "electron-log": "^5.0.1",
+    "electron-updater": "^6.1.7",
+    "rimraf": "^5.0.5",
+    "wait-on": "^7.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "clean": "rimraf dist",
+    "dist": "npm run clean && npm run build && electron-builder -w --publish never"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "build": {
+    "appId": "com.alloflow.admin",
+    "productName": "AlloFlow Admin",
+    "files": [
+      "build/**/*",
+      "public/**/*",
+      "node_modules/**/*"
+    ],
+    "extraMetadata": {
+      "main": "public/main.js"
+    },
+    "extraResources": [
+      "docker_templates/flux-server/flux_server.py",
+      "uninstall.bat",
+      {
+        "from": "../tts-server",
+        "to": "tts-server"
+      },
+      {
+        "from": "../local-app/build",
+        "to": "local-app"
+      },
+      {
+        "from": "../local-app/backend",
+        "to": "local-app/backend"
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AlloFlow Admin",
+      "include": "uninstaller.nsh"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -19,19 +19,24 @@
 #    Set FLUX_MODEL to a smaller model if VRAM is limited.
 # ══════════════════════════════════════════════════════════════════
 
-version: "3.8"
-
 services:
   # ── Local Database (PocketBase — replaces Firebase) ─────────
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: alloflow-pocketbase
     ports:
-      - "8090:8090"
+      - "127.0.0.1:8090:8090"
     volumes:
       - pocketbase_data:/pb/pb_data
       - ./pocketbase/pb_migrations:/pb/pb_migrations
     restart: unless-stopped
+    networks:
+      - frontend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
       interval: 15s
@@ -44,9 +49,11 @@ services:
     image: ollama/ollama:latest
     container_name: alloflow-ollama
     ports:
-      - "11434:11434"
+      - "127.0.0.1:11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    networks:
+      - backend
     deploy:
       resources:
         reservations:
@@ -55,6 +62,11 @@ services:
               count: all
               capabilities: [gpu]
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ── Image Generation (Flux.1-schnell) ──────────────────────
   flux:
@@ -63,7 +75,9 @@ services:
       dockerfile: Dockerfile
     container_name: alloflow-flux
     ports:
-      - "7860:7860"
+      - "127.0.0.1:7860:7860"
+    networks:
+      - backend
     environment:
       - FLUX_MODEL=black-forest-labs/FLUX.1-schnell
       - PORT=7860
@@ -79,6 +93,11 @@ services:
               count: all
               capabilities: [gpu]
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
       interval: 30s
@@ -91,14 +110,21 @@ services:
     image: rhasspy/wyoming-piper:latest
     container_name: alloflow-piper
     ports:
-      - "10200:10200"
+      - "127.0.0.1:10200:10200"
     volumes:
       - piper_data:/data
+    networks:
+      - backend
     command: >
       --voice en_US-amy-medium
       --data-dir /data
       --download-dir /data
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ── Neural TTS (Edge TTS — 28 voices, 20 languages) ────────
   edge-tts:
@@ -107,8 +133,15 @@ services:
       dockerfile: Dockerfile
     container_name: alloflow-edge-tts
     ports:
-      - "5001:5001"
+      - "127.0.0.1:5001:5001"
+    networks:
+      - backend
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 30s
@@ -121,12 +154,20 @@ services:
     image: searxng/searxng:latest
     container_name: alloflow-searxng
     ports:
-      - "8888:8080"
+      - "127.0.0.1:8888:8080"
     environment:
       - SEARXNG_BASE_URL=http://localhost:8888
+      - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY}
     volumes:
       - searxng_data:/etc/searxng
+    networks:
+      - backend
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pocketbase_data:
@@ -134,3 +175,10 @@ volumes:
   flux_models:
   piper_data:
   searxng_data:
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true  # No external access to backend

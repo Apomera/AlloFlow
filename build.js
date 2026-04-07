@@ -50,62 +50,62 @@ const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
 const MODULES = [
     {
         name: 'StemLab',
-        filename: 'stem_lab/stem_lab_module.js',
+        filename: 'shared/modules/stem_lab/stem_lab_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'WordSoundsModal',
-        filename: 'word_sounds_module.js',
+        filename: 'shared/modules/word_sounds_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'BehaviorLens',
-        filename: 'behavior_lens_module.js',
+        filename: 'shared/modules/behavior_lens_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'ReportWriter',
-        filename: 'report_writer_module.js',
+        filename: 'shared/modules/report_writer_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'StudentAnalytics',
-        filename: 'student_analytics_module.js',
+        filename: 'shared/modules/student_analytics_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'SymbolStudio',
-        filename: 'symbol_studio_module.js',
+        filename: 'shared/modules/symbol_studio_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'GamesBundle',
-        filename: 'games_module.js',
+        filename: 'shared/modules/games_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'SelHub',
-        filename: 'sel_hub/sel_hub_module.js',
+        filename: 'shared/modules/sel_hub/sel_hub_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'QuickStartWizard',
-        filename: 'quickstart_module.js',
+        filename: 'shared/modules/quickstart_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'AlloBot',
-        filename: 'allobot_module.js',
+        filename: 'shared/modules/allobot_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'TeacherModule',
-        filename: 'teacher_module.js',
+        filename: 'shared/modules/teacher_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'StoryForge',
-        filename: 'story_forge_module.js',
+        filename: 'shared/modules/story_forge_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -392,8 +392,8 @@ if (mode === 'dev') {
     // In dev mode, plugins load from local paths
     content = content.replace(PLUGIN_CDN_RE, () => {
         pluginReplaced = true;
-        console.log('  ✏️  pluginCdnBase: → local (./)'); 
-        return "var pluginCdnBase = './";
+        console.log('  ✏️  pluginCdnBase: → local (./shared/modules/)'); 
+        return "var pluginCdnBase = './shared/modules/";
     });
 } else {
     content = content.replace(PLUGIN_CDN_RE, () => {

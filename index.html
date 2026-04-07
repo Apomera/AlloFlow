@@ -11,16 +11,44 @@
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
     <meta property="og:title" content="AlloFlow | Differentiation on Auto-Pilot">
     <meta property="og:description"
+<<<<<<< HEAD
+        content="The privacy-first AI tool that turns static curriculum into interactive games, leveled text, and quizzes.">
+    <meta property="og:image" content="https://apomera.github.io/AlloFlow/shared/rainbow-book.jpg">
+=======
         content="The privacy-first AI platform with 65 STEM simulations, 24 SEL tools, AAC communication boards, clinical reporting, and PDF accessibility remediation — all free and open source.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
+>>>>>>> upstream/main
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="AlloFlow | Differentiation on Auto-Pilot">
-    <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
+    <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/shared/rainbow-book.jpg">
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser","description":"Open-source, privacy-first AI platform for differentiated instruction, AAC communication, clinical reporting, and STEM/SEL education. 65 STEM simulations, 24 SEL tools, Symbol Studio, and PDF accessibility remediation.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"School Psychologist"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
     </script>
-    <link rel="stylesheet" href="shared.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="shared/shared.css">
+    <script>
+    // Auto-configure from local AlloFlow Admin services if no manual config is set.
+    // Fetches http://localhost:8888/local-config (written by the setup wizard).
+    // Runs synchronously before React mounts so the AI provider picks up the config.
+    (function () {
+      try {
+        if (localStorage.getItem('alloflow_ai_config')) return; // user has manual config
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:8888/local-config', false /* sync */);
+        xhr.timeout = 800;
+        xhr.send();
+        if (xhr.status === 200) {
+          var config = JSON.parse(xhr.responseText);
+          if (config && config.backend) {
+            localStorage.setItem('alloflow_ai_config', JSON.stringify(config));
+            console.log('[AlloFlow] Auto-configured from local services:', config.backend, config.baseUrl);
+          }
+        }
+      } catch (e) {
+        // No local admin running — normal for Canvas/cloud users
+      }
+    })();
+    </script>
+    <script src="https://unpkg.com/lucide@0.405.0" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -105,14 +133,9 @@
                     </a>
                 </div>
                 <div style="margin:20px auto 0;position:relative;display:inline-block">
-                    <!-- Allobot SVG (inline for CSS animation support) -->
+                    <!-- Allobot SVG (loaded safely via img tag) -->
                     <div style="width:110px;height:110px;margin:0 auto;position:relative;z-index:2" id="hero-allobot">
-                        <img src="allobot.svg" alt="Allobot" class="allobot-svg" style="width:100%;height:100%">
-                        <script>
-                            fetch('allobot.svg').then(r => r.text()).then(svg => {
-                                document.getElementById('hero-allobot').innerHTML = svg;
-                            });
-                        </script>
+                        <img src="shared/allobot.svg" alt="Allobot" class="allobot-svg" style="width:100%;height:100%">
                     </div>
                     <div
                         style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:6px;background:rgba(0,0,0,0.2);border-radius:50%;filter:blur(4px);animation:shadowScale 4s ease-in-out infinite;z-index:1">
@@ -5240,7 +5263,7 @@
 
         // Copy Link
         function copyCanvasLink() {
-            const link = "https://gemini.google.com/share/c8baf80a46cc";
+            const link = "https://gemini.google.com/share/544cba6b9967";
             navigator.clipboard.writeText(link).then(() => {
                 document.querySelectorAll('.btn-primary span').forEach(s => { const orig = s.textContent; s.textContent = "Copied!"; setTimeout(() => s.textContent = orig, 2000); });
             }).catch(() => alert("Failed to copy. Check permissions."));

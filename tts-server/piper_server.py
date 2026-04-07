@@ -13,7 +13,10 @@ import urllib.request
 import io
 
 PORT = 5500
-VOICES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "piper-voices")
+VOICES_DIR = os.environ.get("PIPER_VOICES_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "piper-voices"))
+
+# Piper binary path — may be overridden by PIPER_BIN env var set by nativeProcessManager
+PIPER_BIN = os.environ.get("PIPER_BIN", "piper")
 
 # Voice mappings: OpenAI voice name → Piper model
 VOICE_MAP = {
@@ -62,10 +65,12 @@ def ensure_voice(voice_name):
         if not os.path.exists(local):
             print(f"[Piper TTS] Downloading {voice_name}{ext}...")
             try:
-                urllib.request.urlretrieve(url, local)
-                print(f"[Piper TTS] ✅ Downloaded {voice_name}{ext}")
+                req = urllib.request.Request(url, headers={"User-Agent": "AlloFlow/1.0"})
+                with urllib.request.urlopen(req, timeout=20) as response, open(local, "wb") as out:
+                    out.write(response.read())
+                print(f"[Piper TTS] Downloaded {voice_name}{ext} OK")
             except Exception as e:
-                print(f"[Piper TTS] ❌ Failed to download {voice_name}{ext}: {e}")
+                print(f"[Piper TTS] WARN: Failed to download {voice_name}{ext}: {e}")
                 return None
     
     return model_path
@@ -102,9 +107,9 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(b'{"error": "Voice model not available"}')
                 return
             
-            # Generate audio with piper
+            # Generate audio with piper standalone binary
             cmd = [
-                sys.executable, "-m", "piper",
+                PIPER_BIN,
                 "--model", model_path,
                 "--output-raw"
             ]
@@ -137,7 +142,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(wav_audio)
             
-            print(f"[Piper TTS] ✅ Generated {len(wav_audio)} bytes for voice={piper_voice}")
+            print(f"[Piper TTS] Generated {len(wav_audio)} bytes for voice={piper_voice}")
             
         except Exception as e:
             print(f"[Piper TTS] Error: {e}")
@@ -193,12 +198,15 @@ def pcm_to_wav(pcm_data, sample_rate=22050, channels=1, bits_per_sample=16):
 
 
 if __name__ == "__main__":
-    # Pre-download default voice
+    # Pre-download default voice (non-fatal — server starts even if download fails)
     print(f"[Piper TTS] Starting on port {PORT}...")
-    ensure_voice(VOICE_MAP["alloy"])
+    try:
+        ensure_voice(VOICE_MAP["alloy"])
+    except Exception as e:
+        print(f"[Piper TTS] WARN: Could not pre-download default voice: {e}")
     
     server = http.server.HTTPServer(("0.0.0.0", PORT), TTSHandler)
-    print(f"[Piper TTS] ✅ Server ready at http://localhost:{PORT}")
+    print(f"[Piper TTS] Server ready at http://localhost:{PORT}")
     print(f"[Piper TTS] Endpoint: POST /v1/audio/speech")
     print(f"[Piper TTS] Available voices: {', '.join(VOICE_MAP.keys())}")
     

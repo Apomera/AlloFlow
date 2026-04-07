@@ -9,11 +9,19 @@ _archive/
 prismflow-deploy/build/
 prismflow-deploy/.firebase/
 
+# Admin center build artifacts (too large for GitHub)
+admin/dist/
+admin/build/
+admin/node_modules/
+
 # Security: Never commit environment files with secrets
 prismflow-deploy/.env
 prismflow-deploy/.env.local
 prismflow-deploy/.env.production
-*.env.local
+.env
+.env.local
+admin/.env
+admin/.env.local
 
 # Security: Never commit API key files
 api key.txt
@@ -60,6 +68,25 @@ stem_test*.js
 search_results.txt
 tour.txt
 
+# CIS security reference docs
+cis16.rtf
+
+# Internal security & development roadmaps (sensitive, kept locally only)
+SECURE_DEVELOPMENT.md
+PROFESSIONAL_DEVELOPMENT_ROADMAP.md
+
+# Internal planning documents (kept locally, not in repo)
+HOMESCHOOL_ACTION_PLAN.md
+HOMESCHOOL_ARCHITECTURE_SUMMARY.md
+ACTION_PLAN.md
+
+# Note: User-facing deployment guides remain in repo:
+# - DEPLOY_YOUR_OWN.md
+# - HOMESCHOOL_DEPLOYMENT_GUIDE.md
+# - GPU_AUTO_DETECTION_README.md
+# - architecture_extracted.md
+# - setup-local-ai.bat
+
 # Outreach & personal correspondence (emails, drafts, pitches)
 outreach_*.md
 *_draft.md
@@ -93,6 +120,12 @@ setup-local-ai.bat
 
 # Misc test files
 nonshareabletest.txt
+
+# Old flat stem_tool files (moved to prismflow-deploy/public/shared/modules/stem_lab/)
+prismflow-deploy/public/stem_tool_*.js
+
+# dist/ build artifacts (not deployed from this repo)
+dist/
 
 # Agent-generated temp/debug files (one-off scripts, logs, diffs, backups)
 fix_*.py
