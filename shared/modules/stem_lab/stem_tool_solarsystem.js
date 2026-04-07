@@ -57,7 +57,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       { id: 'quiz_score_5', label: 'Score 5+ on the planet quiz', icon: '\uD83E\uDDE0', field: 'quiz.score', check: function(d) { return d.quiz && d.quiz.score >= 5; }, progress: function(d) { return (d.quiz ? d.quiz.score : 0) + '/5'; } },
       { id: 'quiz_score_8', label: 'Score 8+ on the planet quiz', icon: '\uD83C\uDFC6', field: 'quiz.score', check: function(d) { return d.quiz && d.quiz.score >= 8; }, progress: function(d) { return (d.quiz ? d.quiz.score : 0) + '/8'; } },
       { id: 'deploy_rover', label: 'Deploy a rover or probe on any planet', icon: '\uD83D\uDE97', field: 'missionLog', check: function(d) { return (d.missionLog || []).length >= 1; }, progress: function(d) { return (d.missionLog || []).length > 0 ? 'Done' : 'Not yet'; } },
-      { id: 'visit_5_planets', label: 'Visit at least 5 different planets', icon: '\u2B50', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 5; }, progress: function(d) { return (d.planetsVisited || []).length + '/5 planets'; } }
+      { id: 'visit_5_planets', label: 'Visit at least 5 different planets', icon: '\u2B50', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 5; }, progress: function(d) { return (d.planetsVisited || []).length + '/5 planets'; } },
+      { id: 'explore_interior', label: 'View the interior of 3 different planets', icon: '\uD83C\uDF0B', field: 'interiorsViewed', check: function(d) { return (d.interiorsViewed || []).length >= 3; }, progress: function(d) { return (d.interiorsViewed || []).length + '/3'; } },
+      { id: 'descent_sim', label: 'Descend through an atmosphere', icon: '\uD83D\uDE80', field: 'descentsDone', check: function(d) { return (d.descentsDone || []).length >= 1; }, progress: function(d) { return (d.descentsDone || []).length > 0 ? 'Done' : 'Not yet'; } }
     ],
     render: function(ctx) {
       // Aliases â€" maps ctx properties to original variable names
@@ -165,7 +167,8 @@ const d = labToolData.solarSystem;
               if (e.key === '1') { e.preventDefault(); upd('viewTab', 'overview'); }
               if (e.key === '2') { e.preventDefault(); upd('viewTab', 'surface'); }
               if (e.key === '3') { e.preventDefault(); upd('viewTab', 'interior'); }
-              if (e.key === '4') { e.preventDefault(); upd('viewTab', 'drone'); }
+              if (e.key === '4') { e.preventDefault(); upd('viewTab', 'descent'); }
+              if (e.key === '5') { e.preventDefault(); upd('viewTab', 'drone'); }
             }
           };
           window.addEventListener('keydown', window._solarKeyHandler);
@@ -1524,19 +1527,41 @@ const d = labToolData.solarSystem;
 
                 React.createElement("div", { className: "flex gap-1" },
 
-                  ['overview', 'surface', 'drone'].map(function (tab) {
+                  ['overview', 'surface', 'interior', 'descent', 'drone'].map(function (tab) {
 
                     var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
+                    var hasDescentData = !!DESCENT_LAYERS[sel.name];
+                    if (tab === 'descent' && !hasDescentData) return null;
+
+                    var tabLabels = {
+                      overview: '\uD83D\uDCCA Overview',
+                      surface: '\u26C5 Surface',
+                      interior: '\uD83C\uDF0B Interior',
+                      descent: '\uD83D\uDE80 Descent',
+                      drone: isGas ? '\uD83D\uDEF8 Probe' : sel.terrainType === 'earthlike' ? '\uD83D\uDEA4 Submersible' : '\uD83D\uDE97 Rover'
+                    };
 
                     return React.createElement("button", { "aria-label": "Switch to " + tab + " view tab",
 
-                      key: tab, onClick: function () { upd('viewTab', tab); },
+                      key: tab, onClick: function () {
+                        upd('viewTab', tab);
+                        if (tab === 'interior') {
+                          tryAward('gas_explorer');
+                          var prev = d.interiorsViewed || [];
+                          if (sel && prev.indexOf(sel.name) === -1) upd('interiorsViewed', prev.concat([sel.name]));
+                        }
+                        if (tab === 'descent') {
+                          tryAward('atmosphere_descent');
+                          var prevD = d.descentsDone || [];
+                          if (sel && prevD.indexOf(sel.name) === -1) upd('descentsDone', prevD.concat([sel.name]));
+                        }
+                      },
 
                       className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " +
 
                         ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500 hover:bg-slate-300')
 
-                    }, tab === 'overview' ? '\uD83D\uDCCA Overview' : tab === 'surface' ? '\u26C5 Surface' : (isGas ? '\uD83D\uDEF8 Probe' : sel.terrainType === 'earthlike' ? '\uD83D\uDEA4 Submersible' : '\uD83D\uDE97 Rover'));
+                    }, tabLabels[tab]);
 
                   })
 
@@ -3053,8 +3078,440 @@ const d = labToolData.solarSystem;
               ),
 
 
+              // ── INTERIOR VIEW TAB ──
+              (d.viewTab) === 'interior' && sel && React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { className: "bg-gradient-to-r from-orange-900 to-red-900 rounded-xl p-4 text-white" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF0B"),
+                    React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Interior Structure")
+                  ),
+                  React.createElement("p", { className: "text-xs text-orange-200 leading-relaxed" },
+                    sel.terrainType === 'gasgiant' ? "Gas giants have no solid surface. Layers of gas compress into liquid and eventually metallic hydrogen." :
+                    sel.terrainType === 'icegiant' ? "Ice giants have a rocky core surrounded by exotic ices, superionic water, and possibly diamond rain." :
+                    sel.terrainType === 'iceworld' ? "Pluto has a thin nitrogen/methane atmosphere, a water-ice crust over a rocky core, and possibly a subsurface ocean." :
+                    "Rocky planets have a layered structure: a metal core, a rocky mantle, and a thin crust."
+                  )
+                ),
+                // Cutaway canvas
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-orange-300 shadow-lg", style: { height: '420px' } },
+                  React.createElement("canvas", {
+                    "aria-label": "Interior cutaway diagram of " + sel.name,
+                    style: { width: '100%', height: '100%', display: 'block', background: '#0a0a20' },
+                    ref: function(canvasEl) {
+                      if (!canvasEl) return;
+                      var ctx2 = canvasEl.getContext('2d');
+                      if (!ctx2) return;
+                      var cw = canvasEl.parentElement.clientWidth || canvasEl.offsetWidth || 600;
+                      var ch = 420;
+                      canvasEl.width = cw; canvasEl.height = ch;
+                      var cx = cw / 2; var cy = ch / 2;
+                      var maxR = Math.min(cw, ch) * 0.38;
 
-              // â"€â"€ ROVER / PROBE TAB (Three.js First-Person) â"€â"€
+                      // Planet interior layers by type
+                      var layers;
+                      if (sel.name === 'Mercury') {
+                        layers = [
+                          { r: 1.0, color: '#8a7060', label: 'Crust', desc: 'Thin silicate crust, heavily cratered', thick: '100 km' },
+                          { r: 0.85, color: '#6a5040', label: 'Mantle', desc: 'Silicate rock mantle', thick: '600 km' },
+                          { r: 0.55, color: '#d4a050', label: 'Outer Core', desc: 'Liquid iron-nickel outer core', thick: '500 km' },
+                          { r: 0.35, color: '#f0c040', label: 'Inner Core', desc: 'Solid iron inner core \u2014 giant for Mercury\'s size!', thick: '850 km' }
+                        ];
+                      } else if (sel.name === 'Venus') {
+                        layers = [
+                          { r: 1.0, color: '#c9a050', label: 'Crust', desc: 'Basaltic volcanic crust, no tectonic plates', thick: '30 km' },
+                          { r: 0.95, color: '#a07030', label: 'Upper Mantle', desc: 'Silicate rock, possible partial melt', thick: '500 km' },
+                          { r: 0.65, color: '#805020', label: 'Lower Mantle', desc: 'Dense silicate rock under extreme pressure', thick: '2,500 km' },
+                          { r: 0.30, color: '#e0b040', label: 'Core', desc: 'Iron-nickel core \u2014 possibly liquid (no magnetic field!)', thick: '3,200 km' }
+                        ];
+                      } else if (sel.name === 'Earth') {
+                        layers = [
+                          { r: 1.0, color: '#4a8050', label: 'Crust', desc: 'Oceanic (5 km) + Continental (35 km)', thick: '5\u201335 km' },
+                          { r: 0.97, color: '#c07030', label: 'Upper Mantle', desc: 'Asthenosphere \u2014 tectonic plates float here', thick: '670 km' },
+                          { r: 0.70, color: '#903020', label: 'Lower Mantle', desc: 'Dense, slow-flowing rock drives convection', thick: '2,200 km' },
+                          { r: 0.35, color: '#d09030', label: 'Outer Core', desc: 'Liquid iron-nickel \u2014 creates magnetic field!', thick: '2,260 km' },
+                          { r: 0.18, color: '#f0d060', label: 'Inner Core', desc: 'Solid iron ball, 5,400\u00B0C \u2014 hot as Sun\'s surface', thick: '1,220 km' }
+                        ];
+                      } else if (sel.name === 'Mars') {
+                        layers = [
+                          { r: 1.0, color: '#b04020', label: 'Crust', desc: 'Iron-oxide basalt \u2014 gives Mars its red color', thick: '50 km' },
+                          { r: 0.90, color: '#704030', label: 'Mantle', desc: 'Silicate rock, iron/magnesium-rich', thick: '1,560 km' },
+                          { r: 0.40, color: '#d09040', label: 'Core', desc: 'Liquid iron-sulfide core (no magnetic field!)', thick: '1,830 km' }
+                        ];
+                      } else if (sel.name === 'Jupiter') {
+                        layers = [
+                          { r: 1.0, color: '#d4924f', label: 'Cloud Tops', desc: 'Ammonia ice clouds, colored bands & storms', thick: '~50 km' },
+                          { r: 0.95, color: '#b07030', label: 'Gaseous H\u2082', desc: 'Molecular hydrogen deepening to liquid', thick: '~21,000 km' },
+                          { r: 0.65, color: '#7050a0', label: 'Liquid H\u2082', desc: 'Hydrogen compressed to liquid ocean', thick: '~20,000 km' },
+                          { r: 0.35, color: '#a070c0', label: 'Metallic H\u2082', desc: 'Metallic hydrogen conducts electricity \u2014 strongest magnetic field!', thick: '~19,000 km' },
+                          { r: 0.12, color: '#e0c040', label: 'Rocky Core', desc: 'Diffuse rocky/ice core, 10-20x Earth\'s mass', thick: '~10,000 km' }
+                        ];
+                      } else if (sel.name === 'Saturn') {
+                        layers = [
+                          { r: 1.0, color: '#c9a04a', label: 'Cloud Tops', desc: 'Ammonia crystals, golden-white bands', thick: '~50 km' },
+                          { r: 0.95, color: '#a08030', label: 'Gaseous H\u2082', desc: 'Molecular hydrogen gas', thick: '~30,000 km' },
+                          { r: 0.55, color: '#6040a0', label: 'Liquid H\u2082', desc: 'Liquid hydrogen layer', thick: '~14,000 km' },
+                          { r: 0.30, color: '#8060b0', label: 'Metallic H\u2082', desc: 'Metallic hydrogen \u2014 generates magnetic field', thick: '~8,000 km' },
+                          { r: 0.10, color: '#e0b040', label: 'Rocky Core', desc: 'Ice/rock core, 9-22x Earth\'s mass', thick: '~8,000 km' }
+                        ];
+                      } else if (sel.name === 'Uranus') {
+                        layers = [
+                          { r: 1.0, color: '#80d0d0', label: 'Upper Atmosphere', desc: 'Methane absorbs red light \u2192 cyan color', thick: '~5,000 km' },
+                          { r: 0.80, color: '#50a0a0', label: 'H\u2082/He Envelope', desc: 'Hydrogen-helium gas layer', thick: '~7,000 km' },
+                          { r: 0.55, color: '#2a5a7a', label: 'Water/Ammonia Ice', desc: 'Superionic water: ice that conducts electricity!', thick: '~10,000 km' },
+                          { r: 0.30, color: '#b8d8f8', label: 'Diamond Rain', desc: 'Carbon crushed into diamonds that sink', thick: '~3,000 km' },
+                          { r: 0.15, color: '#808060', label: 'Rocky Core', desc: 'Silicate/iron core, ~1x Earth mass', thick: '~3,000 km' }
+                        ];
+                      } else if (sel.name === 'Neptune') {
+                        layers = [
+                          { r: 1.0, color: '#4060c0', label: 'Upper Atmosphere', desc: 'Deep blue from methane, supersonic 2,100 km/h winds', thick: '~5,000 km' },
+                          { r: 0.80, color: '#3050a0', label: 'H\u2082/He Envelope', desc: 'Hydrogen-helium gas layer', thick: '~7,000 km' },
+                          { r: 0.55, color: '#1a2060', label: 'Water/Ammonia Ice', desc: 'Superionic water mantle', thick: '~10,000 km' },
+                          { r: 0.30, color: '#a0c8e8', label: 'Diamond Rain', desc: 'Carbon atoms crushed into literal diamonds', thick: '~3,000 km' },
+                          { r: 0.15, color: '#606050', label: 'Rocky Core', desc: 'Iron-silicate core, ~1.2x Earth mass', thick: '~4,000 km' }
+                        ];
+                      } else { // Pluto
+                        layers = [
+                          { r: 1.0, color: '#d0c8b0', label: 'Nitrogen Ice', desc: 'Frozen N\u2082/CO/CH\u2084 ice surface (Tombaugh Regio)', thick: '~10 km' },
+                          { r: 0.92, color: '#8090a0', label: 'Water Ice Crust', desc: 'Rigid water-ice bedrock', thick: '~300 km' },
+                          { r: 0.65, color: '#4060a0', label: 'Subsurface Ocean?', desc: 'Possible liquid water ocean kept warm by radioactive decay', thick: '~100 km' },
+                          { r: 0.50, color: '#605040', label: 'Rocky Core', desc: 'Silicate rock core, ~70% of Pluto\'s mass', thick: '~850 km' }
+                        ];
+                      }
+
+                      // Draw starfield
+                      ctx2.fillStyle = '#0a0a20';
+                      ctx2.fillRect(0, 0, cw, ch);
+                      for (var si = 0; si < 120; si++) {
+                        var sx = (Math.sin(si * 137.508 + 42) * 0.5 + 0.5) * cw;
+                        var sy = (Math.cos(si * 91.3 + 17) * 0.5 + 0.5) * ch;
+                        ctx2.fillStyle = 'rgba(255,255,255,' + (0.2 + Math.random() * 0.5) + ')';
+                        ctx2.fillRect(sx, sy, 1, 1);
+                      }
+
+                      // Draw half-circle cutaway (right half = full planet, left half = cross-section)
+                      // Full planet right half
+                      for (var li = 0; li < layers.length; li++) {
+                        var lr = layers[li].r * maxR;
+                        ctx2.beginPath();
+                        ctx2.arc(cx, cy, lr, -Math.PI / 2, Math.PI / 2, false);
+                        ctx2.fillStyle = layers[li].color;
+                        ctx2.fill();
+                      }
+
+                      // Cross-section left half (concentric half-circles)
+                      for (var li2 = 0; li2 < layers.length; li2++) {
+                        var lr2 = layers[li2].r * maxR;
+                        ctx2.beginPath();
+                        ctx2.arc(cx, cy, lr2, Math.PI / 2, -Math.PI / 2, false);
+                        ctx2.closePath();
+                        ctx2.fillStyle = layers[li2].color;
+                        ctx2.fill();
+                        // Layer boundary line
+                        if (li2 > 0) {
+                          ctx2.beginPath();
+                          ctx2.arc(cx, cy, lr2, Math.PI / 2, -Math.PI / 2, false);
+                          ctx2.strokeStyle = 'rgba(255,255,255,0.3)';
+                          ctx2.lineWidth = 1;
+                          ctx2.stroke();
+                        }
+                      }
+
+                      // Center dividing line
+                      ctx2.beginPath();
+                      ctx2.moveTo(cx, cy - layers[0].r * maxR);
+                      ctx2.lineTo(cx, cy + layers[0].r * maxR);
+                      ctx2.strokeStyle = 'rgba(255,255,255,0.6)';
+                      ctx2.lineWidth = 2;
+                      ctx2.stroke();
+
+                      // Atmospheric glow
+                      var glowGrad = ctx2.createRadialGradient(cx, cy, maxR * 0.95, cx, cy, maxR * 1.12);
+                      glowGrad.addColorStop(0, layers[0].color + '60');
+                      glowGrad.addColorStop(1, 'transparent');
+                      ctx2.fillStyle = glowGrad;
+                      ctx2.fillRect(0, 0, cw, ch);
+
+                      // Labels on left side (cross-section callouts)
+                      ctx2.textAlign = 'right';
+                      ctx2.textBaseline = 'middle';
+                      for (var li3 = 0; li3 < layers.length; li3++) {
+                        var layer = layers[li3];
+                        var nextR = li3 < layers.length - 1 ? layers[li3 + 1].r : 0;
+                        var midR = ((layer.r + nextR) / 2) * maxR;
+                        var labelY = cy - midR * 0.7; // spread labels vertically
+                        var labelX = cx - maxR - 20;
+
+                        // Connector line
+                        ctx2.beginPath();
+                        ctx2.moveTo(labelX + 5, labelY);
+                        ctx2.lineTo(cx - midR, cy);
+                        ctx2.strokeStyle = 'rgba(255,255,255,0.25)';
+                        ctx2.lineWidth = 1;
+                        ctx2.setLineDash([3, 3]);
+                        ctx2.stroke();
+                        ctx2.setLineDash([]);
+
+                        // Label text
+                        ctx2.font = 'bold 11px sans-serif';
+                        ctx2.fillStyle = '#fff';
+                        ctx2.fillText(layer.label, labelX, labelY - 7);
+                        ctx2.font = '9px sans-serif';
+                        ctx2.fillStyle = '#ccc';
+                        ctx2.fillText(layer.thick, labelX, labelY + 7);
+                      }
+
+                      // Title
+                      ctx2.textAlign = 'center';
+                      ctx2.font = 'bold 14px sans-serif';
+                      ctx2.fillStyle = '#fff';
+                      ctx2.fillText(sel.name + ' Interior', cx, 24);
+                      ctx2.font = '10px sans-serif';
+                      ctx2.fillStyle = '#aaa';
+                      ctx2.fillText('Cross-section (not to scale)', cx, 40);
+                    }
+                  })
+                ),
+                // Layer details grid
+                React.createElement("div", { className: "space-y-2" },
+                  (function() {
+                    var interiorLayers;
+                    if (sel.name === 'Mercury') interiorLayers = [
+                      { label: 'Crust', thick: '~100 km', desc: 'Thin silicate crust, heavily cratered from 4 billion years of impacts', icon: '\uD83E\uDEA8', color: '#8a7060' },
+                      { label: 'Mantle', thick: '~600 km', desc: 'Silicate rock mantle \u2014 unusually thin compared to the core', icon: '\uD83C\uDF0B', color: '#6a5040' },
+                      { label: 'Iron Core', thick: '~1,850 km', desc: 'Enormous iron core makes up 85% of the planet\'s radius \u2014 the largest core-to-planet ratio in the solar system!', icon: '\u2B50', color: '#f0c040' }
+                    ];
+                    else if (sel.name === 'Venus') interiorLayers = [
+                      { label: 'Volcanic Crust', thick: '~30 km', desc: 'Basaltic surface, 1,600+ volcanoes but no tectonic plates', icon: '\uD83C\uDF0B', color: '#c9a050' },
+                      { label: 'Mantle', thick: '~3,000 km', desc: 'Hot silicate rock. May have periodic global resurfacing events', icon: '\uD83D\uDD25', color: '#a07030' },
+                      { label: 'Core', thick: '~3,200 km', desc: 'Iron-nickel core, possibly liquid but no magnetic field \u2014 Venus rotates too slowly!', icon: '\uD83E\uDDF2', color: '#e0b040' }
+                    ];
+                    else if (sel.name === 'Earth') interiorLayers = [
+                      { label: 'Crust', thick: '5\u201335 km', desc: 'Oceanic crust (thin, dense basalt) + continental crust (thick, light granite)', icon: '\uD83C\uDF0D', color: '#4a8050' },
+                      { label: 'Mantle', thick: '~2,870 km', desc: 'Convecting rock drives plate tectonics. Upper part (asthenosphere) is partially molten', icon: '\uD83C\uDF0B', color: '#c07030' },
+                      { label: 'Outer Core', thick: '~2,260 km', desc: 'Liquid iron-nickel \u2014 convection here creates Earth\'s magnetic field (magnetodynamo)', icon: '\uD83E\uDDF2', color: '#d09030' },
+                      { label: 'Inner Core', thick: '~1,220 km', desc: 'Solid iron ball at 5,400\u00B0C \u2014 as hot as the Sun\'s surface, kept solid by immense pressure', icon: '\u2B50', color: '#f0d060' }
+                    ];
+                    else if (sel.name === 'Mars') interiorLayers = [
+                      { label: 'Iron-Oxide Crust', thick: '~50 km', desc: 'Thicker than Earth\'s crust. Iron oxide gives Mars its red color', icon: '\uD83D\uDD34', color: '#b04020' },
+                      { label: 'Mantle', thick: '~1,560 km', desc: 'Iron and magnesium-rich silicate rock, now mostly inactive', icon: '\uD83C\uDF0B', color: '#704030' },
+                      { label: 'Core', thick: '~1,830 km', desc: 'Liquid iron-sulfide. Mars lost its magnetic field ~4 billion years ago when the core stopped convecting', icon: '\uD83E\uDDF2', color: '#d09040' }
+                    ];
+                    else if (sel.name === 'Jupiter') interiorLayers = [
+                      { label: 'Cloud Tops', thick: '~50 km', desc: 'Ammonia ice crystals form the colored bands and Great Red Spot', icon: '\u2601\uFE0F', color: '#d4924f' },
+                      { label: 'Gaseous H\u2082', thick: '~21,000 km', desc: 'Molecular hydrogen gas deepening with pressure', icon: '\uD83D\uDCA8', color: '#b07030' },
+                      { label: 'Metallic Hydrogen', thick: '~39,000 km', desc: 'Hydrogen compressed so densely it conducts electricity like metal \u2014 generates Jupiter\'s enormous magnetic field', icon: '\u26A1', color: '#a070c0' },
+                      { label: 'Rocky Core', thick: '~10,000 km', desc: 'Diffuse core of rock and exotic ices, 10-20x Earth\'s mass, at 20,000\u00B0C', icon: '\uD83E\uDEA8', color: '#e0c040' }
+                    ];
+                    else if (sel.name === 'Saturn') interiorLayers = [
+                      { label: 'Cloud Tops', thick: '~50 km', desc: 'Golden ammonia crystal clouds, less turbulent than Jupiter', icon: '\u2601\uFE0F', color: '#c9a04a' },
+                      { label: 'Gaseous H\u2082', thick: '~30,000 km', desc: 'Molecular hydrogen deepening under pressure', icon: '\uD83D\uDCA8', color: '#a08030' },
+                      { label: 'Metallic Hydrogen', thick: '~22,000 km', desc: 'Metallic hydrogen ocean \u2014 Saturn is so light it could float in water!', icon: '\u26A1', color: '#8060b0' },
+                      { label: 'Rocky Core', thick: '~8,000 km', desc: 'Dense ice/rock core, 9-22x Earth mass', icon: '\uD83E\uDEA8', color: '#e0b040' }
+                    ];
+                    else if (sel.name === 'Uranus') interiorLayers = [
+                      { label: 'Methane Atmosphere', thick: '~5,000 km', desc: 'Methane absorbs red light, giving Uranus its cyan color. Tilted 97.8\u00B0 on its side!', icon: '\uD83D\uDCA0', color: '#80d0d0' },
+                      { label: 'H\u2082/He Envelope', thick: '~7,000 km', desc: 'Hydrogen-helium gas transitioning to liquid', icon: '\uD83D\uDCA8', color: '#50a0a0' },
+                      { label: 'Superionic Water/Ice', thick: '~10,000 km', desc: 'Water in exotic "superionic" state \u2014 ice that conducts electricity! Plus diamond rain', icon: '\uD83D\uDC8E', color: '#2a5a7a' },
+                      { label: 'Rocky Core', thick: '~3,000 km', desc: 'Small silicate/iron core, about 1x Earth mass', icon: '\uD83E\uDEA8', color: '#808060' }
+                    ];
+                    else if (sel.name === 'Neptune') interiorLayers = [
+                      { label: 'Methane Atmosphere', thick: '~5,000 km', desc: 'Deepest blue in the solar system. Winds reach 2,100 km/h \u2014 fastest in the solar system!', icon: '\uD83C\uDF0A', color: '#4060c0' },
+                      { label: 'H\u2082/He Envelope', thick: '~7,000 km', desc: 'Hydrogen-helium gas with extreme pressure', icon: '\uD83D\uDCA8', color: '#3050a0' },
+                      { label: 'Superionic Water/Diamond Rain', thick: '~13,000 km', desc: 'Superionic water mantle where carbon atoms are crushed into literal diamonds that rain down', icon: '\uD83D\uDC8E', color: '#1a2060' },
+                      { label: 'Rocky Core', thick: '~4,000 km', desc: 'Iron-silicate core, ~1.2x Earth mass at 5,400\u00B0C', icon: '\uD83E\uDEA8', color: '#606050' }
+                    ];
+                    else interiorLayers = [ // Pluto
+                      { label: 'Nitrogen Ice', thick: '~10 km', desc: 'Frozen N\u2082, CO, CH\u2084 on the surface. The famous heart-shaped Tombaugh Regio is nitrogen ice', icon: '\u2744\uFE0F', color: '#d0c8b0' },
+                      { label: 'Water Ice Crust', thick: '~300 km', desc: 'Rigid water-ice bedrock \u2014 at -230\u00B0C, ice is as hard as rock', icon: '\uD83E\uDDCA', color: '#8090a0' },
+                      { label: 'Subsurface Ocean?', thick: '~100 km', desc: 'Scientists believe liquid water may exist beneath the ice, kept warm by radioactive decay in the core', icon: '\uD83D\uDCA7', color: '#4060a0' },
+                      { label: 'Rocky Core', thick: '~850 km', desc: 'Silicate rock core makes up ~70% of Pluto\'s mass', icon: '\uD83E\uDEA8', color: '#605040' }
+                    ];
+                    return interiorLayers.map(function(layer, li) {
+                      return React.createElement("div", {
+                        key: li,
+                        className: "flex items-start gap-3 rounded-lg p-3 border transition-all hover:shadow-md",
+                        style: { background: layer.color + '15', borderColor: layer.color + '40' }
+                      },
+                        React.createElement("div", {
+                          className: "w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-0.5",
+                          style: { background: layer.color, boxShadow: '0 2px 8px ' + layer.color + '80' }
+                        }, layer.icon),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "flex items-center gap-2 mb-0.5" },
+                            React.createElement("span", { className: "text-xs font-bold text-white" }, layer.label),
+                            React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-slate-300 font-mono" }, layer.thick)
+                          ),
+                          React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, layer.desc)
+                        )
+                      );
+                    });
+                  })()
+                )
+              ),
+
+
+              // ── ATMOSPHERE DESCENT SIMULATOR TAB ──
+              (d.viewTab) === 'descent' && sel && DESCENT_LAYERS[sel.name] && React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { className: "bg-gradient-to-r from-indigo-900 to-purple-900 rounded-xl p-4 text-white" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-lg" }, "\uD83D\uDE80"),
+                    React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Atmospheric Descent")
+                  ),
+                  React.createElement("p", { className: "text-xs text-indigo-200 leading-relaxed" },
+                    "Experience what a probe would encounter descending through " + sel.name + "'s atmosphere. Click a layer to learn more."
+                  )
+                ),
+                // Descent visualization canvas
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-300 shadow-lg", style: { height: '400px' } },
+                  React.createElement("canvas", {
+                    "aria-label": "Atmospheric descent visualization for " + sel.name,
+                    style: { width: '100%', height: '100%', display: 'block' },
+                    ref: function(canvasEl) {
+                      if (!canvasEl) return;
+                      var ctx2 = canvasEl.getContext('2d');
+                      if (!ctx2) return;
+                      var cw = canvasEl.parentElement.clientWidth || canvasEl.offsetWidth || 600;
+                      var ch = 400;
+                      canvasEl.width = cw; canvasEl.height = ch;
+                      var descentLayers = DESCENT_LAYERS[sel.name] || [];
+                      if (descentLayers.length === 0) return;
+
+                      var padding = 40;
+                      var layerAreaH = ch - padding * 2;
+                      var layerH = layerAreaH / descentLayers.length;
+                      var probeY = d._descentProbeY != null ? d._descentProbeY : 0;
+
+                      // Draw layers from top to bottom (highest altitude first)
+                      descentLayers.forEach(function(layer, li) {
+                        var y = padding + li * layerH;
+                        // Layer gradient background
+                        var grad = ctx2.createLinearGradient(0, y, 0, y + layerH);
+                        grad.addColorStop(0, layer.color);
+                        var nextColor = li < descentLayers.length - 1 ? descentLayers[li + 1].color : layer.color;
+                        grad.addColorStop(1, nextColor);
+                        ctx2.fillStyle = grad;
+                        ctx2.fillRect(0, y, cw, layerH);
+
+                        // Layer boundary line
+                        if (li > 0) {
+                          ctx2.beginPath();
+                          ctx2.moveTo(0, y);
+                          ctx2.lineTo(cw, y);
+                          ctx2.strokeStyle = 'rgba(255,255,255,0.25)';
+                          ctx2.lineWidth = 1;
+                          ctx2.setLineDash([5, 5]);
+                          ctx2.stroke();
+                          ctx2.setLineDash([]);
+                        }
+
+                        // Altitude label on left
+                        ctx2.textAlign = 'left';
+                        ctx2.font = 'bold 10px sans-serif';
+                        ctx2.fillStyle = 'rgba(255,255,255,0.9)';
+                        ctx2.fillText((layer.alt >= 0 ? '+' : '') + layer.alt + ' km', 8, y + 14);
+
+                        // Layer name and description centered
+                        ctx2.textAlign = 'center';
+                        ctx2.font = 'bold 12px sans-serif';
+                        ctx2.fillStyle = '#fff';
+                        ctx2.fillText(layer.name, cw / 2, y + layerH / 2 - 10);
+                        ctx2.font = '10px sans-serif';
+                        ctx2.fillStyle = 'rgba(255,255,255,0.7)';
+                        // Word-wrap description
+                        var words = layer.desc.split(' ');
+                        var line = ''; var lineY = y + layerH / 2 + 6; var maxW = cw * 0.6;
+                        words.forEach(function(word) {
+                          var test = line + word + ' ';
+                          if (ctx2.measureText(test).width > maxW && line) {
+                            ctx2.fillText(line.trim(), cw / 2, lineY);
+                            lineY += 13; line = word + ' ';
+                          } else { line = test; }
+                        });
+                        if (line.trim()) ctx2.fillText(line.trim(), cw / 2, lineY);
+
+                        // Right side: temp & pressure
+                        ctx2.textAlign = 'right';
+                        ctx2.font = '9px sans-serif';
+                        ctx2.fillStyle = 'rgba(255,200,100,0.9)';
+                        ctx2.fillText(layer.temp, cw - 10, y + 14);
+                        ctx2.fillStyle = 'rgba(150,200,255,0.8)';
+                        ctx2.fillText(layer.pressure, cw - 10, y + 26);
+                      });
+
+                      // Probe indicator (animated)
+                      var probeLayerIdx = Math.min(descentLayers.length - 1, Math.floor(probeY * descentLayers.length));
+                      var probePixelY = padding + probeY * layerAreaH;
+                      // Probe glow
+                      var probeGlow = ctx2.createRadialGradient(cw * 0.15, probePixelY, 0, cw * 0.15, probePixelY, 20);
+                      probeGlow.addColorStop(0, 'rgba(255,255,100,0.6)');
+                      probeGlow.addColorStop(1, 'transparent');
+                      ctx2.fillStyle = probeGlow;
+                      ctx2.fillRect(cw * 0.15 - 20, probePixelY - 20, 40, 40);
+                      // Probe icon
+                      ctx2.textAlign = 'center';
+                      ctx2.font = '16px sans-serif';
+                      ctx2.fillText('\uD83D\uDEF0\uFE0F', cw * 0.15, probePixelY + 5);
+
+                      // Title
+                      ctx2.textAlign = 'center';
+                      ctx2.font = 'bold 12px sans-serif';
+                      ctx2.fillStyle = '#fff';
+                      ctx2.fillText('\u2193 ' + sel.name + ' Atmosphere Descent', cw / 2, 20);
+                    }
+                  }),
+                  // Descent depth slider overlay
+                  React.createElement("div", {
+                    className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 bg-black/50 backdrop-blur rounded-lg px-3 py-2"
+                  },
+                    React.createElement("span", { className: "text-[10px] text-white/70 font-bold" }, "\u2B06 High"),
+                    React.createElement("input", {
+                      type: "range", min: "0", max: "100", value: (d._descentProbeY || 0) * 100,
+                      onChange: function(e) { upd('_descentProbeY', parseInt(e.target.value) / 100); },
+                      className: "flex-1 accent-indigo-400",
+                      "aria-label": "Descent depth slider",
+                      style: { height: '6px' }
+                    }),
+                    React.createElement("span", { className: "text-[10px] text-white/70 font-bold" }, "\u2B07 Deep")
+                  )
+                ),
+                // Layer detail cards
+                React.createElement("div", { className: "space-y-2" },
+                  DESCENT_LAYERS[sel.name].map(function(layer, li) {
+                    var isActive = d._descentProbeY != null && Math.floor(d._descentProbeY * DESCENT_LAYERS[sel.name].length) === li;
+                    return React.createElement("div", {
+                      key: li,
+                      className: "flex items-center gap-3 rounded-lg p-3 border transition-all cursor-pointer hover:shadow-md",
+                      style: {
+                        background: isActive ? layer.color + '30' : layer.color + '10',
+                        borderColor: isActive ? layer.color : layer.color + '30',
+                        boxShadow: isActive ? '0 0 12px ' + layer.color + '40' : 'none'
+                      },
+                      onClick: function() { upd('_descentProbeY', li / DESCENT_LAYERS[sel.name].length); tryAward('atmosphere_descent'); }
+                    },
+                      React.createElement("div", {
+                        className: "w-3 h-3 rounded-full flex-shrink-0",
+                        style: { background: layer.color, boxShadow: isActive ? '0 0 8px ' + layer.color : 'none' }
+                      }),
+                      React.createElement("div", { className: "flex-1 min-w-0" },
+                        React.createElement("div", { className: "flex items-center gap-2" },
+                          React.createElement("span", { className: "text-xs font-bold", style: { color: isActive ? '#fff' : '#cbd5e1' } }, layer.name),
+                          React.createElement("span", { className: "text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/10", style: { color: '#94a3b8' } },
+                            (layer.alt >= 0 ? '+' : '') + layer.alt + ' km'
+                          )
+                        ),
+                        React.createElement("p", { className: "text-[10px] mt-0.5", style: { color: isActive ? '#e2e8f0' : '#64748b' } }, layer.desc)
+                      ),
+                      React.createElement("div", { className: "text-right flex-shrink-0" },
+                        React.createElement("div", { className: "text-[9px] font-bold", style: { color: '#f59e0b' } }, layer.temp),
+                        React.createElement("div", { className: "text-[9px]", style: { color: '#60a5fa' } }, layer.pressure)
+                      )
+                    );
+                  })
+                )
+              ),
+
+
+              // ── ROVER / PROBE TAB (Three.js First-Person) ──
 
               (d.viewTab) === 'drone' && React.createElement("div", { id: "drone-fullscreen-container" },
 

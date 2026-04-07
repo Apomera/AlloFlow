@@ -42,6 +42,45 @@
   // ── App dependencies from window ──
   var LanguageContext = window.AlloLanguageContext;
   var _shared = window.__alloShared || {};
+  // Word family and sight word presets — exposed by AlloFlowANTI.txt
+  // Use Proxy/getter pattern so we read from window at USE time, not at module-load time
+  // (the module IIFE runs before AlloFlowANTI.txt populates window.WORD_FAMILY_PRESETS)
+  var WORD_FAMILY_PRESETS = new Proxy({}, {
+    get: function(target, prop) {
+      var src = window.WORD_FAMILY_PRESETS || {};
+      return src[prop];
+    },
+    ownKeys: function() {
+      var src = window.WORD_FAMILY_PRESETS || {};
+      return Object.keys(src);
+    },
+    getOwnPropertyDescriptor: function(target, prop) {
+      var src = window.WORD_FAMILY_PRESETS || {};
+      if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
+    },
+    has: function(target, prop) {
+      var src = window.WORD_FAMILY_PRESETS || {};
+      return prop in src;
+    }
+  });
+  var SIGHT_WORD_PRESETS = new Proxy({}, {
+    get: function(target, prop) {
+      var src = window.SIGHT_WORD_PRESETS || {};
+      return src[prop];
+    },
+    ownKeys: function() {
+      var src = window.SIGHT_WORD_PRESETS || {};
+      return Object.keys(src);
+    },
+    getOwnPropertyDescriptor: function(target, prop) {
+      var src = window.SIGHT_WORD_PRESETS || {};
+      if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
+    },
+    has: function(target, prop) {
+      var src = window.SIGHT_WORD_PRESETS || {};
+      return prop in src;
+    }
+  });
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
@@ -177,6 +216,11 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
   }, []);
   const previewList = React.useMemo(() => {
     let list = [];
+    // Include already-generated words so they appear in the Lesson Preview grid
+    if (preloadedWords && preloadedWords.length > 0) {
+      const preloadedWordStrings = preloadedWords.map((w) => w.targetWord || w.word || w.term || (typeof w === "string" ? w : ""));
+      list = [...list, ...preloadedWordStrings.filter((w) => w)];
+    }
     if (includeGlossary && Array.isArray(glossaryTerms)) {
       const glossaryWords = glossaryTerms.map((t2) => t2.term || t2.word || t2);
       list = [...list, ...glossaryWords];
@@ -200,7 +244,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       list = [...list, ...aiTerms];
     }
     return [...new Set(list)];
-  }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms]);
+  }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms, preloadedWords]);
   React.useEffect(() => {
     const limit = Math.min(previewList.length, wordCount);
     const indices = /* @__PURE__ */ new Set();
@@ -241,9 +285,23 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     setIsProcessing(true);
     setGeneratedCount(0);
     const processed = [];
+    const preloadedMap = {};
+    if (preloadedWords && preloadedWords.length > 0) {
+      preloadedWords.forEach((pw) => {
+        const key = (pw.targetWord || pw.word || pw.term || "").toLowerCase().trim();
+        if (key) preloadedMap[key] = pw;
+      });
+    }
     for (let i = 0; i < wordsToProcess.length; i++) {
       const rawWord = wordsToProcess[i];
+      const existing = preloadedMap[rawWord.toLowerCase().trim()];
+      if (existing && existing.phonemes && existing.phonemes.length > 0) {
+        processed.push(existing);
+        setGeneratedCount((prev) => prev + 1);
+        continue;
+      }
       try {
+
         const prompt = `
                          Analyze the word "${rawWord}" for phonemic awareness activities. Target Audience: ${gradeLevel || "Early Readers (K-2)"}.
                          PHONEME NOTATION (use EXACTLY these symbols):

@@ -60,6 +60,11 @@ const SIGHT_WORD_PRESETS = {
     'Fry Second 100': ['will', 'up', 'other', 'about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'him', 'into', 'time', 'has', 'look', 'two', 'more', 'write', 'go', 'see', 'number', 'no', 'way', 'could', 'people', 'my', 'than', 'first', 'water', 'been', 'call', 'who', 'oil', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come', 'made', 'may', 'part']
 };
 
+// Expose for CDN modules (word_sounds_setup_module.js needs these)
+if (typeof window !== 'undefined') {
+  window.WORD_FAMILY_PRESETS = WORD_FAMILY_PRESETS;
+  window.SIGHT_WORD_PRESETS = SIGHT_WORD_PRESETS;
+}
 
 const _isCanvasEnv = (() => {
   if (typeof window === 'undefined') return false;

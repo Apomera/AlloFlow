@@ -31,6 +31,21 @@
   var useMemo = React.useMemo;
 
   // ═══════════════════════════════════════════════════════════════
+  // LABEL POSITION MAP (mirrored from App.jsx)
+  // ═══════════════════════════════════════════════════════════════
+  var LABEL_POSITIONS = {
+    'top-left': { position: 'absolute', top: '6%', left: '6%', zIndex: 4 },
+    'top-center': { position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)', zIndex: 4 },
+    'top-right': { position: 'absolute', top: '6%', right: '6%', zIndex: 4 },
+    'center-left': { position: 'absolute', top: '50%', left: '6%', transform: 'translateY(-50%)', zIndex: 4 },
+    'center': { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 4 },
+    'center-right': { position: 'absolute', top: '50%', right: '6%', transform: 'translateY(-50%)', zIndex: 4 },
+    'bottom-left': { position: 'absolute', top: '85%', left: '6%', zIndex: 4 },
+    'bottom-center': { position: 'absolute', top: '85%', left: '50%', transform: 'translateX(-50%)', zIndex: 4 },
+    'bottom-right': { position: 'absolute', top: '85%', right: '6%', zIndex: 4 },
+  };
+
+  // ═══════════════════════════════════════════════════════════════
   // VISUAL PANEL COMPONENTS (JSX pre-transformed by esbuild)
   // ═══════════════════════════════════════════════════════════════
 
@@ -38,7 +53,7 @@ var VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, on
   const [labelsHidden, setLabelsHidden] = React.useState(false);
   const [editingLabel, setEditingLabel] = React.useState(null);
   const [refiningPanelIdx, setRefiningPanelIdx] = React.useState(null);
-  const [userLabels, setUserLabels] = React.useState(initialAnnotations?.userLabels || {});
+
   const [draggingLabel, setDraggingLabel] = React.useState(null);
   const [aiLabelPositions, setAiLabelPositions] = React.useState(initialAnnotations?.aiLabelPositions || {});
   const [aiLabelAnchors, setAiLabelAnchors] = React.useState(() => {

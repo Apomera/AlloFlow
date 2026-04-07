@@ -3600,6 +3600,48 @@ Return ONLY a valid JSON object:
   const [isPersonaChatOpen, setIsPersonaChatOpen] = useState(false);
   const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
   const personaScrollRef = useRef(null);
+  // ── Centralized persona interview reset ──
+  // Single source of truth for clearing ALL persona-related state when starting a new interview.
+  // Prevents stale state (chat history, harmony score, badges, refs, etc.) from leaking between interviews.
+  // Note: deliberately preserves personaAutoRead and personaAutoSend (user preferences).
+  const resetPersonaInterviewState = useCallback(() => {
+    setPersonaState({
+      mode: 'single',
+      options: [],
+      selectedCharacter: null,
+      selectedCharacters: [],
+      chatHistory: [],
+      isLoading: false,
+      avatarUrl: null,
+      isImageLoading: false,
+      avatarGenerationFailed: false,
+      suggestions: [],
+      panelSuggestions: [],
+      topicSparkCount: 0,
+      showReflection: false,
+      reflectionText: '',
+      reflectionSubmitted: false,
+      harmonyScore: 10,
+      earnedBadges: []
+    });
+    setPersonaInput('');
+    setPersonaReflectionInput('');
+    setReflectionFeedback(null);
+    setIsPersonaDefining(false);
+    setIsGradingReflection(false);
+    setIsGeneratingReflectionPrompt(false);
+    setPanelTtsPending([]);
+    setShowPersonaHints(false);
+    setPersonaTurnHintsViewed(false);
+    setIsPersonaReflectionOpen(false);
+    lastReadPersonaIndexRef.current = -1;
+    if (personaDefinitionCache.current && typeof personaDefinitionCache.current.clear === 'function') {
+      personaDefinitionCache.current.clear();
+    }
+    // Stop any in-flight TTS playback from a previous interview
+    setPlayingContentId(null);
+    setPlaybackState({ sentences: [], currentIdx: -1 });
+  }, []);
   const [showLedger, setShowLedger] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState(null);
   const fluencyModalRef = useRef(null);

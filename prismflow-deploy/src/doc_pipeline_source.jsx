@@ -105,7 +105,7 @@ Return ONLY valid JSON:
 {
   "score": "<calculated from rubric deductions>",
   "confidence": "<your confidence in this score: 'high' if document is straightforward, 'medium' if some elements are ambiguous, 'low' if you had to guess about key aspects>",
-  "summary": "One sentence overall assessment",
+  "summary": "One balanced sentence that leads with strengths before noting issues. Match tone to score — above 80 is positive with minor notes, below 50 is serious concern.",
   "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "serious": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "moderate": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
@@ -1782,7 +1782,7 @@ IMPORTANT: Calculate the score by starting at 100 and subtracting per the rubric
 Return ONLY JSON:
 {
   "score": <calculated score, minimum 0>,
-  "summary": "One sentence assessment",
+  "summary": "One balanced sentence that leads with what the document does well, then briefly notes remaining areas for improvement. Match the tone to the score — a score above 80 should sound positive, not critical. Example for 94/100: 'The document demonstrates strong accessibility with proper language, headings, and semantic structure, with minor remaining issues in image alt text and navigation landmarks.'",
   "issues": [{"issue": "complete sentence describing violation", "wcag": "X.X.X", "severity": "critical|serious|moderate|minor", "deduction": <points deducted>}],
   "passes": ["List EVERY checklist item (1-11) that passes. Be thorough — for each item that IS accessible, include a specific description of what was found. A longer passes list is better than a short one."]
 }`;
@@ -1812,6 +1812,15 @@ Return ONLY JSON:
           const pf = 1 - (passRatio * 0.4);
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions * pf));
           if (Math.abs((parsed.score || 0) - calculatedScore) > 12) parsed.score = calculatedScore;
+        }
+        // Tone-check: if summary contains harsh language but score is high, soften it
+        if (parsed.score >= 80 && parsed.summary) {
+          const harshWords = /fails?\s+significantly|severely\s+inaccessible|major\s+concern|critically\s+lacking|fundamentally\s+broken|unusable|fails\s+to\s+meet/i;
+          if (harshWords.test(parsed.summary)) {
+            const issueCount = (parsed.issues || []).length;
+            const passCount = (parsed.passes || []).length;
+            parsed.summary = `The document scores ${parsed.score}/100 with ${passCount} accessibility checks passing and ${issueCount} remaining issue${issueCount !== 1 ? 's' : ''} to address.`;
+          }
         }
         return parsed;
       }
