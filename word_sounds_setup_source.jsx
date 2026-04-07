@@ -1,3 +1,7 @@
+    // Word family and sight word presets — exposed by AlloFlowANTI.txt on window
+    const WORD_FAMILY_PRESETS = (typeof window !== 'undefined' && window.WORD_FAMILY_PRESETS) || {};
+    const SIGHT_WORD_PRESETS = (typeof window !== 'undefined' && window.SIGHT_WORD_PRESETS) || {};
+
     const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode}) => {
         const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
         const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');

@@ -42,6 +42,9 @@
   // ── App dependencies from window ──
   var LanguageContext = window.AlloLanguageContext;
   var _shared = window.__alloShared || {};
+  // Word family and sight word presets — exposed by AlloFlowANTI.txt
+  var WORD_FAMILY_PRESETS = window.WORD_FAMILY_PRESETS || {};
+  var SIGHT_WORD_PRESETS = window.SIGHT_WORD_PRESETS || {};
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
