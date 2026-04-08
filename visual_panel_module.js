@@ -30,6 +30,25 @@
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
 
+  // sanitizeHtml is defined in the monolith (AlloFlowANTI.txt) and exposed on window.
+  // The CDN module IIFE can't see top-level monolith consts. We use a wrapper that
+  // resolves window.sanitizeHtml at CALL time (not module-load time), so it works
+  // even if the module loads before the monolith populates window.sanitizeHtml.
+  // Falls back to a minimal inline sanitizer matching the monolith's behavior.
+  function sanitizeHtml(html) {
+    var fn = (typeof window !== 'undefined' && window.sanitizeHtml);
+    if (typeof fn === 'function' && fn !== sanitizeHtml) return fn(html);
+    // Inline fallback — matches AlloFlowANTI.txt sanitizeHtml output
+    if (!html || typeof html !== 'string') return '';
+    var clean = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+    clean = clean.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+    clean = clean.replace(/\s+on\w+\s*=\s*\S+/gi, '');
+    clean = clean.replace(/<\/?(iframe|object|embed|form|link|meta|base)[^>]*>/gi, '');
+    clean = clean.replace(/href\s*=\s*["']?javascript:/gi, 'href="');
+    clean = clean.replace(/src\s*=\s*["']?javascript:/gi, 'src="');
+    return clean;
+  }
+
   // ═══════════════════════════════════════════════════════════════
   // LABEL POSITION MAP (mirrored from App.jsx)
   // ═══════════════════════════════════════════════════════════════
