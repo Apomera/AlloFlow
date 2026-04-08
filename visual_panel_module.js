@@ -87,6 +87,7 @@ var VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, on
   const [drawingStart, setDrawingStart] = React.useState(null);
   const [refineInput, setRefineInput] = React.useState("");
   const [imageOverrides, setImageOverrides] = React.useState(initialAnnotations?.imageOverrides || {});
+  const [userLabels, setUserLabels] = React.useState(initialAnnotations?.userLabels || {});
   const fileInputRefs = React.useRef({});
   const handleImageUpload = (panelIdx, e) => {
     const file = e.target.files?.[0];

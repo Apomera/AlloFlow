@@ -4124,22 +4124,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
       const cfg = config || exportConfig;
-      // Resource type filtering — configurable via export preview modal
+      // Resource type filtering — configurable via export preview modal.
+      // Teacher-only resources (analysis, udl-advice, brainstorm) handled separately
+      // below so they appear in teacher copy unconditionally but are toggleable for student copy.
       const typeToggleMap = {
-        'analysis': 'includeAnalysis', 'udl-advice': 'includeUdlAdvice', 'brainstorm': 'includeBrainstorm',
         'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
         'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
         'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
       };
       const toggleKey = typeToggleMap[item.type];
       if (toggleKey && cfg[toggleKey] === false) return '';
-      // Legacy teacher/student copy filtering for types without explicit toggles
-      if (!isTeacher) {
-          if (!cfg.includeAnalysis && item.type === 'analysis') return '';
-          if (item.type === 'udl-advice' && !cfg.includeUdlAdvice) return '';
-          if (item.type === 'brainstorm' && !cfg.includeBrainstorm) return '';
-      } else {
-          // Teacher copy traditionally hides student-facing resources to avoid duplication
+      // Teacher-copy-by-default resources: always show in teacher copy, opt-in for student copy
+      if (item.type === 'analysis' || item.type === 'udl-advice' || item.type === 'brainstorm') {
+          const studentToggleKey = item.type === 'analysis' ? 'includeAnalysis'
+                                  : item.type === 'udl-advice' ? 'includeUdlAdvice'
+                                  : 'includeBrainstorm';
+          if (!isTeacher && cfg[studentToggleKey] === false) return '';
+          // teacher copy always shows these — fall through to render
+      }
+      // Teacher copy traditionally hides student-facing resources to avoid duplication
+      if (isTeacher) {
           if (item.type === 'simplified') return '';
           if (item.type === 'outline') return '';
           if (item.type === 'image') return '';
