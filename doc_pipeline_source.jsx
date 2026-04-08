@@ -4958,7 +4958,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const textAlign = isRtl ? 'right' : 'left';
       const theme = EXPORT_THEMES[exportTheme] || EXPORT_THEMES.professional;
       // Font: honor user's app font if toggled, otherwise use theme font
-      const appFontEntry = FONT_OPTIONS.find(f => f.id === selectedFont);
+      // Read FONT_OPTIONS from window (defined in monolith) with safe fallback
+      const _fontOptions = (typeof window !== 'undefined' && window.FONT_OPTIONS) || [];
+      const appFontEntry = _fontOptions.find(f => f.id === selectedFont);
       const exportFontFamily = cfg.useAppFont && appFontEntry ? `'${appFontEntry.label}', ${theme.bodyFont}` : theme.bodyFont;
       const exportFontImport = cfg.useAppFont && appFontEntry?.googleFont ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');` : '';
       const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';
