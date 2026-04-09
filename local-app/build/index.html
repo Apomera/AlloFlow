@@ -16,22 +16,10 @@
              connect-src 'self' localhost:* 127.0.0.1:* ws://localhost:*;" />
   <title>AlloFlow — Local</title>
 
-  <script>
-    // Tailwind CDN fallback for development (define before link tag)
-    function loadTailwindCDN() {
-      if (!document.querySelector('script[src*="tailwindcss.com"]')) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.tailwindcss.com';
-        document.head.appendChild(script);
-        console.warn('[Tailwind] Loaded CDN fallback. In production, use: npm run build:css');
-      }
-    }
-  </script>
-
   <!-- Tailwind CSS - served from build or CDN for dev -->
   <!-- In production, this should be replaced with a build-time CSS file -->
   <!-- For now, using CDN with note that it should not be used in production -->
-  <link rel="stylesheet" href="./tailwind.css" onerror="console.warn('[Tailwind] CSS file not found, falling back to CDN'); loadTailwindCDN()">
+  <link rel="stylesheet" href="./tailwind.css" onerror="(function(){if(!document.querySelector('script[src*=tailwindcss]')){const s=document.createElement('script');s.src='https://cdn.tailwindcss.com';document.head.appendChild(s);console.warn('[Tailwind] Loaded CDN fallback');}})()">
 
   <!-- React + ReactDOM from CDN (pinned to same version as web app) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
