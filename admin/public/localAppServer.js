@@ -149,14 +149,14 @@ async function handleAiChatApi(req, res, body) {
                 return res.end(JSON.stringify({ error: 'Gemini token not available' }));
             }
 
-            // Call Gemini API with server-side token
-            const geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/chat/completions', {
+            // Call Gemini OpenAI-compatible API with server-side token
+            const geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ messages, model: model || 'gemini-pro' }),
+                body: JSON.stringify({ messages, model: model || 'gemini-2.0-flash' }),
             });
 
             const data = await geminiRes.json();

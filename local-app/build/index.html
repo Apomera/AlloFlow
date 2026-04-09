@@ -99,9 +99,10 @@
       const config = window.__alloLocalConfig;
       const errors = [];
 
-      // Check LLM Engine (LM Studio) — skip if user selected a cloud AI provider
+      // Check LLM Engine (LM Studio) — skip if admin has configured a cloud AI provider
+      // Admin-injected config.aiProvider always takes precedence over localStorage
       const _localAiConfig = (() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}'); } catch { return {}; } })();
-      const _aiBackend = _localAiConfig.backend || config.aiProvider || 'lmstudio';
+      const _aiBackend = config.aiProvider || _localAiConfig.backend || 'lmstudio';
       const _isCloudProvider = (_aiBackend === 'gemini' || _aiBackend === 'copilot' || _aiBackend === 'openai');
       if (!_isCloudProvider) {
         try {
