@@ -99,23 +99,24 @@
       const config = window.__alloLocalConfig;
       const errors = [];
 
-      // Check LLM Engine (LM Studio) — also auto-detect the loaded model
-      try {
-        const llmUrl = config.llmEngineUrl || config.ollamaUrl || 'http://localhost:1234';
-        const res = await fetch(llmUrl + '/v1/models', { signal: AbortSignal.timeout(3000) });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        const firstModel = data?.data?.[0]?.id;
-        if (firstModel) {
-          window.__ollamaModel = firstModel;
-          window.__alloLocalConfig.defaultModel = firstModel;
-          console.log('[AlloFlow] Auto-detected LM Studio model:', firstModel);
-        }
-      } catch {
-        errors.push({ service: 'LM Studio', url: config.llmEngineUrl || 'http://localhost:1234', required: false });
-        // Only show offline banner if user selected local as AI provider (or it's undefined/legacy)
-        const aiProvider = config.aiProvider || 'local';
-        if (aiProvider === 'local' || aiProvider === 'llm-engine') {
+      // Check LLM Engine (LM Studio) — skip if user selected a cloud AI provider
+      const _localAiConfig = (() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}'); } catch { return {}; } })();
+      const _aiBackend = _localAiConfig.backend || config.aiProvider || 'lmstudio';
+      const _isCloudProvider = (_aiBackend === 'gemini' || _aiBackend === 'copilot' || _aiBackend === 'openai');
+      if (!_isCloudProvider) {
+        try {
+          const llmUrl = config.llmEngineUrl || config.ollamaUrl || 'http://localhost:1234';
+          const res = await fetch(llmUrl + '/v1/models', { signal: AbortSignal.timeout(3000) });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          const firstModel = data?.data?.[0]?.id;
+          if (firstModel) {
+            window.__ollamaModel = firstModel;
+            window.__alloLocalConfig.defaultModel = firstModel;
+            console.log('[AlloFlow] Auto-detected LM Studio model:', firstModel);
+          }
+        } catch {
+          errors.push({ service: 'LM Studio', url: config.llmEngineUrl || 'http://localhost:1234', required: false });
           document.getElementById('offline-banner').classList.add('visible');
         }
       }
