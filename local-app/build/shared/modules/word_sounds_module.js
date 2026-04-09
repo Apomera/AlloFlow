@@ -7411,6 +7411,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setShowReviewPanel(true);
             return;
           }
+          // Guard: if user already started from review and we have preloaded words,
+          // don't re-trigger preload — the activity should be running with the first word
+          if (hasStartedFromReview.current && preloadedWords.length > 0) {
+            debugLog("🛡️ Skip preload re-trigger: user already started activity from review");
+            return;
+          }
           const prefetchTimer = setTimeout(() => {
             prefetchNextWords();
             if (typeof preloadInitialBatch === "function") {
@@ -12604,15 +12610,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             hasStartedFromReview.current = true;
             setWordSoundsHistory([]);
             setShowReviewPanel(false);
-            const firstWord =
-              preloadedWords[
-              currentWordIndex % Math.max(1, preloadedWords.length)
-              ];
-            if (firstWord) {
-              setCurrentWordSoundsWord(firstWord.targetWord || firstWord.word);
-              setWordSoundsPhonemes(firstWord);
-              setIsLoadingPhonemes(false);
+            // Ensure an activity is selected — if none yet, default to first in sequence or 'counting'
+            const targetActivity = wordSoundsActivity || (activitySequence && activitySequence.length > 0 ? activitySequence[0] : 'counting');
+            if (!wordSoundsActivity && setWordSoundsActivity) {
+              setWordSoundsActivity(targetActivity);
             }
+            // Use startActivity to properly initialize the session queue and pick a word
+            setTimeout(() => {
+              if (typeof startActivity === 'function') {
+                startActivity(targetActivity);
+              } else {
+                // Fallback: manually set the first word
+                const firstWord = preloadedWords[currentWordIndex % Math.max(1, preloadedWords.length)];
+                if (firstWord) {
+                  const wordText = firstWord.targetWord || firstWord.word || firstWord.term || firstWord.singleWord || firstWord.displayWord || "";
+                  if (wordText) {
+                    setCurrentWordSoundsWord(wordText);
+                    setWordSoundsPhonemes(firstWord);
+                    setIsLoadingPhonemes(false);
+                  }
+                }
+              }
+            }, 50);
           },
           onClose: onClose,
           onBackToSetup: () => {

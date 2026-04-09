@@ -1,3 +1,24 @@
+    // Word family and sight word presets — exposed by AlloFlowANTI.txt on window
+    // Use Proxy so reads happen at USE time (the module loads BEFORE AlloFlowANTI.txt populates window)
+    const WORD_FAMILY_PRESETS = new Proxy({}, {
+      get: (_, prop) => (window.WORD_FAMILY_PRESETS || {})[prop],
+      ownKeys: () => Object.keys(window.WORD_FAMILY_PRESETS || {}),
+      getOwnPropertyDescriptor: (_, prop) => {
+        const src = window.WORD_FAMILY_PRESETS || {};
+        if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
+      },
+      has: (_, prop) => prop in (window.WORD_FAMILY_PRESETS || {})
+    });
+    const SIGHT_WORD_PRESETS = new Proxy({}, {
+      get: (_, prop) => (window.SIGHT_WORD_PRESETS || {})[prop],
+      ownKeys: () => Object.keys(window.SIGHT_WORD_PRESETS || {}),
+      getOwnPropertyDescriptor: (_, prop) => {
+        const src = window.SIGHT_WORD_PRESETS || {};
+        if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
+      },
+      has: (_, prop) => prop in (window.SIGHT_WORD_PRESETS || {})
+    });
+
     const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode}) => {
         const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
         const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
@@ -89,6 +110,11 @@
         }, []);
         const previewList = React.useMemo(() => {
             let list = [];
+            // Include already-generated words so they appear in the Lesson Preview grid
+            if (preloadedWords && preloadedWords.length > 0) {
+                const preloadedWordStrings = preloadedWords.map(w => w.targetWord || w.word || w.term || (typeof w === 'string' ? w : ''));
+                list = [...list, ...preloadedWordStrings.filter(w => w)];
+            }
             if (includeGlossary && Array.isArray(glossaryTerms)) {
                 const glossaryWords = glossaryTerms.map(t => t.term || t.word || t);
                 list = [...list, ...glossaryWords];
@@ -112,7 +138,7 @@
                 list = [...list, ...aiTerms];
             }
             return [...new Set(list)];
-        }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms]);
+        }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms, preloadedWords]);
         React.useEffect(() => {
             const limit = Math.min(previewList.length, wordCount);
             const indices = new Set();
@@ -153,8 +179,27 @@
              setIsProcessing(true);
              setGeneratedCount(0);
              const processed = [];
+
+             // Build a lookup map for already-processed preloaded words
+             const preloadedMap = {};
+             if (preloadedWords && preloadedWords.length > 0) {
+                 preloadedWords.forEach(pw => {
+                     const key = (pw.targetWord || pw.word || pw.term || '').toLowerCase().trim();
+                     if (key) preloadedMap[key] = pw;
+                 });
+             }
+
              for (let i = 0; i < wordsToProcess.length; i++) {
                  const rawWord = wordsToProcess[i];
+
+                 // ── Skip AI if this word was already generated ──
+                 const existing = preloadedMap[rawWord.toLowerCase().trim()];
+                 if (existing && existing.phonemes && existing.phonemes.length > 0) {
+                     processed.push(existing);
+                     setGeneratedCount(prev => prev + 1);
+                     continue;
+                 }
+
                  try {
                      const prompt = `
                          Analyze the word "${rawWord}" for phonemic awareness activities. Target Audience: ${gradeLevel || 'Early Readers (K-2)'}.
@@ -284,6 +329,7 @@
              onStartGame(processed, sequence, lessonPlanConfig, configSummary);
              setIsProcessing(false);
         };
+
         if (isMinimized) {
             return (
                 <div className="fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl border-2 border-violet-500 p-4 animate-in slide-in-from-bottom-10 fade-in w-80">

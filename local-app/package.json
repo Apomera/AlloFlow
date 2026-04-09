@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@mintplex-labs/piper-tts-web": "^1.0.4",
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "lucide-react": "^1.7.0"
   }
 }

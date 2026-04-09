@@ -43,17 +43,11 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var t = ctx.t;
 
-      // ── State from ctx (hosted in parent) ──
-      var gridPoints = ctx.gridPoints || [];
-      var setGridPoints = ctx.setGridPoints;
-      var gridChallenge = ctx.gridChallenge || null;
-      var setGridChallenge = ctx.setGridChallenge;
-      var gridFeedback = ctx.gridFeedback || null;
-      var setGridFeedback = ctx.setGridFeedback;
-      var gridRange = ctx.gridRange || { min: -10, max: 10 };
+      // ── State handling ──
       var setToolSnapshots = ctx.setToolSnapshots;
       var exploreScore = ctx.exploreScore || { correct: 0, total: 0 };
       var setExploreScore = ctx.setExploreScore;
+      var gridRange = ctx.gridRange || { min: -10, max: 10 };
 
       // ── Extended state via labToolData ──
       var labToolData = ctx.toolData || {};
@@ -67,6 +61,22 @@ window.StemLab = window.StemLab || {
           });
         }
       };
+
+      // ── Local state overrides (formerly from ctx) ──
+      var gridPoints = _cg.gridPoints || [];
+      var setGridPoints = function(updater) {
+        if (typeof updater === 'function') updCG({ gridPoints: updater(_cg.gridPoints || []) });
+        else updCG({ gridPoints: updater });
+      };
+      var gridChallenge = _cg.gridChallenge || null;
+      var setGridChallenge = function(val) { updCG({ gridChallenge: val }); };
+      var gridFeedback = _cg.gridFeedback || null;
+      var setGridFeedback = function(updater) {
+        if (typeof updater === 'function') updCG({ gridFeedback: updater(_cg.gridFeedback || null) });
+        else updCG({ gridFeedback: updater });
+      };
+
+
 
       var badges = _cg.badges || {};
       var streak = _cg.streak || 0;

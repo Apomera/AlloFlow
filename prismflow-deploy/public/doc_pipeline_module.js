@@ -119,7 +119,7 @@ Return ONLY valid JSON:
 {
   "score": "<calculated from rubric deductions>",
   "confidence": "<your confidence in this score: 'high' if document is straightforward, 'medium' if some elements are ambiguous, 'low' if you had to guess about key aspects>",
-  "summary": "One sentence overall assessment",
+  "summary": "One balanced sentence that leads with strengths before noting issues. Match tone to score — above 80 is positive with minor notes, below 50 is serious concern.",
   "critical": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "major": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
   "minor": [{"issue": "complete sentence describing the violation", "wcag": "X.X.X", "count": N}],
@@ -1807,7 +1807,7 @@ IMPORTANT: Calculate the score by starting at 100 and subtracting per the rubric
 Return ONLY JSON:
 {
   "score": <calculated score, minimum 0>,
-  "summary": "One sentence assessment",
+  "summary": "One balanced sentence that leads with what the document does well, then briefly notes remaining areas for improvement. Match the tone to the score — a score above 80 should sound positive, not critical. Example for 94/100: 'The document demonstrates strong accessibility with proper language, headings, and semantic structure, with minor remaining issues in image alt text and navigation landmarks.'",
   "issues": [{"issue": "complete sentence describing violation", "wcag": "X.X.X", "severity": "critical|serious|moderate|minor", "deduction": <points deducted>}],
   "passes": ["List EVERY checklist item (1-11) that passes. Be thorough — for each item that IS accessible, include a specific description of what was found. A longer passes list is better than a short one."]
 }`;

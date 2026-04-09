@@ -28090,7 +28090,7 @@ Return only the corrected version of this exact text:`;
                   </div>
                 )}
                 {isWordSoundsMode && (activeView === 'word-sounds' || generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedWords.length > 0)) && (() => {
-                    const WS = window.AlloModules && window.AlloModules.WordSoundsModal;
+                    const WS = window.AlloModules && window.AlloModules.WordSoundsGenerator;
                     if (WS) {
                         return (
                     <ErrorBoundary fallbackMessage="Word Sounds encountered an error." onError={(error) => console.error("ErrorBoundary CAUGHT:", error?.message || error)} onRetry={() => { setWordSoundsPhonemes(null); setCurrentWordSoundsWord(null); setWordSoundsFeedback(null); setWordSoundsActivity(null); }}>
