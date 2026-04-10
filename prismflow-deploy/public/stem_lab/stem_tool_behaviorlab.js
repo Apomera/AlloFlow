@@ -685,7 +685,83 @@ var d = labToolData || {};
           var blStreak = d.blStreak || 0;
           var blBestStreak = d.blBestStreak || 0;
 
+          // ── rAF Animation System (hooks at top level, before returns) ──
+          var _blCvRef = React.useRef(null);
+          var _blAnimId = React.useRef(0);
+          var _blAnimState = React.useRef({
+            mouseX: 200, mouseY: 150, targetX: 200, targetY: 150,
+            mouseDir: 1, mouseAction: 'explore', mouseAngle: 0,
+            foodVisible: false, foodTime: 0, moodEmoji: '', moodTimer: 0,
+            leverPressed: false, lightColor: 'green', paused: false,
+            tick: 0, levelScore: 0, proxDelta: 0, level: 1,
+            extinctionPhase: false, extinctionStart: 0,
+            chainStep: 0, chainSeqLen: 3,
+            ccPhase: 'baseline', bellRinging: false, salivating: false, assocStrength: 0,
+            droTimer: 0, droInterval: 6,
+            trail: [], recentActions: [],
+            speed: 1, soundOn: true, season: 0,
+            varroaLevel: 0, habitat: 50
+          });
+          var _blTickTimer = React.useRef(null);
 
+          // Sync React state -> mutable animation state every render
+          var _as = _blAnimState.current;
+          _as.targetX = blTargetX; _as.targetY = blTargetY;
+          _as.mouseDir = blMouseDir; _as.mouseAction = blMouseAction;
+          _as.mouseAngle = blMouseAngle;
+          _as.foodVisible = blFoodVisible; _as.foodTime = blFoodTime;
+          _as.moodEmoji = blMoodEmoji; _as.moodTimer = blMoodTimer;
+          _as.leverPressed = blMouseAction === 'pressLever';
+          _as.lightColor = blLightColor; _as.paused = blPaused;
+          _as.tick = blTick; _as.levelScore = blLevelScore;
+          _as.proxDelta = blProxDelta; _as.level = blLevel;
+          _as.extinctionPhase = blExtinctionPhase; _as.extinctionStart = blExtinctionStart;
+          _as.chainStep = blChainStep;
+          _as.ccPhase = blCcPhase; _as.bellRinging = blBellRinging;
+          _as.salivating = blSalivating; _as.assocStrength = blAssocStrength;
+          _as.droTimer = blDroTimer; _as.droInterval = blDroInterval;
+          _as.recentActions = blRecentActions;
+          _as.speed = d.blSpeed || 1;
+
+          // ── rAF loop: smooth interpolation + drawing at 60fps ──
+          React.useEffect(function() {
+            var cv = _blCvRef.current;
+            if (!cv) { cv = document.getElementById('bl-chamber-canvas'); _blCvRef.current = cv; }
+            if (!cv) return;
+            var s = _blAnimState.current;
+            // Initialize visual position to current target
+            if (s.mouseX === 200 && s.mouseY === 150 && s.targetX !== 200) {
+              s.mouseX = s.targetX; s.mouseY = s.targetY;
+            }
+
+            function blFrame() {
+              var cv2 = _blCvRef.current || document.getElementById('bl-chamber-canvas');
+              if (!cv2) { _blAnimId.current = requestAnimationFrame(blFrame); return; }
+              var st = _blAnimState.current;
+
+              // Distance-adaptive lerp
+              var dx = st.targetX - st.mouseX;
+              var dy = st.targetY - st.mouseY;
+              var dist = Math.sqrt(dx * dx + dy * dy);
+              var rate = dist > 100 ? 0.06 : dist > 50 ? 0.10 : 0.14;
+              st.mouseX += dx * rate;
+              st.mouseY += dy * rate;
+              // Snap when close
+              if (Math.abs(dx) < 0.5) st.mouseX = st.targetX;
+              if (Math.abs(dy) < 0.5) st.mouseY = st.targetY;
+
+              // Trail (last 60 frames ~ 1 second at 60fps)
+              st.trail.push({ x: st.mouseX, y: st.mouseY, t: Date.now() });
+              if (st.trail.length > 90) st.trail.shift();
+
+              // Draw chamber
+              drawChamber(cv2, st);
+              _blAnimId.current = requestAnimationFrame(blFrame);
+            }
+            if (_blAnimId.current) cancelAnimationFrame(_blAnimId.current);
+            blFrame();
+            return function() { if (_blAnimId.current) cancelAnimationFrame(_blAnimId.current); };
+          });
 
           // ── Sound effects (Web Audio API) ──
 
@@ -1181,7 +1257,7 @@ var d = labToolData || {};
 
             // Mark extinction burst on cumulative record
 
-            var isBurstTick = blLevel === 3 && blExtinctionPhase && (newTick - blExtinctionStart) < 8;
+            var isBurstTick = blLevel === 3 && blExtinctionPhase && (newTick - blExtinctionStart) < 12;
 
             var newCumRecord = blCumRecord.concat([{ tick: newTick, cum: cumCount, burst: isBurstTick }]);
 
@@ -1273,13 +1349,13 @@ var d = labToolData || {};
 
               var ticksSinceExtinction = newTick - blExtinctionStart;
 
-              if (ticksSinceExtinction < 8) {
+              if (ticksSinceExtinction < 12) {
 
-                // Extinction burst: INCREASE lever pressing temporarily
+                // Extinction burst: INCREASE lever pressing temporarily (dramatic spike)
 
-                newWeights.pressLever = Math.min(60, (newWeights.pressLever || 5) + 5);
+                newWeights.pressLever = Math.min(65, (newWeights.pressLever || 5) + 8);
 
-              } else if (ticksSinceExtinction < 25) {
+              } else if (ticksSinceExtinction < 30) {
 
                 // Gradual decrease
 
@@ -1499,19 +1575,50 @@ var d = labToolData || {};
 
           // ── Canvas Drawing ──
 
-          function drawChamber(canvas) {
+          function drawChamber(canvas, _st) {
 
             if (!canvas) return;
 
             var ctx = canvas.getContext('2d');
 
-            // Only resize canvas if dimensions changed (prevents flicker)
+            // HiDPI support
+            var dpr = window.devicePixelRatio || 1;
             var targetW = canvas.offsetWidth || 420;
             var targetH = 280;
-            if (canvas.width !== targetW) canvas.width = targetW;
-            if (canvas.height !== targetH) canvas.height = targetH;
+            if (canvas.width !== Math.round(targetW * dpr) || canvas.height !== Math.round(targetH * dpr)) {
+              canvas.width = Math.round(targetW * dpr);
+              canvas.height = Math.round(targetH * dpr);
+              canvas.style.width = targetW + 'px';
+              canvas.style.height = targetH + 'px';
+            }
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             var W = targetW;
             var H = targetH;
+
+            // Read from animation state if provided (rAF path), else fall back to closure vars
+            var blMouseX = _st ? _st.mouseX : (d.blMouseX || 200);
+            var blMouseY = _st ? _st.mouseY : (d.blMouseY || 150);
+            var blMouseAction = _st ? _st.mouseAction : (d.blMouseAction || 'explore');
+            var blMouseDir = _st ? _st.mouseDir : (d.blMouseDir || 1);
+            var blMouseAngle = _st ? _st.mouseAngle : (d.blMouseAngle || 0);
+            var blFoodVisible = _st ? _st.foodVisible : d.blFoodVisible;
+            var blFoodTime = _st ? _st.foodTime : (d.blFoodTime || 0);
+            var blMoodEmoji = _st ? _st.moodEmoji : (d.blMoodEmoji || '');
+            var blMoodTimer = _st ? _st.moodTimer : (d.blMoodTimer || 0);
+            var blLightColor = _st ? _st.lightColor : (d.blLightColor || 'green');
+            var blTick = _st ? _st.tick : (d.blTick || 0);
+            var blLevelScore = _st ? _st.levelScore : (d.blLevelScore || 0);
+            var blLevel = _st ? _st.level : (d.blLevel || 1);
+            var blExtinctionPhase = _st ? _st.extinctionPhase : d.blExtinctionPhase;
+            var blExtinctionStart = _st ? _st.extinctionStart : (d.blExtinctionStart || 0);
+            var blChainStep = _st ? _st.chainStep : (d.blChainStep || 0);
+            var blCcPhase = _st ? _st.ccPhase : (d.blCcPhase || 'baseline');
+            var blBellRinging = _st ? _st.bellRinging : d.blBellRinging;
+            var blSalivating = _st ? _st.salivating : d.blSalivating;
+            var blAssocStrength = _st ? _st.assocStrength : (d.blAssocStrength || 0);
+            var blDroTimer = _st ? _st.droTimer : (d.blDroTimer || 0);
+            var blDroInterval = _st ? _st.droInterval : (d.blDroInterval || 6);
+            var blProxDelta = _st ? _st.proxDelta : (d.blProxDelta || 0);
 
 
 
@@ -1585,32 +1692,24 @@ var d = labToolData || {};
 
 
 
-            // ─ Light indicator (top-left) ─
+            // ─ Light indicator (top-left, enlarged + pulsing glow) ─
 
             if (blLevel === 5 || blLevel === 6) {
-
-              ctx.beginPath();
-
-              ctx.arc(50, 35, 12, 0, Math.PI * 2);
-
-              ctx.fillStyle = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#ef4444' : '#6b7280');
-
+              var lightCol = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#ef4444' : '#6b7280');
+              var glowPulse = 0.3 + Math.sin(Date.now() / 400) * 0.15;
+              // Pulsing outer glow ring
+              ctx.save();
+              ctx.beginPath(); ctx.arc(50, 35, 22, 0, Math.PI * 2);
+              ctx.fillStyle = (blLightColor === 'green' ? 'rgba(34,197,94,' : 'rgba(239,68,68,') + glowPulse.toFixed(2) + ')';
               ctx.fill();
-
-              ctx.strokeStyle = '#fff';
-
-              ctx.lineWidth = 1.5;
-
-              ctx.stroke();
-
-              ctx.fillStyle = '#e2e8f0';
-
-              ctx.font = '9px sans-serif';
-
-              ctx.textAlign = 'center';
-
-              ctx.fillText(blLightColor === 'green' ? 'SD' : 'S\u0394', 50, 38);
-
+              ctx.restore();
+              // Main light circle
+              ctx.beginPath(); ctx.arc(50, 35, 16, 0, Math.PI * 2);
+              ctx.fillStyle = lightCol; ctx.fill();
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+              // Label
+              ctx.fillStyle = '#fff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+              ctx.fillText(blLightColor === 'green' ? 'SD' : 'S\u0394', 50, 39);
             }
 
 
@@ -1884,6 +1983,114 @@ var d = labToolData || {};
             }
 
 
+
+            // ── Phase 2: Proximity-to-lever visualization ──
+            var LEVER_CX = leverX + 4, LEVER_CY = leverY + 15;
+            var distToLever = Math.sqrt(Math.pow(blMouseX - LEVER_CX, 2) + Math.pow(blMouseY - LEVER_CY, 2));
+            var prox01 = Math.max(0, Math.min(1, 1 - distToLever / 300));
+
+            // Dashed line from mouse to lever (Levels 1,2,6 — where approach matters)
+            if (blLevel === 1 || blLevel === 2 || blLevel === 6) {
+              ctx.save();
+              ctx.setLineDash([4, 6]);
+              var pR = Math.round(255 * (1 - prox01)), pG = Math.round(200 * prox01);
+              ctx.strokeStyle = 'rgba(' + pR + ',' + pG + ',60,0.35)';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.moveTo(blMouseX, blMouseY); ctx.lineTo(LEVER_CX, LEVER_CY); ctx.stroke();
+              ctx.setLineDash([]);
+              // Distance label
+              var midPX = (blMouseX + LEVER_CX) / 2, midPY = (blMouseY + LEVER_CY) / 2;
+              ctx.fillStyle = 'rgba(' + pR + ',' + pG + ',60,0.6)';
+              ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+              ctx.fillText(Math.round(distToLever) + 'px', midPX, midPY - 5);
+              ctx.restore();
+            }
+
+            // Proximity delta HUD (top-left)
+            if (blProxDelta !== 0 && (blLevel === 1 || blLevel === 2 || blLevel === 6)) {
+              var pdCol = blProxDelta > 0 ? '#22c55e' : '#ef4444';
+              var pdArr = blProxDelta > 0 ? '\u2191' : '\u2193';
+              ctx.fillStyle = pdCol; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left';
+              ctx.fillText(pdArr + ' ' + Math.abs(blProxDelta).toFixed(1) + 'px', 25, 35);
+              ctx.fillStyle = '#64748b'; ctx.font = '7px sans-serif';
+              ctx.fillText('distance \u0394', 25, 44);
+            }
+
+            // Movement trail (fading dots)
+            if (_st && _st.trail && _st.trail.length > 2) {
+              var trNow = Date.now();
+              for (var tri = 0; tri < _st.trail.length; tri++) {
+                var trp = _st.trail[tri];
+                var trAge = (trNow - trp.t) / 2000;
+                if (trAge > 1) continue;
+                var trAlpha = 0.25 * (1 - trAge);
+                ctx.beginPath(); ctx.arc(trp.x, trp.y, 1.5 + (1 - trAge), 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(99,102,241,' + trAlpha.toFixed(2) + ')'; ctx.fill();
+              }
+            }
+
+            // ── Phase 3B: Extinction burst effects (Level 3) ──
+            if (blLevel === 3 && blExtinctionPhase) {
+              var burstTick = blTick - blExtinctionStart;
+              if (burstTick < 12) {
+                // Pulsing red border
+                ctx.save();
+                ctx.strokeStyle = 'rgba(239,68,68,' + (0.3 + Math.sin(Date.now() / 200) * 0.25).toFixed(2) + ')';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(18, 48, W - 36, H - 65);
+                // Label
+                ctx.fillStyle = '#ef4444'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('EXTINCTION BURST', W / 2, 68);
+                ctx.font = '9px sans-serif'; ctx.fillStyle = '#f87171';
+                ctx.fillText('Response rate spiking! (' + burstTick + '/12 ticks)', W / 2, 82);
+                ctx.restore();
+              }
+            }
+
+            // ── Phase 3D: SD/S-delta chamber tint (Level 5) ──
+            if (blLevel === 5) {
+              var sdAlpha = 0.06 + Math.sin(Date.now() / 600) * 0.02;
+              ctx.fillStyle = blLightColor === 'green' ? 'rgba(34,197,94,' + sdAlpha.toFixed(3) + ')' : 'rgba(239,68,68,' + sdAlpha.toFixed(3) + ')';
+              ctx.fillRect(0, 0, W, H);
+              // Reminder text
+              ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+              ctx.fillStyle = blLightColor === 'green' ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)';
+              ctx.fillText(blLightColor === 'green' ? '\u2705 GREEN = Reinforce!' : '\u274C RED = Do NOT reinforce!', W / 2, H - 10);
+            }
+
+            // ── Phase 3E: Chain overlay (Level 7) ──
+            if (blLevel === 7) {
+              var chainLabels = ['1\uFE0F\u20E3 Sniff', '2\uFE0F\u20E3 Rear Up', '3\uFE0F\u20E3 Press'];
+              var chainPositions = [{ x: 120, y: 150 }, { x: 220, y: 110 }, { x: LEVER_CX, y: LEVER_CY }];
+              for (var ci = 0; ci < 3; ci++) {
+                var cp = chainPositions[ci];
+                var isDone = ci < blChainStep;
+                var isCurrent = ci === blChainStep;
+                ctx.save();
+                ctx.globalAlpha = isDone ? 0.9 : isCurrent ? 0.7 : 0.25;
+                ctx.fillStyle = isDone ? '#22c55e' : isCurrent ? '#fbbf24' : '#475569';
+                ctx.beginPath(); ctx.arc(cp.x, cp.y, 12, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText(chainLabels[ci], cp.x, cp.y + 3);
+                ctx.globalAlpha = 1;
+                // Connecting arrow to next step
+                if (ci < 2) {
+                  var np = chainPositions[ci + 1];
+                  ctx.strokeStyle = isDone ? 'rgba(34,197,94,0.4)' : 'rgba(71,85,105,0.2)';
+                  ctx.lineWidth = 1.5; ctx.setLineDash([3, 4]);
+                  ctx.beginPath(); ctx.moveTo(cp.x + 12, cp.y); ctx.lineTo(np.x - 12, np.y); ctx.stroke();
+                  ctx.setLineDash([]);
+                }
+                ctx.restore();
+              }
+            }
+
+            // ── Phase 4: Mouse shadow ──
+            ctx.save();
+            ctx.globalAlpha = 0.15;
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.ellipse(blMouseX, blMouseY + 13, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
 
             // ─ Mouse sprite ─
 
@@ -2475,6 +2682,25 @@ var d = labToolData || {};
 
 
 
+            // Reinforcement pip marks (green vertical lines where cum increases — shows schedule pattern)
+            if (blLevel === 4 || blLevel === 1 || blLevel === 6) {
+              for (var ri = 1; ri < data.length; ri++) {
+                if (data[ri].cum > data[ri - 1].cum) {
+                  var rpx = 40 + ((data[ri].tick - startTick) / tickRange) * plotW;
+                  var rpy = (H - 25) - (data[ri].cum / maxCum) * plotH;
+                  ctx.strokeStyle = 'rgba(34,197,94,0.6)'; ctx.lineWidth = 1.5;
+                  ctx.beginPath(); ctx.moveTo(rpx, rpy - 8); ctx.lineTo(rpx, rpy + 8); ctx.stroke();
+                  // Green dot at reinforcement point
+                  ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(rpx, rpy, 3, 0, Math.PI * 2); ctx.fill();
+                }
+              }
+              // FR annotation
+              if (blLevel === 4 && data.length > 20) {
+                ctx.fillStyle = 'rgba(34,197,94,0.5)'; ctx.font = '7px sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText('Green = reinforcement delivery (FR-3 pattern)', 42, H - 8);
+              }
+            }
+
             // Data point dots
 
             ctx.fillStyle = '#fbbf24';
@@ -2533,45 +2759,23 @@ var d = labToolData || {};
           }
           window._blReinforceFn = (blLastAction && blPhase === 'running' && blLevel !== 8 && blLevel !== 9) ? reinforceAction : null;
 
-          // ── Render canvases via setTimeout (no hooks in conditional IIFE) ──
-
+          // ── Render cumulative record canvas (not rAF — only needs tick-rate updates) ──
           setTimeout(function () {
-
-            var chamberCv = document.getElementById('bl-chamber-canvas');
-
             var cumCv = document.getElementById('bl-cumrecord-canvas');
-
-            drawChamber(chamberCv);
-
             drawCumRecord(cumCv);
-
-            // ── Smooth mouse interpolation (async to avoid render-phase setState) ──
-
-            var _lerpRate = 0.08; // Smoother: 8% per frame (was 15% — too jumpy)
-
-            var _dxLerp = (d.blTargetX || 200) - (d.blMouseX || 200);
-
-            var _dyLerp = (d.blTargetY || 150) - (d.blMouseY || 150);
-
-            if (Math.abs(_dxLerp) > 1 || Math.abs(_dyLerp) > 1) {
-
-              upd('blMouseX', (d.blMouseX || 200) + _dxLerp * _lerpRate);
-
-              upd('blMouseY', (d.blMouseY || 150) + _dyLerp * _lerpRate);
-
-            }
-
-            // ── Auto-advance timer (speed-adjusted, async) ──
-            // Slowed down all speeds for smoother, more observable behavior
-            var _tickDelay = (d.blSpeed || 1) === 3 ? 2000 : (d.blSpeed || 1) === 2 ? 3500 : 5000;
-
-            if ((d.blPhase || 'intro') === 'running' && !d.blPaused) {
-
-              setTimeout(function () { advanceTick(); }, _tickDelay);
-
-            }
-
           }, 0);
+
+          // ── Tick timer (independent of canvas rendering) ──
+          React.useEffect(function() {
+            if (blPhase !== 'running' || blPaused) {
+              if (_blTickTimer.current) { clearInterval(_blTickTimer.current); _blTickTimer.current = null; }
+              return;
+            }
+            var tickDelay = (d.blSpeed || 1) === 3 ? 2000 : (d.blSpeed || 1) === 2 ? 3500 : 5000;
+            if (_blTickTimer.current) clearInterval(_blTickTimer.current);
+            _blTickTimer.current = setInterval(function() { advanceTick(); }, tickDelay);
+            return function() { if (_blTickTimer.current) { clearInterval(_blTickTimer.current); _blTickTimer.current = null; } };
+          }, [blPhase, blPaused, d.blSpeed]);
 
 
 
@@ -3173,7 +3377,23 @@ var d = labToolData || {};
 
             ),
 
-
+            // ── Proximity heat meter (Levels 1, 2, 6) ──
+            (blLevel === 1 || blLevel === 2 || blLevel === 6) && React.createElement("div", {
+              style: { position: 'relative', height: 12, borderRadius: 6, overflow: 'hidden', background: 'rgba(30,41,59,0.7)', border: '1px solid rgba(99,102,241,0.15)', margin: '4px 0' }
+            },
+              React.createElement("div", {
+                style: {
+                  width: Math.max(5, Math.round((1 - Math.min(Math.sqrt(Math.pow((blMouseX || 200) - 350, 2) + Math.pow((blMouseY || 180) - 225, 2)) / 300, 1)) * 100)) + '%',
+                  height: '100%', borderRadius: 6,
+                  background: 'linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%)',
+                  transition: 'width 0.3s ease',
+                  boxShadow: '0 0 8px rgba(34,197,94,0.3)'
+                }
+              }),
+              React.createElement("span", {
+                style: { position: 'absolute', right: 8, top: -1, fontSize: 9, color: '#94a3b8', lineHeight: '12px' }
+              }, '\uD83D\uDC2D \u2192 Lever proximity')
+            ),
 
             // ── Behavior frequency heatmap strip ──
 
