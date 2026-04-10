@@ -267,6 +267,8 @@ const sanitizeHtml = (html) => {
     clean = clean.replace(/src\s*=\s*["']?javascript:/gi, 'src="');
     return clean;
 };
+// Expose to window so CDN modules (visual_panel_module.js, etc.) can access it
+if (typeof window !== 'undefined') { window.sanitizeHtml = sanitizeHtml; }
 let globalMuteEnabled = safeGetItem('alloflow-global-muted') === 'true';
 let globalCachedKey = "";
 const getGlobalAudioContext = () => {
@@ -2487,6 +2489,8 @@ const FONT_OPTIONS = [
     { id: 'lora', label: 'Lora', cssClass: 'font-lora', googleFont: 'Lora:wght@400;500;700', category: 'serif' },
     { id: 'playfair', label: 'Playfair Display', cssClass: 'font-playfair', googleFont: 'Playfair+Display:wght@400;500;700', category: 'serif' }
 ];
+// Expose to window so CDN modules (doc_pipeline_module.js) can access it
+if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
 (function injectFontStyles() {
     const fonts = FONT_OPTIONS.filter(f => f.googleFont).map(f => f.googleFont);
     if (fonts.length > 0) {
@@ -3207,6 +3211,70 @@ const isYouTubeUrl = (url) => {
 const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     if (!url || !url.trim()) return null;
     let targetUrl = url.trim();
+    // ─────────────────────────────────────────────────────────────
+    // Tier-2 fallback: Gemini URL Context tool
+    // Called when Jina + raw-HTML extraction all fail or return garbage.
+    // Uses Gemini 3 Flash (or current default) with urlContext enabled.
+    // Different IP reputation than Jina — often succeeds where Jina 403s.
+    // ─────────────────────────────────────────────────────────────
+    const tryGeminiUrlContext = async () => {
+        if (!apiKey && !_isCanvasEnv) {
+            console.log('[URL Fetch] ⏭️ Gemini URL Context skipped — no API key');
+            return null;
+        }
+        console.log(`[URL Fetch] 🤖 Attempting Gemini URL Context fallback for ${targetUrl}`);
+        const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+        const urlCtxPayload = {
+            contents: [{
+                parts: [{
+                    text: `Read the web page at this URL: ${targetUrl}\n\nTask:\n1. Extract the main body text of the article, lesson, or educational content.\n2. PRESERVE the original wording exactly — do not paraphrase or summarize.\n3. Remove navigational elements, footers, sidebars, ads, cookie banners, and metadata.\n4. If the page is empty, a login screen, or completely inaccessible, return exactly "ERROR: NO_ARTICLE_FOUND".\n5. Return ONLY the cleaned main text (no preamble, no commentary).`
+                }]
+            }],
+            tools: [{ urlContext: {} }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 32768 }
+        };
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
+            const resp = await fetch(urlCtxEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(urlCtxPayload),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!resp.ok) {
+                const errBody = await resp.text().catch(() => '');
+                console.warn(`[URL Fetch] ❌ Gemini URL Context HTTP ${resp.status}: ${errBody.substring(0, 300)}`);
+                return null;
+            }
+            const data = await resp.json();
+            // Check URL retrieval metadata — Gemini tells us whether the URL was actually fetched
+            const urlMeta = data?.candidates?.[0]?.urlContextMetadata?.urlMetadata;
+            if (Array.isArray(urlMeta) && urlMeta.length > 0) {
+                const status = urlMeta[0]?.urlRetrievalStatus;
+                console.log(`[URL Fetch] 🤖 Gemini URL retrieval status: ${status}`);
+                if (status && status !== 'URL_RETRIEVAL_STATUS_SUCCESS') {
+                    console.warn(`[URL Fetch] ❌ Gemini could not retrieve URL (${status})`);
+                    return null;
+                }
+            }
+            const extracted = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!extracted || extracted.includes('ERROR: NO_ARTICLE_FOUND')) {
+                console.warn('[URL Fetch] ❌ Gemini URL Context returned no article');
+                return null;
+            }
+            if (extracted.trim().length < 50) {
+                console.warn(`[URL Fetch] ❌ Gemini URL Context returned ${extracted.trim().length} chars — too short`);
+                return null;
+            }
+            console.log(`[URL Fetch] ✅ Gemini URL Context success: ${extracted.length} chars extracted`);
+            return extracted.trim();
+        } catch (e) {
+            console.warn('[URL Fetch] ❌ Gemini URL Context threw:', e?.message || e);
+            return null;
+        }
+    };
     if (isYouTubeUrl(targetUrl)) {
         if (toastCallback) toastCallback("🎬 YouTube detected — extracting transcript via Gemini...", "info");
         try {
@@ -3264,6 +3332,19 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         const jinaUrl = `https://r.jina.ai/${targetUrl}`;
         let response;
         let usedRawSource = false;
+        // Jina-specific error/rate-limit patterns that indicate we should force raw fallback
+        const isJinaGarbage = (t) => {
+            if (!t) return true;
+            const trimmed = t.trim();
+            if (trimmed.length < 500) return true; // short Jina responses are almost always errors or empty shells
+            const lower = trimmed.toLowerCase();
+            return lower.includes("rate limit") ||
+                   lower.includes("too many requests") ||
+                   lower.includes("quota exceeded") ||
+                   lower.startsWith("warning") ||
+                   lower.startsWith("error:") ||
+                   (lower.includes("jina") && lower.includes("error"));
+        };
         try {
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(jinaUrl)}`;
             const controller = new AbortController();
@@ -3286,6 +3367,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         if (response && response.ok) {
             text = await response.text();
         }
+        debugLog(`[URL Fetch] Jina returned ${text.length} chars for ${targetUrl}`);
         const lowerText = text.toLowerCase();
         const isBlocked = lowerText.includes("access denied") ||
                           lowerText.includes("security check") ||
@@ -3293,8 +3375,12 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                           lowerText.includes("captcha") ||
                           lowerText.includes("403 forbidden") ||
                           lowerText.includes("verify you are human");
-        if (!response || !response.ok || isBlocked || text.length < 50) {
-             debugLog("Jina blocked or failed. Attempting direct raw fetch via proxy...");
+        // Use the new Jina-garbage detector AND the 500-char raw threshold (was 50 — too permissive)
+        if (!response || !response.ok || isBlocked || isJinaGarbage(text)) {
+             debugLog(`[URL Fetch] Jina result inadequate (${text.length} chars). Attempting direct raw HTML fetch...`);
+             const savedJinaText = text; // preserve in case raw fallback also fails
+             let rawOk = false;
+             // Try corsproxy.io first
              try {
                  const rawProxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                  const controller = new AbortController();
@@ -3302,12 +3388,46 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                  const rawResponse = await fetch(rawProxyUrl, { signal: controller.signal });
                  clearTimeout(timeoutId);
                  if (rawResponse.ok) {
-                     text = await rawResponse.text();
-                     usedRawSource = true;
+                     const rawText = await rawResponse.text();
+                     if (rawText && rawText.trim().length > 200) {
+                         text = rawText;
+                         usedRawSource = true;
+                         rawOk = true;
+                         debugLog(`[URL Fetch] corsproxy raw HTML: ${rawText.length} chars`);
+                     }
                  }
              } catch (directErr) {
+                 warnLog("[URL Fetch] corsproxy raw fallback failed:", directErr?.message);
+             }
+             // Second raw fallback via allorigins
+             if (!rawOk) {
+                 try {
+                     const rawFallbackUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}&t=${Date.now()}`;
+                     const controller = new AbortController();
+                     const timeoutId = setTimeout(() => controller.abort(), 20000);
+                     const rawResponse2 = await fetch(rawFallbackUrl, { signal: controller.signal });
+                     clearTimeout(timeoutId);
+                     if (rawResponse2.ok) {
+                         const rawText2 = await rawResponse2.text();
+                         if (rawText2 && rawText2.trim().length > 200) {
+                             text = rawText2;
+                             usedRawSource = true;
+                             rawOk = true;
+                             debugLog(`[URL Fetch] allorigins raw HTML: ${rawText2.length} chars`);
+                         }
+                     }
+                 } catch (e) {
+                     warnLog("[URL Fetch] allorigins raw fallback failed:", e?.message);
+                 }
+             }
+             // If both raw fallbacks failed but we had usable-ish Jina text, fall back to it
+             if (!rawOk && savedJinaText && savedJinaText.trim().length >= 50) {
+                 text = savedJinaText;
+                 debugLog(`[URL Fetch] Raw fallbacks failed, reverting to original Jina text (${savedJinaText.length} chars)`);
+             }
+             if (!rawOk && (!savedJinaText || savedJinaText.trim().length < 50)) {
                  if (isBlocked) throw new Error("URL blocked by security check (CAPTCHA/403). Please paste text manually.");
-                 if (!response || !response.ok) throw new Error(`Failed to fetch: ${response?.status}`);
+                 throw new Error(`Failed to fetch readable content from ${targetUrl}. The site may be JavaScript-rendered or blocking extraction.`);
              }
         }
         const finalLower = text.toLowerCase();
@@ -3320,7 +3440,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             throw new Error("URL blocked by security check. Please paste text manually.");
         }
         if (!text || text.trim().length < 50) {
-            throw new Error("Content too short or empty.");
+            throw new Error(`Content too short or empty (got ${text ? text.trim().length : 0} chars from ${targetUrl}). The site may be JavaScript-rendered or blocking extraction — try pasting text manually.`);
         }
         text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
         text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
@@ -3345,8 +3465,18 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                 text = cleanedText;
             }
         }
+        console.log(`[URL Fetch] ✅ Jina path success: ${text.trim().length} chars returned (usedRawSource=${usedRawSource})`);
         return `Source: ${targetUrl}\n\n${text.trim()}`;
     } catch (err) {
+        // ── Tier-2 fallback: Gemini URL Context before giving up ──
+        console.warn(`[URL Fetch] ⚠️ Jina + raw-HTML path failed: ${err.message}. Trying Gemini URL Context fallback...`);
+        if (toastCallback) toastCallback("Jina failed — trying Gemini URL Context...", "info");
+        const geminiExtracted = await tryGeminiUrlContext();
+        if (geminiExtracted) {
+            if (toastCallback) toastCallback("✅ Content extracted via Gemini URL Context!", "success");
+            return `Source: ${targetUrl}\n(Extracted via Gemini URL Context)\n\n${geminiExtracted}`;
+        }
+        console.error(`[URL Fetch] ❌ ALL methods failed for ${targetUrl}`);
         if (toastCallback) toastCallback(err.message || "URL import failed.", "error");
         throw err;
     }
@@ -4649,6 +4779,7 @@ const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson =
 window.__alloUtils = window.__alloUtils || {};
 window.__alloUtils.processGrounding = processGrounding;
 window.__alloUtils.cleanJson = cleanJson;
+window.__alloUtils.safeJsonParse = safeJsonParse;
 const InfoTooltip = React.memo(({ text, id }) => {
   const tooltipId = id || ('tooltip-' + Math.random().toString(36).substr(2, 6));
   return (
@@ -5178,6 +5309,12 @@ const analyzeFluencyWithGemini = async (audioBase64, mimeType, referenceText) =>
     return null;
   }
 };
+// Expose fluency analysis functions for CDN modules (student_analytics_module.js)
+window.__alloUtils = window.__alloUtils || {};
+window.__alloUtils.calculateLocalFluencyMetrics = calculateLocalFluencyMetrics;
+window.__alloUtils.calculateRunningRecordMetrics = calculateRunningRecordMetrics;
+window.__alloUtils.getBenchmarkComparison = getBenchmarkComparison;
+window.__alloUtils.analyzeFluencyWithGemini = analyzeFluencyWithGemini;
 const BRIDGE_MODES = [
   { id: "react" },
   { id: "python" },
@@ -7202,27 +7339,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7238,7 +7375,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9db4aa5/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8482,11 +8619,14 @@ Return ONLY a valid JSON object:
       'phonics': 'cursor-help',
   };
   useEffect(() => {
-      if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+      // Allow 'output' view too — WordSoundsGenerator launches the modal from 'output' view
+      // when a word-sounds resource is active in generatedContent
+      const isWordSoundsOutput = activeView === 'output' && generatedContent?.type === 'word-sounds';
+      if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator' && !isWordSoundsOutput) {
           if (window.speechSynthesis) window.speechSynthesis.cancel();
           setIsWordSoundsMode(false);
       }
-  }, [activeView, isWordSoundsMode]);
+  }, [activeView, isWordSoundsMode, generatedContent]);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [presentationState, setPresentationState] = useState({});
   const [isReviewGame, setIsReviewGame] = useState(false);
@@ -13142,6 +13282,8 @@ Return only the corrected version of this exact text:`;
   const [isResizing, setIsResizing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
+  // Collapsible resource viewer header — gives small-screen users more vertical space for content
+  const [isOutputHeaderCollapsed, setIsOutputHeaderCollapsed] = useState(false);
   const mainContainerRef = useRef(null);
   const contentRef = useRef(null);
   const dragItem = useRef(null);
@@ -18142,6 +18284,8 @@ Return ONLY valid JSON:
     exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
     selectedFont, responses: studentResponses, history, inputText, gradeLevel,
     studentNickname, isTeacherMode, generatedContent,
+    // Added for generateFullPackHTML fallback path (used when iframe is empty)
+    currentUiLanguage, isIndependentMode, isParentMode,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
     pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
@@ -19369,12 +19513,27 @@ Return ONLY valid JSON:
     let htmlContent;
     const iframe = exportPreviewRef.current;
     const iframeDoc = iframe?.contentDocument;
-    if (iframeDoc && iframeDoc.documentElement) {
+    // ── Detect whether the iframe actually contains the generated pack ──
+    // Bug: previously any truthy iframeDoc made us take the iframe path, even when
+    // the iframe hadn't yet loaded the generated HTML (empty body = blank export).
+    // Fix: verify the iframe body has real content before trusting it.
+    const iframeHasRealContent = (() => {
+      if (!iframeDoc || !iframeDoc.body) return false;
+      const bodyText = iframeDoc.body.textContent || '';
+      const sectionCount = iframeDoc.querySelectorAll('.section, .slide, main, article').length;
+      const hasSubstantialText = bodyText.trim().length > 200;
+      console.log(`[Export] iframe content check: ${bodyText.trim().length} chars, ${sectionCount} sections`);
+      return hasSubstantialText || sectionCount > 0;
+    })();
+    if (iframeDoc && iframeDoc.documentElement && iframeHasRealContent) {
       // Turn off editing mode before export
       iframeDoc.designMode = 'off';
       htmlContent = '<!DOCTYPE html>\n<html' + iframeDoc.documentElement.outerHTML.substring(5);
+      console.log(`[Export] ✅ Using edited iframe content (${htmlContent.length} chars)`);
     } else {
+      console.warn('[Export] ⚠️ Iframe empty or missing — falling back to generateFullPackHTML(history)');
       htmlContent = generateFullPackHTML(history, sourceTopic, isWorksheet, studentResponses, exportConfig);
+      console.log(`[Export] ✅ Regenerated from history: ${htmlContent.length} chars, ${history.length} history items`);
     }
 
     // ── Inject TTS audio if toggled on ──
@@ -37852,7 +38011,7 @@ Return ONLY JSON:
                 </div>
             </div>
           )}
-          <div className={`p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 ${isZenMode || activeView === 'adventure' ? 'hidden' : ''} ${isProcessing ? 'hidden md:flex' : ''}`}>
+          <div className={`px-4 sm:px-6 ${isOutputHeaderCollapsed ? 'py-1.5' : 'py-2 sm:py-4'} border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 transition-all ${isZenMode || activeView === 'adventure' ? 'hidden' : ''} ${isProcessing ? 'hidden md:flex' : ''}`}>
             <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
                 <h3 className={`text-lg font-bold text-slate-700 flex items-center gap-2 truncate ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}>
                 {isProcessing ? <><RefreshCw className="animate-spin text-indigo-600" size={20} /> {generationStep}</> :
@@ -37873,12 +38032,15 @@ Return ONLY JSON:
                 activeView === 'timeline' ? <><ListOrdered className="text-rose-600" size={20} /> {t('timeline.title')}</> :
                 activeView === 'math' ? <><Calculator className="text-blue-600" size={20} /> {t('math.title')}</> :
                 activeView === 'image' ? <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</> :
+                activeView === 'dbq' ? <><FileText className="text-amber-700" size={20} /> 📜 {t('common.dbq_title') || 'Document Analysis (DBQ)'}</> :
                 activeView === 'word-sounds' ? <><Sparkles className="text-violet-600" size={20} /> {isProbeMode ? `${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe` : (t('output.word_sounds_studio') || 'Word Sounds Studio')}</> :
                 activeView === 'word-sounds-generator' ? <><Sparkles className="text-violet-600" size={20} /> {t('output.word_sounds_studio') || 'Word Sounds Studio'}</> :
                 activeView === 'gemini-bridge' ? <><Terminal className="text-slate-600" size={20} /> {t('common.gemini_bridge') || 'Gemini Bridge'}</> :
+                // Fallback: derive from generatedContent.type via getDefaultTitle so we never silently mislabel
+                generatedContent?.type ? <><FileText className="text-slate-500" size={20} /> {getDefaultTitle(generatedContent.type)}</> :
                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
                 </h3>
-                {isTeacherMode && generatedContent && (
+                {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
                     <div className="hidden md:flex items-center bg-white rounded-full border border-slate-200 shadow-sm px-1 py-0.5 ml-2">
                         <button
                             onClick={handleToggleIsStickerMode}
@@ -37917,6 +38079,15 @@ Return ONLY JSON:
                 )}
             </div>
             <div className="flex items-center gap-2">
+                <button
+                    onClick={() => setIsOutputHeaderCollapsed(p => !p)}
+                    className="p-1.5 rounded-md hover:bg-slate-200 text-slate-500 transition-colors"
+                    title={isOutputHeaderCollapsed ? 'Expand header' : 'Collapse header to give content more space'}
+                    aria-label={isOutputHeaderCollapsed ? 'Expand header' : 'Collapse header'}
+                    aria-expanded={!isOutputHeaderCollapsed}
+                >
+                    {isOutputHeaderCollapsed ? <ChevronDown size={16}/> : <ChevronUp size={16}/>}
+                </button>
                 {!isZenMode && (
                     <button
                         onClick={handleToggleIsFullscreen}
@@ -37933,7 +38104,7 @@ Return ONLY JSON:
             ref={contentAreaRef}
             onClick={handleContentClick}
             data-reading-theme={readingTheme}
-            className={`flex-grow p-4 md:p-8 overflow-y-auto relative custom-scrollbar ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
+            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
             style={readingTheme !== 'default' ? {
               backgroundColor: readingTheme === 'warm' ? '#fdfbf7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
               color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : undefined,
@@ -38474,7 +38645,12 @@ Return only the corrected version of this exact text:`;
                       {generatedContent?.data && <p className="text-xs text-violet-500 font-medium">{generatedContent.data.length} words loaded</p>}
                       <div className="flex flex-col sm:flex-row gap-3 justify-center mt-5">
                         <button
-                          onClick={() => { setIsWordSoundsMode(true); setWordSoundsAutoReview(true); }}
+                          onClick={() => {
+                            const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
+                            setWordSoundsActivity(initialActivity);
+                            setIsWordSoundsMode(true);
+                            setWordSoundsAutoReview(true);
+                          }}
                           className="flex items-center justify-center gap-2 px-6 py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
                         >
                           <BookOpen size={18} /> Pre-Activity Review
@@ -46637,10 +46813,17 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                    prevWsPreloadedWordsLengthRef.current = 0;
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
-                   setWordSoundsActivity('word-sounds');
+                   // Use first activity from sequence if provided, else default to counting (a real activity ID)
+                   const initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';
+                   setWordSoundsActivity(initialActivity);
                    setWordSoundsAutoReview(true);
-                   setIsWordSoundsMode(true);
-                   setActiveView('output');
+                   // Force a clean modal mount: close first (in case it was already open), then re-open on next tick.
+                   // This mirrors onShowReview's pattern, which is the only path that lands cleanly on the Pre-Activity Review panel.
+                   setIsWordSoundsMode(false);
+                   setTimeout(() => {
+                       setIsWordSoundsMode(true);
+                       setActiveView('output');
+                   }, 0);
                }}
               onClose={handleCloseDashboard}
               callGemini={callGemini}
@@ -46650,7 +46833,8 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
               onShowReview={() => {
                   setIsWordSoundsMode(false);
                   setTimeout(() => {
-                      setWordSoundsActivity('word-sounds');
+                      const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
+                      setWordSoundsActivity(initialActivity);
                       setWordSoundsAutoReview(true);
                       setIsWordSoundsMode(true);
                       setActiveView('output');
@@ -54224,6 +54408,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                   <div className="space-y-1">
                     {(() => {
+                      // Teacher-only-by-default resources: always shown in teacher copy regardless
+                      // of toggle. Toggle here only controls whether they ALSO appear in student copy.
+                      const teacherOnlyDefault = new Set(['includeAnalysis', 'includeUdlAdvice', 'includeBrainstorm']);
                       const available = [
                         ['includeAnalysis', '📊 Source Analysis', 'analysis'],
                         ['includeSimplified', '📖 Leveled Text', 'simplified'],
@@ -54242,12 +54429,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       if (available.length === 0) return (
                         <p className="text-[10px] text-slate-400 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
                       );
-                      return available.map(([key, label]) => (
-                        <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                          <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
-                          {label}
-                        </label>
-                      ));
+                      return available.map(([key, label]) => {
+                        const isTeacherOnly = teacherOnlyDefault.has(key);
+                        const tooltip = isTeacherOnly
+                          ? 'Always included in teacher copy. Toggle to also include in student copy.'
+                          : '';
+                        return (
+                          <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
+                            <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
+                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[9px] text-indigo-400 font-bold">(also in student copy)</span>}</span>
+                          </label>
+                        );
+                      });
                     })()}
                   </div>
                 </div>

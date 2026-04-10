@@ -27,11 +27,31 @@
   var _ac = null;
   function getAC() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
   function tone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.1, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.15)); } catch(e) {} }
-  function sfxPlace() { tone(520, 0.06, 'square', 0.06); setTimeout(function() { tone(680, 0.05, 'square', 0.05); }, 30); }
-  function sfxBreak() { tone(300, 0.08, 'sawtooth', 0.05); setTimeout(function() { tone(200, 0.1, 'sawtooth', 0.04); }, 40); }
+  // Noise burst helper — for footsteps, impacts
+  function noiseBurst(duration, volume, filterFreq) {
+    var ac = getAC(); if (!ac) return;
+    try {
+      var bufSize = Math.floor(ac.sampleRate * (duration || 0.04));
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+      var src = ac.createBufferSource(); src.buffer = buf;
+      var g = ac.createGain(); g.gain.setValueAtTime(volume || 0.03, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (duration || 0.04));
+      var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = filterFreq || 800;
+      src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start(); src.stop(ac.currentTime + (duration || 0.04));
+    } catch(e) {}
+  }
+  function sfxPlace() { tone(440, 0.04, 'square', 0.05); tone(554, 0.04, 'square', 0.04); setTimeout(function() { tone(660, 0.06, 'sine', 0.06); }, 25); }
+  function sfxBreak() { noiseBurst(0.06, 0.05, 600); tone(250, 0.06, 'sawtooth', 0.04); setTimeout(function() { noiseBurst(0.04, 0.03, 400); tone(180, 0.08, 'sawtooth', 0.03); }, 40); }
   function sfxCorrect() { tone(523, 0.08, 'sine', 0.07); setTimeout(function() { tone(659, 0.08, 'sine', 0.07); }, 80); setTimeout(function() { tone(784, 0.12, 'sine', 0.08); }, 160); }
   function sfxWrong() { tone(300, 0.15, 'sawtooth', 0.06); setTimeout(function() { tone(250, 0.2, 'sawtooth', 0.05); }, 100); }
   function sfxComplete() { tone(523, 0.1, 'sine', 0.08); setTimeout(function() { tone(659, 0.1, 'sine', 0.08); }, 100); setTimeout(function() { tone(784, 0.1, 'sine', 0.08); }, 200); setTimeout(function() { tone(1047, 0.2, 'sine', 0.1); }, 300); }
+  function sfxFootstep() { noiseBurst(0.035, 0.02, 500 + Math.random() * 300); }
+  function sfxJump() { tone(280, 0.06, 'sine', 0.04); setTimeout(function() { tone(420, 0.04, 'sine', 0.03); }, 20); }
+  function sfxLand() { noiseBurst(0.05, 0.04, 350); }
+  function sfxNpcChime() { tone(880, 0.06, 'sine', 0.04); setTimeout(function() { tone(1100, 0.08, 'sine', 0.05); }, 60); }
+  function sfxMeasure() { tone(660, 0.05, 'sine', 0.04); setTimeout(function() { tone(880, 0.07, 'sine', 0.05); }, 50); }
 
   // ── Block Types ──
   var BLOCK_TYPES = [
@@ -1143,41 +1163,126 @@
         cnv.style.width = '100%';
         cnv.style.height = '100%';
         container.appendChild(cnv);
-        engine.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+        engine.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true, powerPreference: 'high-performance' });
         engine.renderer.setSize(container.clientWidth, container.clientHeight);
         engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         engine.renderer.shadowMap.enabled = true;
+        engine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        engine.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        engine.renderer.toneMappingExposure = 1.1;
+        engine.renderer.outputColorSpace = THREE.SRGBColorSpace || engine.renderer.outputEncoding;
 
-        // Lighting
-        engine.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        var sun = new THREE.DirectionalLight(0xffffff, 0.8);
+        // Lighting — warm, balanced, Minecraft-style
+        engine.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
         sun.position.set(20, 40, 20);
         sun.castShadow = true;
         sun.shadow.mapSize.set(2048, 2048);
         sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 100;
         sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
         sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
+        sun.shadow.bias = -0.0005;
+        sun.shadow.normalBias = 0.02;
+        engine.sun = sun;
         engine.scene.add(sun);
-        engine.scene.add(new THREE.HemisphereLight(0x87CEEB, 0x4CAF50, 0.3));
+        var hemi = new THREE.HemisphereLight(0x87CEEB, 0x4CAF50, 0.35);
+        engine.scene.add(hemi);
+        // Soft rim light from behind for depth
+        var rim = new THREE.DirectionalLight(0xc0d8ff, 0.25);
+        rim.position.set(-15, 20, -15);
+        engine.scene.add(rim);
+
+        // ── Sky atmosphere: sun disc + drifting clouds ──
+        (function initSky() {
+          // Sun disc — bright sprite in the sky
+          var sunCanvas = document.createElement('canvas'); sunCanvas.width = 128; sunCanvas.height = 128;
+          var sctx = sunCanvas.getContext('2d');
+          var grad = sctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+          grad.addColorStop(0, 'rgba(255,250,220,1)');
+          grad.addColorStop(0.3, 'rgba(255,240,180,0.8)');
+          grad.addColorStop(0.7, 'rgba(255,220,100,0.2)');
+          grad.addColorStop(1, 'rgba(255,200,50,0)');
+          sctx.fillStyle = grad; sctx.fillRect(0, 0, 128, 128);
+          var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(sunCanvas), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+          sunSprite.scale.set(12, 12, 1);
+          sunSprite.position.set(20, 45, 20);
+          engine.scene.add(sunSprite);
+          engine._sunSprite = sunSprite;
+
+          // Cloud plane — a large flat plane with procedural cloud texture, slowly drifting
+          var cloudCanvas = document.createElement('canvas'); cloudCanvas.width = 512; cloudCanvas.height = 512;
+          var cctx = cloudCanvas.getContext('2d');
+          cctx.clearRect(0, 0, 512, 512);
+          // Paint blotchy clouds
+          for (var ci = 0; ci < 40; ci++) {
+            var cx2 = Math.random() * 512, cy2 = Math.random() * 512;
+            var cr = 30 + Math.random() * 60;
+            var cgrad = cctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, cr);
+            cgrad.addColorStop(0, 'rgba(255,255,255,' + (0.25 + Math.random() * 0.2) + ')');
+            cgrad.addColorStop(1, 'rgba(255,255,255,0)');
+            cctx.fillStyle = cgrad;
+            cctx.fillRect(cx2 - cr, cy2 - cr, cr * 2, cr * 2);
+          }
+          var cloudTex = new THREE.CanvasTexture(cloudCanvas);
+          cloudTex.wrapS = cloudTex.wrapT = THREE.RepeatWrapping;
+          var cloudGeo = new THREE.PlaneGeometry(200, 200);
+          var cloudMat = new THREE.MeshBasicMaterial({ map: cloudTex, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide });
+          var cloudPlane = new THREE.Mesh(cloudGeo, cloudMat);
+          cloudPlane.rotation.x = -Math.PI / 2;
+          cloudPlane.position.y = 40;
+          engine.scene.add(cloudPlane);
+          engine._cloudPlane = cloudPlane;
+          engine._cloudTex = cloudTex;
+        })();
 
         engine.raycaster = new THREE.Raycaster();
         engine.raycaster.far = 8;
         engine.clock = new THREE.Clock();
         engine.euler = new THREE.Euler(0, 0, 0, 'YXZ');
-        engine.moveState = { forward: false, backward: false, left: false, right: false };
+        engine.moveState = { forward: false, backward: false, left: false, right: false, sprint: false };
         engine.velocity = new THREE.Vector3();
         engine.onGround = false;
         engine.isLocked = false;
+        engine._wasOnGround = true; // for land detection
+        engine._footstepTimer = 0;
+
+        // Block material cache — avoids creating duplicate materials per type
+        engine._matCache = {};
+        function getBlockMaterial(type) {
+          if (engine._matCache[type]) return engine._matCache[type].clone();
+          var color = getBlockColor(type);
+          var mat;
+          if (type === 'glass') {
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.0, transmission: 0.8, thickness: 0.2, side: THREE.DoubleSide });
+          } else if (type === 'diamond') {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.15, metalness: 0.35, envMapIntensity: 1.2 });
+          } else if (type === 'gold') {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.7 });
+          } else if (type === 'sand') {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.95, metalness: 0.0 });
+          } else {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.7, metalness: 0.05 });
+          }
+          engine._matCache[type] = mat;
+          return mat.clone();
+        }
+
+        // Block edge wireframe overlay for visual crispness
+        var _edgeMatCache = {};
+        function addBlockEdges(mesh, shapeId) {
+          if (!_edgeMatCache[shapeId]) _edgeMatCache[shapeId] = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.08, linewidth: 1 });
+          var edges = new THREE.EdgesGeometry(mesh.geometry, 30);
+          var line = new THREE.LineSegments(edges, _edgeMatCache[shapeId]);
+          mesh.add(line);
+        }
 
         // Block operations
         engine.placeBlock = function(x, y, z, type, shape) {
           var key = x + ',' + y + ',' + z;
           if (engine.blocks[key]) return;
           var shapeId = shape || 'cube';
-          var color = getBlockColor(type);
           var geo = createShapeGeometry(shapeId);
-          var mat = new THREE.MeshLambertMaterial({ color: color });
-          if (type === 'glass') { mat.transparent = true; mat.opacity = 0.4; }
+          var mat = getBlockMaterial(type);
           var mesh = new THREE.Mesh(geo, mat);
           // Position: cubes center at +0.5, half-slabs sit on the ground
           if (shapeId === 'halfB') {
@@ -1188,6 +1293,7 @@
             mesh.position.set(x + 0.5, y + 0.5, z + 0.5);
           }
           mesh.castShadow = true; mesh.receiveShadow = true;
+          addBlockEdges(mesh, shapeId);
           var shapeDef = BLOCK_SHAPES.find(function(s) { return s.id === shapeId; }) || BLOCK_SHAPES[0];
           mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume };
           engine.scene.add(mesh);
@@ -1197,8 +1303,55 @@
         engine.removeBlock = function(x, y, z) {
           var key = x + ',' + y + ',' + z;
           var mesh = engine.blocks[key];
-          if (mesh) { engine.scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); delete engine.blocks[key]; }
+          if (mesh) {
+            // Spawn break particles
+            var bColor = mesh.material.color ? mesh.material.color.getHex() : 0x808080;
+            spawnBreakParticles(engine, x + 0.5, y + 0.5, z + 0.5, bColor);
+            engine.scene.remove(mesh);
+            // Dispose children (edge wireframes)
+            if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+            mesh.geometry.dispose(); mesh.material.dispose();
+            delete engine.blocks[key];
+          }
         };
+
+        // Break particle system — small cubes scatter on block break
+        engine._particles = [];
+        function spawnBreakParticles(eng, px, py, pz, color) {
+          var THREE = window.THREE;
+          if (!THREE) return;
+          var count = 6;
+          for (var i = 0; i < count; i++) {
+            var size = 0.08 + Math.random() * 0.08;
+            var geo = new THREE.BoxGeometry(size, size, size);
+            var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true });
+            var p = new THREE.Mesh(geo, mat);
+            p.position.set(px + (Math.random() - 0.5) * 0.5, py + (Math.random() - 0.5) * 0.5, pz + (Math.random() - 0.5) * 0.5);
+            p.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 3, 1.5 + Math.random() * 3, (Math.random() - 0.5) * 3);
+            p.userData._life = 0.5 + Math.random() * 0.3;
+            p.userData._age = 0;
+            eng.scene.add(p);
+            eng._particles.push(p);
+          }
+        }
+
+        // Place sparkle — small bright particles burst outward on block place
+        function spawnPlaceParticles(eng, px, py, pz) {
+          var THREE = window.THREE;
+          if (!THREE) return;
+          for (var i = 0; i < 5; i++) {
+            var size = 0.04 + Math.random() * 0.04;
+            var geo = new THREE.BoxGeometry(size, size, size);
+            var mat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true });
+            var sp = new THREE.Mesh(geo, mat);
+            sp.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
+            sp.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 2, 0.5 + Math.random() * 2, (Math.random() - 0.5) * 2);
+            sp.userData._life = 0.3 + Math.random() * 0.2;
+            sp.userData._age = 0;
+            eng.scene.add(sp);
+            eng._particles.push(sp);
+          }
+        }
 
         engine.fillBlocks = function(x1, y1, z1, x2, y2, z2, type) {
           for (var x = Math.min(x1,x2); x <= Math.max(x1,x2); x++)
@@ -1212,33 +1365,68 @@
             var m = engine.blocks[k]; engine.scene.remove(m); m.geometry.dispose(); m.material.dispose();
           });
           engine.blocks = {};
-          engine.npcs.forEach(function(n) { engine.scene.remove(n.body); engine.scene.remove(n.head); engine.scene.remove(n.label); });
+          engine.npcs.forEach(function(n) {
+            engine.scene.remove(n.body); engine.scene.remove(n.head); engine.scene.remove(n.label);
+            if (n.prompt) engine.scene.remove(n.prompt);
+            if (n._ring) engine.scene.remove(n._ring);
+          });
           engine.npcs = [];
         };
 
         engine.createNPC = function(data) {
           var THREE = window.THREE;
-          var body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.5, 8), new THREE.MeshLambertMaterial({ color: data.color || 0x7c3aed }));
-          body.position.set(data.position[0] + 0.5, data.position[1] + 0.75, data.position[2] + 0.5);
+          var npcColor = data.color || 0x7c3aed;
+
+          // Body — slightly tapered cylinder for character feel
+          var bodyMat = new THREE.MeshStandardMaterial({ color: npcColor, roughness: 0.5, metalness: 0.1 });
+          var body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.32, 1.2, 12), bodyMat);
+          body.position.set(data.position[0] + 0.5, data.position[1] + 0.6, data.position[2] + 0.5);
           body.castShadow = true;
           engine.scene.add(body);
 
-          var head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), new THREE.MeshLambertMaterial({ color: 0xFFDBB4 }));
-          head.position.set(data.position[0] + 0.5, data.position[1] + 1.7, data.position[2] + 0.5);
+          // Head — slightly larger with bevel feel
+          var headMat = new THREE.MeshStandardMaterial({ color: 0xFFDBB4, roughness: 0.6, metalness: 0.0 });
+          var head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), headMat);
+          head.position.set(data.position[0] + 0.5, data.position[1] + 1.5, data.position[2] + 0.5);
+          head.castShadow = true;
           engine.scene.add(head);
 
-          var canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 64;
-          var cx = canvas.getContext('2d');
-          cx.fillStyle = 'rgba(0,0,0,0.7)'; cx.fillRect(0, 0, 256, 64);
+          // Eyes — two small dark spheres
+          var eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+          var eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat);
+          eyeL.position.set(-0.1, 0.04, 0.24);
+          head.add(eyeL);
+          var eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat);
+          eyeR.position.set(0.1, 0.04, 0.24);
+          head.add(eyeR);
+
+          // Name label — cleaner with rounded background
+          var canvas2 = document.createElement('canvas'); canvas2.width = 256; canvas2.height = 64;
+          var cx = canvas2.getContext('2d');
+          cx.clearRect(0, 0, 256, 64);
+          cx.fillStyle = 'rgba(15,23,42,0.8)';
+          if (cx.roundRect) { cx.beginPath(); cx.roundRect(8, 4, 240, 56, 12); cx.fill(); } else { cx.fillRect(8, 4, 240, 56); }
           cx.fillStyle = '#fff'; cx.font = 'bold 22px sans-serif'; cx.textAlign = 'center'; cx.fillText(data.name, 128, 40);
-          var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
-          sprite.scale.set(2, 0.5, 1);
-          sprite.position.set(data.position[0] + 0.5, data.position[1] + 2.3, data.position[2] + 0.5);
+          var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas2), transparent: true, depthTest: false }));
+          sprite.scale.set(2.2, 0.55, 1);
+          sprite.position.set(data.position[0] + 0.5, data.position[1] + 2.1, data.position[2] + 0.5);
           engine.scene.add(sprite);
+
+          // "Press E" interaction prompt (hidden until player is near — managed in animate loop)
+          var promptCanvas = document.createElement('canvas'); promptCanvas.width = 128; promptCanvas.height = 48;
+          var pcx = promptCanvas.getContext('2d');
+          pcx.clearRect(0, 0, 128, 48);
+          pcx.fillStyle = 'rgba(124,58,237,0.85)';
+          if (pcx.roundRect) { pcx.beginPath(); pcx.roundRect(4, 4, 120, 40, 8); pcx.fill(); } else { pcx.fillRect(4, 4, 120, 40); }
+          pcx.fillStyle = '#fff'; pcx.font = 'bold 16px sans-serif'; pcx.textAlign = 'center'; pcx.fillText('Press E', 64, 30);
+          var promptSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(promptCanvas), transparent: true, depthTest: false, opacity: 0 }));
+          promptSprite.scale.set(1.2, 0.45, 1);
+          promptSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.5, data.position[2] + 0.5);
+          engine.scene.add(promptSprite);
 
           body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
           head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
-          engine.npcs.push({ body: body, head: head, label: sprite, data: data });
+          engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, data: data });
         };
 
         engine.loadLesson = function(lesson) {
@@ -1290,6 +1478,7 @@
           return {
             count: result.length,
             L: mxX-mnX+1, W: mxZ-mnZ+1, H: mxY-mnY+1,
+            minX: mnX, minY: mnY, minZ: mnZ,
             boundingVolume: (mxX-mnX+1)*(mxZ-mnZ+1)*(mxY-mnY+1),
             totalVolume: totalVolume,
             hasFractions: totalVolume !== Math.floor(totalVolume),
@@ -1298,17 +1487,71 @@
           };
         };
 
+        // ── 3D Dimension Lines — show L/W/H around measured structure ──
+        engine._dimLines = [];
+        function clearDimLines() {
+          engine._dimLines.forEach(function(obj) { engine.scene.remove(obj); if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
+          engine._dimLines = [];
+        }
+        function makeDimLabel(text, color) {
+          var THREE = window.THREE;
+          var c = document.createElement('canvas'); c.width = 128; c.height = 48;
+          var cx = c.getContext('2d');
+          cx.clearRect(0, 0, 128, 48);
+          cx.fillStyle = 'rgba(0,0,0,0.6)';
+          cx.fillRect(4, 4, 120, 40);
+          cx.fillStyle = color || '#fff'; cx.font = 'bold 20px monospace'; cx.textAlign = 'center';
+          cx.fillText(text, 64, 32);
+          var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
+          spr.scale.set(1.6, 0.6, 1);
+          return spr;
+        }
+        function showDimLines(m, startX, startY, startZ) {
+          clearDimLines();
+          var THREE = window.THREE; if (!THREE) return;
+          // Bounding box corners
+          var x0 = startX, y0 = startY, z0 = startZ;
+          var x1 = x0 + m.L, y1 = y0 + m.H, z1 = z0 + m.W;
+          // Helper to draw a thick colored line
+          function dimLine(ax, ay, az, bx, by, bz, color) {
+            var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.85, linewidth: 2 });
+            var geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz)]);
+            var line = new THREE.LineSegments(geo, mat);
+            engine.scene.add(line);
+            engine._dimLines.push(line);
+          }
+          // Length (red, along X at bottom-front)
+          dimLine(x0, y0, z0, x1, y0, z0, 0xef4444);
+          var lbl = makeDimLabel('L=' + m.L, '#ef4444');
+          lbl.position.set((x0 + x1) / 2, y0 - 0.4, z0);
+          engine.scene.add(lbl); engine._dimLines.push(lbl);
+          // Width (blue, along Z at bottom-left)
+          dimLine(x0, y0, z0, x0, y0, z1, 0x3b82f6);
+          var wbl = makeDimLabel('W=' + m.W, '#3b82f6');
+          wbl.position.set(x0 - 0.5, y0 - 0.4, (z0 + z1) / 2);
+          engine.scene.add(wbl); engine._dimLines.push(wbl);
+          // Height (green, along Y at front-left)
+          dimLine(x0, y0, z0, x0, y1, z0, 0x22c55e);
+          var hbl = makeDimLabel('H=' + m.H, '#22c55e');
+          hbl.position.set(x0 - 0.5, (y0 + y1) / 2, z0);
+          engine.scene.add(hbl); engine._dimLines.push(hbl);
+          // Auto-clear after 8 seconds
+          engine._dimTimer = setTimeout(clearDimLines, 8000);
+        }
+
         // Input handlers
         var canvas = engine.renderer.domElement;
         canvas.addEventListener('click', function() { if (!engine.isLocked) canvas.requestPointerLock(); });
         document.addEventListener('pointerlockchange', function() { engine.isLocked = !!document.pointerLockElement; });
 
+        // Smooth mouse look with configurable sensitivity
+        var MOUSE_SENSITIVITY = 0.0018;
         document.addEventListener('mousemove', function(ev) {
           if (!engine.isLocked) return;
           engine.euler.setFromQuaternion(engine.camera.quaternion);
-          engine.euler.y -= ev.movementX * 0.002;
-          engine.euler.x -= ev.movementY * 0.002;
-          engine.euler.x = Math.max(-1.5, Math.min(1.5, engine.euler.x));
+          engine.euler.y -= ev.movementX * MOUSE_SENSITIVITY;
+          engine.euler.x -= ev.movementY * MOUSE_SENSITIVITY;
+          engine.euler.x = Math.max(-Math.PI * 0.49, Math.min(Math.PI * 0.49, engine.euler.x));
           engine.camera.quaternion.setFromEuler(engine.euler);
         });
 
@@ -1318,14 +1561,14 @@
             case 'KeyS': engine.moveState.backward = true; break;
             case 'KeyA': engine.moveState.left = true; break;
             case 'KeyD': engine.moveState.right = true; break;
-            case 'Space': if (engine.onGround) engine.velocity.y = 5; break;
+            case 'Space': if (engine.onGround) { engine.velocity.y = 6; sfxJump(); } break;
             case 'KeyE':
               var minD = 4, nearest = -1;
               engine.npcs.forEach(function(n, i) {
                 var dist = engine.camera.position.distanceTo(n.body.position);
                 if (dist < minD) { minD = dist; nearest = i; }
               });
-              if (nearest >= 0) upd({ showNpcDialog: true, dialogNpcIdx: nearest });
+              if (nearest >= 0) { upd({ showNpcDialog: true, dialogNpcIdx: nearest }); sfxNpcChime(); }
               break;
             case 'KeyM':
               engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
@@ -1334,7 +1577,11 @@
                 var gp = hits[0].object.userData.gridPos;
                 var m = engine.measureStructure(gp.x, gp.y, gp.z, hits[0].object.userData.blockType);
                 if (m) {
+                  sfxMeasure();
                   upd('measureResult', m);
+                  // Show 3D dimension lines around the measured structure
+                  if (engine._dimTimer) clearTimeout(engine._dimTimer);
+                  showDimLines(m, m.minX, m.minY, m.minZ);
                   if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.boundingVolume, blocks: m.count });
                   setTimeout(runAchievementCheck, 100);
                 }
@@ -1346,6 +1593,7 @@
             case 'KeyQ': // Cycle through shapes
               upd('selectedShape', (selectedShape + 1) % BLOCK_SHAPES.length);
               break;
+            case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
           }
         });
         document.addEventListener('keyup', function(ev) {
@@ -1354,6 +1602,7 @@
             case 'KeyS': engine.moveState.backward = false; break;
             case 'KeyA': engine.moveState.left = false; break;
             case 'KeyD': engine.moveState.right = false; break;
+            case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = false; break;
           }
         });
 
@@ -1367,6 +1616,7 @@
             var hit = hits[0];
             if (hit.object.userData.isNPC) {
               upd({ showNpcDialog: true, dialogNpcIdx: hit.object.userData.npcIndex });
+              sfxNpcChime();
               return;
             }
             if (ev.button === 0 && hit.object.userData.gridPos) {
@@ -1379,8 +1629,10 @@
             } else if (ev.button === 2 && hit.object.userData.gridPos && hit.face) {
               var p = hit.object.userData.gridPos;
               var n = hit.face.normal;
-              engine.placeBlock(p.x + Math.round(n.x), p.y + Math.round(n.y), p.z + Math.round(n.z), BLOCK_TYPES[selectedBlock].id, BLOCK_SHAPES[selectedShape].id);
+              var placeX = p.x + Math.round(n.x), placeY = p.y + Math.round(n.y), placeZ = p.z + Math.round(n.z);
+              engine.placeBlock(placeX, placeY, placeZ, BLOCK_TYPES[selectedBlock].id, BLOCK_SHAPES[selectedShape].id);
               sfxPlace();
+              spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
               if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             }
@@ -1389,40 +1641,262 @@
 
         canvas.addEventListener('contextmenu', function(ev) { ev.preventDefault(); });
 
+        // ── Block placement preview ghost + break highlight ──
+        engine._ghostMesh = null;
+        engine._highlightMesh = null; // wireframe outline on targeted block
+        function updateGhostPreview() {
+          var THREE = window.THREE;
+          if (!engine.isLocked || !THREE) {
+            if (engine._ghostMesh) engine._ghostMesh.visible = false;
+            if (engine._highlightMesh) engine._highlightMesh.visible = false;
+            return;
+          }
+          engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+          var hits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+
+          // ── Break highlight — colored wireframe on the targeted block ──
+          if (hits.length > 0 && hits[0].object.userData.gridPos) {
+            var hp = hits[0].object.userData.gridPos;
+            if (!engine._highlightMesh) {
+              var hlGeo = new THREE.BoxGeometry(1.005, 1.005, 1.005);
+              var hlEdges = new THREE.EdgesGeometry(hlGeo);
+              var hlMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, linewidth: 2 });
+              engine._highlightMesh = new THREE.LineSegments(hlEdges, hlMat);
+              engine._highlightMesh.renderOrder = 998;
+              engine.scene.add(engine._highlightMesh);
+            }
+            engine._highlightMesh.position.set(hp.x + 0.5, hp.y + 0.5, hp.z + 0.5);
+            engine._highlightMesh.visible = true;
+            // Pulse the highlight opacity
+            var pulseT = engine.clock.getElapsedTime();
+            engine._highlightMesh.material.opacity = 0.4 + Math.sin(pulseT * 6) * 0.2;
+          } else {
+            if (engine._highlightMesh) engine._highlightMesh.visible = false;
+          }
+
+          // ── Placement ghost — wireframe where new block will go ──
+          if (hits.length > 0 && hits[0].object.userData.gridPos && hits[0].face) {
+            var p = hits[0].object.userData.gridPos;
+            var n = hits[0].face.normal;
+            var gx = p.x + Math.round(n.x), gy = p.y + Math.round(n.y), gz = p.z + Math.round(n.z);
+            if (!engine._ghostMesh) {
+              var gGeo = new THREE.BoxGeometry(1.01, 1.01, 1.01);
+              var gMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.12, wireframe: true });
+              engine._ghostMesh = new THREE.Mesh(gGeo, gMat);
+              engine._ghostMesh.renderOrder = 999;
+              engine.scene.add(engine._ghostMesh);
+            }
+            engine._ghostMesh.position.set(gx + 0.5, gy + 0.5, gz + 0.5);
+            engine._ghostMesh.visible = true;
+          } else {
+            if (engine._ghostMesh) engine._ghostMesh.visible = false;
+          }
+        }
+
+        // ── Collision helper: check if a world-space position is inside a solid block ──
+        function isBlockAt(bx, by, bz) {
+          return !!engine.blocks[Math.floor(bx) + ',' + Math.floor(by) + ',' + Math.floor(bz)];
+        }
+
+        // Player physics constants
+        var MOVE_SPEED = 5.0;
+        var SPRINT_SPEED = 8.0;
+        var MOVE_ACCEL = 25;   // acceleration toward target speed
+        var MOVE_DECEL = 18;   // deceleration (friction) when no input
+        var PLAYER_RADIUS = 0.25; // half-width for XZ collision
+        var EYE_HEIGHT = 1.6;  // camera above feet
+        var PLAYER_HEIGHT = 1.8; // full body height
+        var HEADBOB_AMOUNT = 0.04;  // vertical bob amplitude
+        var HEADBOB_SPEED = 10;     // bob cycle speed
+        var FOOTSTEP_INTERVAL = 0.38; // seconds between footstep sounds
+        var SPRINT_FOOTSTEP_INTERVAL = 0.26;
+        engine._headBobPhase = 0;
+        engine._headBobBase = 0; // will be set to groundY when on ground
+
         // Animation loop
         function animate() {
           requestAnimationFrame(animate);
           var dt = Math.min(engine.clock.getDelta(), 0.1);
+
+          // ── Update break particles ──
+          for (var pi = engine._particles.length - 1; pi >= 0; pi--) {
+            var part = engine._particles[pi];
+            part.userData._age += dt;
+            if (part.userData._age >= part.userData._life) {
+              engine.scene.remove(part); part.geometry.dispose(); part.material.dispose();
+              engine._particles.splice(pi, 1);
+              continue;
+            }
+            part.userData._vel.y -= 9.8 * dt;
+            part.position.x += part.userData._vel.x * dt;
+            part.position.y += part.userData._vel.y * dt;
+            part.position.z += part.userData._vel.z * dt;
+            part.material.opacity = 1.0 - (part.userData._age / part.userData._life);
+            part.scale.setScalar(1.0 - (part.userData._age / part.userData._life) * 0.5);
+          }
+
           if (engine.isLocked) {
             var THREE = window.THREE;
+            // ── Smooth movement with acceleration, deceleration, and proper XZ + Y collision ──
             var dir = new THREE.Vector3();
             var fwd = new THREE.Vector3();
             engine.camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
             var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
-            if (engine.moveState.forward) dir.add(fwd);
-            if (engine.moveState.backward) dir.sub(fwd);
-            if (engine.moveState.right) dir.add(right);
-            if (engine.moveState.left) dir.sub(right);
-            if (dir.length() > 0) dir.normalize();
-            engine.camera.position.x += dir.x * 5 * dt;
-            engine.camera.position.z += dir.z * 5 * dt;
-            engine.velocity.y += -9.8 * dt;
-            engine.camera.position.y += engine.velocity.y * dt;
-            var groundY = 1.7;
-            var gx = Math.floor(engine.camera.position.x), gz = Math.floor(engine.camera.position.z);
-            for (var gy = 20; gy >= 0; gy--) {
-              if (engine.blocks[gx + ',' + gy + ',' + gz]) { groundY = gy + 1 + 1.7; break; }
+            var wantDir = new THREE.Vector3();
+            if (engine.moveState.forward) wantDir.add(fwd);
+            if (engine.moveState.backward) wantDir.sub(fwd);
+            if (engine.moveState.right) wantDir.add(right);
+            if (engine.moveState.left) wantDir.sub(right);
+            var hasInput = wantDir.length() > 0.01;
+            if (hasInput) wantDir.normalize();
+
+            // Accelerate / decelerate horizontal velocity (sprint-aware)
+            var isSprinting = engine.moveState.sprint && engine.moveState.forward;
+            var curSpeed = isSprinting ? SPRINT_SPEED : MOVE_SPEED;
+            var curH = new THREE.Vector3(engine.velocity.x || 0, 0, engine.velocity.z || 0);
+            if (hasInput) {
+              var target = wantDir.clone().multiplyScalar(curSpeed);
+              curH.lerp(target, 1.0 - Math.exp(-MOVE_ACCEL * dt));
+            } else {
+              curH.multiplyScalar(Math.exp(-MOVE_DECEL * dt));
+              if (curH.length() < 0.01) curH.set(0, 0, 0);
             }
-            if (engine.camera.position.y < groundY) { engine.camera.position.y = groundY; engine.velocity.y = 0; engine.onGround = true; }
-            else { engine.onGround = false; }
+            engine.velocity.x = curH.x;
+            engine.velocity.z = curH.z;
+
+            // Apply gravity
+            engine.velocity.y += -14.0 * dt; // slightly stronger gravity for snappier feel
+
+            // Attempt to move: X, then Z, then Y (axis-separated collision)
+            var cam = engine.camera.position;
+            var feetY = cam.y - EYE_HEIGHT;
+
+            // X axis collision
+            var newX = cam.x + engine.velocity.x * dt;
+            var blocked = false;
+            for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
+              if (isBlockAt(newX + PLAYER_RADIUS, feetY + cy, cam.z) || isBlockAt(newX - PLAYER_RADIUS, feetY + cy, cam.z)) { blocked = true; break; }
+            }
+            if (!blocked) cam.x = newX; else engine.velocity.x = 0;
+
+            // Z axis collision
+            var newZ = cam.z + engine.velocity.z * dt;
+            blocked = false;
+            for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
+              if (isBlockAt(cam.x, feetY + cy, newZ + PLAYER_RADIUS) || isBlockAt(cam.x, feetY + cy, newZ - PLAYER_RADIUS)) { blocked = true; break; }
+            }
+            if (!blocked) cam.z = newZ; else engine.velocity.z = 0;
+
+            // Y axis — ground detection (check multiple columns around player)
+            var newY = cam.y + engine.velocity.y * dt;
+            var newFeetY = newY - EYE_HEIGHT;
+            var groundY = -100;
+            var checkOffsets = [[0,0], [PLAYER_RADIUS, 0], [-PLAYER_RADIUS, 0], [0, PLAYER_RADIUS], [0, -PLAYER_RADIUS]];
+            for (var ci = 0; ci < checkOffsets.length; ci++) {
+              var cx2 = Math.floor(cam.x + checkOffsets[ci][0]);
+              var cz2 = Math.floor(cam.z + checkOffsets[ci][1]);
+              for (var gy = Math.floor(newFeetY) + 5; gy >= Math.floor(newFeetY) - 1; gy--) {
+                if (engine.blocks[cx2 + ',' + gy + ',' + cz2]) {
+                  var topOfBlock = gy + 1 + EYE_HEIGHT;
+                  if (topOfBlock > groundY) groundY = topOfBlock;
+                  break;
+                }
+              }
+            }
+            // Fallback: world ground plane at y=0
+            var worldGround = 0 + EYE_HEIGHT;
+            if (groundY < worldGround) groundY = worldGround;
+
+            if (newY < groundY) { cam.y = groundY; engine.velocity.y = 0; engine.onGround = true; }
+            else { cam.y = newY; engine.onGround = false; }
+
+            // Land sound — play when transitioning from air to ground
+            if (engine.onGround && !engine._wasOnGround) sfxLand();
+            engine._wasOnGround = engine.onGround;
+
+            // Head-bump detection (ceiling)
+            var headY = cam.y + (PLAYER_HEIGHT - EYE_HEIGHT);
+            var headGx = Math.floor(cam.x), headGz = Math.floor(cam.z);
+            if (engine.blocks[headGx + ',' + Math.floor(headY) + ',' + headGz] && engine.velocity.y > 0) {
+              engine.velocity.y = 0;
+            }
+
+            // ── Footsteps + head-bob while walking on ground ──
+            var hSpeed = Math.sqrt(engine.velocity.x * engine.velocity.x + engine.velocity.z * engine.velocity.z);
+            if (engine.onGround && hSpeed > 1.0) {
+              var stepInterval = isSprinting ? SPRINT_FOOTSTEP_INTERVAL : FOOTSTEP_INTERVAL;
+              engine._footstepTimer += dt;
+              if (engine._footstepTimer >= stepInterval) {
+                engine._footstepTimer -= stepInterval;
+                sfxFootstep();
+              }
+              // Head-bob: gentle sine wave offset
+              var bobSpeed = isSprinting ? HEADBOB_SPEED * 1.4 : HEADBOB_SPEED;
+              var bobAmt = isSprinting ? HEADBOB_AMOUNT * 1.3 : HEADBOB_AMOUNT;
+              engine._headBobPhase += dt * bobSpeed;
+              cam.y += Math.sin(engine._headBobPhase) * bobAmt;
+            } else {
+              engine._footstepTimer = 0;
+              // Smoothly return head-bob to zero
+              engine._headBobPhase *= 0.9;
+            }
+
+            // FOV zoom on sprint (subtle)
+            var targetFov = isSprinting && hSpeed > 3 ? 82 : 75;
+            engine.camera.fov += (targetFov - engine.camera.fov) * Math.min(1, dt * 6);
+            engine.camera.updateProjectionMatrix();
+
+            // Update ghost block preview
+            updateGhostPreview();
           }
-          // Animate NPCs
+
+          // Animate NPCs — bob, rotate, face player when close
           var t = engine.clock.getElapsedTime();
           engine.npcs.forEach(function(npc, i) {
             var baseY = npc.data.position[1] + 0.75;
-            npc.body.position.y = baseY + Math.sin(t * 2 + i) * 0.1;
-            npc.head.position.y = npc.data.position[1] + 1.7 + Math.sin(t * 2 + i) * 0.1;
-            npc.body.rotation.y += dt * 0.5;
+            var bobY = Math.sin(t * 2 + i) * 0.1;
+            npc.body.position.y = baseY + bobY;
+            npc.head.position.y = npc.data.position[1] + 1.7 + bobY;
+            // Face toward player when within 6 blocks
+            if (engine.camera) {
+              var dx = engine.camera.position.x - npc.body.position.x;
+              var dz = engine.camera.position.z - npc.body.position.z;
+              var dist = Math.sqrt(dx * dx + dz * dz);
+              if (dist < 6) {
+                var targetRot = Math.atan2(dx, dz);
+                npc.body.rotation.y += (targetRot - npc.body.rotation.y) * Math.min(1, dt * 3);
+              } else {
+                npc.body.rotation.y += dt * 0.5;
+              }
+            } else {
+              npc.body.rotation.y += dt * 0.5;
+            }
+            // Proximity glow ring on ground beneath NPC
+            if (!npc._ring) {
+              var THREE = window.THREE;
+              if (THREE) {
+                var ringGeo = new THREE.RingGeometry(0.4, 0.55, 24);
+                ringGeo.rotateX(-Math.PI / 2);
+                var ringMat = new THREE.MeshBasicMaterial({ color: npc.data.color || 0x7c3aed, transparent: true, opacity: 0, side: THREE.DoubleSide });
+                npc._ring = new THREE.Mesh(ringGeo, ringMat);
+                npc._ring.position.set(npc.data.position[0] + 0.5, npc.data.position[1] + 0.02, npc.data.position[2] + 0.5);
+                engine.scene.add(npc._ring);
+              }
+            }
+            if (npc._ring && engine.camera) {
+              var dx2 = engine.camera.position.x - npc.body.position.x;
+              var dz2 = engine.camera.position.z - npc.body.position.z;
+              var dist2 = Math.sqrt(dx2 * dx2 + dz2 * dz2);
+              var targetOp = dist2 < 4 ? 0.5 : 0;
+              npc._ring.material.opacity += (targetOp - npc._ring.material.opacity) * Math.min(1, dt * 5);
+              npc._ring.scale.setScalar(1.0 + Math.sin(t * 3 + i) * 0.08);
+              // "Press E" prompt — fade in when close, bob above head
+              if (npc.prompt) {
+                var promptTarget = dist2 < 3.5 ? 0.9 : 0;
+                npc.prompt.material.opacity += (promptTarget - npc.prompt.material.opacity) * Math.min(1, dt * 6);
+                npc.prompt.position.y = npc.data.position[1] + 2.5 + Math.sin(t * 2.5 + i * 0.7) * 0.06;
+              }
+            }
           });
 
           // ── Collaborative: render peer player avatars ──
@@ -1523,6 +1997,17 @@
               engine.congratsSprite.position.y = 12 + Math.sin(t * 0.5) * 0.5; // gentle float
               engine.congratsSprite.lookAt(engine.camera.position); // always face player
             }
+          }
+
+          // ── Animate clouds — slow UV drift ──
+          if (engine._cloudTex) {
+            engine._cloudTex.offset.x += dt * 0.005;
+            engine._cloudTex.offset.y += dt * 0.002;
+          }
+          // Keep cloud plane centered above camera so it always covers the sky
+          if (engine._cloudPlane && engine.camera) {
+            engine._cloudPlane.position.x = engine.camera.position.x;
+            engine._cloudPlane.position.z = engine.camera.position.z;
           }
 
           engine.renderer.render(engine.scene, engine.camera);
@@ -1787,6 +2272,19 @@
         var engine = window[engineKey];
         if (engine) {
           engine.clearWorld();
+          // Dispose particles
+          if (engine._particles) engine._particles.forEach(function(p) { engine.scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
+          // Dispose ghost mesh + highlight mesh
+          if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
+          if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
+          // Dispose dimension lines
+          if (engine._dimLines) engine._dimLines.forEach(function(obj) { engine.scene.remove(obj); if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
+          if (engine._dimTimer) clearTimeout(engine._dimTimer);
+          // Dispose sky elements
+          if (engine._sunSprite) engine.scene.remove(engine._sunSprite);
+          if (engine._cloudPlane) engine.scene.remove(engine._cloudPlane);
+          // Dispose material cache
+          if (engine._matCache) Object.values(engine._matCache).forEach(function(m) { if (m.dispose) m.dispose(); });
           if (engine.renderer) { engine.renderer.dispose(); }
           delete window[engineKey];
         }
@@ -2219,6 +2717,7 @@
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'E'), 'Talk to NPC',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'M'), 'Measure structure',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Space'), 'Jump',
+            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Shift'), 'Sprint',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, '1-7'), 'Select block',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)'
           ),
@@ -2345,8 +2844,84 @@
             style: { marginTop: '8px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#94a3b8', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }
           }, '\u21BB Reset World')
         ),
-        // Shape selector (above block toolbar)
-        el('div', { style: { position: 'absolute', bottom: '52px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.7)', borderRadius: '8px', padding: '3px', alignItems: 'center' } },
+        // ── Minimap — top-down view showing player + NPC positions ──
+        engine && el('canvas', {
+          ref: function(canvasNode) {
+            if (!canvasNode || !engine) return;
+            var ctx = canvasNode.getContext('2d');
+            if (!ctx) return;
+            var w = canvasNode.width, h = canvasNode.height;
+            var scale = 3; // pixels per block
+            var camX = engine.camera.position.x, camZ = engine.camera.position.z;
+
+            ctx.clearRect(0, 0, w, h);
+            // Background
+            ctx.fillStyle = 'rgba(15,23,42,0.85)';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw ground blocks as dots (sampling — don't iterate all blocks for perf)
+            ctx.fillStyle = 'rgba(100,116,139,0.3)';
+            var blockKeys = Object.keys(engine.blocks);
+            for (var bi = 0; bi < blockKeys.length; bi += 3) {
+              var bm = engine.blocks[blockKeys[bi]];
+              if (!bm || !bm.userData.gridPos) continue;
+              var bp = bm.userData.gridPos;
+              if (bp.y > 0) continue; // only ground layer
+              var bpx = w / 2 + (bp.x - camX) * scale;
+              var bpz = h / 2 + (bp.z - camZ) * scale;
+              if (bpx >= 0 && bpx < w && bpz >= 0 && bpz < h) {
+                ctx.fillRect(bpx, bpz, scale, scale);
+              }
+            }
+            // Draw structure blocks (above ground)
+            ctx.fillStyle = 'rgba(148,163,184,0.4)';
+            for (var bi2 = 0; bi2 < blockKeys.length; bi2 += 2) {
+              var bm2 = engine.blocks[blockKeys[bi2]];
+              if (!bm2 || !bm2.userData.gridPos) continue;
+              var bp2 = bm2.userData.gridPos;
+              if (bp2.y <= 0) continue;
+              var bpx2 = w / 2 + (bp2.x - camX) * scale;
+              var bpz2 = h / 2 + (bp2.z - camZ) * scale;
+              if (bpx2 >= 0 && bpx2 < w && bpz2 >= 0 && bpz2 < h) {
+                ctx.fillRect(bpx2, bpz2, scale, scale);
+              }
+            }
+
+            // Draw NPCs
+            engine.npcs.forEach(function(npc) {
+              var np = npc.data.position;
+              var nx = w / 2 + (np[0] - camX) * scale;
+              var nz = h / 2 + (np[2] - camZ) * scale;
+              ctx.fillStyle = '#' + (npc.data.color || 0x7c3aed).toString(16).padStart(6, '0');
+              ctx.beginPath(); ctx.arc(nx, nz, 3, 0, Math.PI * 2); ctx.fill();
+              // Question indicator
+              if (npc.data.question) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 8px sans-serif';
+                ctx.fillText('?', nx - 2, nz - 5);
+              }
+            });
+
+            // Draw player (center, with direction arrow)
+            ctx.fillStyle = '#4ade80';
+            ctx.beginPath(); ctx.arc(w / 2, h / 2, 3, 0, Math.PI * 2); ctx.fill();
+            // Direction indicator
+            var fwd2 = new (window.THREE.Vector3)();
+            engine.camera.getWorldDirection(fwd2);
+            ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(w / 2, h / 2);
+            ctx.lineTo(w / 2 + fwd2.x * 8, h / 2 + fwd2.z * 8);
+            ctx.stroke();
+
+            // Border
+            ctx.strokeStyle = 'rgba(100,116,139,0.4)'; ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, w, h);
+          },
+          width: 100, height: 100,
+          style: { position: 'absolute', bottom: '100px', right: '8px', zIndex: 20, borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', overflow: 'hidden' }
+        }),
+        // Shape selector (above block toolbar) — matching glass style
+        el('div', { style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
           el('span', { style: { fontSize: '9px', color: '#6b7280', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
           BLOCK_SHAPES.map(function(bs, i) {
             return el('div', {
@@ -2362,19 +2937,35 @@
             );
           })
         ),
-        // Block toolbar (bottom overlay)
-        el('div', { style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.7)', borderRadius: '10px', padding: '4px' } },
+        // Block toolbar (bottom overlay) — with key hints and glow
+        el('div', { style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)' } },
           BLOCK_TYPES.map(function(bt, i) {
+            var isActive = i === selectedBlock;
             return el('div', {
               key: bt.id,
               onClick: function() { upd('selectedBlock', i); },
-              title: bt.name,
-              style: { width: '36px', height: '36px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', border: i === selectedBlock ? '2px solid #7c3aed' : '2px solid transparent', background: i === selectedBlock ? 'rgba(124,58,237,0.3)' : 'transparent' }
-            }, bt.emoji);
+              title: bt.name + ' (' + (i + 1) + ')',
+              style: { width: '38px', height: '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
+                border: isActive ? '2px solid #a78bfa' : '2px solid rgba(255,255,255,0.08)',
+                background: isActive ? 'rgba(124,58,237,0.35)' : 'rgba(255,255,255,0.03)',
+                boxShadow: isActive ? '0 0 10px rgba(124,58,237,0.5), inset 0 0 8px rgba(124,58,237,0.2)' : 'none' }
+            },
+              bt.emoji,
+              el('span', { style: { position: 'absolute', bottom: '1px', right: '3px', fontSize: '8px', color: isActive ? '#c4b5fd' : '#4b5563', fontWeight: 700, lineHeight: 1 } }, String(i + 1))
+            );
           })
         ),
-        // Crosshair
-        el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, color: 'rgba(255,255,255,0.5)', fontSize: '20px', pointerEvents: 'none' } }, '+'),
+        // Crosshair — crisp dot + thin lines
+        el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '20px', height: '20px' } },
+          // Center dot
+          el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', boxShadow: '0 0 2px rgba(0,0,0,0.5)' } }),
+          // Horizontal lines
+          el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: 'rgba(255,255,255,0.6)' } }),
+          el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: 'rgba(255,255,255,0.6)' } }),
+          // Vertical lines
+          el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: 'rgba(255,255,255,0.6)' } }),
+          el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: 'rgba(255,255,255,0.6)' } })
+        ),
         // NPC Dialog overlay
         showNpcDialog && engine && engine.npcs[dialogNpcIdx] && (function() {
           var npc = engine.npcs[dialogNpcIdx];

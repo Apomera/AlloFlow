@@ -28,7 +28,7 @@ var createDocPipeline = function (deps) {
     return window.__docPipelineState || {};
   };
   // Re-expose state vars as getters so existing code works unchanged
-  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage, selectedFont, responses, history, inputText, gradeLevel, projectName, studentNickname, isTeacherMode, generatedContent, pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult, pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect, pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns, customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, pdfTargetScore, setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading, setPdfFixStep, setPendingPdfBase64, setPendingPdfFile, setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex, setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle, setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting, setExportAuditLoading, setExportAuditResult;
+  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage, selectedFont, responses, history, inputText, gradeLevel, projectName, studentNickname, isTeacherMode, generatedContent, pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult, pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect, pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns, customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, pdfTargetScore, setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading, setPdfFixStep, setPendingPdfBase64, setPendingPdfFile, setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex, setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle, setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting, setExportAuditLoading, setExportAuditResult, currentUiLanguage, isIndependentMode, isParentMode;
   // Bind all vars from the state bag before each public function call
   var _bindState = function () {
     var s = _s();
@@ -82,6 +82,9 @@ var createDocPipeline = function (deps) {
     setIsExtracting = s.setIsExtracting;
     setExportAuditLoading = s.setExportAuditLoading;
     setExportAuditResult = s.setExportAuditResult;
+    currentUiLanguage = s.currentUiLanguage || 'English';
+    isIndependentMode = s.isIndependentMode || false;
+    isParentMode = s.isParentMode || false;
   };
 
   // ── PDF Accessibility Audit ──
@@ -4234,11 +4237,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
     const cfg = config || exportConfig;
-    // Resource type filtering — configurable via export preview modal
+    // Resource type filtering — configurable via export preview modal.
+    // Teacher-only resources (analysis, udl-advice, brainstorm) are handled separately
+    // below so they can appear in the teacher copy unconditionally while still being
+    // toggleable for the student copy.
     const typeToggleMap = {
-      'analysis': 'includeAnalysis',
-      'udl-advice': 'includeUdlAdvice',
-      'brainstorm': 'includeBrainstorm',
       'lesson-plan': 'includeLessonPlan',
       'simplified': 'includeSimplified',
       'outline': 'includeOutline',
@@ -4252,13 +4255,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     };
     const toggleKey = typeToggleMap[item.type];
     if (toggleKey && cfg[toggleKey] === false) return '';
-    // Legacy teacher/student copy filtering for types without explicit toggles
-    if (!isTeacher) {
-      if (!cfg.includeAnalysis && item.type === 'analysis') return '';
-      if (item.type === 'udl-advice' && !cfg.includeUdlAdvice) return '';
-      if (item.type === 'brainstorm' && !cfg.includeBrainstorm) return '';
-    } else {
-      // Teacher copy traditionally hides student-facing resources to avoid duplication
+    // Teacher-copy-by-default resources: analysis, udl-advice, brainstorm
+    //   - Always show in teacher copy (teachers need accuracy verification + UDL strategies)
+    //   - Show in student copy ONLY if toggle is on (cfg.includeAnalysis, etc.)
+    //   - Toggle defaults to OFF in student copy via exportConfig defaults
+    if (item.type === 'analysis' || item.type === 'udl-advice' || item.type === 'brainstorm') {
+      const studentToggleKey = item.type === 'analysis' ? 'includeAnalysis'
+                              : item.type === 'udl-advice' ? 'includeUdlAdvice'
+                              : 'includeBrainstorm';
+      if (!isTeacher && cfg[studentToggleKey] === false) return '';
+      // teacher copy always shows these — fall through to render
+    }
+    // Teacher copy traditionally hides student-facing resources to avoid duplication
+    if (isTeacher) {
       if (item.type === 'simplified') return '';
       if (item.type === 'outline') return '';
       if (item.type === 'image') return '';
@@ -5201,7 +5210,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     const textAlign = isRtl ? 'right' : 'left';
     const theme = EXPORT_THEMES[exportTheme] || EXPORT_THEMES.professional;
     // Font: honor user's app font if toggled, otherwise use theme font
-    const appFontEntry = FONT_OPTIONS.find(f => f.id === selectedFont);
+    // Read FONT_OPTIONS from window (defined in monolith) with safe fallback
+    const _fontOptions = (typeof window !== 'undefined' && window.FONT_OPTIONS) || [];
+    const appFontEntry = _fontOptions.find(f => f.id === selectedFont);
     const exportFontFamily = cfg.useAppFont && appFontEntry ? `'${appFontEntry.label}', ${theme.bodyFont}` : theme.bodyFont;
     const exportFontImport = cfg.useAppFont && appFontEntry?.googleFont ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');` : '';
     const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';

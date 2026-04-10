@@ -1062,7 +1062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('span', null, action.emoji),
                       h('span', { className: 'text-[9px] font-bold text-slate-800' }, action.label)),
                     h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, action.cost + ' AP · ' + action.desc));
-                })))),
+                }))),
 
           // Hive Inspection (full view replacement)
           showInspect && renderInspection(),

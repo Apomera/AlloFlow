@@ -24299,6 +24299,18 @@ Use professional language. Refer to "the student" (not the codename).`;
             return dashboardData.map(s => s.studentNickname).filter(Boolean);
         }, [dashboardData]);
 
+        // WCAG 2.1.2 + 2.4.3: Escape closes modals + restore focus
+        useEffect(function() {
+            function _alloEscHandler(e) {
+                if (e.key === 'Escape' && (showLiveObs || showFreqCounter || showIntervalGrid || showChoiceBoard || showWelcome || showRosterDropdown || showExportMenu)) {
+                    setShowLiveObs(false); setShowFreqCounter(false); setShowIntervalGrid(false); setShowChoiceBoard(false); setShowWelcome(false); setShowRosterDropdown(false); setShowExportMenu(false);
+                    alloRestoreFocus();
+                }
+            }
+            document.addEventListener('keydown', _alloEscHandler);
+            return function() { document.removeEventListener('keydown', _alloEscHandler); };
+        });
+
         // AI Analysis function
         const handleAiAnalyze = async () => {
             if (!callGemini || abcEntries.length < 3) return;
@@ -27426,18 +27438,6 @@ Analyze this data and return ONLY valid JSON:
                     const chainIds = interventionChain.map(c => c.id);
                     const isInChain = chainIds.includes(activePanel);
                     const chainIdx = chainIds.indexOf(activePanel);
-                    
-  // WCAG 2.1.2 + 2.4.3: Escape closes modals + restore focus
-  useEffect(function() {
-    function _alloEscHandler(e) {
-      if (e.key === 'Escape' && (showModal || showConfetti || showHistory || showThinning || showTranslate || showForm || showFeedback || showPrint || showBadges || showSummary || showResults || showDiagram || showAdd || showTrend || showLevel || showAim || showCeleration || showCsvImport || showWizard || showExplanation || showComparison || showManual || showSlope || showPhaseEditor || showImport || showLiveObs || showFreqCounter || showIntervalGrid || showChoiceBoard || showWelcome || showRosterDropdown || showExportMenu)) {
-        setShowModal(false); setShowConfetti(false); setShowHistory(false); setShowThinning(false); setShowTranslate(false); setShowForm(false); setShowFeedback(false); setShowPrint(false); setShowBadges(false); setShowSummary(false); setShowResults(false); setShowDiagram(false); setShowAdd(false); setShowTrend(false); setShowLevel(false); setShowAim(false); setShowCeleration(false); setShowCsvImport(false); setShowWizard(false); setShowExplanation(false); setShowComparison(false); setShowManual(false); setShowSlope(false); setShowPhaseEditor(false); setShowImport(false); setShowLiveObs(false); setShowFreqCounter(false); setShowIntervalGrid(false); setShowChoiceBoard(false); setShowWelcome(false); setShowRosterDropdown(false); setShowExportMenu(false);
-        alloRestoreFocus();
-      }
-    }
-    document.addEventListener('keydown', _alloEscHandler);
-    return function() { document.removeEventListener('keydown', _alloEscHandler); };
-  });
 
   return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-6 space-y-4' },
                         // Workflow chain breadcrumb (intervention tools only)

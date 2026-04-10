@@ -3750,8 +3750,9 @@ const d = labToolData.solarSystem;
                             return hits.length > 0 ? hits[0].point.y : -25;
                           };
 
-                          // Coral formations
+                          // Coral formations (with bioluminescent glow)
                           var coralColors = [0xff6b8a, 0xff8c42, 0xffd166, 0x06d6a0, 0x8338ec, 0xf72585];
+                          var coralLights = [];
                           for (var ci = 0; ci < 40; ci++) {
                             var coralType = ci % 3;
                             var cGeo, cMat;
@@ -3759,21 +3760,21 @@ const d = labToolData.solarSystem;
                             if (coralType === 0) {
                               // Branch coral
                               cGeo = new THREE.ConeGeometry(0.3 + Math.random() * 0.5, 1.5 + Math.random() * 2, 5 + Math.floor(Math.random() * 4));
-                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.7, metalness: 0.1, flatShading: true });
+                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.7, metalness: 0.1, flatShading: true, emissive: cColor, emissiveIntensity: 0.15 });
                             } else if (coralType === 1) {
                               // Fan coral
                               cGeo = new THREE.PlaneGeometry(1 + Math.random() * 1.5, 1.5 + Math.random() * 2, 3, 3);
                               var cPos = cGeo.attributes.position.array;
                               for (var cpv = 0; cpv < cPos.length; cpv += 3) { cPos[cpv + 2] = Math.random() * 0.2; }
                               cGeo.computeVertexNormals();
-                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.6, side: THREE.DoubleSide, transparent: true, opacity: 0.85 });
+                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.6, side: THREE.DoubleSide, transparent: true, opacity: 0.85, emissive: cColor, emissiveIntensity: 0.12 });
                             } else {
                               // Brain/mound coral
                               cGeo = new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.8, 1);
                               var bPos = cGeo.attributes.position.array;
                               for (var bpv = 0; bpv < bPos.length; bpv += 3) { bPos[bpv + 1] *= 0.5 + Math.random() * 0.3; }
                               cGeo.computeVertexNormals();
-                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.8, metalness: 0.05, flatShading: true });
+                              cMat = new THREE.MeshStandardMaterial({ color: cColor, roughness: 0.8, metalness: 0.05, flatShading: true, emissive: cColor, emissiveIntensity: 0.1 });
                             }
                             var coral = new THREE.Mesh(cGeo, cMat);
                             var ccx = (Math.random() - 0.5) * 160, ccz = (Math.random() - 0.5) * 160;
@@ -3781,6 +3782,14 @@ const d = labToolData.solarSystem;
                             coral.position.set(ccx, ccy + 0.5, ccz);
                             coral.rotation.set(Math.random() * 0.3, Math.random() * Math.PI * 2, Math.random() * 0.3);
                             scene.add(coral);
+                            // Every 5th coral gets a small point light for visible bioluminescent glow
+                            if (ci % 5 === 0) {
+                              var clGlow = new THREE.PointLight(cColor, 0.3, 4);
+                              clGlow.position.set(ccx, ccy + 1.2, ccz);
+                              clGlow._coralPhase = Math.random() * Math.PI * 2;
+                              scene.add(clGlow);
+                              coralLights.push(clGlow);
+                            }
                           }
 
                           // Kelp forests (tall swaying columns)
@@ -5140,23 +5149,31 @@ const d = labToolData.solarSystem;
                           }
                         }
 
-                        // â"€â"€ Particle effects â"€â"€
+                        // â"€â"€ Particle effects (wind-driven ambient dust/ash) â"€â"€
 
+                        var ambientPartMesh = null;
+                        var ambientPartVelocities = null;
                         if (sel.terrainType === 'desert' || sel.terrainType === 'volcanic') {
 
-                          var partCount = 200;
+                          var partCount = 300;
 
                           var partGeo = new THREE.BufferGeometry();
 
                           var partPos = new Float32Array(partCount * 3);
+                          ambientPartVelocities = new Float32Array(partCount * 3);
 
                           for (var pi = 0; pi < partCount; pi++) {
 
-                            partPos[pi * 3] = (Math.random() - 0.5) * 60;
+                            partPos[pi * 3] = (Math.random() - 0.5) * 80;
 
-                            partPos[pi * 3 + 1] = Math.random() * 8;
+                            partPos[pi * 3 + 1] = Math.random() * 10;
 
-                            partPos[pi * 3 + 2] = (Math.random() - 0.5) * 60;
+                            partPos[pi * 3 + 2] = (Math.random() - 0.5) * 80;
+
+                            // Initial velocities — wind direction + random drift
+                            ambientPartVelocities[pi * 3] = (Math.random() - 0.3) * 0.04; // slight eastward bias
+                            ambientPartVelocities[pi * 3 + 1] = (Math.random() - 0.5) * 0.008; // gentle vertical drift
+                            ambientPartVelocities[pi * 3 + 2] = (Math.random() - 0.5) * 0.02;
 
                           }
 
@@ -5164,7 +5181,11 @@ const d = labToolData.solarSystem;
 
                           var partColor = sel.terrainType === 'volcanic' ? 0xff6600 : 0xc9a06a;
 
-                          scene.add(new THREE.Points(partGeo, new THREE.PointsMaterial({ color: partColor, size: 0.05, transparent: true, opacity: 0.4 })));
+                          ambientPartMesh = new THREE.Points(partGeo, new THREE.PointsMaterial({
+                            color: partColor, size: sel.terrainType === 'volcanic' ? 0.07 : 0.05,
+                            transparent: true, opacity: 0.45
+                          }));
+                          scene.add(ambientPartMesh);
 
                         }
 
@@ -5700,6 +5721,7 @@ const d = labToolData.solarSystem;
 
                         var poiMeshes = [];
 
+                        var poiLabelMeshes = [];
                         pois.forEach(function (poi, idx) {
 
                           var poiGeo = new THREE.SphereGeometry(0.3, 8, 8);
@@ -5708,7 +5730,8 @@ const d = labToolData.solarSystem;
 
                           var poiMesh = new THREE.Mesh(poiGeo, poiMat);
 
-                          poiMesh.position.set(poi.x, isOcean ? -10 : isGas ? 3 : 1.5, poi.z);
+                          var poiY = isOcean ? -10 : isGas ? 3 : 1.5;
+                          poiMesh.position.set(poi.x, poiY, poi.z);
 
                           poiMesh._poiIdx = idx;
 
@@ -5733,6 +5756,32 @@ const d = labToolData.solarSystem;
                           scene.add(ringMesh);
 
                           poiMeshes.push(ringMesh);
+
+                          // 3D text label above POI (canvas-textured plane, billboards toward camera)
+                          var labelCv = document.createElement('canvas');
+                          labelCv.width = 256; labelCv.height = 48;
+                          var lCtx = labelCv.getContext('2d');
+                          lCtx.fillStyle = 'rgba(0,0,0,0.65)';
+                          lCtx.roundRect(0, 0, 256, 48, 8); lCtx.fill();
+                          lCtx.fillStyle = '#fbbf24';
+                          lCtx.font = 'bold 16px system-ui, sans-serif';
+                          lCtx.textAlign = 'center';
+                          // Truncate long names
+                          var labelText = poi.name.length > 28 ? poi.name.substring(0, 26) + '...' : poi.name;
+                          lCtx.fillText(labelText, 128, 20);
+                          lCtx.fillStyle = '#94a3b8';
+                          lCtx.font = '11px system-ui, sans-serif';
+                          var distLabel = Math.round(Math.sqrt(poi.x * poi.x + poi.z * poi.z) * scaleFactor) + 'm from origin';
+                          lCtx.fillText(distLabel, 128, 38);
+                          var labelTex = new THREE.CanvasTexture(labelCv);
+                          var labelGeo2 = new THREE.PlaneGeometry(3.5, 0.7);
+                          var labelMat2 = new THREE.MeshBasicMaterial({ map: labelTex, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthTest: false });
+                          var labelMesh = new THREE.Mesh(labelGeo2, labelMat2);
+                          labelMesh.position.set(poi.x, poiY + 1.5, poi.z);
+                          labelMesh._poiLabelIdx = idx;
+                          labelMesh.renderOrder = 999;
+                          scene.add(labelMesh);
+                          poiLabelMeshes.push(labelMesh);
 
                         });
 
@@ -6785,30 +6834,85 @@ const d = labToolData.solarSystem;
 
 
 
+                          // ═══ Ambient particle wind animation ═══
+                          if (ambientPartMesh && ambientPartVelocities) {
+                            var apArr = ambientPartMesh.geometry.attributes.position.array;
+                            var isStormActive = sel.terrainType === 'desert' && !isOcean && (tick3d % 1800) > 1500;
+                            var windMultiplier = isStormActive ? 4.0 : 1.0;
+                            var gustPhase = Math.sin(tick3d * 0.003) * 0.5 + Math.sin(tick3d * 0.0017) * 0.3;
+                            for (var api = 0; api < apArr.length; api += 3) {
+                              // Apply velocity + wind gusts
+                              apArr[api] += ambientPartVelocities[api] * windMultiplier + gustPhase * 0.008 * windMultiplier;
+                              apArr[api + 1] += ambientPartVelocities[api + 1];
+                              apArr[api + 2] += ambientPartVelocities[api + 2] * windMultiplier;
+                              // Recycle particles that drift out of range
+                              if (apArr[api] > playerPos.x + 45) apArr[api] = playerPos.x - 45;
+                              if (apArr[api] < playerPos.x - 45) apArr[api] = playerPos.x + 45;
+                              if (apArr[api + 2] > playerPos.z + 45) apArr[api + 2] = playerPos.z - 45;
+                              if (apArr[api + 2] < playerPos.z - 45) apArr[api + 2] = playerPos.z + 45;
+                              // Keep vertical range
+                              if (apArr[api + 1] > 12) apArr[api + 1] = 0.2;
+                              if (apArr[api + 1] < 0) apArr[api + 1] = 10;
+                            }
+                            // Opacity pulses during storms
+                            ambientPartMesh.material.opacity = isStormActive ? 0.7 : 0.4;
+                            ambientPartMesh.material.size = isStormActive ? 0.1 : (sel.terrainType === 'volcanic' ? 0.07 : 0.05);
+                            ambientPartMesh.geometry.attributes.position.needsUpdate = true;
+                          }
+
                           // ═══ Planet-Specific Environmental Events ═══
 
-                          // Mars: periodic dust storm that reduces visibility
+                          // Mars: periodic dust storm that reduces visibility + lateral wind push
                           if (sel.terrainType === 'desert' && !isOcean) {
                             var dustCycle = tick3d % 1800; // ~30 sec cycle at 60fps
                             if (dustCycle > 1500) { // storm active for last 5 sec
                               var stormIntensity = (dustCycle - 1500) / 300;
                               var stormFade = dustCycle > 1700 ? (1800 - dustCycle) / 100 : stormIntensity;
                               if (scene.fog) {
-                                scene.fog.density = 0.008 + stormFade * 0.025;
+                                scene.fog.density = 0.008 + stormFade * 0.04; // heavier fog
                               }
                               // Tint scene reddish during storm
-                              renderer.setClearColor(new THREE.Color('#c4856b').lerp(new THREE.Color('#8b3a1a'), stormFade * 0.5));
+                              renderer.setClearColor(new THREE.Color('#c4856b').lerp(new THREE.Color('#6b2010'), stormFade * 0.6));
+                              // Lateral wind push on rover during storm
+                              var windPush = stormFade * 0.015;
+                              playerPos.x += Math.sin(tick3d * 0.008) * windPush;
+                              playerPos.z += Math.cos(tick3d * 0.006) * windPush * 0.7;
+                              // Camera shake in first-person
+                              if (!thirdPerson) {
+                                camera.position.x += Math.sin(tick3d * 0.15) * stormFade * 0.008;
+                                camera.position.y += Math.cos(tick3d * 0.12) * stormFade * 0.005;
+                              }
                             } else if (scene.fog) {
                               scene.fog.density = 0.008;
                             }
                           }
 
-                          // Venus: acid rain particles and heat shimmer
+                          // Venus: acid rain particles + heat shimmer + volcanic lightning
                           if (sel.terrainType === 'volcanic') {
                             // Heat shimmer: slight camera position wobble
                             if (!thirdPerson) {
                               camera.position.x += Math.sin(tick3d * 0.05) * 0.003;
                               camera.position.y += Math.cos(tick3d * 0.07) * 0.002;
+                            }
+                            // Acid rain streaks (animate existing particles as falling rain)
+                            if (ambientPartMesh) {
+                              var rainArr = ambientPartMesh.geometry.attributes.position.array;
+                              for (var ri = 0; ri < rainArr.length; ri += 3) {
+                                rainArr[ri + 1] -= 0.06; // fast rain fall
+                                rainArr[ri] += Math.sin(tick3d * 0.01 + ri) * 0.003; // slight wind drift
+                                if (rainArr[ri + 1] < 0) {
+                                  rainArr[ri + 1] = 8 + Math.random() * 4;
+                                  rainArr[ri] = playerPos.x + (Math.random() - 0.5) * 50;
+                                  rainArr[ri + 2] = playerPos.z + (Math.random() - 0.5) * 50;
+                                }
+                              }
+                              ambientPartMesh.geometry.attributes.position.needsUpdate = true;
+                            }
+                            // Periodic sulfuric lightning flash
+                            if (tick3d % 900 < 3) {
+                              var vFlashIntensity = 1 - (tick3d % 900) / 3;
+                              renderer.setClearColor(new THREE.Color('#ffcc44').lerp(new THREE.Color(sel.skyColor || '#c25a00'), 1 - vFlashIntensity * 0.4));
+                              if (!thirdPerson) camera.position.y += vFlashIntensity * 0.01;
                             }
                           }
 
@@ -6827,11 +6931,20 @@ const d = labToolData.solarSystem;
                             }
                           }
 
-                          // Saturn rings shimmer overhead
+                          // Saturn rings shimmer + slow rotation + shadow bands
                           if (typeof saturnRingMeshes !== 'undefined' && saturnRingMeshes.length > 0) {
                             saturnRingMeshes.forEach(function(rm, ri2) {
                               rm.material.opacity = 0.2 + Math.sin(tick3d * 0.005 + ri2 * 0.5) * 0.05;
+                              // Slow orbital rotation — rings drift across the sky
+                              rm.rotation.z += 0.0001 + ri2 * 0.00003;
+                              // Subtle tilt oscillation (precession effect)
+                              rm.rotation.x = Math.PI / 2 + 0.3 + Math.sin(tick3d * 0.0003 + ri2) * 0.02;
                             });
+                            // Ring shadow bands on terrain — periodic light dimming
+                            if (sunDir && tick3d % 4 === 0) {
+                              var ringShadow = Math.abs(Math.sin(tick3d * 0.001)) * 0.15;
+                              sunDir.intensity = Math.max(0.5, 1.0 - ringShadow);
+                            }
                           }
 
                           // Mars dust devils spin and wander
@@ -6962,6 +7075,49 @@ const d = labToolData.solarSystem;
                               flash.position.set(playerPos.x + (Math.random() - 0.5) * 40, playerPos.y - Math.random() * 5, playerPos.z + (Math.random() - 0.5) * 40);
                               scene.add(flash);
                               setTimeout(function() { scene.remove(flash); flash.dispose(); }, 150);
+                            }
+
+                            // ═══ Great Red Spot Proximity Encounter (Jupiter) ═══
+                            if (sel.name === 'Jupiter' || sel.name === t('stem.solar_sys.jupiter')) {
+                              // GRS storm vortex is at (30, -4, -20)
+                              var grsDist = Math.sqrt(Math.pow(playerPos.x - 30, 2) + Math.pow(playerPos.z + 20, 2));
+                              if (grsDist < 25) {
+                                var grsIntensity = Math.max(0, 1 - grsDist / 25);
+                                // Spiraling vortex pull toward eye
+                                var grsAngle = Math.atan2(playerPos.z + 20, playerPos.x - 30);
+                                var tangentialPull = grsIntensity * 0.012;
+                                playerPos.x += Math.cos(grsAngle + Math.PI * 0.4) * tangentialPull;
+                                playerPos.z += Math.sin(grsAngle + Math.PI * 0.4) * tangentialPull;
+                                // Intense turbulence near vortex
+                                if (grsIntensity > 0.3) {
+                                  var turbJolt = grsIntensity * 0.02;
+                                  playerPos.x += (Math.random() - 0.5) * turbJolt;
+                                  playerPos.z += (Math.random() - 0.5) * turbJolt;
+                                  // Camera shake
+                                  if (!thirdPerson) {
+                                    camera.position.x += Math.sin(tick3d * 0.2) * grsIntensity * 0.01;
+                                    camera.position.y += Math.cos(tick3d * 0.17) * grsIntensity * 0.008;
+                                  }
+                                }
+                                // Fog color shifts to GRS orange-red
+                                if (scene.fog && grsIntensity > 0.2) {
+                                  var grsColor = new THREE.Color('#c85028').lerp(new THREE.Color(zone.color), 1 - grsIntensity * 0.6);
+                                  scene.fog.color.lerp(grsColor, 0.05);
+                                  scene.fog.density = Math.max(scene.fog.density, 0.003 + grsIntensity * 0.02);
+                                }
+                                // Frequent lightning within the storm
+                                if (grsIntensity > 0.4 && Math.random() < 0.03 * grsIntensity) {
+                                  var grsFlash = new THREE.PointLight(0xffcc44, 4, 60);
+                                  grsFlash.position.set(30 + (Math.random() - 0.5) * 20, playerPos.y + (Math.random() - 0.5) * 4, -20 + (Math.random() - 0.5) * 20);
+                                  scene.add(grsFlash);
+                                  setTimeout(function() { scene.remove(grsFlash); grsFlash.dispose(); }, 120);
+                                }
+                                // Warning when very close
+                                if (grsIntensity > 0.7 && gasWarningTimer <= 0) {
+                                  gasWarningText = '\uD83C\uDF00 GREAT RED SPOT! Extreme vortex winds — 680 km/h! Steer clear of the eye!';
+                                  gasWarningTimer = 180;
+                                }
+                              }
                             }
 
                             // Sample orb pulse animation + collection detection
@@ -7101,6 +7257,13 @@ const d = labToolData.solarSystem;
                                 bl.position.x = bl._bioBaseX + Math.sin(tick3d * 0.005 + bl._bioPhase) * 3;
                                 bl.position.y = bl._bioBaseY + Math.sin(tick3d * 0.008 + bl._bioPhase * 2) * 1;
                                 if (bl._orbMesh) bl._orbMesh.position.copy(bl.position);
+                              });
+                            }
+                            // Coral bioluminescence — glow intensifies in deeper water
+                            if (typeof coralLights !== 'undefined' && coralLights.length > 0) {
+                              var depthGlow = Math.max(0, Math.min(1, (-playerPos.y - 2) / 10));
+                              coralLights.forEach(function(cl2) {
+                                cl2.intensity = depthGlow * (0.25 + Math.sin(tick3d * 0.02 + cl2._coralPhase) * 0.15);
                               });
                             }
 
