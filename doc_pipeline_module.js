@@ -978,20 +978,21 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     });
 
     // 38. Add lang attribute to common non-English text patterns
-    // (Detect Spanish, French, Arabic script and wrap in lang spans)
-    accessibleHtml = accessibleHtml.replace(/([\u0600-\u06FF]{5,})/g, (match) => {
+    // (Detect Arabic script and wrap in lang spans — skip if already inside a lang="ar" tag)
+    accessibleHtml = accessibleHtml.replace(/([\u0600-\u06FF]{5,})/g, (match, offset) => {
+      // Check if this match is already inside a lang="ar" span (look back for unclosed tag)
+      var preceding = accessibleHtml.substring(Math.max(0, offset - 200), offset);
+      if (/lang=["']ar["'][^>]*>[^<]*$/i.test(preceding)) return match; // already tagged
       aiFixCount++;
       return `<span lang="ar">${match}</span>`;
     });
 
     // 39. Ensure all <ul>/<ol> have role="list" for Safari VoiceOver compatibility
+    // Safari strips list semantics from styled lists even without list-style:none.
+    // Always add role="list" to ensure screen readers announce list structure.
     accessibleHtml = accessibleHtml.replace(/<(ul|ol)(?![^>]*role=)([^>]*)>/gi, (match, tag, attrs) => {
-      // Only add if list-style is set to none (Safari bug requires explicit role)
-      if (/list-style\s*:\s*none/i.test(match) || /list-style-type\s*:\s*none/i.test(accessibleHtml)) {
-        aiFixCount++;
-        return `<${tag} role="list"${attrs}>`;
-      }
-      return match;
+      aiFixCount++;
+      return `<${tag} role="list"${attrs}>`;
     });
 
     if (aiFixCount > 0) log(`Applied ${aiFixCount} deterministic fixes`);
