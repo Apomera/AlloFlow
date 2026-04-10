@@ -653,11 +653,16 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     // ── Phase 3b: Deterministic a11y fixes (full set — mirroring single-file pipeline) ──
     let aiFixCount = 0;
 
-    // 1. Missing alt on images
+    // 1. Missing alt on images — derive from src/title or add descriptive placeholder
     accessibleHtml = accessibleHtml.replace(/<img([^>]*)>/gi, (match, attrs) => {
       if (/alt\s*=/.test(attrs)) return match;
       aiFixCount++;
-      return `<img alt="Document image"${attrs}>`;
+      var srcMatch = attrs.match(/src\s*=\s*["']([^"']+)["']/i);
+      var titleMatch = attrs.match(/title\s*=\s*["']([^"']+)["']/i);
+      var altText = 'Image';
+      if (titleMatch && titleMatch[1]) { altText = titleMatch[1]; }
+      else if (srcMatch && srcMatch[1]) { var fname = srcMatch[1].split('/').pop().split('?')[0].replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').trim(); if (fname && fname.length > 2 && !/^(img|image|photo|pic|figure)\d*$/i.test(fname)) altText = fname.charAt(0).toUpperCase() + fname.slice(1); }
+      return `<img alt="${altText}"${attrs}>`;
     });
 
     // 2. Ensure exactly one h1
@@ -975,14 +980,25 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       return `<figure aria-label="${label}"${attrs}>${content}</figure>`;
     });
 
-    // 38. Add lang attribute to common non-English text patterns
-    // (Detect Arabic script and wrap in lang spans — skip if already inside a lang="ar" tag)
-    accessibleHtml = accessibleHtml.replace(/([\u0600-\u06FF]{5,})/g, (match, offset) => {
-      // Check if this match is already inside a lang="ar" span (look back for unclosed tag)
-      var preceding = accessibleHtml.substring(Math.max(0, offset - 200), offset);
-      if (/lang=["']ar["'][^>]*>[^<]*$/i.test(preceding)) return match; // already tagged
-      aiFixCount++;
-      return `<span lang="ar">${match}</span>`;
+    // 38. Add lang attribute to non-English text patterns (WCAG 3.1.2: Language of Parts)
+    // Detect script-based languages and wrap in lang spans. Skip already-tagged content.
+    var langPatterns = [
+      { regex: /([\u0600-\u06FF]{5,})/g, lang: 'ar' },        // Arabic
+      { regex: /([\u4E00-\u9FFF]{3,})/g, lang: 'zh' },        // Chinese (CJK Unified)
+      { regex: /([\u3040-\u309F\u30A0-\u30FF]{3,})/g, lang: 'ja' }, // Japanese (Hiragana + Katakana)
+      { regex: /([\uAC00-\uD7AF]{3,})/g, lang: 'ko' },        // Korean (Hangul)
+      { regex: /([\u0900-\u097F]{5,})/g, lang: 'hi' },        // Hindi (Devanagari)
+      { regex: /([\u0E00-\u0E7F]{5,})/g, lang: 'th' },        // Thai
+      { regex: /([\u0400-\u04FF]{5,})/g, lang: 'ru' },        // Russian (Cyrillic)
+      { regex: /([\u0590-\u05FF]{5,})/g, lang: 'he' }         // Hebrew
+    ];
+    langPatterns.forEach(function(lp) {
+      accessibleHtml = accessibleHtml.replace(lp.regex, function(match, p1, offset) {
+        var preceding = accessibleHtml.substring(Math.max(0, offset - 200), offset);
+        if (new RegExp('lang=["\']' + lp.lang + '["\'][^>]*>[^<]*$', 'i').test(preceding)) return match;
+        aiFixCount++;
+        return '<span lang="' + lp.lang + '">' + match + '</span>';
+      });
     });
 
     // 39. Ensure all <ul>/<ol> have role="list" for Safari VoiceOver compatibility
@@ -2874,28 +2890,41 @@ ${currentHtml.substring(0, 20000)}
       };
 
       // ── Step 2b: Extract structured content as JSON ──
-      const jsonPrompt = `You are a document structure analyst. Extract ALL content from this PDF as a structured JSON array of content blocks.
+      const jsonPrompt = `You are a WCAG 2.1 AA accessibility specialist extracting a PDF into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.
 
-Each block must be one of these types:
-- {"type":"banner","title":"Document Title","subtitle":"optional subtitle"} — for title/header banners
-- {"type":"h1","text":"Title","id":"slug-id"}
-- {"type":"h2","text":"Section Title","id":"slug-id"}
-- {"type":"h3","text":"Subsection Title","id":"slug-id"}
-- {"type":"p","text":"Paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>links</a>"}
-- {"type":"ul","items":["item 1","item 2"]}
-- {"type":"ol","items":["step 1","step 2"]}
-- {"type":"table","caption":"Table Title","headers":["Col 1","Col 2"],"rows":[["data","data"],["data","data"]]}
-- {"type":"image","description":"detailed description","alt":"brief alt text"}
-- {"type":"blockquote","text":"quoted text"}
-- {"type":"hr"} — for section breaks
+Extract ALL content as a JSON array of content blocks. Each block must be one of these types:
 
-RULES:
-- Include EVERY piece of content from the document. Do NOT summarize.
-- Preserve the original reading order exactly.
-- Use <strong>, <em>, <a href="url"> within text content for formatting.
-- For tables: include ALL rows, not just a sample. Every data cell matters.
-- For images: describe them thoroughly for alt text.
-- Generate slug IDs for h2/h3 (e.g., "program-guide", "course-categories").
+BLOCK TYPES:
+- {"type":"banner","title":"Document Title","subtitle":"optional subtitle"} — the document's main title
+- {"type":"h1","text":"Title","id":"slug-id"} — ONE per document only (WCAG 2.4.2: page titled)
+- {"type":"h2","text":"Section Title","id":"slug-id"} — major sections. Headings MUST NOT skip levels (no h1→h3)
+- {"type":"h3","text":"Subsection Title","id":"slug-id"} — subsections under h2
+- {"type":"p","text":"Full paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>descriptive link text</a>"}
+- {"type":"ul","items":["item 1","item 2"]} — unordered lists (use for bullet points)
+- {"type":"ol","items":["step 1","step 2"]} — ordered lists (use for numbered sequences)
+- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row
+- {"type":"image","description":"Detailed description of what the image shows and why it matters in context (2-3 sentences)","alt":"Concise alternative text under 125 characters that conveys the image's purpose, not just its appearance"}
+- {"type":"blockquote","text":"quoted text","cite":"attribution if known"}
+- {"type":"hr"} — for section breaks between major content areas
+
+ACCESSIBILITY RULES (WCAG 2.1 AA):
+- Include EVERY piece of content from the document. Do NOT summarize or omit.
+- Preserve the LOGICAL reading order (which may differ from visual layout).
+  For multi-column layouts: determine the intended reading sequence, don't just read left-to-right across columns.
+- Heading hierarchy MUST be sequential: h1 → h2 → h3. Never skip a level.
+  If the PDF uses bold text as a heading, identify it as such and assign the correct level.
+- For images: "alt" should answer "what information does this image convey?" not "what does it look like?"
+  BAD: "Image of a graph" / "Photo" / "image1.png"
+  GOOD: "Bar graph showing enrollment increased 45% from 2020 to 2024"
+  GOOD: "Portrait of Dr. Maria Chen, lead researcher"
+  If the image is decorative (borders, spacers), use: {"type":"image","alt":"","description":"decorative"}
+- For tables: ALWAYS include a caption that describes what data the table presents.
+  Headers must be real column/row labels, not just the first row of data.
+  For complex tables with merged cells, split into simpler tables if possible.
+- For links: link text must describe the destination.
+  BAD: <a href="url">click here</a> / <a href="url">link</a>
+  GOOD: <a href="url">Download the 2024 Annual Report (PDF)</a>
+- Generate slug IDs for all headings (e.g., "program-guide", "course-categories").
 
 Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 
