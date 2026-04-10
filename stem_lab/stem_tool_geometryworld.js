@@ -978,31 +978,68 @@
     return h;
   }
 
-  // ── AI World Generation Prompt ──
-  var AI_WORLD_PROMPT = 'You are a geometry lesson designer for a 3D block-based math world (like Minecraft). '
-    + 'The teacher wants a lesson about: "{TOPIC}"\n\n'
-    + 'Generate a JSON object with this exact structure:\n'
+  // ── AI World Generation Prompts (multi-pass) ──
+  var AI_WORLD_PROMPT_BASE = 'You are a geometry lesson designer for a 3D block-based math world (like Minecraft Education). '
+    + 'Target grade level: {GRADE}. Topic: "{TOPIC}"\n\n'
+    + 'Generate a JSON object with this EXACT structure:\n'
     + '{\n'
     + '  "title": "Lesson Title",\n'
-    + '  "description": "Brief description",\n'
-    + '  "spawnPoint": [x, y, z],\n'
-    + '  "objectives": ["objective 1", "objective 2"],\n'
-    + '  "ground": { "xMin": -4, "xMax": 20, "zMin": -4, "zMax": 20, "y": 0, "type": "grass" },\n'
+    + '  "description": "Brief description for grade {GRADE} students",\n'
+    + '  "spawnPoint": [2, 3, 2],\n'
+    + '  "objectives": ["objective 1", "objective 2", "objective 3"],\n'
+    + '  "ground": { "xMin": -4, "xMax": 24, "zMin": -4, "zMax": 24, "y": 0, "type": "grass" },\n'
     + '  "structures": [\n'
-    + '    { "type": "fill", "x1": 0, "y1": 1, "z1": 0, "x2": 4, "y2": 3, "z2": 2, "block": "diamond" }\n'
+    + '    { "type": "fill", "x1": 0, "y1": 0, "z1": 0, "x2": 8, "y2": 0, "z2": 8, "block": "stone" },\n'
+    + '    { "type": "fill", "x1": 2, "y1": 1, "z1": 2, "x2": 6, "y2": 3, "z2": 4, "block": "diamond" }\n'
     + '  ],\n'
     + '  "npcs": [\n'
     + '    { "position": [x, y, z], "name": "Name", "color": 8048861,\n'
-    + '      "dialogue": "What the NPC says",\n'
-    + '      "question": { "text": "Question?", "choices": ["A", "B", "C"], "correct": 0 } }\n'
+    + '      "dialogue": "What the NPC says — explain the concept first!",\n'
+    + '      "question": null }\n'
     + '  ]\n'
     + '}\n\n'
-    + 'Block types: stone, grass, wood, diamond, gold, sand, glass.\n'
-    + 'NPC colors: 8048861 (purple), 2461147 (blue), 1484836 (green), 16096015 (amber).\n'
-    + 'Create 2-4 structures and 2-4 NPCs with math questions about volume, dimensions, or area.\n'
-    + 'Structures should use "fill" commands with x1,y1,z1 to x2,y2,z2 coordinates.\n'
-    + 'Keep coordinates between -4 and 24. Ground is y=0, build above y=0.\n'
-    + 'Return ONLY the JSON object, no markdown, no explanation.';
+    + 'RULES:\n'
+    + '- Block types: stone, grass, wood, diamond, gold, sand, glass, brick, ice, water\n'
+    + '- NPC colors: 8048861 (purple), 2461147 (blue), 1484836 (green), 16096015 (amber), 14427142 (red)\n'
+    + '- Create 3-5 structures demonstrating the topic concept\n'
+    + '- Create 3-5 NPCs: first NPC is a guide (question: null), others have questions\n'
+    + '- Questions MUST have exactly 3 choices with "correct" as a 0-based index\n'
+    + '- All coordinates between -4 and 24. Ground is y=0. Build structures starting at y=1.\n'
+    + '- Place NPCs at y = highest_block + 1 so they float above structures\n'
+    + '- ALWAYS include a ground/floor structure first (y1=0, y2=0)\n'
+    + '- Make dimensions appropriate for grade {GRADE} (grades 3-4: single digits, 5-6: double digits, 7+: fractions/composites)\n'
+    + '- Return ONLY valid JSON, no markdown fences, no explanation.\n';
+
+  var AI_REFINE_PROMPT = 'You are improving an existing 3D geometry lesson. Here is the current lesson JSON:\n\n'
+    + '{LESSON_JSON}\n\n'
+    + 'The teacher wants you to: {REFINEMENT}\n\n'
+    + 'Return the COMPLETE improved JSON (same structure), not a diff. Fix any issues:\n'
+    + '- Ensure all coordinates are valid (between -4 and 24)\n'
+    + '- Ensure NPCs are positioned above their structures\n'
+    + '- Ensure questions have exactly 3 choices\n'
+    + '- Add more detail to NPC dialogues (explain concepts, give hints)\n'
+    + '- Make structures more interesting and varied\n'
+    + 'Return ONLY the valid JSON.';
+
+  var AI_FOLLOWUP_PROMPT = 'You are adding scaffolded follow-up questions to a geometry lesson. '
+    + 'Each NPC with a question should get a "followUp" array that breaks the concept into steps.\n\n'
+    + 'Current lesson JSON:\n{LESSON_JSON}\n\n'
+    + 'For each NPC that has a "question" object, add a "followUp" array inside the question:\n'
+    + '"question": { "text": "...", "choices": [...], "correct": 0,\n'
+    + '  "followUp": [\n'
+    + '    { "text": "Step 2 question", "choices": ["A","B","C"], "correct": 0 },\n'
+    + '    { "text": "Final step", "choices": ["A","B","C"], "correct": 0 }\n'
+    + '  ]\n'
+    + '}\n\n'
+    + 'RULES for follow-ups:\n'
+    + '- Decompose the main question into 2-3 scaffolded steps\n'
+    + '- Step 1: identify ONE dimension (e.g., "How many blocks long?")\n'
+    + '- Step 2: identify another dimension or calculate a partial result\n'
+    + '- Final step: combine to get the answer (e.g., "5 x 3 x 4 = ?")\n'
+    + '- Each step has exactly 3 choices with "correct" as 0-based index\n'
+    + '- Do NOT change the existing question text or structure — ONLY add followUp arrays\n'
+    + '- NPCs with question: null should stay null\n'
+    + 'Return the COMPLETE lesson JSON with follow-ups added. ONLY valid JSON.';
 
   // ══════════════════════════════════════════════════════════════
   // ── Tool Registration ──
@@ -1041,6 +1078,14 @@
       var answeredNpcs = d.answeredNpcs || {};
       var aiPrompt = d.aiPrompt || '';
       var aiGenerating = d.aiGenerating || false;
+      var aiPassCount = d.aiPassCount || 2; // 1=quick, 2=refine, 3=refine+followups
+      var aiGradeLevel = d.aiGradeLevel || '4';
+      var aiCurrentPass = d.aiCurrentPass || 0;
+      var showMyLessons = d.showMyLessons || false;
+      var showLessonEditor = d.showLessonEditor || false;
+      var lessonEditorJson = d.lessonEditorJson || '';
+      var aiRefinePrompt = d.aiRefinePrompt || '';
+      var lastGeneratedLesson = d.lastGeneratedLesson || null;
       var activeLesson = d.activeLesson || 'volumeExplorer';
       var measureResult = d.measureResult || null;
       var npcChatInput = d.npcChatInput || '';
@@ -2826,24 +2871,116 @@
         );
       }
 
-      // AI generation handler
+      // ── Helper: parse AI JSON response ──
+      function parseAiJson(result) {
+        var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        // Handle cases where AI wraps in extra text
+        var start = cleaned.indexOf('{');
+        var end = cleaned.lastIndexOf('}');
+        if (start >= 0 && end > start) cleaned = cleaned.substring(start, end + 1);
+        return JSON.parse(cleaned);
+      }
+
+      // ── Helper: save lesson to localStorage library ──
+      function saveToMyLessons(lesson) {
+        try {
+          var lib = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]');
+          lesson._savedAt = Date.now();
+          lesson._id = 'ai_' + Date.now();
+          lib.unshift(lesson);
+          if (lib.length > 20) lib = lib.slice(0, 20); // Keep last 20
+          localStorage.setItem('gw_my_lessons', JSON.stringify(lib));
+        } catch(e) { console.warn('[GeoWorld] Failed to save lesson:', e); }
+      }
+      function getMyLessons() {
+        try { return JSON.parse(localStorage.getItem('gw_my_lessons') || '[]'); } catch(e) { return []; }
+      }
+      function deleteMyLesson(id) {
+        try {
+          var lib = getMyLessons().filter(function(l) { return l._id !== id; });
+          localStorage.setItem('gw_my_lessons', JSON.stringify(lib));
+        } catch(e) {}
+      }
+
+      // ── Multi-pass AI generation handler ──
       var generateWorld = function() {
         if (!callGemini || !aiPrompt.trim()) return;
+        var passes = aiPassCount;
+        var grade = aiGradeLevel;
+        upd({ aiGenerating: true, aiCurrentPass: 1 });
+
+        // Pass 1: Generate base lesson
+        var p1Prompt = AI_WORLD_PROMPT_BASE.replace(/\{TOPIC\}/g, aiPrompt.trim()).replace(/\{GRADE\}/g, grade);
+        callGemini(p1Prompt, true).then(function(r1) {
+          var lesson;
+          try { lesson = parseAiJson(r1); } catch(e) {
+            if (addToast) addToast('Pass 1 failed: ' + e.message, 'error');
+            upd({ aiGenerating: false, aiCurrentPass: 0 }); return;
+          }
+
+          if (passes <= 1) {
+            // Single pass — load directly
+            finishGeneration(lesson);
+            return;
+          }
+
+          // Pass 2: Refine (improve structures, fix issues, enrich dialogues)
+          upd('aiCurrentPass', 2);
+          var p2Prompt = AI_REFINE_PROMPT
+            .replace('{LESSON_JSON}', JSON.stringify(lesson, null, 2))
+            .replace('{REFINEMENT}', 'Improve and polish the lesson: make structures more visually interesting, ensure NPC dialogues explain concepts clearly before asking questions, add descriptive objectives, and verify all coordinates are valid.');
+          callGemini(p2Prompt, true).then(function(r2) {
+            try { lesson = parseAiJson(r2); } catch(e) { /* keep pass 1 result */ }
+
+            if (passes <= 2) {
+              finishGeneration(lesson);
+              return;
+            }
+
+            // Pass 3: Add scaffolded follow-up questions
+            upd('aiCurrentPass', 3);
+            var p3Prompt = AI_FOLLOWUP_PROMPT.replace('{LESSON_JSON}', JSON.stringify(lesson, null, 2));
+            callGemini(p3Prompt, true).then(function(r3) {
+              try { lesson = parseAiJson(r3); } catch(e) { /* keep pass 2 result */ }
+              finishGeneration(lesson);
+            }).catch(function() { finishGeneration(lesson); });
+          }).catch(function() { finishGeneration(lesson); });
+        }).catch(function(e) {
+          if (addToast) addToast('AI generation failed: ' + (e.message || 'unknown error'), 'error');
+          upd({ aiGenerating: false, aiCurrentPass: 0 });
+        });
+      };
+
+      function finishGeneration(lesson) {
+        var eng = window[engineKey];
+        if (eng && lesson && lesson.structures) {
+          eng.loadLesson(lesson);
+          saveToMyLessons(lesson);
+          upd({ lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), aiGenerating: false, aiCurrentPass: 0, activeLesson: 'ai_generated' });
+          if (addToast) addToast('\uD83E\uDDF1 AI generated: ' + (lesson.title || 'New World') + ' (saved to My Lessons)', 'success');
+          if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'AI lesson generated');
+        } else {
+          upd({ aiGenerating: false, aiCurrentPass: 0 });
+          if (addToast) addToast('Generated lesson had no structures', 'error');
+        }
+      }
+
+      // ── Refine existing lesson with AI ──
+      var refineLesson = function() {
+        if (!callGemini || !aiRefinePrompt.trim() || !lastGeneratedLesson) return;
         upd('aiGenerating', true);
-        var prompt = AI_WORLD_PROMPT.replace('{TOPIC}', aiPrompt.trim());
+        var prompt = AI_REFINE_PROMPT
+          .replace('{LESSON_JSON}', JSON.stringify(lastGeneratedLesson, null, 2))
+          .replace('{REFINEMENT}', aiRefinePrompt.trim());
         callGemini(prompt, true).then(function(result) {
           try {
-            var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            var json = JSON.parse(cleaned);
-            var engine = window[engineKey];
-            if (engine && json.structures) {
-              engine.loadLesson(json);
-              if (addToast) addToast('\uD83E\uDDF1 AI generated: ' + (json.title || 'New World'), 'success');
-            }
-          } catch (e) {
-            if (addToast) addToast('Failed to parse AI world: ' + e.message, 'error');
+            var lesson = parseAiJson(result);
+            finishGeneration(lesson);
+            if (addToast) addToast('\u2728 Lesson refined!', 'success');
+          } catch(e) {
+            if (addToast) addToast('Refine failed: ' + e.message, 'error');
+            upd('aiGenerating', false);
           }
-          upd('aiGenerating', false);
         }).catch(function() { upd('aiGenerating', false); });
       };
 
@@ -3212,41 +3349,84 @@
             title: showTeacherView ? 'Close teacher dashboard' : 'Open real-time student progress dashboard',
             style: { background: showTeacherView ? '#dc2626' : '#1e293b', border: '1px solid ' + (showTeacherView ? '#f87171' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: showTeacherView ? '#fff' : '#f87171', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
           }, showTeacherView ? '\uD83D\uDCCA Live!' : '\uD83D\uDCCA Teacher'),
-          // AI generate section
-          callGemini && el('div', { style: { display: 'flex', gap: '4px' } },
+          // ── AI Lesson Generator (enhanced) ──
+          callGemini && el('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
             el('input', {
-              type: 'text', value: aiPrompt,
+              type: 'text', value: aiPrompt, 'aria-label': 'Describe a geometry lesson topic for AI generation',
               onChange: function(ev) { upd('aiPrompt', ev.target.value); },
               onKeyDown: function(ev) { if (ev.key === 'Enter') generateWorld(); },
-              placeholder: 'Describe a lesson...',
-              style: { width: '160px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit' }
+              placeholder: 'Describe a lesson topic...',
+              style: { width: '150px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit' }
             }),
+            // Grade level selector
+            el('select', {
+              'aria-label': 'Target grade level', value: aiGradeLevel,
+              onChange: function(ev) { upd('aiGradeLevel', ev.target.value); },
+              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 4px', color: '#94a3b8', fontSize: '10px' }
+            },
+              el('option', { value: '3' }, 'Gr 3'), el('option', { value: '4' }, 'Gr 4'),
+              el('option', { value: '5' }, 'Gr 5'), el('option', { value: '6' }, 'Gr 6'),
+              el('option', { value: '7' }, 'Gr 7'), el('option', { value: '8' }, 'Gr 8')
+            ),
+            // Depth (API calls) selector
+            el('select', {
+              'aria-label': 'Generation depth: number of AI passes', value: String(aiPassCount),
+              onChange: function(ev) { upd('aiPassCount', parseInt(ev.target.value)); },
+              title: '1=Quick (1 call), 2=Refined (2 calls), 3=Full scaffolding (3 calls)',
+              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 4px', color: '#94a3b8', fontSize: '10px' }
+            },
+              el('option', { value: '1' }, '\u26A1 Quick'), el('option', { value: '2' }, '\u2728 Refine'), el('option', { value: '3' }, '\uD83C\uDF1F Full')
+            ),
+            // Generate button (shows pass progress)
             el('button', {
-              onClick: generateWorld,
-              disabled: aiGenerating || !aiPrompt.trim(),
-              style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }
-            }, aiGenerating ? '\u23F3' : '\u2728 Generate'),
-            // Surprise Me button
+              onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
+              style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minWidth: '80px' }
+            }, aiGenerating ? '\u23F3 Pass ' + aiCurrentPass + '/' + aiPassCount : '\u2728 Generate'),
+            // Surprise Me
             el('button', {
               onClick: function() {
                 var topics = [
-                  'volume of rectangular prisms for 4th graders with a treasure hunt theme',
-                  'surface area of cubes for 6th graders in a space station',
+                  'volume of rectangular prisms with a treasure hunt theme',
+                  'surface area of cubes in a space station',
                   'comparing volumes of different containers in a kitchen',
-                  'building houses with specific room dimensions for an architecture class',
+                  'building houses with specific room dimensions for architecture',
                   'packing gifts into boxes for a holiday party',
-                  'designing a garden with rectangular flower beds of different volumes',
+                  'designing a garden with rectangular flower beds',
                   'exploring how many unit cubes fit inside larger structures',
-                  'a museum exhibit where each room demonstrates a different geometric concept'
+                  'a museum where each room demonstrates a geometric concept',
+                  'building a zoo with enclosures of specific volumes',
+                  'designing shipping containers for different products'
                 ];
-                var topic = topics[Math.floor(Math.random() * topics.length)];
-                upd('aiPrompt', topic);
-                if (addToast) addToast('\uD83C\uDFB2 Topic: ' + topic.slice(0, 50) + '...', 'info');
+                upd('aiPrompt', topics[Math.floor(Math.random() * topics.length)]);
               },
-              disabled: aiGenerating,
-              title: 'Generate a random lesson topic',
-              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 8px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
-            }, '\uD83C\uDFB2')
+              disabled: aiGenerating, title: 'Random topic',
+              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
+            }, '\uD83C\uDFB2'),
+            // My Lessons library button
+            el('button', {
+              onClick: function() { upd('showMyLessons', !showMyLessons); },
+              title: 'Browse saved AI-generated lessons',
+              style: { background: showMyLessons ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showMyLessons ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 8px', color: showMyLessons ? '#fff' : '#a78bfa', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
+            }, '\uD83D\uDCDA ' + getMyLessons().length)
+          ),
+          // ── Refine bar (shown when a lesson was just generated) ──
+          callGemini && lastGeneratedLesson && !aiGenerating && el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center', marginTop: '2px' } },
+            el('input', {
+              type: 'text', value: aiRefinePrompt, 'aria-label': 'Refine the generated lesson',
+              onChange: function(ev) { upd('aiRefinePrompt', ev.target.value); },
+              onKeyDown: function(ev) { if (ev.key === 'Enter') refineLesson(); },
+              placeholder: 'Refine: "Make it harder" / "Add more NPCs" / "Change theme to ocean"...',
+              style: { flex: 1, minWidth: '180px', background: '#1e293b', border: '1px solid #7c3aed33', borderRadius: '6px', padding: '4px 8px', color: '#e2e8f0', fontSize: '10px', fontFamily: 'inherit' }
+            }),
+            el('button', {
+              onClick: refineLesson, disabled: !aiRefinePrompt.trim(),
+              style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 }
+            }, '\uD83D\uDD04 Refine'),
+            el('button', {
+              onClick: function() { upd('showLessonEditor', !showLessonEditor); },
+              title: 'Edit the raw lesson JSON manually',
+              style: { background: showLessonEditor ? '#f59e0b' : '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 8px', color: showLessonEditor ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
+            }, '\u270F\uFE0F JSON')
           )
         ),
         // Help overlay
@@ -3313,6 +3493,79 @@
                 });
               })()
             )
+          )
+        ),
+        // ── My Lessons Library Panel ──
+        showMyLessons && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: '#cbd5e1', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
+          el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' } },
+            '\uD83D\uDCDA My Lessons (' + getMyLessons().length + ')',
+            el('button', { 'aria-label': 'Close My Lessons', onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+          ),
+          getMyLessons().length === 0 && el('div', { style: { color: '#64748b', fontSize: '10px', padding: '12px 0', textAlign: 'center' } }, 'No saved lessons yet. Generate one with AI!'),
+          getMyLessons().map(function(lesson, li) {
+            return el('div', { key: lesson._id || li, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '6px', background: 'rgba(30,41,59,0.5)', marginBottom: '4px', border: '1px solid rgba(100,116,139,0.15)' } },
+              el('div', { style: { flex: 1, minWidth: 0 } },
+                el('div', { style: { fontWeight: 700, fontSize: '11px', color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, lesson.title || 'Untitled'),
+                el('div', { style: { fontSize: '9px', color: '#64748b' } },
+                  (lesson.npcs || []).length + ' NPCs \u2022 ' + (lesson.structures || []).length + ' structures' + (lesson._savedAt ? ' \u2022 ' + new Date(lesson._savedAt).toLocaleDateString() : ''))
+              ),
+              el('button', {
+                onClick: function() {
+                  var eng = window[engineKey];
+                  if (eng) { eng.loadLesson(lesson); upd({ showMyLessons: false, lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), activeLesson: 'ai_generated' }); }
+                },
+                style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '4px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: 700, flexShrink: 0 }
+              }, '\u25B6'),
+              el('button', {
+                onClick: function() { deleteMyLesson(lesson._id); upd('showMyLessons', true); /* force re-render */ },
+                title: 'Delete this saved lesson',
+                style: { background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', flexShrink: 0, padding: '2px' }
+              }, '\u00d7')
+            );
+          })
+        ),
+        // ── JSON Lesson Editor Panel ──
+        showLessonEditor && lastGeneratedLesson && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
+          el('div', { style: { fontWeight: 800, color: '#f59e0b', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+            '\u270F\uFE0F Lesson JSON Editor',
+            el('button', { 'aria-label': 'Close editor', onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+          ),
+          el('p', { style: { color: '#94a3b8', fontSize: '9px', margin: '0 0 6px', lineHeight: 1.3 } }, 'Edit the lesson JSON directly. Change NPC dialogue, add questions, move structures. Click Apply to reload.'),
+          el('textarea', {
+            value: lessonEditorJson,
+            onChange: function(ev) { upd('lessonEditorJson', ev.target.value); },
+            style: { width: '100%', height: '250px', background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '8px', color: '#e2e8f0', fontSize: '10px', fontFamily: 'monospace', resize: 'vertical', lineHeight: 1.4 },
+            spellCheck: false
+          }),
+          el('div', { style: { display: 'flex', gap: '6px', marginTop: '6px' } },
+            el('button', {
+              onClick: function() {
+                try {
+                  var lesson = JSON.parse(lessonEditorJson);
+                  var eng = window[engineKey];
+                  if (eng && lesson.structures) {
+                    eng.loadLesson(lesson);
+                    saveToMyLessons(lesson);
+                    upd({ lastGeneratedLesson: lesson, showLessonEditor: false });
+                    if (addToast) addToast('\u2705 Lesson applied and saved!', 'success');
+                  }
+                } catch(e) {
+                  if (addToast) addToast('\u274C Invalid JSON: ' + e.message, 'error');
+                }
+              },
+              style: { flex: 1, background: '#22c55e', color: '#000', border: 'none', borderRadius: '6px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, '\u2705 Apply & Save'),
+            el('button', {
+              onClick: function() {
+                try {
+                  var formatted = JSON.stringify(JSON.parse(lessonEditorJson), null, 2);
+                  upd('lessonEditorJson', formatted);
+                } catch(e) {
+                  if (addToast) addToast('Cannot format: invalid JSON', 'error');
+                }
+              },
+              style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '6px 10px', color: '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+            }, '\uD83D\uDCCB Format')
           )
         ),
         // ── Creator Mode Panel ──
