@@ -566,8 +566,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ref: function(cvEl) {
                 if (!cvEl) return;
                 var ctx2 = cvEl.getContext('2d');
+                if (!ctx2) return;
                 var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 300;
                 cvEl.width = W * 2; cvEl.height = H * 2; ctx2.scale(2, 2);
+
+                // Polyfill roundRect for environments that lack it
+                if (!ctx2.roundRect) {
+                  ctx2.roundRect = function(x, y, w, h, r) {
+                    if (typeof r === 'number') r = [r, r, r, r];
+                    if (!Array.isArray(r)) r = [0, 0, 0, 0];
+                    var tl = r[0] || 0, tr = r[1] || r[0] || 0, br = r[2] || r[0] || 0, bl = r[3] || r[1] || r[0] || 0;
+                    this.moveTo(x + tl, y);
+                    this.lineTo(x + w - tr, y);
+                    this.arcTo(x + w, y, x + w, y + tr, tr);
+                    this.lineTo(x + w, y + h - br);
+                    this.arcTo(x + w, y + h, x + w - br, y + h, br);
+                    this.lineTo(x + bl, y + h);
+                    this.arcTo(x, y + h, x, y + h - bl, bl);
+                    this.lineTo(x, y + tl);
+                    this.arcTo(x, y, x + tl, y, tl);
+                    this.closePath();
+                  };
+                }
 
                 // Cancel previous animation if re-rendering
                 if (cvEl._beeAnimId) cancelAnimationFrame(cvEl._beeAnimId);
@@ -604,6 +624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
                 var tick = 0;
                 function drawHive() {
+                  try {
                   tick++;
                   ctx2.clearRect(0, 0, W, H);
 
@@ -836,6 +857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   ctx2.textAlign = 'center';
                   ctx2.fillText(gardenPollinators > 0 ? '\uD83C\uDF31 Garden bonus: +' + gardenBonus + '% foraging' : '\uD83C\uDF31 Plant pollinator garden for bonus!', W * 0.65, H - 6);
 
+                  } catch(e) { console.error('[Beehive] Canvas draw error:', e); }
                   cvEl._beeAnimId = requestAnimationFrame(drawHive);
                 }
                 drawHive();
