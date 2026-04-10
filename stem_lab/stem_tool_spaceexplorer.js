@@ -586,13 +586,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             // Calculate optimal % for quest tracking
             var optC = newDecLog.filter(function(x) { return x.quality === 'optimal'; }).length;
             var optPct = newDecLog.length > 0 ? Math.round(optC / newDecLog.length * 100) : 0;
+            // Track per-destination stats
+            var destStats = Object.assign({}, d.destStats || {});
+            var ds = destStats[destination.id] || { wins: 0, bestPct: 0, totalScience: 0 };
+            ds.wins += 1;
+            ds.bestPct = Math.max(ds.bestPct, optPct);
+            ds.totalScience += (newRes.science || 0);
+            destStats[destination.id] = ds;
             updAll({
               missionPhase: 'debrief',
               missionResult: 'success',
               completedMissions: completedMissions + 1,
               totalScience: totalScience + (newRes.science || 0),
               highestDifficulty: Math.max(highestDifficulty, destination.difficulty),
-              bestOptimalPct: Math.max(d.bestOptimalPct || 0, optPct)
+              bestOptimalPct: Math.max(d.bestOptimalPct || 0, optPct),
+              destStats: destStats
             });
           }, 1500);
         }
@@ -641,7 +649,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     return h('span', { key: i, className: 'text-[8px]' }, i < dest.difficulty ? '\u2B50' : '\u2606');
                   })
                 ),
-                h('p', { className: 'text-[9px] text-slate-400 leading-relaxed' }, locked ? 'Complete ' + dest.unlockAt + ' mission(s) to unlock' : dest.desc)
+                h('p', { className: 'text-[9px] text-slate-400 leading-relaxed' }, locked ? 'Complete ' + dest.unlockAt + ' mission(s) to unlock' : dest.desc),
+                // Per-destination stats (if any)
+                !locked && (function() {
+                  var stats = (d.destStats || {})[dest.id];
+                  if (!stats) return null;
+                  return h('div', { className: 'flex gap-2 mt-1 text-[8px] text-slate-500' },
+                    stats.wins > 0 && h('span', null, '\u2705 ' + stats.wins + 'x'),
+                    stats.bestPct > 0 && h('span', null, '\u2B50 ' + stats.bestPct + '%'),
+                    stats.totalScience > 0 && h('span', null, '\uD83D\uDD2C ' + stats.totalScience)
+                  );
+                })()
               );
             })
           )
@@ -775,7 +793,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('div', { className: 'flex justify-between items-center mb-2' },
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-sm' }, destination.emoji),
-                h('span', { className: 'text-xs font-bold text-white' }, destination.name)
+                h('span', { className: 'text-xs font-bold text-white' }, destination.name),
+                // Mini crew indicators
+                crew.length > 0 && h('div', { className: 'flex gap-0.5 ml-1' },
+                  crew.map(function(c) {
+                    return h('span', { key: c.name, title: c.name + ' (' + c.role + ')', className: 'text-[10px] cursor-default' }, c.emoji);
+                  })
+                )
               ),
               h('span', { className: 'text-[10px] font-mono text-slate-400' }, 'Turn ' + turn + '/' + maxTurns)
             ),
@@ -796,6 +820,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 );
               })
             )
+          ),
+
+          // Ship status canvas — shows destination planet + crew
+          !isGenerating && h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden border border-slate-700' },
+            h('canvas', {
+              style: { width: '100%', height: '120px', display: 'block' },
+              'aria-label': 'Mission view of ' + destination.name + ' — turn ' + turn + ' of ' + maxTurns,
+              ref: function(cvEl) {
+                if (!cvEl) return;
+                var ctx = cvEl.getContext('2d');
+                var W = cvEl.offsetWidth || 400, H = cvEl.offsetHeight || 120;
+                cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                // Static render (no animation loop needed — redraws on each React render)
+                ctx.fillStyle = '#020010'; ctx.fillRect(0, 0, W, H);
+                drawStarfield(ctx, W, H, turn * 100, 80);
+                // Planet (size based on mission progress)
+                var progress = Math.min(1, turn / maxTurns);
+                var planetR = 15 + progress * 35;
+                drawPlanet(ctx, W * 0.75, H * 0.5, planetR, destination, turn * 50);
+                // Ship silhouette (left side, approaching planet)
+                var shipX = W * 0.15 + progress * W * 0.35;
+                var shipY = H * 0.5 + Math.sin(turn * 0.5) * 5;
+                ctx.fillStyle = '#c0c8d0';
+                ctx.fillRect(shipX - 8, shipY - 2, 12, 4);
+                ctx.fillStyle = '#e8ecf0';
+                ctx.beginPath(); ctx.moveTo(shipX + 4, shipY); ctx.lineTo(shipX + 8, shipY - 3); ctx.lineTo(shipX + 8, shipY + 3); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = 'rgba(56,189,248,0.3)';
+                ctx.beginPath(); ctx.arc(shipX - 9, shipY, 3, 0, Math.PI * 2); ctx.fill();
+                // Crew avatars (bottom strip)
+                if (crew.length > 0) {
+                  ctx.font = '8px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                  crew.forEach(function(c, ci) {
+                    var cx2 = 25 + ci * 30;
+                    ctx.font = '12px serif'; ctx.fillText(c.emoji, cx2, H - 10);
+                  });
+                }
+                // Mission stage label
+                var stageLabel = turn < maxTurns * 0.3 ? 'Arrival Phase' : turn < maxTurns * 0.7 ? 'Exploration Phase' : 'Departure Phase';
+                ctx.font = 'bold 8px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#64748b';
+                ctx.fillText(stageLabel + ' \u2022 Turn ' + turn + '/' + maxTurns, W - 8, 12);
+                // Vignette
+                var vg = ctx.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.6);
+                vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,0.5)');
+                ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+              }
+            })
           ),
 
           // Event card
