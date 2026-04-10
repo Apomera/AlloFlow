@@ -103,6 +103,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       hazards: ['stellar flares', 'unknown biology', 'tidal locking', 'generation ship psychology'],
       scienceFocus: ['astrophysics', 'exoplanetology', 'generation ship sociology'],
       unlockAt: 4
+    },
+    {
+      id: 'moon_base', name: 'Lunar Base Alpha', emoji: '\uD83C\uDF11', difficulty: 1,
+      gravity: 1.62, atmosphere: 'None (vacuum)', temp: '-173 to 127\u00B0C',
+      travelDays: 3, color: '#9ca3af', desc: 'Establish humanity\'s first permanent Moon base at Shackleton Crater.',
+      hazards: ['micrometeorites', 'lunar dust', 'vacuum exposure', 'radiation'],
+      scienceFocus: ['geology', 'engineering', 'resource extraction'],
+      unlockAt: 0
+    },
+    {
+      id: 'io', name: 'Io (Jupiter)', emoji: '\uD83C\uDF0B', difficulty: 4,
+      gravity: 1.80, atmosphere: 'SO\u2082 (thin)', temp: '-143\u00B0C (surface), 1700\u00B0C (lava)',
+      travelDays: 950, color: '#e8b730', desc: 'The most volcanically active body in the solar system \u2014 400+ active volcanoes.',
+      hazards: ['lava flows', 'sulfur dioxide plumes', 'intense radiation', 'tidal heating quakes'],
+      scienceFocus: ['volcanology', 'tidal mechanics', 'plasma physics'],
+      unlockAt: 3
+    },
+    {
+      id: 'asteroid', name: 'Asteroid 16 Psyche', emoji: '\u2604\uFE0F', difficulty: 3,
+      gravity: 0.06, atmosphere: 'None', temp: '-93\u00B0C avg',
+      travelDays: 700, color: '#71717a', desc: 'A metallic asteroid worth $10,000 quadrillion \u2014 possibly a protoplanet core.',
+      hazards: ['microgravity', 'tumbling rotation', 'collision debris', 'communication blackouts'],
+      scienceFocus: ['metallurgy', 'orbital mechanics', 'mining engineering'],
+      unlockAt: 2
     }
   ];
 
@@ -121,7 +145,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   ];
 
   // ═══════════════════════════════════════════════════════════════
-  // RESOURCE DEFINITIONS
+  // CREW SYSTEM — Named characters with specializations
+  // ═══════════════════════════════════════════════════════════════
+  var CREW_POOL = [
+    { name: 'Dr. Kenji Tanaka', role: 'Geologist', emoji: '\uD83E\uDEA8', specialty: 'geology', bonus: { science: 5 }, quote: 'Every rock tells a story billions of years old.' },
+    { name: 'Cmdr. Aisha Okonkwo', role: 'Commander', emoji: '\uD83D\uDE80', specialty: 'leadership', bonus: { morale: 5 }, quote: 'Stay calm, think clearly, act decisively.' },
+    { name: 'Lt. Sofia Reyes', role: 'Pilot', emoji: '\uD83D\uDEF0\uFE0F', specialty: 'navigation', bonus: { fuel: 5 }, quote: 'Orbital mechanics isn\'t math — it\'s poetry.' },
+    { name: 'Dr. Wei Chen', role: 'Biologist', emoji: '\uD83E\uDDEC', specialty: 'astrobiology', bonus: { o2: 5 }, quote: 'If there\'s water, there might be life.' },
+    { name: 'Eng. Marcus Johansson', role: 'Engineer', emoji: '\uD83D\uDD27', specialty: 'systems', bonus: { hull: 5, power: 3 }, quote: 'Redundancy isn\'t paranoia — it\'s survival.' },
+    { name: 'Dr. Priya Sharma', role: 'Physicist', emoji: '\u2699\uFE0F', specialty: 'physics', bonus: { power: 5 }, quote: 'The universe speaks in equations.' },
+    { name: 'Sgt. Tomoko Ishida', role: 'Medic', emoji: '\uD83C\uDFE5', specialty: 'medical', bonus: { morale: 8 }, quote: 'A healthy crew is a capable crew.' },
+    { name: 'Dr. Oluwaseun Adeyemi', role: 'Chemist', emoji: '\u2697\uFE0F', specialty: 'chemistry', bonus: { o2: 3, science: 3 }, quote: 'Chemistry is just atoms being social.' }
+  ];
+
+  function selectCrew(dest) {
+    // Pick 4 crew members, prioritizing specialties relevant to the destination
+    var pool = CREW_POOL.slice();
+    var crew = [];
+    // Always include a commander
+    var cmdIdx = pool.findIndex(function(c) { return c.role === 'Commander'; });
+    if (cmdIdx >= 0) { crew.push(pool.splice(cmdIdx, 1)[0]); }
+    // Prioritize relevant specialties
+    dest.scienceFocus.forEach(function(sf) {
+      if (crew.length >= 4) return;
+      var idx = pool.findIndex(function(c) { return c.specialty === sf || sf.indexOf(c.specialty) >= 0; });
+      if (idx >= 0) crew.push(pool.splice(idx, 1)[0]);
+    });
+    // Fill remaining with random
+    while (crew.length < 4 && pool.length > 0) {
+      var ri = Math.floor(Math.random() * pool.length);
+      crew.push(pool.splice(ri, 1)[0]);
+    }
+    return crew;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // RESOURCE DEFINITIONS + PER-TURN DRAIN
   // ═══════════════════════════════════════════════════════════════
   var RESOURCES = {
     o2:     { label: 'O\u2082', emoji: '\uD83D\uDCA8', color: '#3b82f6', max: 100 },
@@ -132,15 +191,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     science:{ label: 'Science', emoji: '\uD83D\uDD2C', color: '#06b6d4', max: 999 }
   };
 
-  function getInitialResources(dest, tech) {
+  // Each destination drains resources differently each turn
+  var DESTINATION_DRAINS = {
+    mars:        { o2: -3, power: -2, fuel: -2, morale: -1 },
+    europa:      { o2: -4, power: -4, fuel: -2, morale: -2, hull: -1 },
+    titan:       { o2: -3, power: -3, fuel: -3, morale: -2 },
+    enceladus:   { o2: -4, power: -3, fuel: -2, morale: -1 },
+    venus_cloud: { o2: -3, power: -2, fuel: -3, morale: -2, hull: -2 },
+    proxima:     { o2: -5, power: -4, fuel: -4, morale: -3, hull: -1 }
+  };
+
+  function getInitialResources(dest, tech, crew) {
     var base = { o2: 85, power: 80, hull: 100, morale: 75, fuel: 90, science: 0 };
     // Tech bonuses
     if (tech && tech.indexOf('solar_v2') >= 0) base.power = Math.min(100, base.power + 20);
     if (tech && tech.indexOf('med_bay') >= 0) base.morale = Math.min(100, base.morale + 15);
+    // Crew bonuses
+    if (crew) {
+      crew.forEach(function(c) {
+        if (c.bonus) Object.keys(c.bonus).forEach(function(k) { if (base[k] !== undefined) base[k] = Math.min(RESOURCES[k].max, base[k] + c.bonus[k]); });
+      });
+    }
     // Harder destinations start with less
     if (dest.difficulty >= 3) { base.o2 -= 10; base.fuel -= 15; }
     if (dest.difficulty >= 5) { base.o2 -= 15; base.power -= 10; base.morale -= 10; }
     return base;
+  }
+
+  function applyTurnDrain(resources, dest, tech) {
+    var drain = DESTINATION_DRAINS[dest.id] || { o2: -2, power: -2, fuel: -1 };
+    var newRes = Object.assign({}, resources);
+    Object.keys(drain).forEach(function(k) {
+      var amount = drain[k];
+      // Tech mitigations
+      if (k === 'o2' && tech && tech.indexOf('recycler') >= 0) amount = Math.round(amount * 0.7);
+      if (k === 'power' && tech && tech.indexOf('solar_v2') >= 0) amount = Math.round(amount * 0.8);
+      if (k === 'fuel' && tech && tech.indexOf('ion_drive') >= 0) amount = Math.round(amount * 0.6);
+      newRes[k] = Math.max(0, Math.min(RESOURCES[k].max, (newRes[k] || 0) + amount));
+    });
+    return newRes;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -200,6 +289,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       pxg.addColorStop(0, '#ff6b9d'); pxg.addColorStop(1, 'transparent');
       ctx.fillStyle = pxg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
       ctx.globalAlpha = 1;
+    } else if (dest.id === 'moon_base') {
+      // Craters + Shackleton rim shadow
+      ctx.fillStyle = 'rgba(80,80,90,0.3)';
+      for (var mi = 0; mi < 12; mi++) {
+        var mcx = cx + (mi * 31 % 7 - 3) * r * 0.12;
+        var mcy = cy + (mi * 17 % 5 - 2) * r * 0.15;
+        var mcr = r * (0.05 + (mi % 4) * 0.03);
+        ctx.beginPath(); ctx.arc(mcx, mcy, mcr, 0, Math.PI * 2); ctx.fill();
+      }
+      // Base marker
+      ctx.fillStyle = 'rgba(96,165,250,0.6)'; ctx.beginPath();
+      ctx.arc(cx - r * 0.3, cy + r * 0.4, r * 0.04, 0, Math.PI * 2); ctx.fill();
+    } else if (dest.id === 'io') {
+      // Volcanic surface: lava spots + sulfur deposits
+      var lavaColors = ['rgba(255,100,20,0.4)', 'rgba(255,200,0,0.3)', 'rgba(200,50,0,0.35)'];
+      for (var ioi = 0; ioi < 10; ioi++) {
+        ctx.fillStyle = lavaColors[ioi % 3];
+        var ix = cx + Math.cos(ioi * 2.1) * r * (0.2 + (ioi % 3) * 0.2);
+        var iy = cy + Math.sin(ioi * 1.7) * r * (0.3 + (ioi % 2) * 0.15);
+        ctx.beginPath(); ctx.arc(ix, iy, r * (0.03 + (ioi % 4) * 0.015), 0, Math.PI * 2); ctx.fill();
+      }
+      // Plume eruption
+      if (tick && (tick % 120) < 40) {
+        ctx.fillStyle = 'rgba(255,255,100,0.2)';
+        ctx.beginPath(); ctx.moveTo(cx + r * 0.2, cy - r * 0.6);
+        ctx.lineTo(cx + r * 0.15, cy - r * 1.1); ctx.lineTo(cx + r * 0.25, cy - r * 1.1);
+        ctx.closePath(); ctx.fill();
+      }
+    } else if (dest.id === 'asteroid') {
+      // Irregular metallic shape (draw as jagged polygon instead of circle)
+      ctx.restore(); // undo clip to draw non-circular
+      ctx.save();
+      ctx.fillStyle = dest.color;
+      ctx.beginPath();
+      for (var ai = 0; ai < 12; ai++) {
+        var aa = ai * Math.PI * 2 / 12;
+        var ar = r * (0.7 + Math.sin(ai * 3.1 + 1.7) * 0.3);
+        var ax = cx + Math.cos(aa) * ar;
+        var ay = cy + Math.sin(aa) * ar;
+        if (ai === 0) ctx.moveTo(ax, ay); else ctx.lineTo(ax, ay);
+      }
+      ctx.closePath(); ctx.fill();
+      // Metallic sheen
+      var mg = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+      mg.addColorStop(0, 'rgba(200,200,220,0.15)'); mg.addColorStop(0.5, 'rgba(255,255,255,0.08)'); mg.addColorStop(1, 'rgba(100,100,120,0.1)');
+      ctx.fillStyle = mg; ctx.fill();
     }
     ctx.restore();
     // Atmosphere glow
@@ -252,8 +387,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     category: 'Simulations',
     questHooks: [
       { id: 'first_mission', label: 'Complete your first mission', icon: '\uD83D\uDE80', check: function(d) { return (d.spaceExplorer || {}).completedMissions > 0; }, progress: function(d) { return (d.spaceExplorer || {}).completedMissions > 0 ? 'Done!' : 'Not yet'; } },
+      { id: 'complete_3', label: 'Complete 3 missions', icon: '\u2B50', check: function(d) { return ((d.spaceExplorer || {}).completedMissions || 0) >= 3; }, progress: function(d) { return ((d.spaceExplorer || {}).completedMissions || 0) + '/3'; } },
       { id: 'unlock_europa', label: 'Unlock Europa', icon: '\u2744\uFE0F', check: function(d) { return (d.spaceExplorer || {}).completedMissions >= 1; }, progress: function(d) { var m = (d.spaceExplorer || {}).completedMissions || 0; return m >= 1 ? 'Unlocked!' : m + '/1'; } },
-      { id: 'research_5', label: 'Earn 250 science points', icon: '\uD83D\uDD2C', check: function(d) { return ((d.spaceExplorer || {}).totalScience || 0) >= 250; }, progress: function(d) { return ((d.spaceExplorer || {}).totalScience || 0) + '/250'; } }
+      { id: 'research_250', label: 'Earn 250 science points', icon: '\uD83D\uDD2C', check: function(d) { return ((d.spaceExplorer || {}).totalScience || 0) >= 250; }, progress: function(d) { return ((d.spaceExplorer || {}).totalScience || 0) + '/250'; } },
+      { id: 'unlock_tech_3', label: 'Unlock 3 technologies', icon: '\u26A1', check: function(d) { return ((d.spaceExplorer || {}).unlockedTech || []).length >= 3; }, progress: function(d) { return ((d.spaceExplorer || {}).unlockedTech || []).length + '/3'; } },
+      { id: 'difficulty_3', label: 'Complete a difficulty 3+ mission', icon: '\uD83C\uDFC6', check: function(d) { return ((d.spaceExplorer || {}).highestDifficulty || 0) >= 3; }, progress: function(d) { return ((d.spaceExplorer || {}).highestDifficulty || 0) >= 3 ? 'Done!' : 'Not yet'; } },
+      { id: 'optimal_80', label: 'Score 80%+ optimal decisions in a mission', icon: '\uD83E\uDDE0', check: function(d) { return (d.spaceExplorer || {}).bestOptimalPct >= 80; }, progress: function(d) { return ((d.spaceExplorer || {}).bestOptimalPct || 0) + '% best'; } }
     ],
     render: function(ctx) {
       var React = window.React;
@@ -277,9 +416,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var highestDifficulty = d.highestDifficulty || 0;
 
       // ── Current mission state ──
-      var missionPhase = d.missionPhase || 'select'; // select | briefing | transit | explore | event | debrief
+      var missionPhase = d.missionPhase || 'select'; // select | briefing | transit | explore | event | outcome | debrief
       var destination = d.destination ? DESTINATIONS.find(function(dd) { return dd.id === d.destination; }) : null;
       var resources = d.resources || null;
+      var crew = d.crew || [];
       var turn = d.turn || 0;
       var maxTurns = destination ? Math.max(8, 5 + destination.difficulty * 3) : 10;
       var missionLog = d.missionLog || [];
@@ -301,73 +441,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       // ── Start a mission ──
       function startMission(dest) {
-        var res = getInitialResources(dest, unlockedTech);
+        var missionCrew = selectCrew(dest);
+        var res = getInitialResources(dest, unlockedTech, missionCrew);
         updAll({
           missionPhase: 'briefing',
           destination: dest.id,
+          crew: missionCrew,
           resources: res,
           turn: 0,
-          missionLog: [{ text: '\uD83D\uDE80 Mission to ' + dest.name + ' initiated!', time: new Date().toLocaleTimeString() }],
+          missionLog: [{ text: '\uD83D\uDE80 Mission to ' + dest.name + ' initiated! Crew: ' + missionCrew.map(function(c) { return c.name; }).join(', '), time: new Date().toLocaleTimeString() }],
           activeEvent: null,
           eventOutcome: null,
           decisionLog: [],
           isGenerating: false
         });
-        announceToSR('Mission to ' + dest.name + ' selected. Review the briefing.');
+        announceToSR('Mission to ' + dest.name + ' selected. Crew of ' + missionCrew.length + ' assembled. Review the briefing.');
       }
 
       // ── Generate AI event for current turn ──
       function generateEvent() {
         if (!destination || !callGemini || isGenerating) return;
         upd('isGenerating', true);
-        var resStr = Object.keys(resources).map(function(k) {
-          return RESOURCES[k].label + ': ' + resources[k] + '/' + RESOURCES[k].max;
+
+        // Apply per-turn resource drain BEFORE generating the event
+        var drainedRes = applyTurnDrain(resources, destination, unlockedTech);
+        upd('resources', drainedRes);
+
+        // Check for critical resource warnings
+        var warnings = [];
+        Object.keys(drainedRes).forEach(function(k) {
+          if (RESOURCES[k].max !== 999 && drainedRes[k] <= 15) warnings.push(RESOURCES[k].emoji + ' ' + RESOURCES[k].label + ' critical (' + drainedRes[k] + '%)');
+        });
+        if (warnings.length > 0 && addToast) addToast('\u26A0\uFE0F ' + warnings.join(' | '), 'warning');
+
+        // Build rich context for the AI
+        var resStr = Object.keys(drainedRes).map(function(k) {
+          var val = drainedRes[k]; var max = RESOURCES[k].max;
+          var status = max === 999 ? '' : (val <= 15 ? ' CRITICAL!' : val <= 30 ? ' (low)' : '');
+          return RESOURCES[k].label + ': ' + val + (max !== 999 ? '/' + max + status : '');
         }).join(', ');
+        var crewStr = crew.length > 0 ? crew.map(function(c) { return c.name + ' (' + c.role + ', specialty: ' + c.specialty + ')'; }).join('; ') : 'Generic crew';
+        var prevEventsStr = decisionLog.length > 0 ? decisionLog.map(function(dl) { return dl.title + ' (chose: "' + dl.chosen + '", ' + dl.quality + ')'; }).join('; ') : 'No events yet.';
         var techStr = unlockedTech.length > 0 ? unlockedTech.join(', ') : 'none';
-        var prompt = 'You are a sci-fi mission event generator for an educational space exploration game. ' +
-          'Generate ONE event for a crew exploring ' + destination.name + '.\n\n' +
-          'DESTINATION: ' + destination.name + ' (' + destination.desc + ')\n' +
+        var missionStage = turn < maxTurns * 0.3 ? 'EARLY MISSION (setup)' : turn < maxTurns * 0.7 ? 'MID MISSION (deep exploration)' : 'LATE MISSION (preparing departure)';
+        var eventHints = turn < 2 ? 'Focus on arrival/setup challenges.' :
+          turn >= maxTurns - 2 ? 'Focus on departure prep or last-chance discoveries.' :
+          warnings.length > 0 ? 'A resource is critically low \u2014 offer a way to recover it (at a cost).' :
+          'Mix: science discovery (40%), systems (25%), crew dynamics (20%), environment (15%).';
+
+        var prompt = 'You are a master storyteller and science educator for "Space Explorer," an educational roguelike. ' +
+          'Generate ONE vivid, scientifically grounded event.\n\n' +
+          '\u2550\u2550\u2550 MISSION \u2550\u2550\u2550\n' +
+          destination.name + ' \u2014 ' + destination.desc + '\n' +
+          'Gravity: ' + destination.gravity + ' m/s\u00B2 | Atmo: ' + destination.atmosphere + ' | Temp: ' + destination.temp + '\n' +
           'Hazards: ' + destination.hazards.join(', ') + '\n' +
-          'Science focus: ' + destination.scienceFocus.join(', ') + '\n' +
-          'Gravity: ' + destination.gravity + ' m/s\u00B2, Atmosphere: ' + destination.atmosphere + ', Temp: ' + destination.temp + '\n' +
-          'Current resources: ' + resStr + '\n' +
-          'Turn ' + (turn + 1) + ' of ' + maxTurns + '\n' +
-          'Unlocked tech: ' + techStr + '\n' +
-          'Difficulty: ' + destination.difficulty + '/5\n\n' +
-          'IMPORTANT RULES:\n' +
-          '- Events should teach REAL SCIENCE (physics, chemistry, biology, engineering, geology)\n' +
-          '- Include a mix of dramatic crises AND mundane "slice of life" astronaut challenges\n' +
-          '- Each choice must have DIFFERENT resource effects (some positive, some negative)\n' +
-          '- The "optimal" choice should require scientific reasoning, not just common sense\n' +
-          '- Difficulty ' + destination.difficulty + '/5 means: ' +
-            (destination.difficulty <= 2 ? 'moderate challenges, forgiving resource costs' :
-             destination.difficulty <= 3 ? 'serious challenges, meaningful resource costs' :
-             'extreme challenges, harsh trade-offs, possible mission failure') + '\n' +
-          '- Target audience: students grades 4-12\n\n' +
+          'Science: ' + destination.scienceFocus.join(', ') + '\n\n' +
+          '\u2550\u2550\u2550 CREW \u2550\u2550\u2550\n' + crewStr + '\n\n' +
+          '\u2550\u2550\u2550 STATUS \u2550\u2550\u2550\n' + resStr + '\n' +
+          'Turn ' + (turn + 1) + '/' + maxTurns + ' | ' + missionStage + ' | Tech: ' + techStr + '\n\n' +
+          '\u2550\u2550\u2550 HISTORY \u2550\u2550\u2550\n' + prevEventsStr + '\n\n' +
+          '\u2550\u2550\u2550 RULES \u2550\u2550\u2550\n' +
+          eventHints + '\n' +
+          '- Teach REAL SCIENCE through the scenario\n' +
+          '- Reference crew members BY NAME when their specialty is relevant\n' +
+          '- The optimal choice requires applying scientific knowledge creatively\n' +
+          '- Resource effects: costs -3 to -15, gains +5 to +20\n' +
+          '- NEVER repeat a previous event topic\n' +
+          '- Exactly 3 choices (optimal, adequate, poor)\n' +
+          '- Audience: grades 4-12 (vivid, never graphic)\n\n' +
           'Return ONLY valid JSON:\n' +
-          '{\n' +
-          '  "emoji": "one emoji",\n' +
-          '  "title": "Short event title",\n' +
-          '  "category": "one of: systems, science, crew, environment, navigation",\n' +
-          '  "description": "2-3 sentences describing the situation. Vivid but age-appropriate.",\n' +
-          '  "stemConcepts": ["concept1", "concept2"],\n' +
-          '  "choices": [\n' +
-          '    {\n' +
-          '      "label": "Action description (under 60 chars)",\n' +
-          '      "icon": "one emoji",\n' +
-          '      "effects": {"o2": -5, "power": 10, "science": 15},\n' +
-          '      "quality": "optimal or adequate or poor",\n' +
-          '      "outcome": "What happens (1-2 sentences)",\n' +
-          '      "scienceReward": "Real science explanation (2-3 sentences, educational)"\n' +
-          '    }\n' +
-          '  ]\n' +
-          '}';
+          '{"emoji":"emoji","title":"title","category":"systems|science|crew|environment|navigation",' +
+          '"description":"2-3 sentences","stemConcepts":["c1","c2"],' +
+          '"choices":[{"label":"action","icon":"emoji","effects":{"o2":-5,"science":15},' +
+          '"quality":"optimal|adequate|poor","outcome":"result","scienceReward":"science explanation"}]}';
 
         callGemini(prompt, true).then(function(result) {
           try {
             var cleaned = (typeof result === 'string' ? result : (result && result.text ? result.text : String(result || '{}')));
             cleaned = cleaned.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-            // Extract JSON from response
             var jsonStart = cleaned.indexOf('{');
             var jsonEnd = cleaned.lastIndexOf('}');
             if (jsonStart >= 0 && jsonEnd > jsonStart) cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
@@ -380,40 +531,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               throw new Error('Invalid event format');
             }
           } catch (e) {
-            console.warn('[SpaceExplorer] Event parse failed:', e);
-            // Fallback static event
-            updAll({
-              activeEvent: {
-                emoji: '\u2699\uFE0F', title: 'Systems Check', category: 'systems',
-                description: 'Routine diagnostics reveal minor wear on life support filters. Standard maintenance is needed.',
-                stemConcepts: ['engineering', 'preventive maintenance'],
-                choices: [
-                  { label: 'Perform full maintenance cycle', icon: '\uD83D\uDD27', effects: { power: -5, hull: 5, o2: 5 }, quality: 'optimal', outcome: 'All systems nominal.', scienceReward: 'Preventive maintenance extends equipment life exponentially — replacing filters on schedule vs. after failure saves 10x the resources.' },
-                  { label: 'Quick patch and move on', icon: '\u23E9', effects: { hull: -5 }, quality: 'adequate', outcome: 'Patched for now, but may need attention later.', scienceReward: 'Deferred maintenance creates "technical debt" — small problems compound into larger failures over time.' }
-                ]
-              },
-              missionPhase: 'event',
-              isGenerating: false
-            });
+            console.warn('[SpaceExplorer] Event parse failed, retrying:', e);
+            upd('isGenerating', false);
+            if (addToast) addToast('Generating scenario... (retrying)', 'info');
+            setTimeout(function() { generateEvent(); }, 1500);
           }
         }).catch(function(err) {
           console.error('[SpaceExplorer] Gemini error:', err);
           upd('isGenerating', false);
-          if (addToast) addToast('Event generation failed — using backup scenario.', 'info');
-          // Use fallback
-          updAll({
-            activeEvent: {
-              emoji: '\uD83D\uDCE1', title: 'Communication Window', category: 'navigation',
-              description: 'A brief window opens for high-bandwidth communication with Earth. How do you use it?',
-              stemConcepts: ['electromagnetic spectrum', 'signal delay'],
-              choices: [
-                { label: 'Send scientific data burst', icon: '\uD83D\uDD2C', effects: { science: 20, power: -10 }, quality: 'optimal', outcome: 'Data transmitted! Earth scientists are analyzing your findings.', scienceReward: 'Radio waves travel at the speed of light. A signal to Mars takes 3-22 minutes depending on orbital position. Real-time conversation is impossible — all communication must be pre-planned.' },
-                { label: 'Request supply drop coordinates', icon: '\uD83D\uDCE6', effects: { fuel: 10, o2: 5 }, quality: 'adequate', outcome: 'Supply cache coordinates received for next orbit.', scienceReward: 'Orbital mechanics determines when supply drops are possible. The transfer orbit must match your position — this is called a Hohmann transfer.' }
-              ]
-            },
-            missionPhase: 'event',
-            isGenerating: false
-          });
+          if (addToast) addToast('AI connection issue. Please try again.', 'error');
         });
       }
 
@@ -457,12 +583,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         // Check for mission complete
         else if (newTurn >= maxTurns) {
           setTimeout(function() {
+            // Calculate optimal % for quest tracking
+            var optC = newDecLog.filter(function(x) { return x.quality === 'optimal'; }).length;
+            var optPct = newDecLog.length > 0 ? Math.round(optC / newDecLog.length * 100) : 0;
             updAll({
               missionPhase: 'debrief',
               missionResult: 'success',
               completedMissions: completedMissions + 1,
               totalScience: totalScience + (newRes.science || 0),
-              highestDifficulty: Math.max(highestDifficulty, destination.difficulty)
+              highestDifficulty: Math.max(highestDifficulty, destination.difficulty),
+              bestOptimalPct: Math.max(d.bestOptimalPct || 0, optPct)
             });
           }, 1500);
         }
@@ -566,22 +696,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._briefInit) return;
                   cvEl._briefInit = true;
-                  var ctx = cvEl.getContext('2d');
+                  var ctx2 = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 400, H = cvEl.offsetHeight || 200;
-                  cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = H * 2; ctx2.scale(2, 2);
                   var tick = 0;
                   function draw() {
+                    cvEl._briefAnim = requestAnimationFrame(draw);
                     tick++;
-                    ctx.fillStyle = '#020010'; ctx.fillRect(0, 0, W, H);
-                    drawStarfield(ctx, W, H, tick, 100);
-                    drawPlanet(ctx, W * 0.6, H * 0.5, Math.min(W, H) * 0.35, destination, tick);
+                    ctx2.fillStyle = '#020010'; ctx2.fillRect(0, 0, W, H);
+                    drawStarfield(ctx2, W, H, tick, 100);
+                    drawPlanet(ctx2, W * 0.6, H * 0.5, Math.min(W, H) * 0.35, destination, tick);
+                    // Ship approach dot
+                    var shipX = W * 0.15 + Math.sin(tick * 0.008) * W * 0.05;
+                    var shipY = H * 0.5 + Math.cos(tick * 0.006) * H * 0.08;
+                    ctx2.fillStyle = '#fff'; ctx2.beginPath(); ctx2.arc(shipX, shipY, 2, 0, Math.PI * 2); ctx2.fill();
+                    ctx2.strokeStyle = 'rgba(255,255,255,0.12)'; ctx2.lineWidth = 0.5;
+                    ctx2.beginPath(); ctx2.moveTo(shipX, shipY);
+                    ctx2.lineTo(W * 0.6 - Math.min(W, H) * 0.35, H * 0.5); ctx2.stroke();
                     // Vignette
-                    var vg = ctx.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+                    var vg = ctx2.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
                     vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,0.4)');
-                    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-                    requestAnimationFrame(draw);
+                    ctx2.fillStyle = vg; ctx2.fillRect(0, 0, W, H);
                   }
                   draw();
+                  // Cancel animation when canvas leaves DOM
+                  var obs = new MutationObserver(function() {
+                    if (!document.contains(cvEl)) { cancelAnimationFrame(cvEl._briefAnim); obs.disconnect(); }
+                  });
+                  obs.observe(document.body, { childList: true, subtree: true });
                 }
               })
             ),
@@ -599,6 +741,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 destination.hazards.map(function(hz) {
                   return h('span', { key: hz, className: 'px-2 py-0.5 rounded-full text-[9px] bg-red-500/10 text-red-300 border border-red-500/20' }, '\u26A0\uFE0F ' + hz);
                 })
+              ),
+              // Crew roster
+              crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('p', { className: 'text-[9px] text-slate-500 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+                h('div', { className: 'grid grid-cols-2 gap-1.5' },
+                  crew.map(function(c) {
+                    return h('div', { key: c.name, className: 'flex items-center gap-2 bg-white/5 rounded-lg p-2' },
+                      h('span', { className: 'text-lg' }, c.emoji),
+                      h('div', null,
+                        h('p', { className: 'text-[10px] font-bold text-white' }, c.name),
+                        h('p', { className: 'text-[9px] text-slate-400' }, c.role),
+                        h('p', { className: 'text-[8px] text-indigo-300 italic' }, '"' + c.quote + '"')
+                      )
+                    );
+                  })
+                )
               ),
               h('button', {
                 onClick: function() { updAll({ missionPhase: 'explore' }); generateEvent(); },
@@ -758,6 +916,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 pct >= 80 ? 'Outstanding! You think like a real mission commander.' :
                 pct >= 50 ? 'Solid thinking. Review the science notes to improve.' :
                 'Room for improvement \u2014 but every explorer learns from experience!')
+            )
+          ),
+          // STEM Concepts Learned (science rewards from all decisions)
+          decisionLog.length > 0 && decisionLog.some(function(dec2) { return dec2.scienceReward; }) && h('div', { className: 'bg-cyan-500/5 rounded-xl p-3 border border-cyan-500/15' },
+            h('p', { className: 'text-[10px] text-cyan-400 font-bold mb-2' }, '\uD83D\uDD2C SCIENCE CONCEPTS LEARNED'),
+            h('div', { className: 'space-y-1.5' },
+              decisionLog.filter(function(dec2) { return dec2.scienceReward; }).map(function(dec2, i) {
+                return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border-l-2 border-cyan-500/40' },
+                  h('p', { className: 'text-[9px] font-bold text-cyan-300 mb-0.5' }, dec2.title),
+                  h('p', { className: 'text-[9px] text-slate-400 leading-relaxed' }, dec2.scienceReward)
+                );
+              })
+            )
+          ),
+          // Resource survival chart
+          resources && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
+            h('p', { className: 'text-[10px] text-slate-500 font-bold mb-2' }, '\uD83D\uDCCA FINAL RESOURCES'),
+            h('div', { className: 'grid grid-cols-3 gap-1.5' },
+              Object.keys(RESOURCES).map(function(k) {
+                var r = RESOURCES[k]; var val = resources[k] || 0;
+                var pct2 = r.max === 999 ? 100 : Math.round(val / r.max * 100);
+                var col = val <= r.max * 0.15 ? '#ef4444' : val <= r.max * 0.3 ? '#f59e0b' : r.color;
+                return h('div', { key: k, className: 'text-center' },
+                  h('div', { className: 'text-lg' }, r.emoji),
+                  h('div', { className: 'text-[10px] font-bold', style: { color: col } }, r.max === 999 ? val : val + '%'),
+                  h('div', { className: 'text-[8px] text-slate-500' }, r.label)
+                );
+              })
             )
           ),
           // Action buttons
