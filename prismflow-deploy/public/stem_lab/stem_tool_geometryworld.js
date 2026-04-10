@@ -344,14 +344,25 @@
         { position: [4, 1, 0], name: 'Area Guide', color: 0x7c3aed,
           dialogue: 'Area = Length \u00d7 Width. It tells you how many blocks make ONE layer. Volume = Area \u00d7 Height (number of layers)!', question: null },
         { position: [5, 4, 3], name: 'Flat Prism Quiz', color: 0x2563eb,
-          dialogue: 'This blue prism is 6 long, 4 wide, 3 tall. The base area is 6\u00d74 = 24.',
-          question: { text: 'Base area = 24. Height = 3. What is 24 \u00d7 3?', choices: ['72 cubic units', '48 cubic units', '27 cubic units'], correct: 0 } },
+          dialogue: 'This blue prism is 6 long, 4 wide, 3 tall. Let\u2019s find its volume step by step!',
+          question: { text: 'What is the base area? (6 \u00d7 4)', choices: ['24 square units', '10 square units', '18 square units'], correct: 0,
+            followUp: [
+              { text: 'Base area = 24. How many layers tall?', choices: ['3 layers', '4 layers', '6 layers'], correct: 0 },
+              { text: '24 \u00d7 3 = ?', choices: ['72 cubic units', '48 cubic units', '27 cubic units'], correct: 0 }
+            ] } },
         { position: [13, 9, 3], name: 'Tall Prism Quiz', color: 0xf59e0b,
           dialogue: 'This gold prism is 3\u00d73\u00d78. Different shape from the blue one!',
-          question: { text: 'Do these prisms have the same volume?', choices: ['Yes! Both are 72', 'No, gold is bigger', 'No, blue is bigger'], correct: 0 } },
+          question: { text: 'What is 3 \u00d7 3 \u00d7 8?', choices: ['72 cubic units', '64 cubic units', '48 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Blue = 72, Gold = 72. Same or different volume?', choices: ['Same volume! Different shape.', 'Gold is bigger', 'Blue is bigger'], correct: 0 }
+            ] } },
         { position: [4, 5, 12], name: 'Layer Counter', color: 0x16a34a,
-          dialogue: 'Count the alternating layers! Each layer is 5\u00d75 = 25 blocks.',
-          question: { text: '4 layers of 25 blocks each. Total volume?', choices: ['100 cubic units', '29 cubic units', '125 cubic units'], correct: 0 } }
+          dialogue: 'Count the alternating layers! Each layer is 5\u00d75 blocks.',
+          question: { text: 'Area of one layer? (5 \u00d7 5)', choices: ['25 square units', '10 square units', '20 square units'], correct: 0,
+            followUp: [
+              { text: 'How many layers are stacked?', choices: ['4 layers', '5 layers', '3 layers'], correct: 0 },
+              { text: '25 \u00d7 4 = ?', choices: ['100 cubic units', '125 cubic units', '80 cubic units'], correct: 0 }
+            ] } }
       ]
     },
     buildChallenge: {
@@ -378,11 +389,18 @@
         { position: [5, 1, 1], name: 'Architect', color: 0x7c3aed,
           dialogue: 'Welcome to Build Challenge! Use blocks to build rooms, then measure their volume. The example room in the corner shows a 6\u00d76\u00d74 structure. Start building!', question: null },
         { position: [16, 1, 13], name: 'Room Inspector', color: 0x2563eb,
-          dialogue: 'This example room has interior dimensions of 4\u00d74\u00d74 (walls are 1 block thick, floor is the base).',
-          question: { text: 'Interior volume of a 4\u00d74\u00d74 space?', choices: ['64 cubic units', '48 cubic units', '32 cubic units'], correct: 0 } },
+          dialogue: 'This example room has walls 1 block thick. The outside is 6\u00d76\u00d75. Let\u2019s find the INSIDE.',
+          question: { text: 'Walls are 1 block thick. Outside L = 6. What is inside L?', choices: ['4 blocks (6 - 1 - 1)', '5 blocks', '6 blocks'], correct: 0,
+            followUp: [
+              { text: 'Inside is 4\u00d74\u00d74. Volume?', choices: ['64 cubic units', '48 cubic units', '32 cubic units'], correct: 0 }
+            ] } },
         { position: [10, 1, 10], name: 'Volume Coach', color: 0x16a34a,
-          dialogue: 'Tip: Interior volume is always LESS than exterior volume because walls take up space! Use the measure tool (M) to check your builds.',
-          question: { text: 'A room is 8 outside \u00d7 6 outside \u00d7 4 tall with 1-block walls. Interior L?', choices: ['6 blocks', '8 blocks', '7 blocks'], correct: 0 } }
+          dialogue: 'Interior volume is always LESS than exterior because walls take up space!',
+          question: { text: 'Room is 8\u00d76\u00d74 outside, 1-block walls. Interior length?', choices: ['6 blocks', '8 blocks', '7 blocks'], correct: 0,
+            followUp: [
+              { text: 'Interior width? (6 outside - 2 for walls)', choices: ['4 blocks', '5 blocks', '6 blocks'], correct: 0 },
+              { text: 'Interior is 6\u00d74\u00d74. Volume?', choices: ['96 cubic units', '64 cubic units', '72 cubic units'], correct: 0 }
+            ] } }
       ]
     },
     realWorld: {
@@ -423,14 +441,23 @@
         { position: [5, 1, 1], name: 'Warehouse Manager', color: 0x7c3aed,
           dialogue: 'Welcome to the warehouse! We need to figure out how many boxes fit in our containers. The shipping container is open on one side \u2014 look inside!', question: null },
         { position: [5, 5, 3], name: 'Packing Expert', color: 0x2563eb,
-          dialogue: 'The container interior is 6\u00d72\u00d73. Each small box is 2\u00d72\u00d72 = 8 cubic units. The interior holds 36 cubic units.',
-          question: { text: 'How many 2\u00d72\u00d72 boxes fit in a 6\u00d72\u00d73 space?', choices: ['4 boxes (with 4 units wasted)', '3 boxes', '6 boxes'], correct: 0 } },
+          dialogue: 'The container interior is 6\u00d72\u00d73. Each small box is 2\u00d72\u00d72. Let\u2019s figure out how many fit!',
+          question: { text: 'Container interior volume? (6\u00d72\u00d73)', choices: ['36 cubic units', '24 cubic units', '48 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Each box = 2\u00d72\u00d72 = 8 cubic units. 36 \u00f7 8 = ?', choices: ['4 boxes with 4 units wasted', '3 boxes exactly', '6 boxes'], correct: 0 }
+            ] } },
         { position: [14, 1, 1], name: 'Inventory Checker', color: 0xf59e0b,
-          dialogue: 'The crate interior is 4\u00d74\u00d72 = 32 spaces. The bottom layer has 16 sand blocks. How much empty space remains?',
-          question: { text: 'Crate holds 32 units, 16 are filled. Empty space?', choices: ['16 cubic units', '8 cubic units', '32 cubic units'], correct: 0 } },
+          dialogue: 'The crate interior is 4\u00d74\u00d72. The bottom layer has sand.',
+          question: { text: 'Crate total capacity? (4\u00d74\u00d72)', choices: ['32 cubic units', '16 cubic units', '24 cubic units'], correct: 0,
+            followUp: [
+              { text: '16 blocks of sand inside. Empty space = 32 - 16 = ?', choices: ['16 cubic units', '8 cubic units', '32 cubic units'], correct: 0 }
+            ] } },
         { position: [4, 2, 16], name: 'Design Challenge', color: 0x16a34a,
-          dialogue: 'Build a box on the glass platform that holds EXACTLY 36 cubic units! Hint: 36 = 6\u00d73\u00d72 or 4\u00d73\u00d73 or 9\u00d72\u00d72. Use the measure tool (M) to check!',
-          question: { text: 'Which of these does NOT equal 36?', choices: ['5\u00d74\u00d72', '6\u00d73\u00d72', '4\u00d73\u00d73'], correct: 0 } }
+          dialogue: 'Build a box on the glass platform that holds EXACTLY 36 cubic units!',
+          question: { text: 'Which equals 36? (check each)', choices: ['6\u00d73\u00d72 = 36 \u2713', '5\u00d74\u00d72 = 40', '3\u00d73\u00d73 = 27'], correct: 0,
+            followUp: [
+              { text: 'Which is another way to make 36?', choices: ['4\u00d73\u00d73 = 36', '6\u00d76\u00d71 = 36', 'Both!'], correct: 2 }
+            ] } }
       ]
     },
     geometryGarden: {
@@ -542,17 +569,29 @@
         { position: [5, 1, 1], name: 'Decomposer', color: 0x7c3aed,
           dialogue: 'Complex shapes can be split into rectangles! The T-shape has a top bar (8\u00d72\u00d73) and a stem (2\u00d72\u00d75).', question: null },
         { position: [5, 4, 5], name: 'T-Shape Quiz', color: 0x2563eb,
-          dialogue: 'Top: 8\u00d72\u00d73 = 48. Stem: 2\u00d72\u00d75 = 20.',
-          question: { text: 'Total volume of the T-shape? (48 + 20)', choices: ['68 cubic units', '48 cubic units', '96 cubic units'], correct: 0 } },
+          dialogue: 'This T-shape has a top bar and a stem. Let\u2019s measure each part!',
+          question: { text: 'Top bar is 8\u00d72\u00d73. Volume?', choices: ['48 cubic units', '24 cubic units', '36 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Stem is 2\u00d72\u00d75. Volume?', choices: ['20 cubic units', '10 cubic units', '30 cubic units'], correct: 0 },
+              { text: 'Total T-shape = 48 + 20 = ?', choices: ['68 cubic units', '48 cubic units', '96 cubic units'], correct: 0 }
+            ] } },
         { position: [17, 4, 4], name: 'Pyramid Guide', color: 0xf59e0b,
-          dialogue: 'This step pyramid has 3 layers. Bottom: 6\u00d76 = 36, Middle: 4\u00d74 = 16, Top: 2\u00d72 = 4.',
-          question: { text: 'Total volume? (36 + 16 + 4)', choices: ['56 cubic units', '36 cubic units', '64 cubic units'], correct: 0 } },
+          dialogue: 'This step pyramid has 3 layers. Count each layer separately!',
+          question: { text: 'Bottom layer: 6\u00d76\u00d71. Volume?', choices: ['36 cubic units', '24 cubic units', '12 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Middle layer: 4\u00d74\u00d71 = ?', choices: ['16 cubic units', '12 cubic units', '8 cubic units'], correct: 0 },
+              { text: 'Top layer: 2\u00d72\u00d71 = ?', choices: ['4 cubic units', '2 cubic units', '8 cubic units'], correct: 0 },
+              { text: 'Total pyramid: 36 + 16 + 4 = ?', choices: ['56 cubic units', '36 cubic units', '64 cubic units'], correct: 0 }
+            ] } },
         { position: [4, 5, 14], name: 'U-Shape Sage', color: 0x16a34a,
-          dialogue: 'The U-shape has 3 rectangular parts. Left wall, bottom, right wall. Some blocks overlap at corners!',
-          question: { text: 'Can a U-shape have the same volume as a solid rectangle?', choices: ['No \u2014 the U always has less (it\u2019s hollow)', 'Yes \u2014 if you pick the right rectangle', 'It depends on the material'], correct: 0 } },
+          dialogue: 'The U-shape is hollow. It has 3 rectangular parts: left wall, bottom, right wall.',
+          question: { text: 'Is a U-shape\u2019s volume more or less than the bounding box?', choices: ['Less \u2014 the hollow part is empty', 'Same \u2014 the box counts all space', 'More \u2014 the U has extra corners'], correct: 0,
+            followUp: [
+              { text: 'To find U-shape volume: bounding box minus hollow. Which is correct?', choices: ['V = outer - inner', 'V = outer + inner', 'V = outer \u00d7 inner'], correct: 0 }
+            ] } },
         { position: [19, 1, 15], name: 'Design Challenge', color: 0xdc2626,
-          dialogue: 'Your turn! Use the sand platform to build a composite shape with EXACTLY 50 cubic units. Hint: 5\u00d75\u00d72 = 50, or 10\u00d75\u00d71 = 50, or get creative!',
-          question: { text: 'Which is NOT a way to make 50 cubic units?', choices: ['6\u00d74\u00d72 = 48, not 50!', '5\u00d75\u00d72 = 50', '10\u00d75\u00d71 = 50'], correct: 0 } }
+          dialogue: 'Build a composite shape with EXACTLY 50 cubic units! Hint: 5\u00d75\u00d72 = 50.',
+          question: { text: 'Which does NOT equal 50?', choices: ['6\u00d74\u00d72 = 48 \u2717', '5\u00d75\u00d72 = 50 \u2713', '10\u00d75\u00d71 = 50 \u2713'], correct: 0 } }
       ]
     },
     fractionVolume: {
@@ -586,14 +625,25 @@
         { position: [3, 3, 3], name: 'Fraction Prof', color: 0x7c3aed,
           dialogue: 'In real life, dimensions aren\u2019t always whole numbers! A box might be 4 \u00d7 3 \u00d7 2.5 feet. Volume = 4 \u00d7 3 \u00d7 2.5 = 30 cubic feet. The formula still works!', question: null },
         { position: [12, 5, 3], name: 'Between Quiz', color: 0x2563eb,
-          dialogue: 'The blue prism is 4\u00d73\u00d72 = 24. The gold is 4\u00d73\u00d74 = 48. A 4\u00d73\u00d72.5 prism would be between them.',
-          question: { text: 'Volume of 4 \u00d7 3 \u00d7 2.5?', choices: ['30 cubic units', '24 cubic units', '36 cubic units'], correct: 0 } },
+          dialogue: 'The blue prism = 24. The gold = 48. What about a height halfway between (2.5)?',
+          question: { text: 'Blue is 4\u00d73\u00d72 = 24. Gold is 4\u00d73\u00d74 = 48. Halfway height is?', choices: ['2.5 (halfway between 2 and 4-1=3)', '3', '3.5'], correct: 0,
+            followUp: [
+              { text: 'Volume of 4 \u00d7 3 \u00d7 2.5?', choices: ['30 cubic units', '24 cubic units', '36 cubic units'], correct: 0 },
+              { text: 'Is 30 between 24 and 48?', choices: ['Yes! Fractional height gives in-between volume', 'No', 'Only sometimes'], correct: 0 }
+            ] } },
         { position: [4, 1, 9], name: 'Container Challenge', color: 0xf59e0b,
-          dialogue: 'This glass container is 4 wide, 3 deep, 3 tall. The sand fills it 2 blocks high.',
-          question: { text: 'How much more sand to fill it completely? (4\u00d73\u00d71 = ?)', choices: ['12 more cubic units', '24 more cubic units', '6 more cubic units'], correct: 0 } },
+          dialogue: 'This glass container is 4 wide, 3 deep, 3 tall. Sand fills the bottom 2 blocks.',
+          question: { text: 'Sand volume? (4\u00d73\u00d72)', choices: ['24 cubic units', '12 cubic units', '36 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Total container = 4\u00d73\u00d73 = 36. Empty space = 36 - 24 = ?', choices: ['12 more cubic units', '24 more', '6 more'], correct: 0 }
+            ] } },
         { position: [17, 1, 9], name: 'Height Detective', color: 0x16a34a,
-          dialogue: 'These two towers have the same 3\u00d73 base. The short one is 3 tall, the tall one is 5 tall.',
-          question: { text: 'How many times bigger is the tall tower\u2019s volume?', choices: ['About 1.67\u00d7 (5/3)', 'Exactly 2\u00d7', 'About 1.5\u00d7'], correct: 0 } }
+          dialogue: 'Two towers, same 3\u00d73 base. Short = 3 tall, Tall = 5 tall.',
+          question: { text: 'Short tower volume? (3\u00d73\u00d73)', choices: ['27 cubic units', '18 cubic units', '9 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Tall tower? (3\u00d73\u00d75)', choices: ['45 cubic units', '27 cubic units', '30 cubic units'], correct: 0 },
+              { text: '45 \u00f7 27 \u2248 ? (how many times bigger?)', choices: ['About 1.67\u00d7 (5/3)', 'Exactly 2\u00d7', 'About 1.5\u00d7'], correct: 0 }
+            ] } }
       ]
     },
     volumeEstimation: {
@@ -629,17 +679,31 @@
         { position: [2, 2, 4], name: 'Estimator', color: 0x7c3aed,
           dialogue: 'Welcome! This gold block is your reference: 1 cubic unit. Use it to estimate the others BEFORE you measure (M key). Good estimation is a superpower in math!', question: null },
         { position: [7, 3, 2], name: 'Small Quiz', color: 0x2563eb,
-          dialogue: 'Look at this small structure. It\u2019s not too big. Estimate first, then measure!',
-          question: { text: 'Your estimate for this small prism? (Actual: 3\u00d72\u00d72)', choices: ['About 12', 'About 24', 'About 6'], correct: 0 } },
+          dialogue: 'Look at this small structure. Estimate its dimensions before measuring!',
+          question: { text: 'How many blocks LONG does it look?', choices: ['3 blocks', '4 blocks', '2 blocks'], correct: 0,
+            followUp: [
+              { text: 'And how wide and tall? (Look carefully!)', choices: ['2 wide, 2 tall', '3 wide, 2 tall', '2 wide, 3 tall'], correct: 0 },
+              { text: 'So 3\u00d72\u00d72 = ?', choices: ['12 cubic units', '24 cubic units', '6 cubic units'], correct: 0 }
+            ] } },
         { position: [14, 4, 3], name: 'Medium Quiz', color: 0xf59e0b,
-          dialogue: 'This one is bigger. Count the blocks along each edge if you can see them.',
-          question: { text: 'Volume of this medium prism? (5\u00d73\u00d73)', choices: ['45 cubic units', '30 cubic units', '60 cubic units'], correct: 0 } },
+          dialogue: 'This one is bigger. Count edges if you can see them.',
+          question: { text: 'Estimate: how long? (count the blocks along one edge)', choices: ['5 blocks', '4 blocks', '6 blocks'], correct: 0,
+            followUp: [
+              { text: 'It\u2019s 5\u00d73\u00d73. Volume?', choices: ['45 cubic units', '30 cubic units', '60 cubic units'], correct: 0 }
+            ] } },
         { position: [23, 4, 3], name: 'Large Quiz', color: 0x16a34a,
-          dialogue: 'The big one! Don\u2019t try to count every block. Estimate using L\u00d7W\u00d7H.',
-          question: { text: 'Volume of this large prism? (7\u00d74\u00d73)', choices: ['84 cubic units', '72 cubic units', '96 cubic units'], correct: 0 } },
+          dialogue: 'The big one! Use L\u00d7W\u00d7H \u2014 don\u2019t count every block.',
+          question: { text: 'Estimate the length (blocks along the longest edge)?', choices: ['7 blocks', '6 blocks', '8 blocks'], correct: 0,
+            followUp: [
+              { text: 'It\u2019s 7\u00d74\u00d73. Volume?', choices: ['84 cubic units', '72 cubic units', '96 cubic units'], correct: 0 }
+            ] } },
         { position: [4, 9, 10], name: 'Shape Illusion', color: 0xdc2626,
-          dialogue: 'Which has more volume: this tall tower (2\u00d72\u00d78=32) or the flat slab over there (10\u00d75\u00d71=50)?',
-          question: { text: 'Tall tower vs flat slab \u2014 which is bigger?', choices: ['The flat slab (50 > 32)', 'The tall tower (it looks bigger)', 'They\u2019re the same'], correct: 0 } }
+          dialogue: 'Which has more volume: this tall tower or the flat slab?',
+          question: { text: 'Tower = 2\u00d72\u00d78. Volume?', choices: ['32 cubic units', '16 cubic units', '64 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Slab = 10\u00d75\u00d71. Volume?', choices: ['50 cubic units', '15 cubic units', '100 cubic units'], correct: 0 },
+              { text: 'Which is bigger: tower (32) or slab (50)?', choices: ['The flat slab \u2014 shape can fool you!', 'The tall tower', 'Same'], correct: 0 }
+            ] } }
       ]
     },
     fractionBuilder: {
@@ -669,17 +733,30 @@
         { position: [2, 2, 4], name: 'Fraction Guide', color: 0x7c3aed,
           dialogue: 'Welcome to Fraction Builder! Look at the shape selector above the block bar \u2014 you can place cubes (1), halves (\u00BD), or quarters (\u00BC). Try placing two halves next to each other. Do they fill the same space as one cube?', question: null },
         { position: [6, 2, 4], name: 'Half Quiz', color: 0x2563eb,
-          dialogue: 'A half-block has volume = \u00BD cubic unit. If I place 6 half-blocks...',
-          question: { text: '6 \u00d7 \u00BD = ?', choices: ['3 cubic units', '6 cubic units', '2 cubic units'], correct: 0 } },
+          dialogue: 'A half-block has volume = \u00BD cubic unit. Let\u2019s count with fractions!',
+          question: { text: 'Volume of 1 half-block?', choices: ['\u00BD cubic unit', '1 cubic unit', '\u00BC cubic unit'], correct: 0,
+            followUp: [
+              { text: '2 half-blocks = ?', choices: ['1 cubic unit (2 \u00d7 \u00BD = 1)', '2 cubic units', '\u00BD cubic unit'], correct: 0 },
+              { text: '6 half-blocks = ?', choices: ['3 cubic units', '6 cubic units', '2 cubic units'], correct: 0 }
+            ] } },
         { position: [12, 3, 2], name: 'Whole Quiz', color: 0xf59e0b,
-          dialogue: 'This 2\u00d72\u00d72 cube has 8 blocks \u00d7 1 cubic unit each = 8. What if some were half-blocks?',
-          question: { text: 'Replace 4 cubes with 4 half-blocks. New total volume?', choices: ['6 (4\u00d71 + 4\u00d7\u00BD)', '8 (unchanged)', '4 (only halves count)'], correct: 0 } },
+          dialogue: 'This 2\u00d72\u00d72 cube has 8 blocks = 8 cubic units. What if we swap some for halves?',
+          question: { text: '8 cubes = 8 cubic units. If we replace 4 with half-blocks, how many \u201cwhole\u201d cubes remain?', choices: ['4 whole cubes', '8 cubes', '2 cubes'], correct: 0,
+            followUp: [
+              { text: '4 cubes + 4 half-blocks. Volume = 4\u00d71 + 4\u00d7\u00BD = ?', choices: ['6 cubic units', '8 cubic units', '4 cubic units'], correct: 0 }
+            ] } },
         { position: [5, 1, 11], name: 'Challenge Master', color: 0x16a34a,
-          dialogue: 'Use the sand platform to build a structure with EXACTLY 3\u00BD cubic units. Hint: 3 cubes + 1 half = 3\u00BD!',
-          question: { text: 'How many quarter-wedges (\u00BC) equal one whole cube?', choices: ['4 quarters', '2 quarters', '8 quarters'], correct: 0 } },
+          dialogue: 'Build EXACTLY 3\u00BD cubic units on the sand platform! Use the shape selector (Q key).',
+          question: { text: 'How many quarter-wedges equal \u00BD?', choices: ['2 quarters', '4 quarters', '1 quarter'], correct: 0,
+            followUp: [
+              { text: 'How many quarter-wedges equal 1 whole cube?', choices: ['4 quarters', '2 quarters', '8 quarters'], correct: 0 }
+            ] } },
         { position: [15, 1, 11], name: 'Pizza Professor', color: 0xdc2626,
-          dialogue: 'Think of it like pizza! A whole cube is a whole pizza. A half-block is half a pizza. A quarter-wedge is one slice of a pizza cut into 4. How many slices make a whole?',
-          question: { text: 'You eat 3 whole pizzas and 2 slices (\u00BC each). How much pizza total?', choices: ['3\u00BD pizzas', '3\u00BC pizzas', '5 pizzas'], correct: 0 } }
+          dialogue: 'Think pizza! Whole cube = whole pizza. Half-block = half pizza. Quarter-wedge = one slice of 4.',
+          question: { text: 'You eat 3 whole pizzas. How many cubic units is that?', choices: ['3 cubic units', '3\u00BD', '6'], correct: 0,
+            followUp: [
+              { text: 'Now add 2 quarter-slices (\u00BC each). Total = 3 + \u00BD = ?', choices: ['3\u00BD pizzas', '3\u00BC pizzas', '5 pizzas'], correct: 0 }
+            ] } }
       ]
     }
   };
@@ -937,9 +1014,9 @@
     category: 'explore',
     questHooks: [
       { id: 'score_5', label: 'Score 5 points in Geometry World', icon: '\uD83C\uDFAF', check: function(d) { return (d.score || 0) >= 5; }, progress: function(d) { return (d.score || 0) + '/5 pts'; } },
-      { id: 'answer_10', label: 'Answer 10 geometry questions', icon: '\uD83E\uDDE0', check: function(d) { return (d.totalQ || 0) >= 10; }, progress: function(d) { return (d.totalQ || 0) + '/10 questions'; } },
-      { id: 'talk_to_npc', label: 'Talk to an NPC character', icon: '\uD83D\uDCAC', check: function(d) { return d.showNpcDialog || false; }, progress: function(d) { return d.showNpcDialog ? 'Talking!' : 'Find an NPC'; } },
-      { id: 'enter_world', label: 'Enter the Geometry World', icon: '\uD83C\uDF0D', check: function(d) { return d.worldActive || false; }, progress: function(d) { return d.worldActive ? 'Exploring!' : 'Click Enter'; } }
+      { id: 'complete_tutorial', label: 'Complete the Geometry World tutorial', icon: '\uD83C\uDF93', check: function(d) { return d.tutorialDismissed || (d.tutorialStep || 0) >= 4; }, progress: function(d) { return (d.tutorialStep || 0) >= 4 ? 'Done!' : 'Step ' + ((d.tutorialStep || 0) + 1) + '/4'; } },
+      { id: 'measure_structure', label: 'Measure a 3D structure', icon: '\uD83D\uDCCF', check: function(d) { return !!d.measureResult; }, progress: function(d) { return d.measureResult ? 'Measured!' : 'Press M on blocks'; } },
+      { id: 'build_10', label: 'Place 10 blocks in the world', icon: '\uD83E\uDDF1', check: function(d) { return (d.blocksPlaced || 0) >= 10; }, progress: function(d) { return Math.min(d.blocksPlaced || 0, 10) + '/10 blocks'; } }
     ],
     render: function (ctx) {
       var React = ctx.React;
@@ -1788,7 +1865,7 @@
 
           // Step 4 (after 2.4s): Volume label + bounding box
           setTimeout(function() {
-            if (!engine || !engine.scene) return;
+            if (!engine || !engine.scene || !window.THREE) return;
             var volStr = m.L + '\u00d7' + m.W + '\u00d7' + m.H + '=' + (m.hasFractions ? m.formattedVolume : m.boundingVolume);
             var vbl = makeDimLabel(volStr, '#fbbf24');
             vbl.position.set((x0 + x1) / 2, y1 + 0.6, (z0 + z1) / 2);
@@ -3519,11 +3596,12 @@
         ),
         // ── Tutorial overlay (first-time users) ──
         !tutorialDismissed && tutorialStep < 4 && worldActive && el('div', {
+          role: 'region', 'aria-label': 'Tutorial overlay: Step ' + (tutorialStep + 1) + ' of 4', 'aria-live': 'polite',
           style: { position: 'absolute', bottom: '140px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none', textAlign: 'center', maxWidth: '340px' }
         },
           el('div', { style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(8px)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '14px', padding: '14px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'auto' } },
-            el('div', { style: { fontSize: '10px', color: '#a78bfa', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.5px' } }, 'TUTORIAL \u2014 Step ' + (tutorialStep + 1) + ' of 4'),
-            el('div', { style: { fontSize: '14px', color: '#e2e8f0', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4 } },
+            el('div', { 'aria-hidden': 'true', style: { fontSize: '10px', color: '#a78bfa', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.5px' } }, 'TUTORIAL \u2014 Step ' + (tutorialStep + 1) + ' of 4'),
+            el('div', { role: 'status', style: { fontSize: '14px', color: '#e2e8f0', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4 } },
               tutorialStep === 0 ? '\uD83D\uDDB1\uFE0F Click the 3D world to look around. Use WASD to move.' :
               tutorialStep === 1 ? '\uD83D\uDC64 Walk up to a purple character and press E to talk.' :
               tutorialStep === 2 ? '\uD83D\uDCCF Point at the blue blocks and press M to measure.' :
@@ -3536,6 +3614,7 @@
               })
             ),
             el('button', {
+              'aria-label': 'Skip tutorial and proceed to lesson',
               onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
               style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: '#94a3b8', fontSize: '10px', padding: '4px 12px', cursor: 'pointer', pointerEvents: 'auto' }
             }, 'Skip tutorial')
@@ -3593,7 +3672,7 @@
                 el('div', { style: { fontSize: '13px', fontWeight: 800, color: '#e2e8f0' } }, data.name),
                 data.question && !isAnswered && el('div', { style: { fontSize: '9px', color: npcHexColor, fontWeight: 600, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
-              el('button', { 'aria-label': 'Close NPC dialog', onClick: function() { upd('showNpcDialog', false); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
+              el('button', { 'aria-label': 'Close NPC dialog', onClick: function() { upd({ showNpcDialog: false }); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content
             el('div', { style: { padding: '12px 16px' } },
