@@ -256,6 +256,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         if (typeof awardStemXP === 'function') awardStemXP('moonMission', amount);
       }
 
+      // ── Mission Event System ──
+      // advancePhase checks for eligible events before advancing. If an event
+      // triggers, it shows the event modal and delays the phase transition until
+      // the student makes a choice.
+      function advancePhase(targetPhase) {
+        var resolved = d.resolvedEvents || [];
+        var eligible = MISSION_EVENTS.filter(function(evt) {
+          return evt.phases.indexOf(targetPhase) >= 0
+            && evt.difficulty.indexOf(difficulty) >= 0
+            && resolved.indexOf(evt.id) < 0
+            && Math.random() < (evt.probability * (diffSettings.eventFreq || 0.5));
+        });
+        if (eligible.length > 0) {
+          var event = eligible[Math.floor(Math.random() * eligible.length)];
+          upd('activeEvent', event);
+          upd('eventPhaseTarget', targetPhase);
+          log('\u26A0\uFE0F Mission Event: ' + event.title);
+          if (typeof announceToSR === 'function') announceToSR('Mission event: ' + event.title + '. ' + event.scenario);
+        } else {
+          setPhase(targetPhase);
+        }
+      }
+
+      function resolveEvent(event, chosenOption) {
+        // Log the decision
+        var newLog = (d.decisionLog || []).slice();
+        var optimalLabel = '';
+        for (var oi = 0; oi < event.options.length; oi++) { if (event.options[oi].quality === 'optimal') { optimalLabel = event.options[oi].label; break; } }
+        newLog.push({
+          eventId: event.id, title: event.title, chosen: chosenOption.label,
+          quality: chosenOption.quality, optimal: optimalLabel,
+          historical: event.historical, scienceReward: chosenOption.scienceReward
+        });
+        upd('decisionLog', newLog);
+        // Mark event as resolved
+        var resolved = (d.resolvedEvents || []).slice();
+        resolved.push(event.id);
+        upd('resolvedEvents', resolved);
+        // Apply resource effects (currently morale only; expanded in Phase 2)
+        if (chosenOption.effects) {
+          if (chosenOption.effects.morale) upd('crewMorale', Math.max(0, Math.min(100, (d.crewMorale || 75) + chosenOption.effects.morale)));
+        }
+        // Award XP
+        if (chosenOption.xp) addXP(chosenOption.xp);
+        // Show outcome
+        upd('eventOutcome', { outcome: chosenOption.scienceReward, quality: chosenOption.quality, label: chosenOption.label });
+        upd('activeEvent', null);
+        log((chosenOption.quality === 'optimal' ? '\u2B50' : chosenOption.quality === 'adequate' ? '\u2705' : '\u26A0\uFE0F') + ' ' + chosenOption.label);
+        if (addToast) addToast(chosenOption.quality === 'optimal' ? '\u2B50 Excellent decision!' : chosenOption.quality === 'adequate' ? '\u2705 Acceptable solution' : '\u26A0\uFE0F Suboptimal choice \u2014 see the science note', chosenOption.quality === 'optimal' ? 'success' : 'info');
+      }
+
       // ── Mission Data ──
       var PHASES = [
         { name: 'Mission Briefing', icon: '\uD83D\uDCCB', desc: 'Review your mission objectives and crew assignment' },
@@ -316,11 +367,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         { q: 'How old are the oldest Moon rocks collected?', opts: ['1 billion years', '2.5 billion years', '4.4 billion years', '6 billion years'], a: 2, fact: 'The oldest Moon rocks are 4.4 billion years old \u2014 nearly as old as the solar system itself!' }
       ];
 
-      // ── Difficulty Settings ──
+      // ═══════════════════════════════════════════════════════════════
+      // MISSION EVENTS — Strategic decision points inspired by real missions
+      // Each event triggers at phase transitions, presents 2-3 options with
+      // different resource effects and quality grades, and logs the choice
+      // for post-mission debrief analysis.
+      // ═══════════════════════════════════════════════════════════════
+      var MISSION_EVENTS = [
+        {
+          id: 'toilet_clog', title: 'Waste Management Malfunction', emoji: '\uD83D\uDEBD',
+          phases: [3, 8], difficulty: ['pilot', 'commander'], probability: 0.7,
+          historical: 'Artemis II (April 2026): Frozen urine in the vent line blocked the toilet just hours into the mission. NASA rotated the Orion capsule to expose the frozen blockage to sunlight, thawing it via thermal radiation through the vacuum of space.',
+          scenario: 'Houston reports a blockage in the waste management vent line. Frozen waste is preventing the toilet from functioning. With days of coast ahead, this needs solving \u2014 crew comfort and hygiene are critical for mission success.',
+          stemConcepts: ['thermal radiation', 'phase changes of matter', 'heat transfer in vacuum'],
+          options: [
+            { label: 'Rotate spacecraft to expose vent to sunlight', icon: '\u2600\uFE0F',
+              effects: { morale: 10 }, quality: 'optimal', xp: 20,
+              scienceReward: 'Thermal radiation travels through the vacuum of space \u2014 no air needed! The Sun delivers 1,361 watts per square meter. By rotating Orion, the crew used the Sun as a giant space heater. This is the same principle that makes the sunlit side of the Moon reach 127\u00B0C while the dark side drops to -173\u00B0C.' },
+            { label: 'Reroute cabin heater duct to warm the pipe', icon: '\uD83D\uDD25',
+              effects: { morale: 5 }, quality: 'adequate', xp: 10,
+              scienceReward: 'Conduction transfers heat through direct contact between molecules. It works, but uses electrical power from your limited fuel cell supply \u2014 and fuel cells also generate your oxygen and drinking water!' },
+            { label: 'Seal the vent and use backup waste bags', icon: '\uD83D\uDDC4\uFE0F',
+              effects: { morale: -10 }, quality: 'poor', xp: 5,
+              scienceReward: 'Apollo astronauts (1969-1972) had NO toilet at all \u2014 they used adhesive collection bags for every bathroom visit. In zero gravity, this was extremely difficult and unpleasant. The modern $23 million Universal Waste Management System was designed to fix this, but as Artemis II proved, space plumbing is hard!' }
+          ]
+        },
+        {
+          id: 'program_alarm', title: 'Program Alarm 1202!', emoji: '\u26A0\uFE0F',
+          phases: [5], difficulty: ['pilot', 'commander'], probability: 0.8,
+          historical: 'Apollo 11 (July 1969): During powered descent, the guidance computer triggered a 1202 "executive overflow" alarm \u2014 it was overloaded with data from the rendezvous radar left on by mistake. 26-year-old engineer Steve Bales in Mission Control made the call: "GO!" Armstrong continued the landing.',
+          scenario: 'WARNING: The guidance computer is flashing a 1202 alarm \u2014 executive overflow! The computer is being asked to do more calculations than it can handle. The landing radar and rendezvous radar are both demanding processing time. You have seconds to decide.',
+          stemConcepts: ['computer architecture', 'priority scheduling', 'real-time systems'],
+          options: [
+            { label: 'Trust the computer and continue \u2014 "GO!"', icon: '\u2705',
+              effects: { morale: 15 }, quality: 'optimal', xp: 25,
+              scienceReward: 'The Apollo Guidance Computer had just 74 KB of memory and ran at 0.043 MHz \u2014 thousands of times slower than your phone. But its software used a brilliant priority-based scheduling system designed by MIT\'s Margaret Hamilton. Low-priority tasks were shed automatically so critical navigation could continue. This is the same "priority scheduling" concept used in every modern operating system!' },
+            { label: 'Abort the descent \u2014 fire ascent engine', icon: '\uD83D\uDD3A',
+              effects: { morale: -5 }, quality: 'adequate', xp: 10,
+              scienceReward: 'An abort during powered descent was always an option. The abort guidance system (AGS) was a completely separate computer that could return the LM to orbit independently. Redundancy \u2014 having backup systems \u2014 is a core principle of engineering safety.' },
+            { label: 'Switch to full manual control', icon: '\uD83D\uDD79\uFE0F',
+              effects: { morale: 5 }, quality: 'risky', xp: 15,
+              scienceReward: 'Armstrong actually DID take semi-manual control during the final approach, using the hand controller to fly past a boulder field. But full manual control without ANY computer assistance would require superhuman precision \u2014 the computer was still calculating altitude and velocity even when Armstrong steered.' }
+          ]
+        },
+        {
+          id: 'boulder_field', title: 'Boulder Field at Landing Site!', emoji: '\uD83E\uDEA8',
+          phases: [5], difficulty: ['tourist', 'pilot', 'commander'], probability: 0.65,
+          historical: 'Apollo 11 (1969): Armstrong saw the computer was guiding Eagle toward a crater filled with boulders "the size of automobiles." He took manual control and flew 500 meters past the danger zone, landing with just 25 seconds of fuel remaining. Mission Control called: "60 seconds!" then "30 seconds!"',
+          scenario: 'Looking out the window, you see the automated guidance is targeting a field of boulders! Large rocks surround the planned landing zone. You need to decide: trust the computer, take manual control, or abort.',
+          stemConcepts: ['terrain analysis', 'fuel management', 'risk assessment'],
+          options: [
+            { label: 'Take manual control and fly past the boulders', icon: '\uD83D\uDD79\uFE0F',
+              effects: { morale: 15 }, quality: 'optimal', xp: 25,
+              scienceReward: 'Armstrong flew the LM like a helicopter, translating horizontally while descending. This cost precious fuel but saved the mission. When he landed, only 25 seconds of hover fuel remained \u2014 about 200 kg of Aerozine-50 and nitrogen tetroxide. The fuel margin was so thin that a single additional hover would have triggered a mandatory abort.' },
+            { label: 'Land where the computer says', icon: '\uD83E\uDD16',
+              effects: { morale: -15 }, quality: 'poor', xp: 5,
+              scienceReward: 'The guidance computer\'s landing target was calculated from orbital photographs, but those photos couldn\'t show every boulder. The lesson: automation is powerful but humans must monitor and override when reality differs from the plan. This is called "human-in-the-loop" design.' },
+            { label: 'Abort and try again next orbit', icon: '\uD83D\uDD04',
+              effects: { morale: -5 }, quality: 'adequate', xp: 10,
+              scienceReward: 'Aborting and re-orbiting was always an option, but it would cost fuel and delay the landing by 2 hours. In some scenarios, discretion IS the better part of valor \u2014 but Armstrong\'s instinct told him he could make it, and he was right.' }
+          ]
+        },
+        {
+          id: 'fuel_cell_stir', title: 'Oxygen Tank Pressure Spike', emoji: '\u26A1',
+          phases: [3, 8], difficulty: ['commander'], probability: 0.6,
+          historical: 'Apollo 13 (April 1970): A routine "cryo stir" of the oxygen tanks caused an explosion that crippled the Service Module. The crew survived by using the Lunar Module as a lifeboat \u2014 one of the greatest rescues in history. Commander Lovell, Pilot Haise, and Pilot Swigert improvised solutions for 4 days.',
+          scenario: 'During a routine cryogenic tank stir, you hear a loud bang and see the pressure gauge in O\u2082 Tank 2 spiking wildly. Cabin pressure is fluctuating. Houston is analyzing telemetry urgently.',
+          stemConcepts: ['cryogenics', 'gas laws (Boyle\'s Law)', 'electrical systems', 'emergency procedures'],
+          options: [
+            { label: 'Immediately isolate Tank 2 and switch to Tank 1', icon: '\uD83D\uDEE1\uFE0F',
+              effects: { morale: 5 }, quality: 'optimal', xp: 20,
+              scienceReward: 'Cryogenic oxygen is stored at -183\u00B0C under extreme pressure. When pressure rises uncontrollably, the risk is rupture. Isolating the faulty tank preserves your remaining oxygen supply. Boyle\'s Law (P\u00D7V = constant at fixed temperature) tells us that as the tank heats up, pressure increases proportionally \u2014 that\'s what the gauges showed.' },
+            { label: 'Vent Tank 2 to relieve pressure', icon: '\uD83D\uDCA8',
+              effects: { morale: -5 }, quality: 'adequate', xp: 10,
+              scienceReward: 'Venting releases the pressure but wastes oxygen into space. On Apollo 13, the crew eventually lost ALL oxygen from the Service Module. They survived because the Lunar Module had its own independent life support \u2014 a lesson in the importance of redundant systems.' },
+            { label: 'Try to reset the tank heater circuit', icon: '\uD83D\uDD27',
+              effects: { morale: -10 }, quality: 'poor', xp: 5,
+              scienceReward: 'On Apollo 13, the explosion was caused by damaged wiring inside the tank \u2014 a manufacturing defect from years earlier. Attempting to reset would have made it worse. This teaches a critical engineering principle: when you don\'t understand the root cause, don\'t poke at it \u2014 stabilize first, diagnose second.' }
+          ]
+        },
+        {
+          id: 'space_sickness', title: 'Space Adaptation Syndrome', emoji: '\uD83E\uDD22',
+          phases: [2, 3], difficulty: ['tourist', 'pilot', 'commander'], probability: 0.5,
+          historical: 'About 60-80% of astronauts experience Space Adaptation Syndrome (SAS) in the first 1-3 days. Senator Jake Garn\'s 1985 Shuttle flight was so severe that NASA informally named the unit of space sickness the "Garn" \u2014 1 Garn being the maximum possible nausea.',
+          scenario: 'A crew member is experiencing severe nausea and disorientation. In zero gravity, the inner ear sends confusing signals to the brain because "up" and "down" no longer exist. This affects their ability to work and could impact mission tasks.',
+          stemConcepts: ['vestibular system', 'inner ear physiology', 'microgravity adaptation'],
+          options: [
+            { label: 'Administer anti-nausea medication and rest period', icon: '\uD83D\uDC8A',
+              effects: { morale: 5 }, quality: 'optimal', xp: 15,
+              scienceReward: 'The vestibular system in your inner ear uses fluid-filled semicircular canals to detect rotation and tiny calcium carbonate crystals (otoliths) to detect gravity. In microgravity, the otoliths float freely, sending signals that conflict with what your eyes see. Anti-nausea medication (like promethazine) blocks the brain\'s emetic center while the vestibular system adapts over 2-3 days.' },
+            { label: 'Tough it out \u2014 keep working through the nausea', icon: '\uD83D\uDCAA',
+              effects: { morale: -10 }, quality: 'poor', xp: 5,
+              scienceReward: 'Working through severe SAS is counterproductive and dangerous. In zero gravity, vomiting is a serious safety hazard \u2014 without gravity to direct it, vomit can be inhaled into the lungs (aspiration). Modern space medicine prioritizes crew health because a sick astronaut is an ineffective astronaut.' },
+            { label: 'Reduce visual stimulation and close window shades', icon: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F',
+              effects: { morale: 0 }, quality: 'adequate', xp: 10,
+              scienceReward: 'Closing eyes or fixing gaze on a stable reference point reduces "sensory conflict" \u2014 the mismatch between what eyes see (floating objects) and what the inner ear feels (no gravity). This is similar to why reading in a car causes motion sickness: eyes say "still" but inner ear says "moving."' }
+          ]
+        }
+      ];
+
+      // ── Difficulty Settings (expanded with event parameters) ──
       var DIFFICULTIES = {
-        tourist:    { label: 'Tourist',    icon: '\uD83C\uDF1F', desc: 'Guided experience \u2014 auto-landing, extended O\u2082', gravity: 0.5, fuel: 150, o2Rate: 0.1 },
-        pilot:     { label: 'Pilot',      icon: '\u2B50', desc: 'Standard Apollo parameters', gravity: 1.62, fuel: 100, o2Rate: 0.3 },
-        commander: { label: 'Commander',  icon: '\uD83C\uDFC5', desc: 'Realistic \u2014 tight fuel budget, faster O\u2082 drain', gravity: 1.62, fuel: 70, o2Rate: 0.6 }
+        tourist:    { label: 'Tourist',    icon: '\uD83C\uDF1F', desc: 'Guided experience \u2014 auto-landing, extended O\u2082', gravity: 0.5, fuel: 150, o2Rate: 0.1, eventFreq: 0.3, showEffects: true, showOptimalHint: true },
+        pilot:     { label: 'Pilot',      icon: '\u2B50', desc: 'Standard Apollo parameters', gravity: 1.62, fuel: 100, o2Rate: 0.3, eventFreq: 0.6, showEffects: true, showOptimalHint: false },
+        commander: { label: 'Commander',  icon: '\uD83C\uDFC5', desc: 'Realistic \u2014 tight fuel budget, faster O\u2082 drain', gravity: 1.62, fuel: 70, o2Rate: 0.6, eventFreq: 0.9, showEffects: false, showOptimalHint: false }
       };
       var difficulty = d.difficulty || 'pilot';
       var diffSettings = DIFFICULTIES[difficulty];
@@ -388,6 +538,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'text-[10px] text-slate-400 font-mono' }, 'MET ' + getMissionElapsed()),
             h('div', { className: 'text-[10px] text-indigo-500 font-bold' }, '\u2B50 ' + missionXP + ' XP')
           )
+        ),
+
+        // ── Mission Event modal (triggered by advancePhase) ──
+        d.activeEvent && h('div', {
+          className: 'mb-3 bg-gradient-to-br from-amber-950 to-slate-900 rounded-xl p-4 border border-amber-700/50 shadow-lg',
+          role: 'alertdialog', 'aria-label': 'Mission event: ' + d.activeEvent.title
+        },
+          h('div', { className: 'flex items-center gap-2 mb-2' },
+            h('span', { className: 'text-2xl' }, d.activeEvent.emoji),
+            h('div', null,
+              h('h5', { className: 'text-sm font-bold text-amber-300' }, d.activeEvent.title),
+              h('div', { className: 'flex gap-1 mt-0.5' },
+                d.activeEvent.stemConcepts.map(function(c) {
+                  return h('span', { key: c, className: 'px-1.5 py-0.5 rounded-full text-[8px] bg-sky-500/15 text-sky-300 border border-sky-500/20' }, c);
+                })
+              )
+            )
+          ),
+          h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, d.activeEvent.scenario),
+          h('div', { className: 'space-y-2' },
+            d.activeEvent.options.map(function(opt, oi) {
+              var isOptimal = opt.quality === 'optimal';
+              return h('button', {
+                key: oi,
+                onClick: function() { resolveEvent(d.activeEvent, opt); },
+                className: 'w-full text-left p-3 rounded-lg border transition-all hover:scale-[1.01] active:scale-[0.99] ' +
+                  (diffSettings.showOptimalHint && isOptimal ? 'bg-green-500/10 border-green-500/30 hover:border-green-400/50' : 'bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-500/5')
+              },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('span', null, opt.icon),
+                  h('span', { className: 'text-xs font-bold text-white' }, opt.label)
+                ),
+                diffSettings.showEffects && opt.effects && h('div', { className: 'flex flex-wrap gap-2 text-[9px] mt-1' },
+                  Object.keys(opt.effects).map(function(k) {
+                    var v = opt.effects[k];
+                    return h('span', { key: k, className: v > 0 ? 'text-green-400' : 'text-red-400' },
+                      (k === 'morale' ? '\uD83D\uDE0A' : k === 'power' ? '\u26A1' : k === 'time' ? '\u23F1' : '\u2699\uFE0F') + ' ' + (v > 0 ? '+' : '') + v + ' ' + k
+                    );
+                  })
+                )
+              );
+            })
+          ),
+          h('details', { className: 'mt-3' },
+            h('summary', { className: 'text-[9px] text-slate-500 cursor-pointer hover:text-slate-400 transition-colors' }, '\uD83D\uDCDA What really happened?'),
+            h('p', { className: 'text-[10px] text-indigo-300 mt-1 pl-3 leading-relaxed' }, d.activeEvent.historical)
+          )
+        ),
+
+        // ── Event Outcome card (shown after resolving an event) ──
+        d.eventOutcome && h('div', {
+          className: 'mb-3 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-4 border border-slate-600/50'
+        },
+          h('div', { className: 'flex items-center gap-2 mb-2' },
+            h('span', { className: 'text-lg' }, d.eventOutcome.quality === 'optimal' ? '\u2B50' : d.eventOutcome.quality === 'adequate' ? '\u2705' : '\u26A0\uFE0F'),
+            h('span', { className: 'text-sm font-bold ' + (d.eventOutcome.quality === 'optimal' ? 'text-green-400' : d.eventOutcome.quality === 'adequate' ? 'text-yellow-400' : 'text-orange-400') },
+              d.eventOutcome.quality === 'optimal' ? 'Excellent Decision!' : d.eventOutcome.quality === 'adequate' ? 'Acceptable Solution' : 'Suboptimal Choice'
+            )
+          ),
+          h('p', { className: 'text-[10px] text-slate-400 mb-1' }, '\u201C' + d.eventOutcome.label + '\u201D'),
+          h('div', { className: 'bg-sky-500/10 rounded-lg p-3 border border-sky-500/20' },
+            h('p', { className: 'text-[10px] text-sky-200 leading-relaxed' }, '\uD83D\uDD2C ' + d.eventOutcome.outcome)
+          ),
+          h('button', {
+            onClick: function() {
+              upd('eventOutcome', null);
+              setPhase(d.eventPhaseTarget);
+            },
+            className: 'w-full mt-3 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md transition-all'
+          }, '\uD83D\uDE80 Continue Mission')
         ),
 
         // ── Quiz overlay (shown between key phases) ──
@@ -839,7 +1059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('button', {
                   'aria-label': 'Proceed to Earth orbit phase after successful launch',
                   onClick: function() {
-                    setPhase(2);
+                    advancePhase(2);
                     log('\uD83D\uDE80 Launch successful! Reached Earth orbit.');
                     addXP(20);
                     if (addToast) addToast('\uD83C\uDF0D Orbit achieved! Preparing trans-lunar injection.', 'success');
@@ -883,7 +1103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('button', {
             'aria-label': 'Execute trans-lunar injection burn to begin 3-day journey to the Moon',
             onClick: function() {
-              setPhase(3);
+              advancePhase(3);
               upd('showQuiz', true); // Trigger quiz during coast
               log('\uD83D\uDE80 TLI burn complete! En route to the Moon.');
               addXP(15);
@@ -1007,7 +1227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('button', {
             'aria-label': 'Arrive at the Moon and enter lunar orbit at 110 kilometer altitude',
             onClick: function() {
-              setPhase(4);
+              advancePhase(4);
               log('\uD83C\uDF15 Approaching the Moon. Preparing for lunar orbit insertion.');
               addXP(15);
               if (addToast) addToast('\uD83C\uDF15 The Moon fills the window! Preparing LOI burn.', 'success');
@@ -1106,7 +1326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('button', {
             'aria-label': 'Undock Lunar Module Eagle from Command Module Columbia and begin powered descent to the Moon surface',
             onClick: function() {
-              setPhase(5);
+              advancePhase(5);
               log('\u2B07\uFE0F Undocked from Columbia. Beginning powered descent.');
               addXP(15);
               if (addToast) addToast('\u2B07\uFE0F "The Eagle has undocked!" Beginning powered descent.', 'success');
@@ -1443,7 +1663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('button', {
                 'aria-label': 'Begin extravehicular activity moonwalk to explore the lunar surface and collect geological samples',
                 onClick: function() {
-                  setPhase(6);
+                  advancePhase(6);
                   log('\uD83C\uDF15 "The Eagle has landed!" Preparing for EVA.');
                   addXP(30);
                   if (addToast) addToast('\uD83D\uDC68\u200D\uD83D\uDE80 "That\'s one small step..." Preparing for moonwalk!', 'success');
@@ -1984,7 +2204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('button', {
                 'aria-label': 'End moonwalk EVA and return to Lunar Module. ' + (d.lunarSamples || []).length + ' samples collected.',
                 onClick: function() {
-                  setPhase(7);
+                  advancePhase(7);
                   log('\uD83D\uDC68\u200D\uD83D\uDE80 EVA complete. ' + (d.lunarSamples || []).length + ' samples collected. Preparing for ascent.');
                   addXP(25);
                   if (addToast) addToast('\u2B06\uFE0F EVA complete! Time to go home. Preparing lunar ascent.', 'success');
@@ -2026,7 +2246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('button', {
             'aria-label': phase === 7 ? 'Fire trans-Earth injection burn to begin 3-day return journey home' : 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour',
             onClick: function() {
-              setPhase(phase + 1);
+              advancePhase(phase + 1);
               log(phase === 7 ? '\u2B06\uFE0F Docked with Columbia. LM jettisoned.' : '\uD83C\uDF0D Approaching Earth. Preparing for re-entry.');
               addXP(15);
             },
@@ -2335,6 +2555,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 )
               )
             ),
+            // ── Decision Analysis (from Mission Events) ──
+            (d.decisionLog || []).length > 0 && h('div', { className: 'mt-3 bg-white/5 rounded-xl p-3 border border-white/10' },
+              h('p', { className: 'text-[9px] text-slate-500 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
+              (d.decisionLog || []).map(function(dec, i) {
+                return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
+                  h('div', { className: 'flex justify-between items-center mb-1' },
+                    h('span', { className: 'text-[10px] font-bold text-white' }, dec.title),
+                    h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full ' +
+                      (dec.quality === 'optimal' ? 'bg-green-500/20 text-green-300' :
+                       dec.quality === 'adequate' ? 'bg-yellow-500/20 text-yellow-300' :
+                       'bg-red-500/20 text-red-300')
+                    }, dec.quality.toUpperCase())
+                  ),
+                  h('p', { className: 'text-[9px] text-slate-400' }, 'Your choice: "' + dec.chosen + '"'),
+                  dec.quality !== 'optimal' && h('p', { className: 'text-[9px] text-indigo-300 mt-1' },
+                    '\uD83D\uDCA1 Better option: "' + dec.optimal + '"'
+                  ),
+                  h('details', { className: 'mt-1' },
+                    h('summary', { className: 'text-[8px] text-slate-500 cursor-pointer' }, 'Historical context'),
+                    h('p', { className: 'text-[9px] text-slate-400 mt-1 pl-2' }, dec.historical)
+                  )
+                );
+              }),
+              // Overall decision score
+              (function() {
+                var dlog = d.decisionLog || [];
+                var optCount = dlog.filter(function(x) { return x.quality === 'optimal'; }).length;
+                var total = dlog.length;
+                var pct = total > 0 ? Math.round(optCount / total * 100) : 0;
+                return h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20 mt-2 text-center' },
+                  h('p', { className: 'text-xs font-bold ' + (pct >= 80 ? 'text-green-300' : pct >= 50 ? 'text-yellow-300' : 'text-orange-300') },
+                    'Decision Score: ' + optCount + '/' + total + ' optimal (' + pct + '%)'),
+                  h('p', { className: 'text-[9px] text-slate-400 mt-0.5' },
+                    pct >= 80 ? 'Outstanding problem-solving! You think like a real mission commander.' :
+                    pct >= 50 ? 'Solid decisions. Review the notes above to learn what real astronauts did.' :
+                    'Room for improvement \u2014 but every astronaut learns from experience. Try again!')
+                );
+              })()
+            ),
+
             h('button', {
               'aria-label': 'Reset and start a new Moon mission from the beginning',
               onClick: function() {
