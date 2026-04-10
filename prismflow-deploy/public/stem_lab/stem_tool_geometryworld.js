@@ -1750,46 +1750,62 @@
         function showDimLines(m, startX, startY, startZ) {
           clearDimLines();
           var THREE = window.THREE; if (!THREE) return;
-          // Bounding box corners
           var x0 = startX, y0 = startY, z0 = startZ;
           var x1 = x0 + m.L, y1 = y0 + m.H, z1 = z0 + m.W;
-          // Helper to draw a thick colored line
+          engine._measureCenter = { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: (z0 + z1) / 2 };
+
           function dimLine(ax, ay, az, bx, by, bz, color) {
             var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.85, linewidth: 2 });
             var geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz)]);
             var line = new THREE.LineSegments(geo, mat);
-            engine.scene.add(line);
-            engine._dimLines.push(line);
+            engine.scene.add(line); engine._dimLines.push(line);
           }
-          // Length (red, along X at bottom-front)
+
+          // ── Sequential formula buildup (L, then W, then H, then V) ──
+          // Step 1 (immediate): Length line + label
           dimLine(x0, y0, z0, x1, y0, z0, 0xef4444);
           var lbl = makeDimLabel('L=' + m.L, '#ef4444');
           lbl.position.set((x0 + x1) / 2, y0 - 0.4, z0);
           engine.scene.add(lbl); engine._dimLines.push(lbl);
-          // Width (blue, along Z at bottom-left)
-          dimLine(x0, y0, z0, x0, y0, z1, 0x3b82f6);
-          var wbl = makeDimLabel('W=' + m.W, '#3b82f6');
-          wbl.position.set(x0 - 0.5, y0 - 0.4, (z0 + z1) / 2);
-          engine.scene.add(wbl); engine._dimLines.push(wbl);
-          // Height (green, along Y at front-left)
-          dimLine(x0, y0, z0, x0, y1, z0, 0x22c55e);
-          var hbl = makeDimLabel('H=' + m.H, '#22c55e');
-          hbl.position.set(x0 - 0.5, (y0 + y1) / 2, z0);
-          engine.scene.add(hbl); engine._dimLines.push(hbl);
-          // Volume label floating above center
-          var vbl = makeDimLabel('V=' + (m.hasFractions ? m.formattedVolume : m.boundingVolume), '#fbbf24');
-          vbl.position.set((x0 + x1) / 2, y1 + 0.6, (z0 + z1) / 2);
-          vbl.scale.set(2.0, 0.75, 1);
-          engine.scene.add(vbl); engine._dimLines.push(vbl);
-          // Bounding box wireframe — dashed outline around entire structure
-          var bbGeo = new THREE.BoxGeometry(m.L, m.H, m.W);
-          var bbEdges = new THREE.EdgesGeometry(bbGeo);
-          var bbMat = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.4 });
-          var bbLine = new THREE.LineSegments(bbEdges, bbMat);
-          bbLine.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
-          engine.scene.add(bbLine); engine._dimLines.push(bbLine);
-          // Auto-clear after 8 seconds
-          engine._dimTimer = setTimeout(clearDimLines, 8000);
+
+          // Step 2 (after 0.8s): Width line + label
+          setTimeout(function() {
+            if (!engine || !engine.scene) return;
+            dimLine(x0, y0, z0, x0, y0, z1, 0x3b82f6);
+            var wbl = makeDimLabel('W=' + m.W, '#3b82f6');
+            wbl.position.set(x0 - 0.5, y0 - 0.4, (z0 + z1) / 2);
+            engine.scene.add(wbl); engine._dimLines.push(wbl);
+          }, 800);
+
+          // Step 3 (after 1.6s): Height line + label
+          setTimeout(function() {
+            if (!engine || !engine.scene) return;
+            dimLine(x0, y0, z0, x0, y1, z0, 0x22c55e);
+            var hbl = makeDimLabel('H=' + m.H, '#22c55e');
+            hbl.position.set(x0 - 0.5, (y0 + y1) / 2, z0);
+            engine.scene.add(hbl); engine._dimLines.push(hbl);
+          }, 1600);
+
+          // Step 4 (after 2.4s): Volume label + bounding box
+          setTimeout(function() {
+            if (!engine || !engine.scene) return;
+            var volStr = m.L + '\u00d7' + m.W + '\u00d7' + m.H + '=' + (m.hasFractions ? m.formattedVolume : m.boundingVolume);
+            var vbl = makeDimLabel(volStr, '#fbbf24');
+            vbl.position.set((x0 + x1) / 2, y1 + 0.6, (z0 + z1) / 2);
+            vbl.scale.set(2.4, 0.75, 1);
+            engine.scene.add(vbl); engine._dimLines.push(vbl);
+            // Bounding box wireframe
+            var bbGeo = new THREE.BoxGeometry(m.L, m.H, m.W);
+            var bbEdges = new THREE.EdgesGeometry(bbGeo);
+            var bbMat = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.4 });
+            var bbLine = new THREE.LineSegments(bbEdges, bbMat);
+            bbLine.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+            engine.scene.add(bbLine); engine._dimLines.push(bbLine);
+          }, 2400);
+
+          // Persistent: clear on re-measure, distance >20, or after 30 seconds
+          if (engine._dimTimer) clearTimeout(engine._dimTimer);
+          engine._dimTimer = setTimeout(clearDimLines, 30000);
         }
 
         // ── Structure selection glow — briefly highlight all measured blocks ──
@@ -1801,24 +1817,43 @@
         function showSelectionGlow(blocks) {
           clearSelectionGlow();
           var THREE = window.THREE; if (!THREE) return;
-          var glowMat = new THREE.MeshBasicMaterial({ color: 0x7c3aed, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
+
+          // Group blocks by Y layer for sequential reveal (bottom to top)
+          var layers = {};
           blocks.forEach(function(b) {
-            var gMesh = new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.02, 1.02), glowMat.clone());
-            gMesh.position.set(b.x + 0.5, b.y + 0.5, b.z + 0.5);
-            gMesh.renderOrder = 997;
-            engine.scene.add(gMesh);
-            engine._selectionGlows.push(gMesh);
+            var ly = b.y;
+            if (!layers[ly]) layers[ly] = [];
+            layers[ly].push(b);
           });
-          // Fade out after 6 seconds
+          var sortedYs = Object.keys(layers).map(Number).sort(function(a, b) { return a - b; });
+
+          // Animate: reveal one layer every 400ms
+          var colors = [0xef4444, 0xf59e0b, 0x22c55e, 0x3b82f6, 0x7c3aed, 0xec4899];
+          sortedYs.forEach(function(ly, layerIdx) {
+            setTimeout(function() {
+              if (!engine || !engine.scene) return;
+              var layerColor = colors[layerIdx % colors.length];
+              var glowMat = new THREE.MeshBasicMaterial({ color: layerColor, transparent: true, opacity: 0.22, side: THREE.DoubleSide });
+              layers[ly].forEach(function(b) {
+                var gMesh = new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.02, 1.02), glowMat.clone());
+                gMesh.position.set(b.x + 0.5, b.y + 0.5, b.z + 0.5);
+                gMesh.renderOrder = 997;
+                engine.scene.add(gMesh);
+                engine._selectionGlows.push(gMesh);
+              });
+            }, layerIdx * 400);
+          });
+
+          // Fade out after dimension lines clear (25 seconds)
           setTimeout(function() {
             var fadeInterval = setInterval(function() {
               var allGone = true;
               engine._selectionGlows.forEach(function(g) {
-                if (g.material.opacity > 0.01) { g.material.opacity -= 0.02; allGone = false; }
+                if (g.material.opacity > 0.01) { g.material.opacity -= 0.015; allGone = false; }
               });
               if (allGone) { clearSelectionGlow(); clearInterval(fadeInterval); }
             }, 50);
-          }, 6000);
+          }, 25000);
         }
 
         // Input handlers
@@ -2077,6 +2112,13 @@
             part.scale.setScalar(1.0 - (part.userData._age / part.userData._life) * 0.5);
           }
 
+          // ── Auto-clear dimension lines when player walks far away ──
+          if (engine._dimLines.length > 0 && engine._measureCenter) {
+            var mc = engine._measureCenter;
+            var dDist = engine.camera.position.distanceTo(new THREE.Vector3(mc.x, mc.y, mc.z));
+            if (dDist > 25) { clearDimLines(); clearSelectionGlow(); engine._measureCenter = null; }
+          }
+
           // ── Camera entry animation (swoop down to spawn) ──
           if (engine._entryAnim && !engine.isLocked) {
             var ea = engine._entryAnim;
@@ -2223,6 +2265,16 @@
           engine.npcs.forEach(function(npc, i) {
             var baseY = npc.data.position[1] + 0.75;
             var bobY = Math.sin(t * 2 + i) * 0.1;
+            // Celebration bounce (set npc._celebrateUntil on correct answer)
+            if (npc._celebrateUntil && t < npc._celebrateUntil) {
+              bobY += Math.abs(Math.sin((t - (npc._celebrateUntil - 0.8)) * 12)) * 0.4;
+            }
+            // Shake on wrong answer (set npc._shakeUntil)
+            if (npc._shakeUntil && t < npc._shakeUntil) {
+              npc.body.position.x = npc.data.position[0] + 0.5 + Math.sin(t * 30) * 0.05;
+            } else {
+              npc.body.position.x = npc.data.position[0] + 0.5;
+            }
             npc.body.position.y = baseY + bobY;
             npc.head.position.y = npc.data.position[1] + 1.7 + bobY;
             // Face toward player when within 6 blocks
@@ -3607,8 +3659,11 @@
                           if (addToast) addToast('\u2705 Correct! +1', 'success');
                           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
                           if (typeof announceToSR === 'function') announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
-                          // 3D confetti from NPC
-                          if (eng && npc.body) { try { spawnPlaceParticles(eng, npc.body.position.x, npc.body.position.y + 1.5, npc.body.position.z); } catch(e) {} }
+                          // 3D confetti from NPC + celebration bounce
+                          if (eng && npc.body) {
+                            try { spawnPlaceParticles(eng, npc.body.position.x, npc.body.position.y + 1.5, npc.body.position.z); } catch(e) {}
+                            npc._celebrateUntil = (eng.clock ? eng.clock.getElapsedTime() : 0) + 0.8;
+                          }
                           // Check lesson completion
                           if (newScore >= totalQ && totalQ > 0) {
                             sfxComplete();
@@ -3623,7 +3678,9 @@
                         setTimeout(runAchievementCheck, 100);
                       } else {
                         sfxWrong();
+                        // NPC shake animation
                         var eng2 = window[engineKey];
+                        if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
                         if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct] });
                         var newWrong = consecutiveWrong + 1;
                         upd('consecutiveWrong', newWrong);
