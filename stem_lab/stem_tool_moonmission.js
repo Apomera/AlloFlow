@@ -32,6 +32,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 (function() {
   'use strict';
 
+  // ═══════════════════════════════════════════════════════════════
+  // SHARED PROCEDURAL DRAWING HELPERS
+  // Pure canvas draw functions used across all mission phases.
+  // ═══════════════════════════════════════════════════════════════
+
+  // Seeded PRNG — deterministic so craters/stars don't jump per frame
+  function _seededRand(seed) {
+    var s = (seed * 16807 + 1) % 2147483647;
+    return { next: function() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }, s: s };
+  }
+
+  // ── Detailed Earth with continents, clouds, atmosphere ──
+  function drawDetailedEarth(ctx, cx, cy, r, tick) {
+    if (r < 3) { ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); return; }
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+    // Ocean base
+    var og = ctx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, 0, cx, cy, r);
+    og.addColorStop(0, '#4a9aea'); og.addColorStop(0.5, '#2563eb'); og.addColorStop(1, '#1e3a6e');
+    ctx.fillStyle = og; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    // Continents (3 blobs, slowly rotating)
+    var rot = (tick || 0) * 0.0008;
+    ctx.fillStyle = '#3a8a3a';
+    // Americas
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(rot + 0.3) * r * 0.15, cy - r * 0.55);
+    ctx.bezierCurveTo(cx + Math.cos(rot + 0.1) * r * 0.35, cy - r * 0.3, cx + Math.cos(rot - 0.1) * r * 0.25, cy + r * 0.1, cx + Math.cos(rot + 0.2) * r * 0.1, cy + r * 0.45);
+    ctx.bezierCurveTo(cx + Math.cos(rot + 0.4) * r * 0.0, cy + r * 0.2, cx + Math.cos(rot + 0.5) * r * -0.05, cy - r * 0.2, cx + Math.cos(rot + 0.3) * r * 0.15, cy - r * 0.55);
+    ctx.fill();
+    // Eurasia/Africa
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(rot + 2.5) * r * 0.1, cy - r * 0.45);
+    ctx.bezierCurveTo(cx + Math.cos(rot + 2.8) * r * 0.45, cy - r * 0.35, cx + Math.cos(rot + 3.0) * r * 0.55, cy - r * 0.05, cx + Math.cos(rot + 2.9) * r * 0.35, cy + r * 0.15);
+    ctx.bezierCurveTo(cx + Math.cos(rot + 2.6) * r * 0.2, cy + r * 0.45, cx + Math.cos(rot + 2.3) * r * 0.05, cy + r * 0.25, cx + Math.cos(rot + 2.5) * r * 0.1, cy - r * 0.45);
+    ctx.fill();
+    // Australia
+    ctx.fillStyle = '#5a7a3a';
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(rot + 4.2) * r * 0.3, cy + r * 0.25);
+    ctx.bezierCurveTo(cx + Math.cos(rot + 4.5) * r * 0.45, cy + r * 0.2, cx + Math.cos(rot + 4.6) * r * 0.45, cy + r * 0.4, cx + Math.cos(rot + 4.3) * r * 0.3, cy + r * 0.4);
+    ctx.closePath(); ctx.fill();
+    // Ice caps
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.beginPath(); ctx.ellipse(cx, cy - r * 0.88, r * 0.35, r * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy + r * 0.9, r * 0.25, r * 0.08, 0, 0, Math.PI * 2); ctx.fill();
+    // Cloud swirls
+    ctx.globalAlpha = 0.22;
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(1, r * 0.04);
+    var ct = (tick || 0) * 0.0003;
+    for (var ci = 0; ci < 7; ci++) {
+      var ca = ci * 0.9 + ct;
+      var crr = r * (0.3 + ci * 0.08);
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(ca) * r * 0.2, cy + Math.sin(ca * 1.3) * r * 0.3, crr, ca, ca + 1.2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    // Atmosphere glow (outside clip)
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    var ag = ctx.createRadialGradient(cx, cy, r, cx, cy, r * 1.2);
+    ag.addColorStop(0, '#60a5fa'); ag.addColorStop(0.6, '#38bdf8'); ag.addColorStop(1, 'transparent');
+    ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(cx, cy, r * 1.2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 0.07;
+    var ag2 = ctx.createRadialGradient(cx, cy, r * 1.1, cx, cy, r * 1.45);
+    ag2.addColorStop(0, '#93c5fd'); ag2.addColorStop(1, 'transparent');
+    ctx.fillStyle = ag2; ctx.beginPath(); ctx.arc(cx, cy, r * 1.45, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Detailed Moon with procedural craters and mare ──
+  function drawDetailedMoon(ctx, cx, cy, r, seed) {
+    if (r < 5) { ctx.fillStyle = '#d1d5db'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); return; }
+    var rng = _seededRand(seed || 42);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+    // Base shading with light source offset
+    var mg = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 0, cx + r * 0.1, cy + r * 0.1, r);
+    mg.addColorStop(0, '#e8e8e8'); mg.addColorStop(0.6, '#c8c8c8'); mg.addColorStop(1, '#8a8a8a');
+    ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    // Mare regions (darker seas)
+    ctx.fillStyle = 'rgba(80,80,90,0.18)';
+    ctx.beginPath(); ctx.ellipse(cx - r * 0.15, cy - r * 0.2, r * 0.4, r * 0.3, -0.3, 0, Math.PI * 2); ctx.fill(); // Imbrium
+    ctx.fillStyle = 'rgba(80,80,90,0.15)';
+    ctx.beginPath(); ctx.ellipse(cx + r * 0.2, cy - r * 0.05, r * 0.25, r * 0.2, 0.2, 0, Math.PI * 2); ctx.fill(); // Serenitatis
+    ctx.fillStyle = 'rgba(80,80,90,0.12)';
+    ctx.beginPath(); ctx.ellipse(cx + r * 0.1, cy + r * 0.25, r * 0.3, r * 0.18, 0, 0, Math.PI * 2); ctx.fill(); // Tranquillitatis
+    ctx.fillStyle = 'rgba(80,80,90,0.1)';
+    ctx.beginPath(); ctx.ellipse(cx + r * 0.4, cy - r * 0.2, r * 0.12, r * 0.12, 0, 0, Math.PI * 2); ctx.fill(); // Crisium
+    // Procedural craters
+    var craterCount = Math.min(25, Math.max(8, Math.round(r * 0.5)));
+    for (var ci = 0; ci < craterCount; ci++) {
+      var ccx = cx + (rng.next() - 0.5) * r * 1.6;
+      var ccy = cy + (rng.next() - 0.5) * r * 1.6;
+      var cr = r * (0.02 + rng.next() * 0.1);
+      // Only draw if inside the moon circle
+      var dx = ccx - cx, dy = ccy - cy;
+      if (Math.sqrt(dx * dx + dy * dy) + cr > r * 0.95) continue;
+      // Crater shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.beginPath(); ctx.arc(ccx, ccy, cr, 0, Math.PI * 2); ctx.fill();
+      // Bright rim on sun-facing side
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = Math.max(0.5, cr * 0.15);
+      ctx.beginPath(); ctx.arc(ccx, ccy, cr, -2.2, -0.5); ctx.stroke();
+    }
+    // Terminator shadow (day/night)
+    var tg = ctx.createLinearGradient(cx + r * 0.3, cy, cx + r, cy);
+    tg.addColorStop(0, 'transparent'); tg.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.fillStyle = tg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    ctx.restore();
+  }
+
+  // ── Enhanced starfield with size/color variation ──
+  function drawStarfield(ctx, W, H, tick, count) {
+    var rng = _seededRand(7919); // fixed seed for stable positions
+    var colors = ['#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff',
+                  '#b8c8ff','#b8c8ff','#fff5d0','#ffd8b0'];
+    for (var si = 0; si < (count || 100); si++) {
+      var sx = rng.next() * W;
+      var sy = rng.next() * H;
+      var sr = 0.3 + rng.next() * 1.5;
+      var sc = colors[Math.floor(rng.next() * colors.length)];
+      var twinkle = 0.4 + 0.6 * Math.abs(Math.sin((tick || 0) * 0.002 + si * 1.7));
+      ctx.globalAlpha = twinkle;
+      ctx.fillStyle = sc;
+      ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ── Cinematic vignette overlay ──
+  function drawVignette(ctx, W, H, intensity) {
+    var vg = ctx.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+    vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,' + (intensity || 0.25) + ')');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // END SHARED HELPERS
+  // ═══════════════════════════════════════════════════════════════
+
   // WCAG live region
   (function() {
     if (document.getElementById('allo-live-moonmission')) return;
@@ -506,14 +649,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                       // Stars appear as we go higher
                       if (skyPct > 0.4) {
-                        ctx.globalAlpha = (skyPct - 0.4) * 1.5;
-                        for (var si = 0; si < 80; si++) {
-                          ctx.fillStyle = '#ffffff';
-                          ctx.beginPath();
-                          ctx.arc((si * 137 + 29) % W, (si * 211 + 17) % H, si % 3 === 0 ? 1.2 : 0.5, 0, Math.PI * 2);
-                          ctx.fill();
-                        }
-                        ctx.globalAlpha = 1;
+                        ctx.save();
+                        ctx.globalAlpha = Math.min(1, (skyPct - 0.4) * 1.5);
+                        drawStarfield(ctx, W, H, tick, 120);
+                        ctx.restore();
                       }
 
                       // Earth horizon curves away
@@ -627,6 +766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                     }
 
+                    drawVignette(ctx, W, H, 0.3);
                     requestAnimationFrame(drawLaunch);
                   }
                   drawLaunch();
@@ -717,59 +857,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.clearRect(0, 0, W, H3);
                     // Space background
                     ctx.fillStyle = '#010108'; ctx.fillRect(0, 0, W, H3);
-                    // Stars
-                    for (var si = 0; si < 100; si++) {
-                      ctx.globalAlpha = 0.2 + Math.sin(tick * 0.01 + si * 1.3) * 0.2;
-                      ctx.fillStyle = '#fff';
-                      ctx.beginPath();
-                      ctx.arc((si * 137 + 29) % W, (si * 211 + 17) % H3, si % 5 === 0 ? 1.2 : 0.5, 0, Math.PI * 2);
-                      ctx.fill();
-                    }
-                    ctx.globalAlpha = 1;
+                    // Enhanced starfield
+                    drawStarfield(ctx, W, H3, tick, 150);
                     // Journey progress (0 to 1 over time)
                     var progress = Math.min(0.95, tick * 0.0005);
-                    // Earth (left side, shrinks as we move away)
-                    var earthR = 25 * (1 - progress * 0.6);
-                    var earthX = 50 + progress * 10;
-                    var earthGrad = ctx.createRadialGradient(earthX, H3 * 0.5, 0, earthX, H3 * 0.5, earthR);
-                    earthGrad.addColorStop(0, '#3b82f6');
-                    earthGrad.addColorStop(0.6, '#2563eb');
-                    earthGrad.addColorStop(1, '#1e40af');
-                    ctx.fillStyle = earthGrad;
-                    ctx.beginPath(); ctx.arc(earthX, H3 * 0.5, earthR, 0, Math.PI * 2); ctx.fill();
-                    // Earth atmosphere glow
-                    ctx.globalAlpha = 0.2;
-                    var earthGlow = ctx.createRadialGradient(earthX, H3 * 0.5, earthR, earthX, H3 * 0.5, earthR * 1.4);
-                    earthGlow.addColorStop(0, '#60a5fa'); earthGlow.addColorStop(1, 'transparent');
-                    ctx.fillStyle = earthGlow;
-                    ctx.beginPath(); ctx.arc(earthX, H3 * 0.5, earthR * 1.4, 0, Math.PI * 2); ctx.fill();
-                    ctx.globalAlpha = 1;
+                    // Earth (left side, larger — ~3.7x Moon's initial size, shrinks as we depart)
+                    var earthR = Math.max(8, 55 * (1 - progress * 0.5));
+                    var earthX = 70 + progress * 15;
+                    drawDetailedEarth(ctx, earthX, H3 * 0.5, earthR, tick);
                     // Moon (right side, grows as we approach)
                     var moonR = 8 + progress * 30;
                     var moonX = W - 50 - (1 - progress) * 10;
-                    ctx.fillStyle = '#d1d5db';
-                    ctx.beginPath(); ctx.arc(moonX, H3 * 0.5, moonR, 0, Math.PI * 2); ctx.fill();
-                    // Moon craters
-                    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-                    for (var mc = 0; mc < 5; mc++) {
-                      var mcx = moonX + (mc * 7 - 14) * (moonR / 30);
-                      var mcy = H3 * 0.5 + (mc * 5 - 10) * (moonR / 30);
-                      ctx.beginPath(); ctx.arc(mcx, mcy, 2 + mc * (moonR / 30), 0, Math.PI * 2); ctx.fill();
-                    }
-                    // Spacecraft (moving dot with trail)
-                    var scX = earthX + 30 + (moonX - earthX - 60) * progress;
+                    drawDetailedMoon(ctx, moonX, H3 * 0.5, moonR, 42);
+                    // Spacecraft (CSM shape with trail)
+                    var scX = earthX + earthR + 15 + (moonX - earthX - earthR - moonR - 30) * progress;
                     var scY = H3 * 0.5 + Math.sin(tick * 0.008) * 5;
-                    // Trail
-                    ctx.strokeStyle = 'rgba(56,189,248,0.15)';
+                    // Fading dashed trail
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(56,189,248,0.12)';
                     ctx.lineWidth = 1;
-                    ctx.setLineDash([3, 3]);
-                    ctx.beginPath(); ctx.moveTo(earthX + 30, H3 * 0.5); ctx.lineTo(scX, scY); ctx.stroke();
+                    ctx.setLineDash([3, 4]);
+                    ctx.beginPath(); ctx.moveTo(earthX + earthR + 10, H3 * 0.5); ctx.lineTo(scX - 8, scY); ctx.stroke();
                     ctx.setLineDash([]);
-                    // Spacecraft dot
-                    ctx.fillStyle = '#fff';
-                    ctx.beginPath(); ctx.arc(scX, scY, 2.5, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = 'rgba(56,189,248,0.4)';
-                    ctx.beginPath(); ctx.arc(scX, scY, 5, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                    // CSM body (command module cone + service module rectangle)
+                    ctx.save();
+                    ctx.translate(scX, scY);
+                    // Blue engine glow
+                    ctx.fillStyle = 'rgba(56,189,248,0.3)';
+                    ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+                    // Service module (silver rectangle)
+                    ctx.fillStyle = '#c0c8d0';
+                    ctx.fillRect(-8, -2.5, 10, 5);
+                    // Command module (white cone)
+                    ctx.fillStyle = '#e8ecf0';
+                    ctx.beginPath(); ctx.moveTo(5, 0); ctx.lineTo(2, -3); ctx.lineTo(-1, -3); ctx.lineTo(-1, 3); ctx.lineTo(2, 3); ctx.closePath(); ctx.fill();
+                    // Window
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(1, -1, 2, 2);
+                    // LM adapter (wider section behind SM)
+                    ctx.fillStyle = '#a0a8b0';
+                    ctx.fillRect(-12, -3.5, 4, 7);
+                    // Tiny engine glow at rear
+                    ctx.fillStyle = 'rgba(100,180,255,0.5)';
+                    ctx.beginPath(); ctx.arc(-13, 0, 1.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
                     // Distance readout
                     var distFromEarth = Math.round(progress * 384400);
                     var distToMoon = 384400 - distFromEarth;
@@ -794,6 +926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillStyle = '#a5b4fc';
                     ctx.fillText(commsMessages[commsIdx], W * 0.5, H3 - 12);
                     ctx.globalAlpha = 1;
+                    drawVignette(ctx, W, H3, 0.25);
                     requestAnimationFrame(drawTransit);
                   }
                   drawTransit();
@@ -846,32 +979,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     tick++;
                     ctx.clearRect(0, 0, W, HO);
                     ctx.fillStyle = '#000008'; ctx.fillRect(0, 0, W, HO);
-                    // Stars
-                    for (var si = 0; si < 60; si++) {
-                      ctx.globalAlpha = 0.2 + Math.sin(tick * 0.01 + si) * 0.15;
-                      ctx.fillStyle = '#fff';
-                      ctx.beginPath(); ctx.arc((si * 97 + 13) % W, (si * 61 + 7) % HO, 0.6, 0, Math.PI * 2); ctx.fill();
-                    }
-                    ctx.globalAlpha = 1;
-                    // Moon (large, fills most of the view)
+                    // Enhanced starfield
+                    drawStarfield(ctx, W, HO, tick, 100);
+                    // Earthrise — small Earth visible near top-right
+                    drawDetailedEarth(ctx, W - 35, 25, 12, tick);
+                    ctx.font = '6px system-ui'; ctx.fillStyle = 'rgba(147,197,253,0.5)'; ctx.textAlign = 'center';
+                    ctx.fillText('Earth', W - 35, 42);
+                    // Moon (large, fills most of the view) — detailed procedural rendering
                     var moonCx = W * 0.5, moonCy = HO * 0.55;
                     var moonR = Math.min(W, HO) * 0.38;
-                    var moonGrad = ctx.createRadialGradient(moonCx - moonR * 0.2, moonCy - moonR * 0.2, 0, moonCx, moonCy, moonR);
-                    moonGrad.addColorStop(0, '#e5e7eb'); moonGrad.addColorStop(0.7, '#9ca3af'); moonGrad.addColorStop(1, '#6b7280');
-                    ctx.fillStyle = moonGrad;
-                    ctx.beginPath(); ctx.arc(moonCx, moonCy, moonR, 0, Math.PI * 2); ctx.fill();
-                    // Craters on Moon
+                    drawDetailedMoon(ctx, moonCx, moonCy, moonR, 77);
+                    // Landing site marker (over the detailed moon)
                     ctx.save(); ctx.beginPath(); ctx.arc(moonCx, moonCy, moonR, 0, Math.PI * 2); ctx.clip();
-                    ctx.fillStyle = 'rgba(0,0,0,0.06)';
-                    var craters = [[0.2, -0.1, 0.15], [-0.3, 0.2, 0.12], [0.1, 0.3, 0.08], [-0.15, -0.25, 0.1], [0.35, 0.1, 0.07], [-0.05, 0.05, 0.2]];
-                    craters.forEach(function(cr) {
-                      ctx.beginPath(); ctx.arc(moonCx + cr[0] * moonR, moonCy + cr[1] * moonR, cr[2] * moonR, 0, Math.PI * 2); ctx.fill();
-                    });
-                    // Dark mare regions
-                    ctx.fillStyle = 'rgba(0,0,0,0.04)';
-                    ctx.beginPath(); ctx.ellipse(moonCx + moonR * 0.1, moonCy - moonR * 0.1, moonR * 0.3, moonR * 0.2, 0.3, 0, Math.PI * 2); ctx.fill();
-                    // Landing site marker
-                    var lsAngle = tick * 0.003;
                     var lsX = moonCx + moonR * 0.15, lsY = moonCy - moonR * 0.05;
                     ctx.fillStyle = 'rgba(34,197,94,' + (0.4 + Math.sin(tick * 0.06) * 0.3) + ')';
                     ctx.beginPath(); ctx.arc(lsX, lsY, 3, 0, Math.PI * 2); ctx.fill();
@@ -905,6 +1024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.font = 'italic 9px system-ui'; ctx.fillStyle = '#a5b4fc'; ctx.textAlign = 'center';
                     ctx.fillText(orbitComms[ocIdx], W * 0.5, HO - 10);
                     ctx.globalAlpha = 1;
+                    drawVignette(ctx, W, HO, 0.2);
                     requestAnimationFrame(drawOrbit);
                   }
                   drawOrbit();
@@ -1050,15 +1170,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Background: black space + Moon surface below
                     ctx.fillStyle = '#000005';
                     ctx.fillRect(0, 0, W, H);
-                    // Stars
-                    ctx.fillStyle = '#ffffff';
-                    for (var si = 0; si < 50; si++) {
-                      ctx.globalAlpha = 0.3 + Math.sin(tick * 0.02 + si) * 0.2;
-                      ctx.beginPath();
-                      ctx.arc((si * 97 + 13) % W, (si * 61 + 7) % (H * 0.4), 0.8, 0, Math.PI * 2);
-                      ctx.fill();
-                    }
-                    ctx.globalAlpha = 1;
+                    // Enhanced starfield (upper portion of canvas only)
+                    ctx.save();
+                    ctx.beginPath(); ctx.rect(0, 0, W, H * 0.45); ctx.clip();
+                    drawStarfield(ctx, W, H * 0.45, tick, 80);
+                    ctx.restore();
 
                     // Moon surface (rises as altitude drops)
                     var surfaceY = H * 0.5 + Math.min(H * 0.45, (alt / 15000) * H * 0.45);
@@ -1192,6 +1308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fillText('Impact V: ' + Math.abs(vVel).toFixed(1) + ' m/s (limit: 3 m/s) \u2014 Try again or proceed', W * 0.5, H * 0.26);
                     }
 
+                    drawVignette(ctx, W, H, 0.2);
                     if (!landed && !crashed) requestAnimationFrame(drawDescent);
                     else {
                       // One more frame render for final state
@@ -1253,13 +1370,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       sCtx.arc(Math.random() * 512, Math.random() * 256, Math.random() * 1.2, 0, Math.PI * 2);
                       sCtx.fill();
                     }
-                    // Earth in the sky (big blue marble)
-                    sCtx.fillStyle = '#3b82f6';
-                    sCtx.beginPath(); sCtx.arc(380, 50, 18, 0, Math.PI * 2); sCtx.fill();
-                    sCtx.fillStyle = '#22c55e'; // continent hint
-                    sCtx.beginPath(); sCtx.arc(375, 47, 6, 0, Math.PI * 2); sCtx.fill();
-                    sCtx.fillStyle = 'rgba(255,255,255,0.15)';
-                    sCtx.beginPath(); sCtx.arc(373, 43, 12, 0, Math.PI); sCtx.fill();
+                    // Earth in the sky — large detailed marble using drawDetailedEarth
+                    drawDetailedEarth(sCtx, 380, 55, 42, 500);
                     var skyTex = new THREE.CanvasTexture(skyCv);
                     scene.add(new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide })));
 
@@ -1462,16 +1574,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ridge.position.set(0, _terrainHeightAt(0, -70) + 2, -70);
                     scene.add(ridge);
 
-                    // ── Earthrise glow on the horizon ──
-                    var earthGlowGeo = new THREE.SphereGeometry(4, 16, 12);
+                    // ── Earthrise glow on the horizon (enlarged) ──
+                    var earthGlowGeo = new THREE.SphereGeometry(8, 16, 12);
                     var earthGlowMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
                     var earthGlow = new THREE.Mesh(earthGlowGeo, earthGlowMat);
                     earthGlow.position.set(-80, 15, -60);
                     scene.add(earthGlow);
-                    // Earth atmosphere halo
-                    var earthHaloGeo = new THREE.SphereGeometry(5.5, 16, 12);
+                    // Earth atmosphere halo (enlarged)
+                    var earthHaloGeo = new THREE.SphereGeometry(11, 16, 12);
                     var earthHaloMat = new THREE.MeshBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.15 });
                     scene.add(new THREE.Mesh(earthHaloGeo, earthHaloMat)).position.copy(earthGlow.position);
+                    // Outer atmospheric halo
+                    var earthHalo2Geo = new THREE.SphereGeometry(14, 16, 12);
+                    var earthHalo2Mat = new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.05 });
+                    scene.add(new THREE.Mesh(earthHalo2Geo, earthHalo2Mat)).position.copy(earthGlow.position);
 
                     // ── Sample collection orbs (lunar rocks) ──
                     var lunarSampleOrbs = [];
@@ -1834,12 +1950,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       bgGrad.addColorStop(1, 'rgb(' + Math.round(80 * heatPct) + ',' + Math.round(20 * heatPct) + ',0)');
                       ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, HR);
                       // Stars (fade out during heating)
-                      ctx.globalAlpha = 0.3 * (1 - heatPct);
-                      ctx.fillStyle = '#fff';
-                      for (var si = 0; si < 40; si++) {
-                        ctx.beginPath(); ctx.arc((si * 97 + 13) % W, (si * 61 + 7) % HR, 0.6, 0, Math.PI * 2); ctx.fill();
-                      }
-                      ctx.globalAlpha = 1;
+                      ctx.save();
+                      ctx.globalAlpha = Math.max(0, 0.3 * (1 - heatPct));
+                      drawStarfield(ctx, W, HR, tick, 60);
+                      ctx.restore();
                       // Plasma/fire effect around capsule
                       if (heatPct > 0.2) {
                         var fireIntensity = heatPct;
@@ -1958,6 +2072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.globalAlpha = 0.6; ctx.font = 'italic 9px system-ui'; ctx.fillStyle = '#a5b4fc';
                     ctx.fillText(reComms[reentryPhase], W * 0.5, 16);
                     ctx.globalAlpha = 1;
+                    drawVignette(ctx, W, HR, 0.35);
                     if (reentryPhase < 4) requestAnimationFrame(drawReentry);
                   }
                   drawReentry();
