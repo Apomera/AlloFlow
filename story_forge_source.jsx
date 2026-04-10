@@ -127,8 +127,10 @@ const useReducedMotion = () => {
 };
 
 const LAYOUT_MODES = {
-  'prose': { label: 'Prose', emoji: '📄', desc: 'Traditional paragraph layout' },
-  'comic': { label: 'Comic Panels', emoji: '💬', desc: 'Graphic novel panel grid' },
+  'prose': { label: 'Prose', emoji: '📄', desc: 'Traditional paragraph layout', writeBg: 'bg-white', writeBorder: 'border-slate-200', accent: 'rose' },
+  'comic': { label: 'Comic', emoji: '💬', desc: 'Panel grid with speech bubbles', writeBg: 'bg-slate-50', writeBorder: 'border-slate-800', accent: 'blue' },
+  'journal': { label: 'Journal', emoji: '📓', desc: 'Lined notebook diary style', writeBg: 'bg-amber-50', writeBorder: 'border-amber-300', accent: 'amber' },
+  'dark': { label: 'Dark', emoji: '🌙', desc: 'Dark mode cyberpunk aesthetic', writeBg: 'bg-slate-900', writeBorder: 'border-slate-600', accent: 'cyan' },
 };
 
 const VOICE_POOL = ['Kore', 'Puck', 'Charon', 'Fenrir', 'Aoede', 'Leda', 'Orus', 'Zephyr'];
@@ -287,6 +289,8 @@ const StoryForge = React.memo(({
   const [helpMeParagraphIdx, setHelpMeParagraphIdx] = useState(-1);
   const [layoutMode, setLayoutMode] = useState('prose');
   const [dictatingParagraphIdx, setDictatingParagraphIdx] = useState(-1);
+  const [focusMode, setFocusMode] = useState(false);
+  const [focusParagraphIdx, setFocusParagraphIdx] = useState(0);
   const [language, setLanguage] = useState('en');
   const [customLanguage, setCustomLanguage] = useState('');
   const [hasExported, setHasExported] = useState(false);
@@ -347,8 +351,12 @@ const StoryForge = React.memo(({
   // ── Image refinement ──
   const [imageEditState, setImageEditState] = useState(null); // { paragraphId, prompt }
 
-  // ── Comic panel stickers ──
+  // ── Comic panel stickers + dialogue/thought/narration per panel ──
   const [panelStickers, setPanelStickers] = useState({});
+  const [panelDialogue, setPanelDialogue] = useState({}); // keyed by paragraph id: { speaker, speech, thought, narration }
+  const updatePanelDialogue = (pId, field, value) => {
+    setPanelDialogue(prev => ({ ...prev, [pId]: { ...(prev[pId] || {}), [field]: value } }));
+  };
 
   // ── Illustrate state ──
   const [illustrations, setIllustrations] = useState({});
@@ -2209,6 +2217,16 @@ show();
                   >
                     <Sparkles size={14} /> {scaffoldsGenerated ? 'Regenerate Scaffolds' : 'Generate Scaffolds'}
                   </button>
+                  {/* Focus Mode Toggle — write one paragraph at a time */}
+                  <button
+                    onClick={() => { setFocusMode(!focusMode); setFocusParagraphIdx(0); }}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-colors flex items-center gap-2 ${
+                      focusMode ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'
+                    }`}
+                    title={focusMode ? 'Show all paragraphs at once' : 'Focus on one paragraph at a time — less overwhelming!'}
+                  >
+                    <Target size={14} /> {focusMode ? 'Focus ON' : 'Focus Mode'}
+                  </button>
                   {totalWords >= 30 && (
                     <button
                       onClick={checkGrammarAndStyle}
@@ -2233,28 +2251,40 @@ show();
                 </div>
               )}
 
-              {/* Vocab Ingredients Bar with Word Bank Tooltips */}
-              <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-4">
-                <div className="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-2">Story Ingredients — hover for definition, click to copy</div>
-                <div className="flex flex-wrap gap-2">
+              {/* Vocab Ingredients Bar — STICKY so it's always visible while writing */}
+              <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm" style={{ backdropFilter: 'blur(8px)', background: 'rgba(255,241,242,0.92)' }}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Story Ingredients — click to copy</div>
+                  <div className="text-[10px] font-bold text-rose-400">
+                    {vocabTerms.filter(v => vocabUsage[v.term]).length}/{vocabTerms.length} used
+                  </div>
+                </div>
+                {/* Progress bar showing vocab completion */}
+                <div className="w-full h-1.5 bg-rose-100 rounded-full mb-2 overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-500" style={{
+                    width: vocabTerms.length > 0 ? Math.round((vocabTerms.filter(v => vocabUsage[v.term]).length / vocabTerms.length) * 100) + '%' : '0%',
+                    background: vocabTerms.filter(v => vocabUsage[v.term]).length === vocabTerms.length ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f43f5e, #e11d48)'
+                  }} />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
                   {vocabTerms.map((v, i) => {
                     const used = vocabUsage[v.term];
                     return (
                       <div key={i} className="relative group">
                         <div
-                          className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all cursor-pointer select-none ${
-                            used ? 'bg-green-100 border-green-400 text-green-800' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-50'
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all cursor-pointer select-none ${
+                            used ? 'bg-green-100 border-green-400 text-green-800 shadow-sm' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-400'
                           }`}
-                          onClick={() => { navigator.clipboard?.writeText(v.term).then(() => { if (addToast) addToast(`"${v.term}" copied!`, 'success'); }).catch(() => {}); }}
+                          onClick={() => { navigator.clipboard?.writeText(v.term).then(() => { if (addToast) addToast(`"${v.term}" copied — paste into your story!`, 'success'); }).catch(() => {}); }}
                         >
-                          {used ? <CheckCircle2 size={12} className="inline mr-1" /> : null}
+                          {used ? <CheckCircle2 size={11} className="inline mr-1" /> : <span className="inline-block w-2 h-2 rounded-full bg-rose-300 mr-1.5" />}
                           {v.term}
                         </div>
                         {/* Hover Tooltip Word Bank */}
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
                           <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
                           {v.definition && <div className="text-[10px] text-slate-300 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[9px] text-slate-400 italic">Click to copy · Use in your story</div>
+                          <div className="text-[9px] text-slate-400 italic">Click to copy · Paste into your paragraph</div>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
@@ -2263,10 +2293,61 @@ show();
                 </div>
               </div>
 
+              {/* Focus Mode Navigation Bar */}
+              {focusMode && (
+                <div className="flex items-center justify-between bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3">
+                  <button
+                    onClick={() => setFocusParagraphIdx(Math.max(0, focusParagraphIdx - 1))}
+                    disabled={focusParagraphIdx === 0}
+                    className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 disabled:opacity-30 transition-colors flex items-center gap-1"
+                  >
+                    ← Previous
+                  </button>
+                  <div className="text-center">
+                    <div className="text-xs font-bold text-indigo-700">Paragraph {focusParagraphIdx + 1} of {paragraphs.length}</div>
+                    <div className="text-[9px] text-indigo-400 mt-0.5">
+                      {paragraphs[focusParagraphIdx]?.scaffoldFrame ? paragraphs[focusParagraphIdx].scaffoldFrame.substring(0, 60) + (paragraphs[focusParagraphIdx].scaffoldFrame.length > 60 ? '...' : '') : 'Free write'}
+                    </div>
+                    {/* Mini progress dots */}
+                    <div className="flex justify-center gap-1 mt-1.5">
+                      {paragraphs.map((pp, pi) => (
+                        <button
+                          key={pi}
+                          onClick={() => setFocusParagraphIdx(pi)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            pi === focusParagraphIdx ? 'bg-indigo-600 scale-125' : pp.text.trim().length > 10 ? 'bg-green-400' : 'bg-slate-300'
+                          }`}
+                          title={`Jump to paragraph ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (focusParagraphIdx >= paragraphs.length - 1) {
+                        // Add new paragraph if at end
+                        if (paragraphs.length < maxParagraphs) { addParagraph(); setFocusParagraphIdx(paragraphs.length); }
+                      } else {
+                        setFocusParagraphIdx(focusParagraphIdx + 1);
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                  >
+                    {focusParagraphIdx >= paragraphs.length - 1 ? '+ New ¶' : 'Next →'}
+                  </button>
+                </div>
+              )}
+
               {/* Paragraph Cards */}
               {paragraphs.map((p, idx) => (
+                focusMode && idx !== focusParagraphIdx ? null :
                 <React.Fragment key={p.id}>
-                <div id={'sf-para-' + p.id} className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden hover:border-rose-200 transition-colors">
+                <div id={'sf-para-' + p.id} className={`rounded-2xl border-2 shadow-sm overflow-hidden transition-colors ${
+                  focusMode ? 'border-indigo-300 shadow-lg ring-2 ring-indigo-100' :
+                  layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-100' :
+                  layoutMode === 'journal' ? 'bg-amber-50 border-amber-200' :
+                  'bg-white border-slate-200 hover:border-rose-200'
+                }`}>
                   <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-slate-500">Paragraph {idx + 1}</span>
@@ -2323,17 +2404,101 @@ show();
                       <button onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[10px] text-amber-500 hover:text-amber-700 font-bold">Dismiss</button>
                     </div>
                   )}
-                  <textarea
-                    value={p.text}
-                    onChange={(e) => updateParagraph(idx, e.target.value)}
-                    className="w-full p-4 text-sm resize-none outline-none focus:bg-rose-50/30 transition-colors"
-                    style={{ minHeight: '120px' }}
-                    placeholder={p.scaffoldFrame ? "Continue from the scaffold above..." : "Write your paragraph here..."}
-                    aria-label={`Paragraph ${idx + 1} text`}
-                  />
-                  {/* Per-paragraph strength indicator */}
+                  {layoutMode === 'comic' ? (
+                    /* ── Comic Panel Writing Mode — dialogue, thought, narration fields ── */
+                    <div className="p-3 space-y-2 bg-gradient-to-b from-slate-50 to-white">
+                      {/* Narration caption — top yellow bar */}
+                      <div>
+                        <label className="text-[9px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
+                          📖 Narration Caption
+                        </label>
+                        <textarea
+                          value={p.text}
+                          onChange={(e) => updateParagraph(idx, e.target.value)}
+                          className="w-full p-2.5 text-xs resize-none outline-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic"
+                          style={{ minHeight: '50px' }}
+                          placeholder="What's happening in this panel? (narrator voice)"
+                          aria-label={`Panel ${idx + 1} narration`}
+                        />
+                      </div>
+                      {/* Speech bubble */}
+                      <div>
+                        <label className="text-[9px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
+                          💬 Speech Bubble
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={(panelDialogue[p.id] || {}).speaker || ''}
+                            onChange={(e) => updatePanelDialogue(p.id, 'speaker', e.target.value)}
+                            className="w-20 p-1.5 text-[10px] border border-blue-200 rounded-lg outline-none focus:border-blue-400 font-bold text-blue-700"
+                            placeholder="Who?"
+                            aria-label={`Panel ${idx + 1} speaker name`}
+                          />
+                          <textarea
+                            value={(panelDialogue[p.id] || {}).speech || ''}
+                            onChange={(e) => updatePanelDialogue(p.id, 'speech', e.target.value)}
+                            className="flex-1 p-2 text-xs resize-none outline-none border-2 border-blue-200 rounded-xl bg-white focus:border-blue-400 transition-colors"
+                            style={{ minHeight: '36px', borderRadius: '16px' }}
+                            placeholder={'"What the character says out loud..."'}
+                            aria-label={`Panel ${idx + 1} speech`}
+                          />
+                        </div>
+                      </div>
+                      {/* Thought bubble */}
+                      <div>
+                        <label className="text-[9px] font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
+                          💭 Thought Bubble
+                        </label>
+                        <textarea
+                          value={(panelDialogue[p.id] || {}).thought || ''}
+                          onChange={(e) => updatePanelDialogue(p.id, 'thought', e.target.value)}
+                          className="w-full p-2 text-xs resize-none outline-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic"
+                          style={{ minHeight: '30px', borderRadius: '20px', borderStyle: 'dashed' }}
+                          placeholder="What the character is thinking..."
+                          aria-label={`Panel ${idx + 1} thought`}
+                        />
+                      </div>
+                      {/* Sound effect */}
+                      <div className="flex items-center gap-2">
+                        <label className="text-[9px] font-bold text-red-500 uppercase tracking-widest">💥 SFX</label>
+                        <input
+                          type="text"
+                          value={(panelDialogue[p.id] || {}).sfx || ''}
+                          onChange={(e) => updatePanelDialogue(p.id, 'sfx', e.target.value)}
+                          className="flex-1 p-1.5 text-xs border border-red-200 rounded-lg outline-none focus:border-red-400 font-black text-red-600 uppercase"
+                          placeholder="BOOM! CRASH! WHOOSH!"
+                          aria-label={`Panel ${idx + 1} sound effect`}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    /* ── Prose / Journal / Dark Writing Mode — styled textarea ── */
+                    <textarea
+                      value={p.text}
+                      onChange={(e) => updateParagraph(idx, e.target.value)}
+                      className={`w-full p-4 text-sm resize-none outline-none transition-colors ${
+                        layoutMode === 'dark' ? 'bg-slate-800 text-slate-100 placeholder:text-slate-500 focus:bg-slate-750 caret-cyan-400' :
+                        layoutMode === 'journal' ? 'bg-amber-50 text-amber-900 placeholder:text-amber-400 focus:bg-amber-100/50' :
+                        'focus:bg-rose-50/30'
+                      }`}
+                      style={{
+                        minHeight: '120px',
+                        fontFamily: layoutMode === 'journal' ? "'Georgia', 'Times New Roman', serif" : 'inherit',
+                        fontSize: layoutMode === 'journal' ? '14px' : undefined,
+                        lineHeight: layoutMode === 'journal' ? '2.0' : undefined,
+                        backgroundImage: layoutMode === 'journal' ? 'repeating-linear-gradient(transparent, transparent 27px, #d4a574 27px, #d4a574 28px)' : undefined,
+                        backgroundPosition: layoutMode === 'journal' ? '0 8px' : undefined,
+                      }}
+                      placeholder={p.scaffoldFrame ? "Continue from the scaffold above..." : layoutMode === 'journal' ? "Dear diary..." : layoutMode === 'dark' ? "Begin your story..." : "Write your paragraph here..."}
+                      aria-label={`Paragraph ${idx + 1} text`}
+                    />
+                  )}
+                  {/* Per-paragraph strength indicator + vocab reminder */}
                   {p.text.length > 0 && (
-                    <div className="px-4 py-1.5 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-medium">
+                    <div className={`px-4 py-1.5 border-t flex flex-wrap items-center gap-3 text-[10px] font-medium ${
+                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-100 text-slate-400'
+                    }`}>
                       <span>{paragraphStats[idx]?.wordCount || 0} words</span>
                       <span>·</span>
                       <span>{paragraphStats[idx]?.sentenceCount || 0} sentences</span>
@@ -2347,6 +2512,29 @@ show();
                       )}
                     </div>
                   )}
+                  {/* Vocab still needed — shows unused terms as a gentle reminder */}
+                  {vocabTerms.length > 0 && (() => {
+                    const allText = paragraphs.map(pp => pp.text).join(' ').toLowerCase();
+                    const unused = vocabTerms.filter(v => !allText.includes(v.term.toLowerCase()));
+                    if (unused.length === 0 || unused.length === vocabTerms.length) return null;
+                    return (
+                      <div className={`px-4 py-1.5 border-t text-[9px] ${
+                        layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-500' : 'bg-rose-50/50 border-rose-100 text-rose-400'
+                      }`}>
+                        <span className="font-bold">Still needed: </span>
+                        {unused.map((v, vi) => (
+                          <span key={vi}>
+                            <button
+                              onClick={() => { navigator.clipboard?.writeText(v.term); if (addToast) addToast(`"${v.term}" copied!`, 'success'); }}
+                              className={`font-bold underline decoration-dotted cursor-pointer ${layoutMode === 'dark' ? 'text-cyan-500 hover:text-cyan-300' : 'text-rose-600 hover:text-rose-800'}`}
+                              title={v.definition || 'Click to copy'}
+                            >{v.term}</button>
+                            {vi < unused.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
                   {/* Grammar/Style results */}
                   {grammarResults[p.id] && grammarResults[p.id].length > 0 && (
                     <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100 space-y-1.5">
@@ -2385,7 +2573,7 @@ show();
                 </React.Fragment>
               ))}
 
-              {paragraphs.length < maxParagraphs && (
+              {!focusMode && paragraphs.length < maxParagraphs && (
                 <button onClick={addParagraph} className="w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-400 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
                   <Plus size={16} /> Add Paragraph
                 </button>
@@ -3027,7 +3215,7 @@ show();
                   /* ── Comic Panel Grid ── */
                   <div className="p-4 grid grid-cols-2 gap-3 bg-slate-900">
                     {paragraphs.map((p, idx) => (
-                      <div key={p.id} className="bg-white rounded-lg border-3 border-black overflow-hidden shadow-md relative" style={{ border: '3px solid #1e293b' }}>
+                      <div key={p.id} className="bg-white rounded-lg overflow-hidden shadow-md relative" style={{ border: '3px solid #1e293b' }}>
                         {illustrations[p.id]?.imageUrl && (
                           <img src={illustrations[p.id].imageUrl} alt={`Panel ${idx + 1}`} className="w-full aspect-square object-cover" />
                         )}
@@ -3037,11 +3225,38 @@ show();
                             {panelStickers[p.id]}
                           </div>
                         )}
-                        <div className="p-3 relative">
-                          {/* Speech bubble effect */}
-                          <div className="bg-white border-2 border-slate-800 rounded-2xl p-2.5 text-xs text-slate-800 leading-relaxed relative" style={{ borderRadius: '18px' }}>
-                            {p.text.length > 200 ? p.text.substring(0, 200) + '...' : p.text}
+                        {/* SFX overlay */}
+                        {(panelDialogue[p.id] || {}).sfx && (
+                          <div className="absolute top-3 left-3 font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none" style={{ transform: 'rotate(-8deg)', textShadow: '2px 2px 0 #fff, -1px -1px 0 #fff' }}>
+                            {panelDialogue[p.id].sfx}
                           </div>
+                        )}
+                        <div className="p-2.5 relative space-y-1.5">
+                          {/* Narration caption — yellow bar */}
+                          {p.text.trim() && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[10px] text-amber-800 italic leading-snug">
+                              {p.text.length > 200 ? p.text.substring(0, 200) + '...' : p.text}
+                            </div>
+                          )}
+                          {/* Speech bubble */}
+                          {(panelDialogue[p.id] || {}).speech && (
+                            <div className="relative">
+                              {(panelDialogue[p.id] || {}).speaker && (
+                                <div className="text-[8px] font-bold text-blue-600 mb-0.5">{panelDialogue[p.id].speaker}:</div>
+                              )}
+                              <div className="bg-white border-2 border-slate-800 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed" style={{ borderRadius: '18px' }}>
+                                {panelDialogue[p.id].speech}
+                              </div>
+                              {/* Speech bubble tail */}
+                              <div className="absolute -bottom-1.5 left-4 w-3 h-3 bg-white border-b-2 border-r-2 border-slate-800" style={{ transform: 'rotate(45deg)' }} />
+                            </div>
+                          )}
+                          {/* Thought bubble */}
+                          {(panelDialogue[p.id] || {}).thought && (
+                            <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[10px] text-purple-700 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
+                              💭 {panelDialogue[p.id].thought}
+                            </div>
+                          )}
                           <div className="flex items-center justify-between mt-1">
                             <div className="flex gap-0.5">
                               {['💥', '❤️', '⭐', '😂', '😱', '🔥', '💀', '🌟'].map(emoji => (

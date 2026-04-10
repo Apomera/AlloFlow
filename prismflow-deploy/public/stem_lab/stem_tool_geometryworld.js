@@ -42,8 +42,33 @@
       src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start(); src.stop(ac.currentTime + (duration || 0.04));
     } catch(e) {}
   }
-  function sfxPlace() { tone(440, 0.04, 'square', 0.05); tone(554, 0.04, 'square', 0.04); setTimeout(function() { tone(660, 0.06, 'sine', 0.06); }, 25); }
-  function sfxBreak() { noiseBurst(0.06, 0.05, 600); tone(250, 0.06, 'sawtooth', 0.04); setTimeout(function() { noiseBurst(0.04, 0.03, 400); tone(180, 0.08, 'sawtooth', 0.03); }, 40); }
+  // Block-type-aware place/break sounds
+  var _sfxProfiles = {
+    stone:   { placeF: 400, breakF: 220, placeW: 'square',   breakW: 'sawtooth', noiseHz: 500 },
+    grass:   { placeF: 350, breakF: 180, placeW: 'sine',     breakW: 'sine',     noiseHz: 400 },
+    wood:    { placeF: 480, breakF: 260, placeW: 'square',   breakW: 'sawtooth', noiseHz: 700 },
+    diamond: { placeF: 800, breakF: 600, placeW: 'sine',     breakW: 'sine',     noiseHz: 900 },
+    gold:    { placeF: 700, breakF: 500, placeW: 'sine',     breakW: 'sine',     noiseHz: 800 },
+    sand:    { placeF: 300, breakF: 150, placeW: 'sine',     breakW: 'sine',     noiseHz: 300 },
+    glass:   { placeF: 1200,breakF: 900, placeW: 'sine',     breakW: 'sine',     noiseHz: 1200 },
+    water:   { placeF: 350, breakF: 200, placeW: 'sine',     breakW: 'sine',     noiseHz: 350 },
+    brick:   { placeF: 380, breakF: 200, placeW: 'square',   breakW: 'sawtooth', noiseHz: 450 },
+    ice:     { placeF: 1000,breakF: 800, placeW: 'sine',     breakW: 'sine',     noiseHz: 1000 },
+    lava:    { placeF: 200, breakF: 120, placeW: 'sawtooth', breakW: 'sawtooth', noiseHz: 250 },
+    torch:   { placeF: 600, breakF: 400, placeW: 'sine',     breakW: 'sine',     noiseHz: 600 },
+  };
+  function sfxPlace(blockType) {
+    var p = _sfxProfiles[blockType] || _sfxProfiles.stone;
+    tone(p.placeF, 0.04, p.placeW, 0.05);
+    tone(p.placeF * 1.26, 0.04, p.placeW, 0.04);
+    setTimeout(function() { tone(p.placeF * 1.5, 0.06, 'sine', 0.06); }, 25);
+  }
+  function sfxBreak(blockType) {
+    var p = _sfxProfiles[blockType] || _sfxProfiles.stone;
+    noiseBurst(0.06, 0.05, p.noiseHz);
+    tone(p.breakF, 0.06, p.breakW, 0.04);
+    setTimeout(function() { noiseBurst(0.04, 0.03, p.noiseHz * 0.7); tone(p.breakF * 0.72, 0.08, p.breakW, 0.03); }, 40);
+  }
   function sfxCorrect() { tone(523, 0.08, 'sine', 0.07); setTimeout(function() { tone(659, 0.08, 'sine', 0.07); }, 80); setTimeout(function() { tone(784, 0.12, 'sine', 0.08); }, 160); }
   function sfxWrong() { tone(300, 0.15, 'sawtooth', 0.06); setTimeout(function() { tone(250, 0.2, 'sawtooth', 0.05); }, 100); }
   function sfxComplete() { tone(523, 0.1, 'sine', 0.08); setTimeout(function() { tone(659, 0.1, 'sine', 0.08); }, 100); setTimeout(function() { tone(784, 0.1, 'sine', 0.08); }, 200); setTimeout(function() { tone(1047, 0.2, 'sine', 0.1); }, 300); }
@@ -52,6 +77,58 @@
   function sfxLand() { noiseBurst(0.05, 0.04, 350); }
   function sfxNpcChime() { tone(880, 0.06, 'sine', 0.04); setTimeout(function() { tone(1100, 0.08, 'sine', 0.05); }, 60); }
   function sfxMeasure() { tone(660, 0.05, 'sine', 0.04); setTimeout(function() { tone(880, 0.07, 'sine', 0.05); }, 50); }
+
+  // Ambient wind — continuous filtered noise, started once on first interaction
+  var _ambientStarted = false;
+  function startAmbientWind() {
+    if (_ambientStarted) return;
+    var ac = getAC(); if (!ac) return;
+    _ambientStarted = true;
+    try {
+      // White noise buffer (2 seconds looped)
+      var bufSize = ac.sampleRate * 2;
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) d[i] = (Math.random() * 2 - 1);
+      var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+      // Bandpass filter for wind character
+      var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 250; bp.Q.value = 0.5;
+      // Low-frequency modulation via another oscillator controlling gain
+      var lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.15;
+      var lfoGain = ac.createGain(); lfoGain.gain.value = 0.004;
+      lfo.connect(lfoGain);
+      // Master gain (very quiet)
+      var master = ac.createGain(); master.gain.value = 0.008;
+      lfoGain.connect(master.gain);
+      src.connect(bp); bp.connect(master); master.connect(ac.destination);
+      src.start(); lfo.start();
+    } catch(e) {}
+  }
+
+  // ── Environment Presets ──
+  var ENV_PRESETS = {
+    day:     { sky: [0.53, 0.81, 0.92], fog: [0.53, 0.81, 0.92], sunIntensity: 1.0, ambientIntensity: 0.45, fogNear: 30, fogFar: 80, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
+    sunrise: { sky: [0.95, 0.6, 0.4],   fog: [0.9, 0.55, 0.4],  sunIntensity: 0.7, ambientIntensity: 0.3, fogNear: 20, fogFar: 60, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
+    sunset:  { sky: [0.85, 0.35, 0.2],  fog: [0.8, 0.3, 0.2],   sunIntensity: 0.6, ambientIntensity: 0.25, fogNear: 18, fogFar: 55, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
+    night:   { sky: [0.06, 0.05, 0.15], fog: [0.06, 0.05, 0.15], sunIntensity: 0.1, ambientIntensity: 0.12, fogNear: 10, fogFar: 40, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
+    golden:  { sky: [1.0, 0.85, 0.5],   fog: [0.95, 0.8, 0.45], sunIntensity: 0.85, ambientIntensity: 0.35, fogNear: 25, fogFar: 70, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
+  };
+
+  function applyEnvPreset(engine, presetKey) {
+    var p = ENV_PRESETS[presetKey];
+    if (!p || !engine) return;
+    engine.scene.background.setRGB(p.sky[0], p.sky[1], p.sky[2]);
+    engine.scene.fog.color.setRGB(p.fog[0], p.fog[1], p.fog[2]);
+    engine.scene.fog.near = p.fogNear;
+    engine.scene.fog.far = p.fogFar;
+    if (engine.sun) engine.sun.intensity = p.sunIntensity;
+    // Update ambient light (first child that's AmbientLight)
+    engine.scene.children.forEach(function(c) {
+      if (c.isAmbientLight) c.intensity = p.ambientIntensity;
+    });
+    if (engine._cloudPlane) engine._cloudPlane.material.opacity = p.cloudOpacity;
+    engine._currentEnv = presetKey;
+  }
 
   // ── Block Types ──
   var BLOCK_TYPES = [
@@ -62,6 +139,11 @@
     { id: 'gold', name: 'Gold', color: 0xFFD700, emoji: '\uD83E\uDD47' },
     { id: 'sand', name: 'Sand', color: 0xF5DEB3, emoji: '\uD83C\uDFD6\uFE0F' },
     { id: 'glass', name: 'Glass', color: 0xE3F2FD, emoji: '\uD83D\uDD32' },
+    { id: 'water', name: 'Water', color: 0x2196F3, emoji: '\uD83D\uDCA7' },
+    { id: 'brick', name: 'Brick', color: 0xB71C1C, emoji: '\uD83E\uDDF1' },
+    { id: 'ice', name: 'Ice', color: 0xB3E5FC, emoji: '\u2744\uFE0F' },
+    { id: 'lava', name: 'Lava', color: 0xFF5722, emoji: '\uD83C\uDF0B' },
+    { id: 'torch', name: 'Torch', color: 0xFFA726, emoji: '\uD83D\uDD25' },
   ];
 
   function getBlockColor(type) {
@@ -1245,6 +1327,59 @@
         engine.isLocked = false;
         engine._wasOnGround = true; // for land detection
         engine._footstepTimer = 0;
+        engine.flyMode = false; // toggled with F key
+
+        // ── Procedural textures ──
+        var _procTexCache = {};
+        function makeGrassTexture() {
+          if (_procTexCache.grass) return _procTexCache.grass;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#4CAF50'; ctx.fillRect(0, 0, 64, 64);
+          // Add noise dots for organic feel
+          for (var i = 0; i < 200; i++) {
+            var gx = Math.random() * 64, gy = Math.random() * 64;
+            var shade = Math.random() > 0.5 ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+            ctx.fillStyle = shade;
+            ctx.fillRect(gx, gy, 1 + Math.random() * 2, 1 + Math.random() * 2);
+          }
+          // Add a few darker "grass blade" strokes
+          ctx.strokeStyle = 'rgba(56,142,60,0.3)'; ctx.lineWidth = 1;
+          for (var j = 0; j < 15; j++) {
+            var sx = Math.random() * 64, sy = Math.random() * 64;
+            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + (Math.random() - 0.5) * 6, sy - 2 - Math.random() * 4); ctx.stroke();
+          }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          _procTexCache.grass = tex;
+          return tex;
+        }
+        function makeBrickTexture() {
+          if (_procTexCache.brick) return _procTexCache.brick;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#B71C1C'; ctx.fillRect(0, 0, 64, 64);
+          ctx.strokeStyle = 'rgba(100,50,30,0.6)'; ctx.lineWidth = 2;
+          // Horizontal mortar lines
+          for (var r = 0; r < 4; r++) {
+            var ry = r * 16;
+            ctx.strokeRect(0, ry, 64, 16);
+            // Vertical mortar — offset every other row
+            var offset = (r % 2 === 0) ? 0 : 16;
+            for (var bx = offset; bx < 64; bx += 32) {
+              ctx.beginPath(); ctx.moveTo(bx, ry); ctx.lineTo(bx, ry + 16); ctx.stroke();
+            }
+          }
+          // Noise for roughness
+          for (var n = 0; n < 80; n++) {
+            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.04)';
+            ctx.fillRect(Math.random() * 64, Math.random() * 64, 2, 2);
+          }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          _procTexCache.brick = tex;
+          return tex;
+        }
 
         // Block material cache — avoids creating duplicate materials per type
         engine._matCache = {};
@@ -1260,6 +1395,18 @@
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.7 });
           } else if (type === 'sand') {
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.95, metalness: 0.0 });
+          } else if (type === 'water') {
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.45, roughness: 0.0, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide });
+          } else if (type === 'ice') {
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.6, roughness: 0.05, metalness: 0.05, transmission: 0.5, thickness: 0.3 });
+          } else if (type === 'brick') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeBrickTexture(), roughness: 0.85, metalness: 0.0 });
+          } else if (type === 'lava') {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4, metalness: 0.1, emissive: 0xFF3D00, emissiveIntensity: 0.6 });
+          } else if (type === 'torch') {
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.0, emissive: 0xFFAB00, emissiveIntensity: 0.9 });
+          } else if (type === 'grass') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeGrassTexture(), roughness: 0.8, metalness: 0.0 });
           } else {
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.7, metalness: 0.05 });
           }
@@ -1275,6 +1422,56 @@
           var line = new THREE.LineSegments(edges, _edgeMatCache[shapeId]);
           mesh.add(line);
         }
+
+        // ── Undo / Redo system ──
+        engine._undoStack = []; // { action: 'place'|'remove', x, y, z, type, shape }
+        engine._redoStack = [];
+        var MAX_UNDO = 200;
+        function pushUndo(action) {
+          engine._undoStack.push(action);
+          if (engine._undoStack.length > MAX_UNDO) engine._undoStack.shift();
+          engine._redoStack = []; // clear redo on new action
+        }
+        engine.undo = function() {
+          if (engine._undoStack.length === 0) return;
+          var a = engine._undoStack.pop();
+          if (a.action === 'place') {
+            // Undo a placement = remove the block (no particles)
+            var key = a.x + ',' + a.y + ',' + a.z;
+            var mesh = engine.blocks[key];
+            if (mesh) {
+              engine.scene.remove(mesh);
+              if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+              mesh.geometry.dispose(); mesh.material.dispose();
+              delete engine.blocks[key];
+            }
+          } else if (a.action === 'remove') {
+            // Undo a removal = re-place the block
+            engine.placeBlock(a.x, a.y, a.z, a.type, a.shape);
+            // Pop the undo entry that placeBlock just added (avoid double-entry)
+            engine._undoStack.pop();
+          }
+          engine._redoStack.push(a);
+        };
+        engine.redo = function() {
+          if (engine._redoStack.length === 0) return;
+          var a = engine._redoStack.pop();
+          if (a.action === 'place') {
+            engine.placeBlock(a.x, a.y, a.z, a.type, a.shape);
+            // Pop the undo that placeBlock added (we manage it ourselves)
+            engine._undoStack.pop();
+          } else if (a.action === 'remove') {
+            var key = a.x + ',' + a.y + ',' + a.z;
+            var mesh = engine.blocks[key];
+            if (mesh) {
+              engine.scene.remove(mesh);
+              if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+              mesh.geometry.dispose(); mesh.material.dispose();
+              delete engine.blocks[key];
+            }
+          }
+          engine._undoStack.push(a);
+        };
 
         // Block operations
         engine.placeBlock = function(x, y, z, type, shape) {
@@ -1298,12 +1495,26 @@
           mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume };
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
+          pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId });
+          // Torch blocks emit a point light
+          if (type === 'torch') {
+            var tLight = new THREE.PointLight(0xFFAB00, 1.2, 8, 1.5);
+            tLight.position.set(x + 0.5, y + 1.0, z + 0.5);
+            tLight.castShadow = false; // perf: no shadow from torch lights
+            engine.scene.add(tLight);
+            mesh.userData._torchLight = tLight;
+          }
         };
 
         engine.removeBlock = function(x, y, z) {
           var key = x + ',' + y + ',' + z;
           var mesh = engine.blocks[key];
           if (mesh) {
+            // Record type/shape for undo before destroying
+            var removedType = mesh.userData.blockType || 'stone';
+            var removedShape = mesh.userData.shape || 'cube';
+            // Clean up torch light
+            if (mesh.userData._torchLight) { engine.scene.remove(mesh.userData._torchLight); mesh.userData._torchLight.dispose(); }
             // Spawn break particles
             var bColor = mesh.material.color ? mesh.material.color.getHex() : 0x808080;
             spawnBreakParticles(engine, x + 0.5, y + 0.5, z + 0.5, bColor);
@@ -1312,6 +1523,7 @@
             if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
             mesh.geometry.dispose(); mesh.material.dispose();
             delete engine.blocks[key];
+            pushUndo({ action: 'remove', x: x, y: y, z: z, type: removedType, shape: removedShape });
           }
         };
 
@@ -1448,7 +1660,16 @@
             if (s.type === 'fill') engine.fillBlocks(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2, s.block);
           });
           if (lesson.npcs) lesson.npcs.forEach(function(n) { engine.createNPC(n); });
-          if (lesson.spawnPoint) engine.camera.position.set(lesson.spawnPoint[0], lesson.spawnPoint[1], lesson.spawnPoint[2]);
+          // Smooth camera entry — start high above spawn, swoop down
+          if (lesson.spawnPoint) {
+            var sp = lesson.spawnPoint;
+            engine.camera.position.set(sp[0], sp[1] + 15, sp[2] - 8);
+            engine.camera.lookAt(sp[0], sp[1], sp[2]);
+            engine._entryAnim = { targetX: sp[0], targetY: sp[1], targetZ: sp[2], progress: 0 };
+          }
+          // Reset undo stacks on lesson load
+          engine._undoStack = [];
+          engine._redoStack = [];
           upd({ totalQ: (lesson.npcs || []).filter(function(n) { return n.question; }).length, score: 0, answeredNpcs: {}, worldActive: true });
         };
 
@@ -1483,7 +1704,8 @@
             totalVolume: totalVolume,
             hasFractions: totalVolume !== Math.floor(totalVolume),
             shapeCounts: shapeCounts,
-            formattedVolume: formatVolume(totalVolume)
+            formattedVolume: formatVolume(totalVolume),
+            blocks: result // list of {x,y,z} for selection glow
           };
         };
 
@@ -1535,14 +1757,58 @@
           var hbl = makeDimLabel('H=' + m.H, '#22c55e');
           hbl.position.set(x0 - 0.5, (y0 + y1) / 2, z0);
           engine.scene.add(hbl); engine._dimLines.push(hbl);
+          // Volume label floating above center
+          var vbl = makeDimLabel('V=' + (m.hasFractions ? m.formattedVolume : m.boundingVolume), '#fbbf24');
+          vbl.position.set((x0 + x1) / 2, y1 + 0.6, (z0 + z1) / 2);
+          vbl.scale.set(2.0, 0.75, 1);
+          engine.scene.add(vbl); engine._dimLines.push(vbl);
+          // Bounding box wireframe — dashed outline around entire structure
+          var bbGeo = new THREE.BoxGeometry(m.L, m.H, m.W);
+          var bbEdges = new THREE.EdgesGeometry(bbGeo);
+          var bbMat = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.4 });
+          var bbLine = new THREE.LineSegments(bbEdges, bbMat);
+          bbLine.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+          engine.scene.add(bbLine); engine._dimLines.push(bbLine);
           // Auto-clear after 8 seconds
           engine._dimTimer = setTimeout(clearDimLines, 8000);
+        }
+
+        // ── Structure selection glow — briefly highlight all measured blocks ──
+        engine._selectionGlows = [];
+        function clearSelectionGlow() {
+          engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
+          engine._selectionGlows = [];
+        }
+        function showSelectionGlow(blocks) {
+          clearSelectionGlow();
+          var THREE = window.THREE; if (!THREE) return;
+          var glowMat = new THREE.MeshBasicMaterial({ color: 0x7c3aed, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
+          blocks.forEach(function(b) {
+            var gMesh = new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.02, 1.02), glowMat.clone());
+            gMesh.position.set(b.x + 0.5, b.y + 0.5, b.z + 0.5);
+            gMesh.renderOrder = 997;
+            engine.scene.add(gMesh);
+            engine._selectionGlows.push(gMesh);
+          });
+          // Fade out after 6 seconds
+          setTimeout(function() {
+            var fadeInterval = setInterval(function() {
+              var allGone = true;
+              engine._selectionGlows.forEach(function(g) {
+                if (g.material.opacity > 0.01) { g.material.opacity -= 0.02; allGone = false; }
+              });
+              if (allGone) { clearSelectionGlow(); clearInterval(fadeInterval); }
+            }, 50);
+          }, 6000);
         }
 
         // Input handlers
         var canvas = engine.renderer.domElement;
         canvas.addEventListener('click', function() { if (!engine.isLocked) canvas.requestPointerLock(); });
-        document.addEventListener('pointerlockchange', function() { engine.isLocked = !!document.pointerLockElement; });
+        document.addEventListener('pointerlockchange', function() {
+          engine.isLocked = !!document.pointerLockElement;
+          if (engine.isLocked) startAmbientWind();
+        });
 
         // Smooth mouse look with configurable sensitivity
         var MOUSE_SENSITIVITY = 0.0018;
@@ -1561,7 +1827,36 @@
             case 'KeyS': engine.moveState.backward = true; break;
             case 'KeyA': engine.moveState.left = true; break;
             case 'KeyD': engine.moveState.right = true; break;
-            case 'Space': if (engine.onGround) { engine.velocity.y = 6; sfxJump(); } break;
+            case 'Space':
+              if (engine.flyMode) { engine.velocity.y = 6; }
+              else if (engine.onGround) { engine.velocity.y = 6; sfxJump(); }
+              break;
+            case 'KeyF':
+              if (!ev.ctrlKey) {
+                engine.flyMode = !engine.flyMode;
+                engine.velocity.y = 0;
+                if (addToast) addToast(engine.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON' : '\uD83D\uDC63 Walk mode', 'info');
+              }
+              break;
+            case 'KeyG':
+              // Toggle grid floor
+              if (engine._gridHelper) {
+                engine.scene.remove(engine._gridHelper);
+                engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose();
+                engine._gridHelper = null;
+                if (addToast) addToast('Grid OFF', 'info');
+              } else {
+                var THREE2 = window.THREE;
+                if (THREE2) {
+                  engine._gridHelper = new THREE2.GridHelper(60, 60, 0x444466, 0x333355);
+                  engine._gridHelper.position.y = 1.01; // just above ground blocks
+                  engine._gridHelper.material.transparent = true;
+                  engine._gridHelper.material.opacity = 0.35;
+                  engine.scene.add(engine._gridHelper);
+                  if (addToast) addToast('\uD83D\uDCCF Grid ON', 'info');
+                }
+              }
+              break;
             case 'KeyE':
               var minD = 4, nearest = -1;
               engine.npcs.forEach(function(n, i) {
@@ -1579,21 +1874,32 @@
                 if (m) {
                   sfxMeasure();
                   upd('measureResult', m);
-                  // Show 3D dimension lines around the measured structure
+                  // Show 3D dimension lines + selection glow around the measured structure
                   if (engine._dimTimer) clearTimeout(engine._dimTimer);
                   showDimLines(m, m.minX, m.minY, m.minZ);
+                  if (m.blocks) showSelectionGlow(m.blocks);
                   if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.boundingVolume, blocks: m.count });
                   setTimeout(runAchievementCheck, 100);
                 }
               }
               break;
-            case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4': case 'Digit5': case 'Digit6': case 'Digit7':
-              upd('selectedBlock', parseInt(ev.code.charAt(5)) - 1);
+            case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4': case 'Digit5': case 'Digit6': case 'Digit7': case 'Digit8': case 'Digit9':
+              var bIdx = parseInt(ev.code.charAt(5)) - 1;
+              if (bIdx >= 0 && bIdx < BLOCK_TYPES.length) upd('selectedBlock', bIdx);
+              break;
+            case 'Digit0':
+              if (BLOCK_TYPES.length >= 10) upd('selectedBlock', 9);
               break;
             case 'KeyQ': // Cycle through shapes
               upd('selectedShape', (selectedShape + 1) % BLOCK_SHAPES.length);
               break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
+            case 'KeyZ':
+              if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); }
+              break;
+            case 'KeyY':
+              if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.redo(); if (addToast) addToast('\u21AA\uFE0F Redo', 'info'); }
+              break;
           }
         });
         document.addEventListener('keyup', function(ev) {
@@ -1621,8 +1927,9 @@
             }
             if (ev.button === 0 && hit.object.userData.gridPos) {
               var p = hit.object.userData.gridPos;
+              var breakType = hit.object.userData.blockType || 'stone';
               engine.removeBlock(p.x, p.y, p.z);
-              sfxBreak();
+              sfxBreak(breakType);
               engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
               checkBreakFrustration();
               if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
@@ -1630,8 +1937,9 @@
               var p = hit.object.userData.gridPos;
               var n = hit.face.normal;
               var placeX = p.x + Math.round(n.x), placeY = p.y + Math.round(n.y), placeZ = p.z + Math.round(n.z);
-              engine.placeBlock(placeX, placeY, placeZ, BLOCK_TYPES[selectedBlock].id, BLOCK_SHAPES[selectedShape].id);
-              sfxPlace();
+              var placeType = BLOCK_TYPES[selectedBlock].id;
+              engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[selectedShape].id);
+              sfxPlace(placeType);
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
               if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
@@ -1640,6 +1948,15 @@
         });
 
         canvas.addEventListener('contextmenu', function(ev) { ev.preventDefault(); });
+
+        // Scroll-wheel to cycle through block types
+        canvas.addEventListener('wheel', function(ev) {
+          if (!engine.isLocked) return;
+          ev.preventDefault();
+          var dir = ev.deltaY > 0 ? 1 : -1;
+          var newIdx = ((selectedBlock + dir) % BLOCK_TYPES.length + BLOCK_TYPES.length) % BLOCK_TYPES.length;
+          upd('selectedBlock', newIdx);
+        }, { passive: false });
 
         // ── Block placement preview ghost + break highlight ──
         engine._ghostMesh = null;
@@ -1735,6 +2052,18 @@
             part.scale.setScalar(1.0 - (part.userData._age / part.userData._life) * 0.5);
           }
 
+          // ── Camera entry animation (swoop down to spawn) ──
+          if (engine._entryAnim && !engine.isLocked) {
+            var ea = engine._entryAnim;
+            ea.progress = Math.min(1, ea.progress + dt * 0.6);
+            var easeP = 1 - Math.pow(1 - ea.progress, 3); // ease-out cubic
+            engine.camera.position.x += (ea.targetX - engine.camera.position.x) * easeP * dt * 2;
+            engine.camera.position.y += (ea.targetY - engine.camera.position.y) * easeP * dt * 2;
+            engine.camera.position.z += (ea.targetZ - engine.camera.position.z) * easeP * dt * 2;
+            engine.camera.lookAt(ea.targetX + 3, ea.targetY - 1, ea.targetZ + 3);
+            if (ea.progress >= 1) engine._entryAnim = null;
+          }
+
           if (engine.isLocked) {
             var THREE = window.THREE;
             // ── Smooth movement with acceleration, deceleration, and proper XZ + Y collision ──
@@ -1764,61 +2093,75 @@
             engine.velocity.x = curH.x;
             engine.velocity.z = curH.z;
 
-            // Apply gravity
-            engine.velocity.y += -14.0 * dt; // slightly stronger gravity for snappier feel
-
-            // Attempt to move: X, then Z, then Y (axis-separated collision)
             var cam = engine.camera.position;
-            var feetY = cam.y - EYE_HEIGHT;
 
-            // X axis collision
-            var newX = cam.x + engine.velocity.x * dt;
-            var blocked = false;
-            for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
-              if (isBlockAt(newX + PLAYER_RADIUS, feetY + cy, cam.z) || isBlockAt(newX - PLAYER_RADIUS, feetY + cy, cam.z)) { blocked = true; break; }
-            }
-            if (!blocked) cam.x = newX; else engine.velocity.x = 0;
+            if (engine.flyMode) {
+              // ── Fly mode: no gravity, no collision, fly up with Space, down with Shift ──
+              var flySpeed = isSprinting ? 12 : 7;
+              cam.x += engine.velocity.x * dt;
+              cam.z += engine.velocity.z * dt;
+              // Vertical: Space = up, Shift (when not moving forward) = down
+              var flyVertical = 0;
+              if (engine.moveState.sprint && !engine.moveState.forward) flyVertical = -flySpeed;
+              if (engine.velocity.y > 0) cam.y += flySpeed * dt;
+              cam.y += flyVertical * dt;
+              engine.velocity.y *= 0.9; // dampen
+              engine.onGround = false;
+            } else {
+              // ── Walk mode: full gravity + collision ──
+              // Apply gravity
+              engine.velocity.y += -14.0 * dt;
 
-            // Z axis collision
-            var newZ = cam.z + engine.velocity.z * dt;
-            blocked = false;
-            for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
-              if (isBlockAt(cam.x, feetY + cy, newZ + PLAYER_RADIUS) || isBlockAt(cam.x, feetY + cy, newZ - PLAYER_RADIUS)) { blocked = true; break; }
-            }
-            if (!blocked) cam.z = newZ; else engine.velocity.z = 0;
+              var feetY = cam.y - EYE_HEIGHT;
 
-            // Y axis — ground detection (check multiple columns around player)
-            var newY = cam.y + engine.velocity.y * dt;
-            var newFeetY = newY - EYE_HEIGHT;
-            var groundY = -100;
-            var checkOffsets = [[0,0], [PLAYER_RADIUS, 0], [-PLAYER_RADIUS, 0], [0, PLAYER_RADIUS], [0, -PLAYER_RADIUS]];
-            for (var ci = 0; ci < checkOffsets.length; ci++) {
-              var cx2 = Math.floor(cam.x + checkOffsets[ci][0]);
-              var cz2 = Math.floor(cam.z + checkOffsets[ci][1]);
-              for (var gy = Math.floor(newFeetY) + 5; gy >= Math.floor(newFeetY) - 1; gy--) {
-                if (engine.blocks[cx2 + ',' + gy + ',' + cz2]) {
-                  var topOfBlock = gy + 1 + EYE_HEIGHT;
-                  if (topOfBlock > groundY) groundY = topOfBlock;
-                  break;
+              // X axis collision
+              var newX = cam.x + engine.velocity.x * dt;
+              var blocked = false;
+              for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
+                if (isBlockAt(newX + PLAYER_RADIUS, feetY + cy, cam.z) || isBlockAt(newX - PLAYER_RADIUS, feetY + cy, cam.z)) { blocked = true; break; }
+              }
+              if (!blocked) cam.x = newX; else engine.velocity.x = 0;
+
+              // Z axis collision
+              var newZ = cam.z + engine.velocity.z * dt;
+              blocked = false;
+              for (var cy = 0; cy < Math.ceil(PLAYER_HEIGHT); cy++) {
+                if (isBlockAt(cam.x, feetY + cy, newZ + PLAYER_RADIUS) || isBlockAt(cam.x, feetY + cy, newZ - PLAYER_RADIUS)) { blocked = true; break; }
+              }
+              if (!blocked) cam.z = newZ; else engine.velocity.z = 0;
+
+              // Y axis — ground detection
+              var newY = cam.y + engine.velocity.y * dt;
+              var newFeetY = newY - EYE_HEIGHT;
+              var groundY = -100;
+              var checkOffsets = [[0,0], [PLAYER_RADIUS, 0], [-PLAYER_RADIUS, 0], [0, PLAYER_RADIUS], [0, -PLAYER_RADIUS]];
+              for (var ci = 0; ci < checkOffsets.length; ci++) {
+                var cx2 = Math.floor(cam.x + checkOffsets[ci][0]);
+                var cz2 = Math.floor(cam.z + checkOffsets[ci][1]);
+                for (var gy = Math.floor(newFeetY) + 5; gy >= Math.floor(newFeetY) - 1; gy--) {
+                  if (engine.blocks[cx2 + ',' + gy + ',' + cz2]) {
+                    var topOfBlock = gy + 1 + EYE_HEIGHT;
+                    if (topOfBlock > groundY) groundY = topOfBlock;
+                    break;
+                  }
                 }
               }
-            }
-            // Fallback: world ground plane at y=0
-            var worldGround = 0 + EYE_HEIGHT;
-            if (groundY < worldGround) groundY = worldGround;
+              var worldGround = 0 + EYE_HEIGHT;
+              if (groundY < worldGround) groundY = worldGround;
 
-            if (newY < groundY) { cam.y = groundY; engine.velocity.y = 0; engine.onGround = true; }
-            else { cam.y = newY; engine.onGround = false; }
+              if (newY < groundY) { cam.y = groundY; engine.velocity.y = 0; engine.onGround = true; }
+              else { cam.y = newY; engine.onGround = false; }
 
-            // Land sound — play when transitioning from air to ground
-            if (engine.onGround && !engine._wasOnGround) sfxLand();
-            engine._wasOnGround = engine.onGround;
+              // Land sound
+              if (engine.onGround && !engine._wasOnGround) sfxLand();
+              engine._wasOnGround = engine.onGround;
 
-            // Head-bump detection (ceiling)
-            var headY = cam.y + (PLAYER_HEIGHT - EYE_HEIGHT);
-            var headGx = Math.floor(cam.x), headGz = Math.floor(cam.z);
-            if (engine.blocks[headGx + ',' + Math.floor(headY) + ',' + headGz] && engine.velocity.y > 0) {
-              engine.velocity.y = 0;
+              // Head-bump detection
+              var headY = cam.y + (PLAYER_HEIGHT - EYE_HEIGHT);
+              var headGx = Math.floor(cam.x), headGz = Math.floor(cam.z);
+              if (engine.blocks[headGx + ',' + Math.floor(headY) + ',' + headGz] && engine.velocity.y > 0) {
+                engine.velocity.y = 0;
+              }
             }
 
             // ── Footsteps + head-bob while walking on ground ──
@@ -1996,6 +2339,31 @@
               engine.congratsSprite.material.opacity = Math.min(1, engine.congratsSprite.material.opacity + dt * 0.5);
               engine.congratsSprite.position.y = 12 + Math.sin(t * 0.5) * 0.5; // gentle float
               engine.congratsSprite.lookAt(engine.camera.position); // always face player
+            }
+          }
+
+          // ── Animate water blocks — gentle vertical bob + opacity shimmer ──
+          if (!engine._waterAnimFrame) engine._waterAnimFrame = 0;
+          engine._waterAnimFrame++;
+          if (engine._waterAnimFrame % 3 === 0) { // Every 3rd frame for performance
+            var wt = engine.clock.getElapsedTime();
+            var blockKeys = Object.keys(engine.blocks);
+            for (var wi = 0; wi < blockKeys.length; wi++) {
+              var wm = engine.blocks[blockKeys[wi]];
+              if (wm && wm.userData.blockType === 'water') {
+                var wp = wm.userData.gridPos;
+                wm.position.y = wp.y + 0.5 + Math.sin(wt * 1.5 + wp.x * 0.7 + wp.z * 0.5) * 0.04;
+                wm.material.opacity = 0.35 + Math.sin(wt * 2 + wp.x + wp.z) * 0.08;
+              } else if (wm && wm.userData.blockType === 'lava') {
+                // Lava: pulse emissive intensity
+                var lp = wm.userData.gridPos;
+                wm.material.emissiveIntensity = 0.5 + Math.sin(wt * 1.2 + lp.x * 0.5 + lp.z * 0.3) * 0.25;
+              } else if (wm && wm.userData.blockType === 'torch' && wm.userData._torchLight) {
+                // Torch: flicker the point light intensity
+                var tp = wm.userData.gridPos;
+                wm.userData._torchLight.intensity = 1.0 + Math.sin(wt * 8 + tp.x * 2.3) * 0.3 + Math.sin(wt * 13 + tp.z * 3.1) * 0.15;
+                wm.material.emissiveIntensity = 0.7 + Math.sin(wt * 6 + tp.x) * 0.25;
+              }
             }
           }
 
@@ -2277,8 +2645,10 @@
           // Dispose ghost mesh + highlight mesh
           if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
           if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
-          // Dispose dimension lines
+          // Dispose dimension lines + selection glows
           if (engine._dimLines) engine._dimLines.forEach(function(obj) { engine.scene.remove(obj); if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
+          if (engine._selectionGlows) engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
+          if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
           if (engine._dimTimer) clearTimeout(engine._dimTimer);
           // Dispose sky elements
           if (engine._sunSprite) engine.scene.remove(engine._sunSprite);
@@ -2327,8 +2697,8 @@
       var currentLesson = SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer;
 
       return el('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: '#000' } },
-        // Top bar
-        el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#0f172a', borderBottom: '1px solid #1e293b', flexShrink: 0, flexWrap: 'wrap' } },
+        // Top bar — glass style
+        el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
           el('span', { style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
           el('span', { style: { fontWeight: 800, color: '#fff', fontSize: '14px' } }, 'Geometry World'),
           el('span', { style: { fontSize: '11px', color: '#64748b', marginRight: 'auto' } }, currentLesson.title || ''),
@@ -2437,6 +2807,22 @@
             onClick: function() { upd('showHelp', !showHelp); },
             style: { background: '#1e293b', border: 'none', color: '#94a3b8', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }
           }, showHelp ? 'Hide Help' : '? Help'),
+          // Environment preset selector
+          el('select', {
+            value: d.envPreset || 'day',
+            onChange: function(ev) {
+              var key = ev.target.value;
+              upd('envPreset', key);
+              var eng = window[engineKey];
+              if (eng) applyEnvPreset(eng, key);
+            },
+            title: 'Time of day / environment',
+            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
+          },
+            Object.keys(ENV_PRESETS).map(function(k) {
+              return el('option', { key: k, value: k }, ENV_PRESETS[k].label);
+            })
+          ),
           // AI generate
           // Save/Export world
           engine && el('button', {
@@ -2718,7 +3104,12 @@
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'M'), 'Measure structure',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Space'), 'Jump',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Shift'), 'Sprint',
-            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, '1-7'), 'Select block',
+            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Scroll'), 'Cycle blocks',
+            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, '1-9,0'), 'Select block',
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Z'), 'Undo',
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Y'), 'Redo',
+            el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'F'), 'Toggle fly',
+            el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'G'), 'Toggle grid',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)'
           ),
           el('div', { style: { fontWeight: 700, color: '#22d3ee', marginBottom: '4px', fontSize: '12px' } }, '\uD83D\uDCCF Formulas'),
@@ -2813,7 +3204,7 @@
                 }
 
                 eng.createNPC(npcData);
-                sfxPlace();
+                sfxPlace('stone');
                 if (addToast) addToast('\uD83E\uDDD1\u200D\uD83C\uDFEB NPC "' + npcData.name + '" placed!', 'success');
                 if (eng.logEvent) eng.logEvent('npc_created', { name: npcData.name, hasQuestion: !!npcData.question, position: npcData.position });
                 upd({ creatorNpcName: '', creatorNpcDialogue: '', creatorNpcQuestion: '', creatorNpcChoices: '' });
@@ -2824,14 +3215,21 @@
             el('p', { style: { color: '#64748b', fontSize: '9px', margin: '4px 0 0' } }, 'The NPC will appear near where you\u2019re standing. Build structures first, then add NPCs that ask questions about them. Save your world with \uD83D\uDCBE to share!')
           )
         ),
-        // Objectives panel (left side)
-        el('div', { style: { position: 'absolute', top: '48px', left: '8px', zIndex: 20, background: 'rgba(15,23,42,0.9)', border: '1px solid #1e293b', borderRadius: '10px', padding: '10px 12px', maxWidth: '200px', fontSize: '11px' } },
-          el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px', marginBottom: '6px' } }, '\uD83D\uDCCB Objectives'),
+        // Objectives panel (left side) — glass style with progress bar
+        el('div', { style: { position: 'absolute', top: '48px', left: '8px', zIndex: 20, background: 'rgba(15,23,42,0.88)', backdropFilter: 'blur(8px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '12px', padding: '10px 12px', maxWidth: '210px', fontSize: '11px', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' } },
+          el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+            el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px' } }, '\uD83D\uDCCB Objectives'),
+            totalQ > 0 && el('div', { style: { fontSize: '9px', color: '#64748b', fontWeight: 600 } }, score + '/' + totalQ)
+          ),
+          // Progress bar
+          totalQ > 0 && el('div', { style: { width: '100%', height: '3px', background: 'rgba(100,116,139,0.2)', borderRadius: '2px', marginBottom: '8px', overflow: 'hidden' } },
+            el('div', { style: { width: (totalQ > 0 ? Math.round((score / totalQ) * 100) : 0) + '%', height: '100%', background: score >= totalQ ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'linear-gradient(90deg, #7c3aed, #a78bfa)', borderRadius: '2px', transition: 'width 0.5s ease' } })
+          ),
           currentLesson.objectives && currentLesson.objectives.map(function(obj, i) {
-            var isDone = i < score; // Simple: objectives complete in order with score
-            return el('div', { key: i, style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '3px', color: isDone ? '#4ade80' : '#94a3b8', textDecoration: isDone ? 'line-through' : 'none', opacity: isDone ? 0.7 : 1 } },
-              el('span', null, isDone ? '\u2705' : '\u2B1C'),
-              el('span', null, obj)
+            var isDone = i < score;
+            return el('div', { key: i, style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '4px', color: isDone ? '#4ade80' : '#cbd5e1', opacity: isDone ? 0.6 : 1, transition: 'all 0.3s ease' } },
+              el('span', { style: { fontSize: '10px', flexShrink: 0, marginTop: '1px' } }, isDone ? '\u2705' : '\u25CB'),
+              el('span', { style: { textDecoration: isDone ? 'line-through' : 'none', fontSize: '10px', lineHeight: 1.4 } }, obj)
             );
           }),
           // Reset button
@@ -2841,7 +3239,7 @@
               if (eng) eng.loadLesson(currentLesson);
               upd({ score: 0, answeredNpcs: {}, measureResult: null });
             },
-            style: { marginTop: '8px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#94a3b8', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit' }
+            style: { marginTop: '8px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '6px', padding: '4px 10px', color: '#94a3b8', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', transition: 'all 0.15s' }
           }, '\u21BB Reset World')
         ),
         // ── Minimap — top-down view showing player + NPC positions ──
@@ -2955,6 +3353,66 @@
             );
           })
         ),
+        // ── Coordinate & Compass HUD (bottom-left) ──
+        engine && engine.camera && el('div', {
+          style: { position: 'absolute', bottom: '10px', left: '8px', zIndex: 20, background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '5px 10px', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'monospace', fontSize: '10px', color: '#94a3b8', lineHeight: 1.5 }
+        },
+          el('div', { style: { color: '#64748b', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginBottom: '1px' } }, 'POSITION'),
+          el('div', null,
+            el('span', { style: { color: '#ef4444' } }, 'X'),
+            ' ' + Math.floor(engine.camera.position.x) + '  ',
+            el('span', { style: { color: '#22c55e' } }, 'Y'),
+            ' ' + Math.floor(engine.camera.position.y) + '  ',
+            el('span', { style: { color: '#3b82f6' } }, 'Z'),
+            ' ' + Math.floor(engine.camera.position.z)
+          ),
+          (function() {
+            // Compass: derive facing direction from camera
+            var fwd = new (window.THREE.Vector3)();
+            engine.camera.getWorldDirection(fwd);
+            var angle = Math.atan2(fwd.x, fwd.z) * (180 / Math.PI);
+            if (angle < 0) angle += 360;
+            var dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            var idx = Math.round(angle / 45) % 8;
+            return el('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' } },
+              el('span', { style: { color: '#fbbf24', fontWeight: 700, fontSize: '11px' } }, dirs[idx]),
+              el('span', { style: { color: '#475569' } }, Math.round(angle) + '\u00b0')
+            );
+          })()
+        ),
+        // ── Mode indicators (fly, grid) ──
+        engine && (engine.flyMode || engine._gridHelper) && el('div', {
+          style: { position: 'absolute', bottom: '10px', left: '130px', zIndex: 20, display: 'flex', gap: '4px' }
+        },
+          engine.flyMode && el('div', { style: { background: 'rgba(99,102,241,0.25)', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#a5b4fc', fontWeight: 600 } }, '\uD83D\uDD4A\uFE0F FLY'),
+          engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600 } }, '\uD83D\uDCCF GRID')
+        ),
+        // ── Block inventory widget (top-right, shows counts per type) ──
+        engine && (engine.blocksPlaced || 0) > 0 && el('div', {
+          style: { position: 'absolute', top: '48px', right: '8px', zIndex: 19, background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '10px', padding: '8px 10px', fontSize: '10px', maxWidth: '140px' }
+        },
+          el('div', { style: { fontWeight: 700, color: '#94a3b8', fontSize: '9px', marginBottom: '4px', letterSpacing: '0.5px' } }, 'BLOCKS PLACED'),
+          (function() {
+            var counts = {};
+            var bk = Object.keys(engine.blocks);
+            for (var bi = 0; bi < bk.length; bi++) {
+              var bm = engine.blocks[bk[bi]];
+              if (bm && bm.userData.blockType && bm.userData.blockType !== 'grass') {
+                var bt = bm.userData.blockType;
+                counts[bt] = (counts[bt] || 0) + 1;
+              }
+            }
+            var typeKeys = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
+            if (typeKeys.length === 0) return el('div', { style: { color: '#475569', fontSize: '9px' } }, 'None yet');
+            return typeKeys.slice(0, 6).map(function(tk) {
+              var bt = BLOCK_TYPES.find(function(b) { return b.id === tk; });
+              return el('div', { key: tk, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 0', color: '#cbd5e1' } },
+                el('span', null, (bt ? bt.emoji + ' ' : '') + tk),
+                el('span', { style: { fontWeight: 700, color: '#a78bfa', fontFamily: 'monospace' } }, counts[tk])
+              );
+            });
+          })()
+        ),
         // Crosshair — crisp dot + thin lines
         el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '20px', height: '20px' } },
           // Center dot
@@ -2997,10 +3455,21 @@
                 upd('npcTranslations', ut);
               });
           }
-          return el('div', { style: { position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, background: 'rgba(15,23,42,0.95)', border: '1px solid #334155', borderRadius: '14px', padding: '16px', maxWidth: '420px', width: '90%' } },
-            el('button', { onClick: function() { upd('showNpcDialog', false); }, style: { position: 'absolute', top: '6px', right: '10px', background: 'none', border: 'none', color: '#6b7280', fontSize: '16px', cursor: 'pointer' } }, '\u00d7'),
-            el('div', { style: { fontSize: '13px', fontWeight: 800, color: '#a78bfa', marginBottom: '4px' } }, data.name),
-            el('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5, marginBottom: homeLang !== 'en' ? '4px' : '10px' } }, data.dialogue),
+          var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
+          return el('div', { style: { position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '1px solid rgba(100,116,139,0.25)', borderRadius: '16px', padding: '0', maxWidth: '440px', width: '90%', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' } },
+            // Header bar with NPC color accent
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'linear-gradient(135deg, ' + npcHexColor + '22, ' + npcHexColor + '08)', borderBottom: '1px solid rgba(100,116,139,0.15)' } },
+              // NPC avatar circle
+              el('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, ' + npcHexColor + ', ' + npcHexColor + '88)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#fff', fontWeight: 800, flexShrink: 0, border: '2px solid ' + npcHexColor + '66' } }, data.name.charAt(0)),
+              el('div', { style: { flex: 1 } },
+                el('div', { style: { fontSize: '13px', fontWeight: 800, color: '#e2e8f0' } }, data.name),
+                data.question && !isAnswered && el('div', { style: { fontSize: '9px', color: npcHexColor, fontWeight: 600, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
+              ),
+              el('button', { onClick: function() { upd('showNpcDialog', false); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
+            ),
+            // Body content
+            el('div', { style: { padding: '12px 16px' } },
+            el('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6, marginBottom: homeLang !== 'en' ? '4px' : '10px' } }, data.dialogue),
             // Bilingual translation line (click to hear)
             homeLang !== 'en' && translation && el('div', {
               onClick: function() {
@@ -3151,6 +3620,7 @@
                 }, npcChatLoading ? '\u23F3' : '\u2728')
               )
             )
+            ) // close body content div
           );
         })(),
         // ── Growth Mindset Nudge Overlay (SEL + Academic Integration) ──

@@ -59,7 +59,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       { id: 'deploy_rover', label: 'Deploy a rover or probe on any planet', icon: '\uD83D\uDE97', field: 'missionLog', check: function(d) { return (d.missionLog || []).length >= 1; }, progress: function(d) { return (d.missionLog || []).length > 0 ? 'Done' : 'Not yet'; } },
       { id: 'visit_5_planets', label: 'Visit at least 5 different planets', icon: '\u2B50', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 5; }, progress: function(d) { return (d.planetsVisited || []).length + '/5 planets'; } },
       { id: 'explore_interior', label: 'View the interior of 3 different planets', icon: '\uD83C\uDF0B', field: 'interiorsViewed', check: function(d) { return (d.interiorsViewed || []).length >= 3; }, progress: function(d) { return (d.interiorsViewed || []).length + '/3'; } },
-      { id: 'descent_sim', label: 'Descend through an atmosphere', icon: '\uD83D\uDE80', field: 'descentsDone', check: function(d) { return (d.descentsDone || []).length >= 1; }, progress: function(d) { return (d.descentsDone || []).length > 0 ? 'Done' : 'Not yet'; } }
+      { id: 'descent_sim', label: 'Descend through an atmosphere', icon: '\uD83D\uDE80', field: 'descentsDone', check: function(d) { return (d.descentsDone || []).length >= 1; }, progress: function(d) { return (d.descentsDone || []).length > 0 ? 'Done' : 'Not yet'; } },
+      // Pedagogical quest hooks (for Station Builder integration)
+      { id: 'journal_3', label: 'Write 3 field journal entries', icon: '\uD83D\uDCD3', field: 'journalEntries', check: function(d) { return (d.journalEntries || []).length >= 3; }, progress: function(d) { return (d.journalEntries || []).length + '/3 entries'; } },
+      { id: 'journal_5_planets', label: 'Journal entries for 5 different planets', icon: '\uD83D\uDCDD', field: 'journalEntries', check: function(d) { var planets = {}; (d.journalEntries || []).forEach(function(j) { planets[j.planet] = true; }); return Object.keys(planets).length >= 5; }, progress: function(d) { var planets = {}; (d.journalEntries || []).forEach(function(j) { planets[j.planet] = true; }); return Object.keys(planets).length + '/5 planets'; } },
+      { id: 'vocab_10', label: 'Explore 10 vocabulary terms', icon: '\uD83D\uDCD6', field: 'vocabLookedUp', check: function(d) { return (d.vocabLookedUp || []).length >= 10; }, progress: function(d) { return (d.vocabLookedUp || []).length + '/10 terms'; } },
+      { id: 'poe_5', label: 'Make predictions for 5 planets', icon: '\uD83E\uDD14', field: 'poeSeen', check: function(d) { return (d.poeSeen || []).length >= 5; }, progress: function(d) { return (d.poeSeen || []).length + '/5 predictions'; } },
+      { id: 'misconception_5', label: 'Answer 5 misconception checkpoints', icon: '\u2753', field: 'misconceptionsSeen', check: function(d) { return (d.misconceptionsSeen || []).length >= 5; }, progress: function(d) { return (d.misconceptionsSeen || []).length + '/5 checked'; } },
+      { id: 'assignment_complete', label: 'Complete any assignment', icon: '\uD83D\uDCCB', field: 'activeAssignment', check: function(d) { if (!d.activeAssignment) return false; var tasks = d['asn_done_' + d.activeAssignment] || []; var asnLen = { inner_planets: 4, gas_giants: 4, habitability: 4, full_survey: 5 }; return tasks.length >= (asnLen[d.activeAssignment] || 4); }, progress: function(d) { if (!d.activeAssignment) return 'Not started'; var tasks = d['asn_done_' + d.activeAssignment] || []; return tasks.length + ' tasks done'; } }
     ],
     render: function(ctx) {
       // Aliases â€" maps ctx properties to original variable names
@@ -173,31 +180,81 @@ const d = labToolData.solarSystem;
           };
           window.addEventListener('keydown', window._solarKeyHandler);
 
-          // --- Sound effects ---
-          function playBeep() {
+          // --- Sound effects (singleton AudioContext) ---
+          var _solarAC = null;
+          function getSolarAC() {
+            if (!_solarAC) { try { _solarAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            if (_solarAC && _solarAC.state === 'suspended') { try { _solarAC.resume(); } catch(e) {} }
+            return _solarAC;
+          }
+          function solarTone(freq, dur, type, vol) {
+            var ac = getSolarAC(); if (!ac) return;
+            try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = freq; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.1)); } catch(e) {}
+          }
+          function playBeep() { solarTone(880, 0.08, 'sine', 0.08); }
+          function playCelebrate() {
+            [523, 659, 784, 1047].forEach(function(freq, i) {
+              setTimeout(function() { solarTone(freq, 0.1, 'sine', 0.06); }, i * 120);
+            });
+          }
+          // Planet selection sound — ascending tone based on distance from sun
+          function playPlanetSelect(distAU) {
+            var baseFreq = 300 + Math.min(distAU || 1, 40) * 15;
+            solarTone(baseFreq, 0.06, 'sine', 0.05);
+            setTimeout(function() { solarTone(baseFreq * 1.33, 0.08, 'sine', 0.06); }, 50);
+            setTimeout(function() { solarTone(baseFreq * 1.5, 0.1, 'sine', 0.04); }, 100);
+          }
+          // Quiz correct/wrong sounds
+          function playQuizCorrect() { solarTone(523, 0.08, 'sine', 0.06); setTimeout(function() { solarTone(659, 0.08, 'sine', 0.06); }, 80); setTimeout(function() { solarTone(784, 0.12, 'sine', 0.07); }, 160); }
+          function playQuizWrong() { solarTone(300, 0.12, 'sawtooth', 0.05); setTimeout(function() { solarTone(220, 0.15, 'sawtooth', 0.04); }, 80); }
+          // Tab switch click
+          function playTabClick() { solarTone(600, 0.03, 'square', 0.03); }
+          // Descent altitude change
+          function playDescentTick(alt) { var freq = 200 + (1 - Math.min(alt, 300) / 300) * 600; solarTone(freq, 0.04, 'sine', 0.03); }
+
+          // ── Ambient planet drones — each planet has a unique synthesized atmosphere ──
+          var _ambientNodes = null;
+          var PLANET_AMBIENCE = {
+            Mercury: { freq: 80, type: 'sine', filterHz: 200, vol: 0.006 },
+            Venus: { freq: 55, type: 'sawtooth', filterHz: 150, vol: 0.008 },
+            Earth: { freq: 120, type: 'sine', filterHz: 400, vol: 0.005 },
+            Mars: { freq: 90, type: 'sine', filterHz: 250, vol: 0.006 },
+            Jupiter: { freq: 40, type: 'sawtooth', filterHz: 120, vol: 0.01 },
+            Saturn: { freq: 50, type: 'triangle', filterHz: 180, vol: 0.008 },
+            Uranus: { freq: 70, type: 'sine', filterHz: 160, vol: 0.007 },
+            Neptune: { freq: 45, type: 'triangle', filterHz: 140, vol: 0.009 },
+            Pluto: { freq: 100, type: 'sine', filterHz: 200, vol: 0.004 }
+          };
+          function startPlanetAmbience(planetName) {
+            stopPlanetAmbience();
+            var ac = getSolarAC(); if (!ac) return;
+            var cfg = PLANET_AMBIENCE[planetName]; if (!cfg) return;
             try {
-              var ac = new (window.AudioContext || window.webkitAudioContext)();
-              var osc = ac.createOscillator();
-              var gain = ac.createGain();
-              osc.connect(gain); gain.connect(ac.destination);
-              osc.frequency.value = 880;
-              gain.gain.value = 0.08;
-              osc.start(); osc.stop(ac.currentTime + 0.08);
+              // Base oscillator
+              var osc = ac.createOscillator(); osc.type = cfg.type; osc.frequency.value = cfg.freq;
+              // LFO for gentle wobble
+              var lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.3 + Math.random() * 0.2;
+              var lfoGain = ac.createGain(); lfoGain.gain.value = cfg.freq * 0.08;
+              lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+              // Filter
+              var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = cfg.filterHz; filt.Q.value = 1.5;
+              // Master gain with fade-in
+              var master = ac.createGain(); master.gain.setValueAtTime(0, ac.currentTime);
+              master.gain.linearRampToValueAtTime(cfg.vol, ac.currentTime + 1.5);
+              osc.connect(filt); filt.connect(master); master.connect(ac.destination);
+              osc.start(); lfo.start();
+              _ambientNodes = { osc: osc, lfo: lfo, master: master };
             } catch(e) {}
           }
-          function playCelebrate() {
-            try {
-              var ac = new (window.AudioContext || window.webkitAudioContext)();
-              [523, 659, 784, 1047].forEach(function(freq, i) {
-                var osc = ac.createOscillator();
-                var gain = ac.createGain();
-                osc.connect(gain); gain.connect(ac.destination);
-                osc.frequency.value = freq;
-                gain.gain.value = 0.06;
-                osc.start(ac.currentTime + i * 0.12);
-                osc.stop(ac.currentTime + i * 0.12 + 0.1);
-              });
-            } catch(e) {}
+          function stopPlanetAmbience() {
+            if (_ambientNodes) {
+              try {
+                _ambientNodes.master.gain.linearRampToValueAtTime(0, (getSolarAC() ? getSolarAC().currentTime : 0) + 0.5);
+                var nodes = _ambientNodes;
+                setTimeout(function() { try { nodes.osc.stop(); nodes.lfo.stop(); } catch(e) {} }, 600);
+              } catch(e) {}
+              _ambientNodes = null;
+            }
           }
 
           // --- AI Space Tutor ---
@@ -516,6 +573,161 @@ const d = labToolData.solarSystem;
             'Saturn\'s moon Titan has a thicker atmosphere than Earth!'
           ];
 
+          // ═══════════════════════════════════════════════════════════
+          // ═══ PEDAGOGICAL SYSTEMS ═══
+          // ═══════════════════════════════════════════════════════════
+
+          // ── POE (Predict-Observe-Explain) Prompts ──
+          var POE_PROMPTS = {
+            Mercury: { predict: 'Mercury is closest to the Sun. Do you think it is the hottest planet?', reveal: 'Surprise! Venus is hotter (462\u00B0C vs 430\u00B0C). Mercury has no atmosphere to trap heat, so heat escapes into space at night (-180\u00B0C). Atmospheres matter more than distance!', concept: 'greenhouse effect' },
+            Venus: { predict: 'Venus is similar in size to Earth. Do you think its surface is similar too?', reveal: 'Not at all! Venus has a crushing 90-atmosphere CO\u2082 atmosphere, 462\u00B0C surface, and sulfuric acid clouds. It\u2019s the most extreme greenhouse effect in the solar system.', concept: 'atmospheric composition' },
+            Earth: { predict: 'What makes Earth unique compared to every other planet we know of?', reveal: 'Liquid water on the surface! Earth sits in the habitable zone, has a protective magnetic field, and a balanced atmosphere. No other known planet has all three.', concept: 'habitable zone' },
+            Mars: { predict: 'Mars once had rivers and lakes. Why do you think the water disappeared?', reveal: 'Mars lost its magnetic field ~4 billion years ago. Without magnetic shielding, solar wind stripped away the atmosphere, and low pressure caused surface water to evaporate or freeze underground.', concept: 'magnetosphere' },
+            Jupiter: { predict: 'Jupiter is 11x wider than Earth. How strong do you think its gravity is compared to Earth?', reveal: 'Jupiter\u2019s surface gravity is only 2.34x Earth\u2019s \u2014 surprisingly low for such a massive planet! That\u2019s because it\u2019s made of light gases (hydrogen/helium), so its density is low.', concept: 'density vs mass' },
+            Saturn: { predict: 'Saturn is the second-largest planet. Could it float in water?', reveal: 'Yes! Saturn\u2019s density is only 0.687 g/cm\u00B3 \u2014 less than water (1.0 g/cm\u00B3). If you had a bathtub big enough, Saturn would float. Size doesn\u2019t always mean heavy!', concept: 'density' },
+            Uranus: { predict: 'Uranus is tilted 98\u00B0 on its side. What do you think seasons are like there?', reveal: 'Each pole gets 42 years of continuous sunlight followed by 42 years of darkness! The equator is actually colder than the poles. Axial tilt dramatically affects climate.', concept: 'axial tilt & seasons' },
+            Neptune: { predict: 'Neptune is the farthest planet from the Sun. Do you think it has the coldest temperature?', reveal: 'Neptune is cold (-214\u00B0C) but Uranus is actually colder (-224\u00B0C) despite being closer to the Sun! Neptune radiates 2.6x more heat than it receives \u2014 it has a mysterious internal heat source.', concept: 'internal heat' },
+            Pluto: { predict: 'Pluto was called a planet for 76 years. Why do you think scientists reclassified it?', reveal: 'In 2006, the IAU defined 3 criteria: orbits the Sun (\u2713), round shape (\u2713), cleared its orbit (\u2717). Pluto shares its orbital zone with thousands of Kuiper Belt objects, so it\u2019s a "dwarf planet."', concept: 'planetary classification' }
+          };
+
+          // ── Enhanced Quiz with Error-Correcting Feedback ──
+          var QUIZ_BANK = [
+            { q: 'Which planet is the hottest?', a: 'Venus', opts: ['Mercury', 'Venus', 'Mars', 'Jupiter'], tip: 'Venus has a runaway greenhouse effect reaching 462\u00B0C!', wrongFeedback: { Mercury: 'Mercury is closest to the Sun, but Venus is hotter because its thick CO\u2082 atmosphere traps heat (greenhouse effect). Distance isn\u2019t everything!', Mars: 'Mars is actually very cold (-65\u00B0C average). Its thin atmosphere can\u2019t trap much heat.', Jupiter: 'Jupiter is far from the Sun and made of cold gas. Its cloud tops are -145\u00B0C!' }, difficulty: 1, concept: 'greenhouse effect' },
+            { q: 'Which planet has the most moons?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Uranus', 'Neptune'], tip: 'Saturn has 146 known moons as of 2024!', wrongFeedback: { Jupiter: 'Close! Jupiter has 95 known moons, but Saturn surpassed it with 146 discoveries in recent surveys.', Uranus: 'Uranus has 27 known moons \u2014 far fewer than the gas giant leaders.', Neptune: 'Neptune has only 16 known moons. Triton is the famous one \u2014 it orbits backwards!' }, difficulty: 1, concept: 'moons' },
+            { q: 'Which planet rotates on its side?', a: 'Uranus', opts: ['Neptune', 'Uranus', 'Saturn', 'Pluto'], tip: 'Uranus has an axial tilt of 97.77\u00B0!', wrongFeedback: { Neptune: 'Neptune\u2019s tilt is 28\u00B0 \u2014 similar to Earth\u2019s 23.5\u00B0.', Saturn: 'Saturn\u2019s tilt is 27\u00B0 \u2014 it has normal seasons.', Pluto: 'Pluto\u2019s tilt is 120\u00B0 (extreme!), but Uranus at 98\u00B0 is the textbook answer for "on its side."' }, difficulty: 2, concept: 'axial tilt' },
+            { q: 'Which is the smallest planet?', a: 'Mercury', opts: ['Mercury', 'Mars', 'Pluto', 'Venus'], tip: 'Mercury is only 4,879 km in diameter.', wrongFeedback: { Mars: 'Mars (6,779 km) is small but still 40% larger than Mercury.', Pluto: 'Pluto is tiny (2,377 km) but it\u2019s no longer classified as a planet since 2006!', Venus: 'Venus (12,104 km) is nearly the same size as Earth \u2014 much larger than Mercury.' }, difficulty: 1, concept: 'planetary size' },
+            { q: 'Which planet has the longest year?', a: 'Pluto', opts: ['Neptune', 'Pluto', 'Uranus', 'Saturn'], tip: 'Pluto takes 248 Earth years to orbit the Sun!', wrongFeedback: { Neptune: 'Neptune\u2019s year is 165 Earth years \u2014 long, but Pluto\u2019s is even longer at 248.', Uranus: 'Uranus orbits in 84 Earth years \u2014 less than half of Pluto\u2019s.', Saturn: 'Saturn takes 29.5 Earth years. The farther from the Sun, the longer the orbit!' }, difficulty: 2, concept: 'orbital period' },
+            { q: 'Which planet has the shortest day?', a: 'Jupiter', opts: ['Jupiter', 'Saturn', 'Earth', 'Mars'], tip: 'Jupiter rotates in just 10 hours!', wrongFeedback: { Saturn: 'Saturn is close at 10.7 hours, but Jupiter at 9.9 hours wins!', Earth: 'Earth\u2019s 24-hour day is slow compared to giant planets. Giant planets spin fast because they formed from rapidly spinning gas clouds.', Mars: 'Mars\u2019s day is 24.6 hours \u2014 almost identical to Earth\u2019s.' }, difficulty: 1, concept: 'rotation' },
+            { q: 'Which planet is known as the Red Planet?', a: 'Mars', opts: ['Venus', 'Mars', 'Mercury', 'Jupiter'], tip: 'Iron oxide (rust) gives Mars its red color.', wrongFeedback: { Venus: 'Venus appears yellowish-white due to sulfuric acid clouds.', Mercury: 'Mercury appears dark grey \u2014 its surface is similar to our Moon.', Jupiter: 'Jupiter\u2019s bands are brown/orange/white from ammonia and sulfur compounds.' }, difficulty: 1, concept: 'surface composition' },
+            { q: 'Which planet could float in water?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Neptune', 'Uranus'], tip: 'Saturn\u2019s density is less than water (0.687 g/cm\u00B3)!', wrongFeedback: { Jupiter: 'Jupiter\u2019s density is 1.33 g/cm\u00B3 \u2014 denser than water. Despite being mostly hydrogen, its massive gravity compresses the gas.', Neptune: 'Neptune\u2019s density is 1.64 g/cm\u00B3. Ice giants are denser than gas giants.', Uranus: 'Uranus has a density of 1.27 g/cm\u00B3 \u2014 close, but still sinks!' }, difficulty: 3, concept: 'density' },
+            { q: 'Where is the tallest volcano in the solar system?', a: 'Mars', opts: ['Earth', 'Venus', 'Mars', 'Jupiter'], tip: 'Olympus Mons on Mars is 21.9 km high \u2014 nearly 3x Everest!', wrongFeedback: { Earth: 'Mauna Kea (from base) is 10.2 km, but Mars\u2019s low gravity allows volcanoes to grow much taller!', Venus: 'Venus has Maat Mons (8 km), but Mars\u2019s Olympus Mons is nearly 3x taller. Low gravity = taller mountains!', Jupiter: 'Jupiter has no solid surface, so no traditional volcanoes. But its moon Io is the most volcanic body in the solar system!' }, difficulty: 2, concept: 'gravity & geology' },
+            { q: 'Which planet has the strongest winds?', a: 'Neptune', opts: ['Jupiter', 'Saturn', 'Neptune', 'Uranus'], tip: 'Neptune\u2019s winds reach 2,100 km/h!', wrongFeedback: { Jupiter: 'Jupiter\u2019s winds reach 680 km/h in the Great Red Spot \u2014 fast, but Neptune\u2019s are 3x faster!', Saturn: 'Saturn has 1,800 km/h winds \u2014 close, but Neptune edges it out.', Uranus: 'Uranus has relatively weak winds (900 km/h) for an ice giant.' }, difficulty: 2, concept: 'atmospheric dynamics' },
+            // ── New questions expanding coverage ──
+            { q: 'What protects Earth from harmful solar radiation?', a: 'Magnetic field', opts: ['Ozone layer', 'Magnetic field', 'Gravity', 'Atmosphere thickness'], tip: 'Earth\u2019s magnetic field deflects charged solar particles. The ozone helps with UV, but the magnetosphere is the primary shield!', wrongFeedback: { 'Ozone layer': 'The ozone layer blocks UV radiation, but the magnetosphere deflects the solar wind \u2014 charged particles that would strip away our atmosphere entirely.', 'Gravity': 'Gravity holds our atmosphere, but doesn\u2019t deflect solar wind. Mars has enough gravity to hold some atmosphere but lost it without a magnetic field.', 'Atmosphere thickness': 'A thick atmosphere helps (Venus has one!) but without a magnetic field, solar wind gradually strips it away. Mars proves this!' }, difficulty: 2, concept: 'magnetosphere' },
+            { q: 'Why is Pluto no longer classified as a planet?', a: 'It hasn\u2019t cleared its orbital zone', opts: ['It\u2019s too small', 'It\u2019s too far away', 'It hasn\u2019t cleared its orbital zone', 'It doesn\u2019t orbit the Sun'], tip: 'The IAU\u2019s 2006 definition requires planets to clear their orbital neighborhood of other debris.', wrongFeedback: { 'It\u2019s too small': 'Size isn\u2019t one of the IAU criteria! Mercury is only twice Pluto\u2019s diameter and is still a planet.', 'It\u2019s too far away': 'Distance from the Sun isn\u2019t a criterion for planet classification.', 'It doesn\u2019t orbit the Sun': 'Pluto does orbit the Sun! The issue is it shares its orbit with thousands of Kuiper Belt objects.' }, difficulty: 2, concept: 'planetary classification' },
+            { q: 'What is the "habitable zone"?', a: 'Distance where liquid water can exist', opts: ['Where humans can breathe', 'Distance where liquid water can exist', 'Where there is no radiation', 'The warmest part of a solar system'], tip: 'Also called the "Goldilocks zone" \u2014 not too hot, not too cold for liquid water on the surface.', wrongFeedback: { 'Where humans can breathe': 'Breathability depends on atmosphere composition, not distance from the star. Venus is in the habitable zone but has no oxygen!', 'Where there is no radiation': 'Radiation exists everywhere in space. The habitable zone is about temperature for liquid water.', 'The warmest part of a solar system': 'The warmest zone is closest to the star, but that\u2019s too hot for liquid water. The habitable zone is the "just right" middle distance.' }, difficulty: 2, concept: 'habitable zone' },
+            { q: 'Why do we always see the same side of the Moon?', a: 'Tidal locking', opts: ['The Moon doesn\u2019t rotate', 'Tidal locking', 'Earth\u2019s gravity is too strong', 'The dark side is always hidden'], tip: 'The Moon rotates exactly once per orbit \u2014 this synchronization is caused by tidal forces over billions of years.', wrongFeedback: { 'The Moon doesn\u2019t rotate': 'The Moon DOES rotate! It rotates exactly once per orbit (27.3 days), so the same face always points at Earth. This is called tidal locking.', 'Earth\u2019s gravity is too strong': 'Earth\u2019s gravity caused the tidal locking, but the result is synchronized rotation, not prevented rotation.', 'The dark side is always hidden': 'There\u2019s no permanent "dark side" \u2014 all parts of the Moon get sunlight. The far side is just the part we can\u2019t see from Earth.' }, difficulty: 3, concept: 'tidal locking' },
+            { q: 'What evidence suggests Mars once had liquid water?', a: 'Hematite minerals and river channels', opts: ['Red color from rust', 'Hematite minerals and river channels', 'Polar ice caps', 'Thin atmosphere'], tip: 'Opportunity rover found hematite "blueberries" \u2014 minerals that only form in water. Orbital photos show ancient river deltas!', wrongFeedback: { 'Red color from rust': 'Iron oxide (rust) forms through oxidation, not necessarily water. Mars\u2019s red color comes from iron dust, not liquid water.', 'Polar ice caps': 'Mars\u2019s ice caps are mostly CO\u2082 (dry ice) with some water ice. They show water exists but not that it was ever liquid on the surface.', 'Thin atmosphere': 'The thin atmosphere actually makes liquid water impossible today! Low pressure causes water to boil or freeze instantly.' }, difficulty: 3, concept: 'evidence of water' }
+          ];
+
+          // ── Vocabulary Glossary ──
+          var VOCAB = {
+            'greenhouse effect': { def: 'When an atmosphere traps heat from the Sun, warming the surface. CO\u2082 and methane are key greenhouse gases.', grade: 4 },
+            'habitable zone': { def: 'The distance range from a star where liquid water can exist on a planet\u2019s surface. Also called the "Goldilocks zone."', grade: 5 },
+            'magnetosphere': { def: 'The region around a planet controlled by its magnetic field, which deflects charged particles from the solar wind.', grade: 6 },
+            'tidal locking': { def: 'When a moon or planet rotates at the same rate it orbits, so one face always points toward the body it orbits.', grade: 6 },
+            'density': { def: 'How much mass fits in a given volume. Measured in g/cm\u00B3. Water = 1.0. Objects with density < 1.0 float in water.', grade: 4 },
+            'axial tilt': { def: 'The angle a planet\u2019s rotation axis is tilted relative to its orbit. Earth\u2019s 23.5\u00B0 tilt causes our seasons.', grade: 5 },
+            'escape velocity': { def: 'The minimum speed needed to break free from a planet\u2019s gravity without further propulsion.', grade: 7 },
+            'exosphere': { def: 'The outermost layer of an atmosphere, where atoms are so spread out they can escape into space.', grade: 6 },
+            'tholins': { def: 'Complex reddish-brown organic molecules formed when UV light hits methane and nitrogen. Found on Pluto and Titan.', grade: 7 },
+            'superionic ice': { def: 'A bizarre form of water ice where oxygen atoms are locked in a crystal but hydrogen atoms flow freely like a liquid. Found deep inside Uranus and Neptune.', grade: 8 },
+            'extremophile': { def: 'An organism that thrives in extreme conditions (extreme heat, cold, pressure, or acidity) that would kill most life.', grade: 6 },
+            'biosignature': { def: 'Any substance, element, isotope, or phenomenon that provides scientific evidence of past or present life.', grade: 7 },
+            'Kuiper Belt': { def: 'A ring of icy bodies beyond Neptune\u2019s orbit, from 30 to 50 AU. Pluto is the most famous Kuiper Belt object.', grade: 5 },
+            'AU (astronomical unit)': { def: 'The average distance from Earth to the Sun: about 150 million km. Used to measure distances within our solar system.', grade: 5 },
+            'solar wind': { def: 'A stream of charged particles (mostly protons and electrons) constantly flowing outward from the Sun at 400-800 km/s.', grade: 6 },
+            'albedo': { def: 'How much light a surface reflects. Fresh snow has high albedo (0.9); charcoal has low albedo (0.04). Affects planet temperature.', grade: 7 },
+            'regolith': { def: 'The layer of loose rock, dust, and debris covering solid bedrock on a planet or moon. The Moon\u2019s surface is mostly regolith.', grade: 6 }
+          };
+
+          // ── Misconception Checkpoints (T/F) ──
+          var MISCONCEPTIONS = [
+            { statement: 'Mercury is the hottest planet because it\u2019s closest to the Sun.', answer: false, explanation: 'Venus is hotter (462\u00B0C vs 430\u00B0C)! Mercury has no atmosphere to trap heat. The greenhouse effect matters more than distance.', trigger: 'Mercury', concept: 'greenhouse effect' },
+            { statement: 'Gas giants like Jupiter have solid surfaces you could stand on.', answer: false, explanation: 'Gas giants have no solid surface! They\u2019re mostly hydrogen and helium gas that gradually gets denser toward the core. A probe would sink endlessly.', trigger: 'descent_gas', concept: 'gas giant structure' },
+            { statement: 'The Sun is closest to Earth at noon.', answer: false, explanation: 'Earth\u2019s distance from the Sun doesn\u2019t change during the day. Noon just means the Sun is highest in your sky. Earth is closest in January (perihelion)!', trigger: 'Earth', concept: 'orbital mechanics' },
+            { statement: 'All planets are roughly the same size.', answer: false, explanation: 'Jupiter is 11x wider than Earth, and 1,300 Earths could fit inside it! The solar system has extreme size differences.', trigger: 'comparison', concept: 'scale' },
+            { statement: 'Pluto was removed from the solar system when it was reclassified.', answer: false, explanation: 'Pluto is still in the solar system! It was reclassified from "planet" to "dwarf planet" in 2006, but it\u2019s still orbiting the Sun.', trigger: 'Pluto', concept: 'classification' },
+            { statement: 'The asteroid belt is a dense field of rocks you\u2019d have to dodge through.', answer: false, explanation: 'The asteroid belt is mostly empty space! The average distance between asteroids is millions of km. Spacecraft fly through without any risk.', trigger: 'overview', concept: 'scale' },
+            { statement: 'You would weigh more on any planet bigger than Earth.', answer: false, explanation: 'Not always! Saturn is 95x Earth\u2019s mass but surface gravity is only 1.06g because it\u2019s so large and low-density. Weight depends on both mass AND radius.', trigger: 'gravity', concept: 'gravity' },
+            { statement: 'The Moon has a permanent "dark side" that never gets sunlight.', answer: false, explanation: 'All parts of the Moon receive sunlight! The "far side" is just the half we can\u2019t see from Earth due to tidal locking. It gets just as much Sun.', trigger: 'moons', concept: 'tidal locking' }
+          ];
+
+          // ── Science Concept Cards ──
+          var CONCEPT_CARDS = {
+            habitable_zone: { title: 'The Habitable Zone', icon: '\uD83C\uDF0D', color: '#22c55e', content: 'The habitable zone (or "Goldilocks zone") is the range of distances from a star where liquid water could exist on a planet\u2019s surface. In our solar system, Venus is at the inner edge, Earth is in the middle, and Mars is at the outer edge. But having liquid water also requires the right atmosphere and magnetic field!', planets: ['Venus', 'Earth', 'Mars'] },
+            greenhouse: { title: 'The Greenhouse Effect', icon: '\u2600\uFE0F', color: '#f59e0b', content: 'When sunlight heats a planet\u2019s surface, the surface radiates heat (infrared). Greenhouse gases (CO\u2082, CH\u2084, H\u2082O) absorb this heat and re-radiate it, warming the planet. Earth\u2019s greenhouse is +33\u00B0C (life-sustaining). Venus\u2019s is +510\u00B0C (runaway). Mars has almost none (-60\u00B0C average). The amount of greenhouse gas determines the outcome!', planets: ['Venus', 'Earth', 'Mars'] },
+            magnetosphere: { title: 'Magnetic Shields', icon: '\uD83E\uDDF2', color: '#3b82f6', content: 'A planet\u2019s magnetic field creates a "magnetosphere" \u2014 an invisible shield that deflects the solar wind (charged particles from the Sun). Earth\u2019s magnetosphere protects our atmosphere and makes life possible. Mars lost its magnetic field 4 billion years ago, and its atmosphere was gradually stripped away. Jupiter\u2019s magnetosphere is 20,000x stronger than Earth\u2019s!', planets: ['Earth', 'Mars', 'Jupiter'] },
+            pluto_iau: { title: 'Why Isn\u2019t Pluto a Planet?', icon: '\uD83E\uDE90', color: '#8b5cf6', content: 'In 2006, the International Astronomical Union defined three criteria for a planet: (1) Orbits the Sun \u2713, (2) Has enough mass for round shape \u2713, (3) Has "cleared its orbit" of other debris \u2717. Pluto shares its orbital zone with thousands of Kuiper Belt objects, so it\u2019s classified as a "dwarf planet." This doesn\u2019t make it less interesting \u2014 New Horizons revealed it\u2019s geologically active!', planets: ['Pluto'] },
+            tidal_locking: { title: 'Tidal Locking', icon: '\uD83C\uDF19', color: '#06b6d4', content: 'Over billions of years, gravitational tidal forces can slow a moon\u2019s rotation until it matches its orbital period. Result: one face always points at the planet. Our Moon is tidally locked to Earth. Mercury is partially locked to the Sun (3:2 ratio). Pluto and Charon are mutually locked \u2014 they always show the same face to each other!', planets: ['Earth', 'Mercury', 'Pluto'] },
+            biosignatures: { title: 'Searching for Life', icon: '\uD83E\uDDA0', color: '#10b981', content: 'A biosignature is any evidence of past or present life. Scientists look for: (1) liquid water, (2) organic molecules, (3) atmospheric gases like oxygen or methane that shouldn\u2019t exist without life producing them, (4) energy sources. The best candidates in our solar system: Mars (ancient water), Europa (subsurface ocean), Enceladus (water geysers), and Titan (methane lakes).', planets: ['Mars', 'Jupiter', 'Saturn'] }
+          };
+
+          // ── Guided Learning Paths ──
+          var LEARNING_PATHS = {
+            tour_guide: { name: 'Tour Guide', icon: '\uD83D\uDE8C', desc: 'Guided tour for beginners (grades 3-5)', planets: ['Earth', 'Mars', 'Jupiter', 'Saturn', 'Pluto'], steps: [
+              'Start with Earth \u2014 your home planet! Compare everything else to it.',
+              'Visit Mars \u2014 the most Earth-like planet. Look for evidence of water.',
+              'Explore Jupiter \u2014 feel the difference in gravity and size.',
+              'See Saturn\u2019s rings \u2014 and learn they won\u2019t last forever.',
+              'End with Pluto \u2014 and decide: should it be a planet?'
+            ] },
+            explorer: { name: 'Explorer', icon: '\uD83E\uDDED', desc: 'Self-directed exploration (grades 6-8)', planets: null, steps: [
+              'Choose any planet that interests you.',
+              'Use all 5 view modes (overview, surface, interior, descent, drone).',
+              'Collect at least 3 geological samples.',
+              'Complete 2 navigation challenges in drone mode.',
+              'Compare your planet with another using the comparison tool.'
+            ] },
+            researcher: { name: 'Researcher', icon: '\uD83D\uDD2C', desc: 'Advanced investigation (grade 8+)', planets: null, steps: [
+              'Form a hypothesis about one planet\u2019s most interesting feature.',
+              'Collect evidence using scanner, samples, and observations.',
+              'Use the AI Space Tutor to research your hypothesis.',
+              'Compare at least 3 planets\u2019 atmospheres and interiors.',
+              'Write a field journal entry summarizing your findings.'
+            ] }
+          };
+
+          // ── Field Journal Template ──
+          var journalEntries = d.journalEntries || [];
+          function addJournalEntry(planet, prediction, observation, surprise, question) {
+            var entry = { planet: planet, prediction: prediction, observation: observation, surprise: surprise, question: question, timestamp: Date.now(), samples: (d.collectedSamples || []).filter(function(s) { return s.planet === planet; }).length };
+            var updated = journalEntries.concat([entry]);
+            upd('journalEntries', updated);
+            journalEntries = updated;
+            if (addToast) addToast('\uD83D\uDCD3 Field journal entry saved for ' + planet + '!', 'success');
+          }
+
+          // ── Teacher Progress Tracking ──
+          function exportProgressCSV() {
+            var rows = [['Metric', 'Value', 'Details']];
+            rows.push(['Planets Visited', planetsVisited.length + '/9', planetsVisited.join(', ') || 'None']);
+            rows.push(['Quiz Score', (d.quiz ? d.quiz.score : 0) + '', 'Best streak: ' + (d.quiz ? d.quiz.streak : 0)]);
+            rows.push(['Research Points', researchPoints + '', totalRP + ' total earned']);
+            rows.push(['Challenges Completed', completedChallenges.length + '/' + CHALLENGES.length, completedChallenges.join(', ')]);
+            rows.push(['Samples Collected', (d.collectedSamples || []).length + '', '']);
+            rows.push(['Journal Entries', journalEntries.length + '', '']);
+            rows.push(['Misconceptions Checked', (d.misconceptionsSeen || []).length + '/' + MISCONCEPTIONS.length, '']);
+            rows.push(['POE Prompts Seen', (d.poeSeen || []).length + '/9', '']);
+            var vocabSeen = d.vocabLookedUp || [];
+            rows.push(['Vocabulary Explored', vocabSeen.length + '/' + Object.keys(VOCAB).length, vocabSeen.join(', ')]);
+            // Active learning path
+            rows.push(['Learning Path', d.learningPath || 'Free Explore', '']);
+            // Per-planet detail
+            PLANETS.forEach(function(p) {
+              var visited = planetsVisited.indexOf(p.name) !== -1;
+              var samples = (d.collectedSamples || []).filter(function(s) { return s.planet === p.name; }).length;
+              var journal = journalEntries.filter(function(j) { return j.planet === p.name; }).length;
+              rows.push([p.name, visited ? 'Visited' : 'Not visited', 'Samples: ' + samples + ', Journal: ' + journal]);
+            });
+            var csv = rows.map(function(r) { return r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+            var blob = new Blob([csv], { type: 'text/csv' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'solar_explorer_progress_' + new Date().toISOString().slice(0, 10) + '.csv';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            if (addToast) addToast('\uD83D\uDCCA Progress report exported!', 'success');
+          }
+
+          // ── Assignment Mode ──
+          var PRESET_ASSIGNMENTS = [
+            { id: 'inner_planets', name: 'Inner Planets Study', tasks: ['Visit Mercury, Venus, Earth, and Mars', 'Collect 2 samples from each rocky planet', 'Answer: Why is Venus hotter than Mercury?', 'Write a journal entry comparing Earth and Mars'], gradeRange: '4-6' },
+            { id: 'gas_giants', name: 'Gas Giant Expedition', tasks: ['Visit Jupiter, Saturn, Uranus, and Neptune', 'Descend through Jupiter\u2019s atmosphere', 'Compare wind speeds across all 4 gas/ice giants', 'Explore the Great Red Spot in drone mode'], gradeRange: '5-8' },
+            { id: 'habitability', name: 'Search for Life', tasks: ['Read the Habitable Zone concept card', 'Compare Earth, Mars, and Venus using the comparison tool', 'Collect biosignature-related samples', 'Write: What makes a planet habitable?'], gradeRange: '6-8' },
+            { id: 'full_survey', name: 'Grand Tour Survey', tasks: ['Visit all 9 planets', 'Score 8+ on the quiz', 'Complete 3 navigation challenges', 'Write journal entries for 5 different planets', 'Export your progress report'], gradeRange: '6-8+' }
+          ];
+
           // Hohmann transfer orbit data (delta-v in km/s from Earth)
           var HOHMANN = {
             Mercury: { dv1: 7.5, dv2: 5.5, travelDays: 105, window: '~116 days' },
@@ -738,9 +950,9 @@ const d = labToolData.solarSystem;
 
                 // Orbit ring
 
-                const orbitGeo = new THREE.RingGeometry(p.dist - 0.02, p.dist + 0.02, 128);
+                const orbitGeo = new THREE.RingGeometry(p.dist - 0.015, p.dist + 0.015, 128);
 
-                const orbitMat = new THREE.MeshBasicMaterial({ color: 0x334466, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+                const orbitMat = new THREE.MeshBasicMaterial({ color: p.color ? parseInt(p.color.replace('#', '0x')) : 0x556688, side: THREE.DoubleSide, transparent: true, opacity: 0.18 });
 
                 const orbitMesh = new THREE.Mesh(orbitGeo, orbitMat);
 
@@ -778,7 +990,21 @@ const d = labToolData.solarSystem;
 
                 planetMeshes.push(mesh);
 
-
+                // Atmosphere glow — soft halo around planets with atmospheres
+                if (p.atmosphere && p.atmosphere !== 'None' && p.atmosphere.indexOf('None') === -1) {
+                  var glowSize = p.size * 2.4;
+                  var glowCanvas = document.createElement('canvas'); glowCanvas.width = 128; glowCanvas.height = 128;
+                  var gctx = glowCanvas.getContext('2d');
+                  var glowGrad = gctx.createRadialGradient(64, 64, 20, 64, 64, 64);
+                  glowGrad.addColorStop(0, 'rgba(' + Math.round(p.rgb[0]*255) + ',' + Math.round(p.rgb[1]*255) + ',' + Math.round(p.rgb[2]*255) + ',0.3)');
+                  glowGrad.addColorStop(0.5, 'rgba(' + Math.round(p.rgb[0]*255) + ',' + Math.round(p.rgb[1]*255) + ',' + Math.round(p.rgb[2]*255) + ',0.1)');
+                  glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                  gctx.fillStyle = glowGrad; gctx.fillRect(0, 0, 128, 128);
+                  var glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+                  glowSprite.scale.set(glowSize, glowSize, 1);
+                  mesh.add(glowSprite);
+                  mesh._atmosGlow = glowSprite;
+                }
 
                 // Saturn's rings
 
@@ -1006,6 +1232,7 @@ const d = labToolData.solarSystem;
                   const name = hitObj.userData.name;
 
                   upd('selectedPlanet', name);
+                  startPlanetAmbience(name);
                   if (typeof canvasNarrate === 'function') {
                     var pData = PLANETS[hitObj.userData.idx];
                     canvasNarrate('solarSystem', 'planet_select', {
@@ -1033,9 +1260,9 @@ const d = labToolData.solarSystem;
 
                 } else {
 
-                  // Clicked empty space â€" deselect, return to system view
+                  // Clicked empty space — deselect, return to system view
 
-                  upd('selectedPlanet', null);
+                  upd('selectedPlanet', null); stopPlanetAmbience();
 
                   focusedPlanetIdx = -1;
 
@@ -1193,6 +1420,12 @@ const d = labToolData.solarSystem;
 
                 }
 
+                // Highlight selected planet's orbit ring
+                orbitLines.forEach(function(ol, oi) {
+                  var targetOp = (oi === focusedPlanetIdx) ? 0.5 : 0.18;
+                  ol.material.opacity += (targetOp - ol.material.opacity) * 0.1;
+                });
+
                 // Smoothly interpolate camera toward target
 
                 currentLookAt.lerp(targetLookAt, cameraLerp);
@@ -1338,6 +1571,8 @@ const d = labToolData.solarSystem;
 
                 scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
 
+                stopPlanetAmbience();
+
               };
 
             }
@@ -1427,7 +1662,7 @@ const d = labToolData.solarSystem;
 
                 React.createElement("button", { "aria-label": "Reset View",
 
-                  onClick: () => { upd('selectedPlanet', null); const c = document.querySelector('.solar3d-canvas'); if (c) { c.dataset.resetCamera = 'true'; } },
+                  onClick: () => { upd('selectedPlanet', null); stopPlanetAmbience(); const c = document.querySelector('.solar3d-canvas'); if (c) { c.dataset.resetCamera = 'true'; } },
 
                   className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 text-white/70 hover:bg-white/20 border border-white/10 backdrop-blur-sm transition-all"
 
@@ -1447,7 +1682,7 @@ const d = labToolData.solarSystem;
 
                 key: p.name,
 
-                onClick: () => { upd('selectedPlanet', p.name); if (typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'planet_select', { first: 'Selected ' + p.name + '. ' + p.fact, repeat: p.name + ' selected.', terse: p.name + '.' }, { debounce: 500 }); } },
+                onClick: () => { upd('selectedPlanet', p.name); playPlanetSelect(p.dist || 1); startPlanetAmbience(p.name); if (typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'planet_select', { first: 'Selected ' + p.name + '. ' + p.fact, repeat: p.name + ' selected.', terse: p.name + '.' }, { debounce: 500 }); } },
 
                 className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
 
@@ -1544,7 +1779,7 @@ const d = labToolData.solarSystem;
                     return React.createElement("button", { "aria-label": "Switch to " + tab + " view tab",
 
                       key: tab, onClick: function () {
-                        upd('viewTab', tab);
+                        upd('viewTab', tab); playTabClick();
                         if (tab === 'interior') {
                           tryAward('gas_explorer');
                           var prev = d.interiorsViewed || [];
@@ -1583,16 +1818,40 @@ const d = labToolData.solarSystem;
 
                   ].map(function (item) {
 
-                    return React.createElement("div", { key: item[1], className: "bg-white rounded-lg p-2 text-center border" },
+                    return React.createElement("div", { key: item[1], className: "bg-white rounded-xl p-2.5 text-center border border-slate-200 hover:border-indigo-200 transition-colors" },
 
-                      React.createElement("p", { className: "text-[10px] text-slate-500 font-bold" }, item[0] + ' ' + item[1]),
+                      React.createElement("p", { className: "text-[9px] text-slate-400 font-bold uppercase tracking-wider" }, item[0] + ' ' + item[1]),
 
-                      React.createElement("p", { className: "text-xs font-bold text-slate-700" }, item[2])
+                      React.createElement("p", { className: "text-xs font-bold text-slate-800 mt-0.5" }, item[2])
 
                     );
 
                   })
 
+                ),
+
+                // Visual comparison bars — gravity and size relative to Earth
+                React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" },
+                  // Gravity bar
+                  React.createElement("div", { className: "bg-white rounded-xl p-2.5 border border-slate-200" },
+                    React.createElement("div", { className: "flex justify-between items-center mb-1" },
+                      React.createElement("span", { className: "text-[9px] font-bold text-slate-400 uppercase" }, "\u2696\uFE0F Gravity vs Earth"),
+                      React.createElement("span", { className: "text-[10px] font-bold text-indigo-600" }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
+                    ),
+                    React.createElement("div", { className: "w-full h-2.5 bg-slate-100 rounded-full overflow-hidden" },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (GRAVITY_MAP[sel.name] || 1) * 42) + '%', background: 'linear-gradient(90deg, #6366f1, #818cf8)' } })
+                    )
+                  ),
+                  // Size bar
+                  React.createElement("div", { className: "bg-white rounded-xl p-2.5 border border-slate-200" },
+                    React.createElement("div", { className: "flex justify-between items-center mb-1" },
+                      React.createElement("span", { className: "text-[9px] font-bold text-slate-400 uppercase" }, "\uD83D\uDCCF Radius vs Earth"),
+                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-600" }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
+                    ),
+                    React.createElement("div", { className: "w-full h-2.5 bg-slate-100 rounded-full overflow-hidden" },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((PLANET_RADII[sel.name] || 6371) / 6371) * 9) + '%', background: 'linear-gradient(90deg, #10b981, #34d399)' } })
+                    )
+                  )
                 ),
 
                 React.createElement("p", { className: "text-sm text-slate-600 italic bg-indigo-50 rounded-lg p-2 border border-indigo-100 mb-2" }, "\uD83D\uDCA1 " + sel.fact),
@@ -4093,6 +4352,81 @@ const d = labToolData.solarSystem;
                             scene.add(rock);
                           }
 
+                          // ═══ PLANET-SPECIFIC TERRAIN FEATURES ═══
+
+                          // Mars: Polar ice caps at terrain edges
+                          if (sel.terrainType === 'desert') {
+                            var iceCap1 = new THREE.CircleGeometry(25, 24);
+                            var iceCapMat = new THREE.MeshStandardMaterial({
+                              color: 0xeef4f8, roughness: 0.3, metalness: 0.1,
+                              transparent: true, opacity: 0.75
+                            });
+                            var iceMesh1 = new THREE.Mesh(iceCap1, iceCapMat);
+                            iceMesh1.rotation.x = -Math.PI / 2;
+                            iceMesh1.position.set(0, _terrainHeightAt(0, -100) + 0.15, -100);
+                            scene.add(iceMesh1);
+                            var iceMesh2 = new THREE.Mesh(iceCap1.clone(), iceCapMat.clone());
+                            iceMesh2.rotation.x = -Math.PI / 2;
+                            iceMesh2.position.set(0, _terrainHeightAt(0, 100) + 0.15, 100);
+                            scene.add(iceMesh2);
+                            // Frost dusting near poles
+                            for (var frosti = 0; frosti < 20; frosti++) {
+                              var frostGeo = new THREE.CircleGeometry(1.5 + Math.random() * 3, 8);
+                              var frostMat2 = new THREE.MeshStandardMaterial({ color: 0xddeeff, transparent: true, opacity: 0.25 + Math.random() * 0.15, roughness: 0.2 });
+                              var frostMesh = new THREE.Mesh(frostGeo, frostMat2);
+                              frostMesh.rotation.x = -Math.PI / 2;
+                              var fz = (frosti < 10 ? -1 : 1) * (70 + Math.random() * 40);
+                              var fx = (Math.random() - 0.5) * 60;
+                              frostMesh.position.set(fx, _terrainHeightAt(fx, fz) + 0.1, fz);
+                              scene.add(frostMesh);
+                            }
+                          }
+
+                          // Venus: Pancake dome formations (unique flat-topped volcanoes)
+                          if (sel.terrainType === 'volcanic') {
+                            for (var pdi = 0; pdi < 4; pdi++) {
+                              var pdX = (Math.random() - 0.5) * 140;
+                              var pdZ = (Math.random() - 0.5) * 140;
+                              var pdR = 5 + Math.random() * 8;
+                              var pdH = 1.5 + Math.random() * 2;
+                              var pdGeo = new THREE.CylinderGeometry(pdR, pdR * 1.2, pdH, 16, 1, false);
+                              // Slightly round the top
+                              var pdPos = pdGeo.attributes.position.array;
+                              for (var pdv = 0; pdv < pdPos.length; pdv += 3) {
+                                if (pdPos[pdv + 1] > pdH * 0.3) {
+                                  var dist2 = Math.sqrt(pdPos[pdv] * pdPos[pdv] + pdPos[pdv + 2] * pdPos[pdv + 2]) / pdR;
+                                  pdPos[pdv + 1] -= dist2 * dist2 * pdH * 0.15;
+                                }
+                              }
+                              pdGeo.computeVertexNormals();
+                              var pdMat = new THREE.MeshStandardMaterial({ color: 0x8a5a3a, roughness: 0.85, flatShading: true });
+                              var pdMesh = new THREE.Mesh(pdGeo, pdMat);
+                              var pdY = _terrainHeightAt(pdX, pdZ);
+                              pdMesh.position.set(pdX, pdY + pdH * 0.3, pdZ);
+                              scene.add(pdMesh);
+                            }
+                          }
+
+                          // Pluto: Cantaloupe terrain ridges (irregular mound pattern)
+                          if (sel.terrainType === 'iceworld') {
+                            for (var cti = 0; cti < 30; cti++) {
+                              var ctX = (Math.random() - 0.5) * 120;
+                              var ctZ = (Math.random() - 0.5) * 120;
+                              var ctR = 1 + Math.random() * 2.5;
+                              var ctGeo = new THREE.DodecahedronGeometry(ctR, 0);
+                              var ctPos2 = ctGeo.attributes.position.array;
+                              for (var ctv = 0; ctv < ctPos2.length; ctv += 3) {
+                                ctPos2[ctv + 1] *= 0.35; // flatten into ridge mound
+                              }
+                              ctGeo.computeVertexNormals();
+                              var ctMat = new THREE.MeshStandardMaterial({ color: 0xb8d4e3, roughness: 0.4, metalness: 0.15, flatShading: true });
+                              var ctMesh = new THREE.Mesh(ctGeo, ctMat);
+                              ctMesh.position.set(ctX, _terrainHeightAt(ctX, ctZ) + ctR * 0.2, ctZ);
+                              ctMesh.rotation.y = Math.random() * Math.PI * 2;
+                              scene.add(ctMesh);
+                            }
+                          }
+
                           // ═══ GEOLOGICAL SAMPLE COLLECTION (Rocky Planets) ═══
                           var geoSamples = [];
                           var geoSampleOrbs = [];
@@ -6204,29 +6538,41 @@ const d = labToolData.solarSystem;
                             doEnvironmentScan();
                           }
 
-                          // Photo capture mode (C key)
+                          // Photo capture mode (C key) — with actual screenshot thumbnail
                           if (e.key === 'c' || e.key === 'C') {
                             if (typeof _photoCooldown !== 'undefined' && _photoCooldown > 0) return;
                             _photoCooldown = 120;
+
+                            // Capture the actual canvas as a thumbnail before flash
+                            var thumbDataUrl = '';
+                            try {
+                              renderer.render(scene, camera); // ensure fresh frame
+                              thumbDataUrl = canvasEl.toDataURL('image/jpeg', 0.7);
+                            } catch(pe) { /* security restrictions on some browsers */ }
+
                             // Flash effect
                             var flash = document.createElement('div');
                             flash.style.cssText = 'position:absolute;inset:0;background:rgba(255,255,255,0.7);z-index:50;pointer-events:none;transition:opacity 0.4s';
                             canvasEl.parentElement.appendChild(flash);
                             setTimeout(function() { flash.style.opacity = '0'; }, 100);
                             setTimeout(function() { if (flash.parentElement) flash.parentElement.removeChild(flash); }, 500);
-                            // Photo card overlay
+
+                            // Photo card overlay with real screenshot thumbnail
                             var photoCard = document.createElement('div');
-                            photoCard.style.cssText = 'position:absolute;bottom:70px;right:12px;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);border:2px solid rgba(56,189,248,0.4);border-radius:12px;padding:10px 14px;z-index:25;pointer-events:none;color:#e2e8f0;font-family:system-ui;max-width:220px;opacity:0;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px)';
+                            photoCard.style.cssText = 'position:absolute;bottom:70px;right:12px;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);border:2px solid rgba(56,189,248,0.4);border-radius:14px;padding:10px;z-index:25;pointer-events:auto;color:#e2e8f0;font-family:system-ui;max-width:260px;opacity:0;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px)';
                             var photoLabel = isOcean ? 'DEPTH ' + Math.abs(playerPos.y * scaleFactor).toFixed(0) + 'm' : isGas ? 'ALT ' + (playerPos.y * scaleFactor).toFixed(0) + 'm' : 'ELEV ' + ((playerPos.y - 1.6) * scaleFactor).toFixed(0) + 'm';
                             var timestamp = new Date().toLocaleTimeString();
-                            photoCard.innerHTML = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:14px">\uD83D\uDCF8</span><span style="font-weight:bold;font-size:11px;color:#38bdf8">PHOTO CAPTURED</span></div>' +
+                            var thumbHtml = thumbDataUrl ? '<img src="' + thumbDataUrl + '" style="width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid rgba(56,189,248,0.2);margin-bottom:6px" alt="Photo of ' + sel.name + '" />' : '';
+                            photoCard.innerHTML = thumbHtml +
+                              '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:14px">\uD83D\uDCF8</span><span style="font-weight:bold;font-size:11px;color:#38bdf8">PHOTO CAPTURED</span></div>' +
                               '<div style="font-size:9px;color:#94a3b8">' + sel.name + ' \u2022 ' + photoLabel + '</div>' +
                               '<div style="font-size:9px;color:#64748b">' + dirLabel + ' ' + Math.round(deg) + '\u00B0 \u2022 ' + timestamp + '</div>' +
-                              '<div style="font-size:9px;color:#4ade80;margin-top:3px">\u2B50 +5 XP \u2022 Added to mission log</div>';
+                              '<div style="font-size:9px;color:#4ade80;margin-top:3px">\u2B50 +5 XP \u2022 Added to mission log</div>' +
+                              (thumbDataUrl ? '<div style="margin-top:6px;text-align:center"><a download="' + sel.name.replace(/\s/g, '_') + '_photo.jpg" href="' + thumbDataUrl + '" style="font-size:9px;color:#38bdf8;text-decoration:underline;cursor:pointer">\u2B07 Save Photo</a></div>' : '');
                             canvasEl.parentElement.appendChild(photoCard);
                             setTimeout(function() { photoCard.style.opacity = '1'; photoCard.style.transform = 'translateY(0)'; }, 50);
-                            setTimeout(function() { photoCard.style.opacity = '0'; photoCard.style.transform = 'translateY(10px)'; }, 4000);
-                            setTimeout(function() { if (photoCard.parentElement) photoCard.parentElement.removeChild(photoCard); }, 4500);
+                            setTimeout(function() { photoCard.style.opacity = '0'; photoCard.style.transform = 'translateY(10px)'; }, 6000);
+                            setTimeout(function() { if (photoCard.parentElement) photoCard.parentElement.removeChild(photoCard); }, 6500);
                             // Award XP
                             if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 5);
                             addMissionEntry('\uD83D\uDCF8 Photo: ' + sel.name + ' ' + photoLabel + ' heading ' + dirLabel);
@@ -7918,6 +8264,51 @@ const d = labToolData.solarSystem;
                             geyserMesh.geometry.attributes.position.needsUpdate = true;
                           }
 
+                          // ── 3D POI Labels: billboard toward camera + proximity fade ──
+                          if (typeof poiLabelMeshes !== 'undefined' && poiLabelMeshes.length > 0 && tick3d % 2 === 0) {
+                            poiLabelMeshes.forEach(function(lm) {
+                              // Always face camera
+                              lm.lookAt(camera.position);
+                              // Fade based on distance — visible when close, transparent when far
+                              var lDist = playerPos.distanceTo(lm.position);
+                              if (lDist < 20) {
+                                lm.material.opacity = Math.min(0.9, 0.9 - (lDist - 5) * 0.04);
+                              } else {
+                                lm.material.opacity = Math.max(0, 0.3 - (lDist - 20) * 0.01);
+                              }
+                              // Dim discovered POIs
+                              if (discoveredPOIs[lm._poiLabelIdx]) {
+                                lm.material.opacity *= 0.4;
+                              }
+                            });
+                          }
+
+                          // ── Contextual HUD: auto-show telemetry near POIs/hazards ──
+                          if (tick3d % 15 === 0 && hud) {
+                            var nearestDist = 999;
+                            for (var ch = 0; ch < pois.length; ch++) {
+                              var chDist = Math.sqrt(Math.pow(playerPos.x - pois[ch].x, 2) + Math.pow(playerPos.z - pois[ch].z, 2));
+                              if (chDist < nearestDist) nearestDist = chDist;
+                            }
+                            // Show full HUD when near a POI or in a hazard zone
+                            var inHazard = (isGas && gasAtmo && gasAtmo.getZone(playerPos.y).hazard) ||
+                                           (isOcean && oceanAtmo && oceanAtmo.getZone(playerPos.y).hazard);
+                            var showFull = nearestDist < 8 || inHazard;
+                            // Toggle extended rows visibility
+                            var extRows = hud.querySelectorAll('[data-hud-ext]');
+                            extRows.forEach(function(row) {
+                              row.style.display = showFull ? 'block' : 'none';
+                            });
+                            // Pulse HUD border when near discovery
+                            if (nearestDist < 5 && !discoveredPOIs[pois.indexOf(pois.find(function(p) { return Math.sqrt(Math.pow(playerPos.x - p.x, 2) + Math.pow(playerPos.z - p.z, 2)) < 5; }))]) {
+                              hud.style.borderColor = 'rgba(251,191,36,0.6)';
+                            } else if (inHazard) {
+                              hud.style.borderColor = 'rgba(239,68,68,0.5)';
+                            } else {
+                              hud.style.borderColor = 'rgba(56,189,248,0.3)';
+                            }
+                          }
+
                           // ── Mini-Map Radar Rendering (every 5 frames) ──
                           if (tick3d % 5 === 0 && mmCtx) {
                             var mmW = 120, mmH = 120, mmCx = 60, mmCy = 60;
@@ -8203,53 +8594,114 @@ const d = labToolData.solarSystem;
 
                   }),
 
-                  // â"€â"€ Quiz Mode â"€â"€
+                  // ═══ POE (Predict-Observe-Explain) Prompt ═══
+                  sel && POE_PROMPTS[sel.name] && !d['poe_seen_' + sel.name] && React.createElement("div", {
+                    className: "mt-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border-2 border-amber-300 shadow-sm"
+                  },
+                    React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                      React.createElement("span", { className: "text-lg" }, "\uD83E\uDD14"),
+                      React.createElement("span", { className: "text-xs font-black text-amber-800 tracking-wide" }, "PREDICT BEFORE YOU EXPLORE")),
+                    React.createElement("p", { className: "text-sm text-amber-900 font-medium mb-3" }, POE_PROMPTS[sel.name].predict),
+                    React.createElement("div", { className: "flex gap-2" },
+                      React.createElement("button", {
+                        onClick: function() { upd('poe_seen_' + sel.name, 'predicted'); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
+                        className: "flex-1 px-3 py-2 text-xs font-bold rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                      }, "\uD83D\uDCDD I have a prediction!"),
+                      React.createElement("button", {
+                        onClick: function() { upd('poe_seen_' + sel.name, 'skipped'); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
+                        className: "px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 border border-amber-300 hover:bg-amber-50 transition-all"
+                      }, "Skip for now"))
+                  ),
+
+                  // POE Reveal (after exploring, show the answer)
+                  sel && POE_PROMPTS[sel.name] && d['poe_seen_' + sel.name] === 'predicted' && !d['poe_revealed_' + sel.name] && React.createElement("div", {
+                    className: "mt-2 bg-emerald-50 rounded-xl p-3 border border-emerald-200"
+                  },
+                    React.createElement("p", { className: "text-xs font-bold text-emerald-700 mb-1" }, "\uD83D\uDD0D Ready to check your prediction?"),
+                    React.createElement("button", {
+                      onClick: function() { upd('poe_revealed_' + sel.name, true); },
+                      className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all"
+                    }, "\u2705 Reveal the answer")
+                  ),
+
+                  sel && POE_PROMPTS[sel.name] && d['poe_revealed_' + sel.name] && React.createElement("div", {
+                    className: "mt-2 bg-emerald-50 rounded-xl p-3 border border-emerald-300"
+                  },
+                    React.createElement("p", { className: "text-xs font-bold text-emerald-800 mb-1" }, "\uD83D\uDCA1 " + POE_PROMPTS[sel.name].concept.toUpperCase()),
+                    React.createElement("p", { className: "text-xs text-emerald-700 leading-relaxed" }, POE_PROMPTS[sel.name].reveal),
+                    VOCAB[POE_PROMPTS[sel.name].concept] && React.createElement("div", { className: "mt-2 bg-white rounded-lg p-2 border border-emerald-100" },
+                      React.createElement("span", { className: "text-[9px] font-black text-emerald-600" }, "\uD83D\uDCD6 VOCABULARY: "),
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, POE_PROMPTS[sel.name].concept),
+                      React.createElement("span", { className: "text-[10px] text-slate-500" }, ' \u2014 ' + VOCAB[POE_PROMPTS[sel.name].concept].def))
+                  ),
+
+                  // ═══ Misconception Checkpoint ═══
+                  (function() {
+                    var mcTrigger = sel ? sel.name : 'overview';
+                    var relevantMC = MISCONCEPTIONS.filter(function(mc) { return mc.trigger === mcTrigger && (d.misconceptionsSeen || []).indexOf(mc.statement) === -1; });
+                    if (relevantMC.length === 0) return null;
+                    var mc = relevantMC[0];
+                    if (d['mc_answered_' + mcTrigger]) return null;
+                    return React.createElement("div", { className: "mt-3 bg-purple-50 rounded-xl p-3 border border-purple-200" },
+                      React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                        React.createElement("span", { className: "text-sm" }, "\u2753"),
+                        React.createElement("span", { className: "text-[10px] font-black text-purple-700 tracking-wide" }, "TRUE OR FALSE?")),
+                      React.createElement("p", { className: "text-xs font-bold text-purple-900 mb-2" }, '"' + mc.statement + '"'),
+                      !d['mc_choice_' + mcTrigger] ? React.createElement("div", { className: "flex gap-2" },
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-300 hover:bg-emerald-200 transition-all" }, "\u2705 True"),
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg bg-red-100 text-red-700 border border-red-300 hover:bg-red-200 transition-all" }, "\u274C False")
+                      ) : React.createElement("div", null,
+                        React.createElement("p", { className: "text-xs font-bold " + (d['mc_choice_' + mcTrigger] === mc.answer ? 'text-emerald-600' : 'text-red-600') }, d['mc_choice_' + mcTrigger] === mc.answer ? '\u2705 Correct!' : '\u274C Not quite!'),
+                        React.createElement("p", { className: "text-xs text-purple-700 mt-1 leading-relaxed" }, mc.explanation),
+                        React.createElement("button", { onClick: function() { upd('mc_answered_' + mcTrigger, true); upd('misconceptionsSeen', (d.misconceptionsSeen || []).concat([mc.statement])); }, className: "mt-2 px-3 py-1 text-[10px] font-bold rounded bg-purple-200 text-purple-700 hover:bg-purple-300" }, "Got it \u2192"))
+                    );
+                  })(),
+
+                  // ═══ Science Concept Cards ═══
+                  sel && React.createElement("div", { className: "mt-3" },
+                    Object.keys(CONCEPT_CARDS).filter(function(k) { return CONCEPT_CARDS[k].planets.indexOf(sel.name) !== -1; }).map(function(k) {
+                      var card = CONCEPT_CARDS[k];
+                      return React.createElement("div", { key: k, className: "mb-2" },
+                        React.createElement("button", {
+                          onClick: function() { upd('showConcept_' + k, !d['showConcept_' + k]); },
+                          className: "w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border transition-all hover:shadow-sm",
+                          style: { borderColor: card.color + '60', color: card.color, backgroundColor: card.color + '10' }
+                        }, React.createElement("span", null, card.icon), card.title, React.createElement("span", { className: "ml-auto text-[10px]" }, d['showConcept_' + k] ? '\u25B2' : '\u25BC')),
+                        d['showConcept_' + k] && React.createElement("div", {
+                          className: "mt-1 p-3 rounded-lg border text-xs text-slate-700 leading-relaxed",
+                          style: { borderColor: card.color + '30', backgroundColor: card.color + '08' }
+                        }, card.content)
+                      );
+                    })
+                  ),
+
+                  // â"€â"€ Quiz Mode (Enhanced with Error-Correcting Feedback) â"€â"€
 
                   React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
                       React.createElement("button", { "aria-label": "Start solar system quiz",
-
                         onClick: () => {
-
-                          const QUIZ_QS = [
-
-                            { q: 'Which planet is the hottest?', a: t('stem.solar_sys.venus'), opts: [t('stem.periodic.mercury'), t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.solar_sys.jupiter')], tip: 'Venus has a runaway greenhouse effect reaching 462\u00B0C!' },
-
-                            { q: 'Which planet has the most moons?', a: t('stem.solar_sys.saturn'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.uranus'), t('stem.solar_sys.neptune')], tip: 'Saturn has 146 known moons as of 2024!' },
-
-                            { q: 'Which planet rotates on its side?', a: t('stem.solar_sys.uranus'), opts: [t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus'), t('stem.solar_sys.saturn'), t('stem.solar_sys.pluto')], tip: 'Uranus has an axial tilt of 97.77\u00B0!' },
-
-                            { q: 'Which is the smallest planet?', a: t('stem.periodic.mercury'), opts: [t('stem.periodic.mercury'), t('stem.solar_sys.mars'), t('stem.solar_sys.pluto'), t('stem.solar_sys.venus')], tip: 'Mercury is only 4,879 km in diameter.' },
-
-                            { q: 'Which planet has the longest year?', a: t('stem.solar_sys.pluto'), opts: [t('stem.solar_sys.neptune'), t('stem.solar_sys.pluto'), t('stem.solar_sys.uranus'), t('stem.solar_sys.saturn')], tip: 'Pluto takes 248 Earth years to orbit the Sun!' },
-
-                            { q: 'Which planet has the shortest day?', a: t('stem.solar_sys.jupiter'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.earth'), t('stem.solar_sys.mars')], tip: 'Jupiter rotates in just 10 hours!' },
-
-                            { q: 'Which planet is known as the Red Planet?', a: t('stem.solar_sys.mars'), opts: [t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.periodic.mercury'), t('stem.solar_sys.jupiter')], tip: 'Iron oxide (rust) gives Mars its red color.' },
-
-                            { q: 'Which planet could float in water?', a: t('stem.solar_sys.saturn'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus')], tip: 'Saturn\u2019s density is less than water (0.687 g/cm\u00B3)!' },
-
-                            { q: 'Where is the tallest volcano in the solar system?', a: t('stem.solar_sys.mars'), opts: [t('stem.solar_sys.earth'), t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.solar_sys.jupiter')], tip: 'Olympus Mons on Mars is 21.9 km high \u2014 nearly 3x Everest!' },
-
-                            { q: 'Which planet has the strongest winds?', a: t('stem.solar_sys.neptune'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus')], tip: 'Neptune\u2019s winds reach 2,100 km/h!' },
-
-                          ];
-
-                          const q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-
-                          upd('quiz', { ...q, answered: false, correct: null, score: d.quiz?.score || 0, streak: d.quiz?.streak || 0 });
-
+                          // Use QUIZ_BANK for richer feedback; avoid repeating recently asked questions
+                          var asked = d.quizAsked || [];
+                          var available = QUIZ_BANK.filter(function(q2) { return asked.indexOf(q2.q) === -1; });
+                          if (available.length === 0) { available = QUIZ_BANK; asked = []; }
+                          var q = available[Math.floor(Math.random() * available.length)];
+                          upd('quiz', Object.assign({}, q, { answered: false, correct: null, chosen: null, score: d.quiz ? d.quiz.score : 0, streak: d.quiz ? d.quiz.streak : 0 }));
+                          upd('quizAsked', asked.concat([q.q]));
                         }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all"
-
                       }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
 
-                      d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct | \uD83D\uDD25 " + d.quiz.streak + " streak")
+                      d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct | \uD83D\uDD25 " + d.quiz.streak + " streak"),
+
+                      React.createElement("span", { className: "ml-auto text-[9px] text-slate-400" }, (d.quizAsked || []).length + '/' + QUIZ_BANK.length + ' asked')
 
                     ),
 
-                    d.quiz && React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 border border-indigo-200 animate-in slide-in-from-bottom" },
+                    d.quiz && React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 border border-indigo-200" },
+
+                      d.quiz.concept && React.createElement("div", { className: "text-[9px] font-bold text-indigo-400 mb-1 tracking-wider" }, '\uD83C\uDFAF CONCEPT: ' + d.quiz.concept.toUpperCase()),
 
                       React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, d.quiz.q),
 
@@ -8271,9 +8723,8 @@ const d = labToolData.solarSystem;
 
                               upd('quiz', Object.assign({}, d.quiz, { answered: true, correct: correct, chosen: opt, score: d.quiz.score + (correct ? 1 : 0), streak: correct ? d.quiz.streak + 1 : 0 }));
 
-                              if (correct) addToast(t('stem.planet_quiz.u2705_correct') + d.quiz.tip, 'success');
-
-                              else addToast(t('stem.planet_quiz.u274c_the_answer_is') + d.quiz.a + '. ' + d.quiz.tip, 'error');
+                              if (correct) { addToast('\u2705 Correct! ' + d.quiz.tip, 'success'); playQuizCorrect(); }
+                              else { playQuizWrong(); }
 
                             }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
 
@@ -8283,7 +8734,19 @@ const d = labToolData.solarSystem;
 
                       ),
 
-                      d.quiz.answered && React.createElement("p", { className: "mt-2 text-xs text-indigo-600 italic" }, "\uD83D\uDCA1 " + d.quiz.tip)
+                      // Error-correcting feedback: explain WHY wrong answer is wrong
+                      d.quiz.answered && !d.quiz.correct && d.quiz.wrongFeedback && d.quiz.wrongFeedback[d.quiz.chosen] && React.createElement("div", { className: "mt-3 bg-red-50 rounded-lg p-3 border border-red-200" },
+                        React.createElement("p", { className: "text-xs font-bold text-red-700 mb-1" }, "\u274C Why \"" + d.quiz.chosen + "\" isn\u2019t right:"),
+                        React.createElement("p", { className: "text-xs text-red-600 leading-relaxed" }, d.quiz.wrongFeedback[d.quiz.chosen]),
+                        React.createElement("p", { className: "text-xs font-bold text-emerald-600 mt-2" }, "\u2705 The answer is " + d.quiz.a + ": " + d.quiz.tip),
+                        // Link to vocabulary if concept matches
+                        d.quiz.concept && VOCAB[d.quiz.concept] && React.createElement("div", { className: "mt-2 bg-white rounded p-2 border border-slate-100" },
+                          React.createElement("span", { className: "text-[9px] font-black text-indigo-500" }, "\uD83D\uDCD6 "),
+                          React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, d.quiz.concept + ': '),
+                          React.createElement("span", { className: "text-[10px] text-slate-500" }, VOCAB[d.quiz.concept].def))
+                      ),
+
+                      d.quiz.answered && d.quiz.correct && React.createElement("p", { className: "mt-2 text-xs text-emerald-600 italic" }, "\uD83D\uDCA1 " + d.quiz.tip)
 
                     ),
 
@@ -8469,7 +8932,7 @@ const d = labToolData.solarSystem;
                       type: "range", min: "0", max: "100",
                       value: d.descentAlt !== undefined ? d.descentAlt : 100,
                       'aria-label': 'Descent altitude',
-                      onChange: function(e) { upd('descentAlt', parseInt(e.target.value)); },
+                      onChange: function(e) { var alt = parseInt(e.target.value); upd('descentAlt', alt); playDescentTick(alt); },
                       className: "w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer",
                       style: { direction: 'rtl' } // 100 = top, 0 = bottom
                     }),
@@ -9089,6 +9552,187 @@ const d = labToolData.solarSystem;
                     onClick: function() { upd('tutorialDismissed', true); playBeep(); },
                     className: "mt-4 w-full py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg"
                   }, "\uD83D\uDE80 Start Exploring!")
+                )
+              ),
+
+              // ═══ PEDAGOGICAL PANELS ═══
+
+              // ── Learning Path Selector ──
+              React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-xs font-black text-slate-600" }, "\uD83D\uDDFA\uFE0F Learning Path"),
+                  d.learningPath && React.createElement("span", { className: "text-[9px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold" }, d.learningPath)
+                ),
+                React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                  Object.keys(LEARNING_PATHS).map(function(k) {
+                    var lp = LEARNING_PATHS[k];
+                    var active = d.learningPath === k;
+                    return React.createElement("button", { key: k, onClick: function() { upd('learningPath', active ? null : k); },
+                      className: "p-2 rounded-lg border text-left transition-all " + (active ? 'bg-indigo-50 border-indigo-300 shadow-sm' : 'bg-white border-slate-200 hover:border-indigo-300')
+                    },
+                      React.createElement("div", { className: "text-sm mb-0.5" }, lp.icon),
+                      React.createElement("div", { className: "text-[10px] font-bold " + (active ? 'text-indigo-700' : 'text-slate-700') }, lp.name),
+                      React.createElement("div", { className: "text-[9px] text-slate-400" }, lp.desc)
+                    );
+                  })
+                ),
+                // Show steps for active path
+                d.learningPath && LEARNING_PATHS[d.learningPath] && React.createElement("div", { className: "mt-2 bg-indigo-50 rounded-lg p-3 border border-indigo-100" },
+                  LEARNING_PATHS[d.learningPath].steps.map(function(step, si2) {
+                    return React.createElement("div", { key: si2, className: "flex items-start gap-2 mb-1" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-indigo-400 mt-0.5" }, (si2 + 1) + '.'),
+                      React.createElement("span", { className: "text-[10px] text-slate-600" }, step)
+                    );
+                  })
+                )
+              ),
+
+              // ── Field Journal ──
+              React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                  React.createElement("span", { className: "text-xs font-black text-slate-600" }, "\uD83D\uDCD3 Field Journal"),
+                  React.createElement("span", { className: "text-[9px] text-slate-400" }, journalEntries.length + ' entries')
+                ),
+                React.createElement("button", {
+                  onClick: function() { upd('showJournal', !d.showJournal); },
+                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg " + (d.showJournal ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-amber-500 text-white hover:bg-amber-600') + " transition-all"
+                }, d.showJournal ? 'Close Journal' : (sel ? 'Write about ' + sel.name : 'Open Journal')),
+                d.showJournal && React.createElement("div", { className: "mt-2 space-y-2" },
+                  // New entry form
+                  sel && React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200 space-y-2" },
+                    React.createElement("div", { className: "text-[10px] font-bold text-amber-800" }, "\uD83D\uDCDD New Entry: " + sel.name),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[9px] font-bold text-amber-600 block mb-0.5" }, "What I predicted:"),
+                      React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: "Before exploring, I thought...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[9px] font-bold text-amber-600 block mb-0.5" }, "What I observed:"),
+                      React.createElement("textarea", { id: 'journal-observe', rows: 2, placeholder: "I noticed that...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[9px] font-bold text-amber-600 block mb-0.5" }, "What surprised me:"),
+                      React.createElement("textarea", { id: 'journal-surprise', rows: 1, placeholder: "I was surprised that...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[9px] font-bold text-amber-600 block mb-0.5" }, "One question I still have:"),
+                      React.createElement("textarea", { id: 'journal-question', rows: 1, placeholder: "I wonder...", className: "w-full text-[10px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                    ),
+                    React.createElement("button", {
+                      onClick: function() {
+                        var p1 = document.getElementById('journal-predict'); var p2 = document.getElementById('journal-observe');
+                        var p3 = document.getElementById('journal-surprise'); var p4 = document.getElementById('journal-question');
+                        if (!p2 || !p2.value.trim()) { addToast('Please write at least an observation!', 'info'); return; }
+                        addJournalEntry(sel.name, p1 ? p1.value : '', p2.value, p3 ? p3.value : '', p4 ? p4.value : '');
+                        if (p1) p1.value = ''; p2.value = ''; if (p3) p3.value = ''; if (p4) p4.value = '';
+                        if (awardStemXP) awardStemXP('solarSystem', 10);
+                      },
+                      className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                    }, "\uD83D\uDCBE Save Entry (+10 XP)")
+                  ),
+                  // Previous entries
+                  journalEntries.length > 0 && React.createElement("div", { className: "space-y-1" },
+                    React.createElement("div", { className: "text-[9px] font-bold text-slate-400 mt-2" }, "Previous Entries:"),
+                    journalEntries.slice().reverse().slice(0, 5).map(function(entry, ei) {
+                      return React.createElement("div", { key: ei, className: "bg-white rounded-lg p-2 border border-slate-100 text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between items-center mb-1" },
+                          React.createElement("span", { className: "font-bold text-slate-700" }, "\uD83C\uDF0D " + entry.planet),
+                          React.createElement("span", { className: "text-[8px] text-slate-400" }, new Date(entry.timestamp).toLocaleDateString())
+                        ),
+                        entry.prediction && React.createElement("div", { className: "text-slate-500" }, "\uD83D\uDCDD " + entry.prediction),
+                        React.createElement("div", { className: "text-slate-600" }, "\uD83D\uDD2D " + entry.observation),
+                        entry.surprise && React.createElement("div", { className: "text-amber-600" }, "\u2757 " + entry.surprise),
+                        entry.question && React.createElement("div", { className: "text-indigo-600" }, "\u2753 " + entry.question)
+                      );
+                    })
+                  )
+                )
+              ),
+
+              // ── Vocabulary Browser ──
+              React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+                React.createElement("button", {
+                  onClick: function() { upd('showVocab', !d.showVocab); },
+                  className: "flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+                }, "\uD83D\uDCD6 Vocabulary Glossary (" + Object.keys(VOCAB).length + " terms)", React.createElement("span", { className: "text-[10px]" }, d.showVocab ? '\u25B2' : '\u25BC')),
+                d.showVocab && React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1" },
+                  Object.keys(VOCAB).sort().map(function(term) {
+                    var v = VOCAB[term];
+                    var looked = (d.vocabLookedUp || []).indexOf(term) !== -1;
+                    return React.createElement("button", { key: term,
+                      onClick: function() { upd('vocabSelected', d.vocabSelected === term ? null : term); if (!looked) upd('vocabLookedUp', (d.vocabLookedUp || []).concat([term])); },
+                      className: "text-left p-1.5 rounded text-[10px] border transition-all " + (d.vocabSelected === term ? 'bg-indigo-50 border-indigo-300 font-bold text-indigo-700' : looked ? 'bg-emerald-50 border-emerald-100 text-slate-600' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200')
+                    }, (looked ? '\u2705 ' : '') + term + (v.grade > 6 ? ' \u2B50' : ''));
+                  })
+                ),
+                d.showVocab && d.vocabSelected && VOCAB[d.vocabSelected] && React.createElement("div", { className: "mt-2 bg-indigo-50 rounded-lg p-3 border border-indigo-200" },
+                  React.createElement("div", { className: "text-xs font-bold text-indigo-800 mb-1" }, d.vocabSelected),
+                  React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" }, VOCAB[d.vocabSelected].def),
+                  React.createElement("div", { className: "text-[9px] text-slate-400 mt-1" }, "Grade level: " + VOCAB[d.vocabSelected].grade + "+")
+                )
+              ),
+
+              // ── Assignment Mode ──
+              React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+                React.createElement("button", {
+                  onClick: function() { upd('showAssignments', !d.showAssignments); },
+                  className: "flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+                }, "\uD83D\uDCCB Assignment Mode", React.createElement("span", { className: "text-[10px]" }, d.showAssignments ? '\u25B2' : '\u25BC')),
+                d.showAssignments && React.createElement("div", { className: "mt-2 space-y-2" },
+                  PRESET_ASSIGNMENTS.map(function(asn) {
+                    var active = d.activeAssignment === asn.id;
+                    var tasksDone = active ? (d['asn_done_' + asn.id] || []) : [];
+                    return React.createElement("div", { key: asn.id, className: "rounded-lg border p-3 transition-all " + (active ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200') },
+                      React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                        React.createElement("span", { className: "text-[10px] font-bold " + (active ? 'text-blue-700' : 'text-slate-700') }, asn.name),
+                        React.createElement("span", { className: "text-[9px] text-slate-400" }, "Grades " + asn.gradeRange)
+                      ),
+                      React.createElement("div", { className: "space-y-1" },
+                        asn.tasks.map(function(task, ti) {
+                          var done = tasksDone.indexOf(ti) !== -1;
+                          return React.createElement("div", { key: ti, className: "flex items-start gap-1.5" },
+                            active && React.createElement("button", {
+                              onClick: function() {
+                                var updated = done ? tasksDone.filter(function(x) { return x !== ti; }) : tasksDone.concat([ti]);
+                                upd('asn_done_' + asn.id, updated);
+                                if (!done && updated.length === asn.tasks.length) { addToast('\uD83C\uDF89 Assignment complete: ' + asn.name + '!', 'success'); if (awardStemXP) awardStemXP('solarSystem', 25); }
+                              },
+                              className: "mt-0.5 w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[8px] " + (done ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-300')
+                            }, done ? '\u2713' : ''),
+                            React.createElement("span", { className: "text-[10px] " + (done ? 'text-slate-400 line-through' : 'text-slate-600') }, task)
+                          );
+                        })
+                      ),
+                      !active && React.createElement("button", {
+                        onClick: function() { upd('activeAssignment', asn.id); },
+                        className: "mt-2 w-full px-2 py-1 text-[10px] font-bold rounded bg-blue-500 text-white hover:bg-blue-600 transition-all"
+                      }, "Start Assignment")
+                    );
+                  })
+                )
+              ),
+
+              // ── Teacher Progress Export ──
+              React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+                React.createElement("div", { className: "flex items-center gap-2" },
+                  React.createElement("button", {
+                    onClick: exportProgressCSV,
+                    className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-all"
+                  }, "\uD83D\uDCCA Export Progress (CSV)"),
+                  React.createElement("span", { className: "text-[9px] text-slate-400" }, "For teacher review")
+                ),
+                // Quick stats summary
+                React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1" },
+                  [
+                    { label: 'Planets', value: planetsVisited.length + '/9', color: planetsVisited.length >= 9 ? '#22c55e' : '#64748b' },
+                    { label: 'Quiz', value: (d.quiz ? d.quiz.score : 0) + '', color: (d.quiz && d.quiz.score >= 5) ? '#22c55e' : '#64748b' },
+                    { label: 'Journal', value: journalEntries.length + '', color: journalEntries.length > 0 ? '#22c55e' : '#64748b' },
+                    { label: 'Vocab', value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: '#64748b' }
+                  ].map(function(stat) {
+                    return React.createElement("div", { key: stat.label, className: "text-center p-1.5 rounded bg-slate-50 border border-slate-100" },
+                      React.createElement("div", { className: "text-sm font-bold", style: { color: stat.color } }, stat.value),
+                      React.createElement("div", { className: "text-[8px] text-slate-400" }, stat.label)
+                    );
+                  })
                 )
               ),
 

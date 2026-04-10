@@ -1690,7 +1690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "flex gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
                 [{ id: 'play', icon: '\uD83C\uDFB9', label: t('stem.synth.play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: t('stem.synth.scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: t('stem.synth.chords') }, { id: 'harmonypad', icon: '\uD83C\uDF1F', label: t('stem.synth.harmonypad') }, { id: 'beatpad', icon: '\uD83E\uDD41', label: t('stem.synth.beatpad') || 'Beat Pad' }, { id: 'theory', icon: '\uD83D\uDCDA', label: t('stem.synth.theory') }].map(function (tab) {
                   return React.createElement("button", { "aria-label": "Change synth tab",
-                    key: tab.id, role: "tab", "aria-selected": stemLabTab === tab.id,
+                    key: tab.id, role: "tab", "aria-selected": synthTab === tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
                     className: "px-2.5 py-1 rounded-md text-[11px] font-bold transition-all " + (synthTab === tab.id ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-500 hover:text-slate-700')
                   }, tab.icon + " " + tab.label);
