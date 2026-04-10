@@ -3985,10 +3985,18 @@ const StudentSubmitModal = React.memo((props) => {
     );
 });
 // ── Accessibility hook: focus trap for modal dialogs (WCAG 2.4.3) ──
+// Traps Tab/Shift+Tab within modal, auto-focuses first element on open,
+// restores focus to trigger element on close (WCAG 2.4.3 Focus Order)
 const useFocusTrap = (ref, isOpen) => {
   useEffect(() => {
     if (!isOpen || !ref.current) return;
+    // Save the element that had focus before the modal opened
+    const previouslyFocused = document.activeElement;
     const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        // Let Escape propagate to close handlers, but ensure focus restoration
+        return;
+      }
       if (e.key !== 'Tab') return;
       const focusableElements = ref.current.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -4018,6 +4026,10 @@ const useFocusTrap = (ref, isOpen) => {
     }
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      // Restore focus to the element that triggered the modal
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        try { previouslyFocused.focus(); } catch(e) {}
+      }
     };
   }, [isOpen, ref]);
 };
@@ -7339,27 +7351,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7375,7 +7387,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@25ed12d/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ae3fe65/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -8750,7 +8762,9 @@ Return ONLY a valid JSON object:
   };
   const [voiceSpeed, setVoiceSpeed] = useState(1);
   const [voiceVolume, setVoiceVolume] = useState(1);
-  const [disableAnimations, setDisableAnimations] = useState(false);
+  const [disableAnimations, setDisableAnimations] = useState(() => {
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) { return false; }
+  });
   const [colorOverlay, setColorOverlay] = useState('none');
   const [readingRuler, setReadingRuler] = useState(false);
   const [rulerY, setRulerY] = useState(0);
@@ -31076,6 +31090,19 @@ Return ONLY JSON:
           }
         `}</style>
       )}
+      {/* WCAG 2.3.1: Respect OS-level reduced motion preference as CSS safety net */}
+      <style>{`
+        @media (prefers-reduced-motion: reduce) {
+          .animate-pulse, .animate-bounce, .animate-spin, .animate-ping {
+            animation: none !important;
+          }
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
       <style>{`
         .theme-contrast .bg-yellow-200,
         .theme-contrast .bg-yellow-300,
@@ -32227,7 +32254,7 @@ Return ONLY JSON:
                                   }
                               }}
                               data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
-                              className={`p-2 rounded-xl transition-all flex items-center gap-2 ${isTeacherMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-teal-700 hover:bg-teal-600 text-white shadow-lg shadow-teal-700/30'}`}
+                              className={`p-2 rounded-xl transition-all flex items-center gap-2 ${isTeacherMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-teal-700 hover:bg-teal-700 text-white shadow-lg shadow-teal-700/30'}`}
                               title={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
                               aria-label={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
                             >
@@ -34517,7 +34544,7 @@ Return ONLY JSON:
                         <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.topic')}</label>
                         <input
                           type="text"
-                          value={sourceTopic}
+                          value={sourceTopic} aria-label="Source topic"
                           onChange={(e) => setSourceTopic(e.target.value)}
                           placeholder={t('wizard.topic_placeholder')}
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
@@ -34695,7 +34722,7 @@ Return ONLY JSON:
                         </label>
                         <input
                           type="text"
-                          value={sourceVocabulary}
+                          value={sourceVocabulary} aria-label="Vocabulary terms"
                           onChange={(e) => setSourceVocabulary(e.target.value)}
                           placeholder={t('wizard.vocab_placeholder')}
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
@@ -34708,7 +34735,7 @@ Return ONLY JSON:
                         </label>
                         <input
                           type="number"
-                          value={sourceLength}
+                          value={sourceLength} aria-label="Target word count"
                           onChange={(e) => setSourceLength(e.target.value)}
                           placeholder="250"
                           step="50"
@@ -34959,7 +34986,7 @@ Return ONLY JSON:
                     <div className="flex gap-2 mb-3" data-help-key="glossary_language_input">
                     <input
                         type="text"
-                        value={languageInput}
+                        value={languageInput} aria-label="Target language"
                         onChange={(e) => setLanguageInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={t('glossary.language_placeholder')}
@@ -36404,7 +36431,7 @@ Return ONLY JSON:
                                     <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
                                         <p className="text-sm font-bold text-amber-800 mb-2">🤔 What is the volume of this rectangular prism?</p>
                                         <div className="flex gap-2 items-center">
-                                            <input type="number" value={cubeAnswer}
+                                            <input type="number" value={cubeAnswer} aria-label="Volume answer"
                                                 onChange={(e) => setCubeAnswer(e.target.value)}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) { const ans = parseInt(cubeAnswer); setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: '✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units' } : { correct: false, msg: '❌ Not quite. Try V = L × W × H' }); } }}
                                                 placeholder="Enter volume..."
@@ -48453,7 +48480,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                 <label style={{display:'flex',alignItems:'center',gap:'8px',background:_bt.cardBg,border:_bt.cardBorder,borderRadius:'10px',padding:'10px 14px',cursor:'pointer',flex:1,minWidth:'200px'}}>
                   <input
                     type="checkbox"
-                    id="bridge-autoplay-toggle"
+                    id="bridge-autoplay-toggle" aria-label="Auto-play bridge narration"
                     onChange={(e) => { window.__bridgeAutoplay = e.target.checked; }}
                     style={{accentColor:'#14b8a6',width:'16px',height:'16px',cursor:'pointer'}}
                   />
@@ -51992,7 +52019,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="flex gap-2">
                             <div className="flex-1">
                               <label className="text-[9px] font-bold text-slate-500 uppercase">Language</label>
-                              <input id="summary-lang" list="summary-lang-list" className="w-full text-[10px] border border-blue-200 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
+                              <input id="summary-lang" aria-label="Translation language" list="summary-lang-list" className="w-full text-[10px] border border-blue-200 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
                               <datalist id="summary-lang-list">
                                 <option value="English" /><option value="Spanish" /><option value="French" /><option value="Arabic" /><option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" /><option value="Mandarin Chinese" /><option value="Haitian Creole" /><option value="Russian" />
                               </datalist>
@@ -53501,7 +53528,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Google Search API Key <span className="normal-case font-normal text-slate-500">(optional)</span></label>
                     <input
-                        id="ai-canvas-cse-key"
+                        id="ai-canvas-cse-key" aria-label="Google Search API Key"
                         type="password"
                         placeholder="Your Google API key..."
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').cseApiKey || ''; } catch { return ''; } })()}
@@ -53517,7 +53544,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-500">(optional)</span></label>
                     <input
-                        id="ai-canvas-wolfram"
+                        id="ai-canvas-wolfram" aria-label="Wolfram Alpha App ID"
                         type="text"
                         placeholder="XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
@@ -53580,7 +53607,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Server URL</label>
                     <input
-                        id="ai-backend-url"
+                        id="ai-backend-url" aria-label="Custom AI backend URL"
                         type="text"
                         placeholder="http://localhost:8080"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').baseUrl || ''; } catch { return ''; } })()}
@@ -53594,7 +53621,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">API Key <span className="normal-case font-normal text-slate-500">(cloud providers only)</span></label>
                     <input
-                        id="ai-backend-apikey"
+                        id="ai-backend-apikey" aria-label="Custom AI backend API key"
                         type="password"
                         placeholder="Your API key..."
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').apiKey || ''; } catch { return ''; } })()}
@@ -53608,7 +53635,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-500">(optional — enhances math)</span></label>
                     <input
-                        id="ai-backend-wolfram"
+                        id="ai-backend-wolfram" aria-label="Custom backend Wolfram App ID"
                         type="text"
                         placeholder="XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
@@ -54405,7 +54432,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
                   </div>
                   <div id="word-goal-label" className="text-[8px] text-slate-400 mt-0.5"></div>
-                  <div className="text-[8px] text-slate-300 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
+                  <div className="text-[8px] text-slate-500 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
                 </div>
 
                 {/* ── SECTION: Content ── */}
@@ -54526,7 +54553,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ))}
                   </div>
                   <div className="flex gap-1">
-                    <input type="text" value={exportStylePrompt} onChange={(e) => setExportStylePrompt(e.target.value)}
+                    <input type="text" value={exportStylePrompt} aria-label="Custom style description" onChange={(e) => setExportStylePrompt(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter' && exportStylePrompt.trim()) generateCustomExportStyle(); }}
                       placeholder="Describe a style or click a preset above..."
                       className="flex-1 text-[10px] p-1.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
@@ -54881,8 +54908,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
             );
         })()}
         {showEducatorHub && (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Educator Tools" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
@@ -54973,8 +55000,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
         </div>
         )}
         {showLearningHub && (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Learning Tools" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">{'\uD83E\uDDE9'} {t('learning_hub.title') || 'Learning Tools'}</h2>
