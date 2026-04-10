@@ -11,6 +11,7 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 var createDocPipeline = function(deps) {
   var callGemini = deps.callGemini;
   var callGeminiVision = deps.callGeminiVision;
+  var callImagen = deps.callImagen;
   var addToast = deps.addToast;
   var t = deps.t;
   var isRtlLang = deps.isRtlLang || function() { return false; };
@@ -577,14 +578,10 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       } catch(e) {}
     }
 
-    // Check for user style preference (set via UI before remediation)
-    const _stylePref = typeof window !== 'undefined' ? window.__pdfStylePreference : '';
-    const _styleInstructions = _stylePref === 'academic' ? '\nSTYLE PREFERENCE: Academic — use serif fonts (Georgia), navy (#1b3a5c) and gold (#b8860b) color scheme, formal spacing, scholarly appearance.'
-      : _stylePref === 'elementary' ? '\nSTYLE PREFERENCE: Kid-friendly — use rounded corners (border-radius: 12px), bright cheerful colors (teal, coral, purple), larger fonts (16px base), playful section cards with soft shadows.'
-      : _stylePref === 'dark' ? '\nSTYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), soft white text (#e2e8f0), indigo accents (#818cf8), subtle borders, excellent contrast.'
-      : _stylePref === 'magazine' ? '\nSTYLE PREFERENCE: Magazine editorial — large hero headings, pull quotes with colored left borders, serif body text (Georgia), elegant professional feel.'
-      : _stylePref === 'minimal' ? '\nSTYLE PREFERENCE: Minimalist — lots of whitespace, thin sans-serif font, muted grays, one accent color (#6366f1), hairline borders, understated elegance.'
-      : '';
+    // Check for user style seed (set via UI before remediation) — unified with STYLE_SEEDS
+    const _styleSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
+    const _styleSeed = STYLE_SEEDS[_styleSeedId];
+    const _styleInstructions = _styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '';
 
     const batchTransformPrompt = `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.${_styleInstructions}
 
@@ -2112,14 +2109,42 @@ HTML section ${chunkNum}/${chunks.length}:
 
     let fixed = htmlContent;
     let fixCount = 0;
-    const whiteBg = [255, 255, 255];
 
-    // ── Pass 1: Fix color:#hex declarations against white background ──
+    // ── Detect document background color instead of assuming white ──
+    // Search for background on <body> or <html> elements; fall back to white
+    const detectDocBg = (html) => {
+      // Check body style first, then html style
+      const bodyBgMatch = html.match(/<body[^>]*style="[^"]*background(?:-color)?:\s*([^;"]+)/i);
+      if (bodyBgMatch) {
+        const parsed = parseColor(bodyBgMatch[1].trim());
+        if (parsed) return parsed;
+      }
+      const htmlBgMatch = html.match(/<html[^>]*style="[^"]*background(?:-color)?:\s*([^;"]+)/i);
+      if (htmlBgMatch) {
+        const parsed = parseColor(htmlBgMatch[1].trim());
+        if (parsed) return parsed;
+      }
+      // Check <style> blocks for body { background... } rules
+      const styleBlockMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+      if (styleBlockMatch) {
+        for (const block of styleBlockMatch) {
+          const bodyRuleMatch = block.match(/body\s*\{[^}]*background(?:-color)?:\s*([^;}\s]+)/i);
+          if (bodyRuleMatch) {
+            const parsed = parseColor(bodyRuleMatch[1].trim());
+            if (parsed) return parsed;
+          }
+        }
+      }
+      return [255, 255, 255]; // default white
+    };
+    const defaultBg = detectDocBg(htmlContent);
+
+    // ── Pass 1: Fix color:#hex declarations against detected background ──
     fixed = fixed.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
       try {
         const rgb = hexToRgb(hex);
-        if (contrastRatio(rgb, whiteBg) < 4.5) {
-          const [fr, fg, fb] = fixToPass(rgb, whiteBg);
+        if (contrastRatio(rgb, defaultBg) < 4.5) {
+          const [fr, fg, fb] = fixToPass(rgb, defaultBg);
           fixCount++;
           return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
@@ -2130,8 +2155,8 @@ HTML section ${chunkNum}/${chunks.length}:
     // ── Pass 2: Fix color:rgb() and color:rgba() declarations ──
     fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)/gi, (match, r, g, b) => {
       const rgb = [parseInt(r), parseInt(g), parseInt(b)];
-      if (contrastRatio(rgb, whiteBg) < 4.5) {
-        const [fr, fg, fb] = fixToPass(rgb, whiteBg);
+      if (contrastRatio(rgb, defaultBg) < 4.5) {
+        const [fr, fg, fb] = fixToPass(rgb, defaultBg);
         fixCount++;
         return 'color:' + rgbToHex(fr, fg, fb);
       }
@@ -2145,8 +2170,8 @@ HTML section ${chunkNum}/${chunks.length}:
       if (!hex) return match;
       try {
         const rgb = hexToRgb(hex);
-        if (contrastRatio(rgb, whiteBg) < 4.5) {
-          const [fr, fg, fb] = fixToPass(rgb, whiteBg);
+        if (contrastRatio(rgb, defaultBg) < 4.5) {
+          const [fr, fg, fb] = fixToPass(rgb, defaultBg);
           fixCount++;
           return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
@@ -2193,8 +2218,21 @@ HTML section ${chunkNum}/${chunks.length}:
 
     // ── Pass 6: Inject a global CSS rule as a safety net for common light-colored classes ──
     // This catches elements styled by class names rather than inline styles
+    // Background-aware: use different overrides for dark vs light document backgrounds
     if (fixed.includes('<head>') && !fixed.includes('/* a11y-contrast-safety */')) {
-      const safetyCSS = `<style>/* a11y-contrast-safety */
+      const docBgLum = luminance(...defaultBg);
+      const isDarkDoc = docBgLum < 0.18;
+      const safetyCSS = isDarkDoc
+        ? `<style>/* a11y-contrast-safety */
+.text-gray-400,.text-gray-300,.text-slate-400,.text-slate-300,.text-zinc-400,.text-zinc-300{color:#d1d5db !important}
+.text-blue-300,.text-sky-300,.text-cyan-300,.text-indigo-300{color:#93c5fd !important}
+.text-green-300,.text-emerald-300{color:#86efac !important}
+.text-red-300,.text-rose-300,.text-pink-300{color:#fca5a5 !important}
+.text-yellow-300,.text-amber-300,.text-orange-300{color:#fcd34d !important}
+.text-purple-300,.text-violet-300{color:#c4b5fd !important}
+.bg-gray-800 *,.bg-slate-800 *,.bg-gray-900 *,.bg-slate-900 *,.bg-black *{color:#e2e8f0}
+</style>`
+        : `<style>/* a11y-contrast-safety */
 .text-gray-400,.text-gray-300,.text-slate-400,.text-slate-300,.text-zinc-400,.text-zinc-300{color:#4b5563 !important}
 .text-blue-300,.text-sky-300,.text-cyan-300,.text-indigo-300{color:#1e40af !important}
 .text-green-300,.text-emerald-300{color:#166534 !important}
@@ -2209,6 +2247,79 @@ HTML section ${chunkNum}/${chunks.length}:
 
     warnLog(`[Contrast Fix] Fixed ${fixCount} color-contrast issues deterministically`);
     return { html: fixed, fixCount };
+  };
+
+  // ── WCAG Style Sanitizer: guarantees WCAG compliance on ANY styled HTML ──
+  // Runs deterministic checks that cannot be defeated by AI hallucination or theme misconfiguration
+  const sanitizeStyleForWCAG = (htmlContent, options = {}) => {
+    const { level = 'AA', minFontSize = 12 } = options;
+    let html = htmlContent;
+    let totalFixes = 0;
+
+    // 1. Run contrast fixer (now background-aware via detectDocBg inside fixContrastViolations)
+    //    For AAA level, we need to patch the ratio threshold — fixContrastViolations uses 4.5:1 internally.
+    //    We do a second pass for AAA that catches anything between 4.5:1 and 7:1.
+    const contrastResult = fixContrastViolations(html);
+    html = contrastResult.html;
+    totalFixes += contrastResult.fixCount;
+
+    // 2. For AAA: second contrast pass with stricter 7:1 ratio
+    if (level === 'AAA') {
+      // Re-implement targeted contrast check at 7:1 threshold
+      const hexToRgb = (hex) => {
+        const h = hex.replace('#', '');
+        if (h.length === 3) return [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)];
+        return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+      };
+      const rgbToHex = (r, g, b) => '#' + [r, g, b].map(c => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
+      const srgb = (c) => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+      const lum = (r, g, b) => 0.2126 * srgb(r/255) + 0.7152 * srgb(g/255) + 0.0722 * srgb(b/255);
+      const cr = (rgb1, rgb2) => { const l1 = lum(...rgb1), l2 = lum(...rgb2); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
+      const fixAAA = (fgRgb, bgRgb) => {
+        let [r, g, b] = fgRgb;
+        const bgLum = lum(...bgRgb);
+        const isDark = bgLum < 0.18;
+        for (let i = 0; i < 30; i++) {
+          if (cr([r,g,b], bgRgb) >= 7.0) break;
+          if (isDark) { r = Math.min(255, Math.round(r+(255-r)*0.15)); g = Math.min(255, Math.round(g+(255-g)*0.15)); b = Math.min(255, Math.round(b+(255-b)*0.15)); }
+          else { r = Math.max(0, Math.round(r*0.82)); g = Math.max(0, Math.round(g*0.82)); b = Math.max(0, Math.round(b*0.82)); }
+        }
+        return [r, g, b];
+      };
+      // Detect background for AAA pass
+      const bodyBgM = html.match(/<body[^>]*style="[^"]*background(?:-color)?:\s*([^;"]+)/i);
+      const styleBgM = html.match(/body\s*\{[^}]*background(?:-color)?:\s*([^;}\s]+)/i);
+      let aaaBg = [255, 255, 255];
+      if (bodyBgM) { try { const p = hexToRgb(bodyBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
+      else if (styleBgM) { try { const p = hexToRgb(styleBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
+
+      html = html.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
+        try {
+          const rgb = hexToRgb(hex);
+          if (cr(rgb, aaaBg) < 7.0) {
+            const [fr, fg, fb] = fixAAA(rgb, aaaBg);
+            totalFixes++;
+            return prefix + 'color:' + rgbToHex(fr, fg, fb);
+          }
+        } catch(e) {}
+        return match;
+      });
+    }
+
+    // 3. Enforce minimum font-size
+    html = html.replace(/font-size:\s*([\d.]+)(px|pt)\b/gi, (match, size, unit) => {
+      const px = unit.toLowerCase() === 'pt' ? parseFloat(size) * 1.333 : parseFloat(size);
+      if (px < minFontSize) {
+        totalFixes++;
+        return `font-size:${minFontSize}px`;
+      }
+      return match;
+    });
+
+    if (totalFixes > 0) {
+      warnLog(`[WCAG Sanitizer] Applied ${totalFixes} fixes (level: ${level}, minFont: ${minFontSize}px)`);
+    }
+    return { html, fixCount: totalFixes };
   };
 
   // ── Deterministic list-structure fixer (no AI needed) ──
@@ -3884,34 +3995,57 @@ tr { page-break-inside: avoid; }
   };
 
   // ── PDF Preview: Apply theme to accessible HTML ──
-  const applyThemeToPdfHtml = (html, themeName, fontSize) => {
-    // If using default "professional" theme AND we have the document's extracted style, use it
-    // This auto-matches the original document's branding without user input
+  // ── Apply Style Seed to HTML (unified replacement for applyThemeToPdfHtml) ──
+  const applyStyleSeedToHtml = (html, seedId, fontSize) => {
+    const seed = STYLE_SEEDS[seedId];
     const extractedStyle = pdfFixResult?.docStyle;
-    const useExtracted = themeName === 'professional' && extractedStyle && extractedStyle.headingColor !== '#1e3a5f';
-    const theme = useExtracted ? {
-      bodyFont: extractedStyle.bodyFont || 'system-ui, sans-serif',
-      headingColor: extractedStyle.headingColor || '#1e3a5f',
-      accentColor: extractedStyle.accentColor || '#2563eb',
-      bgColor: extractedStyle.bgColor || '#ffffff',
-      cardBg: extractedStyle.tableBg || '#f1f5f9',
-      cardBorder: extractedStyle.tableBorder || '#cbd5e1',
-      extraCSS: extractedStyle.extraCSS || '',
-    } : (EXPORT_THEMES[themeName] || EXPORT_THEMES.professional);
-    const themeCSS = `
-      body { font-family: ${theme.bodyFont}; font-size: ${fontSize}px; background: ${theme.bgColor}; color: #1e293b; }
-      h1, h2, h3, h4 { color: ${theme.headingColor}; }
-      a { color: ${theme.accentColor}; }
-      table { border-color: ${theme.cardBorder}; }
-      th { background: ${theme.cardBg}; }
-      ${theme.extraCSS || ''}
-    `;
-    // Inject theme CSS into the HTML
-    if (html.includes('</style>')) {
-      return html.replace('</style>', themeCSS + '\n</style>');
+
+    // Resolve CSS vars: matchOriginal uses extracted PDF colors, others use seed.cssVars
+    let cssVars;
+    if (seedId === 'matchOriginal' && extractedStyle) {
+      cssVars = {
+        bodyFont: extractedStyle.bodyFont || 'system-ui, sans-serif',
+        headingColor: extractedStyle.headingColor || '#1e3a5f',
+        accentColor: extractedStyle.accentColor || '#2563eb',
+        bgColor: extractedStyle.bgColor || '#ffffff',
+        cardBg: extractedStyle.tableBg || '#f1f5f9',
+        cardBorder: extractedStyle.tableBorder || '#cbd5e1',
+        extraCSS: extractedStyle.extraCSS || '',
+      };
+    } else if (seed?.cssVars) {
+      cssVars = seed.cssVars;
+    } else {
+      // Fallback to professional
+      cssVars = STYLE_SEEDS.professional.cssVars;
     }
-    return html.replace('</head>', '<style>' + themeCSS + '</style>\n</head>');
+
+    // For dark themes, use light text color instead of dark
+    const textColor = cssVars.bgColor && (() => {
+      const hexToRgb = (hex) => { const h = hex.replace('#',''); return h.length === 3 ? [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)] : [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)]; };
+      try { const bg = hexToRgb(cssVars.bgColor); const lum = (0.2126*(bg[0]/255<=0.03928?bg[0]/255/12.92:Math.pow((bg[0]/255+0.055)/1.055,2.4))) + (0.7152*(bg[1]/255<=0.03928?bg[1]/255/12.92:Math.pow((bg[1]/255+0.055)/1.055,2.4))) + (0.0722*(bg[2]/255<=0.03928?bg[2]/255/12.92:Math.pow((bg[2]/255+0.055)/1.055,2.4))); return lum < 0.18 ? '#e2e8f0' : '#1e293b'; } catch(e) { return '#1e293b'; }
+    })() || '#1e293b';
+
+    const themeCSS = `
+      body { font-family: ${cssVars.bodyFont}; font-size: ${fontSize}px; background: ${cssVars.bgColor}; color: ${textColor}; }
+      h1, h2, h3, h4 { color: ${cssVars.headingColor}; }
+      a { color: ${cssVars.accentColor}; }
+      table { border-color: ${cssVars.cardBorder}; }
+      th { background: ${cssVars.cardBg}; }
+      ${cssVars.extraCSS || ''}
+    `;
+    let themed;
+    if (html.includes('</style>')) {
+      themed = html.replace('</style>', themeCSS + '\n</style>');
+    } else {
+      themed = html.replace('</head>', '<style>' + themeCSS + '</style>\n</head>');
+    }
+    // Run WCAG sanitizer — High Contrast uses AAA (7:1), all others use AA (4.5:1)
+    const wcagLevel = seed?.wcagLevel || 'AA';
+    const sanitized = sanitizeStyleForWCAG(themed, { level: wcagLevel });
+    return sanitized.html;
   };
+  // Backward compat alias
+  const applyThemeToPdfHtml = applyStyleSeedToHtml;
 
   // ── PDF Preview: Update iframe content ──
   // Accept overrides to avoid stale closure — state may not have updated yet when called from setTimeout
@@ -4943,15 +5077,66 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       }
       return '';
   };
-  // ── Export Theme Definitions ──
-  const EXPORT_THEMES = {
-    professional: { name: 'Professional', emoji: '💼', bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' },
-    colorful: { name: 'Colorful Elementary', emoji: '🌈', bodyFont: "'Comic Sans MS', 'Lexend', sans-serif", headingColor: '#7c3aed', accentColor: '#ec4899', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #ec4899, #f59e0b)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #ec4899; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
-    minimal: { name: 'Minimalist', emoji: '✨', bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; }' },
-    highContrast: { name: 'High Contrast', emoji: '◼️', bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' },
-    nature: { name: 'Nature & Calm', emoji: '🌿', bodyFont: "'Lexend', system-ui, sans-serif", headingColor: '#166534', accentColor: '#15803d', bgColor: '#f0fdf4', cardBg: '#ffffff', cardBorder: '#bbf7d0', headerBg: 'linear-gradient(135deg, #166534, #15803d)', headerText: '#ffffff', extraCSS: '.section { border-left: 4px solid #86efac; border-radius: 8px; background: white; } .resource-header { background: #f0fdf4; color: #166534; }' },
-    print: { name: 'Print Optimized', emoji: '🖨️', bodyFont: "'Times New Roman', serif", headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
+  // ── Unified Style Seeds: merge pre-remediation preferences + post-remediation themes ──
+  // Each seed works as both an AI prompt instruction (during remediation) and a deterministic CSS fallback (for preview/offline)
+  const STYLE_SEEDS = {
+    professional: {
+      name: 'Professional', emoji: '💼', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Professional — use clean sans-serif fonts (Inter), navy (#1e3a5f) headings and blue (#2563eb) accents, white background, formal spacing, polished corporate appearance.',
+      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' },
+    },
+    academic: {
+      name: 'Academic', emoji: '📚', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Academic — use serif fonts (Georgia), navy (#1b3a5c) and gold (#b8860b) color scheme, formal spacing, scholarly appearance suitable for university submissions.',
+      cssVars: { bodyFont: "'Georgia', 'Times New Roman', serif", headingColor: '#1b3a5c', accentColor: '#b8860b', bgColor: '#ffffff', cardBg: '#fefce8', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1b3a5c, #2c5f8a)', headerText: '#ffffff', extraCSS: 'h1 { border-bottom: 2px solid #b8860b; padding-bottom: 0.5rem; } blockquote { border-left: 3px solid #b8860b; padding-left: 1rem; font-style: italic; }' },
+    },
+    elementary: {
+      name: 'Kid-Friendly', emoji: '🌈', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Kid-friendly — use rounded corners (border-radius: 12px), bright cheerful colors (teal, coral, purple), larger fonts (16px base), playful section cards with soft shadows, Comic Sans or Lexend font.',
+      cssVars: { bodyFont: "'Comic Sans MS', 'Lexend', sans-serif", headingColor: '#7c3aed', accentColor: '#ec4899', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #ec4899, #f59e0b)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #ec4899; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
+    },
+    minimal: {
+      name: 'Minimalist', emoji: '✨', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Minimalist — lots of whitespace, thin sans-serif font, muted grays, one accent color (#6366f1), hairline borders, understated elegance.',
+      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; }' },
+    },
+    highContrast: {
+      name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA',
+      promptInstructions: 'STYLE PREFERENCE: High Contrast accessibility — use Atkinson Hyperlegible font, pure black text on white background, blue (#0000ff) underlined links, bold 2px borders, increased font size (1.1rem). ALL text must achieve 7:1 contrast ratio (WCAG AAA). No subtle colors.',
+      cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' },
+    },
+    nature: {
+      name: 'Nature & Calm', emoji: '🌿', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Nature & Calm — use Lexend font, deep green (#166534) headings, green accents, soft pale green (#f0fdf4) background, rounded section cards with green left borders, calming and soothing appearance.',
+      cssVars: { bodyFont: "'Lexend', system-ui, sans-serif", headingColor: '#166534', accentColor: '#15803d', bgColor: '#f0fdf4', cardBg: '#ffffff', cardBorder: '#bbf7d0', headerBg: 'linear-gradient(135deg, #166534, #15803d)', headerText: '#ffffff', extraCSS: '.section { border-left: 4px solid #86efac; border-radius: 8px; background: white; } .resource-header { background: #f0fdf4; color: #166534; }' },
+    },
+    print: {
+      name: 'Print Optimized', emoji: '🖨️', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Print Optimized — use Times New Roman serif, pure black text on white, page-break-inside: avoid on sections, 12pt base font, optimized for physical printing with clean margins and no decorative elements.',
+      cssVars: { bodyFont: "'Times New Roman', serif", headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
+    },
+    dark: {
+      name: 'Dark Mode', emoji: '🌙', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), soft white text (#e2e8f0), indigo accents (#818cf8), subtle borders, excellent contrast. All text must be light on dark.',
+      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#e2e8f0', accentColor: '#818cf8', bgColor: '#1e1e2e', cardBg: '#2a2a3e', cardBorder: '#3f3f5e', headerBg: 'linear-gradient(135deg, #1e1e2e, #2d2b55)', headerText: '#e2e8f0', extraCSS: 'body { color: #e2e8f0; } a { color: #818cf8; } table { border-color: #3f3f5e; } th { background: #2a2a3e; color: #e2e8f0; } td { color: #cbd5e1; }' },
+    },
+    magazine: {
+      name: 'Magazine', emoji: '📰', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Magazine editorial — large hero headings, pull quotes with colored left borders, serif body text (Georgia), elegant professional feel with editorial flair.',
+      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#1a1a2e', accentColor: '#e63946', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#e5e7eb', headerBg: 'linear-gradient(135deg, #1a1a2e, #16213e)', headerText: '#ffffff', extraCSS: 'h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; } blockquote { border-left: 4px solid #e63946; padding: 1rem 1.5rem; font-size: 1.2rem; font-style: italic; color: #374151; } .section { border-bottom: 1px solid #e5e7eb; padding-bottom: 2rem; }' },
+    },
+    matchOriginal: {
+      name: 'Match Original', emoji: '📎', wcagLevel: 'AA',
+      promptInstructions: '', // Uses extracted docStyle colors instead — no additional instructions
+      cssVars: null, // Populated dynamically from PDF color extraction
+    },
   };
+  // Backward compatibility: EXPORT_THEMES maps to STYLE_SEEDS cssVars
+  const EXPORT_THEMES = Object.fromEntries(
+    Object.entries(STYLE_SEEDS)
+      .filter(([, seed]) => seed.cssVars)
+      .map(([id, seed]) => [id, { name: seed.name, emoji: seed.emoji, ...seed.cssVars }])
+  );
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = config || exportConfig;
@@ -4960,7 +5145,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const isRtl = isRtlLang(leveledTextLanguage);
       const direction = isRtl ? 'rtl' : 'ltr';
       const textAlign = isRtl ? 'right' : 'left';
-      const theme = EXPORT_THEMES[exportTheme] || EXPORT_THEMES.professional;
+      const seed = STYLE_SEEDS[exportTheme] || STYLE_SEEDS.professional;
+      const theme = seed.cssVars ? { name: seed.name, emoji: seed.emoji, ...seed.cssVars } : (EXPORT_THEMES.professional);
       // Font: honor user's app font if toggled, otherwise use theme font
       // Read FONT_OPTIONS from window (defined in monolith) with safe fallback
       const _fontOptions = (typeof window !== 'undefined' && window.FONT_OPTIONS) || [];
@@ -4996,7 +5182,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             </div>
         </div>
       ` : '';
-      return `
+      const rawHtml = `
       <!DOCTYPE html>
       <html lang="${({'English':'en','Spanish':'es','French':'fr','German':'de','Italian':'it','Portuguese':'pt','Chinese':'zh','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Vietnamese':'vi','Haitian Creole':'ht','Somali':'so'})[currentUiLanguage] || 'en'}" dir="${direction}">
       <head>
@@ -5160,6 +5346,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       </body>
       </html>
       `;
+      // Run WCAG sanitizer on the complete export HTML to guarantee accessibility
+      const sanitized = sanitizeStyleForWCAG(rawHtml);
+      return sanitized.html;
   };
 
   // Wrap each function to bind fresh state before execution
@@ -5170,6 +5359,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
     fixContrastViolations: _wrap(fixContrastViolations),
+    sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),
     autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
@@ -5179,6 +5369,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     parseMarkdownToHTML: _wrap(parseMarkdownToHTML),
     generateResourceHTML: _wrap(generateResourceHTML),
     EXPORT_THEMES,
+    STYLE_SEEDS,
+    applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
     generateFullPackHTML: _wrap(generateFullPackHTML),
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),

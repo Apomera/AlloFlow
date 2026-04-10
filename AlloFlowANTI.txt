@@ -18321,7 +18321,7 @@ Return ONLY valid JSON:
   };
   const _createDocPipeline = window.AlloModules && window.AlloModules.createDocPipeline;
   const _docPipeline = _createDocPipeline
-    ? _createDocPipeline({ callGemini, callGeminiVision, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); } })
+    ? _createDocPipeline({ callGemini, callGeminiVision, callImagen, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); } })
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
@@ -19255,13 +19255,21 @@ Return ONLY valid JSON:
     setShowExportPreview(true);
     setShowExportMenu(false);
   };
+  // ── Export filtering: strip interactive/generative resources that can't be rendered as static documents ──
+  const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
+  const getExportableHistory = () => history.filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type));
+  const getSkippedResources = () => {
+    const skipped = history.filter(item => item && NON_EXPORTABLE_TYPES.has(item.type));
+    return skipped.map(item => item.title || getDefaultTitle(item.type));
+  };
+
   // Generate preview HTML for the iframe
   const getExportPreviewHTML = () => {
     if (exportPreviewMode === 'slides') {
       return getSlidesPreviewHTML();
     }
     const isWorksheet = exportPreviewMode === 'worksheet';
-    return generateFullPackHTML(history, sourceTopic, isWorksheet, studentResponses, exportConfig);
+    return generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
   };
   // Slides-specific preview: renders content as paginated slide cards
   const getSlidesPreviewHTML = () => {
@@ -19269,7 +19277,7 @@ Return ONLY valid JSON:
     const themeColor = '#4f46e5';
     // Title slide
     slides.push(`<div class="slide"><div style="background:${themeColor};color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;border-radius:8px"><h1 style="font-size:28px;margin:0;text-align:center;padding:0 20px">${sourceTopic || 'Untitled Presentation'}</h1><p style="font-size:14px;opacity:0.8;margin-top:8px">${gradeLevel} · ${new Date().toLocaleDateString()}</p></div></div>`);
-    history.forEach(item => {
+    getExportableHistory().forEach(item => {
       const title = item.title || item.type;
       if (item.type === 'simplified' && typeof item.data === 'string') {
         const paragraphs = item.data.split(/\n{2,}/);
@@ -19552,7 +19560,7 @@ Return ONLY valid JSON:
       console.log(`[Export] ✅ Using edited iframe content (${htmlContent.length} chars)`);
     } else {
       console.warn('[Export] ⚠️ Iframe empty or missing — falling back to generateFullPackHTML(history)');
-      htmlContent = generateFullPackHTML(history, sourceTopic, isWorksheet, studentResponses, exportConfig);
+      htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
       console.log(`[Export] ✅ Regenerated from history: ${htmlContent.length} chars, ${history.length} history items`);
     }
 
@@ -19633,7 +19641,7 @@ Return ONLY valid JSON:
 
   const handleExport = async (mode = 'html') => {
     const isWorksheet = mode === 'worksheet';
-    const htmlContent = generateFullPackHTML(history, sourceTopic, isWorksheet, studentResponses, exportConfig);
+    const htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
 
     // ── Blind Output Accessibility Audit (runs in background, non-blocking) ──
     if (mode === 'print') {
@@ -54494,6 +54502,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     })()}
                   </div>
                 </div>
+
+                {/* Skipped interactive resources notice */}
+                {(() => {
+                  const skipped = getSkippedResources();
+                  if (skipped.length === 0) return null;
+                  return (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
+                      <p className="text-[10px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
+                      <p className="text-[10px] text-amber-600">{skipped.join(', ')}</p>
+                      <p className="text-[9px] text-amber-500 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
+                    </div>
+                  );
+                })()}
 
                 {/* ── SECTION: Export ── */}
                 <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
