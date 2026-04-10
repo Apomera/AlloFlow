@@ -295,14 +295,26 @@
         { position: [4, 1, 4], name: 'Professor Block', color: 0x7c3aed,
           dialogue: 'Welcome! Volume = Length \u00d7 Width \u00d7 Height. Explore the structures and solve problems!', question: null },
         { position: [12, 5, 3], name: 'Quiz Master', color: 0x2563eb,
-          dialogue: 'The blue prism is 5 long, 3 wide, 4 tall.',
-          question: { text: 'Volume of 5\u00d73\u00d74?', choices: ['60 cubic units', '12 cubic units', '35 cubic units'], correct: 0 } },
+          dialogue: 'The blue prism is 5 long, 3 wide, 4 tall. Let\u2019s measure step by step!',
+          question: { text: 'How many blocks LONG is this prism?', choices: ['5 blocks', '3 blocks', '4 blocks'], correct: 0,
+            followUp: [
+              { text: 'Good! How many blocks WIDE?', choices: ['3 blocks', '5 blocks', '2 blocks'], correct: 0 },
+              { text: 'And how many blocks TALL?', choices: ['4 blocks', '3 blocks', '5 blocks'], correct: 0 },
+              { text: 'Now multiply: 5 \u00d7 3 \u00d7 4 = ?', choices: ['60 cubic units', '12 cubic units', '35 cubic units'], correct: 0 }
+            ] } },
         { position: [4, 1, 11], name: 'Builder Bot', color: 0x16a34a,
-          dialogue: 'Fill the pool! Inside is 3\u00d73\u00d72.',
-          question: { text: 'Blocks needed for 3\u00d73\u00d72?', choices: ['18 blocks', '8 blocks', '12 blocks'], correct: 0 } },
+          dialogue: 'Fill the pool! The inside measures 3 long, 3 wide, 2 tall.',
+          question: { text: 'What is the area of the pool floor? (3\u00d73)', choices: ['9 square units', '6 square units', '12 square units'], correct: 0,
+            followUp: [
+              { text: 'Now stack 2 layers of 9. How many total blocks?', choices: ['18 blocks', '11 blocks', '27 blocks'], correct: 0 }
+            ] } },
         { position: [18, 4, 12], name: 'L-Block Sage', color: 0xf59e0b,
-          dialogue: 'This L-block has two parts. Find each volume and add!',
-          question: { text: 'Part A: 5\u00d73\u00d73=45, Part B: 3\u00d73\u00d73=27. Total?', choices: ['72 cubic units', '45 cubic units', '54 cubic units'], correct: 0 } }
+          dialogue: 'This L-block has two rectangular parts. Measure each, then add!',
+          question: { text: 'Part A is 5\u00d73\u00d73. What is its volume?', choices: ['45 cubic units', '15 cubic units', '30 cubic units'], correct: 0,
+            followUp: [
+              { text: 'Part B is 3\u00d73\u00d73. What is its volume?', choices: ['27 cubic units', '18 cubic units', '9 cubic units'], correct: 0 },
+              { text: 'Total volume = 45 + 27 = ?', choices: ['72 cubic units', '45 cubic units', '54 cubic units'], correct: 0 }
+            ] } }
       ]
     },
     areaSurface: {
@@ -939,6 +951,7 @@
       };
       var callGemini = ctx.callGemini || null;
       var addToast = ctx.addToast;
+      var awardXP = ctx.awardXP;
       var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
 
       // ── State from toolData ──
@@ -971,6 +984,11 @@
       var showGrowthNudge = d.showGrowthNudge || false;
       var growthNudgeMsg = d.growthNudgeMsg || '';
       var growthNudgeDismissed = d.growthNudgeDismissed || 0;
+      // ── Tutorial state ──
+      var tutorialStep = d.tutorialStep || 0; // 0-4 (0=not started, 4=done)
+      var tutorialDismissed = d.tutorialDismissed || false;
+      // ── Follow-up question state ──
+      var npcFollowUpStep = d.npcFollowUpStep || {}; // { npcIdx: currentStep }
       // ── Teacher Command Center state ──
       var showTeacherView = d.showTeacherView || false;
       var studentProgressMap = d.studentProgressMap || {};
@@ -1011,6 +1029,7 @@
           var latest = result.newBadges[result.newBadges.length - 1];
           upd({ earnedBadges: result.badges, lastBadgeNotification: latest });
           if (addToast) addToast(latest.icon + ' Achievement: ' + latest.name + ' \u2014 ' + latest.desc, 'success');
+          if (typeof awardXP === 'function') awardXP('geometryWorld', 10, 'Badge: ' + latest.name);
           // Auto-dismiss after 4 seconds
           setTimeout(function() { upd('lastBadgeNotification', null); }, 4000);
         }
@@ -1807,7 +1826,7 @@
         canvas.addEventListener('click', function() { if (!engine.isLocked) canvas.requestPointerLock(); });
         document.addEventListener('pointerlockchange', function() {
           engine.isLocked = !!document.pointerLockElement;
-          if (engine.isLocked) startAmbientWind();
+          if (engine.isLocked) { startAmbientWind(); if (tutorialStep === 0 && !tutorialDismissed) upd('tutorialStep', 1); }
         });
 
         // Smooth mouse look with configurable sensitivity
@@ -1863,7 +1882,7 @@
                 var dist = engine.camera.position.distanceTo(n.body.position);
                 if (dist < minD) { minD = dist; nearest = i; }
               });
-              if (nearest >= 0) { upd({ showNpcDialog: true, dialogNpcIdx: nearest }); sfxNpcChime(); }
+              if (nearest >= 0) { upd({ showNpcDialog: true, dialogNpcIdx: nearest }); sfxNpcChime(); if (tutorialStep === 1 && !tutorialDismissed) upd('tutorialStep', 2); }
               break;
             case 'KeyM':
               engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
@@ -1879,6 +1898,9 @@
                   showDimLines(m, m.minX, m.minY, m.minZ);
                   if (m.blocks) showSelectionGlow(m.blocks);
                   if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.boundingVolume, blocks: m.count });
+                  var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement'; }).length;
+                  if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
+                  if (tutorialStep === 2 && !tutorialDismissed) upd('tutorialStep', 3);
                   setTimeout(runAchievementCheck, 100);
                 }
               }
@@ -1942,6 +1964,9 @@
               sfxPlace(placeType);
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
+              if (engine.blocksPlaced === 10 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '10 blocks placed');
+              if (engine.blocksPlaced === 50 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '50 blocks placed');
+              if (tutorialStep === 3 && !tutorialDismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
               if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             }
           }
@@ -2696,7 +2721,7 @@
       var engine = window[engineKey];
       var currentLesson = SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer;
 
-      return el('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: '#000' } },
+      return el('div', { role: 'application', 'aria-label': 'Geometry World - 3D block-based math explorer. Use WASD to move, mouse to look, left-click to break blocks, right-click to place blocks.', style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: '#000' } },
         // Top bar — glass style
         el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
           el('span', { style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
@@ -2766,6 +2791,7 @@
           ),
           // Lesson selector
           el('select', {
+            'aria-label': 'Choose lesson',
             value: activeLesson,
             onChange: function(ev) {
               var lessonKey = ev.target.value;
@@ -2787,6 +2813,7 @@
           ),
           // Home language selector (multilingual NPC voices)
           el('select', {
+            'aria-label': 'Student home language for bilingual NPC speech',
             value: homeLang,
             onChange: function(ev) { upd({ homeLang: ev.target.value, npcTranslations: {} }); },
             title: 'Student home language \u2014 NPCs will speak bilingually',
@@ -2809,6 +2836,7 @@
           }, showHelp ? 'Hide Help' : '? Help'),
           // Environment preset selector
           el('select', {
+            'aria-label': 'Time of day / environment preset',
             value: d.envPreset || 'day',
             onChange: function(ev) {
               var key = ev.target.value;
@@ -3162,7 +3190,7 @@
         creatorMode && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\uD83C\uDFA8 Lesson Creator',
-            el('button', { onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close creator panel', onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           el('p', { style: { color: '#94a3b8', fontSize: '10px', margin: '0 0 8px', lineHeight: 1.4 } }, 'Build structures with blocks (right-click), then add an NPC teacher below. Save your world to share with classmates!'),
           // NPC Creator form
@@ -3285,31 +3313,46 @@
               }
             }
 
-            // Draw NPCs
-            engine.npcs.forEach(function(npc) {
+            // Draw NPCs (pulsing ? for unanswered questions)
+            var _mmPulse = 0.5 + Math.sin(Date.now() / 400) * 0.4;
+            engine.npcs.forEach(function(npc, ni) {
               var np = npc.data.position;
               var nx = w / 2 + (np[0] - camX) * scale;
               var nz = h / 2 + (np[2] - camZ) * scale;
+              if (nx < -5 || nx > w + 5 || nz < -5 || nz > h + 5) return;
               ctx.fillStyle = '#' + (npc.data.color || 0x7c3aed).toString(16).padStart(6, '0');
               ctx.beginPath(); ctx.arc(nx, nz, 3, 0, Math.PI * 2); ctx.fill();
-              // Question indicator
-              if (npc.data.question) {
+              // Pulsing question indicator for unanswered NPCs
+              if (npc.data.question && !answeredNpcs[ni]) {
+                ctx.save();
+                ctx.globalAlpha = _mmPulse;
                 ctx.fillStyle = '#fbbf24';
-                ctx.font = 'bold 8px sans-serif';
-                ctx.fillText('?', nx - 2, nz - 5);
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText('?', nx - 3, nz - 5);
+                // Glow ring
+                ctx.strokeStyle = 'rgba(251,191,36,' + (_mmPulse * 0.5).toFixed(2) + ')';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(nx, nz, 6, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+              } else if (npc.data.question && answeredNpcs[ni]) {
+                ctx.fillStyle = '#22c55e'; ctx.font = 'bold 7px sans-serif';
+                ctx.fillText('\u2713', nx - 2, nz - 4);
               }
             });
 
-            // Draw player (center, with direction arrow)
-            ctx.fillStyle = '#4ade80';
-            ctx.beginPath(); ctx.arc(w / 2, h / 2, 3, 0, Math.PI * 2); ctx.fill();
-            // Direction indicator
+            // Draw player (center, with direction wedge)
             var fwd2 = new (window.THREE.Vector3)();
             engine.camera.getWorldDirection(fwd2);
-            ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(w / 2, h / 2);
-            ctx.lineTo(w / 2 + fwd2.x * 8, h / 2 + fwd2.z * 8);
-            ctx.stroke();
+            var pAngle = Math.atan2(fwd2.z, fwd2.x);
+            // Direction wedge (triangle)
+            ctx.fillStyle = '#4ade80';
+            ctx.beginPath();
+            ctx.moveTo(w / 2 + Math.cos(pAngle) * 7, h / 2 + Math.sin(pAngle) * 7);
+            ctx.lineTo(w / 2 + Math.cos(pAngle + 2.5) * 4, h / 2 + Math.sin(pAngle + 2.5) * 4);
+            ctx.lineTo(w / 2 + Math.cos(pAngle - 2.5) * 4, h / 2 + Math.sin(pAngle - 2.5) * 4);
+            ctx.closePath(); ctx.fill();
+            // Player dot
+            ctx.beginPath(); ctx.arc(w / 2, h / 2, 2.5, 0, Math.PI * 2); ctx.fill();
 
             // Border
             ctx.strokeStyle = 'rgba(100,116,139,0.4)'; ctx.lineWidth = 1;
@@ -3324,7 +3367,11 @@
           BLOCK_SHAPES.map(function(bs, i) {
             return el('div', {
               key: bs.id,
+              role: 'button', tabIndex: 0,
+              'aria-label': 'Select ' + bs.name + ' shape, ' + bs.desc + (i === selectedShape ? ', currently selected' : ''),
+              'aria-pressed': i === selectedShape ? 'true' : 'false',
               onClick: function() { upd('selectedShape', i); },
+              onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedShape', i); } },
               title: bs.name + ' (' + bs.desc + ')',
               style: { width: '32px', height: '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '14px', cursor: 'pointer',
                 border: i === selectedShape ? '2px solid #fbbf24' : '2px solid transparent',
@@ -3341,7 +3388,12 @@
             var isActive = i === selectedBlock;
             return el('div', {
               key: bt.id,
+              role: 'button',
+              tabIndex: 0,
+              'aria-label': 'Select ' + bt.name + ' block, key ' + (i + 1) + (isActive ? ', currently selected' : ''),
+              'aria-pressed': isActive ? 'true' : 'false',
               onClick: function() { upd('selectedBlock', i); },
+              onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedBlock', i); } },
               title: bt.name + ' (' + (i + 1) + ')',
               style: { width: '38px', height: '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
                 border: isActive ? '2px solid #a78bfa' : '2px solid rgba(255,255,255,0.08)',
@@ -3413,6 +3465,30 @@
             });
           })()
         ),
+        // ── Tutorial overlay (first-time users) ──
+        !tutorialDismissed && tutorialStep < 4 && worldActive && el('div', {
+          style: { position: 'absolute', bottom: '140px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none', textAlign: 'center', maxWidth: '340px' }
+        },
+          el('div', { style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(8px)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '14px', padding: '14px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'auto' } },
+            el('div', { style: { fontSize: '10px', color: '#a78bfa', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.5px' } }, 'TUTORIAL \u2014 Step ' + (tutorialStep + 1) + ' of 4'),
+            el('div', { style: { fontSize: '14px', color: '#e2e8f0', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4 } },
+              tutorialStep === 0 ? '\uD83D\uDDB1\uFE0F Click the 3D world to look around. Use WASD to move.' :
+              tutorialStep === 1 ? '\uD83D\uDC64 Walk up to a purple character and press E to talk.' :
+              tutorialStep === 2 ? '\uD83D\uDCCF Point at the blue blocks and press M to measure.' :
+              '\uD83E\uDDF1 Right-click on any block face to place a new block!'
+            ),
+            // Progress dots
+            el('div', { style: { display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '8px' } },
+              [0,1,2,3].map(function(si) {
+                return el('div', { key: si, style: { width: 8, height: 8, borderRadius: '50%', background: si < tutorialStep ? '#22c55e' : si === tutorialStep ? '#a78bfa' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
+              })
+            ),
+            el('button', {
+              onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
+              style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: '#94a3b8', fontSize: '10px', padding: '4px 12px', cursor: 'pointer', pointerEvents: 'auto' }
+            }, 'Skip tutorial')
+          )
+        ),
         // Crosshair — crisp dot + thin lines
         el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '20px', height: '20px' } },
           // Center dot
@@ -3465,7 +3541,7 @@
                 el('div', { style: { fontSize: '13px', fontWeight: 800, color: '#e2e8f0' } }, data.name),
                 data.question && !isAnswered && el('div', { style: { fontSize: '9px', color: npcHexColor, fontWeight: 600, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
-              el('button', { onClick: function() { upd('showNpcDialog', false); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
+              el('button', { 'aria-label': 'Close NPC dialog', onClick: function() { upd('showNpcDialog', false); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content
             el('div', { style: { padding: '12px 16px' } },
@@ -3487,66 +3563,88 @@
               style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
             }, '\uD83D\uDD0A ' + translation.dialogue),
             homeLang !== 'en' && !translation && el('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '10px' } }, '\u23F3 Translating...'),
-            data.question && !isAnswered && el('div', null,
-              el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#7c3aed', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, data.question.text),
-              homeLang !== 'en' && translation && translation.question && el('div', { style: { fontSize: '11px', color: '#fbbf24', marginBottom: '6px', fontStyle: 'italic' } }, translation.question),
-              data.question.choices.map(function(choice, ci) {
-                return el('button', {
-                  key: ci,
-                  onClick: function() {
-                    if (ci === data.question.correct) {
-                      var newAnswered = Object.assign({}, answeredNpcs);
-                      newAnswered[dialogNpcIdx] = true;
-                      var newScore = score + 1;
-                      upd({ score: newScore, answeredNpcs: newAnswered });
-                      sfxCorrect();
-                      upd('consecutiveWrong', 0); // Reset frustration counter on success
-                      setTimeout(runAchievementCheck, 100);
-                      // Log for research
-                      var eng = window[engineKey];
-                      if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: data.question.text, choice: choice, score: newScore });
-                      if (addToast) addToast('\u2705 Correct! +1', 'success');
-                      // Check lesson completion — trigger sky transition
-                      if (newScore >= totalQ && totalQ > 0) {
-                        sfxComplete();
-                        if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
+            data.question && !isAnswered && (function() {
+              // Determine current question (base or follow-up)
+              var curStep = npcFollowUpStep[dialogNpcIdx] || 0;
+              var followUps = data.question.followUp || [];
+              var curQ = curStep === 0 ? data.question : (followUps[curStep - 1] || data.question);
+              var totalSteps = 1 + followUps.length;
+              var isLastStep = curStep >= totalSteps - 1;
+
+              return el('div', null,
+                // Progress dots for multi-step questions
+                totalSteps > 1 && el('div', { style: { display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '6px' } },
+                  Array.apply(null, Array(totalSteps)).map(function(_, di) {
+                    return el('div', { key: di, style: { width: 8, height: 8, borderRadius: '50%', background: di < curStep ? '#22c55e' : di === curStep ? '#7c3aed' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
+                  })
+                ),
+                el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#7c3aed', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
+                homeLang !== 'en' && translation && translation.question && curStep === 0 && el('div', { style: { fontSize: '11px', color: '#fbbf24', marginBottom: '6px', fontStyle: 'italic' } }, translation.question),
+                curQ.choices.map(function(choice, ci) {
+                  return el('button', {
+                    key: ci,
+                    'aria-label': 'Answer option ' + (ci + 1) + ': ' + choice,
+                    onClick: function() {
+                      if (ci === curQ.correct) {
+                        sfxCorrect();
+                        upd('consecutiveWrong', 0);
+                        if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
                         var eng = window[engineKey];
-                        if (eng && !eng.completionTriggered) {
-                          eng.completionTriggered = true;
-                          eng.completionProgress = 0;
-                          if (eng.logEvent) eng.logEvent('lesson_complete', { score: newScore, totalQuestions: totalQ, timeToComplete: ((Date.now() - eng.sessionStart) / 1000).toFixed(1) + 's', blocksPlaced: eng.blocksPlaced || 0 });
+                        if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep });
+                        // Check if there are more follow-up steps
+                        if (!isLastStep) {
+                          // Advance to next follow-up
+                          var newFU = Object.assign({}, npcFollowUpStep);
+                          newFU[dialogNpcIdx] = curStep + 1;
+                          upd('npcFollowUpStep', newFU);
+                          if (addToast) addToast('\u2705 Correct! Next step...', 'success');
+                        } else {
+                          // Final step — mark NPC as answered, award full score
+                          var newAnswered = Object.assign({}, answeredNpcs);
+                          newAnswered[dialogNpcIdx] = true;
+                          var newScore = score + 1;
+                          upd({ score: newScore, answeredNpcs: newAnswered });
+                          if (addToast) addToast('\u2705 Correct! +1', 'success');
+                          if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
+                          if (typeof announceToSR === 'function') announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
+                          // 3D confetti from NPC
+                          if (eng && npc.body) { try { spawnPlaceParticles(eng, npc.body.position.x, npc.body.position.y + 1.5, npc.body.position.z); } catch(e) {} }
+                          // Check lesson completion
+                          if (newScore >= totalQ && totalQ > 0) {
+                            sfxComplete();
+                            if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
+                            if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);
+                            if (eng && !eng.completionTriggered) {
+                              eng.completionTriggered = true; eng.completionProgress = 0;
+                              if (eng.logEvent) eng.logEvent('lesson_complete', { score: newScore, totalQuestions: totalQ, timeToComplete: ((Date.now() - eng.sessionStart) / 1000).toFixed(1) + 's', blocksPlaced: eng.blocksPlaced || 0 });
+                            }
+                          }
                         }
-                      }
-                    } else {
-                      sfxWrong();
-                      // Log wrong answer for research
-                      var eng2 = window[engineKey];
-                      if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: data.question.text, chosenAnswer: choice, correctAnswer: data.question.choices[data.question.correct] });
-                      // Track consecutive wrong answers for frustration detection
-                      var newWrong = consecutiveWrong + 1;
-                      upd('consecutiveWrong', newWrong);
-                      checkFrustration(newWrong);
-                      setTimeout(runAchievementCheck, 100);
-                      // Give adaptive hint (scaffolding increases with consecutive errors)
-                      var hintText = '\u274C Not quite. ';
-                      if (newWrong >= 3) {
-                        // Tier 3 scaffolding: give the formula breakdown
-                        var correct = data.question.choices[data.question.correct];
-                        hintText += 'Let\u2019s break it down: ' + correct + '. Try measuring the structure with M key \u2014 count blocks in each direction!';
-                      } else if (newWrong >= 2) {
-                        // Tier 2 scaffolding: more specific strategy
-                        hintText += data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply those three numbers.';
+                        setTimeout(runAchievementCheck, 100);
                       } else {
-                        // Tier 1: gentle redirect
-                        hintText += 'Hint: think about ' + (data.dialogue.indexOf('layer') >= 0 ? 'counting the layers' : data.dialogue.indexOf('L-block') >= 0 ? 'splitting into two prisms' : 'L \u00d7 W \u00d7 H');
+                        sfxWrong();
+                        var eng2 = window[engineKey];
+                        if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct] });
+                        var newWrong = consecutiveWrong + 1;
+                        upd('consecutiveWrong', newWrong);
+                        checkFrustration(newWrong);
+                        setTimeout(runAchievementCheck, 100);
+                        var hintText = '\u274C Not quite. ';
+                        if (newWrong >= 3) {
+                          hintText += 'Let\u2019s break it down: ' + curQ.choices[curQ.correct] + '. Try measuring with M key!';
+                        } else if (newWrong >= 2) {
+                          hintText += data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply!';
+                        } else {
+                          hintText += 'Hint: think about ' + (data.dialogue.indexOf('layer') >= 0 ? 'counting the layers' : data.dialogue.indexOf('L-block') >= 0 ? 'splitting into two prisms' : 'L \u00d7 W \u00d7 H');
+                        }
+                        if (addToast) addToast(hintText, 'error');
                       }
-                      if (addToast) addToast(hintText, 'error');
-                    }
-                  },
-                  style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', color: '#e2e8f0', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
-                }, choice);
-              })
-            ),
+                    },
+                    style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', color: '#e2e8f0', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
+                  }, choice);
+                })
+              );
+            })(),
             isAnswered && el('div', { style: { color: '#4ade80', fontWeight: 700, fontSize: '12px' } }, '\u2705 Already answered correctly!'),
             // ── AI Chat with NPC (ask anything) ──
             callGemini && el('div', { style: { marginTop: '10px', borderTop: '1px solid #334155', paddingTop: '8px' } },
@@ -3669,7 +3767,7 @@
             el('div', { style: { fontSize: '15px', fontWeight: 800, color: '#c4b5fd' } }, '\uD83D\uDCDA Class World Library'),
             el('div', { style: { display: 'flex', gap: '6px' } },
               el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#7c3aed', fontSize: '12px', cursor: 'pointer', fontWeight: 600 } }, '\u21BB Refresh'),
-              el('button', { onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
+              el('button', { 'aria-label': 'Close class worlds browser', onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
             )
           ),
           peerWorldsList.length === 0
@@ -3720,7 +3818,7 @@
         },
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
             el('div', { style: { fontWeight: 800, color: '#f87171', fontSize: '14px' } }, '\uD83D\uDCCA Teacher Dashboard'),
-            el('button', { onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close teacher dashboard', onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
           ),
           // Live session info
           el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '10px', padding: '6px 8px', background: '#0f172a', borderRadius: '6px' } },
@@ -3814,6 +3912,9 @@
                   setTimeout(function() { initEngine(node); }, 100);
                 }
               },
+              role: 'img',
+              'aria-label': 'Interactive 3D world view. Click to enter. ' + (currentLesson.title || 'Geometry World') + '. ' + score + ' of ' + totalQ + ' questions answered.',
+              tabIndex: 0,
               style: { flex: 1, position: 'relative' }
             })
       );
