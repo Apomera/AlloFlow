@@ -2523,6 +2523,267 @@ ${currentHtml.substring(0, 20000)}
     return { html: currentHtml, axe: currentAxe, passes: passCount };
   };
 
+  // ═══════════════════════════════════════════════════════════════
+  // AUTONOMOUS REMEDIATION AGENT
+  // Self-prompting AI loop: audit → analyze → plan tools → fix → re-audit
+  // The AI generates its own fix plan using the surgical micro-tools,
+  // executes them, and loops until score plateaus or target is reached.
+  // ═══════════════════════════════════════════════════════════════
+  const runAutonomousRemediation = async (htmlContent, options = {}) => {
+    const maxPasses = options.maxPasses || 5;
+    const targetScore = options.targetScore || 90;
+    const onProgress = options.onProgress || function() {};
+    const onActivity = options.onActivity || function() {};
+
+    let currentHtml = htmlContent;
+    let passCount = 0;
+    let prevScore = 0;
+    let plateauCount = 0;
+    const activityLog = [];
+
+    function logActivity(msg, type) {
+      var entry = { text: msg, type: type || 'info', time: new Date().toLocaleTimeString() };
+      activityLog.push(entry);
+      onActivity(entry, activityLog);
+      warnLog('[Agent] ' + msg);
+    }
+
+    // Build tool descriptions for the AI prompt
+    var toolDescriptions = Object.keys(surgicalTools).map(function(name) {
+      return '- ' + name + '(html, params)';
+    }).join('\n');
+
+    logActivity('\uD83E\uDD16 Autonomous remediation agent started. Target: ' + targetScore + '/100, max ' + maxPasses + ' passes.', 'start');
+
+    while (passCount < maxPasses) {
+      passCount++;
+      onProgress('Agent pass ' + passCount + '/' + maxPasses + ': auditing...');
+      logActivity('\uD83D\uDD0D Pass ' + passCount + ': Running WCAG audit...', 'audit');
+
+      // AUDIT: Run axe-core on current HTML
+      var axeResult;
+      try {
+        axeResult = await runAxeAudit(currentHtml);
+      } catch (e) {
+        logActivity('\u274C Audit failed: ' + (e.message || e), 'error');
+        break;
+      }
+      if (!axeResult) { logActivity('\u274C Audit returned no results.', 'error'); break; }
+
+      var currentScore = 100 - ((axeResult.critical || []).length * 15 + (axeResult.serious || []).length * 10 + (axeResult.moderate || []).length * 5 + (axeResult.minor || []).length * 2);
+      currentScore = Math.max(0, Math.min(100, currentScore));
+      logActivity('\uD83D\uDCCA Score: ' + currentScore + '/100 (' + axeResult.totalViolations + ' violations)', 'score');
+
+      // CHECK: Target reached?
+      if (currentScore >= targetScore) {
+        logActivity('\u2705 Target score ' + targetScore + ' reached! Final: ' + currentScore + '/100', 'success');
+        break;
+      }
+
+      // CHECK: Plateau (no improvement for 2 passes)?
+      if (currentScore <= prevScore) {
+        plateauCount++;
+        if (plateauCount >= 2) {
+          logActivity('\uD83D\uDFE1 Plateau detected — score not improving after ' + plateauCount + ' passes. Stopping.', 'plateau');
+          break;
+        }
+      } else {
+        plateauCount = 0;
+      }
+      prevScore = currentScore;
+
+      // ANALYZE: Ask AI to plan tool calls based on audit results
+      onProgress('Agent pass ' + passCount + '/' + maxPasses + ': analyzing violations...');
+      logActivity('\uD83E\uDDE0 Analyzing ' + axeResult.totalViolations + ' violations and planning fixes...', 'analyze');
+
+      var violationSummary = [];
+      (axeResult.critical || []).forEach(function(v) { violationSummary.push('CRITICAL: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
+      (axeResult.serious || []).forEach(function(v) { violationSummary.push('SERIOUS: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
+      (axeResult.moderate || []).forEach(function(v) { violationSummary.push('MODERATE: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
+
+      var analyzePrompt = 'You are a WCAG 2.1 AA remediation agent with surgical micro-tools.\n\n' +
+        'AVAILABLE TOOLS:\n' + toolDescriptions + '\n\n' +
+        'CURRENT SCORE: ' + currentScore + '/100\nTARGET: ' + targetScore + '/100\n\n' +
+        'AXE-CORE VIOLATIONS (' + axeResult.totalViolations + ' total):\n' +
+        violationSummary.slice(0, 15).join('\n') + '\n\n' +
+        'HTML PREVIEW (first 3000 chars):\n' + currentHtml.substring(0, 3000) + '\n\n' +
+        'Plan exactly which tools to call and with what parameters to fix the top violations.\n' +
+        'Focus on the highest-impact fixes first (CRITICAL > SERIOUS > MODERATE).\n' +
+        'Be specific: provide exact index numbers, alt text strings, heading levels, etc.\n\n' +
+        'Return ONLY JSON:\n' +
+        '{\n' +
+        '  "analysis": "Brief summary of remaining issues",\n' +
+        '  "actions": [\n' +
+        '    {"tool": "fix_alt_text", "params": {"index": 0, "alt": "descriptive text"}, "reason": "why"},\n' +
+        '    {"tool": "fix_heading", "params": {"index": 2, "newLevel": "h3"}, "reason": "why"}\n' +
+        '  ],\n' +
+        '  "shouldContinue": true\n' +
+        '}';
+
+      var plan;
+      try {
+        var planResult = await callGemini(analyzePrompt, true);
+        var planStr = (typeof planResult === 'string' ? planResult : (planResult && planResult.text ? planResult.text : String(planResult || '{}')));
+        planStr = planStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        var jsonS = planStr.indexOf('{'), jsonE = planStr.lastIndexOf('}');
+        if (jsonS >= 0 && jsonE > jsonS) planStr = planStr.substring(jsonS, jsonE + 1);
+        plan = JSON.parse(planStr);
+      } catch (e) {
+        logActivity('\u26A0\uFE0F AI analysis failed to parse: ' + (e.message || e), 'error');
+        break;
+      }
+
+      if (!plan || !plan.actions || plan.actions.length === 0) {
+        logActivity('\uD83D\uDFE2 AI found no actionable fixes remaining.', 'complete');
+        break;
+      }
+
+      logActivity('\uD83D\uDCCB Plan: ' + plan.analysis, 'plan');
+      logActivity('\uD83D\uDD27 Executing ' + plan.actions.length + ' tool calls...', 'fix');
+
+      // FIX: Execute planned tool calls
+      var fixedCount = 0;
+      for (var ai = 0; ai < plan.actions.length; ai++) {
+        var action = plan.actions[ai];
+        var toolFn = surgicalTools[action.tool];
+        if (toolFn && action.params) {
+          try {
+            var newHtml = toolFn(currentHtml, action.params);
+            if (newHtml && newHtml !== currentHtml) {
+              currentHtml = newHtml;
+              fixedCount++;
+              logActivity('  \u2705 ' + action.tool + ': ' + (action.reason || 'applied'), 'tool');
+            } else {
+              logActivity('  \u23E9 ' + action.tool + ': no change (already fixed or invalid params)', 'skip');
+            }
+          } catch (e) {
+            logActivity('  \u274C ' + action.tool + ' failed: ' + (e.message || e), 'error');
+          }
+        } else {
+          logActivity('  \u26A0\uFE0F Unknown tool: ' + action.tool, 'error');
+        }
+      }
+
+      logActivity('\uD83D\uDD27 Applied ' + fixedCount + '/' + plan.actions.length + ' fixes.', 'result');
+
+      if (fixedCount === 0) {
+        logActivity('\uD83D\uDFE1 No fixes were effective this pass. Stopping.', 'plateau');
+        break;
+      }
+
+      if (plan.shouldContinue === false) {
+        logActivity('\uD83D\uDFE2 Agent determined no further improvement possible.', 'complete');
+        break;
+      }
+    }
+
+    // Final audit
+    var finalAxe = await runAxeAudit(currentHtml).catch(function() { return null; });
+    var finalScore = finalAxe ? Math.max(0, 100 - ((finalAxe.critical || []).length * 15 + (finalAxe.serious || []).length * 10 + (finalAxe.moderate || []).length * 5 + (finalAxe.minor || []).length * 2)) : currentScore;
+    logActivity('\uD83C\uDFC1 Agent complete. Final score: ' + finalScore + '/100 after ' + passCount + ' passes.', 'complete');
+
+    return { html: currentHtml, score: finalScore, passes: passCount, log: activityLog, axe: finalAxe };
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // EXPERT COMMAND PROCESSOR
+  // Parses natural language commands into surgical tool calls.
+  // Built-in commands (audit, auto, score, inspect, undo) are handled
+  // directly; everything else goes through AI interpretation.
+  // ═══════════════════════════════════════════════════════════════
+  const processExpertCommand = async (command, currentHtml, options = {}) => {
+    var cmd = (command || '').trim().toLowerCase();
+    var onActivity = options.onActivity || function() {};
+
+    // Built-in commands
+    if (cmd === 'audit' || cmd === 'check') {
+      onActivity({ text: '\uD83D\uDD0D Running WCAG audit...', type: 'audit', time: new Date().toLocaleTimeString() });
+      var axe = await runAxeAudit(currentHtml);
+      var sc = axe ? Math.max(0, 100 - ((axe.critical || []).length * 15 + (axe.serious || []).length * 10 + (axe.moderate || []).length * 5 + (axe.minor || []).length * 2)) : 0;
+      onActivity({ text: '\uD83D\uDCCA Score: ' + sc + '/100 — ' + (axe ? axe.totalViolations : '?') + ' violations', type: 'score', time: new Date().toLocaleTimeString() });
+      return { type: 'audit', html: currentHtml, score: sc, axe: axe };
+    }
+    if (cmd === 'auto' || cmd === 'auto-fix' || cmd === 'agent') {
+      var result = await runAutonomousRemediation(currentHtml, {
+        onProgress: options.onProgress || function() {},
+        onActivity: function(entry) { onActivity(entry); }
+      });
+      return { type: 'agent', html: result.html, score: result.score, log: result.log };
+    }
+    if (cmd === 'score') {
+      var ax = await runAxeAudit(currentHtml);
+      var s = ax ? Math.max(0, 100 - ((ax.critical || []).length * 15 + (ax.serious || []).length * 10 + (ax.moderate || []).length * 5 + (ax.minor || []).length * 2)) : 0;
+      onActivity({ text: '\uD83D\uDCCA Current score: ' + s + '/100', type: 'score', time: new Date().toLocaleTimeString() });
+      return { type: 'score', html: currentHtml, score: s };
+    }
+    if (cmd === 'contrast' || cmd === 'fix contrast') {
+      onActivity({ text: '\uD83C\uDFA8 Fixing color contrast violations...', type: 'fix', time: new Date().toLocaleTimeString() });
+      var fixed = fixContrastViolations(currentHtml);
+      return { type: 'fix', html: fixed };
+    }
+
+    // AI-interpreted commands
+    onActivity({ text: '\uD83E\uDD16 Interpreting: "' + command + '"', type: 'thinking', time: new Date().toLocaleTimeString() });
+
+    var toolList = Object.keys(surgicalTools).map(function(name) { return name; }).join(', ');
+    var interpretPrompt = 'You are a remediation command interpreter. Parse this accessibility expert\'s instruction into surgical tool calls.\n\n' +
+      'AVAILABLE TOOLS: ' + toolList + '\n\n' +
+      'Each tool takes (html, params). Common params:\n' +
+      '- fix_alt_text: {index: N, alt: "text"}\n' +
+      '- fix_heading: {index: N, newLevel: "h2"}\n' +
+      '- fix_link_text: {index: N, newText: "descriptive text"}\n' +
+      '- fix_table_caption: {index: N, caption: "text"}\n' +
+      '- fix_aria_label: {tag: "nav", index: N, label: "text"}\n' +
+      '- fix_contrast: {oldColor: "#aaa", newColor: "#333"}\n' +
+      '- fix_skip_nav: {} (no params)\n' +
+      '- fix_lang: {lang: "en"}\n' +
+      '- fix_input_label: {index: N, label: "text"}\n' +
+      '- fix_math: {index: N} (detect and convert math notation)\n' +
+      '- fix_reflow: {} (add responsive CSS)\n\n' +
+      'EXPERT COMMAND: "' + command + '"\n\n' +
+      'HTML PREVIEW (first 1500 chars):\n' + currentHtml.substring(0, 1500) + '\n\n' +
+      'Return ONLY JSON:\n' +
+      '{"interpretation":"what the expert wants","actions":[{"tool":"fix_alt_text","params":{"index":0,"alt":"text"},"reason":"why"}],"confirmation":"I will..."}';
+
+    try {
+      var aiResult = await callGemini(interpretPrompt, true);
+      var aiStr = (typeof aiResult === 'string' ? aiResult : (aiResult && aiResult.text ? aiResult.text : '{}'));
+      aiStr = aiStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var jS = aiStr.indexOf('{'), jE = aiStr.lastIndexOf('}');
+      if (jS >= 0 && jE > jS) aiStr = aiStr.substring(jS, jE + 1);
+      var parsed = JSON.parse(aiStr);
+
+      if (parsed.confirmation) {
+        onActivity({ text: '\uD83D\uDCAC ' + parsed.confirmation, type: 'confirm', time: new Date().toLocaleTimeString() });
+      }
+
+      // Execute actions
+      var resultHtml = currentHtml;
+      if (parsed.actions && parsed.actions.length > 0) {
+        for (var ci = 0; ci < parsed.actions.length; ci++) {
+          var act = parsed.actions[ci];
+          var fn = surgicalTools[act.tool];
+          if (fn && act.params) {
+            try {
+              var newH = fn(resultHtml, act.params);
+              if (newH && newH !== resultHtml) {
+                resultHtml = newH;
+                onActivity({ text: '  \u2705 ' + act.tool + ': ' + (act.reason || 'applied'), type: 'tool', time: new Date().toLocaleTimeString() });
+              }
+            } catch (e) {
+              onActivity({ text: '  \u274C ' + act.tool + ' failed: ' + (e.message || e), type: 'error', time: new Date().toLocaleTimeString() });
+            }
+          }
+        }
+      }
+
+      return { type: 'command', html: resultHtml, interpretation: parsed.interpretation };
+    } catch (e) {
+      onActivity({ text: '\u274C Could not interpret command: ' + (e.message || e), type: 'error', time: new Date().toLocaleTimeString() });
+      return { type: 'error', html: currentHtml, error: e.message };
+    }
+  };
+
   // ── PDF Fix & Verify: Audit → Extract → Transform → Verify → axe-core → Auto-fix ──
   const fixAndVerifyPdf = async (batchOverrides = null) => {
     // ── Unified pipeline: supports both single-file UI and batch mode ──
@@ -5423,6 +5684,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
     parseAuditJson: _wrap(parseAuditJson),
+    // Expert Workbench — Advanced Mode
+    runAutonomousRemediation: _wrapAsync(runAutonomousRemediation),
+    processExpertCommand: _wrapAsync(processExpertCommand),
   };
 };
 
