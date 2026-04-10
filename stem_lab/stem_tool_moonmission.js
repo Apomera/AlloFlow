@@ -670,40 +670,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         ctx.fill();
                       }
 
-                      // Rocket (always center-screen)
+                      // ── Saturn V Rocket (enhanced detail) ──
                       var rocketX = W * 0.5, rocketY = H * 0.55;
-                      var rocketH = 40;
-                      // Body
-                      ctx.fillStyle = '#e2e8f0';
-                      ctx.fillRect(rocketX - 8, rocketY - rocketH / 2, 16, rocketH);
-                      // Nose cone
-                      ctx.fillStyle = '#f0f0f0';
+                      var rocketH = 50;
+                      var rBase = rocketY + rocketH / 2;
+                      var rTop = rocketY - rocketH / 2;
+                      // Body gradient (silver with panel lines)
+                      var bodyGrad = ctx.createLinearGradient(rocketX - 10, 0, rocketX + 10, 0);
+                      bodyGrad.addColorStop(0, '#c8ccd0'); bodyGrad.addColorStop(0.3, '#e8ecf0'); bodyGrad.addColorStop(0.7, '#f0f4f8'); bodyGrad.addColorStop(1, '#b8bcc0');
+                      ctx.fillStyle = bodyGrad;
+                      ctx.fillRect(rocketX - 9, rTop, 18, rocketH);
+                      // Stage separation lines
+                      ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 0.5;
+                      var stageLines = [0.33, 0.55];
+                      for (var sli = 0; sli < stageLines.length; sli++) {
+                        var sly = rTop + rocketH * stageLines[sli];
+                        ctx.beginPath(); ctx.moveTo(rocketX - 9, sly); ctx.lineTo(rocketX + 9, sly); ctx.stroke();
+                      }
+                      // Nose cone (elongated, white with escape tower)
+                      ctx.fillStyle = '#f8f8f8';
                       ctx.beginPath();
-                      ctx.moveTo(rocketX - 8, rocketY - rocketH / 2);
-                      ctx.lineTo(rocketX, rocketY - rocketH / 2 - 15);
-                      ctx.lineTo(rocketX + 8, rocketY - rocketH / 2);
+                      ctx.moveTo(rocketX - 9, rTop);
+                      ctx.lineTo(rocketX - 3, rTop - 14);
+                      ctx.lineTo(rocketX, rTop - 20);
+                      ctx.lineTo(rocketX + 3, rTop - 14);
+                      ctx.lineTo(rocketX + 9, rTop);
                       ctx.fill();
-                      // Engine flame
-                      var flameLen = 20 + Math.random() * 15 + velocity * 0.8;
-                      var flameGrad = ctx.createLinearGradient(rocketX, rocketY + rocketH / 2, rocketX, rocketY + rocketH / 2 + flameLen);
-                      flameGrad.addColorStop(0, '#ffffff');
-                      flameGrad.addColorStop(0.2, '#ffd700');
-                      flameGrad.addColorStop(0.5, '#ff6600');
-                      flameGrad.addColorStop(1, 'rgba(255,0,0,0)');
-                      ctx.fillStyle = flameGrad;
+                      // Escape tower
+                      ctx.strokeStyle = '#888'; ctx.lineWidth = 1;
+                      ctx.beginPath(); ctx.moveTo(rocketX, rTop - 20); ctx.lineTo(rocketX, rTop - 28); ctx.stroke();
+                      // USA text
+                      ctx.font = 'bold 4px sans-serif'; ctx.fillStyle = '#1e40af'; ctx.textAlign = 'center';
+                      ctx.fillText('USA', rocketX, rTop + rocketH * 0.25);
+                      // Fins (4 visible as 2 on each side)
+                      ctx.fillStyle = '#94a3b8';
+                      ctx.beginPath(); ctx.moveTo(rocketX - 9, rBase); ctx.lineTo(rocketX - 15, rBase + 8); ctx.lineTo(rocketX - 9, rBase - 5); ctx.fill();
+                      ctx.beginPath(); ctx.moveTo(rocketX + 9, rBase); ctx.lineTo(rocketX + 15, rBase + 8); ctx.lineTo(rocketX + 9, rBase - 5); ctx.fill();
+                      // ── Engine flame (dual envelope + Mach diamonds + particles) ──
+                      var flameLen = 25 + Math.random() * 12 + velocity * 1.0;
+                      var flameW = 7 + velocity * 0.15;
+                      // Outer envelope (orange-red, wider)
+                      var outerGrad = ctx.createLinearGradient(rocketX, rBase, rocketX, rBase + flameLen);
+                      outerGrad.addColorStop(0, 'rgba(255,120,0,0.8)');
+                      outerGrad.addColorStop(0.4, 'rgba(255,60,0,0.5)');
+                      outerGrad.addColorStop(1, 'rgba(200,0,0,0)');
+                      ctx.fillStyle = outerGrad;
                       ctx.beginPath();
-                      ctx.moveTo(rocketX - 6, rocketY + rocketH / 2);
-                      ctx.lineTo(rocketX, rocketY + rocketH / 2 + flameLen);
-                      ctx.lineTo(rocketX + 6, rocketY + rocketH / 2);
+                      ctx.moveTo(rocketX - flameW, rBase);
+                      ctx.quadraticCurveTo(rocketX - flameW * 0.6, rBase + flameLen * 0.4, rocketX, rBase + flameLen);
+                      ctx.quadraticCurveTo(rocketX + flameW * 0.6, rBase + flameLen * 0.4, rocketX + flameW, rBase);
                       ctx.fill();
-                      // Smoke trail (lower altitudes only)
-                      if (skyPct < 0.5) {
-                        ctx.globalAlpha = 0.15 * (1 - skyPct * 2);
-                        ctx.fillStyle = '#cccccc';
-                        for (var smi = 0; smi < 8; smi++) {
-                          ctx.beginPath();
-                          ctx.arc(rocketX + (Math.random() - 0.5) * 8, rocketY + rocketH / 2 + flameLen + smi * 12, 5 + smi * 3, 0, Math.PI * 2);
-                          ctx.fill();
+                      // Inner core (white-yellow, narrow)
+                      var innerGrad = ctx.createLinearGradient(rocketX, rBase, rocketX, rBase + flameLen * 0.7);
+                      innerGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
+                      innerGrad.addColorStop(0.3, 'rgba(255,240,100,0.7)');
+                      innerGrad.addColorStop(1, 'rgba(255,180,0,0)');
+                      ctx.fillStyle = innerGrad;
+                      ctx.beginPath();
+                      ctx.moveTo(rocketX - flameW * 0.4, rBase);
+                      ctx.quadraticCurveTo(rocketX - flameW * 0.2, rBase + flameLen * 0.3, rocketX, rBase + flameLen * 0.7);
+                      ctx.quadraticCurveTo(rocketX + flameW * 0.2, rBase + flameLen * 0.3, rocketX + flameW * 0.4, rBase);
+                      ctx.fill();
+                      // Mach diamonds (bright spots in the exhaust at high velocity)
+                      if (velocity > 5) {
+                        ctx.fillStyle = 'rgba(255,255,200,0.6)';
+                        for (var md = 0; md < 3; md++) {
+                          var mdy = rBase + flameLen * (0.15 + md * 0.18);
+                          var mdSize = 2 - md * 0.4;
+                          ctx.beginPath(); ctx.arc(rocketX, mdy, mdSize, 0, Math.PI * 2); ctx.fill();
+                        }
+                      }
+                      // Exhaust particles (scattered sparks)
+                      ctx.globalAlpha = 0.6;
+                      for (var epi = 0; epi < 6; epi++) {
+                        var epx = rocketX + (Math.random() - 0.5) * flameW * 1.5;
+                        var epy = rBase + flameLen * (0.3 + Math.random() * 0.7);
+                        var epr = 0.5 + Math.random() * 1.5;
+                        ctx.fillStyle = epi < 3 ? 'rgba(255,200,50,0.7)' : 'rgba(255,100,0,0.5)';
+                        ctx.beginPath(); ctx.arc(epx, epy, epr, 0, Math.PI * 2); ctx.fill();
+                      }
+                      ctx.globalAlpha = 1;
+                      // Smoke trail (billowing at lower altitudes, thins in upper atmosphere)
+                      if (skyPct < 0.6) {
+                        var smokeOpacity = 0.2 * (1 - skyPct * 1.5);
+                        for (var smi = 0; smi < 10; smi++) {
+                          ctx.globalAlpha = smokeOpacity * (1 - smi * 0.08);
+                          ctx.fillStyle = smi < 4 ? '#ddd' : '#bbb';
+                          var smx = rocketX + (Math.random() - 0.5) * (6 + smi * 3);
+                          var smy = rBase + flameLen + smi * 14;
+                          var smr = 4 + smi * 3.5;
+                          ctx.beginPath(); ctx.arc(smx, smy, smr, 0, Math.PI * 2); ctx.fill();
                         }
                         ctx.globalAlpha = 1;
                       }
@@ -1178,55 +1234,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                     // Moon surface (rises as altitude drops)
                     var surfaceY = H * 0.5 + Math.min(H * 0.45, (alt / 15000) * H * 0.45);
-                    ctx.fillStyle = '#8a8278';
+                    // ── Moon surface (gradient with procedural craters + boulders) ──
+                    var surfGrad = ctx.createLinearGradient(0, surfaceY, 0, H);
+                    surfGrad.addColorStop(0, '#9a9288'); surfGrad.addColorStop(0.3, '#8a8278'); surfGrad.addColorStop(1, '#6a6258');
+                    ctx.fillStyle = surfGrad;
                     ctx.fillRect(0, surfaceY, W, H - surfaceY);
-                    // Craters on surface
-                    ctx.fillStyle = '#706860';
-                    for (var ci = 0; ci < 8; ci++) {
-                      var crX = (ci * 73 + 20) % W;
-                      var crR = 8 + ci * 5;
-                      if (surfaceY < H - 10) {
-                        ctx.beginPath();
-                        ctx.arc(crX, surfaceY + 10 + ci * 3, crR, 0, Math.PI * 2);
-                        ctx.fill();
+                    // Procedural craters (seeded so they're stable)
+                    var sRng = _seededRand(314);
+                    if (surfaceY < H - 10) {
+                      for (var ci = 0; ci < 16; ci++) {
+                        var crX = sRng.next() * W;
+                        var crY = surfaceY + 5 + sRng.next() * Math.max(5, (H - surfaceY) * 0.7);
+                        var crR = 3 + sRng.next() * 12;
+                        // Shadow
+                        ctx.fillStyle = 'rgba(80,70,60,0.3)';
+                        ctx.beginPath(); ctx.arc(crX, crY, crR, 0, Math.PI * 2); ctx.fill();
+                        // Bright rim (upper-left)
+                        ctx.strokeStyle = 'rgba(180,170,160,0.25)';
+                        ctx.lineWidth = Math.max(0.5, crR * 0.12);
+                        ctx.beginPath(); ctx.arc(crX, crY, crR, -2.5, -0.8); ctx.stroke();
+                      }
+                      // Scattered boulders
+                      ctx.fillStyle = 'rgba(100,90,80,0.4)';
+                      for (var bi = 0; bi < 8; bi++) {
+                        var bx = sRng.next() * W;
+                        var by = surfaceY + 3 + sRng.next() * Math.max(3, (H - surfaceY) * 0.5);
+                        var br = 1 + sRng.next() * 3;
+                        ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
                       }
                     }
 
-                    // LM (center of screen)
-                    var lmX = W * 0.5, lmY = Math.min(surfaceY - 15, H * 0.5);
-                    // Descent stage (gold foil box)
+                    // ── Enhanced Lunar Module ──
+                    var lmX = W * 0.5, lmY = Math.min(surfaceY - 18, H * 0.5);
+                    // Descent stage (octagonal gold foil)
                     ctx.fillStyle = '#c9a04a';
-                    ctx.fillRect(lmX - 12, lmY, 24, 14);
-                    // Ascent stage (silver box)
-                    ctx.fillStyle = '#cccccc';
-                    ctx.fillRect(lmX - 10, lmY - 14, 20, 16);
-                    // Window
-                    ctx.fillStyle = '#334455';
-                    ctx.fillRect(lmX - 4, lmY - 12, 8, 6);
-                    // Legs
-                    ctx.strokeStyle = '#888888';
-                    ctx.lineWidth = 1.5;
                     ctx.beginPath();
-                    ctx.moveTo(lmX - 12, lmY + 14); ctx.lineTo(lmX - 20, lmY + 24);
-                    ctx.moveTo(lmX + 12, lmY + 14); ctx.lineTo(lmX + 20, lmY + 24);
+                    ctx.moveTo(lmX - 14, lmY + 3); ctx.lineTo(lmX - 12, lmY); ctx.lineTo(lmX + 12, lmY);
+                    ctx.lineTo(lmX + 14, lmY + 3); ctx.lineTo(lmX + 14, lmY + 13);
+                    ctx.lineTo(lmX + 12, lmY + 16); ctx.lineTo(lmX - 12, lmY + 16); ctx.lineTo(lmX - 14, lmY + 13);
+                    ctx.closePath(); ctx.fill();
+                    // Gold foil texture lines
+                    ctx.strokeStyle = 'rgba(160,120,40,0.3)'; ctx.lineWidth = 0.5;
+                    for (var fl = 0; fl < 3; fl++) {
+                      ctx.beginPath(); ctx.moveTo(lmX - 12, lmY + 4 + fl * 4); ctx.lineTo(lmX + 12, lmY + 4 + fl * 4); ctx.stroke();
+                    }
+                    // Ascent stage (angular silver with facets)
+                    ctx.fillStyle = '#c8c8c8';
+                    ctx.beginPath();
+                    ctx.moveTo(lmX - 11, lmY); ctx.lineTo(lmX - 9, lmY - 16);
+                    ctx.lineTo(lmX + 9, lmY - 16); ctx.lineTo(lmX + 11, lmY);
+                    ctx.closePath(); ctx.fill();
+                    // Facet shading
+                    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+                    ctx.beginPath(); ctx.moveTo(lmX, lmY); ctx.lineTo(lmX + 9, lmY - 16); ctx.lineTo(lmX + 11, lmY); ctx.closePath(); ctx.fill();
+                    // Triangular windows (like real LM)
+                    ctx.fillStyle = '#1a2a3a';
+                    ctx.beginPath(); ctx.moveTo(lmX - 5, lmY - 12); ctx.lineTo(lmX - 2, lmY - 6); ctx.lineTo(lmX - 8, lmY - 6); ctx.closePath(); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(lmX + 5, lmY - 12); ctx.lineTo(lmX + 2, lmY - 6); ctx.lineTo(lmX + 8, lmY - 6); ctx.closePath(); ctx.fill();
+                    // Antenna dish on top
+                    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 0.8;
+                    ctx.beginPath(); ctx.moveTo(lmX + 2, lmY - 16); ctx.lineTo(lmX + 2, lmY - 22); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(lmX + 2, lmY - 22, 3, Math.PI, 0); ctx.stroke();
+                    // RCS quads (small rectangles on corners)
+                    ctx.fillStyle = '#999';
+                    ctx.fillRect(lmX - 13, lmY - 10, 3, 4);
+                    ctx.fillRect(lmX + 10, lmY - 10, 3, 4);
+                    // 4 Legs (spread outward)
+                    ctx.strokeStyle = '#888'; ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(lmX - 14, lmY + 14); ctx.lineTo(lmX - 24, lmY + 27);
+                    ctx.moveTo(lmX + 14, lmY + 14); ctx.lineTo(lmX + 24, lmY + 27);
+                    ctx.moveTo(lmX - 6, lmY + 16); ctx.lineTo(lmX - 10, lmY + 27);
+                    ctx.moveTo(lmX + 6, lmY + 16); ctx.lineTo(lmX + 10, lmY + 27);
                     ctx.stroke();
-                    // Foot pads
-                    ctx.fillStyle = '#888888';
-                    ctx.fillRect(lmX - 23, lmY + 23, 6, 2);
-                    ctx.fillRect(lmX + 17, lmY + 23, 6, 2);
-                    // Thrust flame
+                    // Foot pads (circles)
+                    ctx.fillStyle = '#888';
+                    ctx.beginPath(); ctx.arc(lmX - 24, lmY + 28, 2.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(lmX + 24, lmY + 28, 2.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(lmX - 10, lmY + 28, 2, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(lmX + 10, lmY + 28, 2, 0, Math.PI * 2); ctx.fill();
+                    // ── Descent engine flame (dual envelope) ──
                     if (thrust > 0.1 && fuel > 0) {
-                      var fLen = 10 + thrust * 25 + Math.random() * 5;
-                      var fGrad = ctx.createLinearGradient(lmX, lmY + 14, lmX, lmY + 14 + fLen);
-                      fGrad.addColorStop(0, 'rgba(255,255,255,0.9)');
-                      fGrad.addColorStop(0.3, 'rgba(255,200,50,0.6)');
-                      fGrad.addColorStop(1, 'rgba(255,100,0,0)');
-                      ctx.fillStyle = fGrad;
+                      var fLen = 12 + thrust * 28 + Math.random() * 5;
+                      var fW = 4 + thrust * 3;
+                      // Outer flame
+                      var fOutGrad = ctx.createLinearGradient(lmX, lmY + 16, lmX, lmY + 16 + fLen);
+                      fOutGrad.addColorStop(0, 'rgba(255,130,0,0.7)'); fOutGrad.addColorStop(0.5, 'rgba(255,60,0,0.3)'); fOutGrad.addColorStop(1, 'rgba(200,0,0,0)');
+                      ctx.fillStyle = fOutGrad;
                       ctx.beginPath();
-                      ctx.moveTo(lmX - 5, lmY + 14);
-                      ctx.lineTo(lmX, lmY + 14 + fLen);
-                      ctx.lineTo(lmX + 5, lmY + 14);
+                      ctx.moveTo(lmX - fW, lmY + 16);
+                      ctx.quadraticCurveTo(lmX - fW * 0.5, lmY + 16 + fLen * 0.4, lmX, lmY + 16 + fLen);
+                      ctx.quadraticCurveTo(lmX + fW * 0.5, lmY + 16 + fLen * 0.4, lmX + fW, lmY + 16);
                       ctx.fill();
+                      // Inner core
+                      var fInGrad = ctx.createLinearGradient(lmX, lmY + 16, lmX, lmY + 16 + fLen * 0.65);
+                      fInGrad.addColorStop(0, 'rgba(255,255,255,0.9)'); fInGrad.addColorStop(0.4, 'rgba(255,230,80,0.5)'); fInGrad.addColorStop(1, 'rgba(255,180,0,0)');
+                      ctx.fillStyle = fInGrad;
+                      ctx.beginPath();
+                      ctx.moveTo(lmX - fW * 0.3, lmY + 16);
+                      ctx.quadraticCurveTo(lmX, lmY + 16 + fLen * 0.3, lmX, lmY + 16 + fLen * 0.65);
+                      ctx.quadraticCurveTo(lmX, lmY + 16 + fLen * 0.3, lmX + fW * 0.3, lmY + 16);
+                      ctx.fill();
+                      // Surface dust kick-up near landing
+                      if (alt < 200 && surfaceY < H) {
+                        ctx.globalAlpha = 0.15 * (1 - alt / 200);
+                        ctx.fillStyle = '#b0a898';
+                        for (var di = 0; di < 6; di++) {
+                          var dx = lmX + (Math.random() - 0.5) * 60;
+                          var dy = surfaceY + 2 + Math.random() * 8;
+                          ctx.beginPath(); ctx.arc(dx, dy, 3 + Math.random() * 6, 0, Math.PI * 2); ctx.fill();
+                        }
+                        ctx.globalAlpha = 1;
+                      }
                     }
 
                     // HUD
@@ -1954,33 +2073,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.globalAlpha = Math.max(0, 0.3 * (1 - heatPct));
                       drawStarfield(ctx, W, HR, tick, 60);
                       ctx.restore();
-                      // Plasma/fire effect around capsule
-                      if (heatPct > 0.2) {
+                      // ── Enhanced plasma/fire effects ──
+                      if (heatPct > 0.15) {
                         var fireIntensity = heatPct;
-                        for (var fi = 0; fi < 15; fi++) {
-                          var fx = W * 0.5 + (Math.random() - 0.5) * 40 * fireIntensity;
-                          var fy = capsuleY + 20 + Math.random() * 60 * fireIntensity;
-                          var fr = 5 + Math.random() * 15 * fireIntensity;
-                          var fireGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, fr);
-                          fireGrad.addColorStop(0, 'rgba(255,' + Math.round(200 - fi * 10) + ',0,' + (0.3 * fireIntensity) + ')');
-                          fireGrad.addColorStop(1, 'transparent');
-                          ctx.fillStyle = fireGrad;
-                          ctx.beginPath(); ctx.arc(fx, fy, fr, 0, Math.PI * 2); ctx.fill();
+                        // Bow shock wave (curved arc ahead of capsule)
+                        ctx.save();
+                        ctx.globalAlpha = 0.4 * fireIntensity;
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2 + fireIntensity * 2;
+                        ctx.beginPath();
+                        ctx.arc(W * 0.5, capsuleY - 5, 25 + fireIntensity * 10, Math.PI * 0.7, Math.PI * 0.3, true);
+                        ctx.stroke();
+                        // Second shock layer (wider, fainter)
+                        ctx.globalAlpha = 0.15 * fireIntensity;
+                        ctx.strokeStyle = '#ffa500';
+                        ctx.lineWidth = 3 + fireIntensity * 3;
+                        ctx.beginPath();
+                        ctx.arc(W * 0.5, capsuleY - 10, 35 + fireIntensity * 15, Math.PI * 0.75, Math.PI * 0.25, true);
+                        ctx.stroke();
+                        ctx.restore();
+                        // Plasma streaks (elongated trails behind capsule)
+                        for (var fi = 0; fi < 12; fi++) {
+                          var sx = W * 0.5 + (Math.random() - 0.5) * 30 * fireIntensity;
+                          var sy = capsuleY + 15 + Math.random() * 20;
+                          var sLen = 20 + Math.random() * 50 * fireIntensity;
+                          var sGrad = ctx.createLinearGradient(sx, sy, sx + (Math.random() - 0.5) * 8, sy + sLen);
+                          var r = 255, g = Math.round(200 - fi * 15), b = Math.round(fi * 8);
+                          sGrad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',' + (0.4 * fireIntensity) + ')');
+                          sGrad.addColorStop(0.6, 'rgba(' + r + ',' + Math.max(0, g - 60) + ',0,' + (0.15 * fireIntensity) + ')');
+                          sGrad.addColorStop(1, 'transparent');
+                          ctx.strokeStyle = sGrad;
+                          ctx.lineWidth = 1 + Math.random() * 2;
+                          ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + (Math.random() - 0.5) * 8, sy + sLen); ctx.stroke();
                         }
+                        // Heat shield glow (intense white-hot center)
+                        var hsGrad = ctx.createRadialGradient(W * 0.5, capsuleY + 8, 0, W * 0.5, capsuleY + 8, 18 * fireIntensity);
+                        hsGrad.addColorStop(0, 'rgba(255,255,220,' + (0.6 * fireIntensity) + ')');
+                        hsGrad.addColorStop(0.3, 'rgba(255,200,50,' + (0.3 * fireIntensity) + ')');
+                        hsGrad.addColorStop(0.7, 'rgba(255,100,0,' + (0.15 * fireIntensity) + ')');
+                        hsGrad.addColorStop(1, 'transparent');
+                        ctx.fillStyle = hsGrad;
+                        ctx.beginPath(); ctx.arc(W * 0.5, capsuleY + 8, 18 * fireIntensity, 0, Math.PI * 2); ctx.fill();
+                        // Ablation sparks (small particles flying backward)
+                        ctx.globalAlpha = 0.7;
+                        for (var spi = 0; spi < 10; spi++) {
+                          var spx = W * 0.5 + (Math.random() - 0.5) * 35;
+                          var spy = capsuleY + 20 + Math.random() * 40 * fireIntensity;
+                          var spr = 0.5 + Math.random() * 1.5;
+                          ctx.fillStyle = spi < 5 ? '#ffee88' : '#ff8844';
+                          ctx.beginPath(); ctx.arc(spx, spy, spr, 0, Math.PI * 2); ctx.fill();
+                        }
+                        ctx.globalAlpha = 1;
+                        // Atmospheric orange tint on upper canvas
+                        ctx.globalAlpha = 0.05 * fireIntensity;
+                        ctx.fillStyle = '#ff6600';
+                        ctx.fillRect(0, 0, W, HR * 0.5);
+                        ctx.globalAlpha = 1;
                       }
-                      // Blackout static
+                      // Blackout static + enhanced interference
                       if (reentryPhase === 1) {
-                        ctx.globalAlpha = 0.15;
-                        for (var ni = 0; ni < 50; ni++) {
-                          ctx.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#ff4400';
-                          ctx.fillRect(Math.random() * W, Math.random() * HR, 2, 1);
+                        ctx.globalAlpha = 0.2;
+                        for (var ni = 0; ni < 60; ni++) {
+                          ctx.fillStyle = Math.random() > 0.5 ? '#ffffff' : (Math.random() > 0.5 ? '#ff4400' : '#ff8800');
+                          var nw = 1 + Math.random() * 3;
+                          ctx.fillRect(Math.random() * W, Math.random() * HR, nw, 1);
                         }
+                        // Scan lines
+                        ctx.fillStyle = 'rgba(0,0,0,0.03)';
+                        for (var sli = 0; sli < HR; sli += 3) { ctx.fillRect(0, sli, W, 1); }
                         ctx.globalAlpha = 1;
                         ctx.textAlign = 'center'; ctx.font = 'bold 14px monospace';
                         ctx.fillStyle = '#ff4444';
                         ctx.fillText('\u26A0 COMMUNICATIONS BLACKOUT', W * 0.5, 30);
                         ctx.font = '9px system-ui'; ctx.fillStyle = '#f87171';
-                        ctx.fillText('Ionized plasma blocking all radio signals...', W * 0.5, 46);
+                        ctx.fillText('Ionized plasma at 2,760\u00B0C blocking all radio signals...', W * 0.5, 46);
                       }
                     } else {
                       // Lower atmosphere - blue sky appearing
