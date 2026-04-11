@@ -51473,7 +51473,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                             <div class="divider"></div>
                             <div class="pane pane-right">
-                              <div class="pane-header">Accessible HTML (After)</div>
+                              <div class="pane-header" style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px">
+                                <span>Accessible HTML (After)</span>
+                                <div style="display:flex;gap:4px;align-items:center">
+                                  <button onclick="toggleBionic()" id="btn-bionic" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Toggle Bionic Reading">Bi onic</button>
+                                  <button onclick="toggleLineGuide()" id="btn-lineguide" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Toggle Line Guide">Line Guide</button>
+                                  <button onclick="toggleDarkMode()" id="btn-dark" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Toggle Dark Mode">🌙</button>
+                                  <button onclick="zoomIn()" style="padding:3px 6px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:12px;font-weight:700;cursor:pointer" title="Zoom In">+</button>
+                                  <button onclick="zoomOut()" style="padding:3px 6px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:12px;font-weight:700;cursor:pointer" title="Zoom Out">−</button>
+                                  <span id="zoom-level" style="color:#86efac;font-size:10px;min-width:30px;text-align:center">100%</span>
+                                  <button onclick="downloadHtml()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Download HTML">📥</button>
+                                  <button onclick="printHtml()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
                               <iframe id="after-frame"></iframe>
                             </div>
                           </div>
@@ -51483,6 +51495,113 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             doc.open();
                             doc.write(${JSON.stringify(pdfFixResult.accessibleHtml)});
                             doc.close();
+
+                            // ── Compare view toolbar functions ──
+                            var _bionicOn = false;
+                            function toggleBionic() {
+                              _bionicOn = !_bionicOn;
+                              var d = iframe.contentDocument;
+                              if (!d) return;
+                              var btn = document.getElementById('btn-bionic');
+                              if (_bionicOn) {
+                                btn.style.background = '#16a34a'; btn.style.color = '#fff';
+                                // Bold the first half of each word
+                                var walker = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null, false);
+                                var textNodes = [];
+                                while(walker.nextNode()) textNodes.push(walker.currentNode);
+                                textNodes.forEach(function(node) {
+                                  if (!node.textContent.trim() || node.parentElement.closest('script,style,code,pre')) return;
+                                  var words = node.textContent.split(/(\s+)/);
+                                  var span = d.createElement('span');
+                                  span.className = 'bionic-wrap';
+                                  span.innerHTML = words.map(function(w) {
+                                    if (/^\s+$/.test(w)) return w;
+                                    var half = Math.ceil(w.length * 0.5);
+                                    return '<strong>' + w.substring(0, half) + '</strong>' + w.substring(half);
+                                  }).join('');
+                                  node.parentNode.replaceChild(span, node);
+                                });
+                              } else {
+                                btn.style.background = 'transparent'; btn.style.color = '#86efac';
+                                d.querySelectorAll('.bionic-wrap').forEach(function(el) {
+                                  el.outerHTML = el.textContent;
+                                });
+                              }
+                            }
+
+                            var _lineGuideOn = false;
+                            function toggleLineGuide() {
+                              _lineGuideOn = !_lineGuideOn;
+                              var d = iframe.contentDocument;
+                              if (!d) return;
+                              var btn = document.getElementById('btn-lineguide');
+                              var existing = d.getElementById('allo-lineguide');
+                              if (_lineGuideOn) {
+                                btn.style.background = '#16a34a'; btn.style.color = '#fff';
+                                if (!existing) {
+                                  var guide = d.createElement('div');
+                                  guide.id = 'allo-lineguide';
+                                  guide.style.cssText = 'position:fixed;left:0;right:0;height:32px;background:rgba(250,204,21,0.15);border-top:2px solid rgba(250,204,21,0.4);border-bottom:2px solid rgba(250,204,21,0.4);pointer-events:none;z-index:99999;top:40%;transition:top 0.05s';
+                                  d.body.appendChild(guide);
+                                  d.addEventListener('mousemove', function(e) {
+                                    var g = d.getElementById('allo-lineguide');
+                                    if (g) g.style.top = (e.clientY - 16) + 'px';
+                                  });
+                                }
+                              } else {
+                                btn.style.background = 'transparent'; btn.style.color = '#86efac';
+                                if (existing) existing.remove();
+                              }
+                            }
+
+                            var _darkOn = false;
+                            function toggleDarkMode() {
+                              _darkOn = !_darkOn;
+                              var d = iframe.contentDocument;
+                              if (!d) return;
+                              var btn = document.getElementById('btn-dark');
+                              var s = d.getElementById('allo-darkmode');
+                              if (_darkOn) {
+                                btn.style.background = '#16a34a'; btn.style.color = '#fff';
+                                if (!s) {
+                                  s = d.createElement('style');
+                                  s.id = 'allo-darkmode';
+                                  s.textContent = 'body{background:#1a1a2e!important;color:#e2e8f0!important;} a{color:#818cf8!important;} h1,h2,h3,h4,h5,h6{color:#e2e8f0!important;} table,th,td{border-color:#4a5568!important;color:#e2e8f0!important;} th{background:#2d3748!important;}';
+                                  d.head.appendChild(s);
+                                }
+                              } else {
+                                btn.style.background = 'transparent'; btn.style.color = '#86efac';
+                                if (s) s.remove();
+                              }
+                            }
+
+                            var _zoomLevel = 100;
+                            function zoomIn() {
+                              _zoomLevel = Math.min(200, _zoomLevel + 10);
+                              var d = iframe.contentDocument;
+                              if (d) d.body.style.zoom = (_zoomLevel / 100);
+                              document.getElementById('zoom-level').textContent = _zoomLevel + '%';
+                            }
+                            function zoomOut() {
+                              _zoomLevel = Math.max(50, _zoomLevel - 10);
+                              var d = iframe.contentDocument;
+                              if (d) d.body.style.zoom = (_zoomLevel / 100);
+                              document.getElementById('zoom-level').textContent = _zoomLevel + '%';
+                            }
+                            function downloadHtml() {
+                              var d = iframe.contentDocument;
+                              if (!d) return;
+                              var html = '<!DOCTYPE html>\\n' + d.documentElement.outerHTML;
+                              var blob = new Blob([html], {type: 'text/html'});
+                              var a = document.createElement('a');
+                              a.href = URL.createObjectURL(blob);
+                              a.download = 'remediated-document.html';
+                              a.click();
+                              URL.revokeObjectURL(a.href);
+                            }
+                            function printHtml() {
+                              iframe.contentWindow.print();
+                            }
                           </script>
                           </body></html>`);
                           win.document.close();
@@ -52006,10 +52125,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <h2 style="color:#16a34a;margin-bottom:1rem">📖 Simplified (${level} Grade)</h2>
                                 ${simplified.split('\n').map(line => {
                                   line = line.trim();
-                                  if (line.startsWith('# ')) return '<h3 style="color:#166534;margin:1em 0 0.5em">' + line.substring(2) + '</h3>';
-                                  if (line.startsWith('## ')) return '<h4 style="color:#166534;margin:0.8em 0 0.4em">' + line.substring(3) + '</h4>';
-                                  if (line.startsWith('- ')) return '<li style="margin:0.3em 0;margin-left:1.5em">' + line.substring(2) + '</li>';
-                                  if (line) return '<p style="margin:0.6em 0;line-height:1.8">' + line + '</p>';
+                                  // Process inline markdown: bold, italic
+                                  var processed = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>');
+                                  if (processed.startsWith('# ')) return '<h3 style="color:#166534;margin:1em 0 0.5em">' + processed.substring(2) + '</h3>';
+                                  if (processed.startsWith('## ')) return '<h4 style="color:#166534;margin:0.8em 0 0.4em">' + processed.substring(3) + '</h4>';
+                                  if (processed.startsWith('### ')) return '<h5 style="color:#166534;margin:0.6em 0 0.3em;font-weight:bold">' + processed.substring(4) + '</h5>';
+                                  if (processed.startsWith('- ') || processed.startsWith('* ')) return '<li style="margin:0.3em 0;margin-left:1.5em">' + processed.substring(2) + '</li>';
+                                  if (processed) return '<p style="margin:0.6em 0;line-height:1.8">' + processed + '</p>';
                                   return '';
                                 }).join('\n')}
                                 </div>`;
