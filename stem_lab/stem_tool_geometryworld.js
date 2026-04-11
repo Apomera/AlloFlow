@@ -818,10 +818,161 @@
               { text: 'Now add 2 quarter-slices (\u00BC each). Total = 3 + \u00BD = ?', choices: ['3\u00BD pizzas', '3\u00BC pizzas', '5 pizzas'], correct: 0 }
             ] } }
       ]
+    },
+    base10Blocks: {
+      title: 'Base 10 Place Value \u2014 Building Numbers in 3D',
+      description: 'Understand place value by building numbers with unit cubes (1s), ten-rods (10s), and hundred-flats (100s). Each block represents a different place value \u2014 see how numbers are constructed!',
+      spawnPoint: [5, 2, 5],
+      objectives: [
+        'Identify units (1), tens (10), and hundreds (100) blocks',
+        'Build the number 234 using base-10 blocks',
+        'Compare two numbers by counting their blocks',
+        'Understand that 10 ones = 1 ten, 10 tens = 1 hundred'
+      ],
+      ground: { xMin: -4, xMax: 30, zMin: -4, zMax: 24, y: 0, type: 'grass' },
+      structures: [
+        // Floor
+        { type: 'fill', x1: -2, y1: 0, z1: -2, x2: 28, y2: 0, z2: 22, block: 'stone' },
+        // ── Station 1: The Unit Cube (ONES place) ──
+        // Single gold cube = 1 unit
+        { type: 'fill', x1: 2, y1: 1, z1: 2, x2: 2, y2: 1, z2: 2, block: 'gold' },
+        // Label platform
+        { type: 'fill', x1: 2, y1: 0, z1: 0, x2: 2, y2: 0, z2: 0, block: 'diamond' },
+        // ── Station 2: The Ten-Rod (TENS place) ──
+        // Row of 10 gold cubes = 10 units
+        { type: 'fill', x1: 8, y1: 1, z1: 2, x2: 17, y2: 1, z2: 2, block: 'gold' },
+        // Label platform
+        { type: 'fill', x1: 12, y1: 0, z1: 0, x2: 12, y2: 0, z2: 0, block: 'diamond' },
+        // ── Station 3: The Hundred-Flat (HUNDREDS place) ──
+        // 10\u00d710 flat of gold cubes = 100 units
+        { type: 'fill', x1: 2, y1: 1, z1: 8, x2: 11, y2: 1, z2: 17, block: 'gold' },
+        // Label
+        { type: 'fill', x1: 6, y1: 0, z1: 6, x2: 6, y2: 0, z2: 6, block: 'diamond' },
+        // ── Example: The number 234 ──
+        // 2 hundred-flats (stacked)
+        { type: 'fill', x1: 16, y1: 1, z1: 8, x2: 25, y2: 1, z2: 17, block: 'diamond' },
+        { type: 'fill', x1: 16, y1: 2, z1: 8, x2: 25, y2: 2, z2: 17, block: 'diamond' },
+        // 3 ten-rods (beside the flats)
+        { type: 'fill', x1: 16, y1: 1, z1: 19, x2: 25, y2: 1, z2: 19, block: 'brick' },
+        { type: 'fill', x1: 16, y1: 1, z1: 20, x2: 25, y2: 1, z2: 20, block: 'brick' },
+        { type: 'fill', x1: 16, y1: 1, z1: 21, x2: 25, y2: 1, z2: 21, block: 'brick' },
+        // 4 unit cubes
+        { type: 'fill', x1: 16, y1: 1, z1: 23, x2: 19, y2: 1, z2: 23, block: 'sand' },
+        // ── Build Platform (for student experiments) ──
+        { type: 'fill', x1: 2, y1: 0, z1: 20, x2: 12, y2: 0, z2: 24, block: 'sand' }
+      ],
+      npcs: [
+        { position: [0, 1, 2], name: 'Place Value Guide', color: 0x7c3aed,
+          dialogue: 'Welcome! In our number system, position matters. Each place is 10\u00d7 bigger than the one before. Let\u2019s explore with blocks!', question: null },
+        { position: [2, 2, 0], name: 'Ones Expert', color: 0xf59e0b,
+          dialogue: 'This single gold cube represents ONE unit. It\u2019s the building block of all numbers!',
+          question: { text: 'How many unit cubes = 1 unit?', choices: ['1 cube', '10 cubes', '100 cubes'], correct: 0,
+            followUp: [
+              { text: 'If you have 7 unit cubes, what number do they represent?', choices: ['7', '70', '700'], correct: 0 }
+            ] } },
+        { position: [12, 2, 0], name: 'Tens Teacher', color: 0x2563eb,
+          dialogue: 'This row of 10 cubes is a TEN-ROD. Count them \u2014 10 ones make 1 ten!',
+          question: { text: 'How many unit cubes are in this ten-rod?', choices: ['10 cubes', '1 cube', '100 cubes'], correct: 0,
+            followUp: [
+              { text: 'If you have 5 ten-rods, what number is that?', choices: ['50', '5', '500'], correct: 0 },
+              { text: 'How many unit cubes = 5 ten-rods?', choices: ['50 cubes', '5 cubes', '15 cubes'], correct: 0 }
+            ] } },
+        { position: [6, 2, 6], name: 'Hundreds Hero', color: 0x16a34a,
+          dialogue: 'This 10\u00d710 flat is a HUNDRED-FLAT. It has 10 ten-rods, or 100 unit cubes! Use M to measure it.',
+          question: { text: 'How many unit cubes in this 10\u00d710 flat?', choices: ['100 cubes', '10 cubes', '20 cubes'], correct: 0,
+            followUp: [
+              { text: '10 ten-rods = 1 hundred-flat. What is 10 \u00d7 10?', choices: ['100', '20', '1000'], correct: 0 }
+            ] } },
+        { position: [20, 3, 15], name: 'Number Builder', color: 0xdc2626,
+          dialogue: 'This structure represents the number 234: 2 hundred-flats (blue) + 3 ten-rods (red) + 4 unit cubes (beige). 200 + 30 + 4 = 234!',
+          question: { text: '2 hundreds + 3 tens + 4 ones = ?', choices: ['234', '2034', '432'], correct: 0,
+            followUp: [
+              { text: 'What is the value of the digit 3 in 234?', choices: ['30 (3 tens)', '3 (3 ones)', '300 (3 hundreds)'], correct: 0 },
+              { text: 'How many total unit cubes would you need to build 234?', choices: ['234 cubes', '9 cubes (2+3+4)', '23 cubes'], correct: 0 }
+            ] } },
+        { position: [7, 1, 22], name: 'Build Challenge', color: 0x7c3aed,
+          dialogue: 'Your turn! Use the sand platform to build the number 156. That\u2019s 1 hundred-flat + 5 ten-rods + 6 unit cubes. Measure with M to check!',
+          question: { text: 'In the number 156, what does the 5 represent?', choices: ['5 tens (50)', '5 ones (5)', '5 hundreds (500)'], correct: 0,
+            followUp: [
+              { text: '1 hundred + 5 tens + 6 ones = ?', choices: ['156', '516', '165'], correct: 0 }
+            ] } }
+      ]
+    },
+    fluencyMaze: {
+      title: 'Volume Fluency Maze \u2014 Measure to Navigate',
+      description: 'Race through a 3D maze where every junction has structures you must MEASURE to find the correct path! Wrong turns lead to dead ends. Use the M key to measure quickly and accurately.',
+      spawnPoint: [2, 2, 2],
+      objectives: [
+        'Measure each structure at a junction to find its volume',
+        'Choose the path labeled with the correct answer',
+        'Reach the golden finish platform at the end',
+        'Complete the maze as fast as you can!'
+      ],
+      ground: { xMin: -2, xMax: 40, zMin: -2, zMax: 30, y: 0, type: 'stone' },
+      structures: [
+        // ── Maze walls (brick, 3 blocks high) ──
+        // Start corridor
+        { type: 'fill', x1: 0, y1: 1, z1: 0, x2: 0, y2: 3, z2: 8, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 0, x2: 4, y2: 3, z2: 8, block: 'brick' },
+        // ── Junction 1: Measure 3\u00d72\u00d72 = 12 ──
+        // Structure to measure (diamond)
+        { type: 'fill', x1: 1, y1: 1, z1: 5, x2: 3, y2: 2, z2: 6, block: 'diamond' },
+        // Fork: LEFT path (correct = 12) and RIGHT path (dead end)
+        { type: 'fill', x1: 0, y1: 1, z1: 8, x2: 0, y2: 3, z2: 14, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 8, x2: 4, y2: 3, z2: 10, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 10, x2: 8, y2: 3, z2: 10, block: 'brick' },
+        // Dead end wall (right path)
+        { type: 'fill', x1: 8, y1: 1, z1: 8, x2: 8, y2: 3, z2: 10, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 8, x2: 8, y2: 3, z2: 8, block: 'brick' },
+        // Correct path continues north
+        { type: 'fill', x1: 0, y1: 1, z1: 14, x2: 8, y2: 3, z2: 14, block: 'brick' },
+        // ── Junction 2: Measure 4\u00d73\u00d72 = 24 ──
+        { type: 'fill', x1: 1, y1: 1, z1: 11, x2: 3, y2: 2, z2: 13, block: 'gold' },
+        // Corridor continues east
+        { type: 'fill', x1: 0, y1: 1, z1: 14, x2: 0, y2: 3, z2: 20, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 14, x2: 4, y2: 3, z2: 20, block: 'brick' },
+        // ── Junction 3: Measure 5\u00d72\u00d73 = 30 ──
+        { type: 'fill', x1: 1, y1: 1, z1: 17, x2: 3, y2: 3, z2: 18, block: 'diamond' },
+        // Fork north vs east
+        { type: 'fill', x1: 0, y1: 1, z1: 20, x2: 0, y2: 3, z2: 26, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 20, x2: 12, y2: 3, z2: 20, block: 'brick' },
+        // Dead end (east)
+        { type: 'fill', x1: 12, y1: 1, z1: 20, x2: 12, y2: 3, z2: 24, block: 'brick' },
+        { type: 'fill', x1: 8, y1: 1, z1: 24, x2: 12, y2: 3, z2: 24, block: 'brick' },
+        { type: 'fill', x1: 8, y1: 1, z1: 20, x2: 8, y2: 3, z2: 24, block: 'brick' },
+        // Correct path continues north to finish
+        { type: 'fill', x1: 0, y1: 1, z1: 26, x2: 8, y2: 3, z2: 26, block: 'brick' },
+        { type: 'fill', x1: 4, y1: 1, z1: 20, x2: 4, y2: 3, z2: 26, block: 'brick' },
+        // ── FINISH PLATFORM ──
+        { type: 'fill', x1: 1, y1: 1, z1: 23, x2: 3, y2: 1, z2: 25, block: 'gold' },
+        { type: 'fill', x1: 2, y1: 2, z1: 24, x2: 2, y2: 2, z2: 24, block: 'diamond' }
+      ],
+      npcs: [
+        { position: [2, 1, 1], name: 'Maze Guide', color: 0x7c3aed,
+          dialogue: 'Welcome to the Volume Fluency Maze! At each junction, MEASURE the structure (M key) to find its volume. The correct volume tells you which path to take! Speed and accuracy both matter. Go!', question: null },
+        { position: [2, 3, 6], name: 'Junction 1', color: 0x2563eb,
+          dialogue: 'Measure the blue structure below (M key). It\u2019s 3 long, 2 wide, 2 tall. Take the path matching the correct volume!',
+          question: { text: 'Volume of this 3\u00d72\u00d72 structure?', choices: ['12 \u2014 go LEFT (north)', '8 \u2014 go RIGHT (east)', '6 \u2014 go RIGHT (east)'], correct: 0,
+            followUp: [
+              { text: 'Double check: 3 \u00d7 2 = 6, then 6 \u00d7 2 = ?', choices: ['12 \u2713 (go left!)', '8', '10'], correct: 0 }
+            ] } },
+        { position: [2, 3, 12], name: 'Junction 2', color: 0xf59e0b,
+          dialogue: 'Nice! Now measure the gold structure. Be quick \u2014 fluency means speed + accuracy!',
+          question: { text: 'Volume of this gold prism?', choices: ['24 cubic units', '18 cubic units', '36 cubic units'], correct: 0 } },
+        { position: [2, 4, 18], name: 'Junction 3', color: 0x16a34a,
+          dialogue: 'Last junction! This one is taller. Measure carefully \u2014 the finish is close!',
+          question: { text: 'Volume of 5\u00d72\u00d73?', choices: ['30 \u2014 go NORTH to finish!', '25 \u2014 go EAST', '20 \u2014 go EAST'], correct: 0,
+            followUp: [
+              { text: '5 \u00d7 2 = 10, then 10 \u00d7 3 = ?', choices: ['30 \u2713 (north to gold platform!)', '15', '60'], correct: 0 }
+            ] } },
+        { position: [2, 2, 24], name: 'Finish!', color: 0xdc2626,
+          dialogue: '\uD83C\uDFC6 You made it! You navigated the maze using volume measurement fluency. Every junction tested your speed and accuracy with L\u00d7W\u00d7H. That\u2019s fluency \u2014 doing math automatically so you can focus on the problem!',
+          question: { text: 'Why is math fluency important?', choices: ['It frees your brain for harder problems', 'It only matters for tests', 'It\u2019s not important'], correct: 0 } }
+      ]
     }
   };
 
-  var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder'];
+  var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
   var MAX_BLOCKS = 1500; // Performance safety limit
 
   // ── Worksheet Generator ──
@@ -3803,7 +3954,9 @@
               el('option', { value: 'compositeVolume' }, '\uD83E\uDDE9 Composite Volume'),
               el('option', { value: 'fractionVolume' }, '\u00BD Fractional Dimensions'),
               el('option', { value: 'volumeEstimation' }, '\uD83C\uDFAF Volume Estimation'),
-              el('option', { value: 'fractionBuilder' }, '\u00BD Fraction Builder')
+              el('option', { value: 'fractionBuilder' }, '\u00BD Fraction Builder'),
+              el('option', { value: 'base10Blocks' }, '\uD83E\uDDF1 Base 10 Place Value'),
+              el('option', { value: 'fluencyMaze' }, '\uD83C\uDFAF Volume Fluency Maze')
             ),
             getMyLessons().length > 0 && el('optgroup', { label: '\uD83E\uDD16 AI-Generated (' + getMyLessons().length + ')' },
               getMyLessons().slice(0, 5).map(function(ml) {
