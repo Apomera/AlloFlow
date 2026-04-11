@@ -2357,7 +2357,10 @@
               var p = hit.object.userData.gridPos;
               var breakType = hit.object.userData.blockType || 'stone';
               engine.removeBlock(p.x, p.y, p.z);
-              sfxBreak(breakType);
+              sfxBreak(breakType); if (window._alloHaptic) window._alloHaptic('break');
+              // Camera shake on break (subtle)
+              engine._shakeUntil = engine.clock.getElapsedTime() + 0.15;
+              engine._shakeIntensity = 0.03;
               engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
               checkBreakFrustration();
               if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
@@ -2372,9 +2375,26 @@
               var placeX = p.x + Math.round(n.x), placeY = p.y + Math.round(n.y), placeZ = p.z + Math.round(n.z);
               var placeType = BLOCK_TYPES[selectedBlock].id;
               engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[selectedShape].id, blockRotation);
-              sfxPlace(placeType);
+              sfxPlace(placeType); if (window._alloHaptic) window._alloHaptic('place');
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
+              // First block ever — special celebration!
+              if (engine.blocksPlaced === 1) {
+                if (addToast) addToast('\uD83C\uDF89 Your first block! Keep building!', 'success');
+                // Extra confetti burst
+                var confColors = [0xfbbf24, 0x22c55e, 0x3b82f6, 0xa78bfa, 0xf472b6];
+                for (var fi = 0; fi < 12; fi++) {
+                  try {
+                    var fGeo = new THREE.BoxGeometry(0.07, 0.07, 0.07);
+                    var fMat = new THREE.MeshBasicMaterial({ color: confColors[fi % confColors.length], transparent: true, opacity: 1 });
+                    var fMesh = new THREE.Mesh(fGeo, fMat);
+                    fMesh.position.set(placeX + 0.5 + (Math.random() - 0.5), placeY + 1, placeZ + 0.5 + (Math.random() - 0.5));
+                    fMesh.userData._age = 0; fMesh.userData._life = 1.5 + Math.random();
+                    fMesh.userData._vel = { x: (Math.random() - 0.5) * 3, y: 3 + Math.random() * 2, z: (Math.random() - 0.5) * 3 };
+                    engine.scene.add(fMesh); engine._particles.push(fMesh);
+                  } catch(e) {}
+                }
+              }
               if (engine.blocksPlaced === 10 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '10 blocks placed');
               if (engine.blocksPlaced === 50 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '50 blocks placed');
               if (tutorialStep === 3 && !tutorialDismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
@@ -2645,6 +2665,11 @@
               if (engine.onGround && !engine._wasOnGround) sfxLand();
               engine._wasOnGround = engine.onGround;
 
+              // Check if player is submerged in water (camera inside water block)
+              var camGx = Math.floor(cam.x), camGy = Math.floor(cam.y - EYE_HEIGHT + 0.5), camGz = Math.floor(cam.z);
+              var waterBlock = engine.blocks[camGx + ',' + camGy + ',' + camGz];
+              engine._inWater = waterBlock && waterBlock.userData.blockType === 'water';
+
               // Head-bump detection
               var headY = cam.y + (PLAYER_HEIGHT - EYE_HEIGHT);
               var headGx = Math.floor(cam.x), headGz = Math.floor(cam.z);
@@ -2678,6 +2703,13 @@
             engine.camera.fov += (targetFov - engine.camera.fov) * Math.min(1, dt * 6);
             engine.camera.updateProjectionMatrix();
 
+            // ── Camera shake (on block break) ──
+            if (engine._shakeUntil && t < engine._shakeUntil) {
+              var shakeAmt = engine._shakeIntensity || 0.03;
+              cam.x += (Math.random() - 0.5) * shakeAmt;
+              cam.y += (Math.random() - 0.5) * shakeAmt;
+            }
+
             // Update ghost block preview
             updateGhostPreview();
           }
@@ -2694,6 +2726,10 @@
             // Shake on wrong answer (set npc._shakeUntil)
             if (npc._shakeUntil && t < npc._shakeUntil) {
               npc.body.position.x = npc.data.position[0] + 0.5 + Math.sin(t * 30) * 0.05;
+            } else if (engine.camera && engine.camera.position.distanceTo(npc.body.position) > 8) {
+              // Subtle idle patrol when player is far — gentle sinusoidal wander
+              npc.body.position.x = npc.data.position[0] + 0.5 + Math.sin(t * 0.4 + i * 2.1) * 0.3;
+              npc.body.position.z = npc.data.position[2] + 0.5 + Math.cos(t * 0.3 + i * 1.7) * 0.3;
             } else {
               npc.body.position.x = npc.data.position[0] + 0.5;
             }
@@ -3576,7 +3612,7 @@
             '\uD83E\uDDF1 ' + (engine.blocksPlaced || 0) + ' placed'
           ),
           // Score with completion indicator
-          el('span', { style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 700 } },
+          el('span', { style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 700, transition: 'transform 0.2s ease', display: 'inline-block', transform: d._scorePulse && Date.now() - d._scorePulse < 500 ? 'scale(1.3)' : 'scale(1)' } },
             (score >= totalQ && totalQ > 0 ? '\uD83C\uDFC6 ' : '\u2B50 ') + score + '/' + totalQ
           ),
           // Achievement badges earned
@@ -4492,6 +4528,11 @@
             title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
           }, '\u21AA ' + engine._redoStack.length)
         ),
+        // ── Water submersion blue tint ──
+        engine && engine._inWater && el('div', {
+          style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5, pointerEvents: 'none',
+            background: 'rgba(33,150,243,0.15)', transition: 'background 0.3s ease' }
+        }),
         // ── Action feedback toast (center-bottom, fades in/out) ──
         actionFeedback && el('div', {
           style: { position: 'absolute', bottom: '135px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
@@ -4838,12 +4879,13 @@
                           var newAnswered = Object.assign({}, answeredNpcs);
                           newAnswered[dialogNpcIdx] = true;
                           var newScore = score + 1;
-                          upd({ score: newScore, answeredNpcs: newAnswered });
+                          upd({ score: newScore, answeredNpcs: newAnswered, _scorePulse: Date.now() });
                           // Auto-save progress to localStorage
                           try { var pk = eng && eng._progressKey; if (pk) localStorage.setItem(pk, JSON.stringify({ score: newScore, answeredNpcs: newAnswered, npcFollowUpStep: npcFollowUpStep })); } catch(e) {}
                           if (addToast) addToast('\u2705 Correct! +1', 'success');
                           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
                           if (typeof announceToSR === 'function') announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
+                      if (window._alloHaptic) window._alloHaptic('correct');
                           // 3D confetti from NPC + celebration bounce
                           if (eng && npc.body) {
                             try { spawnPlaceParticles(eng, npc.body.position.x, npc.body.position.y + 1.5, npc.body.position.z); } catch(e) {}
@@ -4878,7 +4920,7 @@
                         }
                         setTimeout(runAchievementCheck, 100);
                       } else {
-                        sfxWrong();
+                        sfxWrong(); if (window._alloHaptic) window._alloHaptic('wrong');
                         // NPC shake animation
                         var eng2 = window[engineKey];
                         if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
