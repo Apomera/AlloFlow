@@ -126,6 +126,20 @@
     };
     engine._envTransition = 0; // 0 to 1 over ~1.5 seconds
     engine._currentEnv = presetKey;
+    // Stars: create on night/sunset, remove on day/sunrise
+    var isNightime = presetKey === 'night' || presetKey === 'sunset';
+    if (isNightime && !engine._manualStars && window.THREE) {
+      var THREE = window.THREE;
+      var sg = new THREE.BufferGeometry();
+      var sv = [];
+      for (var si = 0; si < 400; si++) sv.push((Math.random() - 0.5) * 200, 25 + Math.random() * 55, (Math.random() - 0.5) * 200);
+      sg.setAttribute('position', new THREE.Float32BufferAttribute(sv, 3));
+      engine._manualStars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0 }));
+      engine.scene.add(engine._manualStars);
+      engine._manualStarsTarget = 0.8;
+    } else if (!isNightime && engine._manualStars) {
+      engine._manualStarsTarget = 0; // fade out
+    }
   }
   // Called in animate() to smoothly interpolate environment
   function updateEnvTransition(engine, dt) {
@@ -149,6 +163,18 @@
       if (c.isAmbientLight) c.intensity += (tgt.ambientIntensity - c.intensity) * ease * 0.1;
     });
     if (engine._cloudPlane) engine._cloudPlane.material.opacity += (tgt.cloudOpacity - engine._cloudPlane.material.opacity) * ease * 0.1;
+    // Manual stars fade + rotate
+    if (engine._manualStars) {
+      var stTarget = engine._manualStarsTarget || 0;
+      engine._manualStars.material.opacity += (stTarget - engine._manualStars.material.opacity) * 0.03;
+      engine._manualStars.rotation.y += dt * 0.015;
+      // Remove when fully faded
+      if (stTarget === 0 && engine._manualStars.material.opacity < 0.01) {
+        engine.scene.remove(engine._manualStars);
+        engine._manualStars.geometry.dispose(); engine._manualStars.material.dispose();
+        engine._manualStars = null;
+      }
+    }
   }
 
   // ── Block Types ──
@@ -1586,6 +1612,31 @@
           return tex;
         }
 
+        function makeSandTexture() {
+          if (_procTexCache.sand) return _procTexCache.sand;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#F5DEB3'; ctx.fillRect(0, 0, 64, 64);
+          // Sand ripple lines (gentle curves)
+          ctx.strokeStyle = 'rgba(180,150,100,0.25)'; ctx.lineWidth = 1;
+          for (var r = 0; r < 8; r++) {
+            var ry = r * 8 + Math.random() * 3;
+            ctx.beginPath(); ctx.moveTo(0, ry);
+            ctx.quadraticCurveTo(32, ry + 2 + Math.random() * 3, 64, ry + Math.random() * 2);
+            ctx.stroke();
+          }
+          // Sand grains (scattered dots)
+          for (var n = 0; n < 120; n++) {
+            var brightness = 0.7 + Math.random() * 0.3;
+            ctx.fillStyle = 'rgba(' + Math.round(200 * brightness) + ',' + Math.round(170 * brightness) + ',' + Math.round(120 * brightness) + ',0.3)';
+            ctx.fillRect(Math.random() * 64, Math.random() * 64, 1 + Math.random(), 1 + Math.random());
+          }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          _procTexCache.sand = tex;
+          return tex;
+        }
+
         // Block material cache — avoids creating duplicate materials per type
         engine._matCache = {};
         function getBlockMaterial(type) {
@@ -1601,7 +1652,7 @@
           } else if (type === 'wood') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeWoodTexture(), roughness: 0.85, metalness: 0.0 });
           } else if (type === 'sand') {
-            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.95, metalness: 0.0 });
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeSandTexture(), roughness: 0.95, metalness: 0.0 });
           } else if (type === 'water') {
             mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.45, roughness: 0.0, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide });
           } else if (type === 'ice') {
@@ -2153,6 +2204,9 @@
                   if (engine._dimTimer) clearTimeout(engine._dimTimer);
                   showDimLines(m, m.minX, m.minY, m.minZ);
                   if (m.blocks) showSelectionGlow(m.blocks);
+                  // Measurement sparkle particles at structure center
+                  var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
+                  for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
                   if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.boundingVolume, blocks: m.count });
                   var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement'; }).length;
                   if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
@@ -2610,6 +2664,28 @@
             }
           });
 
+          // ── NPC proximity chime (soft ping when near unanswered NPC, every 3s) ──
+          if (!engine._npcProxTimer) engine._npcProxTimer = 0;
+          engine._npcProxTimer += dt;
+          if (engine._npcProxTimer > 3.0 && engine.camera) {
+            engine._npcProxTimer = 0;
+            engine.npcs.forEach(function(npc, ni) {
+              if (!npc.data.question || answeredNpcs[ni]) return;
+              var pDist = engine.camera.position.distanceTo(npc.body.position);
+              if (pDist < 4.5 && pDist > 1.5) {
+                // Soft proximity chime (quieter than interaction chime)
+                try {
+                  var ac = getAC(); if (!ac) return;
+                  var osc = ac.createOscillator(); osc.type = 'sine'; osc.frequency.value = 660 + ni * 50;
+                  var g = ac.createGain(); g.gain.value = 0.015; // very quiet
+                  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+                  osc.connect(g); g.connect(ac.destination);
+                  osc.start(); osc.stop(ac.currentTime + 0.4);
+                } catch(e) {}
+              }
+            });
+          }
+
           // ── Collaborative: render peer player avatars ──
           if (collabMode && engine._peerAvatars === undefined) engine._peerAvatars = {};
           if (collabMode) {
@@ -2726,12 +2802,42 @@
                 // Lava: pulse emissive intensity
                 var lp = wm.userData.gridPos;
                 wm.material.emissiveIntensity = 0.5 + Math.sin(wt * 1.2 + lp.x * 0.5 + lp.z * 0.3) * 0.25;
+              } else if (wm && wm.userData.blockType === 'diamond') {
+                // Diamond: periodic sparkle particles (1 in 200 chance per frame per block)
+                if (Math.random() < 0.005) {
+                  var dp = wm.userData.gridPos;
+                  var THREE2 = window.THREE;
+                  if (THREE2) {
+                    var sparkGeo = new THREE2.BoxGeometry(0.06, 0.06, 0.06);
+                    var sparkMat = new THREE2.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.9 });
+                    var spark = new THREE2.Mesh(sparkGeo, sparkMat);
+                    spark.position.set(dp.x + Math.random(), dp.y + Math.random(), dp.z + Math.random());
+                    spark.userData._age = 0; spark.userData._life = 0.6;
+                    spark.userData._vel = { x: (Math.random() - 0.5) * 2, y: 1.5 + Math.random(), z: (Math.random() - 0.5) * 2 };
+                    engine.scene.add(spark);
+                    engine._particles.push(spark);
+                  }
+                }
               } else if (wm && wm.userData.blockType === 'torch' && wm.userData._torchLight) {
                 // Torch: flicker the point light intensity
                 var tp = wm.userData.gridPos;
                 wm.userData._torchLight.intensity = 1.0 + Math.sin(wt * 8 + tp.x * 2.3) * 0.3 + Math.sin(wt * 13 + tp.z * 3.1) * 0.15;
                 wm.material.emissiveIntensity = 0.7 + Math.sin(wt * 6 + tp.x) * 0.25;
               }
+            }
+          }
+
+          // ── Auto day/night cycle (60-second rotation through presets) ──
+          if (d.autoCycle) {
+            if (!engine._cycleTimer) engine._cycleTimer = 0;
+            engine._cycleTimer += dt;
+            if (engine._cycleTimer > 60) {
+              engine._cycleTimer = 0;
+              var presetKeys = Object.keys(ENV_PRESETS);
+              var curIdx = presetKeys.indexOf(engine._currentEnv || 'day');
+              var nextIdx = (curIdx + 1) % presetKeys.length;
+              applyEnvPreset(engine, presetKeys[nextIdx]);
+              upd('envPreset', presetKeys[nextIdx]);
             }
           }
 
@@ -3397,7 +3503,12 @@
               return el('option', { key: k, value: k }, ENV_PRESETS[k].label);
             })
           ),
-          // AI generate
+          // Auto day/night cycle toggle
+          el('button', {
+            onClick: function() { upd('autoCycle', !(d.autoCycle || false)); },
+            title: d.autoCycle ? 'Stop auto day/night cycle' : 'Start auto day/night cycle (changes every 60s)',
+            style: { background: d.autoCycle ? '#f59e0b' : '#1e293b', border: '1px solid ' + (d.autoCycle ? '#fbbf24' : '#334155'), borderRadius: '6px', padding: '3px 6px', color: d.autoCycle ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
+          }, d.autoCycle ? '\u2600\uFE0F\u27F3' : '\u2600\uFE0F'),
           // Save/Export world
           engine && el('button', {
             onClick: function() {
