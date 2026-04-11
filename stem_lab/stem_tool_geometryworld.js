@@ -2383,19 +2383,33 @@
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
           }
 
-          // ── Placement ghost — wireframe where new block will go ──
+          // ── Placement ghost — wireframe preview matching selected shape + rotation ──
           if (hits.length > 0 && hits[0].object.userData.gridPos && hits[0].face) {
-            var p = hits[0].object.userData.gridPos;
-            var n = hits[0].face.normal;
-            var gx = p.x + Math.round(n.x), gy = p.y + Math.round(n.y), gz = p.z + Math.round(n.z);
-            if (!engine._ghostMesh) {
-              var gGeo = new THREE.BoxGeometry(1.01, 1.01, 1.01);
-              var gMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.12, wireframe: true });
+            var p2 = hits[0].object.userData.gridPos;
+            var n2 = hits[0].face.normal;
+            var gx = p2.x + Math.round(n2.x), gy = p2.y + Math.round(n2.y), gz = p2.z + Math.round(n2.z);
+            var curShapeId = BLOCK_SHAPES[selectedShape] ? BLOCK_SHAPES[selectedShape].id : 'cube';
+            var curRot = blockRotation || 0;
+            // Recreate ghost if shape or rotation changed
+            if (!engine._ghostMesh || engine._ghostShapeId !== curShapeId || engine._ghostRot !== curRot) {
+              if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
+              var gGeo = createShapeGeometry(curShapeId);
+              var gMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.15, wireframe: true, side: THREE.DoubleSide });
               engine._ghostMesh = new THREE.Mesh(gGeo, gMat);
               engine._ghostMesh.renderOrder = 999;
+              if (curRot > 0 && curShapeId !== 'cube') engine._ghostMesh.rotation.y = curRot * Math.PI / 2;
               engine.scene.add(engine._ghostMesh);
+              engine._ghostShapeId = curShapeId;
+              engine._ghostRot = curRot;
             }
-            engine._ghostMesh.position.set(gx + 0.5, gy + 0.5, gz + 0.5);
+            // Position based on shape type
+            if (curShapeId === 'halfB') {
+              engine._ghostMesh.position.set(gx + 0.5, gy + 0.25, gz + 0.5);
+            } else if (curShapeId === 'halfA' || curShapeId === 'quarter') {
+              engine._ghostMesh.position.set(gx + 0.5, gy, gz + 0.5);
+            } else {
+              engine._ghostMesh.position.set(gx + 0.5, gy + 0.5, gz + 0.5);
+            }
             engine._ghostMesh.visible = true;
           } else {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
@@ -2696,6 +2710,27 @@
               var targetOp = dist2 < 4 ? 0.5 : 0;
               npc._ring.material.opacity += (targetOp - npc._ring.material.opacity) * Math.min(1, dt * 5);
               npc._ring.scale.setScalar(1.0 + Math.sin(t * 3 + i) * 0.08);
+              // Speech bubble preview — show first ~30 chars of dialogue when medium-close
+              if (!npc._speechBubble && npc.data.dialogue) {
+                var sbCanvas = document.createElement('canvas'); sbCanvas.width = 256; sbCanvas.height = 64;
+                var sbx = sbCanvas.getContext('2d');
+                sbx.clearRect(0, 0, 256, 64);
+                sbx.fillStyle = 'rgba(15,23,42,0.85)';
+                if (sbx.roundRect) { sbx.beginPath(); sbx.roundRect(4, 4, 248, 56, 10); sbx.fill(); } else { sbx.fillRect(4, 4, 248, 56); }
+                sbx.fillStyle = '#e2e8f0'; sbx.font = '14px sans-serif'; sbx.textAlign = 'center';
+                var preview = npc.data.dialogue.length > 35 ? npc.data.dialogue.slice(0, 33) + '...' : npc.data.dialogue;
+                sbx.fillText(preview, 128, 38);
+                npc._speechBubble = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(sbCanvas), transparent: true, depthTest: false, opacity: 0 }));
+                npc._speechBubble.scale.set(2.5, 0.6, 1);
+                npc._speechBubble.position.set(npc.data.position[0] + 0.5, npc.data.position[1] + 3.0, npc.data.position[2] + 0.5);
+                engine.scene.add(npc._speechBubble);
+              }
+              if (npc._speechBubble) {
+                // Show when medium distance (3-6 blocks), hide when too close (dialog takes over) or too far
+                var sbTarget = (dist2 > 3 && dist2 < 6) ? 0.7 : 0;
+                npc._speechBubble.material.opacity += (sbTarget - npc._speechBubble.material.opacity) * Math.min(1, dt * 5);
+                npc._speechBubble.position.y = npc.data.position[1] + 3.0 + Math.sin(t * 1.5 + i * 0.8) * 0.04;
+              }
               // "Press E" prompt — fade in when close, bob above head
               if (npc.prompt) {
                 var promptTarget = dist2 < 3.5 ? 0.9 : 0;
@@ -3648,6 +3683,23 @@
             title: 'Export structures as STL file for 3D printing',
             style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#f472b6', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83E\uDE78 3D Print'),
+          // Screenshot capture
+          engine && el('button', {
+            onClick: function() {
+              var eng = window[engineKey];
+              if (!eng || !eng.renderer) return;
+              eng.renderer.render(eng.scene, eng.camera); // force render
+              var dataUrl = eng.renderer.domElement.toDataURL('image/png');
+              var a = document.createElement('a');
+              a.href = dataUrl;
+              a.download = 'geometry_world_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.png';
+              document.body.appendChild(a); a.click(); document.body.removeChild(a);
+              if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
+              if (eng.logEvent) eng.logEvent('screenshot', { timestamp: Date.now() });
+            },
+            title: 'Capture a screenshot of your world',
+            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, '\uD83D\uDCF8 Photo'),
           // Print companion worksheet
           el('button', {
             onClick: function() {
@@ -4311,9 +4363,21 @@
         ),
         // ── Block inventory widget (top-right, shows counts per type) ──
         engine && (engine.blocksPlaced || 0) > 0 && el('div', {
-          style: { position: 'absolute', top: '48px', right: '8px', zIndex: 19, background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '10px', padding: '8px 10px', fontSize: '10px', maxWidth: '140px' }
+          style: { position: 'absolute', top: '48px', right: '8px', zIndex: 19, background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '10px', padding: '8px 10px', fontSize: '10px', maxWidth: '160px' }
         },
           el('div', { style: { fontWeight: 700, color: '#94a3b8', fontSize: '9px', marginBottom: '4px', letterSpacing: '0.5px' } }, 'BLOCKS PLACED'),
+          // Real-time total volume counter
+          (function() {
+            var totalVol = 0;
+            var bks = Object.keys(engine.blocks);
+            for (var vi = 0; vi < bks.length; vi++) {
+              var bm = engine.blocks[bks[vi]];
+              if (bm && bm.userData && bm.userData.volume) totalVol += bm.userData.volume;
+            }
+            return el('div', { style: { fontWeight: 800, color: '#fbbf24', fontSize: '12px', marginBottom: '4px', textAlign: 'center' } },
+              '\uD83D\uDCE6 ' + (totalVol === Math.floor(totalVol) ? totalVol : totalVol.toFixed(2)) + ' cu'
+            );
+          })(),
           (function() {
             var counts = {};
             var bk = Object.keys(engine.blocks);
