@@ -169,7 +169,8 @@ window.StemLab = window.StemLab || {
         return cleaned;
       }
 
-      // ── Multi-Agent Generate App (configurable pipeline) ──
+      // ── Hierarchical Multi-Agent Generate App ──
+      // Architect breaks app into sections → each section gets Build→Review→Fix → Assembler combines
       var generateApp = useCallback(async function(userPrompt) {
         if (!callGemini || !userPrompt.trim()) return;
         setIsGenerating(true);
@@ -179,89 +180,162 @@ window.StemLab = window.StemLab || {
           var gradeCtx = 'Grade level: ' + gradeLevel + (isElem ? ' (use simple language, large buttons, bright colors)' : '');
           var pipelineLog = [];
           var enabledIds = pipelineConfig.filter(function(c) { return c.enabled; }).map(function(c) { return c.id; });
-          var step = 0;
-          var totalSteps = enabledIds.length;
-          function nextStep(icon, name) { step++; setPipelineLive(name.toLowerCase()); setGenStep(icon + ' ' + name + ' (' + step + '/' + totalSteps + ')...'); }
+          var useArchitect = enabledIds.indexOf('architect') >= 0;
+          var useReviewer = enabledIds.indexOf('reviewer') >= 0;
+          var useFixer = enabledIds.indexOf('fixer') >= 0;
 
-          // ═══ ARCHITECT ═══
-          var plan = '';
-          if (enabledIds.indexOf('architect') >= 0) {
-            nextStep('\uD83C\uDFD7\uFE0F', 'Architecting');
-            plan = await callGemini('You are a software architect planning an educational mini-app.\n\nApp request: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\nCreate a concise technical plan:\n1. Key features (3-5 bullet points)\n2. UI layout (sections, controls, displays)\n3. Core logic (algorithms, data structures)\n4. Accessibility: keyboard nav, aria-labels, 4.5:1 contrast\n5. Edge cases to handle\n\nBe specific and concise. Under 300 words.', false);
-            pipelineLog.push({ agent: 'Architect', icon: '\uD83C\uDFD7\uFE0F', result: (plan || '').substring(0, 200).replace(/\n/g, ' ') });
-          } else {
-            pipelineLog.push({ agent: 'Architect', icon: '\u23ED', result: 'Skipped (disabled in pipeline config)' });
+          // ═══ PHASE 1: ARCHITECT — decompose into sections ═══
+          var sections = null;
+          if (useArchitect) {
+            setPipelineLive('architect');
+            setGenStep('\uD83C\uDFD7\uFE0F Architect: decomposing app into sections...');
+            var archPrompt = 'You are a software architect decomposing an educational mini-app into buildable sections.\n\n'
+              + 'App request: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\n'
+              + 'Break this app into 2-4 independent sections. Each section is a self-contained piece of the app.\n\n'
+              + 'Return ONLY JSON:\n'
+              + '{"appTitle":"App Title","sections":[\n'
+              + '  {"id":"header","name":"Header & Navigation","desc":"What this section contains and does","css":"CSS this section needs","deps":"What other sections it depends on"},\n'
+              + '  {"id":"main","name":"Main Interactive Area","desc":"...","css":"...","deps":"..."},\n'
+              + '  {"id":"controls","name":"Control Panel","desc":"...","css":"...","deps":"..."}\n'
+              + '],"sharedState":"Description of shared JavaScript variables/state between sections","colorScheme":"primary:#hex, accent:#hex, bg:#hex"}';
+            try {
+              var archResult = await callGemini(archPrompt, true);
+              var archStr = (typeof archResult === 'string' ? archResult : JSON.stringify(archResult)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+              var js = archStr.indexOf('{'), je = archStr.lastIndexOf('}');
+              if (js >= 0 && je > js) archStr = archStr.substring(js, je + 1);
+              sections = JSON.parse(archStr);
+            } catch(e) { sections = null; }
+
+            if (sections && sections.sections && sections.sections.length >= 2) {
+              pipelineLog.push({ agent: 'Architect', icon: '\uD83C\uDFD7\uFE0F', result: 'Decomposed into ' + sections.sections.length + ' sections: ' + sections.sections.map(function(s) { return s.name; }).join(', '), children: sections.sections.map(function(s) { return s.name; }) });
+            } else {
+              // Fallback: architect failed to produce sections, use linear mode
+              sections = null;
+              pipelineLog.push({ agent: 'Architect', icon: '\u26A0\uFE0F', result: 'Could not decompose — falling back to single-build mode' });
+            }
           }
 
-          // ═══ BUILDER (required) ═══
-          nextStep('\uD83D\uDD28', 'Building');
-          var buildPrompt = 'You are an expert web developer building an educational mini-app.\n\n'
-            + 'APP REQUEST: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\n'
-            + (plan ? 'ARCHITECTURE PLAN:\n' + plan.substring(0, 2000) + '\n\n' : '')
-            + 'REQUIREMENTS:\n'
-            + '- Single HTML file, ALL CSS/JS inline, NO external deps/CDN\n'
-            + '- Interactive: sliders, buttons, animations, user input\n'
-            + '- Modern CSS: flexbox, gradients, rounded corners, shadows, custom properties\n'
-            + '- HTML5 Canvas for simulations/visualizations where appropriate\n'
-            + '- WCAG 2.1 AA: aria-labels, 4.5:1 contrast, keyboard nav, semantic HTML, prefers-reduced-motion\n'
-            + '- Mobile-friendly responsive layout\n'
-            + '- Educational: clear labels, explanations, tooltips\n'
-            + '- Error handling: graceful fallbacks\n\n'
-            + 'Return ONLY the complete HTML document. No markdown.';
-          var builtHtml = cleanHtmlResponse(await callGemini(buildPrompt, false));
-          if (!builtHtml || builtHtml.length < 100) throw new Error('Builder produced empty output');
-          pipelineLog.push({ agent: 'Builder', icon: '\uD83D\uDD28', result: builtHtml.length + ' chars generated' });
+          var finalHtml = '';
 
-          // ═══ REVIEWER ═══
-          var issues = [];
-          var currentCode = builtHtml;
-          if (enabledIds.indexOf('reviewer') >= 0) {
-            nextStep('\uD83D\uDD0D', 'Reviewing');
-            var reviewPrompt = 'Review this educational HTML mini-app for issues.\n\nCheck for:\n1. JavaScript errors\n2. CSS/layout issues\n3. Accessibility gaps (aria-labels, contrast, keyboard)\n4. UX problems\n5. Educational quality\n\nCODE:\n```html\n' + builtHtml.substring(0, 12000) + '\n```\n\nReturn JSON array: [{"type":"error|warning|a11y","description":"...","fix":"..."}]\nIf perfect, return []. ONLY JSON.';
-            try {
-              var rr = await callGemini(reviewPrompt, true);
-              rr = (typeof rr === 'string' ? rr : JSON.stringify(rr)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-              try { issues = JSON.parse(rr); } catch(e) {}
-              if (!Array.isArray(issues)) issues = [];
-            } catch(e) { issues = []; }
-            pipelineLog.push({ agent: 'Reviewer', icon: '\uD83D\uDD0D', result: issues.length === 0 ? 'No issues found \u2705' : issues.length + ' issue(s) found' });
+          if (sections && sections.sections && sections.sections.length >= 2) {
+            // ═══ PHASE 2: PER-SECTION BUILD → REVIEW → FIX ═══
+            var sectionResults = [];
+            for (var si = 0; si < sections.sections.length; si++) {
+              var sec = sections.sections[si];
+              var secLabel = sec.name + ' (' + (si + 1) + '/' + sections.sections.length + ')';
 
-            // Conditional rebuild for structural errors
-            var structErrors = issues.filter(function(i2) { return i2.type === 'error'; });
-            if (structErrors.length > 0 && enabledIds.indexOf('builder') >= 0) {
-              nextStep('\uD83D\uDD04', 'Rebuilding');
-              totalSteps += 2; // rebuild + re-review
-              var rebuilt = cleanHtmlResponse(await callGemini('Rebuild this mini-app. Original request: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\nPrevious issues:\n' + structErrors.map(function(e2, i2) { return (i2+1) + '. ' + e2.description; }).join('\n') + '\n\nFix ALL issues. Return ONLY complete HTML.', false));
-              if (rebuilt && rebuilt.length > 100) {
-                currentCode = rebuilt;
-                pipelineLog.push({ agent: 'Rebuild', icon: '\uD83D\uDD04', result: 'Rebuilt ' + rebuilt.length + ' chars' });
-                // Re-review
+              // BUILD this section
+              setPipelineLive('builder');
+              setGenStep('\uD83D\uDD28 Building: ' + secLabel);
+              var secBuildPrompt = 'You are building ONE SECTION of a larger educational mini-app.\n\n'
+                + 'APP: "' + userPrompt.trim() + '" — ' + (sections.appTitle || '') + '\n'
+                + gradeCtx + '\nColor scheme: ' + (sections.colorScheme || 'modern, clean') + '\n\n'
+                + 'THIS SECTION: ' + sec.name + '\n'
+                + 'Description: ' + sec.desc + '\n'
+                + 'CSS needed: ' + (sec.css || 'standard') + '\n'
+                + 'Dependencies: ' + (sec.deps || 'none') + '\n'
+                + 'Shared state: ' + (sections.sharedState || 'none') + '\n\n'
+                + 'Generate ONLY the HTML for this section (not a full document).\n'
+                + 'Use semantic tags: <section id="' + sec.id + '" aria-label="' + sec.name + '">...</section>\n'
+                + 'Include inline <style> for this section\'s CSS.\n'
+                + 'Include <script> for this section\'s JavaScript (if any).\n'
+                + 'WCAG 2.1 AA: aria-labels, 4.5:1 contrast, keyboard nav.\n\n'
+                + 'Return ONLY the section HTML. No <!DOCTYPE>, no <html>, no <body>.';
+              var secHtml = await callGemini(secBuildPrompt, false);
+              secHtml = (secHtml || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+              var secLog = { agent: 'Section: ' + sec.name, icon: '\uD83D\uDCE6', result: '', children: [] };
+
+              secLog.children.push({ agent: 'Builder', icon: '\uD83D\uDD28', result: (secHtml || '').length + ' chars' });
+
+              // REVIEW this section
+              if (useReviewer && secHtml && secHtml.length > 50) {
+                setPipelineLive('reviewer');
+                setGenStep('\uD83D\uDD0D Reviewing: ' + secLabel);
+                var secIssues = [];
                 try {
-                  var rr2 = await callGemini(reviewPrompt.replace(builtHtml.substring(0, 12000), rebuilt.substring(0, 12000)), true);
-                  rr2 = (typeof rr2 === 'string' ? rr2 : JSON.stringify(rr2)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-                  try { issues = JSON.parse(rr2); } catch(e3) { issues = []; }
-                  if (!Array.isArray(issues)) issues = [];
-                } catch(e4) { issues = []; }
-                pipelineLog.push({ agent: 'Re-Review', icon: '\uD83D\uDD0D', result: issues.length === 0 ? 'Passed!' : issues.length + ' remaining' });
+                  var sr = await callGemini('Review this HTML section for bugs, a11y gaps, and UX issues. Section: "' + sec.name + '"\n\nCODE:\n```html\n' + secHtml.substring(0, 6000) + '\n```\n\nReturn JSON array: [{"type":"error|warning|a11y","description":"...","fix":"..."}]. If perfect, return [].', true);
+                  sr = (typeof sr === 'string' ? sr : JSON.stringify(sr)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                  try { secIssues = JSON.parse(sr); } catch(e2) {}
+                  if (!Array.isArray(secIssues)) secIssues = [];
+                } catch(e3) {}
+                secLog.children.push({ agent: 'Reviewer', icon: '\uD83D\uDD0D', result: secIssues.length === 0 ? 'Passed \u2705' : secIssues.length + ' issue(s)' });
+
+                // FIX this section's issues
+                if (useFixer && secIssues.length > 0) {
+                  setPipelineLive('fixer');
+                  setGenStep('\uD83D\uDD27 Fixing: ' + secLabel);
+                  var secFixList = secIssues.map(function(iss, ii) { return (ii+1) + '. ' + iss.description + ' \u2192 ' + (iss.fix || ''); }).join('\n');
+                  try {
+                    var secFixed = await callGemini('Fix these issues in this HTML section.\n\nISSUES:\n' + secFixList + '\n\nCODE:\n```html\n' + secHtml.substring(0, 8000) + '\n```\n\nReturn ONLY the fixed section HTML.', false);
+                    secFixed = (secFixed || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+                    if (secFixed && secFixed.length > secHtml.length * 0.3) secHtml = secFixed;
+                  } catch(e4) {}
+                  secLog.children.push({ agent: 'Fixer', icon: '\uD83D\uDD27', result: 'Fixed ' + secIssues.length + ' issue(s)' });
+                }
+              }
+
+              secLog.result = secHtml.length + ' chars final';
+              pipelineLog.push(secLog);
+              sectionResults.push({ id: sec.id, name: sec.name, html: secHtml });
+            }
+
+            // ═══ PHASE 3: ASSEMBLER — combine sections into final document ═══
+            setPipelineLive('assembler');
+            setGenStep('\uD83E\uDDE9 Assembler: combining ' + sectionResults.length + ' sections...');
+            var assemblePrompt = 'You are assembling sections into a complete HTML document.\n\n'
+              + 'APP: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n'
+              + 'Color scheme: ' + (sections.colorScheme || 'modern') + '\n\n'
+              + 'Combine these sections into ONE complete <!DOCTYPE html> document:\n\n'
+              + sectionResults.map(function(sr) { return '=== SECTION: ' + sr.name + ' ===\n' + sr.html.substring(0, 5000); }).join('\n\n') + '\n\n'
+              + 'REQUIREMENTS:\n'
+              + '- Wrap in <!DOCTYPE html><html lang="en"><head>...</head><body><main>...</main></body></html>\n'
+              + '- Consolidate all <style> blocks into one <style> in <head>\n'
+              + '- Consolidate all <script> blocks into one <script> before </body>\n'
+              + '- Resolve any shared state conflicts between sections\n'
+              + '- Add responsive CSS, skip-to-content link, proper <title>\n'
+              + '- NO external dependencies\n\n'
+              + 'Return ONLY the complete HTML document.';
+            finalHtml = cleanHtmlResponse(await callGemini(assemblePrompt, false));
+            pipelineLog.push({ agent: 'Assembler', icon: '\uD83E\uDDE9', result: 'Combined ' + sectionResults.length + ' sections into ' + finalHtml.length + ' chars' });
+
+          } else {
+            // ═══ FALLBACK: Linear single-build (no architect or decomposition failed) ═══
+            setPipelineLive('builder');
+            setGenStep('\uD83D\uDD28 Building app...');
+            var buildPrompt = 'You are an expert web developer building an educational mini-app.\n\n'
+              + 'APP REQUEST: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\n'
+              + 'REQUIREMENTS: Single HTML file, ALL CSS/JS inline, NO CDN. Interactive, WCAG 2.1 AA, responsive, educational.\n\n'
+              + 'Return ONLY the complete HTML document. No markdown.';
+            finalHtml = cleanHtmlResponse(await callGemini(buildPrompt, false));
+            if (!finalHtml || finalHtml.length < 100) throw new Error('Builder produced empty output');
+            pipelineLog.push({ agent: 'Builder', icon: '\uD83D\uDD28', result: finalHtml.length + ' chars (single-build mode)' });
+
+            // Linear review + fix
+            if (useReviewer) {
+              setPipelineLive('reviewer');
+              setGenStep('\uD83D\uDD0D Reviewing...');
+              var issues = [];
+              try {
+                var rr = await callGemini('Review this HTML app for bugs/a11y/UX issues.\n\nCODE:\n```html\n' + finalHtml.substring(0, 12000) + '\n```\n\nReturn JSON array of issues. If perfect, return [].', true);
+                rr = (typeof rr === 'string' ? rr : JSON.stringify(rr)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                try { issues = JSON.parse(rr); } catch(e) {}
+                if (!Array.isArray(issues)) issues = [];
+              } catch(e) {}
+              pipelineLog.push({ agent: 'Reviewer', icon: '\uD83D\uDD0D', result: issues.length === 0 ? 'Passed \u2705' : issues.length + ' issue(s)' });
+              if (useFixer && issues.length > 0) {
+                setPipelineLive('fixer');
+                setGenStep('\uD83D\uDD27 Fixing ' + issues.length + ' issue(s)...');
+                var fixList = issues.map(function(iss, i) { return (i+1) + '. ' + iss.description; }).join('\n');
+                try {
+                  var fixed = cleanHtmlResponse(await callGemini('Fix these issues:\n' + fixList + '\n\nCODE:\n```html\n' + finalHtml.substring(0, 15000) + '\n```\n\nReturn COMPLETE fixed HTML.', false));
+                  if (fixed && fixed.length > finalHtml.length * 0.5) finalHtml = fixed;
+                } catch(e) {}
+                pipelineLog.push({ agent: 'Fixer', icon: '\uD83D\uDD27', result: 'Fixed ' + issues.length + ' issue(s)' });
               }
             }
-          } else {
-            pipelineLog.push({ agent: 'Reviewer', icon: '\u23ED', result: 'Skipped (disabled)' });
           }
 
-          // ═══ FIXER ═══
-          var finalHtml = currentCode;
-          if (enabledIds.indexOf('fixer') >= 0 && issues.length > 0) {
-            nextStep('\uD83D\uDD27', 'Fixing');
-            var issueList = issues.map(function(iss, i) { return (i+1) + '. [' + (iss.type||'issue') + '] ' + (iss.description||'') + ' \u2192 ' + (iss.fix||''); }).join('\n');
-            var fixed = cleanHtmlResponse(await callGemini('Fix these issues precisely.\n\nISSUES:\n' + issueList + '\n\nCODE:\n```html\n' + currentCode.substring(0, 15000) + '\n```\n\nReturn COMPLETE fixed HTML. No markdown.', false));
-            if (fixed && fixed.length > currentCode.length * 0.5) finalHtml = fixed;
-            pipelineLog.push({ agent: 'Fixer', icon: '\uD83D\uDD27', result: 'Fixed ' + issues.length + ' issue(s)' });
-          } else if (enabledIds.indexOf('fixer') >= 0) {
-            pipelineLog.push({ agent: 'Fixer', icon: '\u2705', result: 'No issues to fix' });
-          } else {
-            pipelineLog.push({ agent: 'Fixer', icon: '\u23ED', result: 'Skipped (disabled)' });
-          }
+          if (!finalHtml || finalHtml.length < 100) throw new Error('Pipeline produced empty output');
 
           setPipelineLive(null);
           setHtml(finalHtml);
@@ -271,8 +345,8 @@ window.StemLab = window.StemLab || {
           upd('appsGenerated', (d.appsGenerated || 0) + 1);
           upd('lastPipelineLog', pipelineLog);
           if (awardXP) awardXP('appLab', 15);
-          var activeAgents = pipelineLog.filter(function(p) { return p.result.indexOf('Skipped') < 0; });
-          addToast && addToast('\u2705 ' + activeAgents.length + '-agent pipeline: ' + activeAgents.map(function(p) { return p.agent; }).join(' \u2192 '), 'success');
+          var agentCount = pipelineLog.reduce(function(acc, p) { return acc + 1 + (p.children ? p.children.length : 0); }, 0);
+          addToast && addToast('\u2705 ' + agentCount + '-step pipeline complete! ' + (sections ? sections.sections.length + ' sections built independently.' : 'Single-build mode.'), 'success');
         } catch(err) {
           addToast && addToast('Generation failed: ' + err.message, 'error');
         }
@@ -620,24 +694,25 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               d.lastPipelineLog.map(function(step, si) {
-                var colors = { Architect: '#818cf8', Builder: '#34d399', Reviewer: '#fbbf24', Fixer: '#f87171', Rebuild: '#f97316', 'Re-Review': '#fbbf24' };
-                var descs = {
-                  Architect: 'Plans the app structure, features, and accessibility requirements before any code is written. Like a blueprint for a building.',
-                  Builder: 'Writes the actual HTML, CSS, and JavaScript code based on the Architect\'s plan. Creates the working app.',
-                  Reviewer: 'Reads the code with fresh eyes to find bugs, accessibility issues, and UX problems. Like a code review at a software company.',
-                  Fixer: 'Takes the Reviewer\'s feedback and applies targeted fixes. Only runs if the Reviewer found issues.',
-                  Rebuild: 'When the Reviewer finds fundamental structural problems, the Builder runs again with the feedback to create a better version.',
-                  'Re-Review': 'Checks the rebuilt code to make sure the structural issues were actually fixed.'
-                };
-                return h('div', { key: si, style: { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '8px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', borderLeft: '3px solid ' + (colors[step.agent] || '#818cf8') } },
-                  h('div', { style: { fontSize: '18px', flexShrink: 0 } }, step.icon),
-                  h('div', { style: { flex: 1, minWidth: 0 } },
-                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                      h('span', { style: { fontSize: '11px', fontWeight: 700, color: colors[step.agent] || '#c4b5fd' } }, 'Agent ' + (si + 1) + ': ' + step.agent),
-                      si < d.lastPipelineLog.length - 1 && h('span', { style: { fontSize: '9px', color: '#6366f1' } }, '\u2192')
-                    ),
-                    h('p', { style: { fontSize: '9px', color: '#94a3b8', margin: '2px 0 4px', lineHeight: 1.4 } }, descs[step.agent] || ''),
-                    h('p', { style: { fontSize: '10px', color: '#e2e8f0', background: 'rgba(0,0,0,0.2)', padding: '4px 8px', borderRadius: '4px', fontFamily: 'monospace' } }, step.result)
+                var colors = { Architect: '#818cf8', Builder: '#34d399', Reviewer: '#fbbf24', Fixer: '#f87171', Assembler: '#a78bfa' };
+                var agentColor = colors[step.agent] || (step.agent.indexOf('Section') === 0 ? '#06b6d4' : '#818cf8');
+                var isSection = !!step.children;
+                return h('div', { key: si, style: { padding: '8px 10px', background: isSection ? 'rgba(6,182,212,0.05)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', borderLeft: '3px solid ' + agentColor } },
+                  h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+                    h('span', { style: { fontSize: '16px' } }, step.icon),
+                    h('span', { style: { fontSize: '11px', fontWeight: 700, color: agentColor } }, step.agent),
+                    h('span', { style: { fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace', marginLeft: 'auto' } }, step.result)
+                  ),
+                  // Render children (sub-agents for sections)
+                  isSection && h('div', { style: { marginTop: '6px', marginLeft: '20px', display: 'flex', flexDirection: 'column', gap: '3px' } },
+                    step.children.map(function(child, ci) {
+                      var childColor = colors[child.agent] || '#64748b';
+                      return h('div', { key: ci, style: { display: 'flex', gap: '6px', alignItems: 'center', fontSize: '10px', padding: '3px 8px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', borderLeft: '2px solid ' + childColor } },
+                        h('span', null, child.icon),
+                        h('span', { style: { color: childColor, fontWeight: 600 } }, child.agent),
+                        h('span', { style: { color: '#94a3b8', fontFamily: 'monospace', marginLeft: 'auto' } }, child.result)
+                      );
+                    })
                   )
                 );
               })
@@ -645,9 +720,9 @@ window.StemLab = window.StemLab || {
             h('div', { style: { marginTop: '10px', padding: '8px 10px', background: 'rgba(99,102,241,0.1)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' } },
               h('p', { style: { fontSize: '10px', color: '#a5b4fc', fontWeight: 600, marginBottom: '4px' } }, '\uD83D\uDCA1 How does this relate to real software engineering?'),
               h('p', { style: { fontSize: '9px', color: '#94a3b8', lineHeight: 1.5 } },
-                'Professional software teams follow a similar pattern: architects design systems, developers write code, QA engineers test for bugs, and developers fix issues found in review. '
-                + 'Large Language Models (LLMs) like Gemini can play each of these roles because they understand both natural language instructions and programming code. '
-                + 'By giving each AI agent a specific, focused task instead of asking one agent to do everything, the overall quality improves \u2014 just like how a team of specialists outperforms a single generalist.'
+                'This app was built using a hierarchical multi-agent architecture. An Architect AI decomposed the app into independent sections, then EACH section was built, reviewed, and fixed by separate AI agents working in parallel \u2014 just like how professional software teams work. '
+                + 'This is called "component-based architecture" \u2014 the same pattern used by React, Vue, and Angular. Each component is small enough for an AI to build perfectly, and the Assembler combines them into a working whole. '
+                + 'The result is higher quality than a single AI trying to build everything at once, because each agent focuses on one thing and does it well.'
               )
             )
           )
