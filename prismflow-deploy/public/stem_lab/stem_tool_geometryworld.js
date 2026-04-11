@@ -819,6 +819,9 @@
     }
   };
 
+  var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder'];
+  var MAX_BLOCKS = 1500; // Performance safety limit
+
   // ── Worksheet Generator ──
   // Creates a printable companion worksheet for any lesson
   function generateWorksheetHTML(lesson) {
@@ -2267,6 +2270,49 @@
               upd('actionFeedback', 'Rotate: ' + (newRot * 90) + '\u00b0');
               setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               break;
+            case 'KeyT': // Point-to-point ruler: set point A, then point B
+              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+              var rHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+              if (rHits.length > 0 && rHits[0].point) {
+                var rp = rHits[0].point;
+                if (!engine._rulerA) {
+                  // Set point A
+                  engine._rulerA = rp.clone();
+                  upd('actionFeedback', '\uD83D\uDCCF Ruler: Point A set \u2014 press T on second point');
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                } else {
+                  // Set point B, draw line, show distance
+                  var rA = engine._rulerA;
+                  var rDist = rA.distanceTo(rp);
+                  // Draw 3D line
+                  if (engine._rulerLine) { engine.scene.remove(engine._rulerLine); engine._rulerLine.geometry.dispose(); engine._rulerLine.material.dispose(); }
+                  if (engine._rulerLabel) { engine.scene.remove(engine._rulerLabel); }
+                  var rGeo = new THREE.BufferGeometry().setFromPoints([rA, rp]);
+                  var rMat = new THREE.LineBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.8, linewidth: 2 });
+                  engine._rulerLine = new THREE.LineSegments(rGeo, rMat);
+                  engine.scene.add(engine._rulerLine);
+                  // Distance label at midpoint
+                  var rLabel = makeDimLabel(rDist.toFixed(1) + ' blocks', '#22d3ee');
+                  rLabel.position.set((rA.x + rp.x) / 2, (rA.y + rp.y) / 2 + 0.5, (rA.z + rp.z) / 2);
+                  rLabel.scale.set(2, 0.6, 1);
+                  engine.scene.add(rLabel);
+                  engine._rulerLabel = rLabel;
+                  upd('actionFeedback', '\uD83D\uDCCF Distance: ' + rDist.toFixed(1) + ' blocks');
+                  setTimeout(function() { upd('actionFeedback', ''); }, 3000);
+                  // Auto-clear after 15s
+                  setTimeout(function() {
+                    if (engine._rulerLine) { engine.scene.remove(engine._rulerLine); engine._rulerLine.geometry.dispose(); engine._rulerLine.material.dispose(); engine._rulerLine = null; }
+                    if (engine._rulerLabel) { engine.scene.remove(engine._rulerLabel); engine._rulerLabel = null; }
+                  }, 15000);
+                  engine._rulerA = null; // Reset for next measurement
+                }
+              } else if (engine._rulerA) {
+                // Cancel ruler if no hit
+                engine._rulerA = null;
+                upd('actionFeedback', '\uD83D\uDCCF Ruler cancelled');
+                setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+              }
+              break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
             case 'KeyZ':
               if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); }
@@ -2310,6 +2356,11 @@
               checkBreakFrustration();
               if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             } else if (ev.button === 2 && hit.object.userData.gridPos && hit.face) {
+              // Block limit check
+              if (Object.keys(engine.blocks).length >= MAX_BLOCKS) {
+                if (addToast) addToast('\u26A0\uFE0F Block limit reached (' + MAX_BLOCKS + '). Remove blocks first!', 'error');
+                return;
+              }
               var p = hit.object.userData.gridPos;
               var n = hit.face.normal;
               var placeX = p.x + Math.round(n.x), placeY = p.y + Math.round(n.y), placeZ = p.z + Math.round(n.z);
@@ -3929,7 +3980,8 @@
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, '2\u00d7Space'), 'Toggle fly (or F key)',
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'G'), 'Toggle grid',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)',
-            el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'R'), 'Rotate shape 90\u00b0'
+            el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'R'), 'Rotate shape 90\u00b0',
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'T'), 'Ruler (2 points)'
           ),
           el('div', { style: { fontWeight: 700, color: '#22d3ee', marginBottom: '4px', fontSize: '12px' } }, '\uD83D\uDCCF Formulas'),
           el('div', { style: { background: '#0c4a6e', borderRadius: '6px', padding: '6px 8px', marginBottom: '8px', fontFamily: 'monospace', fontSize: '11px' } },
@@ -4452,6 +4504,53 @@
             ct === 'npc_question' && el('div', { style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, 'Press E')
           );
         })(),
+        // ── Lesson Completion overlay with Next Lesson ──
+        score >= totalQ && totalQ > 0 && !showNpcDialog && el('div', {
+          style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'auto', textAlign: 'center',
+            background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '2px solid rgba(251,191,36,0.5)', borderRadius: '20px',
+            padding: '24px 32px', maxWidth: '380px', boxShadow: '0 12px 40px rgba(251,191,36,0.2)' }
+        },
+          el('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDFC6'),
+          el('div', { style: { fontSize: '20px', fontWeight: 800, color: '#fbbf24', marginBottom: '4px' } }, 'Lesson Complete!'),
+          el('div', { style: { fontSize: '13px', color: '#94a3b8', marginBottom: '12px', lineHeight: 1.5 } },
+            currentLesson.title + ' \u2014 ' + score + '/' + totalQ + ' questions answered'),
+          el('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '16px' } },
+            (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed \u2022 ' +
+            measureHistory.length + ' measurements taken'),
+          // Next Lesson button
+          (function() {
+            var curIdx = LESSON_ORDER.indexOf(activeLesson);
+            var nextKey = curIdx >= 0 && curIdx < LESSON_ORDER.length - 1 ? LESSON_ORDER[curIdx + 1] : null;
+            var nextLesson = nextKey ? SAMPLE_LESSONS[nextKey] : null;
+            return el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
+              nextLesson && el('button', {
+                onClick: function() {
+                  upd({ activeLesson: nextKey, measureHistory: [] });
+                  var eng = window[engineKey]; if (eng) eng.loadLesson(nextLesson);
+                },
+                style: { background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff', border: 'none', borderRadius: '10px',
+                  padding: '10px 24px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(124,58,237,0.3)' }
+              }, '\u27A1\uFE0F Next: ' + (nextLesson.title || '').split(' \u2014')[0]),
+              el('button', {
+                onClick: function() {
+                  var eng = window[engineKey]; if (eng) eng.loadLesson(currentLesson);
+                  upd('measureHistory', []);
+                },
+                style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px',
+                  padding: '10px 20px', fontSize: '12px', color: '#94a3b8', cursor: 'pointer', fontWeight: 600 }
+              }, '\uD83D\uDD04 Replay'),
+              !nextLesson && el('div', { style: { fontSize: '11px', color: '#fbbf24', fontWeight: 600, marginTop: '4px' } }, '\u2B50 You completed all lessons!')
+            );
+          })()
+        ),
+        // ── Block count warning ──
+        engine && Object.keys(engine.blocks).length > MAX_BLOCKS * 0.8 && el('div', {
+          style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
+            background: Object.keys(engine.blocks).length >= MAX_BLOCKS ? 'rgba(239,68,68,0.9)' : 'rgba(251,191,36,0.85)',
+            borderRadius: '8px', padding: '4px 14px', fontSize: '11px', color: '#fff', fontWeight: 700 }
+        }, Object.keys(engine.blocks).length >= MAX_BLOCKS
+          ? '\u26A0\uFE0F Block limit reached (' + MAX_BLOCKS + ') \u2014 remove some blocks for performance'
+          : '\u26A0\uFE0F ' + Object.keys(engine.blocks).length + '/' + MAX_BLOCKS + ' blocks \u2014 approaching limit'),
         // NPC Dialog overlay
         showNpcDialog && engine && engine.npcs[dialogNpcIdx] && (function() {
           var npc = engine.npcs[dialogNpcIdx];
@@ -4579,6 +4678,20 @@
                             if (eng && !eng.completionTriggered) {
                               eng.completionTriggered = true; eng.completionProgress = 0;
                               if (eng.logEvent) eng.logEvent('lesson_complete', { score: newScore, totalQuestions: totalQ, timeToComplete: ((Date.now() - eng.sessionStart) / 1000).toFixed(1) + 's', blocksPlaced: eng.blocksPlaced || 0 });
+                              // Confetti burst from camera position
+                              var camP = eng.camera.position;
+                              var confettiColors = [0xfbbf24, 0x22c55e, 0x3b82f6, 0xef4444, 0xa78bfa, 0xf472b6, 0x06b6d4];
+                              for (var ci = 0; ci < 25; ci++) {
+                                try {
+                                  var cGeo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+                                  var cMat = new THREE.MeshBasicMaterial({ color: confettiColors[ci % confettiColors.length], transparent: true, opacity: 1 });
+                                  var cMesh = new THREE.Mesh(cGeo, cMat);
+                                  cMesh.position.set(camP.x + (Math.random() - 0.5) * 3, camP.y + Math.random() * 2, camP.z + (Math.random() - 0.5) * 3);
+                                  cMesh.userData._age = 0; cMesh.userData._life = 2 + Math.random();
+                                  cMesh.userData._vel = { x: (Math.random() - 0.5) * 4, y: 3 + Math.random() * 3, z: (Math.random() - 0.5) * 4 };
+                                  eng.scene.add(cMesh); eng._particles.push(cMesh);
+                                } catch(e) {}
+                              }
                             }
                           }
                         }
