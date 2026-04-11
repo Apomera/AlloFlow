@@ -2115,7 +2115,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
 
       React.createElement("div", { className: "text-xl font-black tabular-nums text-cyan-400" }, volumeAdded.toFixed(1) + " mL"),
 
-      React.createElement("div", { className: "text-[10px] text-slate-500 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
+      React.createElement("div", { className: "text-[10px] text-slate-600 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
 
     ),
 
@@ -2318,7 +2318,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto", st
             className: "text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
               (cq.category === 'safety' ? 'bg-red-900/30 text-red-400' : cq.category === 'technique' ? 'bg-cyan-900/30 text-cyan-400' : 'bg-indigo-900/30 text-indigo-400')
           }, cq.category),
-          React.createElement("span", { className: "text-[10px] text-slate-500" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
+          React.createElement("span", { className: "text-[10px] text-slate-600" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
         ),
         React.createElement("p", { className: "text-sm font-semibold text-white mb-3" }, cq.q),
         React.createElement("div", { className: "flex flex-col gap-2" },

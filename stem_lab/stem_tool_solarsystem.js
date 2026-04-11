@@ -1758,7 +1758,7 @@ const d = labToolData.solarSystem;
 
                   React.createElement("h4", { className: "text-lg font-black text-slate-800" }, sel.name),
 
-                  React.createElement("p", { className: "text-xs text-slate-500" }, sel.diameter + " \u2022 " + sel.moons + " moon" + (sel.moons !== 1 ? 's' : '') + " \u2022 " + (sel.gravity || '?'))
+                  React.createElement("p", { className: "text-xs text-slate-600" }, sel.diameter + " \u2022 " + sel.moons + " moon" + (sel.moons !== 1 ? 's' : '') + " \u2022 " + (sel.gravity || '?'))
 
                 ),
 
@@ -1798,7 +1798,7 @@ const d = labToolData.solarSystem;
 
                       className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " +
 
-                        ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500 hover:bg-slate-300')
+                        ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-600 hover:bg-slate-300')
 
                     }, tabLabels[tab]);
 
@@ -1894,7 +1894,7 @@ const d = labToolData.solarSystem;
 
                 sel.notableFeatures && React.createElement("div", { className: "bg-white rounded-lg p-3 border" },
 
-                  React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1.5" }, "\u2B50 Notable Features"),
+                  React.createElement("p", { className: "text-xs font-bold text-slate-600 mb-1.5" }, "\u2B50 Notable Features"),
 
                   React.createElement("div", { className: "flex flex-wrap gap-1.5" },
 
@@ -3252,7 +3252,7 @@ const d = labToolData.solarSystem;
                             React.createElement("div", { className: "bg-white/5 rounded-lg p-2 border border-white/10 hover:border-white/20 transition-all", style: { borderLeftColor: layer.color, borderLeftWidth: '3px' } },
                               React.createElement("div", { className: "flex items-center justify-between mb-1" },
                                 React.createElement("span", { className: "text-xs font-bold", style: { color: layer.color } }, layer.name),
-                                React.createElement("span", { className: "text-[9px] text-slate-500 font-mono" }, layer.alt >= 0 ? layer.alt + " km" : Math.abs(layer.alt).toLocaleString() + " km depth")
+                                React.createElement("span", { className: "text-[10px] text-slate-600 font-mono" }, layer.alt >= 0 ? layer.alt + " km" : Math.abs(layer.alt).toLocaleString() + " km depth")
                               ),
                               React.createElement("p", { className: "text-[10px] text-slate-300 mb-1" }, layer.desc),
                               React.createElement("div", { className: "flex gap-3 text-[9px] text-slate-400" },
@@ -3266,7 +3266,7 @@ const d = labToolData.solarSystem;
                     ) :
                     React.createElement("div", { className: "text-center py-3" },
                       React.createElement("p", { className: "text-xs text-slate-300" }, sel.atmosphere || "No atmosphere data"),
-                      React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Detailed descent layers not available for " + sel.name)
+                      React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, "Detailed descent layers not available for " + sel.name)
                     )
                 ),
 
@@ -3289,7 +3289,7 @@ const d = labToolData.solarSystem;
                     React.createElement("p", { className: "text-[10px] text-sky-300 leading-relaxed" }, "\uD83D\uDCA1 " + MAGNETOSPHERE[sel.name].note),
                     // Visual strength bar
                     React.createElement("div", { className: "mt-2" },
-                      React.createElement("div", { className: "flex justify-between text-[8px] text-slate-500 mb-0.5" },
+                      React.createElement("div", { className: "flex justify-between text-[10px] text-slate-600 mb-0.5" },
                         React.createElement("span", null, "Field Strength vs Earth"),
                         React.createElement("span", null, MAGNETOSPHERE[sel.name].strength)
                       ),
@@ -3302,7 +3302,7 @@ const d = labToolData.solarSystem;
                         })
                       )
                     ),
-                    ESCAPE_VEL[sel.name] && React.createElement("p", { className: "text-[9px] text-slate-500 mt-2" }, "\uD83D\uDE80 Escape velocity: " + ESCAPE_VEL[sel.name] + " km/s" + (sel.name !== 'Earth' ? " (Earth: 11.2 km/s)" : ""))
+                    ESCAPE_VEL[sel.name] && React.createElement("p", { className: "text-[10px] text-slate-600 mt-2" }, "\uD83D\uDE80 Escape velocity: " + ESCAPE_VEL[sel.name] + " km/s" + (sel.name !== 'Earth' ? " (Earth: 11.2 km/s)" : ""))
                   )
                 ),
 
@@ -8688,7 +8688,7 @@ const d = labToolData.solarSystem;
                     VOCAB[POE_PROMPTS[sel.name].concept] && React.createElement("div", { className: "mt-2 bg-white rounded-lg p-2 border border-emerald-100" },
                       React.createElement("span", { className: "text-[9px] font-black text-emerald-600" }, "\uD83D\uDCD6 VOCABULARY: "),
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, POE_PROMPTS[sel.name].concept),
-                      React.createElement("span", { className: "text-[10px] text-slate-500" }, ' \u2014 ' + VOCAB[POE_PROMPTS[sel.name].concept].def))
+                      React.createElement("span", { className: "text-[10px] text-slate-600" }, ' \u2014 ' + VOCAB[POE_PROMPTS[sel.name].concept].def))
                   ),
 
                   // ═══ Misconception Checkpoint ═══
@@ -8799,7 +8799,7 @@ const d = labToolData.solarSystem;
                         d.quiz.concept && VOCAB[d.quiz.concept] && React.createElement("div", { className: "mt-2 bg-white rounded p-2 border border-slate-100" },
                           React.createElement("span", { className: "text-[9px] font-black text-indigo-500" }, "\uD83D\uDCD6 "),
                           React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, d.quiz.concept + ': '),
-                          React.createElement("span", { className: "text-[10px] text-slate-500" }, VOCAB[d.quiz.concept].def))
+                          React.createElement("span", { className: "text-[10px] text-slate-600" }, VOCAB[d.quiz.concept].def))
                       ),
 
                       d.quiz.answered && d.quiz.correct && React.createElement("p", { className: "mt-2 text-xs text-emerald-600 italic" }, "\uD83D\uDCA1 " + d.quiz.tip)
@@ -8810,7 +8810,7 @@ const d = labToolData.solarSystem;
 
                     React.createElement("div", { className: "mt-3" },
 
-                      React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD0D Compare Planets"),
+                      React.createElement("p", { className: "text-xs font-bold text-slate-600 mb-1" }, "\uD83D\uDD0D Compare Planets"),
 
                       React.createElement("div", { className: "flex gap-2 mb-2" },
 
@@ -8822,7 +8822,7 @@ const d = labToolData.solarSystem;
 
                         ),
 
-                        React.createElement("span", { className: "text-slate-500 font-bold self-center" }, "vs"),
+                        React.createElement("span", { className: "text-slate-600 font-bold self-center" }, "vs"),
 
                         React.createElement("select", { 'aria-label': 'Second planet to compare', value: d.compare2 || '', onChange: function (e) { upd('compare2', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
 
@@ -8852,7 +8852,7 @@ const d = labToolData.solarSystem;
 
                               row.map(function (cell, ci) {
 
-                                return React.createElement("div", { key: ci, className: "py-1 " + (ri === 0 ? 'font-black text-slate-700' : ci === 0 ? 'font-bold text-slate-500' : 'font-bold text-slate-700') + (ri > 0 && ri % 2 === 0 ? ' bg-slate-50' : '') }, cell);
+                                return React.createElement("div", { key: ci, className: "py-1 " + (ri === 0 ? 'font-black text-slate-700' : ci === 0 ? 'font-bold text-slate-600' : 'font-bold text-slate-700') + (ri > 0 && ri % 2 === 0 ? ' bg-slate-50' : '') }, cell);
 
                               })
 
@@ -9659,7 +9659,7 @@ const d = labToolData.solarSystem;
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, "\uD83D\uDCC5 Space Exploration Timeline"),
                   React.createElement("button", { "aria-label": "Toggle space exploration timeline",
                     onClick: function() { upd('showTimeline', !d.showTimeline); },
-                    className: "text-[10px] text-slate-500 hover:text-slate-700"
+                    className: "text-[10px] text-slate-600 hover:text-slate-700"
                   }, d.showTimeline ? 'Hide' : 'View \u2192')
                 ),
                 d.showTimeline && React.createElement("div", { className: "relative pl-4 border-l-2 " + (isDark ? 'border-slate-600' : 'border-indigo-200') + " space-y-1.5 max-h-64 overflow-y-auto" },
@@ -9971,10 +9971,10 @@ const d = labToolData.solarSystem;
                 ),
                 d.showLog && React.createElement("div", { className: "space-y-1 max-h-32 overflow-y-auto" },
                   missionLog.length === 0
-                    ? React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "No entries yet. Start exploring!")
+                    ? React.createElement("div", { className: "text-[10px] text-slate-600 italic" }, "No entries yet. Start exploring!")
                     : missionLog.map(function(entry, ei) {
                         return React.createElement("div", { key: ei, className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " flex gap-2" },
-                          React.createElement("span", { className: "text-slate-500 font-mono whitespace-nowrap" }, entry.time),
+                          React.createElement("span", { className: "text-slate-600 font-mono whitespace-nowrap" }, entry.time),
                           entry.text
                         );
                       })
@@ -10003,7 +10003,7 @@ const d = labToolData.solarSystem;
                   React.createElement("div", { className: "text-center mb-4" },
                     React.createElement("div", { className: "text-4xl mb-2" }, "\u2600\uFE0F\uD83C\uDF0D\uD83D\uDE80"),
                     React.createElement("h2", { className: "text-lg font-black text-slate-800" }, "Welcome to Solar System Explorer!"),
-                    React.createElement("p", { className: "text-sm text-slate-500 mt-1" }, "Your interactive guide to our cosmic neighborhood")
+                    React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, "Your interactive guide to our cosmic neighborhood")
                   ),
                   React.createElement("div", { className: "space-y-2 text-xs text-slate-600" },
                     [

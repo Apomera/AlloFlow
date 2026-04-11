@@ -379,7 +379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
             h('h2', { className: 'text-xl font-black text-slate-800' }, '\u267F Digital Accessibility Lab'),
-            h('p', { className: 'text-xs text-slate-500' }, 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate')
+            h('p', { className: 'text-xs text-slate-600' }, 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate')
           ),
           auditsCompleted > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
         ),
@@ -444,7 +444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 return h('button', { 'aria-label': 'Change audit input mode',
                   key: mode.id,
                   onClick: function() { upd('auditInputMode', mode.id); },
-                  className: 'flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all ' + (auditInputMode === mode.id ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500 hover:text-slate-700')
+                  className: 'flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all ' + (auditInputMode === mode.id ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
                 }, mode.icon + ' ' + mode.label);
               })
             ),
@@ -470,7 +470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('p', { className: 'text-[10px] text-slate-400 mt-1' }, 'The AI will analyze the website\u2019s accessibility based on its known structure and common patterns.'),
               // Quick suggestions
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2 pt-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 font-bold' }, 'Try:'),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 font-bold' }, 'Try:'),
                 ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com', 'https://www.amazon.com'].map(function(url) {
                   return h('button', { 'aria-label': 'Change audit url',
                     key: url,
@@ -656,10 +656,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   return h('div', { key: i, className: 'p-3 rounded-xl border ' + sevColor },
                     h('div', { className: 'flex items-start gap-2' },
                       h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded ' + (issue.severity === 'critical' ? 'bg-red-200 text-red-800' : issue.severity === 'major' ? 'bg-amber-200 text-amber-800' : 'bg-blue-200 text-blue-800') }, issue.severity),
-                      h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'WCAG ', issue.criterion)
+                      h('span', { className: 'text-[10px] font-bold text-slate-600' }, 'WCAG ', issue.criterion)
                     ),
                     h('p', { className: 'text-sm text-slate-800 font-medium mt-1' }, issue.issue),
-                    issue.who && h('p', { className: 'text-xs text-slate-500 mt-1' }, '👤 Who it affects: ', issue.who),
+                    issue.who && h('p', { className: 'text-xs text-slate-600 mt-1' }, '👤 Who it affects: ', issue.who),
                     issue.fix && h('p', { className: 'text-xs text-teal-600 mt-1 font-medium' }, '🔧 Fix: ', issue.fix)
                   );
                 })
@@ -710,7 +710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-xs font-bold shrink-0' }, criterion.id),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, criterion.name),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 font-bold' }, 'Level ', criterion.level)
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 font-bold' }, 'Level ', criterion.level)
                 )
               ),
               isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 space-y-2' },
@@ -826,7 +826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('div', { className: 'flex gap-2 mb-3' },
               [{ id: 'ada_coordinator', label: '\uD83C\uDFE2 ADA Coordinator' }, { id: 'doj', label: '\uD83C\uDFDB\uFE0F Dept. of Justice' }].map(function(opt) {
                 return h('button', { key: opt.id, onClick: function() { upd('complaintType', opt.id); },
-                  className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-500 hover:border-red-300')
+                  className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-300')
                 }, opt.label);
               })
             ),
@@ -898,7 +898,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('div', { className: 'text-2xl font-black ' + (entry.score >= 80 ? 'text-green-600' : entry.score >= 60 ? 'text-amber-600' : 'text-red-600') }, entry.score),
               h('div', { className: 'flex-1 min-w-0' },
                 h('div', { className: 'text-xs font-bold text-slate-700 truncate' }, entry.input),
-                h('div', { className: 'text-[10px] text-slate-500' }, new Date(entry.date).toLocaleDateString(), ' · Grade: ', entry.grade)
+                h('div', { className: 'text-[10px] text-slate-600' }, new Date(entry.date).toLocaleDateString(), ' · Grade: ', entry.grade)
               )
             );
           })
@@ -913,7 +913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               return h('div', { key: badge.id, className: 'text-center p-3 rounded-xl border-2 transition-all ' + (earned ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50') },
                 h('div', { className: 'text-2xl' }, badge.icon),
                 h('div', { className: 'text-[10px] font-bold text-slate-700 mt-1' }, badge.name),
-                h('p', { className: 'text-[11px] text-slate-500 mt-0.5' }, badge.desc)
+                h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, badge.desc)
               );
             })
           )

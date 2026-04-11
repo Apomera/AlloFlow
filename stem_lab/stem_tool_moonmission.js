@@ -685,7 +685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             h('div', null,
               h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, '\uD83D\uDE80 Apollo Moon Mission'),
-              h('p', { className: 'text-[10px] text-slate-500 -mt-0.5' }, 'Full mission simulation \u2022 Launch to splashdown')
+              h('p', { className: 'text-[10px] text-slate-600 -mt-0.5' }, 'Full mission simulation \u2022 Launch to splashdown')
             )
           ),
           h('div', { className: 'text-right' },
@@ -736,7 +736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             })
           ),
           h('details', { className: 'mt-3' },
-            h('summary', { className: 'text-[9px] text-slate-500 cursor-pointer hover:text-slate-400 transition-colors' }, '\uD83D\uDCDA What really happened?'),
+            h('summary', { className: 'text-[10px] text-slate-600 cursor-pointer hover:text-slate-400 transition-colors' }, '\uD83D\uDCDA What really happened?'),
             h('p', { className: 'text-[10px] text-indigo-300 mt-1 pl-3 leading-relaxed' }, d.activeEvent.historical)
           )
         ),
@@ -770,7 +770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('span', { className: 'text-xl' }, '\uD83E\uDDE0'),
             h('div', null,
               h('h5', { className: 'text-sm font-bold text-indigo-300' }, 'Space Knowledge Check'),
-              h('p', { className: 'text-[9px] text-slate-500' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
+              h('p', { className: 'text-[10px] text-slate-600' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
             )
           ),
           h('p', { className: 'text-xs text-white font-bold mb-3' }, QUIZ_BANK[quizIdx].q),
@@ -1212,7 +1212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
                   h('p', { className: 'text-xs text-slate-400' }, '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust'),
-                  h('p', { className: 'text-[9px] text-slate-500' }, 'Watch the countdown and ascent through Earth\'s atmosphere')
+                  h('p', { className: 'text-[10px] text-slate-600' }, 'Watch the countdown and ascent through Earth\'s atmosphere')
                 ),
                 h('button', {
                   'aria-label': 'Proceed to Earth orbit phase after successful launch',
@@ -2683,7 +2683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 })
               ),
               // Badges earned
-              h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1' }, '\uD83C\uDFC5 BADGES EARNED:'),
+              h('p', { className: 'text-[10px] text-slate-600 font-bold mb-1' }, '\uD83C\uDFC5 BADGES EARNED:'),
               h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                 BADGES.map(function(b) {
                   var earned = !!(d.earnedBadges || {})[b.id];
@@ -2695,7 +2695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ),
               // Sample gallery
               (d.lunarSamples || []).length > 0 && h('div', { className: 'mt-2' },
-                h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1.5' }, '\uD83E\uDEA8 LUNAR SAMPLE COLLECTION (' + (d.lunarSamples || []).length + '/' + LUNAR_SAMPLES_DATA.length + ')'),
+                h('p', { className: 'text-[10px] text-slate-600 font-bold mb-1.5' }, '\uD83E\uDEA8 LUNAR SAMPLE COLLECTION (' + (d.lunarSamples || []).length + '/' + LUNAR_SAMPLES_DATA.length + ')'),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   (d.lunarSamples || []).map(function(s, i) {
                     return h('div', { key: i, className: 'bg-white/10 rounded-lg p-2 border border-white/10' },
@@ -2719,7 +2719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             // ── Decision Analysis (from Mission Events) ──
             (d.decisionLog || []).length > 0 && h('div', { className: 'mt-3 bg-white/5 rounded-xl p-3 border border-white/10' },
-              h('p', { className: 'text-[9px] text-slate-500 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
+              h('p', { className: 'text-[10px] text-slate-600 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
               (d.decisionLog || []).map(function(dec, i) {
                 return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
                   h('div', { className: 'flex justify-between items-center mb-1' },
@@ -2735,7 +2735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     '\uD83D\uDCA1 Better option: "' + dec.optimal + '"'
                   ),
                   h('details', { className: 'mt-1' },
-                    h('summary', { className: 'text-[8px] text-slate-500 cursor-pointer' }, 'Historical context'),
+                    h('summary', { className: 'text-[10px] text-slate-600 cursor-pointer' }, 'Historical context'),
                     h('p', { className: 'text-[9px] text-slate-400 mt-1 pl-2' }, dec.historical)
                   )
                 );
@@ -2778,7 +2778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
         // Mission Log (collapsible)
         missionLog.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 border border-slate-200' },
-          h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1' }, '\uD83D\uDCCB MISSION LOG (' + missionLog.length + ' entries)'),
+          h('p', { className: 'text-[10px] text-slate-600 font-bold mb-1' }, '\uD83D\uDCCB MISSION LOG (' + missionLog.length + ' entries)'),
           h('div', { className: 'space-y-0.5 max-h-32 overflow-y-auto' },
             missionLog.slice(-8).reverse().map(function(entry, i) {
               return h('div', { key: i, className: 'flex justify-between text-[9px]' },

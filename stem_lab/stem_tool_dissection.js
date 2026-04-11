@@ -6211,7 +6211,7 @@ var d = labToolData.dissection || {};
 
                       React.createElement("div", { className: "font-bold " + (isCurrent ? 'text-cyan-800' : 'text-slate-700') }, sp.icon + ' ' + sp.name.split('(')[0].trim() + ': ' + match.organ.name),
 
-                      React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5 leading-relaxed" }, match.organ.fn.substring(0, 120) + (match.organ.fn.length > 120 ? '...' : '')),
+                      React.createElement("p", { className: "text-[10px] text-slate-600 mt-0.5 leading-relaxed" }, match.organ.fn.substring(0, 120) + (match.organ.fn.length > 120 ? '...' : '')),
 
                       match.organ.clinical && React.createElement("p", { className: "text-[10px] text-amber-600 mt-0.5 italic" }, '\uD83C\uDFEB ' + match.organ.clinical.substring(0, 80) + '...')
 
@@ -6251,7 +6251,7 @@ var d = labToolData.dissection || {};
 
                         },
 
-                        className: "w-6 h-6 rounded bg-slate-100 text-slate-500 text-xs hover:bg-slate-200 flex items-center justify-center"
+                        className: "w-6 h-6 rounded bg-slate-100 text-slate-600 text-xs hover:bg-slate-200 flex items-center justify-center"
 
                       }, '\u25C0'),
 
@@ -6265,7 +6265,7 @@ var d = labToolData.dissection || {};
 
                         },
 
-                        className: "w-6 h-6 rounded bg-slate-100 text-slate-500 text-xs hover:bg-slate-200 flex items-center justify-center"
+                        className: "w-6 h-6 rounded bg-slate-100 text-slate-600 text-xs hover:bg-slate-200 flex items-center justify-center"
 
                       }, '\u25B6')
 
@@ -6463,7 +6463,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(relMap).forEach(function (k) { if (sn.indexOf(k) >= 0) related = relMap[k]; });
 
-                    return related ? React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" },
+                    return related ? React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" },
 
                       React.createElement("span", { className: "font-bold" }, '\uD83D\uDD17 ' + 'Related' + ': '),
 
@@ -6693,7 +6693,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-slate-50 rounded-xl border p-3" },
 
-                  React.createElement("div", { className: "text-[10px] font-bold text-slate-500 mb-1" }, 'Layer Progress'),
+                  React.createElement("div", { className: "text-[10px] font-bold text-slate-600 mb-1" }, 'Layer Progress'),
 
                   spec.layers.map(function (layer) {
 
@@ -6711,13 +6711,13 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "mt-2 pt-2 border-t border-slate-200" },
 
-                    React.createElement("p", { className: "text-[10px] text-slate-500 leading-relaxed mb-1" }, spec.desc),
+                    React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed mb-1" }, spec.desc),
 
                     React.createElement("div", { className: "grid grid-cols-2 gap-1 mt-1" },
 
                       spec.kingdom && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-500 uppercase" }, 'Kingdom'),
+                        React.createElement("span", { className: "text-[8px] font-bold text-slate-600 uppercase" }, 'Kingdom'),
 
                         React.createElement("p", { className: "text-[11px] text-slate-500" }, spec.kingdom)
 
@@ -6725,7 +6725,7 @@ var d = labToolData.dissection || {};
 
                       spec.phylum && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-500 uppercase" }, 'Phylum'),
+                        React.createElement("span", { className: "text-[8px] font-bold text-slate-600 uppercase" }, 'Phylum'),
 
                         React.createElement("p", { className: "text-[11px] text-slate-500" }, spec.phylum)
 
@@ -6733,7 +6733,7 @@ var d = labToolData.dissection || {};
 
                       spec.habitat && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-500 uppercase" }, 'Habitat'),
+                        React.createElement("span", { className: "text-[8px] font-bold text-slate-600 uppercase" }, 'Habitat'),
 
                         React.createElement("p", { className: "text-[11px] text-slate-500" }, spec.habitat)
 
@@ -6741,7 +6741,7 @@ var d = labToolData.dissection || {};
 
                       spec.lifespan && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-500 uppercase" }, 'Lifespan'),
+                        React.createElement("span", { className: "text-[8px] font-bold text-slate-600 uppercase" }, 'Lifespan'),
 
                         React.createElement("p", { className: "text-[11px] text-slate-500" }, spec.lifespan)
 
@@ -6858,7 +6858,7 @@ var d = labToolData.dissection || {};
 
                       React.createElement("div", { className: "text-lg font-bold text-blue-600" }, String(totalOrgansInSpecimen)),
 
-                      React.createElement("div", { className: "text-[8px] text-slate-500" }, 'Structures')
+                      React.createElement("div", { className: "text-[10px] text-slate-600" }, 'Structures')
 
                     ),
 
@@ -6866,7 +6866,7 @@ var d = labToolData.dissection || {};
 
                       React.createElement("div", { className: "text-lg font-bold text-emerald-600" }, String(spec.layers.length)),
 
-                      React.createElement("div", { className: "text-[8px] text-slate-500" }, 'Layers')
+                      React.createElement("div", { className: "text-[10px] text-slate-600" }, 'Layers')
 
                     ),
 
@@ -6874,7 +6874,7 @@ var d = labToolData.dissection || {};
 
                       React.createElement("div", { className: "text-lg font-bold text-amber-600" }, String(d.quizScore || 0)),
 
-                      React.createElement("div", { className: "text-[8px] text-slate-500" }, 'Quiz Score')
+                      React.createElement("div", { className: "text-[10px] text-slate-600" }, 'Quiz Score')
 
                     ),
 
@@ -6888,7 +6888,7 @@ var d = labToolData.dissection || {};
 
                       })()),
 
-                      React.createElement("div", { className: "text-[8px] text-slate-500" }, 'Time')
+                      React.createElement("div", { className: "text-[10px] text-slate-600" }, 'Time')
 
                     )
 

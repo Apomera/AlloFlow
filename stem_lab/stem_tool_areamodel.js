@@ -426,7 +426,7 @@ window.StemLab = window.StemLab || {
             h('table', { className: 'mx-auto border-collapse' },
               h('caption', { className: 'sr-only' }, 'areamodel data table'), h('thead', null,
                 h('tr', null,
-                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-slate-500' }, '\u00d7'),
+                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-slate-600' }, '\u00d7'),
                   h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tl-lg border border-indigo-200', style: { minWidth: '120px' } }, bTens),
                   h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tr-lg border border-indigo-200', style: { minWidth: '80px' } }, bOnes)
                 )
@@ -536,11 +536,11 @@ window.StemLab = window.StemLab || {
         // Header
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
-            h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+            h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
           h('h3', { className: 'text-lg font-bold text-amber-800' }, '\uD83D\uDFE7 Area Model'),
           h('div', { className: 'ml-auto flex items-center gap-3' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
+            bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, 'Best: ' + bestStreak),
             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-600' }, score.correct + '/' + score.total)
           )
         ),
@@ -604,7 +604,7 @@ window.StemLab = window.StemLab || {
         viewMode === 'basic' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
           h('button', { 'aria-label': 'Clear highlight',
             onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); },
-            className: 'text-xs text-slate-500 hover:text-amber-600'
+            className: 'text-xs text-slate-600 hover:text-amber-600'
           }, 'Clear highlight'),
           h('button', { 'aria-label': 'Commutative:',
             onClick: function() {
@@ -630,7 +630,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                     className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
-                      (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-amber-700 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                      (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-amber-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                   }, d);
                 })
               )
@@ -694,7 +694,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
+        h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
           '\u2328\uFE0F B/D/P: switch mode | N: new challenge | C: commutative | ?: AI tutor'
         )
       );

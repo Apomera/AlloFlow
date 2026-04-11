@@ -623,7 +623,7 @@
           // ── Header ──
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
             h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' },
-              h(ArrowLeft, { size: 18, className: 'text-slate-500' })
+              h(ArrowLeft, { size: 18, className: 'text-slate-600' })
             ),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u2697\uFE0F Chemistry Lab'),
             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-lime-100 text-lime-700 text-[10px] font-bold rounded-full' }, 'CHEM v3'),
@@ -725,7 +725,7 @@
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-4 mb-4' },
                 coeffs.map(function(c, i) {
                   return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex flex-col items-center gap-1' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-500 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
                     h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg' }, '+'),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-black text-slate-700 w-9 text-center' }, c),
                     h('button', { 'aria-label': 'Chem Sound', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-500 hover:bg-red-100 transition-colors text-lg' }, '\u2212')
@@ -742,7 +742,7 @@
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black', style: { backgroundColor: atomColors[atom] || '#64748b' } }, atom),
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1 text-xs font-bold' },
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: match ? 'text-emerald-600' : 'text-red-600' }, left),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500' }, match ? '=' : '\u2260'),
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600' }, match ? '=' : '\u2260'),
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: match ? 'text-emerald-600' : 'text-red-600' }, right)
                     )
                   );
@@ -751,7 +751,7 @@
               // Action buttons
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-2 mb-3 flex-wrap' },
                 h('button', { 'aria-label': 'Check', onClick: checkBalance, className: 'px-5 py-2 bg-lime-600 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm' }, '\u2696\uFE0F Check'),
-                h('button', { 'aria-label': 'Hints', onClick: function() { upd('showHints', !showHints); }, className: 'px-3 py-2 rounded-lg font-bold text-xs transition-colors ' + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500 hover:bg-blue-50') }, '\uD83D\uDCA1 Hints'),
+                h('button', { 'aria-label': 'Hints', onClick: function() { upd('showHints', !showHints); }, className: 'px-3 py-2 rounded-lg font-bold text-xs transition-colors ' + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-blue-50') }, '\uD83D\uDCA1 Hints'),
                 h('button', { 'aria-label': 'Reset', onClick: function() { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ coefficients: arr, feedback: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-200' }, '\uD83D\uDD04 Reset'),
                 h('button', { 'aria-label': 'Random', onClick: function() { var pick = filtered[Math.floor(Math.random() * filtered.length)]; switchPreset(pick.name); addToast('\uD83C\uDFB2 ' + pick.name, 'info'); }, className: 'px-3 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 border border-purple-200' }, '\uD83C\uDFB2 Random')
               ),
@@ -772,7 +772,7 @@
           // REACTION TYPES SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'reactions' && h('div', null,
-            h('p', { className: 'text-xs text-slate-500 italic mb-3' },
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' },
               gradeText(
                 'There are 5 main ways chemicals can react. Explore each one!',
                 'Chemical reactions fall into 5 categories based on how atoms rearrange. Each type follows a pattern.',
@@ -790,7 +790,7 @@
                       h('p', { className: 'text-sm font-bold text-slate-700' }, rt.label),
                       h('p', { className: 'text-[10px] font-mono text-slate-500' }, rt.pattern)
                     ),
-                    h('span', { className: 'text-xs text-slate-500' }, isOpen ? '\u25B2' : '\u25BC')
+                    h('span', { className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')
                   ),
                   isOpen && h('div', { className: 'px-3 pb-3' },
                     h('p', { className: 'text-xs text-slate-600 mb-2' }, rt.desc),
@@ -849,7 +849,7 @@
           // STOICHIOMETRY SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'stoich' && h('div', null,
-            h('p', { className: 'text-xs text-slate-500 italic mb-3' },
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' },
               gradeText(
                 'Figure out how heavy molecules are! Type a chemical formula to see.',
                 'Calculate the molar mass of any compound. The molar mass tells you how many grams equal one mole.',
@@ -873,7 +873,7 @@
               var result = parseFormula(stoichFormula);
               var mass = result.mass;
               var elems = result.elems;
-              if (mass <= 0) return h('p', { className: 'text-xs text-slate-500 italic' }, 'Enter a valid formula above');
+              if (mass <= 0) return h('p', { className: 'text-xs text-slate-600 italic' }, 'Enter a valid formula above');
               return h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                   h('p', { className: 'text-lg font-bold text-teal-700' }, 'Molar Mass: ' + mass.toFixed(3) + ' g/mol'),
@@ -894,12 +894,12 @@
                 // Gram-mole converter
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-500 block mb-1' }, 'Grams \u2192 Moles'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Grams \u2192 Moles'),
                     h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', 'aria-label': 'Grams to convert to moles', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
                     stoichGrams && h('p', { className: 'text-[10px] font-bold text-teal-600 mt-1' }, stoichGrams + 'g = ' + (parseFloat(stoichGrams) / mass).toFixed(4) + ' mol')
                   ),
                   h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-500 block mb-1' }, 'Moles \u2192 Grams'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Moles \u2192 Grams'),
                     h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', 'aria-label': 'Moles to convert to grams', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
                     stoichMoles && h('p', { className: 'text-[10px] font-bold text-teal-600 mt-1' }, stoichMoles + ' mol = ' + (parseFloat(stoichMoles) * mass).toFixed(4) + 'g')
                   )
@@ -912,7 +912,7 @@
           // MOLECULAR VIEWER SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'molecular' && h('div', null,
-            h('p', { className: 'text-xs text-slate-500 italic mb-3' },
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' },
               gradeText(
                 'See what molecules look like! Pick one below.',
                 'Explore ball-and-stick models of common molecules. Different colors represent different elements.',
@@ -987,7 +987,7 @@
           // LAB SAFETY SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'safety' && h('div', null,
-            h('p', { className: 'text-xs text-slate-500 italic mb-3' },
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' },
               gradeText(
                 'Lab safety keeps everyone healthy! Learn the warning signs and what to do in emergencies.',
                 'Know the hazard symbols, wear your PPE, and always follow lab rules. Safety first!',
@@ -1010,7 +1010,7 @@
                     h('div', { className: 'w-10 h-10 flex items-center justify-center rounded-lg text-2xl', style: { background: sym.color + '15', border: '2px solid ' + sym.color } }, sym.icon),
                     h('div', null,
                       h('p', { className: 'text-[10px] font-bold text-slate-700' }, sym.label),
-                      !isOpen && h('p', { className: 'text-[8px] text-slate-500' }, sym.desc.substring(0, 40) + '...')
+                      !isOpen && h('p', { className: 'text-[10px] text-slate-600' }, sym.desc.substring(0, 40) + '...')
                     )
                   ),
                   isOpen && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 pt-2 border-t border-red-200' },
@@ -1075,7 +1075,7 @@
                   h('span', { className: 'text-xl' }, r.icon),
                   h('div', null,
                     h('p', { className: 'text-xs font-bold text-slate-700' }, r.rule),
-                    h('p', { className: 'text-[10px] text-slate-500' }, r.desc)
+                    h('p', { className: 'text-[10px] text-slate-600' }, r.desc)
                   )
                 );
               })
@@ -1086,7 +1086,7 @@
           // CHALLENGE SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'challenge' && h('div', null,
-            h('p', { className: 'text-xs text-slate-500 italic mb-3' }, 'Test your chemistry knowledge across 3 difficulty levels!'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Test your chemistry knowledge across 3 difficulty levels!'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mb-3' },
               ['easy', 'medium', 'hard'].map(function(diff) {
                 var labels = { easy: '\uD83C\uDF31 Beginner', medium: '\u26A1 Intermediate', hard: '\uD83D\uDE80 Advanced' };
@@ -1130,11 +1130,11 @@
           // ELEMENT BATTLE SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'battle' && h('div', null,
-            h('p', { className: 'text-xs text-slate-500 italic mb-3' }, 'A rogue element is destabilizing the compound! Answer chemistry questions to restore stability!'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'A rogue element is destabilizing the compound! Answer chemistry questions to restore stability!'),
             !battleActive && !battleResult && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 p-6' },
               h('p', { className: 'text-4xl mb-3' }, '\u2694\uFE0F'),
               h('p', { className: 'text-lg font-bold text-red-700 mb-1' }, 'Element Battle'),
-              h('p', { className: 'text-xs text-slate-500 mb-4' }, 'Answer correctly to deal damage. Wrong answers destabilize your compound!'),
+              h('p', { className: 'text-xs text-slate-600 mb-4' }, 'Answer correctly to deal damage. Wrong answers destabilize your compound!'),
               h('button', { 'aria-label': 'Start Battle', onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg hover:from-red-600 hover:to-orange-600 shadow-lg' }, '\u2694\uFE0F Start Battle')
             ),
             battleActive && battleRound < BATTLE_QS.length && h('div', null,
@@ -1154,7 +1154,7 @@
                   h('p', { className: 'text-[10px] font-bold text-red-700 mt-0.5' }, battleEnemyHP + ' HP')
                 )
               ),
-              h('p', { className: 'text-[10px] font-bold text-slate-500 text-center mb-2' }, 'Round ' + (battleRound + 1) + '/' + BATTLE_QS.length),
+              h('p', { className: 'text-[10px] font-bold text-slate-600 text-center mb-2' }, 'Round ' + (battleRound + 1) + '/' + BATTLE_QS.length),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border p-4' },
                 h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, BATTLE_QS[battleRound].q),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
@@ -1181,7 +1181,7 @@
             battleResult && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center bg-gradient-to-r ' + (battleResult === 'won' ? 'from-emerald-50 to-teal-50 border-emerald-200' : 'from-red-50 to-orange-50 border-red-200') + ' rounded-xl border p-6' },
               h('p', { className: 'text-4xl mb-2' }, battleResult === 'won' ? '\uD83C\uDFC6' : '\uD83D\uDCA5'),
               h('p', { className: 'text-lg font-bold ' + (battleResult === 'won' ? 'text-emerald-700' : 'text-red-700') }, battleResult === 'won' ? 'Victory! Compound Stabilized!' : 'Defeated! The element escaped...'),
-              h('p', { className: 'text-xs text-slate-500 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length),
+              h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length),
               h('button', { 'aria-label': 'Battle Again', onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg' }, '\u2694\uFE0F Battle Again')
             ),
             battleActive && battleRound >= BATTLE_QS.length && !battleResult && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center bg-amber-50 rounded-xl border border-amber-200 p-6' },
@@ -1194,7 +1194,7 @@
           // LEARN SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'learn' && h('div', null,
-            h('p', { className: 'text-xs text-slate-500 italic mb-3' }, 'Explore chemistry concepts at your level. Content adapts to grade band: ' + band.toUpperCase()),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Explore chemistry concepts at your level. Content adapts to grade band: ' + band.toUpperCase()),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
               LEARN_TOPICS.map(function(topic, idx) {
                 var isOpen = learnTopic === idx;
@@ -1203,7 +1203,7 @@
                   h('button', { 'aria-label': 'Select option', onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); }, className: 'w-full flex items-center gap-2 p-3 text-left' },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, topic.icon),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-700 flex-1' }, topic.title),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-500' }, isOpen ? '\u25B2' : '\u25BC')
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')
                   ),
                   isOpen && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 pb-3' },
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-lime-50 rounded-lg p-3 border border-lime-100' },
@@ -1213,7 +1213,7 @@
                     idx === 0 && h('button', { 'aria-label': 'Explore Reaction Types', onClick: function() { upd('subtool', 'reactions'); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold text-lime-600 bg-lime-50 border border-lime-200 rounded-lg hover:bg-lime-100' }, '\u2192 Explore Reaction Types'),
                     idx === 2 && h('button', { 'aria-label': 'View Molecular Models', onClick: function() { upd('subtool', 'molecular'); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100' }, '\u2192 View Molecular Models'),
                     idx === 3 && h('button', { 'aria-label': 'Try Stoichiometry Calculator', onClick: function() { upd('subtool', 'stoich'); }, className: 'mt-2 px-3 py-1 text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100' }, '\u2192 Try Stoichiometry Calculator'),
-                    callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(content); }, className: 'mt-2 ml-2 px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100' }, '\uD83D\uDD0A Read Aloud')
+                    callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(content); }, className: 'mt-2 ml-2 px-3 py-1 text-[10px] font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100' }, '\uD83D\uDD0A Read Aloud')
                   )
                 );
               })

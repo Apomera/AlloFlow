@@ -3331,7 +3331,7 @@ var d = labToolData.cell;
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
 
-              React.createElement("span", { className: "text-xs text-slate-500 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
@@ -3505,7 +3505,7 @@ var d = labToolData.cell;
 
                           ),
 
-                          React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5" }, "Move your organism to interact with the environment")
+                          React.createElement("p", { className: "text-[10px] text-slate-600 mt-0.5" }, "Move your organism to interact with the environment")
 
                         )
 

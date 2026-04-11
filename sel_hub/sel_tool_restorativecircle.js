@@ -1060,7 +1060,7 @@ window.SelHub = window.SelHub || {
             ),
             h('div', null,
               h('h2', { className: 'text-xl font-black text-slate-800' }, '\uD83E\uDEB6 Restorative Circle'),
-              h('p', { className: 'text-xs text-slate-500' }, 'Community building, repair, and the wisdom of sitting in circle')
+              h('p', { className: 'text-xs text-slate-600' }, 'Community building, repair, and the wisdom of sitting in circle')
             )
           )
         ),
@@ -1108,7 +1108,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { className: 'text-2xl mb-2' }, ct.emoji),
                 h('div', { className: 'font-bold text-sm text-slate-800' }, ct.label),
-                h('p', { className: 'text-xs text-slate-500 mt-1 leading-relaxed' }, ct.desc)
+                h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, ct.desc)
               );
             })
           ),
@@ -1227,7 +1227,7 @@ window.SelHub = window.SelHub || {
         tab === 'scripts' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCDC Circle Scripts'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Pre-written scripts to guide each phase of your circle. Select a section below, then choose a script to follow.'
             )
           ),
@@ -1240,7 +1240,7 @@ window.SelHub = window.SelHub || {
                 key: sec,
                 onClick: function() { updMulti({ scriptSection: sec, activeScriptIdx: undefined }); },
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all ' +
-                  (scriptSection === sec ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-500 hover:text-amber-600')
+                  (scriptSection === sec ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-600 hover:text-amber-600')
               }, secLabels[sec]);
             })
           ),
@@ -1255,7 +1255,7 @@ window.SelHub = window.SelHub || {
             // Discussion section is an array of strings
             if (scriptSection === 'discussion') {
               return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
-                h('p', { className: 'text-xs text-slate-500 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' discussion prompts available'),
+                h('p', { className: 'text-xs text-slate-600 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' discussion prompts available'),
                 bandData.map(function(prompt, i) {
                   return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3' },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-amber-500 font-bold text-sm mt-0.5 shrink-0' }, (i + 1) + '.'),
@@ -1275,7 +1275,7 @@ window.SelHub = window.SelHub || {
 
             // Opening, CheckIn, Closing sections are arrays of { title, desc }
             return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
-              h('p', { className: 'text-xs text-slate-500 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' scripts available'),
+              h('p', { className: 'text-xs text-slate-600 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' scripts available'),
               bandData.map(function(script, i) {
                 var isActive = activeScriptIdx === i;
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'bg-white rounded-xl border-2 transition-all ' + (isActive ? 'border-amber-400 shadow-md' : 'border-slate-200 hover:border-amber-300') },
@@ -1317,7 +1317,7 @@ window.SelHub = window.SelHub || {
         tab === 'harm-repair' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDE79 Harm Repair Process'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'A guided step-by-step restorative conversation for when harm has occurred. Each step builds understanding and leads to a repair agreement.'
             )
           ),
@@ -1402,7 +1402,7 @@ window.SelHub = window.SelHub || {
                 var response = harmResponses[step.id];
                 return h('div', { key: i, className: 'bg-white rounded-lg p-3 border border-slate-100' },
                   h('div', { className: 'text-[10px] font-bold text-amber-600' }, step.icon + ' Step ' + (i + 1) + ': ' + step.title),
-                  response ? h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, response) : h('p', { className: 'text-xs text-slate-500 italic mt-1' }, '(No response recorded)')
+                  response ? h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, response) : h('p', { className: 'text-xs text-slate-600 italic mt-1' }, '(No response recorded)')
                 );
               })
             )
@@ -1413,7 +1413,7 @@ window.SelHub = window.SelHub || {
         tab === 'scenarios' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFAD Restorative Scenarios'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Practice restorative thinking with realistic scenarios. Read the situation, choose a response, and see how the restorative approach unfolds.'
             )
           ),
@@ -1431,7 +1431,7 @@ window.SelHub = window.SelHub || {
                     key: i,
                     onClick: function() { updMulti({ scenarioIdx: i, scenarioChoice: undefined, scenarioOutcome: null }); },
                     className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
-                      (scenarioIdx === i ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-amber-100')
+                      (scenarioIdx === i ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-amber-100')
                   }, sc.emoji + ' ' + sc.title);
                 })
               ),
@@ -1503,7 +1503,7 @@ window.SelHub = window.SelHub || {
         tab === 'agreements' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDD1D Community Agreements Builder'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Build your class or group agreements together. Select from suggestions or write your own. These become the foundation of your restorative community.'
             )
           ),
@@ -1621,7 +1621,7 @@ window.SelHub = window.SelHub || {
         tab === 'talking-piece' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDEB6 The Talking Piece'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'The talking piece is a sacred object passed around the circle. Only the person holding it may speak. This practice teaches us that listening is just as powerful as speaking.'
             )
           ),
@@ -1719,7 +1719,7 @@ window.SelHub = window.SelHub || {
         tab === 'questions' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\u2753 Restorative Questions Bank'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Deep conversation starters organized by purpose. Use these in your circles or anytime you need a thoughtful question to open dialogue.'
             )
           ),
@@ -1732,7 +1732,7 @@ window.SelHub = window.SelHub || {
                 key: cat,
                 onClick: function() { upd('questionCategory', cat); },
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all ' +
-                  ((d.questionCategory || 'opening') === cat ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-500 hover:text-amber-600')
+                  ((d.questionCategory || 'opening') === cat ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-600 hover:text-amber-600')
               }, catData.emoji + ' ' + catData.label);
             })
           ),
@@ -1747,7 +1747,7 @@ window.SelHub = window.SelHub || {
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' },
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, catData.emoji),
                 h('h4', { className: 'text-sm font-bold', style: { color: catData.color } }, catData.label),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500 ml-auto' }, catData.questions.length + ' questions')
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 ml-auto' }, catData.questions.length + ' questions')
               ),
               catData.questions.map(function(q, i) {
                 return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3 hover:border-amber-400 transition-all' },
@@ -1767,7 +1767,7 @@ window.SelHub = window.SelHub || {
                           incrementBadgeStat('questionsUsed', 1);
                         }
                       },
-                      className: 'text-[10px] text-slate-500 hover:text-slate-600',
+                      className: 'text-[10px] text-slate-600 hover:text-slate-600',
                       'aria-label': 'Copy question to clipboard'
                     }, '\uD83D\uDCCB')
                   )
@@ -1816,7 +1816,7 @@ window.SelHub = window.SelHub || {
         tab === 'roles' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDE4B Circle Role Cards'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Every circle participant has a role. Learn what each role involves, the dos and don\'ts, and sample phrases to guide your practice.'
             )
           ),
@@ -1923,7 +1923,7 @@ window.SelHub = window.SelHub || {
         tab === 'empathy-map' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDDE0 Empathy Mapping Exercise'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Understand different perspectives in a conflict by mapping what each person said, did, thought, and felt. Then find areas of overlap and build bridges.'
             )
           ),
@@ -1932,11 +1932,11 @@ window.SelHub = window.SelHub || {
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 bg-slate-100 rounded-xl p-1' },
             ['personA', 'personB'].map(function(person) {
               var personLabel = person === 'personA' ? '\uD83D\uDC64 Person A' : '\uD83D\uDC65 Person B';
-              return h('button', { 'aria-label': 'text-slate-500 hover:text-amber-600',
+              return h('button', { 'aria-label': 'text-slate-600 hover:text-amber-600',
                 key: person,
                 onClick: function() { upd('empathyPerson', person); },
                 className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
-                  ((d.empathyPerson || 'personA') === person ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-500 hover:text-amber-600')
+                  ((d.empathyPerson || 'personA') === person ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-600 hover:text-amber-600')
               }, personLabel);
             })
           ),
@@ -2059,7 +2059,7 @@ window.SelHub = window.SelHub || {
         tab === 'compare' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\u2696\uFE0F Restorative vs. Punitive'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               gradeBand === 'elementary'
                 ? 'Learn the difference between punishment and making things right. Which approach helps people learn and grow?'
                 : gradeBand === 'middle'
@@ -2115,7 +2115,7 @@ window.SelHub = window.SelHub || {
                       key: i,
                       onClick: function() { upd('compareScenarioIdx', i); },
                       className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
-                        (compareScenarioIdx === i ? 'bg-amber-700 text-white' : hasRating ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500 hover:bg-amber-100')
+                        (compareScenarioIdx === i ? 'bg-amber-700 text-white' : hasRating ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-100')
                     }, sc.emoji + ' ' + (i + 1));
                   })
                 ),
@@ -2165,7 +2165,7 @@ window.SelHub = window.SelHub || {
                           ctx.awardXP(5);
                         },
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
-                          (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-500 hover:border-red-300')
+                          (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-300')
                       }, gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive'),
                       h('button', { 'aria-label': 'compareReflections',
                         onClick: function() {
@@ -2176,7 +2176,7 @@ window.SelHub = window.SelHub || {
                           ctx.awardXP(5);
                         },
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
-                          (ratings[ratingKey] === 'restorative' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-500 hover:border-emerald-300')
+                          (ratings[ratingKey] === 'restorative' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:border-emerald-300')
                       }, gradeBand === 'elementary' ? '\uD83D\uDC9A Making It Right' : '\uD83D\uDC9A Restorative')
                     ),
 
@@ -2252,7 +2252,7 @@ window.SelHub = window.SelHub || {
         tab === 'badges' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFC5 Restorative Badges'),
-            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Earn badges as you deepen your restorative practice. Each badge recognizes growth, courage, and commitment to community.'
             )
           ),
@@ -2271,7 +2271,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-3xl ' + (isEarned ? '' : 'grayscale opacity-40') }, badge.emoji),
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'font-bold text-sm ' + (isEarned ? 'text-amber-700' : 'text-slate-600') }, badge.name),
-                    h('p', { className: 'text-[10px] text-slate-500' }, badge.desc)
+                    h('p', { className: 'text-[10px] text-slate-600' }, badge.desc)
                   )
                 ),
                 h('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-1' },
@@ -2280,7 +2280,7 @@ window.SelHub = window.SelHub || {
                     style: { width: pct + '%' }
                   })
                 ),
-                h('p', { className: 'text-[10px] text-slate-500 mt-1 text-right' },
+                h('p', { className: 'text-[10px] text-slate-600 mt-1 text-right' },
                   isEarned ? '\u2713 Earned!' : progress + ' / ' + badge.threshold
                 )
               );

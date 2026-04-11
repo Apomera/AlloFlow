@@ -1169,7 +1169,7 @@ window.StemLab = window.StemLab || {
                 sprEvents.map(function(rule, ri) {
                   return h('div', { key: ri, className: 'p-3 rounded-xl border border-rose-200 bg-white' },
                     h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                      h('span', { className: 'text-xs font-bold text-slate-500' }, 'When'),
+                      h('span', { className: 'text-xs font-bold text-slate-600' }, 'When'),
                       h('select', {
                         value: rule.trigger || 'onKey',
                         onChange: function(e) {
@@ -1194,7 +1194,7 @@ window.StemLab = window.StemLab || {
                           className: 'text-xs border border-rose-200 rounded px-1.5 py-1'
                         }, h('option', { value: '' }, '\u2014'), trig.params.map(function(p) { return h('option', { key: p, value: p }, p); }));
                       })(),
-                      h('span', { className: 'text-xs font-bold text-slate-500' }, '\u2192'),
+                      h('span', { className: 'text-xs font-bold text-slate-600' }, '\u2192'),
                       h('select', {
                         value: rule.action || 'move',
                         onChange: function(e) {
@@ -1254,9 +1254,9 @@ window.StemLab = window.StemLab || {
                 '\u2764\uFE0F ' + Array.from({ length: Math.max(0, Math.min(playLives, 10)) }, function() { return '\u2665'; }).join('')
               ),
               playKeys > 0 && h('span', { className: 'text-xs font-bold text-yellow-600' }, '\uD83D\uDD11 \u00D7' + playKeys),
-              h('span', { className: 'text-xs font-bold text-slate-500' }, '\uD83D\uDC63 Moves: ' + playMoves),
+              h('span', { className: 'text-xs font-bold text-slate-600' }, '\uD83D\uDC63 Moves: ' + playMoves),
               playCoinsCollected > 0 && h('span', { className: 'text-xs font-bold text-amber-500' }, '\uD83E\uDE99 ' + playCoinsCollected + ' collected'),
-              h('span', { className: 'text-xs font-bold text-slate-500 ml-auto' },
+              h('span', { className: 'text-xs font-bold text-slate-600 ml-auto' },
                 gameType === 'topdown' ? '\uD83D\uDD3D Top-Down' : gameType === 'platformer' ? '\uD83C\uDFC3 Platformer' : '\uD83E\uDDE9 Puzzle'
               )
             ),
@@ -1336,7 +1336,7 @@ window.StemLab = window.StemLab || {
                 },
                 className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-600 shadow-md transition-all'
               }, '\uD83D\uDD04 Play Again'),
-              h('div', { className: 'text-[10px] text-slate-500 self-center ml-2' }, 'Arrow keys / WASD to move \u2022 Click game area first')
+              h('div', { className: 'text-[10px] text-slate-600 self-center ml-2' }, 'Arrow keys / WASD to move \u2022 Click game area first')
             ),
 
             // Mechanics guide
@@ -1524,7 +1524,7 @@ window.StemLab = window.StemLab || {
                         h('span', { className: 'text-sm font-black ' + (isComplete ? 'text-green-800' : 'text-indigo-900') }, lesson.title),
                         isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713')
                       ),
-                      h('p', { className: 'text-[11px] text-slate-500 mt-0.5' }, lesson.desc)
+                      h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, lesson.desc)
                     ),
                     h('span', { className: 'text-xs font-bold ' + (isComplete ? 'text-green-500' : 'text-indigo-400') }, 'Lesson ' + (li + 1))
                   )
@@ -1763,7 +1763,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'grid grid-cols-3 gap-3 text-center' },
                 h('div', null,
                   h('div', { className: 'text-lg font-black text-slate-800' }, Object.keys(tiles).length),
-                  h('div', { className: 'text-[10px] text-slate-500' }, 'Tiles Placed')
+                  h('div', { className: 'text-[10px] text-slate-600' }, 'Tiles Placed')
                 ),
                 h('div', null,
                   h('div', { className: 'text-lg font-black text-slate-800' }, (function() {
@@ -1771,11 +1771,11 @@ window.StemLab = window.StemLab || {
                     Object.keys(tiles).forEach(function(k) { types[tiles[k]] = true; });
                     return Object.keys(types).length;
                   })()),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Tile Types')
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, 'Tile Types')
                 ),
                 h('div', null,
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-black text-slate-800' }, Object.keys(spritePixels).length),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Pixels Drawn')
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, 'Pixels Drawn')
                 )
               )
             )

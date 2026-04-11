@@ -834,10 +834,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('h4', { className: 'text-lg font-black text-white flex items-center gap-2' }, destination.emoji, ' Mission to ' + destination.name),
               h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, destination.desc),
               h('div', { className: 'grid grid-cols-2 gap-2 text-[10px]' },
-                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-500' }, 'Gravity: '), h('span', { className: 'text-white font-bold' }, destination.gravity + ' m/s\u00B2')),
-                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-500' }, 'Temp: '), h('span', { className: 'text-white font-bold' }, destination.temp)),
-                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-500' }, 'Atmosphere: '), h('span', { className: 'text-white font-bold' }, destination.atmosphere)),
-                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-500' }, 'Travel: '), h('span', { className: 'text-white font-bold' }, destination.travelDays + ' days'))
+                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Gravity: '), h('span', { className: 'text-white font-bold' }, destination.gravity + ' m/s\u00B2')),
+                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Temp: '), h('span', { className: 'text-white font-bold' }, destination.temp)),
+                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Atmosphere: '), h('span', { className: 'text-white font-bold' }, destination.atmosphere)),
+                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Travel: '), h('span', { className: 'text-white font-bold' }, destination.travelDays + ' days'))
               ),
               h('div', { className: 'flex flex-wrap gap-1' },
                 destination.hazards.map(function(hz) {
@@ -846,7 +846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               // Crew roster
               crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
-                h('p', { className: 'text-[9px] text-slate-500 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+                h('p', { className: 'text-[10px] text-slate-600 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   crew.map(function(c) {
                     return h('div', { key: c.name, className: 'flex items-center gap-2 bg-white/5 rounded-lg p-2' },
@@ -1013,7 +1013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 );
               })
             ),
-            h('p', { className: 'text-[10px] text-slate-500 mt-2 text-center', 'aria-hidden': 'true' }, 'Press 1, 2, or 3 to choose')
+            h('p', { className: 'text-[10px] text-slate-600 mt-2 text-center', 'aria-hidden': 'true' }, 'Press 1, 2, or 3 to choose')
           ),
 
           // Generating indicator
@@ -1052,7 +1052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               missionLog.slice().reverse().map(function(entry, i) {
                 return h('div', { key: i, className: 'flex justify-between text-[10px]' },
                   h('span', { className: 'text-slate-300' }, entry.text),
-                  h('span', { className: 'text-slate-500 font-mono' }, entry.time)
+                  h('span', { className: 'text-slate-600 font-mono' }, entry.time)
                 );
               })
             )
@@ -1145,7 +1145,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       }
 
       // Fallback
-      return h('div', { className: 'text-center p-6 text-slate-500 text-xs' }, 'Loading Space Explorer...');
+      return h('div', { className: 'text-center p-6 text-slate-600 text-xs' }, 'Loading Space Explorer...');
     }
   });
 

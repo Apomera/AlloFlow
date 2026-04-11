@@ -1175,7 +1175,7 @@ var d = labToolData || {};
 
                   className: 'whitespace-nowrap px-3 py-2 text-xs font-medium transition-all border-b-2 ' +
 
-                    (geoTab === tab.id ? 'border-teal-500 text-teal-700 bg-teal-50' : 'border-transparent text-slate-500 hover:text-slate-700')
+                    (geoTab === tab.id ? 'border-teal-500 text-teal-700 bg-teal-50' : 'border-transparent text-slate-600 hover:text-slate-700')
 
                 }, tab.icon + ' ' + tab.label);
 
@@ -1205,11 +1205,11 @@ var d = labToolData || {};
 
               geoTarget && React.createElement('div', { className: 'text-center py-3 bg-gradient-to-r from-slate-50 to-teal-50 border-b' },
 
-                React.createElement('p', { className: 'text-xs text-slate-500' }, 'Click on the map to find:'),
+                React.createElement('p', { className: 'text-xs text-slate-600' }, 'Click on the map to find:'),
 
                 React.createElement('p', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDDFA\uFE0F ' + geoTarget.name),
 
-                React.createElement('p', { className: 'text-[10px] text-slate-500' }, geoTarget.continent + ' \u2022 ' + geoTarget.region)
+                React.createElement('p', { className: 'text-[10px] text-slate-600' }, geoTarget.continent + ' \u2022 ' + geoTarget.region)
 
               ),
 
@@ -1227,7 +1227,7 @@ var d = labToolData || {};
 
               // Progress
 
-              React.createElement('div', { className: 'px-4 py-2 bg-slate-50 flex justify-between text-[10px] text-slate-500' },
+              React.createElement('div', { className: 'px-4 py-2 bg-slate-50 flex justify-between text-[10px] text-slate-600' },
 
                 React.createElement('span', null, '\u2705 ' + geoAnswered.length + '/' + filteredCountries.length + ' found'),
 
@@ -1253,11 +1253,11 @@ var d = labToolData || {};
 
               geoTarget && React.createElement('div', { className: 'text-center mb-4' },
 
-                React.createElement('p', { className: 'text-xs text-slate-500 mb-1' }, 'What is the capital of:'),
+                React.createElement('p', { className: 'text-xs text-slate-600 mb-1' }, 'What is the capital of:'),
 
                 React.createElement('p', { className: 'text-2xl font-bold text-slate-800 mb-1' }, '\uD83C\uDFDB\uFE0F ' + geoTarget.name),
 
-                React.createElement('p', { className: 'text-xs text-slate-500' }, geoTarget.continent),
+                React.createElement('p', { className: 'text-xs text-slate-600' }, geoTarget.continent),
 
                 React.createElement('div', { className: 'flex gap-2 max-w-md mx-auto mt-3' },
 
@@ -1419,7 +1419,7 @@ var d = labToolData || {};
 
                     React.createElement('h4', { className: 'text-lg font-bold text-slate-800' }, lm.name),
 
-                    React.createElement('p', { className: 'text-xs text-slate-500 mt-1' }, lm.fact),
+                    React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, lm.fact),
 
                     React.createElement('p', { className: 'text-xs text-amber-600 mt-2 font-bold' }, '\uD83D\uDCCD ' + lm.country + ' \u2014 ' + lm.lat.toFixed(1) + '\u00b0, ' + lm.lng.toFixed(1) + '\u00b0')
 
@@ -1479,7 +1479,7 @@ var d = labToolData || {};
 
                     }, '\u25C0 Previous'),
 
-                    React.createElement('span', { className: 'text-[10px] text-slate-500 self-center' }, (geoLandmarkIdx + 1) + '/' + GEO_LANDMARKS.length),
+                    React.createElement('span', { className: 'text-[10px] text-slate-600 self-center' }, (geoLandmarkIdx + 1) + '/' + GEO_LANDMARKS.length),
 
                     React.createElement('button', {
 
@@ -1529,9 +1529,9 @@ var d = labToolData || {};
 
                     React.createElement('h4', { className: 'text-lg font-bold text-slate-800' }, c.name),
 
-                    React.createElement('p', { className: 'text-xs text-slate-500' }, c.continent),
+                    React.createElement('p', { className: 'text-xs text-slate-600' }, c.continent),
 
-                    React.createElement('p', { className: 'text-[10px] text-slate-500 mt-1' }, 'Click if bigger')
+                    React.createElement('p', { className: 'text-[10px] text-slate-600 mt-1' }, 'Click if bigger')
 
                   );
 
@@ -1539,7 +1539,7 @@ var d = labToolData || {};
 
               ),
 
-              React.createElement('p', { className: 'text-center text-[10px] text-slate-500 mt-3' }, '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!')
+              React.createElement('p', { className: 'text-center text-[10px] text-slate-600 mt-3' }, '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!')
 
             ),
 
@@ -1575,7 +1575,7 @@ var d = labToolData || {};
 
               React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83C\uDFC6 AI Quiz Builder'),
 
-              React.createElement('p', { className: 'text-xs text-slate-500 text-center mb-3' }, 'Describe the quiz you want and AI will generate custom geography questions!'),
+              React.createElement('p', { className: 'text-xs text-slate-600 text-center mb-3' }, 'Describe the quiz you want and AI will generate custom geography questions!'),
 
               React.createElement('div', { className: 'flex gap-2 max-w-md mx-auto mb-4' },
 
@@ -1669,7 +1669,7 @@ var d = labToolData || {};
 
                   React.createElement('h4', { className: 'text-sm font-bold text-slate-800 mb-2' }, q.question),
 
-                  q.hint && React.createElement('p', { className: 'text-[10px] text-slate-500 mb-2' }, '\uD83D\uDCA1 Hint: ' + q.hint),
+                  q.hint && React.createElement('p', { className: 'text-[10px] text-slate-600 mb-2' }, '\uD83D\uDCA1 Hint: ' + q.hint),
 
                   React.createElement('div', { className: 'flex gap-2' },
 
@@ -1740,7 +1740,7 @@ var d = labToolData || {};
             // ── Distance tab content ──
             geoTab === 'distance' && React.createElement('div', { className: 'p-5 space-y-4' },
               React.createElement('h3', { className: 'text-sm font-bold text-teal-700' }, '\uD83D\uDCCD Distance Challenge'),
-              React.createElement('p', { className: 'text-xs text-slate-500' }, 'Estimate the distance between two countries (within 15% to score!)'),
+              React.createElement('p', { className: 'text-xs text-slate-600' }, 'Estimate the distance between two countries (within 15% to score!)'),
 
               geoDistA && geoDistB ? React.createElement('div', { className: 'space-y-4' },
                 // Country cards
@@ -1769,7 +1769,7 @@ var d = labToolData || {};
                     'aria-label': 'Distance guess in kilometers',
                     className: 'w-48 px-3 py-2 rounded-lg border border-teal-200 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400'
                   }),
-                  React.createElement('span', { className: 'text-xs text-slate-500 font-bold' }, 'km'),
+                  React.createElement('span', { className: 'text-xs text-slate-600 font-bold' }, 'km'),
                   React.createElement('button', {
                     onClick: checkDistanceAnswer,
                     className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-700 transition-colors'
@@ -1786,7 +1786,7 @@ var d = labToolData || {};
                 }, geoDistFeedback.msg),
 
                 // Stats
-                React.createElement('div', { className: 'text-center text-xs text-slate-500' },
+                React.createElement('div', { className: 'text-center text-xs text-slate-600' },
                   '\uD83C\uDFAF Distance challenges nailed: ' + geoDistCorrect
                 )
               ) : React.createElement('div', { className: 'text-center py-8 text-slate-500' }, 'Loading...')
@@ -1794,7 +1794,7 @@ var d = labToolData || {};
 
             // ── Badge shelf ──
             React.createElement('div', { className: 'px-4 py-2 border-t border-slate-100 flex flex-wrap gap-1 items-center' },
-              React.createElement('span', { className: 'text-[10px] text-slate-500 mr-1' }, 'Badges:'),
+              React.createElement('span', { className: 'text-[10px] text-slate-600 mr-1' }, 'Badges:'),
               GEO_BADGES.map(function(b) {
                 return React.createElement('span', {
                   key: b.id,
@@ -1806,7 +1806,7 @@ var d = labToolData || {};
 
             // ── Bottom stats ──
 
-            React.createElement('div', { className: 'px-4 py-3 bg-gradient-to-r from-slate-50 to-teal-50 border-t flex justify-between items-center text-[10px] text-slate-500' },
+            React.createElement('div', { className: 'px-4 py-3 bg-gradient-to-r from-slate-50 to-teal-50 border-t flex justify-between items-center text-[10px] text-slate-600' },
 
               React.createElement('span', null, '\u2B50 Score: ' + geoScore + '  \u2022  \uD83D\uDD25 Streak: ' + geoStreak),
 
@@ -2136,7 +2136,7 @@ var d = labToolData || {};
                 },
                   isMatched
                     ? React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-lg'},matchedPair.icon), React.createElement('span',{className:'text-xs font-bold text-emerald-700'},matchedPair.theorem), React.createElement('span',{className:'text-xs text-emerald-500 ml-auto'},'✅'))
-                    : React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-[10px] text-slate-500 font-bold'},(slot+1)+'.'), React.createElement('span',{className:'text-xs text-slate-600'},pair.desc), !isMatched&&React.createElement('span',{className:'text-[10px] text-violet-400 ml-auto italic'},gp.matchDragOver===slot?'⬇ Drop!':gp.selectedMatch!=null?'👆 Click':'🧩 Drop'))
+                    : React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-[10px] text-slate-600 font-bold'},(slot+1)+'.'), React.createElement('span',{className:'text-xs text-slate-600'},pair.desc), !isMatched&&React.createElement('span',{className:'text-[10px] text-violet-400 ml-auto italic'},gp.matchDragOver===slot?'⬇ Drop!':gp.selectedMatch!=null?'👆 Click':'🧩 Drop'))
                 );
               })
             ),
@@ -2213,7 +2213,7 @@ var d = labToolData || {};
                   onClick:()=>{ if(gp.selectedAngle!=null){sortAngle(gp.selectedAngle,ci);gpUpd('selectedAngle',null);} },
                   className:`p-2 rounded-xl border-2 min-h-[70px] transition-all text-center ${gp.sorterDragOver===ci?'border-violet-400 bg-violet-50 shadow-md':'border-slate-200 bg-slate-50 hover:border-slate-300'}`
                 },
-                  React.createElement('p',{className:'text-[11px] font-bold text-slate-500 mb-1'},cat),
+                  React.createElement('p',{className:'text-[11px] font-bold text-slate-600 mb-1'},cat),
                   inBucket.map(a=>React.createElement('div',{key:a.id,className:'text-[10px] font-bold text-emerald-800 bg-emerald-100 rounded px-1 py-0.5 mb-0.5 gp-sort-bounce'},a.deg+'° ✅'))
                 );
               })
@@ -2339,7 +2339,7 @@ var d = labToolData || {};
             React.createElement('div',{className:'space-y-2'},
               theorems.map((th,ti)=>React.createElement('div',{key:ti,className:`flex items-start gap-2 bg-white rounded-lg p-2.5 border ${th.valid?'border-emerald-200':'border-amber-200'}`},
                 React.createElement('span',{className:'text-lg leading-none pt-0.5'},th.icon),
-                React.createElement('div',{className:'flex-1 min-w-0'}, React.createElement('p',{className:`text-xs font-bold ${th.valid?'text-emerald-700':'text-amber-700'}`},th.label), React.createElement('p',{className:'text-[11px] text-slate-600 font-mono break-words'},th.desc), React.createElement('p',{className:'text-[10px] text-slate-500 mt-0.5 italic'},th.detail)),
+                React.createElement('div',{className:'flex-1 min-w-0'}, React.createElement('p',{className:`text-xs font-bold ${th.valid?'text-emerald-700':'text-amber-700'}`},th.label), React.createElement('p',{className:'text-[11px] text-slate-600 font-mono break-words'},th.desc), React.createElement('p',{className:'text-[10px] text-slate-600 mt-0.5 italic'},th.detail)),
                 React.createElement('span',{className:`text-xs font-bold ${th.valid?'text-emerald-500':'text-amber-500'}`},th.valid?'✓':'≈')
               ))
             )
@@ -2403,7 +2403,7 @@ var d = labToolData || {};
                     isCorrect ? React.createElement('div',{className:'text-[10px] font-bold text-emerald-800 bg-emerald-100 rounded px-2 py-1 gp-snap'},'✅ '+step.reason)
                     : canAnswer ? React.createElement('div',{className:`h-8 flex items-center justify-center rounded-lg border-2 border-dashed transition-all ${isHovered?'border-violet-400 bg-violet-50 text-violet-600':'border-emerald-200 text-emerald-400'} ${ans&&!isCorrect?'border-red-300 text-red-500':''} text-[10px] font-semibold`},
                         ans&&!isCorrect ? '❌ Try again — drag the correct reason here' : isHovered ? '⬇ Drop here!' : selectedChip ? '👆 Click to place' : '🧩 Drag reason here')
-                    : React.createElement('div',{className:'text-[10px] text-slate-500 italic px-2 py-1'},'🔒 Locked')
+                    : React.createElement('div',{className:'text-[10px] text-slate-600 italic px-2 py-1'},'🔒 Locked')
                   ),
                   React.createElement('div',{className:'col-span-1 p-2 text-center text-sm'},isCorrect?'✅':ans?'❌':canAnswer?'⭕':'⏳')
                 );
@@ -2422,7 +2422,7 @@ var d = labToolData || {};
         const renderDiscover = () => {
           if (!gpMission) return React.createElement('div',{className:'space-y-3'},
             React.createElement('p',{className:'text-sm font-bold text-violet-800'},'🧭 Choose a Discovery Mission'),
-            React.createElement('p',{className:'text-xs text-slate-500 mb-2'},'Each mission guides you to discover a theorem through measurement and prediction — no formulas given away!'),
+            React.createElement('p',{className:'text-xs text-slate-600 mb-2'},'Each mission guides you to discover a theorem through measurement and prediction — no formulas given away!'),
             React.createElement('div',{className:'space-y-2'}, MISSIONS.map(m=>React.createElement('button',{key:m.id,onClick:()=>startMission(m.id),className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-violet-100 rounded-xl hover:border-violet-400 hover:bg-violet-50 text-left transition-all'},
               React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},m.icon),
               React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[11px] text-slate-500'},'Discover the rule yourself through measurement & prediction'))
@@ -2439,7 +2439,7 @@ var d = labToolData || {};
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('span',{className:'text-xl'},'📐'),
               React.createElement('p',{className:'text-sm font-bold text-orange-700 flex-1'},'Angle Sorter'),
-              React.createElement('button',{onClick:function(){gpUpd('mission',null);gpUpd('sorter',null);},className:'text-[10px] text-slate-500 hover:text-slate-600 underline'},'Exit')
+              React.createElement('button',{onClick:function(){gpUpd('mission',null);gpUpd('sorter',null);},className:'text-[10px] text-slate-600 hover:text-slate-600 underline'},'Exit')
             ),
             renderAngleSorter()
           );
@@ -2457,7 +2457,7 @@ var d = labToolData || {};
               React.createElement('span',{className:'text-xl'},mission.icon),
               React.createElement('div',{className:'flex-1'}, React.createElement('p',{className:'text-sm font-bold text-violet-800'},mission.title), React.createElement('div',{className:'w-full h-1.5 bg-violet-100 rounded-full mt-1 overflow-hidden'}, React.createElement('div',{className:'h-full bg-gradient-to-r from-violet-400 to-purple-400 rounded-full transition-all duration-500',style:{width:pct+'%'}}))),
               React.createElement('span',{className:'text-[10px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full'},`${step+1}/${mission.steps.length}`),
-              React.createElement('button',{onClick:()=>gpUpd('mission',null),className:'text-[10px] text-slate-500 hover:text-slate-600 underline'},'Exit')
+              React.createElement('button',{onClick:()=>gpUpd('mission',null),className:'text-[10px] text-slate-600 hover:text-slate-600 underline'},'Exit')
             ),
             React.createElement('div',{className:'bg-white rounded-xl p-3 border-2 border-violet-200'},
               cs.type==='action'&&React.createElement('div',null, React.createElement('p',{className:'text-[10px] font-bold text-violet-500 uppercase mb-1'},'📋 Do This'), React.createElement('p',{className:'text-sm text-slate-700 mb-2'},cs.text), React.createElement('button',{onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-violet-700 text-white font-bold rounded-lg text-xs hover:bg-violet-600 transition-all'},'Done →')),
@@ -2477,13 +2477,13 @@ var d = labToolData || {};
             React.createElement('h3',{className:'text-lg font-bold text-violet-800'},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
               React.createElement('div',{className:'text-xs font-bold text-emerald-600'},exploreScore.correct+'/'+exploreScore.total),
-              React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5'},'📸 Snapshot')
+              React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5'},'📸 Snapshot')
             )
           ),
           // Tab bar
           React.createElement('div',{className:'flex gap-1 bg-slate-100 p-1 rounded-xl'},
             [{id:'build',label:'🔨 Build'},{id:'discover',label:'🧭 Discover'},{id:'challenge',label:'🎯 Challenge'}].map(tab=>
-              React.createElement('button',{key:tab.id,onClick:()=>gpUpd('tab',tab.id),className:`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${gpTab===tab.id?'bg-white text-violet-700 shadow-sm':'text-slate-500 hover:text-violet-600'}`},tab.label)
+              React.createElement('button',{key:tab.id,onClick:()=>gpUpd('tab',tab.id),className:`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${gpTab===tab.id?'bg-white text-violet-700 shadow-sm':'text-slate-600 hover:text-violet-600'}`},tab.label)
             )
           ),
           // Canvas — always visible
@@ -2498,7 +2498,7 @@ var d = labToolData || {};
           gpTab==='build'&&React.createElement('div',{className:'space-y-3'},
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('button',{onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
-              React.createElement('span',{className:'text-[10px] text-slate-500 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
+              React.createElement('span',{className:'text-[10px] text-slate-600 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
             ),
             React.createElement('div',{className:'flex gap-1.5 flex-wrap'},
               [{id:'freeform',label:'✏️ Freeform',color:'violet',action:()=>{gpUpd('mode','freeform');gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('guided',null);}},
@@ -2528,7 +2528,7 @@ var d = labToolData || {};
           gpTab==='discover'&&React.createElement('div',null,renderDiscover()),
           // CHALLENGE TAB
           gpTab==='challenge'&&React.createElement('div',{className:'space-y-3'},
-            React.createElement('p',{className:'text-xs text-slate-500'},'Answer without looking up the formula — use what you know from exploring!'),
+            React.createElement('p',{className:'text-xs text-slate-600'},'Answer without looking up the formula — use what you know from exploring!'),
             React.createElement('div',{className:'flex gap-2'},
               React.createElement('button',{onClick:generateChallenge,className:'flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'},'🎯 New Challenge'),
               React.createElement('button',{onClick:startMatchGame,className:'flex-1 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'},'🧩 Theorem Match'),
@@ -2554,7 +2554,7 @@ var d = labToolData || {};
           // Footer
           React.createElement('div',{className:'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200 text-center'},
             React.createElement('p',{className:'text-[10px] text-violet-600'},React.createElement('strong',null,'📐 Euclidean Geometry'),' — drag points to explore how angles change.'),
-            React.createElement('p',{className:'text-[11px] text-slate-500 mt-0.5'},'Place points • Draw segments • Drag to explore • Discover theorems')
+            React.createElement('p',{className:'text-[11px] text-slate-600 mt-0.5'},'Place points • Draw segments • Drag to explore • Discover theorems')
           )
         );
       })();

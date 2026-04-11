@@ -1146,7 +1146,7 @@
               onClick: function() { setStemLabTool(null); },
               className: 'p-1.5 hover:bg-slate-100 rounded-lg',
               'aria-label': 'Back to tools'
-            }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+            }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u2697\uFE0F Material Decomposer'),
             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full' },
               totalAtoms + ' ATOMS'
@@ -1176,7 +1176,7 @@
                 className: 'flex-1 py-2 rounded-lg text-xs font-bold transition-all '
                   + (active
                     ? 'bg-white text-slate-800 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50')
+                    : 'text-slate-600 hover:text-slate-700 hover:bg-slate-50')
               }, t.label);
             })
           ),
@@ -1215,7 +1215,7 @@
                     h('h4', { className: 'font-bold text-slate-800 text-lg' }, sel.name),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-white rounded-full text-sm font-mono font-bold text-slate-700 border border-slate-200 shadow-sm' }, sel.formula)
                   ),
-                  h('p', { className: 'text-xs text-slate-500 mt-1 leading-relaxed' }, sel.desc),
+                  h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, sel.desc),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 mt-2 text-[10px] font-bold' },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-cyan-600' }, '\uD83D\uDD17 ' + sel.bondType),
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600' }, '\uD83D\uDCCA ' + sel.state),
@@ -1294,7 +1294,7 @@
                     ),
                     h('div', null,
                       h('p', { className: 'font-bold text-sm text-slate-800' }, el.name),
-                      h('p', { className: 'text-[10px] text-slate-500' }, el.group + ' \u00B7 ' + el.mass + ' u')
+                      h('p', { className: 'text-[10px] text-slate-600' }, el.group + ' \u00B7 ' + el.mass + ' u')
                     ),
                     h('span', { className: 'ml-auto px-2 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold' },
                       '\u00D7' + el.count + ' in ' + sel.formula
@@ -1307,7 +1307,7 @@
                       style: { width: Math.round(el.count / totalAtoms * 100) + '%', background: el.color }
                     })
                   ),
-                  h('p', { className: 'text-[10px] text-slate-500 mt-1' },
+                  h('p', { className: 'text-[10px] text-slate-600 mt-1' },
                     Math.round(el.count / totalAtoms * 100) + '% of atoms in this molecule'
                   )
                 );
@@ -1373,7 +1373,7 @@
                                 style: { width: Math.round(el.count / tc * 100) + '%', background: el.color }
                               })
                             ),
-                            h('span', { className: 'text-[10px] font-bold text-slate-500 w-5 text-right' },
+                            h('span', { className: 'text-[10px] font-bold text-slate-600 w-5 text-right' },
                               '\u00D7' + el.count
                             )
                           );
@@ -1381,15 +1381,15 @@
                       ),
                       h('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-center text-[11px]' },
                         h('div', { className: 'bg-slate-50 rounded p-1' },
-                          h('div', { className: 'font-bold text-slate-500' }, 'Atoms'),
+                          h('div', { className: 'font-bold text-slate-600' }, 'Atoms'),
                           h('div', { className: 'font-black text-slate-700' }, tc)
                         ),
                         h('div', { className: 'bg-slate-50 rounded p-1' },
-                          h('div', { className: 'font-bold text-slate-500' }, 'Bond'),
+                          h('div', { className: 'font-bold text-slate-600' }, 'Bond'),
                           h('div', { className: 'font-black text-slate-700' }, mat.bondType)
                         ),
                         h('div', { className: 'bg-slate-50 rounded p-1' },
-                          h('div', { className: 'font-bold text-slate-500' }, 'State'),
+                          h('div', { className: 'font-bold text-slate-600' }, 'State'),
                           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-black text-slate-700' }, mat.state)
                         )
                       )
@@ -1457,7 +1457,7 @@
                     ),
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'font-bold text-sm text-slate-800' }, el.name),
-                      h('div', { className: 'text-[10px] text-slate-500' }, el.group),
+                      h('div', { className: 'text-[10px] text-slate-600' }, el.group),
                       h('div', { className: 'text-[10px] font-bold text-amber-600 mt-0.5' }, '\u00D7' + el.count + ' in ' + sel.formula)
                     )
                   );
@@ -1482,7 +1482,7 @@
                         style: { width: percent + '%', background: el.color }
                       })
                     ),
-                    h('span', { className: 'text-slate-500 font-bold w-12 text-right' }, percent + '%')
+                    h('span', { className: 'text-slate-600 font-bold w-12 text-right' }, percent + '%')
                   );
                 })
               ),
@@ -1554,7 +1554,7 @@
                           scene.name,
                           complete ? h('span', { className: 'text-emerald-500 text-xs' }, '\u2705') : null
                         ),
-                        h('p', { className: 'text-[10px] text-slate-500 mt-0.5 line-clamp-1' }, scene.desc),
+                        h('p', { className: 'text-[10px] text-slate-600 mt-0.5 line-clamp-1' }, scene.desc),
                         h('div', { className: 'flex items-center gap-2 mt-2' },
                           h('div', { className: 'flex-1 h-2 rounded-full overflow-hidden', style: { background: complete ? '#d1fae5' : '#f1f5f9' } },
                             h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: pct + '%', background: complete ? '#10b981' : scene.accent } })
@@ -2056,7 +2056,7 @@
                       h('h4', { className: 'font-bold text-slate-800' }, selObj.name),
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full' }, '\u2705 Identified')
                     ),
-                    h('button', { 'aria-label': 'Change selected scene obj', onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-500' }))
+                    h('button', { 'aria-label': 'Change selected scene obj', onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-600' }))
                   ),
                   h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -2089,7 +2089,7 @@
 
                 // Found objects summary
                 sceneFoundCount > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
-                  h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\u2705 Identified in ' + scene.name),
+                  h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\u2705 Identified in ' + scene.name),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
                       var mat = MATERIALS.find(function(m) { return m.name === obj.material; });
@@ -2113,7 +2113,7 @@
           tab === 'reactions' && h('div', null,
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-4' },
               h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83C\uDF0B Reaction Lab'),
-              h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Pick two materials and see what happens when they react!')
+              h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Pick two materials and see what happens when they react!')
             ),
 
             // Material picker — two slots
@@ -2197,7 +2197,7 @@
                   ),
                   // Equation
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-lg p-3 mb-3 text-center border border-amber-200' },
-                    h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1' }, 'Chemical Equation'),
+                    h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, 'Chemical Equation'),
                     h('p', { className: 'text-sm font-mono font-bold text-slate-800' }, activeReaction.equation)
                   ),
                   // Description
@@ -2224,7 +2224,7 @@
 
             // Discovered reactions log
             Object.keys(reactionsDiscovered).length > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA Discovered Reactions (' + Object.keys(reactionsDiscovered).length + '/' + REACTIONS.length + ')'),
+              h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA Discovered Reactions (' + Object.keys(reactionsDiscovered).length + '/' + REACTIONS.length + ')'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 REACTIONS.map(function(r) {
                   var disc = !!reactionsDiscovered[r.name];
@@ -2245,7 +2245,7 @@
           tab === 'states' && h('div', null,
             h('div', { className: 'text-center mb-3' },
               h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83C\uDF21\uFE0F States of Matter'),
-              h('p', { className: 'text-xs text-slate-500 mt-1' }, 'See how ' + sel.name + ' particles behave as a solid, liquid, or gas. Drag the temperature slider!')
+              h('p', { className: 'text-xs text-slate-600 mt-1' }, 'See how ' + sel.name + ' particles behave as a solid, liquid, or gas. Drag the temperature slider!')
             ),
 
             // Temperature slider
@@ -2275,7 +2275,7 @@
                 return h('div', { className: 'flex items-center justify-center gap-3 mt-2' },
                   h('span', { className: 'text-2xl' }, stateEmoji[state]),
                   h('span', { className: 'text-sm font-black', style: { color: stateColors[state] } }, sel.name + ' is a ' + state),
-                  geo && geo.shape ? h('span', { className: 'text-[10px] text-slate-500 font-bold' }, '\u00B7 ' + geo.shape) : null
+                  geo && geo.shape ? h('span', { className: 'text-[10px] text-slate-600 font-bold' }, '\u00B7 ' + geo.shape) : null
                 );
               })()
             ),
@@ -2442,7 +2442,7 @@
 
             // Explanation text
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1' }, '\uD83D\uDCDA How it works'),
+              h('p', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCDA How it works'),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' },
                 'All matter is made of particles (atoms or molecules) that are always moving. In a solid, particles vibrate in a fixed arrangement held by strong bonds. As temperature increases, particles gain energy. At the melting point, they break free and flow as a liquid. At the boiling point, they escape into the air as gas.'
               ),
@@ -2507,7 +2507,7 @@
                   );
                 })
               ),
-              h('div', { className: 'mt-2 pt-2 border-t border-indigo-200 text-[10px] text-slate-500' },
+              h('div', { className: 'mt-2 pt-2 border-t border-indigo-200 text-[10px] text-slate-600' },
                 'Circle size represents relative atom count. '
                 + (decomposed
                   ? 'Dashed lines show where bonds were.'
@@ -2519,19 +2519,19 @@
             h('div', { className: 'grid grid-cols-4 gap-2 mb-3' },
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, totalAtoms),
-                h('div', { className: 'text-[11px] font-bold text-slate-500' }, 'Total Atoms')
+                h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Total Atoms')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.elements.length),
-                h('div', { className: 'text-[11px] font-bold text-slate-500' }, 'Elements')
+                h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Elements')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.bondType.split(' ')[0]),
-                h('div', { className: 'text-[11px] font-bold text-slate-500' }, 'Bond Type')
+                h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Bond Type')
               ),
               h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.state),
-                h('div', { className: 'text-[11px] font-bold text-slate-500' }, 'State')
+                h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'State')
               )
             )
           ),
@@ -2546,11 +2546,11 @@
             h('div', { className: 'flex items-center gap-3 mb-3' },
               h('div', { className: 'flex-1' },
                 h('h4', { className: 'font-bold text-slate-800' }, '\uD83E\uDDE0 Chemistry Quiz'),
-                h('p', { className: 'text-xs text-slate-500' }, 'Test your knowledge of chemical formulas, elements, and bonds')
+                h('p', { className: 'text-xs text-slate-600' }, 'Test your knowledge of chemical formulas, elements, and bonds')
               ),
               quizScore > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-right' },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-emerald-600' }, '\u2B50 ' + quizScore + ' correct'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-500' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600' },
                   '\uD83D\uDD25 Streak: ' + quizStreak + ' | Best: ' + bestStreak
                 )
               )
@@ -2642,7 +2642,7 @@
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
               },
-              className: 'text-xs text-slate-500 hover:text-slate-600 font-bold'
+              className: 'text-xs text-slate-600 hover:text-slate-600 font-bold'
             }, '\uD83D\uDD04 Reset Quiz')
           ),
 
@@ -2654,14 +2654,14 @@
 
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('h4', { className: 'font-bold text-slate-800' }, '\uD83E\uDD16 Chemistry AI Tutor'),
-              h('span', { className: 'text-xs text-slate-500' }, 'Ask me anything about ' + sel.name + '!')
+              h('span', { className: 'text-xs text-slate-600' }, 'Ask me anything about ' + sel.name + '!')
             ),
 
             /* Chat messages */
             h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3 mb-3 max-h-[300px] overflow-y-auto space-y-2' },
               aiMessages.length === 0 && h('div', { className: 'text-center py-6' },
                 h('div', { className: 'text-4xl mb-2' }, '\uD83E\uDDEC'),
-                h('p', { className: 'text-xs text-slate-500' }, 'Ask a question about chemistry or the current molecule!')
+                h('p', { className: 'text-xs text-slate-600' }, 'Ask a question about chemistry or the current molecule!')
               ),
               aiMessages.map(function(msg, i) {
                 var isUser = msg.role === 'user';
@@ -2684,7 +2684,7 @@
                 );
               }),
               aiLoading && h('div', { className: 'flex justify-start' },
-                h('div', { className: 'bg-white border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-500 animate-pulse' },
+                h('div', { className: 'bg-white border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-600 animate-pulse' },
                   'Thinking...'
                 )
               )
@@ -2737,7 +2737,7 @@
           h('div', { className: 'border-t border-slate-200 pt-3 mt-4 mb-3' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-sm font-bold text-slate-700' }, '\uD83C\uDFC5 Badges'),
-              h('span', { className: 'text-xs text-slate-500' },
+              h('span', { className: 'text-xs text-slate-600' },
                 badges.length + ' / ' + BADGES.length + ' earned'
               )
             ),

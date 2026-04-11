@@ -1015,7 +1015,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // STL note
-        h('div', { className: 'text-[10px] text-slate-500 text-center' },
+        h('div', { className: 'text-[10px] text-slate-600 text-center' },
           '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.'
         )
       );

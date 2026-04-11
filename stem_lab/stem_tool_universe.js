@@ -1590,7 +1590,7 @@ var d = labToolData.universe || {};
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF20 Universe Time-Lapse"),
 
-              React.createElement("span", { className: "text-xs text-slate-500" }, "13.8 billion years of cosmic history")
+              React.createElement("span", { className: "text-xs text-slate-600" }, "13.8 billion years of cosmic history")
 
             ),
 
@@ -2981,7 +2981,7 @@ var d = labToolData.universe || {};
                 // z-value formula
                 React.createElement("div", { className: "bg-slate-800 rounded-lg p-2 text-center border border-slate-700 mt-1" },
                   React.createElement("div", { className: "text-[11px] font-mono text-indigo-300" }, "z = (\u03BB_observed - \u03BB_emitted) / \u03BB_emitted"),
-                  React.createElement("div", { className: "text-[11px] text-slate-500 mt-0.5" }, "z > 0 = redshift (receding) \u2022 z < 0 = blueshift (approaching) \u2022 z = 1 means wavelength doubled")
+                  React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, "z > 0 = redshift (receding) \u2022 z < 0 = blueshift (approaching) \u2022 z = 1 means wavelength doubled")
                 ),
                 // Real examples
                 React.createElement("div", { className: "text-[10px] font-bold text-white mt-2 mb-1" }, "Real Examples:"),
@@ -3126,7 +3126,7 @@ var d = labToolData.universe || {};
                     return React.createElement("div", { key: emi, className: "flex-1", style: { background: em.color }, title: em.name });
                   })
                 ),
-                React.createElement("div", { className: "flex justify-between text-[7px] text-slate-500 mb-2" },
+                React.createElement("div", { className: "flex justify-between text-[7px] text-slate-600 mb-2" },
                   React.createElement("span", null, "Radio (long \u03BB) \u2190"),
                   React.createElement("span", null, "\u2192 Gamma (short \u03BB)")
                 ),
@@ -3141,12 +3141,12 @@ var d = labToolData.universe || {};
                       React.createElement("div", { className: "flex items-center gap-2" },
                         React.createElement("div", { className: "w-3 h-3 rounded-full flex-shrink-0", style: { background: em.color } }),
                         React.createElement("span", { className: "text-[10px] font-bold text-white" }, em.name),
-                        React.createElement("span", { className: "ml-auto text-[8px] text-slate-500 font-mono" }, em.wavelength)
+                        React.createElement("span", { className: "ml-auto text-[10px] text-slate-600 font-mono" }, em.wavelength)
                       ),
                       isActive && React.createElement("div", { className: "mt-1.5 space-y-1" },
                         React.createElement("div", { className: "text-[11px] text-slate-400" }, em.desc),
                         React.createElement("div", { className: "text-[11px] text-indigo-300" }, "\uD83D\uDD2D Sees: " + em.sees),
-                        React.createElement("div", { className: "text-[8px] text-slate-500" }, "Telescopes: " + em.telescope)
+                        React.createElement("div", { className: "text-[10px] text-slate-600" }, "Telescopes: " + em.telescope)
                       )
                     );
                   })
@@ -3473,7 +3473,7 @@ var d = labToolData.universe || {};
                 React.createElement("div", { className: "text-center mb-4" },
                   React.createElement("div", { className: "text-4xl mb-2" }, "\uD83C\uDF20\uD83D\uDCA5\u2B50"),
                   React.createElement("h2", { className: "text-lg font-black text-slate-800" }, "Welcome to Universe Time-Lapse!"),
-                  React.createElement("p", { className: "text-sm text-slate-500 mt-1" }, "Explore 13.8 billion years of cosmic history")
+                  React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, "Explore 13.8 billion years of cosmic history")
                 ),
                 React.createElement("div", { className: "space-y-2 text-xs text-slate-600" },
                   [

@@ -871,10 +871,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Header
           h('div', { className: 'flex items-center justify-between' },
             h('div', { className: 'flex items-center gap-3' },
-              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
               h('div', null,
                 h('h3', { className: 'text-lg font-bold text-slate-800' }, '🐝 Beehive Colony Simulator'),
-                h('p', { className: 'text-xs text-slate-500' }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
+                h('p', { className: 'text-xs text-slate-600' }, 'Manage a living superorganism — 50,000 minds, one purpose')))),
 
           // ═══ ANIMATED CANVAS SIMULATION ═══
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg', style: { height: '300px' } },
@@ -911,10 +911,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'text-sm font-bold text-amber-900' }, '🐝 Colony Status'),
               h('div', { className: 'text-sm font-black ' + ratingColor }, colonyRating + ' (' + colonyHealth + ')')),
             h('div', { className: 'grid grid-cols-4 gap-2 text-center mb-3' },
-              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-amber-600' }, fmtPop(workers)), h('div', { className: 'text-[9px] text-slate-500' }, '👷 Workers')),
-              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-pink-500' }, fmtPop(brood)), h('div', { className: 'text-[9px] text-slate-500' }, '🥚 Brood')),
-              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-500' }, drones), h('div', { className: 'text-[9px] text-slate-500' }, '♂ Drones')),
-              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-500' : 'text-red-500') }, queenHealth + '%'), h('div', { className: 'text-[9px] text-slate-500' }, '👑 Queen'))),
+              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-amber-600' }, fmtPop(workers)), h('div', { className: 'text-[10px] text-slate-600' }, '👷 Workers')),
+              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-pink-500' }, fmtPop(brood)), h('div', { className: 'text-[10px] text-slate-600' }, '🥚 Brood')),
+              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-500' }, drones), h('div', { className: 'text-[10px] text-slate-600' }, '♂ Drones')),
+              h('div', { className: 'bg-white rounded-lg p-2' }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-500' : 'text-red-500') }, queenHealth + '%'), h('div', { className: 'text-[10px] text-slate-600' }, '👑 Queen'))),
             // Meters
             h('div', { className: 'space-y-2' },
               // Varroa
@@ -935,7 +935,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', null,
                 h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
                   h('span', { className: 'text-green-700 font-bold' }, '🌸 Foraging Efficiency'),
-                  h('span', { className: 'text-slate-500' }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '% garden)' : ''))),
+                  h('span', { className: 'text-slate-600' }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '% garden)' : ''))),
                 h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden' },
                   h('div', { style: { width: Math.min(100, foragingEfficiency + gardenBonus) + '%' }, className: 'h-full bg-green-500 rounded-full transition-all' }))))),
 
@@ -1104,7 +1104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center gap-1' },
                       h('span', null, action.emoji),
                       h('span', { className: 'text-[9px] font-bold text-slate-800' }, action.label)),
-                    h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, action.cost + ' AP · ' + action.desc));
+                    h('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, action.cost + ' AP · ' + action.desc));
                 }))),
 
           // Hive Inspection (full view replacement)

@@ -735,7 +735,7 @@ window.SelHub = window.SelHub || {
             ),
             h('div', null,
               h('h2', { className: 'text-xl font-black text-slate-800' }, '\u270a Civic Action & Hope'),
-              h('p', { className: 'text-xs text-slate-500' }, 'Your feelings are valid. Your voice matters. Your actions count.')
+              h('p', { className: 'text-xs text-slate-600' }, 'Your feelings are valid. Your voice matters. Your actions count.')
             )
           )
         ),
@@ -831,7 +831,7 @@ window.SelHub = window.SelHub || {
         tab === 'understand' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udd0d Why Does This Matter to Me?'),
-            h('p', { className: 'text-sm text-slate-500' }, 'Understanding why you care is the first step toward meaningful action.')
+            h('p', { className: 'text-sm text-slate-600' }, 'Understanding why you care is the first step toward meaningful action.')
           ),
 
           h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-4' },
@@ -878,7 +878,7 @@ window.SelHub = window.SelHub || {
         tab === 'cope' && h('div', { className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udf3f Healthy Ways to Hold Hard Feelings'),
-            h('p', { className: 'text-sm text-slate-500' }, 'You do not have to fix the world to take care of yourself.')
+            h('p', { className: 'text-sm text-slate-600' }, 'You do not have to fix the world to take care of yourself.')
           ),
 
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
@@ -894,7 +894,7 @@ window.SelHub = window.SelHub || {
                   className: 'w-full p-4 text-left'
                 },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, strategy.label),
-                  h('div', { className: 'text-[10px] text-slate-500 mt-0.5 uppercase font-bold' }, strategy.category)
+                  h('div', { className: 'text-[10px] text-slate-600 mt-0.5 uppercase font-bold' }, strategy.category)
                 ),
                 isExpanded && h('div', { className: 'px-4 pb-4 space-y-2' },
                   strategy.steps.map(function(step, si) {
@@ -913,7 +913,7 @@ window.SelHub = window.SelHub || {
         tab === 'explore' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udf0d Explore Civic Issues'),
-            h('p', { className: 'text-sm text-slate-500' }, 'Learn about issues that affect your community and the world. (' + gradeBand + ' level)')
+            h('p', { className: 'text-sm text-slate-600' }, 'Learn about issues that affect your community and the world. (' + gradeBand + ' level)')
           ),
 
           !selectedIssue && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
@@ -936,7 +936,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-2xl' }, issue.emoji),
                   h('div', null,
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, issue.title),
-                    h('p', { className: 'text-xs text-slate-500 mt-0.5' }, issue.desc)
+                    h('p', { className: 'text-xs text-slate-600 mt-0.5' }, issue.desc)
                   )
                 )
               );
@@ -981,7 +981,7 @@ window.SelHub = window.SelHub || {
         tab === 'act' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\u270a Turn Feelings Into Action'),
-            h('p', { className: 'text-sm text-slate-500' }, 'You have more power than you think. Here are concrete steps you can take.')
+            h('p', { className: 'text-sm text-slate-600' }, 'You have more power than you think. Here are concrete steps you can take.')
           ),
 
           // Action cards
@@ -1000,7 +1000,7 @@ window.SelHub = window.SelHub || {
           // Personalized action plan
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-200 p-5' },
             h('h4', { className: 'text-sm font-bold text-teal-700 mb-2 flex items-center gap-2' }, h(Sparkles, { size: 14 }), 'Get a Personalized Action Plan'),
-            d.issueText && h('p', { className: 'text-xs text-slate-500 mb-3' }, 'Based on your concern about: "' + d.issueText + '"'),
+            d.issueText && h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Based on your concern about: "' + d.issueText + '"'),
             h('button', { 'aria-label': aiLoading ? 'Creating your plan...' : '\u2728 Generate My Action Plan',
               onClick: generateActionPlan,
               disabled: aiLoading,
@@ -1015,7 +1015,7 @@ window.SelHub = window.SelHub || {
                     h('span', { className: 'bg-teal-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0' }, i + 1),
                     h('div', null,
                       h('p', { className: 'text-sm font-bold text-slate-800' }, step.action),
-                      h('p', { className: 'text-xs text-slate-500 mt-1' }, step.why),
+                      h('p', { className: 'text-xs text-slate-600 mt-1' }, step.why),
                       step.how && h('p', { className: 'text-xs text-teal-600 mt-1 font-medium' }, '\ud83d\udccb How: ' + step.how)
                     )
                   )
@@ -1029,14 +1029,14 @@ window.SelHub = window.SelHub || {
         tab === 'planner' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcdd Civic Action Plan Builder'),
-            h('p', { className: 'text-sm text-slate-500' }, 'Build a step-by-step plan to create real change in your community.')
+            h('p', { className: 'text-sm text-slate-600' }, 'Build a step-by-step plan to create real change in your community.')
           ),
 
           // Progress bar
           h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
             h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: ((plannerStep + 1) / PLANNER_STEPS.length * 100) + '%' } })
           ),
-          h('div', { className: 'flex justify-between text-[10px] text-slate-500 font-bold' },
+          h('div', { className: 'flex justify-between text-[10px] text-slate-600 font-bold' },
             h('span', null, 'Step ' + (plannerStep + 1) + ' of ' + PLANNER_STEPS.length),
             h('span', null, PLANNER_STEPS[plannerStep].label)
           ),
@@ -1044,7 +1044,7 @@ window.SelHub = window.SelHub || {
           // Current step
           h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
             h('h4', { className: 'text-sm font-bold text-teal-700' }, PLANNER_STEPS[plannerStep].label),
-            h('p', { className: 'text-xs text-slate-500' }, PLANNER_STEPS[plannerStep].prompt),
+            h('p', { className: 'text-xs text-slate-600' }, PLANNER_STEPS[plannerStep].prompt),
             h('textarea', {
               value: plannerData[PLANNER_STEPS[plannerStep].id] || '',
               onChange: function(e) {
@@ -1080,7 +1080,7 @@ window.SelHub = window.SelHub || {
           // Template letters section
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-slate-50 to-teal-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
             h('h4', { className: 'text-sm font-bold text-slate-700' }, '\ud83d\udce8 Template Letters'),
-            h('p', { className: 'text-xs text-slate-500' }, 'Use these templates to write a formal letter advocating for your issue.'),
+            h('p', { className: 'text-xs text-slate-600' }, 'Use these templates to write a formal letter advocating for your issue.'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
               Object.keys(LETTER_TEMPLATES).map(function(key) {
                 var tmpl = LETTER_TEMPLATES[key];
@@ -1098,7 +1098,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'text-sm font-bold text-slate-700' }, tmpl.title),
                 h('div', { className: 'text-xs text-slate-600 italic' }, tmpl.greeting),
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed mt-2 bg-slate-50 rounded-lg p-3 border border-slate-100' }, tmpl.body),
-                h('p', { className: 'text-[10px] text-slate-500 mt-1' }, 'Tip: Copy this template and customize the parts in [brackets] with your own words.')
+                h('p', { className: 'text-[10px] text-slate-600 mt-1' }, 'Tip: Copy this template and customize the parts in [brackets] with your own words.')
               );
             })()
           ),
@@ -1106,7 +1106,7 @@ window.SelHub = window.SelHub || {
           // Petition creator
           h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
             h('h4', { className: 'text-sm font-bold text-amber-700' }, '\u270d\ufe0f Petition Creator'),
-            h('p', { className: 'text-xs text-slate-500' }, 'Draft a petition to gather support for your cause.'),
+            h('p', { className: 'text-xs text-slate-600' }, 'Draft a petition to gather support for your cause.'),
             h('div', null,
               h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Petition Title'),
               h('input', {
@@ -1149,7 +1149,7 @@ window.SelHub = window.SelHub || {
         tab === 'simulation' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udfdb\ufe0f ' + simData.title),
-            h('p', { className: 'text-sm text-slate-500' }, simData.intro)
+            h('p', { className: 'text-sm text-slate-600' }, simData.intro)
           ),
 
           // ── Elementary: School Council Meeting ──
@@ -1159,7 +1159,7 @@ window.SelHub = window.SelHub || {
             if (!currentProposal) return null;
             return h('div', { className: 'space-y-4' },
               h('div', { className: 'flex justify-between items-center' },
-                h('span', { className: 'text-xs font-bold text-slate-500' }, 'Proposal ' + (simStep + 1) + ' of ' + proposals.length),
+                h('span', { className: 'text-xs font-bold text-slate-600' }, 'Proposal ' + (simStep + 1) + ' of ' + proposals.length),
                 h('span', { className: 'text-xs font-bold text-teal-600' }, 'Decisions made: ' + Object.keys(simChoices).length)
               ),
               h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
@@ -1243,7 +1243,7 @@ window.SelHub = window.SelHub || {
                       h('span', { className: 'text-xs font-bold text-slate-700' }, cat.label),
                       h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString() + ' (' + pct + '%)')
                     ),
-                    h('p', { className: 'text-[10px] text-slate-500' }, cat.desc),
+                    h('p', { className: 'text-[10px] text-slate-600' }, cat.desc),
                     h('input', {
                       type: 'range',
                       min: 0,
@@ -1286,7 +1286,7 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-500 text-center' }, currentStep.title),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
                   h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
                   currentStep.bills.map(function(bill) {
@@ -1300,7 +1300,7 @@ window.SelHub = window.SelHub || {
                       className: 'w-full p-4 rounded-xl border-2 text-left transition-all ' + (isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300')
                     },
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, bill.title),
-                      h('p', { className: 'text-xs text-slate-500 mt-1' }, bill.desc),
+                      h('p', { className: 'text-xs text-slate-600 mt-1' }, bill.desc),
                       h('p', { className: 'text-[10px] text-amber-600 mt-1' }, '\u26a0\ufe0f Opposition: ' + bill.opposition),
                       h('p', { className: 'text-[10px] text-teal-600 font-bold mt-1' }, 'Base support: ' + bill.support_base + '%')
                     );
@@ -1332,7 +1332,7 @@ window.SelHub = window.SelHub || {
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, ally.label),
                         h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-emerald-600' }, '+' + ally.bonus + '% support')
                       ),
-                      h('p', { className: 'text-xs text-slate-500 mt-1' }, ally.ask),
+                      h('p', { className: 'text-xs text-slate-600 mt-1' }, ally.ask),
                       !isRecruited && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-2' },
                         h('button', { 'aria-label': 'Accept & Recruit',
                           onClick: function() {
@@ -1417,7 +1417,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                   h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-indigo-500 h-full rounded-full', style: { width: '100%' } })
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-500 text-center' }, currentStep.title),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4 text-center' },
                   h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-100 rounded-full h-6 overflow-hidden relative mt-4' },
@@ -1425,7 +1425,7 @@ window.SelHub = window.SelHub || {
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white', style: { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, legSupport + '% Support')
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'absolute left-1/2 top-0 bottom-0 border-l-2 border-dashed border-slate-400', style: { left: '50%' } }),
-                  h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Need 51% to pass'),
+                  h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Need 51% to pass'),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl mt-4' }, passed ? '\ud83c\udf89' : '\ud83d\udcaa'),
                   h('h4', { className: 'text-lg font-black ' + (passed ? 'text-emerald-700' : 'text-amber-700') }, passed ? 'Your Bill Passed!' : 'Your Bill Did Not Pass'),
                   h('p', { className: 'text-sm text-slate-600' }, passed ? 'Congratulations! Your coalition-building and strong committee answers made the difference. This is how democracy works.' : 'Your bill fell short of 51%. Consider building a broader coalition and preparing stronger evidence next time. Many great bills take multiple attempts to pass.'),
@@ -1463,9 +1463,9 @@ window.SelHub = window.SelHub || {
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
                 h('h4', { className: 'text-lg font-black text-slate-800' }, 'School Council Results!'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-6' },
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[10px] text-slate-500' }, 'Happiness')),
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[10px] text-slate-500' }, 'Learning')),
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[10px] text-slate-500' }, 'Health'))
+                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[10px] text-slate-600' }, 'Happiness')),
+                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[10px] text-slate-600' }, 'Learning')),
+                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[10px] text-slate-600' }, 'Health'))
                 ),
                 h('p', { className: 'text-sm text-slate-600' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
                 h('button', { 'aria-label': 'Try Again',
@@ -1527,7 +1527,7 @@ window.SelHub = window.SelHub || {
         tab === 'survey' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcca Community Survey Builder'),
-            h('p', { className: 'text-sm text-slate-500' }, 'Create a survey to learn about community needs. Add template questions or write your own.')
+            h('p', { className: 'text-sm text-slate-600' }, 'Create a survey to learn about community needs. Add template questions or write your own.')
           ),
 
           // Survey title
@@ -1546,7 +1546,7 @@ window.SelHub = window.SelHub || {
           // Template questions
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
             h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest' }, '\ud83d\udccb Template Questions (' + gradeBand + ')'),
-            h('p', { className: 'text-[10px] text-slate-500' }, 'Click to add a template question to your survey.'),
+            h('p', { className: 'text-[10px] text-slate-600' }, 'Click to add a template question to your survey.'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
               surveyTemplates.map(function(tmpl, ti) {
                 var alreadyAdded = surveyQuestions.some(function(sq) { return sq.q === tmpl.q; });
@@ -1564,7 +1564,7 @@ window.SelHub = window.SelHub || {
                     h('span', null, tmpl.q),
                     alreadyAdded ? h('span', { className: 'text-[10px] font-bold text-emerald-600' }, '\u2705 Added') : h('span', { className: 'text-[10px] font-bold text-teal-500' }, '+ Add')
                   ),
-                  h('span', { className: 'text-[10px] text-slate-500 block mt-0.5' }, tmpl.type === 'choice' ? 'Multiple choice' : 'Open-ended')
+                  h('span', { className: 'text-[10px] text-slate-600 block mt-0.5' }, tmpl.type === 'choice' ? 'Multiple choice' : 'Open-ended')
                 );
               })
             )
@@ -1592,7 +1592,7 @@ window.SelHub = window.SelHub || {
               }, 'Multiple Choice')
             ),
             surveyCustomType === 'choice' && h('div', null,
-              h('label', { className: 'text-[10px] text-slate-500 block mb-1' }, 'Answer options (comma-separated)'),
+              h('label', { className: 'text-[10px] text-slate-600 block mb-1' }, 'Answer options (comma-separated)'),
               h('input', {
                 type: 'text',
                 value: surveyCustomOpts,
@@ -1620,7 +1620,7 @@ window.SelHub = window.SelHub || {
               return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: si, className: 'bg-white rounded-xl border border-teal-200 p-3 flex justify-between items-start' },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold text-slate-800' }, (si + 1) + '. ' + sq.q),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
                   sq.custom && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-500 ml-2 font-bold' }, '(custom)')
                 ),
                 h('button', {
@@ -1685,7 +1685,7 @@ window.SelHub = window.SelHub || {
         tab === 'rights' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcdc ' + rightsInfo.title),
-            h('p', { className: 'text-sm text-slate-500' }, rightsInfo.intro)
+            h('p', { className: 'text-sm text-slate-600' }, rightsInfo.intro)
           ),
 
           // Rights navigation
@@ -1788,7 +1788,7 @@ window.SelHub = window.SelHub || {
         tab === 'service' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83e\udd1d Service Learning Project Planner'),
-            h('p', { className: 'text-sm text-slate-500' }, 'Plan a community service project from start to finish. Choose a template or design your own.')
+            h('p', { className: 'text-sm text-slate-600' }, 'Plan a community service project from start to finish. Choose a template or design your own.')
           ),
 
           // Template selection
@@ -1806,7 +1806,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { className: 'text-2xl mb-2' }, tmpl.title.split(' ')[0]),
                   h('div', { className: 'font-bold text-sm text-slate-800' }, tmpl.title),
-                  h('p', { className: 'text-xs text-slate-500 mt-1' }, tmpl.desc)
+                  h('p', { className: 'text-xs text-slate-600 mt-1' }, tmpl.desc)
                 );
               })
             )
@@ -1913,11 +1913,11 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'flex justify-center gap-6' },
                 h('div', null,
                   h('div', { className: 'text-2xl font-bold text-teal-700' }, serviceHours.toFixed(1)),
-                  h('div', { className: 'text-[10px] text-slate-500' }, 'Hours Logged')
+                  h('div', { className: 'text-[10px] text-slate-600' }, 'Hours Logged')
                 ),
                 h('div', null,
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-bold text-teal-700' }, Object.keys(serviceNotes).length),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Phases Documented')
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, 'Phases Documented')
                 )
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-3 border border-teal-200 text-left' },
@@ -1940,7 +1940,7 @@ window.SelHub = window.SelHub || {
         tab === 'quiz' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udfc6 Civic Skills Quiz'),
-            h('p', { className: 'text-sm text-slate-500' }, 'Test your knowledge of civic concepts! (' + gradeBand + ' level)')
+            h('p', { className: 'text-sm text-slate-600' }, 'Test your knowledge of civic concepts! (' + gradeBand + ' level)')
           ),
 
           !quizDone && (function() {
@@ -1949,7 +1949,7 @@ window.SelHub = window.SelHub || {
             return h('div', { className: 'space-y-4' },
               // Progress
               h('div', { className: 'flex justify-between items-center' },
-                h('span', { className: 'text-xs font-bold text-slate-500' }, 'Question ' + (quizIdx + 1) + ' of ' + quizQuestions.length),
+                h('span', { className: 'text-xs font-bold text-slate-600' }, 'Question ' + (quizIdx + 1) + ' of ' + quizQuestions.length),
                 h('span', { className: 'text-xs font-bold text-teal-600' }, 'Score: ' + quizScore + '/' + quizQuestions.length)
               ),
               h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
@@ -2029,7 +2029,7 @@ window.SelHub = window.SelHub || {
         tab === 'scenarios' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udfad Community Change Scenarios'),
-            h('p', { className: 'text-sm text-slate-500' }, 'What would you do? Make choices and see how effective different approaches are.')
+            h('p', { className: 'text-sm text-slate-600' }, 'What would you do? Make choices and see how effective different approaches are.')
           ),
 
           !scenarioDone && (function() {
@@ -2037,7 +2037,7 @@ window.SelHub = window.SelHub || {
             if (!scenario) return null;
             return h('div', { className: 'space-y-4' },
               h('div', { className: 'flex justify-between items-center' },
-                h('span', { className: 'text-xs font-bold text-slate-500' }, 'Scenario ' + (scenarioIdx + 1) + ' of ' + scenarios.length),
+                h('span', { className: 'text-xs font-bold text-slate-600' }, 'Scenario ' + (scenarioIdx + 1) + ' of ' + scenarios.length),
                 h('span', { className: 'text-xs font-bold text-teal-600' }, 'Total Score: ' + scenarioScore)
               ),
               h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
@@ -2113,7 +2113,7 @@ window.SelHub = window.SelHub || {
         tab === 'hope' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udf05 Cultivating Hope'),
-            h('p', { className: 'text-sm text-slate-500' }, 'Hope is not the belief that things will be easy. It is the belief that things can be better \u2014 and the courage to work toward it.')
+            h('p', { className: 'text-sm text-slate-600' }, 'Hope is not the belief that things will be easy. It is the belief that things can be better \u2014 and the courage to work toward it.')
           ),
 
           // Hope anchors — people who changed things
@@ -2142,7 +2142,7 @@ window.SelHub = window.SelHub || {
                   h('div', null,
                     h('div', { className: 'flex items-center gap-2 flex-wrap' },
                       h('span', { className: 'font-bold text-sm text-slate-800' }, cm.name),
-                      h('span', { className: 'text-[10px] text-slate-500' }, cm.years),
+                      h('span', { className: 'text-[10px] text-slate-600' }, cm.years),
                       h('span', { className: 'bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-[10px] font-bold' }, cm.theme)
                     ),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mt-1' }, cm.bio),
@@ -2156,7 +2156,7 @@ window.SelHub = window.SelHub || {
           // Vision exercise
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-rose-50 rounded-2xl border border-amber-200 p-5' },
             h('h4', { className: 'text-sm font-bold text-amber-700 mb-2' }, '\ud83d\udd2e Your Vision for the Future'),
-            h('p', { className: 'text-xs text-slate-500 mb-3' }, 'Close your eyes for a moment. Imagine the world you want to live in 20 years from now. What does it look like?'),
+            h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Close your eyes for a moment. Imagine the world you want to live in 20 years from now. What does it look like?'),
             h('textarea', {
               value: d.visionText || '',
               onChange: function(e) { upd('visionText', e.target.value); },
