@@ -915,6 +915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng.perchRegen = 8; // per second while perched
           eng.gameOver = false;
           eng.survivalTime = 0;
+          try { eng.highScore = JSON.parse(localStorage.getItem('echo3d_highscore') || '{}'); } catch(e) { eng.highScore = {}; }
 
           // ── Insect types (different food values) ──
           var INSECT_TYPES = [
@@ -967,6 +968,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           };
           document.addEventListener('mousemove', eng._mouseMove);
           cnv.addEventListener('click', function() { cnv.requestPointerLock(); });
+
+          // ── Touch controls for 3D cave (mobile) ──
+          var _caveTouchLookId = null, _caveTouchLookStart = null;
+          var _caveTouchMoveId = null, _caveTouchMoveStart = null;
+          cnv.addEventListener('touchstart', function(ev) {
+            ev.preventDefault(); eng._locked = true;
+            for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+              var tch = ev.changedTouches[ti];
+              if (tch.clientX < window.innerWidth / 2 && _caveTouchMoveId === null) {
+                _caveTouchMoveId = tch.identifier; _caveTouchMoveStart = { x: tch.clientX, y: tch.clientY };
+              } else if (_caveTouchLookId === null) {
+                _caveTouchLookId = tch.identifier; _caveTouchLookStart = { x: tch.clientX, y: tch.clientY };
+              }
+            }
+          }, { passive: false });
+          cnv.addEventListener('touchmove', function(ev) {
+            ev.preventDefault();
+            for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+              var tch = ev.changedTouches[ti];
+              if (tch.identifier === _caveTouchLookId && _caveTouchLookStart) {
+                eng.euler.setFromQuaternion(eng.camera.quaternion);
+                eng.euler.y -= (tch.clientX - _caveTouchLookStart.x) * 0.004;
+                eng.euler.x -= (tch.clientY - _caveTouchLookStart.y) * 0.004;
+                eng.euler.x = Math.max(-1.2, Math.min(1.2, eng.euler.x));
+                eng.camera.quaternion.setFromEuler(eng.euler);
+                _caveTouchLookStart = { x: tch.clientX, y: tch.clientY };
+              } else if (tch.identifier === _caveTouchMoveId && _caveTouchMoveStart) {
+                var mx = tch.clientX - _caveTouchMoveStart.x;
+                var mz = tch.clientY - _caveTouchMoveStart.y;
+                eng.keys['KeyW'] = mz < -20; eng.keys['KeyS'] = mz > 20;
+                eng.keys['KeyA'] = mx < -20; eng.keys['KeyD'] = mx > 20;
+              }
+            }
+          }, { passive: false });
+          cnv.addEventListener('touchend', function(ev) {
+            for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+              var tch = ev.changedTouches[ti];
+              if (tch.identifier === _caveTouchMoveId) { _caveTouchMoveId = null; _caveTouchMoveStart = null; eng.keys['KeyW'] = false; eng.keys['KeyS'] = false; eng.keys['KeyA'] = false; eng.keys['KeyD'] = false; }
+              if (tch.identifier === _caveTouchLookId) { _caveTouchLookId = null; _caveTouchLookStart = null; }
+            }
+          }, { passive: false });
           document.addEventListener('pointerlockchange', function() { eng._locked = !!document.pointerLockElement; });
 
           // ── Animate ──
@@ -994,10 +1036,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               eng.energy = Math.min(eng.energyMax, eng.energy + eng.perchRegen * dt);
             } else if (isMoving) {
               // Drain energy while flying
-              eng.energy -= eng.energyDrain * 60 * dt;
+              eng.energy -= currentDrain * 60 * dt;
             } else {
               // Hovering drains less
-              eng.energy -= eng.energyDrain * 20 * dt;
+              eng.energy -= currentDrain * 20 * dt;
             }
             // Sonar pulses cost energy
             // (handled below in pulse emission)
@@ -1006,7 +1048,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             if (eng.energy <= 0) {
               eng.energy = 0;
               eng.gameOver = true;
-              if (addToast) addToast('\uD83E\uDD87 Out of energy! You caught ' + eng.mothsCaught + ' insects and survived ' + Math.round(eng.survivalTime) + 's. Press R to restart.', 'error');
+              // Save high score to localStorage
+              try {
+                var hs = JSON.parse(localStorage.getItem('echo3d_highscore') || '{}');
+                if (!hs.score || eng.score > hs.score) {
+                  hs = { score: eng.score, caught: eng.mothsCaught, time: Math.round(eng.survivalTime) };
+                  localStorage.setItem('echo3d_highscore', JSON.stringify(hs));
+                }
+                eng.highScore = hs;
+              } catch(e) {}
+              if (addToast) addToast('\uD83E\uDD87 Out of energy! Score: ' + eng.score + ' \u2022 ' + eng.mothsCaught + ' insects \u2022 ' + Math.round(eng.survivalTime) + 's. Press R to restart.', 'error');
             }
 
             // Restart on R key
@@ -1023,25 +1074,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               for (var ri = 0; ri < 8; ri++) spawnInsect();
             }
 
+            // ── Difficulty scaling: drain increases over time ──
+            var difficultyMult = 1 + (eng.survivalTime / 120) * 0.5; // +50% drain per 2 minutes
+            var currentDrain = eng.energyDrain * difficultyMult;
+
             // Movement (WASD) — only if not game over
             var fwd = new THREE.Vector3();
             eng.camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
             var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
             var moveSpeed = eng.perching ? 0 : 4;
+            var prevPos = eng.camera.position.clone();
             if (eng.keys['KeyW']) eng.camera.position.addScaledVector(fwd, moveSpeed * dt);
             if (eng.keys['KeyS']) eng.camera.position.addScaledVector(fwd, -moveSpeed * dt);
             if (eng.keys['KeyA']) eng.camera.position.addScaledVector(right, -moveSpeed * dt);
             if (eng.keys['KeyD']) eng.camera.position.addScaledVector(right, moveSpeed * dt);
-            // Fly up/down
             if (!eng.perching) {
               if (eng.keys['Space']) eng.camera.position.y += 3 * dt;
               if (eng.keys['ShiftLeft'] || eng.keys['ShiftRight']) eng.camera.position.y -= 3 * dt;
             }
             eng.camera.position.y = Math.max(0.3, Math.min(5.7, eng.camera.position.y));
 
-            // ── Insect respawning (every 8 seconds, up to 12 active) ──
+            // ── Wall collision: push back if inside any wall mesh ──
+            var camPos = eng.camera.position;
+            for (var ci = 0; ci < eng.walls.length; ci++) {
+              var wall = eng.walls[ci];
+              if (!wall.geometry || !wall.geometry.boundingBox) {
+                wall.geometry.computeBoundingBox();
+              }
+              var bb = wall.geometry.boundingBox;
+              var wPos = wall.position;
+              var minX = wPos.x + bb.min.x, maxX = wPos.x + bb.max.x;
+              var minY = wPos.y + bb.min.y, maxY = wPos.y + bb.max.y;
+              var minZ = wPos.z + bb.min.z, maxZ = wPos.z + bb.max.z;
+              if (camPos.x > minX - 0.3 && camPos.x < maxX + 0.3 &&
+                  camPos.y > minY - 0.3 && camPos.y < maxY + 0.3 &&
+                  camPos.z > minZ - 0.3 && camPos.z < maxZ + 0.3) {
+                // Push back to previous position
+                eng.camera.position.copy(prevPos);
+                // Small energy penalty for wall collision
+                eng.energy -= 0.5;
+                break;
+              }
+            }
+
+            // ── Ambient cave sounds (drip every 3-6 seconds) ──
+            if (!eng._dripTimer) eng._dripTimer = 2 + Math.random() * 4;
+            eng._dripTimer -= dt;
+            if (eng._dripTimer <= 0) {
+              eng._dripTimer = 3 + Math.random() * 5;
+              if (typeof beep === 'function') beep(800 + Math.random() * 400, 0.03 + Math.random() * 0.02, 0.02);
+            }
+
+            // ── Insect respawning (faster over time, up to 12 active) ──
+            var respawnInterval = Math.max(4, 8 - eng.survivalTime / 60); // gets faster
             eng._respawnTimer += dt;
-            if (eng._respawnTimer > 8 && eng.moths.filter(function(m) { return !m._caught; }).length < 10) {
+            if (eng._respawnTimer > respawnInterval && eng.moths.filter(function(m) { return !m._caught; }).length < 10) {
               eng._respawnTimer = 0;
               spawnInsect();
             }
@@ -1096,6 +1183,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     m.material.color.setHex(0xffff00);
                     eng.mothsFound++;
                   }
+                  // Flee behavior: revealed insects scatter away from sonar source
+                  if (m._found) {
+                    var fleeDir = m.position.clone().sub(p.position).normalize();
+                    m._fleeVx = (m._fleeVx || 0) + fleeDir.x * 2;
+                    m._fleeVz = (m._fleeVz || 0) + fleeDir.z * 2;
+                    m._fleeVy = (m._fleeVy || 0) + (Math.random() - 0.3) * 1.5;
+                  }
                 }
               });
 
@@ -1119,10 +1213,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             for (var mi2 = eng.moths.length - 1; mi2 >= 0; mi2--) {
               var m = eng.moths[mi2];
               if (m._caught) continue;
-              // Hover + drift
+              // Hover + drift + flee velocity
               m.position.y = m._baseY + Math.sin(t * 2 + mi2 * 1.3) * 0.2;
               m.position.x += Math.sin(t * (m._type.speed || 0.3) + m._movePhase) * 0.01;
               m.position.z += Math.cos(t * (m._type.speed || 0.3) * 0.7 + m._movePhase) * 0.01;
+              // Apply flee velocity (from sonar hits)
+              if (m._fleeVx || m._fleeVz || m._fleeVy) {
+                m.position.x += (m._fleeVx || 0) * dt;
+                m.position.z += (m._fleeVz || 0) * dt;
+                m._baseY += (m._fleeVy || 0) * dt;
+                m._baseY = Math.max(0.5, Math.min(5, m._baseY));
+                // Dampen flee velocity
+                m._fleeVx = (m._fleeVx || 0) * 0.95;
+                m._fleeVz = (m._fleeVz || 0) * 0.95;
+                m._fleeVy = (m._fleeVy || 0) * 0.92;
+                // Clamp position to cave bounds
+                m.position.x = Math.max(-7, Math.min(7, m.position.x));
+                m.position.z = Math.max(-18, Math.min(18, m.position.z));
+              }
               // Revealed insects fade slightly if not caught
               if (m._found && !m._caught) {
                 m.material.opacity = Math.max(0.3, m.material.opacity - 0.002);
@@ -1216,7 +1324,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { style: { color: '#fbbf24', fontWeight: 700 } }, '\uD83E\uDD8B Caught: ' + (cave3dEngineRef.current.mothsCaught || 0)),
                 h('div', { style: { color: '#4ade80' } }, '\uD83C\uDFAF Score: ' + (cave3dEngineRef.current.score || 0)),
                 h('div', { style: { color: '#94a3b8' } }, '\u23F1 ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
-                cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)')
+                cave3dEngineRef.current.highScore && cave3dEngineRef.current.highScore.score > 0 && h('div', { style: { color: '#7c3aed', fontSize: '9px' } }, '\uD83C\uDFC6 Best: ' + cave3dEngineRef.current.highScore.score + ' (' + (cave3dEngineRef.current.highScore.time || 0) + 's)'),
+                cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)'),
+                eng.survivalTime > 5 && h('div', { style: { color: '#64748b', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1))
               ),
               // Game over overlay
               cave3dEngineRef.current && cave3dEngineRef.current.gameOver && h('div', {
@@ -1230,6 +1340,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { style: { fontSize: '12px', color: '#fbbf24', fontWeight: 700 } }, 'Press R to restart')
               )
             )
+          ),
+          // Mobile action buttons (touch devices only)
+          ('ontouchstart' in window) && h('div', { className: 'flex gap-2 justify-center' },
+            h('button', {
+              onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['KeyE'] = true; setTimeout(function() { if (e) e.keys['KeyE'] = false; }, 100); },
+              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(0,255,170,0.2)', border: '2px solid rgba(0,255,170,0.5)', color: '#4ade80' }
+            }, '\uD83D\uDD26 Sonar'),
+            h('button', {
+              onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['KeyP'] = true; },
+              onTouchEnd: function() { var e = cave3dEngineRef.current; if (e) e.keys['KeyP'] = false; },
+              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(96,165,250,0.2)', border: '2px solid rgba(96,165,250,0.5)', color: '#60a5fa' }
+            }, '\uD83E\uDD87 Perch'),
+            h('button', {
+              onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['Space'] = true; },
+              onTouchEnd: function() { var e = cave3dEngineRef.current; if (e) e.keys['Space'] = false; },
+              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(167,139,250,0.2)', border: '2px solid rgba(167,139,250,0.5)', color: '#a78bfa' }
+            }, '\u2B06\uFE0F Up'),
+            cave3dEngineRef.current && cave3dEngineRef.current.gameOver && h('button', {
+              onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['KeyR'] = true; setTimeout(function() { if (e) e.keys['KeyR'] = false; }, 100); },
+              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(239,68,68,0.2)', border: '2px solid rgba(239,68,68,0.5)', color: '#ef4444' }
+            }, '\uD83D\uDD04 Restart')
           ),
           // Controls help
           h('div', { className: 'grid grid-cols-3 gap-2 text-center text-xs ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
