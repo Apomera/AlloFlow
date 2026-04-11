@@ -655,6 +655,93 @@ const GlobalMuteButton = React.memo(({ className = '' }) => {
         </button>
     );
 });
+
+// @section REMEDIATION_AUDIO_CUES — Sound effects for the doc remediation pipeline
+// Uses the global AudioContext and respects the global mute. Also suppresses sounds
+// when the user has prefers-reduced-motion enabled (accessibility).
+const remediationAudio = (() => {
+  let lastChunkSoundAt = 0;
+  const DEBOUNCE_MS = 150;
+  const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canPlay = () => !isGlobalMuted() && !prefersReducedMotion();
+
+  // Generic tone generator: frequency (Hz), duration (s), type, gain, attack, release
+  const playTone = (freq, duration = 0.12, type = 'sine', gain = 0.12, attack = 0.005, release = 0.08) => {
+    if (!canPlay()) return;
+    try {
+      const ctx = getGlobalAudioContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') { try { ctx.resume(); } catch(e) {} }
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      const now = ctx.currentTime;
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(gain, now + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + duration + release);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration + release + 0.02);
+    } catch(e) { /* non-blocking */ }
+  };
+
+  // Play a chord: array of frequencies, layered
+  const playChord = (freqs, duration = 0.5, type = 'triangle', gain = 0.08) => {
+    if (!canPlay()) return;
+    freqs.forEach((f, i) => setTimeout(() => playTone(f, duration, type, gain, 0.01, 0.25), i * 50));
+  };
+
+  return {
+    // Chunk completed — good score (≥80): soft high tick, debounced
+    chunkGood: () => {
+      const now = Date.now();
+      if (now - lastChunkSoundAt < DEBOUNCE_MS) return;
+      lastChunkSoundAt = now;
+      playTone(1760, 0.06, 'sine', 0.08, 0.002, 0.04); // A6
+    },
+    // Chunk completed — borderline score (60-79): medium tick
+    chunkMedium: () => {
+      const now = Date.now();
+      if (now - lastChunkSoundAt < DEBOUNCE_MS) return;
+      lastChunkSoundAt = now;
+      playTone(880, 0.08, 'sine', 0.09, 0.003, 0.05); // A5
+    },
+    // Chunk completed — bad score (<60) or fell back to original: low thud
+    chunkBad: () => {
+      const now = Date.now();
+      if (now - lastChunkSoundAt < DEBOUNCE_MS) return;
+      lastChunkSoundAt = now;
+      playTone(220, 0.18, 'triangle', 0.12, 0.005, 0.12); // A3
+    },
+    // Re-fix starts — quick ascending whoosh
+    refixStart: () => {
+      if (!canPlay()) return;
+      playTone(440, 0.08, 'sine', 0.07, 0.005, 0.05);
+      setTimeout(() => playTone(660, 0.08, 'sine', 0.07, 0.005, 0.05), 60);
+    },
+    // Re-fix succeeded — short rising tone
+    refixSuccess: () => {
+      if (!canPlay()) return;
+      playTone(523, 0.1, 'sine', 0.09, 0.005, 0.08);  // C5
+      setTimeout(() => playTone(784, 0.12, 'sine', 0.09, 0.005, 0.1), 90); // G5
+    },
+    // Session complete — triumphant chord (C major → G major)
+    sessionComplete: () => {
+      if (!canPlay()) return;
+      playChord([523.25, 659.25, 783.99], 0.5, 'triangle', 0.08); // C E G
+      setTimeout(() => playChord([587.33, 739.99, 880], 0.6, 'triangle', 0.08), 300); // D F# A
+    },
+    // Error / pipeline failure — descending minor tone
+    error: () => {
+      if (!canPlay()) return;
+      playTone(440, 0.15, 'sawtooth', 0.1, 0.005, 0.1);
+      setTimeout(() => playTone(311, 0.25, 'sawtooth', 0.1, 0.005, 0.2), 130);
+    },
+  };
+})();
+if (typeof window !== 'undefined') { window.remediationAudio = remediationAudio; }
+
 // @section LARGE_FILE_HANDLER — Chunked audio/video transcription
 const LargeFileHandler = {
     CHUNK_DURATION_SECONDS: 600,
@@ -4051,6 +4138,53 @@ const useTranslation = (targetLanguage, apiKey) => {
     };
     reader.readAsText(file);
   }, []);
+
+  // ── Live chunk review: listen for events from doc_pipeline during remediation ──
+  useEffect(() => {
+    const onSessionStart = (e) => {
+      setLiveChunkStream([]);
+      setLiveChunkSessionActive(true);
+      setLiveChunkExpanded({});
+      setLiveChunkRejected({});
+    };
+    const onChunkStart = (e) => {
+      setLiveChunkStream(prev => {
+        // Add a placeholder card so users see "working on this chunk" immediately
+        const idx = e.detail.index;
+        if (prev.find(c => c.index === idx)) return prev;
+        return [...prev, { ...e.detail, status: 'working' }];
+      });
+    };
+    const onChunkFixed = (e) => {
+      setLiveChunkStream(prev => {
+        const idx = e.detail.index;
+        const existing = prev.find(c => c.index === idx);
+        if (existing) {
+          return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c);
+        }
+        return [...prev, { ...e.detail, status: 'complete' }];
+      });
+    };
+    const onChunkRefixed = (e) => {
+      setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c));
+    };
+    const onSessionComplete = (e) => {
+      setLiveChunkSessionActive(false);
+    };
+    window.addEventListener('alloflow:chunk-session-start', onSessionStart);
+    window.addEventListener('alloflow:chunk-start', onChunkStart);
+    window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
+    window.addEventListener('alloflow:chunk-refixed', onChunkRefixed);
+    window.addEventListener('alloflow:chunk-session-complete', onSessionComplete);
+    return () => {
+      window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
+      window.removeEventListener('alloflow:chunk-start', onChunkStart);
+      window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
+      window.removeEventListener('alloflow:chunk-refixed', onChunkRefixed);
+      window.removeEventListener('alloflow:chunk-session-complete', onSessionComplete);
+    };
+  }, []);
+
   useEffect(() => {
     if (!targetLanguage || targetLanguage === 'English') {
       setLanguagePack(null);
@@ -7746,27 +7880,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/content_engine_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7782,7 +7916,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cd4c373/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7844,6 +7978,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
         'stem_lab/stem_tool_spaceexplorer.js',
+        'stem_lab/stem_tool_roadready.js',
         'sel_hub/sel_safety_layer.js',
         'sel_hub/sel_tool_advocacy.js',
         'sel_hub/sel_tool_restorativecircle.js',
@@ -12765,6 +12900,12 @@ Return only the corrected version of this exact text:`;
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
   const pdfFixModeRef = useRef('');
   const [pdfFixStep, setPdfFixStep] = useState('');
+  // ── Live chunk review state ──
+  // Tracks per-chunk events dispatched by doc_pipeline_module during remediation
+  const [liveChunkStream, setLiveChunkStream] = useState([]); // array of chunk event details
+  const [liveChunkSessionActive, setLiveChunkSessionActive] = useState(false);
+  const [liveChunkExpanded, setLiveChunkExpanded] = useState({}); // { [index]: bool } for diff expansion
+  const [liveChunkRejected, setLiveChunkRejected] = useState({}); // { [index]: bool } for user-rejected chunks
   // User-configurable pipeline settings
   const [pdfAuditorCount, setPdfAuditorCount] = useState(5);
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
@@ -16305,7 +16446,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
   };
   const callGeminiVision = async (prompt, base64Data, mimeType) => {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.flash}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+    const model = GEMINI_MODELS.flash;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
     const payload = {
       contents: [{
         parts: [
@@ -16323,6 +16465,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       });
       if (!response.ok) {
         const errText = await response.text().catch(() => 'Unknown error');
+        console.error(`[Vision] ${model} HTTP ${response.status}:`, errText.substring(0, 500));
         throw new Error(`Vision API HTTP ${response.status}: ${errText.substring(0, 200)}`);
       }
       const rawText = await response.text();
@@ -16351,7 +16494,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }
       return text;
     } catch (err) {
-      warnLog("Vision API Error", err);
+      console.error(`[Vision] ${model} error:`, err.message || err);
       throw err;
     }
   };
@@ -18724,6 +18867,8 @@ Return ONLY valid JSON:
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
   const autoFixAxeViolations = _docPipeline ? _docPipeline.autoFixAxeViolations : async (h) => h;
+  const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
+  const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
@@ -31591,14 +31736,19 @@ Return ONLY JSON:
         {toasts.map(toast => (
             <div
                 key={toast.id}
+                role={toast.type === 'error' ? 'alert' : 'status'}
+                aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+                aria-atomic="true"
                 className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all animate-in slide-in-from-right-10 fade-in duration-300 max-w-sm ${
                     toast.type === 'success' ? 'bg-white border-green-200 text-green-800 shadow-green-100' :
                     toast.type === 'error' ? 'bg-white border-red-200 text-red-800 shadow-red-100' :
+                    toast.type === 'warning' ? 'bg-white border-amber-200 text-amber-800 shadow-amber-100' :
                     'bg-white border-indigo-200 text-indigo-800 shadow-indigo-100'
                 }`}
             >
                 {toast.type === 'success' ? <CheckCircle size={18} className="text-green-500 shrink-0" /> :
                  toast.type === 'error' ? <XCircle size={18} className="text-red-500 shrink-0" /> :
+                 toast.type === 'warning' ? <AlertTriangle size={18} className="text-amber-500 shrink-0" /> :
                  <Info size={18} className="text-indigo-500 shrink-0" />}
                 <span className="text-sm font-bold">{toast.message}</span>
             </div>
@@ -50322,6 +50472,8 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             autoFixPasses: autoFix?.passes || 0,
                             needsExpertReview: finalScore < 70,
                             htmlChars: fixed.length,
+                            chunkState: autoFix?.chunkState || null,
+                            chunkWeightedScore: autoFix?.chunkWeightedScore || null,
                           });
                           setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '-remediated.html' });
                           addToast(`Remediation complete! Score: ${finalScore}/100`, 'success');
@@ -51250,7 +51402,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             html = fr.html;
                             const [fv, fa] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
                             const finalScore = (fv?.issues?.length === 0 && fa?.totalViolations === 0) ? 100 : fv?.score ?? rv?.score;
-                            setPdfFixResult(p => ({...p, accessibleHtml: html, verificationAudit: fv||rv, axeAudit: fa||ra, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0)+fr.passes, htmlChars: html.length}));
+                            setPdfFixResult(p => ({...p, accessibleHtml: html, verificationAudit: fv||rv, axeAudit: fa||ra, afterScore: finalScore ?? p.afterScore, autoFixPasses: (p.autoFixPasses||0)+fr.passes, htmlChars: html.length, chunkState: fr.chunkState || p.chunkState, chunkWeightedScore: fr.chunkWeightedScore || p.chunkWeightedScore}));
                           } else {
                             const finalScore = (rv?.issues?.length === 0 && ra?.totalViolations === 0) ? 100 : rv?.score;
                             setPdfFixResult(p => ({...p, accessibleHtml: html, verificationAudit: rv||p.verificationAudit, axeAudit: ra||p.axeAudit, afterScore: finalScore ?? p.afterScore, htmlChars: html.length}));
@@ -51594,6 +51746,204 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                   <p className="text-[10px] text-slate-600 text-center">"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.</p>
 
+                  {/* ── Live Chunk Review Panel ── */}
+                  {/* Shows each chunk's fix as it happens in real time, with Accept/Reject/Re-fix per chunk */}
+                  {(liveChunkSessionActive || liveChunkStream.length > 0) && (
+                    <div className="mt-4 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-5 space-y-3 animate-in slide-in-from-bottom duration-300" role="region" aria-label="Live chunk remediation review">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl" aria-hidden="true">🔬</span>
+                          <div>
+                            <h4 className="text-sm font-bold text-indigo-800">Live Remediation Review</h4>
+                            <div className="text-[10px] text-indigo-500">Watch each section get fixed in real time — reject or re-fix anything that looks wrong</div>
+                          </div>
+                        </div>
+                        <div className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
+                          {liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} complete
+                        </div>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="w-full bg-indigo-100 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label="Live remediation progress" aria-valuenow={liveChunkStream.filter(c => c.status === 'complete').length} aria-valuemin={0} aria-valuemax={liveChunkStream.length || 1}>
+                        <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: liveChunkStream.length > 0 ? `${(liveChunkStream.filter(c => c.status === 'complete').length / liveChunkStream.length) * 100}%` : '0%' }}></div>
+                      </div>
+
+                      {/* Chunk cards stream */}
+                      <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+                        {liveChunkStream.map((chunk, ci) => {
+                          const isWorking = chunk.status === 'working';
+                          const isRejected = !!liveChunkRejected[chunk.index];
+                          const isExpanded = !!liveChunkExpanded[chunk.index];
+                          const scoreColor = chunk.score >= 80 ? 'green' : chunk.score >= 60 ? 'amber' : 'red';
+                          const scoreBg = scoreColor === 'green' ? 'bg-green-50 border-green-200' : scoreColor === 'amber' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200';
+                          const scoreText = scoreColor === 'green' ? 'text-green-600' : scoreColor === 'amber' ? 'text-amber-600' : 'text-red-600';
+                          const scoreDot = scoreColor === 'green' ? 'bg-green-500' : scoreColor === 'amber' ? 'bg-amber-500' : 'bg-red-500';
+
+                          return (
+                            <div key={chunk.index} className={`border-2 rounded-xl transition-all duration-300 ${isRejected ? 'bg-slate-50 border-slate-300 opacity-60' : isWorking ? 'bg-indigo-50 border-indigo-200' : scoreBg}`}>
+                              <div className="flex items-center gap-2 p-2">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0 ${isWorking ? 'bg-indigo-500 animate-pulse' : scoreDot}`}>
+                                  {isWorking ? <span className="animate-spin" aria-hidden="true">⏳</span> : chunk.index + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-[11px] font-bold text-slate-700">Section {chunk.index + 1}</span>
+                                    <span className="text-[10px] text-slate-400">{chunk.sizeKB || '?'}KB</span>
+                                    {isWorking && <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">Fixing...</span>}
+                                    {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title="Deterministic regex fixes">{chunk.deterministicFixCount} det</span>}
+                                    {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title="AI-diagnosed micro-tool fixes">{chunk.surgicalFixCount} surg</span>}
+                                    {!isWorking && chunk.usedOriginal && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title="AI fix failed — deterministic fixes only">det-only</span>}
+                                    {!isWorking && chunk.wasRetried && !chunk.usedOriginal && <span className="text-[9px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">retried</span>}
+                                    {!isWorking && chunk.aiVerified && <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title="AI verified content preserved">✓ verified</span>}
+                                    {!isWorking && chunk.integrityPassed && <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold" title="Word overlap integrity check passed">integrity ✓</span>}
+                                    {isRejected && <span className="text-[9px] bg-slate-300 text-slate-700 px-1.5 py-0.5 rounded font-bold">rejected</span>}
+                                  </div>
+                                </div>
+                                {!isWorking && (
+                                  <div className={`text-base font-black shrink-0 ${scoreText}`}>
+                                    {chunk.score}<span className="text-[9px] opacity-60">/100</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Action buttons — only shown after chunk is complete */}
+                              {!isWorking && (
+                                <div className="flex items-center gap-1 px-2 pb-2 flex-wrap">
+                                  <button
+                                    onClick={() => setLiveChunkExpanded(prev => ({ ...prev, [chunk.index]: !prev[chunk.index] }))}
+                                    className="text-[10px] bg-slate-100 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-200 transition-colors focus:ring-2 focus:ring-slate-400"
+                                    aria-expanded={isExpanded}
+                                    aria-label={`${isExpanded ? 'Hide' : 'View'} diff for section ${chunk.index + 1}`}
+                                  >
+                                    {isExpanded ? '▼ Hide Diff' : '▶ View Diff'}
+                                  </button>
+                                  {!isRejected && !pdfFixLoading && (
+                                    <button
+                                      onClick={async () => {
+                                        // Re-fix this chunk via module API
+                                        setPdfFixLoading(true);
+                                        setPdfFixStep(`Re-fixing section ${chunk.index + 1}...`);
+                                        try {
+                                          const result = await refixChunk(chunk.index, { onProgress: setPdfFixStep });
+                                          if (result?.html) {
+                                            const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
+                                            const newScore = (reAi && reAxe) ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi?.score;
+                                            setPdfFixResult(prev => ({
+                                              ...prev,
+                                              accessibleHtml: result.html,
+                                              verificationAudit: reAi || prev?.verificationAudit,
+                                              axeAudit: reAxe || prev?.axeAudit,
+                                              afterScore: newScore ?? prev?.afterScore,
+                                              htmlChars: result.html.length,
+                                              chunkState: result.chunkState,
+                                              chunkWeightedScore: result.chunkWeightedScore,
+                                            }));
+                                            addToast(`Section ${chunk.index + 1} re-fixed: ${result.chunkResult.score}/100`, 'success');
+                                          }
+                                        } catch(e) { addToast(`Re-fix failed: ${e?.message}`, 'error'); }
+                                        finally { setPdfFixLoading(false); setPdfFixStep(''); }
+                                      }}
+                                      className="text-[10px] bg-indigo-600 text-white px-2 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors focus:ring-2 focus:ring-indigo-400"
+                                      aria-label={`Re-fix section ${chunk.index + 1}`}
+                                    >
+                                      🔄 Re-fix
+                                    </button>
+                                  )}
+                                  {!isRejected && !pdfFixLoading && (
+                                    <button
+                                      onClick={() => {
+                                        // Mark as rejected — revert this chunk to the original in the assembled doc
+                                        setLiveChunkRejected(prev => ({ ...prev, [chunk.index]: true }));
+                                        try {
+                                          const cs = getChunkState?.();
+                                          if (cs && cs.fixedChunks && cs.originalChunks && cs.fixedChunks[chunk.index] !== undefined) {
+                                            cs.fixedChunks[chunk.index] = cs.originalChunks[chunk.index];
+                                            const revertedHtml = cs.preamble + '\n' + cs.fixedChunks.join('\n') + '\n' + cs.postamble;
+                                            setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: revertedHtml, htmlChars: revertedHtml.length } : prev);
+                                            addToast(`Section ${chunk.index + 1} reverted to original`, 'info');
+                                          }
+                                        } catch(e) { addToast(`Revert failed: ${e?.message}`, 'error'); }
+                                      }}
+                                      className="text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold hover:bg-red-200 transition-colors focus:ring-2 focus:ring-red-400"
+                                      aria-label={`Reject fix for section ${chunk.index + 1}, revert to original`}
+                                    >
+                                      ✕ Reject
+                                    </button>
+                                  )}
+                                  {isRejected && !pdfFixLoading && (
+                                    <button
+                                      onClick={() => {
+                                        // Unreject — restore the fixed version
+                                        setLiveChunkRejected(prev => { const next = { ...prev }; delete next[chunk.index]; return next; });
+                                        try {
+                                          const cs = getChunkState?.();
+                                          if (cs && cs.fixedChunks) {
+                                            // The fixedChunks[index] was overwritten with original — but chunkResults still has the fixed html
+                                            const fixedHtml = cs.chunkResults?.[chunk.index]?.html;
+                                            if (fixedHtml !== undefined) {
+                                              cs.fixedChunks[chunk.index] = fixedHtml;
+                                              const restoredHtml = cs.preamble + '\n' + cs.fixedChunks.join('\n') + '\n' + cs.postamble;
+                                              setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: restoredHtml, htmlChars: restoredHtml.length } : prev);
+                                              addToast(`Section ${chunk.index + 1} restored`, 'success');
+                                            }
+                                          }
+                                        } catch(e) { /* non-blocking */ }
+                                      }}
+                                      className="text-[10px] bg-slate-200 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-300 transition-colors"
+                                      aria-label={`Restore fixed section ${chunk.index + 1}`}
+                                    >
+                                      ↶ Restore
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Diff view — shown when expanded */}
+                              {!isWorking && isExpanded && (
+                                <div className="px-2 pb-2 space-y-2">
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                                    <div className="bg-white rounded-lg border border-slate-200 p-2">
+                                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Before (original)</div>
+                                      <pre className="text-[9px] text-slate-700 whitespace-pre-wrap break-all max-h-40 overflow-y-auto font-mono">{(chunk.originalHtml || '').substring(0, 2000)}{(chunk.originalHtml || '').length > 2000 ? '\n... (truncated)' : ''}</pre>
+                                    </div>
+                                    <div className="bg-white rounded-lg border border-emerald-200 p-2">
+                                      <div className="text-[9px] font-bold text-emerald-600 uppercase mb-1">After (fixed)</div>
+                                      <pre className="text-[9px] text-slate-700 whitespace-pre-wrap break-all max-h-40 overflow-y-auto font-mono">{(chunk.fixedHtml || '').substring(0, 2000)}{(chunk.fixedHtml || '').length > 2000 ? '\n... (truncated)' : ''}</pre>
+                                    </div>
+                                  </div>
+                                  {chunk.integrityReason && chunk.integrityReason !== 'ok' && (
+                                    <div className="text-[10px] bg-amber-50 border border-amber-200 rounded p-1.5 text-amber-800">
+                                      <span className="font-bold">Integrity note:</span> {chunk.integrityReason}
+                                    </div>
+                                  )}
+                                  {chunk.violationInstructions && (
+                                    <details className="bg-slate-50 border border-slate-200 rounded p-1.5">
+                                      <summary className="text-[10px] font-bold text-slate-600 cursor-pointer">Violations targeted in this pass</summary>
+                                      <pre className="text-[9px] text-slate-600 whitespace-pre-wrap mt-1">{chunk.violationInstructions}</pre>
+                                    </details>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {!liveChunkSessionActive && liveChunkStream.length > 0 && (
+                        <div className="flex items-center justify-between text-[10px] text-slate-600 pt-2 border-t border-indigo-200">
+                          <span>✓ Review complete — {Object.keys(liveChunkRejected).length} section(s) rejected</span>
+                          <button
+                            onClick={() => { setLiveChunkStream([]); setLiveChunkRejected({}); setLiveChunkExpanded({}); }}
+                            className="text-[10px] text-slate-500 hover:text-slate-700 font-bold underline"
+                            aria-label="Clear live review history"
+                          >
+                            Clear history
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
                     <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300">
@@ -51774,6 +52124,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   afterScore: reVerify ? reVerify.score : prev.afterScore,
                                   autoFixPasses: (prev.autoFixPasses || 0) + result.passes,
                                   htmlChars: result.html.length,
+                                  chunkState: result.chunkState || prev.chunkState,
+                                  chunkWeightedScore: result.chunkWeightedScore || prev.chunkWeightedScore,
                                 }));
                                 setPdfFixLoading(false);
                                 setPdfFixStep('');
@@ -51799,6 +52151,86 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {!pdfFixResult.axeAudit && (
                         <div className="bg-slate-50 rounded-lg p-2 border border-slate-200 text-center">
                           <div className="text-[10px] text-slate-600">axe-core automated check could not run (CDN may be blocked). AI verification above is still valid.</div>
+                        </div>
+                      )}
+
+                      {/* ── Chunk Map: Per-section scores with selective re-fix ── */}
+                      {pdfFixResult.chunkState && pdfFixResult.chunkState.chunkResults && pdfFixResult.chunkState.chunkResults.length > 1 && (
+                        <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl border-2 border-slate-200 p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">🧩</span>
+                              <div>
+                                <div className="text-xs font-bold text-slate-800">Document Section Map</div>
+                                <div className="text-[10px] text-slate-500">{pdfFixResult.chunkState.chunkResults.length} sections — re-fix individual sections without affecting others</div>
+                              </div>
+                            </div>
+                            {pdfFixResult.chunkWeightedScore != null && (
+                              <div className={`text-sm font-black ${pdfFixResult.chunkWeightedScore >= 80 ? 'text-green-600' : pdfFixResult.chunkWeightedScore >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
+                                {pdfFixResult.chunkWeightedScore}<span className="text-[10px] opacity-60">/100 avg</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            {pdfFixResult.chunkState.chunkResults.map((cr, ci) => (
+                              <div key={ci} className={`flex items-center gap-2 p-1.5 rounded-lg border ${cr.score >= 80 ? 'bg-green-50 border-green-200' : cr.score >= 60 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'} transition-all`}>
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0 ${cr.score >= 80 ? 'bg-green-500' : cr.score >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}>
+                                  {ci + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-bold text-slate-700">Section {ci + 1}</span>
+                                    <span className="text-[10px] text-slate-400">{cr.sizeKB || '?'}KB</span>
+                                    {cr.deterministicFixes > 0 && <span className="text-[9px] bg-blue-100 text-blue-600 px-1 rounded font-bold">{cr.deterministicFixes} det</span>}
+                                    {cr.surgicalFixes > 0 && <span className="text-[9px] bg-purple-100 text-purple-600 px-1 rounded font-bold">{cr.surgicalFixes} surg</span>}
+                                    {cr.usedOriginal && <span className="text-[9px] bg-amber-100 text-amber-700 px-1 rounded font-bold">det-only</span>}
+                                    {cr.wasRetried && !cr.usedOriginal && <span className="text-[9px] bg-slate-100 text-slate-500 px-1 rounded font-bold">retried</span>}
+                                  </div>
+                                  {/* Score bar */}
+                                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-0.5" role="progressbar" aria-label={`Section ${ci + 1} score: ${cr.score}/100`} aria-valuenow={cr.score} aria-valuemin={0} aria-valuemax={100}>
+                                    <div className={`h-full rounded-full transition-all duration-500 ${cr.score >= 80 ? 'bg-green-500' : cr.score >= 60 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${cr.score}%` }}></div>
+                                  </div>
+                                </div>
+                                <div className={`text-sm font-black shrink-0 ${cr.score >= 80 ? 'text-green-600' : cr.score >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
+                                  {cr.score}
+                                </div>
+                                {cr.score < 80 && !pdfFixLoading && (
+                                  <button
+                                    onClick={async () => {
+                                      setPdfFixLoading(true);
+                                      setPdfFixStep(`Re-fixing section ${ci + 1}...`);
+                                      try {
+                                        const result = await refixChunk(ci, { onProgress: setPdfFixStep });
+                                        if (result?.html) {
+                                          const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
+                                          const newScore = (reAi && reAxe) ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi?.score;
+                                          setPdfFixResult(prev => ({
+                                            ...prev,
+                                            accessibleHtml: result.html,
+                                            verificationAudit: reAi || prev.verificationAudit,
+                                            axeAudit: reAxe || prev.axeAudit,
+                                            afterScore: newScore ?? prev.afterScore,
+                                            htmlChars: result.html.length,
+                                            chunkState: result.chunkState,
+                                            chunkWeightedScore: result.chunkWeightedScore,
+                                          }));
+                                          addToast(`Section ${ci + 1} re-fixed: ${result.chunkResult.score}/100`, 'success');
+                                        }
+                                      } catch(e) { addToast(`Re-fix failed: ${e?.message}`, 'error'); }
+                                      finally { setPdfFixLoading(false); setPdfFixStep(''); }
+                                    }}
+                                    className="text-[9px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer shrink-0 focus:ring-2 focus:ring-indigo-400"
+                                    aria-label={`Re-fix section ${ci + 1} (score ${cr.score}/100)`}
+                                  >
+                                    Re-fix
+                                  </button>
+                                )}
+                                {cr.score >= 80 && (
+                                  <span className="text-[10px] text-green-600 font-bold shrink-0">✓</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
 

@@ -1186,7 +1186,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         activeTab === 'stats' && h('div', { className: 'space-y-3' },
           n === 0
-            ? h('div', { className: 'text-center text-sm text-slate-500 py-8' }, 'Add data points to see statistics')
+            ? h('div', { className: 'text-center text-sm text-slate-600 py-8' }, 'Add data points to see statistics')
             : h('div', { className: 'space-y-3' },
 
               // Summary stats grid (expanded)
@@ -1390,7 +1390,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Next', onClick: makeQuiz, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
           ),
 
-          !dpQuiz && h('div', { className: 'text-center text-sm text-slate-500 py-4' }, 'Select a quiz type and click "Start Quiz"!')
+          !dpQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-4' }, 'Select a quiz type and click "Start Quiz"!')
         ),
 
         // ══════════════════════════════════════════════════════════

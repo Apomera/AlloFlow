@@ -1990,7 +1990,7 @@ window.StemLab = window.StemLab || {
                           title: AMINO_FULL[aa] || aa
                         },
                           h('span', { className: 'text-xs font-bold block', style: { color: AMINO_COLORS[cat] || '#94a3b8' } }, aa),
-                          h('span', { className: 'text-[7px] text-slate-500 block' }, codons[i]),
+                          h('span', { className: 'text-[7px] text-slate-600 block' }, codons[i]),
                           i < aminos.length - 1 && aa !== 'Stop' ? h('span', { className: 'text-[10px] text-slate-600' }, '\u2192') : null
                         );
                       })

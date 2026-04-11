@@ -745,7 +745,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter' && multTableAnswer && !inputDisabled) checkMult(); },
               className: 'w-20 px-3 py-2 text-center text-lg font-bold border-2 rounded-lg outline-none transition-all ' +
                 (inputDisabled
-                  ? 'border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed'
+                  ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
                   : 'border-pink-300 focus:border-pink-500'),
               placeholder: '?',
               autoFocus: true,

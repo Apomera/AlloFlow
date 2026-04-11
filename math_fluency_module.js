@@ -733,9 +733,8 @@
   // maze assessment (USM, 2024)
   // ═══════════════════════════════════════════════════════════
 
-  var MAZE_COLS = 7;
-  var MAZE_ROWS = 7;
   var CELL_SIZE = 52;
+  var MAZE_SIZES = { small: { cols: 5, rows: 5, label: 'Small (5\u00d75)' }, medium: { cols: 7, rows: 7, label: 'Medium (7\u00d77)' }, large: { cols: 9, rows: 9, label: 'Large (9\u00d79)' } };
 
   function generateMaze(rows, cols) {
     // Simple recursive backtracker maze generator
@@ -803,6 +802,8 @@
     var difficulty = diffState[0], setDifficulty = diffState[1];
     var chaseState = useState(false);
     var chaseMode = chaseState[0], setChaseMode = chaseState[1];
+    var mazeSizeState = useState('medium');
+    var mazeSize = mazeSizeState[0], setMazeSize = mazeSizeState[1];
     var mazeState = useState(null);
     var maze = mazeState[0], setMaze = mazeState[1];
     var posState = useState({ r: 0, c: 0 });
@@ -845,8 +846,13 @@
       return { text: '1 + 1', answer: 2, op: 'add' };
     }
 
+    function getMazeSize() { var s = MAZE_SIZES[mazeSize] || MAZE_SIZES.medium; return { cols: s.cols, rows: s.rows }; }
+    var MAZE_COLS = getMazeSize().cols;
+    var MAZE_ROWS = getMazeSize().rows;
+
     function startMaze() {
-      var newMaze = generateMaze(MAZE_ROWS, MAZE_COLS);
+      var sz = getMazeSize();
+      var newMaze = generateMaze(sz.rows, sz.cols);
       setMaze(newMaze);
       setPlayerPos({ r: 0, c: 0 }); playerPosRef.current = { r: 0, c: 0 };
       setMonsterPos({ r: 0, c: 0 });
@@ -905,13 +911,41 @@
         setFeedback('correct');
         playTone(880, 0.05, 'sine', 0.06);
         setTimeout(function() { playTone(1320, 0.05, 'sine', 0.05); }, 50);
+        // 3D feedback: green ambient flash
+        var eng3d = maze3dEngRef.current;
+        if (eng3d) { eng3d._feedbackFlash = 1; eng3d.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0x22aa44); c.intensity = 0.8; }); }
         // Check win
         if (currentProblem.targetR === MAZE_ROWS - 1 && currentProblem.targetC === MAZE_COLS - 1) {
           setWon(true); setMode('results');
           if (timerRef.current) clearInterval(timerRef.current);
           if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+          var finalScore = score + 10;
           if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
           if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60), 'Fluency Maze Complete', 'fluency-maze');
+          // Save high score
+          try {
+            var hs = JSON.parse(localStorage.getItem('fluency_maze_best') || '{}');
+            if (!hs.score || finalScore > hs.score) {
+              localStorage.setItem('fluency_maze_best', JSON.stringify({ score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize }));
+            }
+          } catch(e) {}
+          // 3D completion particles
+          var eng3dC = maze3dEngRef.current;
+          if (eng3dC && window.THREE) {
+            var THREE = window.THREE;
+            var confColors = [0xfbbf24, 0x22c55e, 0x7c3aed, 0xef4444, 0x3b82f6];
+            for (var ci = 0; ci < 20; ci++) {
+              var cGeo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+              var cMat = new THREE.MeshBasicMaterial({ color: confColors[ci % confColors.length], transparent: true, opacity: 1 });
+              var cMesh = new THREE.Mesh(cGeo, cMat);
+              cMesh.position.copy(eng3dC.camera.position);
+              cMesh.userData._age = 0; cMesh.userData._life = 2 + Math.random();
+              cMesh.userData._vel = { x: (Math.random() - 0.5) * 5, y: 3 + Math.random() * 3, z: (Math.random() - 0.5) * 5 };
+              eng3dC.scene.add(cMesh);
+              if (!eng3dC._particles) eng3dC._particles = [];
+              eng3dC._particles.push(cMesh);
+            }
+          }
         }
       } else {
         // Wrong — don't move, penalty
@@ -919,6 +953,9 @@
         setScore(function(p) { return Math.max(0, p - 3); });
         setFeedback('wrong');
         playTone(220, 0.1, 'triangle', 0.04);
+        // 3D feedback: red ambient flash
+        var eng3dW = maze3dEngRef.current;
+        if (eng3dW) { eng3dW._feedbackFlash = 1; eng3dW.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0xaa2222); c.intensity = 0.8; }); }
       }
       setCurrentProblem(null);
       setTimeout(function() { setFeedback(''); }, 400);
@@ -1039,6 +1076,16 @@
                 background: difficulty === d ? '#f59e0b' : '#f1f5f9', color: difficulty === d ? '#fff' : '#475569',
                 border: difficulty === d ? '2px solid #f59e0b' : '2px solid #e2e8f0' }
             }, d === 'single' ? 'Single Digit (0-12)' : 'Double Digit (0-20)');
+          })
+        ),
+        // Maze size selector
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
+          ['small', 'medium', 'large'].map(function(sz) {
+            return h('button', { key: sz, onClick: function() { setMazeSize(sz); },
+              style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                background: mazeSize === sz ? '#6366f1' : '#f1f5f9', color: mazeSize === sz ? '#fff' : '#475569',
+                border: mazeSize === sz ? '2px solid #6366f1' : '2px solid #e2e8f0' }
+            }, MAZE_SIZES[sz].label);
           })
         ),
         // Chase mode toggle
@@ -1202,6 +1249,42 @@
           eng.monsterMesh.position.z += (mtz - eng.monsterMesh.position.z) * 0.08;
           eng.monsterMesh.position.y = 0.6 + Math.sin(t2 * 5) * 0.1;
           eng.monsterMesh.rotation.y += 0.02;
+        }
+
+        // ── 3D Feedback: green/red ambient flash on correct/wrong ──
+        if (eng._feedbackFlash) {
+          eng._feedbackFlash -= 0.03;
+          if (eng._feedbackFlash <= 0) {
+            eng._feedbackFlash = 0;
+            eng.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0x222244); });
+          }
+        }
+
+        // ── Monster warning sound (when within 2 cells) ──
+        if (eng.monsterMesh && !gameOver) {
+          var mDist = Math.abs(monsterPos.r - playerPosRef.current.r) + Math.abs(monsterPos.c - playerPosRef.current.c);
+          if (mDist <= 2 && (!eng._lastWarnTime || t2 - eng._lastWarnTime > 2)) {
+            eng._lastWarnTime = t2;
+            playTone(180, 0.15, 'sawtooth', 0.03);
+          }
+          // Red tint intensifies as monster gets closer
+          if (mDist <= 3) {
+            var dangerAlpha = (3 - mDist) / 3;
+            eng.scene.fog.color.setRGB(0.08 * dangerAlpha + 0.04, 0.04 * (1 - dangerAlpha), 0.1 * (1 - dangerAlpha));
+          } else {
+            eng.scene.fog.color.setHex(0x0a0a1a);
+          }
+        }
+
+        // ── Footstep tick while camera is moving ──
+        var camMoveDist = Math.abs(eng.camera.position.x - (playerPosRef.current.c * 2 + 1)) + Math.abs(eng.camera.position.z - (playerPosRef.current.r * 2 + 1));
+        if (camMoveDist > 0.1) {
+          if (!eng._stepTimer) eng._stepTimer = 0;
+          eng._stepTimer += 0.016;
+          if (eng._stepTimer > 0.3) {
+            eng._stepTimer = 0;
+            playTone(200 + Math.random() * 100, 0.02, 'sine', 0.01);
+          }
         }
 
         eng.renderer.render(eng.scene, eng.camera);

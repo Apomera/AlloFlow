@@ -8233,7 +8233,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: answered,
 
-                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-500") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
+                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-600") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
 
                     }, opt);
 

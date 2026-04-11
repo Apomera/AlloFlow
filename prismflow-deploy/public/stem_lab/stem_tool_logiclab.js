@@ -1129,7 +1129,7 @@ window.StemLab = window.StemLab || {
 
                             table.vars.map(function(v) {
 
-                              return React.createElement("td", { key: v, className: "px-4 py-2 text-center font-bold bg-white group-hover:bg-violet-50 transition-colors " + (row.env[v] ? "text-emerald-600" : "text-slate-500") },
+                              return React.createElement("td", { key: v, className: "px-4 py-2 text-center font-bold bg-white group-hover:bg-violet-50 transition-colors " + (row.env[v] ? "text-emerald-600" : "text-slate-600") },
 
                                 row.env[v] ? "T" : "F"
 
@@ -1807,7 +1807,7 @@ window.StemLab = window.StemLab || {
 
                         return React.createElement("tr", { key: ri },
 
-                          table.vars.map(function(v) { return React.createElement("td", { key: v, className: "px-4 py-2 text-center font-bold bg-white " + (row.env[v] ? "text-emerald-600" : "text-slate-500") }, row.env[v] ? "T" : "F"); }),
+                          table.vars.map(function(v) { return React.createElement("td", { key: v, className: "px-4 py-2 text-center font-bold bg-white " + (row.env[v] ? "text-emerald-600" : "text-slate-600") }, row.env[v] ? "T" : "F"); }),
 
                           React.createElement("td", { className: "px-4 py-2 text-center" },
 
@@ -2093,8 +2093,8 @@ window.StemLab = window.StemLab || {
                         rows2.map(function(r2,ri2) {
                           var isActive2 = r2.A===gateInputs.A && (isUnaryGate||r2.B===gateInputs.B);
                           return React.createElement("tr", { key:ri2, style:{background:isActive2?'#ede9fe':'transparent'} },
-                            React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.A?"text-emerald-600":"text-slate-500")},r2.A?"T":"F"),
-                            !isUnaryGate&&React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.B?"text-emerald-600":"text-slate-500")},r2.B?"T":"F"),
+                            React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.A?"text-emerald-600":"text-slate-600")},r2.A?"T":"F"),
+                            !isUnaryGate&&React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.B?"text-emerald-600":"text-slate-600")},r2.B?"T":"F"),
                             React.createElement("td",{className:"px-4 py-2 text-center font-black "+(r2.out?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600")},r2.out?"\u2705 T":"\u274C F")
                           );
                         })

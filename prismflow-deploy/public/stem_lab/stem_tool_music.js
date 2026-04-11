@@ -2122,7 +2122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "bg-slate-50 rounded-xl border p-3" },
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                     React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83D\uDCC8 ADSR Envelope"),
-                    React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.adsr.text }, "\u2753")
+                    React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.adsr.text }, "\u2753")
                   ),
                   // ADSR visual
                   React.createElement("svg", { viewBox: "0 0 200 60", className: "w-full mb-2", style: { maxHeight: '50px' } },
@@ -2172,7 +2172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   synthEngine === 'plucked' && React.createElement("div", { className: "space-y-1 mb-2" },
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, "\uD83C\uDFB8 Karplus-Strong"),
-                      React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.karplusStrong.text }, "\u2753")
+                      React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.karplusStrong.text }, "\u2753")
                     ),
                     [{ k: 'ksBrightness', label: t('stem.synth.brightness'), min: 0.1, max: 1, step: 0.01 },
                     { k: 'ksDamping', label: t('stem.synth.damping'), min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
@@ -2196,7 +2196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("div", { className: "mt-1 pt-1 border-t border-slate-200" },
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "\uD83C\uDF0A Filter"),
-                      React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753"),
+                      React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753"),
                       React.createElement("select", {
                         'aria-label': 'Filter type',
                         value: d.filterType || 'lowpass',
@@ -2217,7 +2217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("div", { className: "mt-1 pt-1 border-t border-slate-200" },
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "\u2728 Modulation"),
-                      React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.tremolo.text }, "\u2753")
+                      React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.tremolo.text }, "\u2753")
                     ),
                     [{ k: 'tremoloDepth', label: t('stem.synth.trem_dep'), min: 0, max: 1, step: 0.01 },
                     { k: 'tremoloRate', label: t('stem.synth.trem_rate'), min: 0.5, max: 20, step: 0.5 },
@@ -2570,7 +2570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDFB5 Scales & Modes"),
-                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.scales.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.scales.text }, "\u2753")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1 mb-3" },
                   Object.keys(SCALES).map(function (name) {
@@ -2647,7 +2647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDFB6 Chord Explorer"),
-                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.chords.text }, "\u2753"),
+                  React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.chords.text }, "\u2753"),
                   React.createElement("button", { "aria-label": "Jazz Mode",
                     onClick: function () { upd('jazzMode', !jazzMode); },
                     className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-500')
@@ -2722,7 +2722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\u2B55 Circle of Fifths"),
-                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.circleOfFifths.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.circleOfFifths.text }, "\u2753")
                 ),
                 React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full mx-auto", style: { maxWidth: '300px', maxHeight: '300px' } },
                   // Background
@@ -2866,8 +2866,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 ),
                 // Undo / Redo
                 React.createElement("div", { className: "flex gap-1" },
-                  React.createElement("button", { "aria-label": "Undo last beat change", onClick: bpUndo, disabled: !(window._bpUndoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpUndoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-500 cursor-not-allowed') }, "\u21A9 " + (window._bpUndoStack || []).length),
-                  React.createElement("button", { "aria-label": "Redo beat change", onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-500 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
+                  React.createElement("button", { "aria-label": "Undo last beat change", onClick: bpUndo, disabled: !(window._bpUndoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpUndoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-600 cursor-not-allowed') }, "\u21A9 " + (window._bpUndoStack || []).length),
+                  React.createElement("button", { "aria-label": "Redo beat change", onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-600 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
                 ),
                 // Step Rec toggle
                 React.createElement("button", { "aria-label": "Toggle step recording", onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
@@ -3969,7 +3969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83D\uDCCF Intervals"),
-                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.intervals.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.intervals.text }, "\u2753")
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   INTERVALS.map(function (intv) {
@@ -3984,7 +3984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       className: "flex items-center gap-2 px-2 py-1.5 rounded-lg border text-left transition-all hover:shadow-sm " + (qColors[intv.quality] || 'bg-slate-50 border-slate-200')
                     },
                       React.createElement("span", { className: "text-[11px] font-bold" }, intv.name),
-                      React.createElement("span", { className: "text-[11px] text-slate-500 ml-auto" }, intv.ratio),
+                      React.createElement("span", { className: "text-[11px] text-slate-600 ml-auto" }, intv.ratio),
                       React.createElement("span", { className: "text-[11px] text-slate-500 hidden sm:inline" }, intv.song)
                     );
                   })
@@ -3995,7 +3995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDF10 Harmonic Series"),
-                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.harmonicSeries.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.harmonicSeries.text }, "\u2753")
                 ),
                 React.createElement("div", { className: "flex gap-2" },
                   HARMONICS_INFO.map(function (h) {
@@ -4117,7 +4117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDF0A Filter Lab"),
-                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753")
                 ),
                 React.createElement("svg", { viewBox: "0 0 300 100", className: "w-full bg-slate-50 rounded-lg mb-2", style: { maxHeight: '100px' } },
                   React.createElement("line", { x1: 20, y1: 80, x2: 280, y2: 80, stroke: "#e2e8f0", strokeWidth: 1 }),

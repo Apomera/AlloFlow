@@ -507,7 +507,7 @@ window.StemLab = window.StemLab || {
         return h('button', { 'aria-label': 'Select option',
           onClick: function() { if (label.indexOf('\u2192') > 0 && label.indexOf('10') === 0) doRegroup(from, to); else doUngroup(from, to); },
           disabled: !enabled,
-          className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (enabled ? 'text-white shadow hover:shadow-md hover:scale-105' : 'bg-slate-100 text-slate-500 cursor-not-allowed'),
+          className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (enabled ? 'text-white shadow hover:shadow-md hover:scale-105' : 'bg-slate-100 text-slate-600 cursor-not-allowed'),
           style: enabled ? { background: 'linear-gradient(90deg, ' + colorFrom + ', ' + colorTo + ')' } : {}
         }, label);
       };
@@ -965,7 +965,7 @@ window.StemLab = window.StemLab || {
             )
           ),
 
-          !pvQuiz && h('div', { className: 'text-center text-sm text-slate-500 py-8' }, 'Click "Start Quiz" to test your place value skills!'),
+          !pvQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-8' }, 'Click "Start Quiz" to test your place value skills!'),
 
           // Quiz categories info
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },

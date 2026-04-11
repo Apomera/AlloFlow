@@ -2096,7 +2096,7 @@
                         onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-600 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
                     )
                   ),
@@ -2187,7 +2187,7 @@
                         React.createElement("span", { className: "text-sm" }, done ? "\u2705" : active ? "\u25B6\uFE0F" : "\u2B1C"),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("div", { className: "text-xs font-bold " + (done ? "text-emerald-300" : active ? "text-indigo-300" : "text-slate-300") }, ch.title),
-                          React.createElement("div", { className: "text-[10px] " + (done ? "text-emerald-400/60" : "text-slate-500") + " truncate" }, ch.desc)
+                          React.createElement("div", { className: "text-[10px] " + (done ? "text-emerald-400/60" : "text-slate-600") + " truncate" }, ch.desc)
                         ),
                         React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full border " +
                           (ch.concept === 'Sequencing' ? "border-blue-500/40 text-blue-400 bg-blue-500/10" :
@@ -2559,12 +2559,12 @@
                   React.createElement("button", { "aria-label": "Grid",
                     onClick: function() { upd('show3DGrid', !show3DGrid); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
+                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
                   }, "\u{2B1C} Grid"),
                   React.createElement("button", { "aria-label": "Axes",
                     onClick: function() { upd('show3DAxes', !show3DAxes); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
+                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
                   }, "\u{1F4CD} Axes"),
                   React.createElement("button", { "aria-label": "Reset 3D camera view",
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },

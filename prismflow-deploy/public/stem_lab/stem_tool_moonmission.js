@@ -2394,7 +2394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
                     h('p', { className: 'text-[10px] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
                     (d.lunarSamples || []).map(function(s, i) {
-                      return h('p', { key: i, className: 'text-[10px] text-slate-500 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
+                      return h('p', { key: i, className: 'text-[10px] text-slate-600 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
                     })
                   )
                 ) :

@@ -846,9 +846,9 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ DILEMMAS TAB ═══
-        tab === 'dilemmas' && !selectedDilemma && h('div', { className: 'space-y-3' },
+        tab === 'dilemmas' && !selectedDilemma && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
           h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a dilemma to explore. Each one has no single right answer.'),
-          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             DILEMMAS.map(function(dl) {
               return h('button', { 'aria-label': 'Explore', key: dl.id, onClick: function() {
                 var explored = (d.deepDilemmasExplored || []).slice();
@@ -872,14 +872,14 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ BRANCHING SCENARIOS TAB ═══
-        tab === 'branching' && h('div', { className: 'space-y-4' },
-          h('div', { className: 'text-center mb-2' },
+        tab === 'branching' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF33 Ethical Scenarios'),
             h('p', { className: 'text-sm text-slate-600' }, 'Choose wisely \u2014 every decision has consequences.')
           ),
 
           // If no scenario selected, show list
-          !d.branchingId && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          !d.branchingId && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             (BRANCHING_SCENARIOS[gradeBand] || BRANCHING_SCENARIOS.elementary).map(function(sc) {
               var completed = (d.dilemmasCompleted || []).indexOf(sc.id) !== -1;
               return h('button', { 'aria-label': 'Back to scenarios', key: sc.id, onClick: function() { updMulti({ branchingId: sc.id, branchChoice: null, branchReflection: '' }); },
@@ -901,14 +901,14 @@ window.SelHub = window.SelHub || {
             var sc = scenarios.find(function(s) { return s.id === d.branchingId; });
             if (!sc) return null;
 
-            return h('div', { className: 'space-y-4' },
+            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
               // Back button
               h('button', { 'aria-label': '},', onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
 
               // Scenario card
-              h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 p-5' },
-                h('div', { className: 'flex items-center gap-2 mb-3' },
-                  h('span', { className: 'text-3xl' }, sc.emoji),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 p-5' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-3' },
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, sc.emoji),
                   h('h3', { className: 'text-lg font-black text-slate-800' }, sc.title)
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, sc.scenario),
@@ -916,7 +916,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Choices
-              !d.branchChoice && h('div', { className: 'space-y-2' },
+              !d.branchChoice && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
                 h('h4', { className: 'text-sm font-bold text-slate-700' }, 'What would you do?'),
                 sc.choices.map(function(ch, idx) {
                   return h('button', { 'aria-label': 'div', key: idx, onClick: function() {
@@ -977,7 +977,7 @@ window.SelHub = window.SelHub || {
                   ),
 
                   // Reflection textarea
-                  h('div', { className: 'bg-white border border-slate-200 rounded-xl p-4' },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white border border-slate-200 rounded-xl p-4' },
                     h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Reflect: Why did you choose this? Would you change your answer?'),
                     h('textarea', { value: d.branchReflection || '', onChange: function(e) { upd('branchReflection', e.target.value); },
                       placeholder: 'I chose this because...',
@@ -1007,8 +1007,8 @@ window.SelHub = window.SelHub || {
                   }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\uD83D\uDCAC Discuss with AI'),
 
                   // AI discussion response
-                  d.branchAIDiscussion && h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4' },
-                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                  d.branchAIDiscussion && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
                       h(Sparkles, { size: 14, className: 'text-emerald-500' }),
                       h('h4', { className: 'text-sm font-bold text-emerald-700' }, 'AI Response')
                     ),
@@ -1026,11 +1026,11 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ FRAMEWORKS TAB (Grade-Banded) ═══
-        tab === 'frameworks' && h('div', { className: 'space-y-4' },
+        tab === 'frameworks' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('p', { className: 'text-sm text-slate-600 text-center mb-2' }, 'Ethical frameworks are different lenses for examining the same question. No single framework has all the answers.'),
 
           // Grade band indicator
-          h('div', { className: 'flex justify-center gap-2 mb-3' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-2 mb-3' },
             ['elementary', 'middle', 'high'].map(function(band) {
               return h('button', { 'aria-label': 'frameworkBand', key: band, onClick: function() { upd('frameworkBand', band); },
                 className: 'px-3 py-1 rounded-full text-[10px] font-bold transition-all ' +
@@ -1042,7 +1042,7 @@ window.SelHub = window.SelHub || {
           // Frameworks for selected band
           (FRAMEWORKS_BY_BAND[d.frameworkBand || gradeBand] || FRAMEWORKS_BY_BAND.elementary).map(function(fw) {
             var isActive = selectedFramework === fw.id;
-            return h('div', { key: fw.id,
+            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: fw.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isActive ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 bg-white hover:border-indigo-300')
             },
               h('button', { 'aria-label': 'px-4 pb-4 space-y-3', onClick: function() {
@@ -1072,7 +1072,7 @@ window.SelHub = window.SelHub || {
                 ),
 
                 // Try It prompt
-                h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
                   h('p', { className: 'text-xs text-amber-700 italic font-medium' }, '\uD83D\uDCA1 Try applying it: ', fw.tryIt)
                 ),
 
@@ -1107,15 +1107,15 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ EXPLORE TAB (selected dilemma deep dive) ═══
-        tab === 'explore' && selectedDilemma && h('div', { className: 'space-y-4' },
+        tab === 'explore' && selectedDilemma && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
 
           // Dilemma header
-          h('div', { className: 'bg-gradient-to-r from-slate-50 to-indigo-50 rounded-2xl border-2 border-slate-200 p-5' },
-            h('div', { className: 'flex items-center gap-2 mb-3' },
-              h('span', { className: 'text-3xl' }, selectedDilemma.emoji),
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-slate-50 to-indigo-50 rounded-2xl border-2 border-slate-200 p-5' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-3' },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, selectedDilemma.emoji),
               h('div', null,
                 h('h3', { className: 'text-lg font-black text-slate-800' }, selectedDilemma.title),
-                h('span', { className: 'text-[10px] text-slate-600 font-bold uppercase' }, selectedDilemma.category)
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 font-bold uppercase' }, selectedDilemma.category)
               ),
               h('button', { 'aria-label': '},', onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
             ),
@@ -1162,7 +1162,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Your position
-          h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-4' },
             h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\uD83E\uDD14 Where do you stand? (Write your reasoning)'),
             h('textarea', { value: d.position || '', onChange: function(e) { upd('position', e.target.value); },
               placeholder: 'I think... because...',
@@ -1175,7 +1175,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Quick analyze buttons
-          h('div', { className: 'flex flex-wrap gap-2' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
             FRAMEWORKS.map(function(fw) {
               return h('button', { 'aria-label': 'Analyze with framework', key: fw.id, onClick: function() { analyzeWithFramework(fw.id); }, disabled: aiLoading,
                 className: 'px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 transition-colors disabled:opacity-40'
@@ -1185,7 +1185,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ EXPLORE TAB - no dilemma selected ═══
-        tab === 'explore' && !selectedDilemma && h('div', { className: 'bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center' },
+        tab === 'explore' && !selectedDilemma && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center' },
           h('p', { className: 'text-slate-600 font-bold' }, 'Choose a dilemma from the Dilemmas tab first, then come here to explore it deeply.'),
           h('button', { 'aria-label': '},', onClick: function() { upd('tab', 'dilemmas'); }, className: 'mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700' }, 'Go to Dilemmas')
         ),
@@ -1243,12 +1243,12 @@ window.SelHub = window.SelHub || {
           ),
 
           // Intro card
-          !d.kohlbergStarted && h('div', { className: 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200 p-5 text-center' },
-            h('span', { className: 'text-4xl block mb-3' }, '\uD83E\uDDD9'),
+          !d.kohlbergStarted && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200 p-5 text-center' },
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl block mb-3' }, '\uD83E\uDDD9'),
             h('h4', { className: 'text-base font-bold text-purple-800 mb-2' }, 'What Kind of Moral Thinker Are You?'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'Psychologist Lawrence Kohlberg found that people reason about ethics at different levels \u2014 and all levels are a normal part of growing up. This assessment helps you see YOUR pattern.'),
-            h('div', { className: 'bg-white rounded-xl p-4 border border-purple-200 text-left mb-4' },
-              h('div', { className: 'space-y-2' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-purple-200 text-left mb-4' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
                 h('p', { className: 'text-xs text-purple-700' }, '\uD83D\uDD35 Level 1 \u2014 "What happens to ME?" (Self-interest: rewards and punishments)'),
                 h('p', { className: 'text-xs text-purple-700' }, '\uD83D\uDFE2 Level 2 \u2014 "What do others expect?" (Rules, authority, social approval)'),
                 h('p', { className: 'text-xs text-purple-700' }, '\uD83D\uDFE1 Level 3 \u2014 "What is universally right?" (Principles like justice, dignity, human rights)')
@@ -1269,15 +1269,15 @@ window.SelHub = window.SelHub || {
             var answers = d.kohlbergAnswers || {};
             var answeredCount = Object.keys(answers).length;
 
-            return h('div', { className: 'space-y-4' },
+            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
               // Progress bar
-              h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
-                h('div', { className: 'bg-purple-500 h-full transition-all duration-300', style: { width: Math.round((step / total) * 100) + '%' } })
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-purple-500 h-full transition-all duration-300', style: { width: Math.round((step / total) * 100) + '%' } })
               ),
               h('p', { className: 'text-[10px] text-slate-600 text-center' }, 'Question ' + (step + 1) + ' of ' + total),
 
               // Scenario
-              h('div', { className: 'bg-white rounded-2xl border-2 border-purple-200 p-5' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-purple-200 p-5' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-4' }, sc.scenario),
                 callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(sc.scenario); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold mb-3 block' }, '\uD83D\uDD0A Read Aloud'),
 
@@ -1294,7 +1294,7 @@ window.SelHub = window.SelHub || {
                 }),
 
                 // Example reasoning levels (shown after they answer)
-                answers[sc.id] && answers[sc.id].length > 15 && h('div', { className: 'mt-3 bg-purple-50 rounded-xl p-3 border border-purple-200' },
+                answers[sc.id] && answers[sc.id].length > 15 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-purple-50 rounded-xl p-3 border border-purple-200' },
                   h('p', { className: 'text-[10px] font-bold text-purple-700 mb-2' }, '\uD83D\uDD0D Different people reason like this:'),
                   h('p', { className: 'text-[10px] text-slate-600 mb-1' }, '\uD83D\uDD35 Self-interest: "' + sc.levels.preconv + '"'),
                   h('p', { className: 'text-[10px] text-slate-600 mb-1' }, '\uD83D\uDFE2 Rules/Society: "' + sc.levels.conv + '"'),
@@ -1304,11 +1304,11 @@ window.SelHub = window.SelHub || {
               ),
 
               // Navigation
-              h('div', { className: 'flex gap-2' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                 step > 0 && h('button', { 'aria-label': 'kohlbergStep', onClick: function() { upd('kohlbergStep', step - 1); },
                   className: 'px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200'
                 }, '\u2190 Previous'),
-                h('div', { className: 'flex-1' }),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' }),
                 step < total - 1 && h('button', { 'aria-label': 'See reasoning pattern', onClick: function() {
                   if (answers[sc.id] && answers[sc.id].length > 10) {
                     upd('kohlbergStep', step + 1);
@@ -1348,8 +1348,8 @@ window.SelHub = window.SelHub || {
                   { level: 'Post-conventional', color: 'yellow', desc: 'Universal principles: "What is fundamentally just and right?"', ages: 'Developed through deep reflection' },
                 ].map(function(lv) {
                   var colorMap = { blue: 'bg-blue-100 border-blue-300 text-blue-800', green: 'bg-green-100 border-green-300 text-green-800', yellow: 'bg-amber-100 border-amber-300 text-amber-800' };
-                  return h('div', { key: lv.level, className: 'p-3 rounded-lg border ' + colorMap[lv.color] },
-                    h('div', { className: 'font-bold text-xs' }, lv.level),
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: lv.level, className: 'p-3 rounded-lg border ' + colorMap[lv.color] },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-xs' }, lv.level),
                     h('p', { className: 'text-[10px] mt-1' }, lv.desc),
                     h('p', { className: 'text-[11px] mt-1 opacity-70 italic' }, lv.ages)
                   );
@@ -1366,21 +1366,21 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ DEBATE PREP TAB ═══
-        tab === 'debate' && h('div', { className: 'space-y-4' },
-          h('div', { className: 'text-center mb-2' },
+        tab === 'debate' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFA4 Debate Prep Tool'),
             h('p', { className: 'text-sm text-slate-600' }, 'Pick a topic, choose a side, and build your argument.')
           ),
 
           // Topic selection
-          !d.debateTopicObj && h('div', { className: 'space-y-3' },
+          !d.debateTopicObj && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
             h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a topic to debate:'),
             (DEBATE_TOPICS[gradeBand] || DEBATE_TOPICS.elementary).map(function(topic) {
               return h('button', { 'aria-label': ', debateCounter:', key: topic.id, onClick: function() { updMulti({ debateTopicObj: topic, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
                 className: 'w-full p-4 rounded-xl border-2 border-slate-200 bg-white text-left hover:border-violet-300 hover:shadow-md transition-all'
               },
                 h('p', { className: 'text-sm font-bold text-slate-800' }, topic.topic),
-                h('div', { className: 'flex gap-4 mt-2' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-4 mt-2' },
                   h('p', { className: 'text-[10px] text-emerald-600 flex-1' }, '\u2713 For: ' + topic.forSide.substring(0, 60) + '...'),
                   h('p', { className: 'text-[10px] text-red-500 flex-1' }, '\u2717 Against: ' + topic.againstSide.substring(0, 60) + '...')
                 )
@@ -1389,7 +1389,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Active debate
-          d.debateTopicObj && h('div', { className: 'space-y-4' },
+          d.debateTopicObj && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
             // Back button
             h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
               className: 'text-xs text-slate-600 hover:text-slate-600 font-bold'
@@ -1398,12 +1398,12 @@ window.SelHub = window.SelHub || {
             // Topic display
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border-2 border-violet-200 p-5' },
               h('h4', { className: 'text-base font-bold text-slate-800 mb-2' }, d.debateTopicObj.topic),
-              h('div', { className: 'grid grid-cols-2 gap-3 mt-3' },
-                h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-3 mt-3' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
                   h('p', { className: 'text-xs font-bold text-emerald-700 mb-1' }, '\u2713 For:'),
                   h('p', { className: 'text-[10px] text-emerald-600' }, d.debateTopicObj.forSide)
                 ),
-                h('div', { className: 'bg-red-50 rounded-lg p-3 border border-red-200' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-red-50 rounded-lg p-3 border border-red-200' },
                   h('p', { className: 'text-xs font-bold text-red-700 mb-1' }, '\u2717 Against:'),
                   h('p', { className: 'text-[10px] text-red-600' }, d.debateTopicObj.againstSide)
                 )
@@ -1411,7 +1411,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Side selection
-            !d.debateSide && h('div', { className: 'flex gap-3' },
+            !d.debateSide && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3' },
               h('button', { 'aria-label': 'for', onClick: function() { upd('debateSide', 'for'); ctx.awardXP(3); },
                 className: 'flex-1 p-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-all text-center'
               },
@@ -1427,10 +1427,10 @@ window.SelHub = window.SelHub || {
             ),
 
             // Argument building
-            d.debateSide && !d.debateFeedback && h('div', { className: 'space-y-4' },
-              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
-                h('div', { className: 'flex items-center gap-2 mb-2' },
-                  h('span', { className: 'text-sm font-bold ' + (d.debateSide === 'for' ? 'text-emerald-700' : 'text-red-700') },
+            d.debateSide && !d.debateFeedback && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold ' + (d.debateSide === 'for' ? 'text-emerald-700' : 'text-red-700') },
                     d.debateSide === 'for' ? '\u2713 You are arguing FOR' : '\u2717 You are arguing AGAINST'),
                   h('button', { 'aria-label': 'for', onClick: function() { upd('debateSide', d.debateSide === 'for' ? 'against' : 'for'); },
                     className: 'ml-auto text-[10px] text-slate-600 hover:text-slate-600 font-bold'
@@ -1452,7 +1452,7 @@ window.SelHub = window.SelHub || {
                 }),
 
                 // Tips
-                h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200 mt-3' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-violet-50 rounded-lg p-3 border border-violet-200 mt-3' },
                   h('p', { className: 'text-[10px] font-bold text-violet-700 mb-1' }, '\uD83D\uDCA1 Debate Tips:'),
                   h('p', { className: 'text-[10px] text-violet-600' }, '\u2022 Use evidence and examples to support your points'),
                   h('p', { className: 'text-[10px] text-violet-600' }, '\u2022 Acknowledge the strongest argument of the other side'),
@@ -1474,9 +1474,9 @@ window.SelHub = window.SelHub || {
             ),
 
             // Feedback display
-            d.debateFeedback && h('div', { className: 'space-y-3' },
-              h('div', { className: 'bg-violet-50 border border-violet-200 rounded-2xl p-5' },
-                h('div', { className: 'flex items-center gap-2 mb-3' },
+            d.debateFeedback && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-violet-50 border border-violet-200 rounded-2xl p-5' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-3' },
                   h(Sparkles, { size: 14, className: 'text-violet-500' }),
                   h('h4', { className: 'text-sm font-bold text-violet-700' }, 'Debate Coach Feedback')
                 ),
@@ -1484,7 +1484,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Challenge: argue the other side
-              h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
                 h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, '\uD83C\uDFC6 Challenge: Can you argue the OTHER side just as well?'),
                 h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateSide: d.debateSide === 'for' ? 'against' : 'for', debateArgs: '', debateCounter: '', debateFeedback: null }); },
                   className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors'
@@ -1499,14 +1499,14 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ CASE STUDIES TAB ═══
-        tab === 'casestudies' && h('div', { className: 'space-y-4' },
-          h('div', { className: 'text-center mb-2' },
+        tab === 'casestudies' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCD6 Ethical Case Studies'),
             h('p', { className: 'text-sm text-slate-600' }, 'Real-world ethical situations for deeper analysis and Socratic dialogue.')
           ),
 
           // Case study list (when none selected)
-          !d.caseStudyId && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          !d.caseStudyId && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             (CASE_STUDIES[gradeBand] || CASE_STUDIES.elementary).map(function(cs) {
               var completed = (d.caseStudiesCompleted || []).indexOf(cs.id) !== -1;
               return h('button', { 'aria-label': 'Back to case studies', key: cs.id, onClick: function() {
@@ -1531,15 +1531,15 @@ window.SelHub = window.SelHub || {
             if (!cs) return null;
             var csSocratic = d.caseStudySocratic || [];
 
-            return h('div', { className: 'space-y-4' },
+            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
               h('button', { 'aria-label': 'Read aloud', onClick: function() { updMulti({ caseStudyId: null, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [] }); },
                 className: 'text-xs text-slate-600 hover:text-slate-600 font-bold'
               }, '\u2190 All Case Studies'),
 
               // Background
-              h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 p-5' },
-                h('div', { className: 'flex items-center gap-2 mb-3' },
-                  h('span', { className: 'text-3xl' }, cs.emoji),
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 p-5' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-3' },
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, cs.emoji),
                   h('h3', { className: 'text-lg font-black text-slate-800' }, cs.title)
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, cs.background),
@@ -1677,8 +1677,8 @@ window.SelHub = window.SelHub || {
               }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing...' : '\uD83D\uDCD6 Get AI Insight on My Analysis'),
 
               // AI insight response
-              d.caseStudyAIResp && h('div', { className: 'bg-teal-50 border border-teal-200 rounded-2xl p-5' },
-                h('div', { className: 'flex items-center gap-2 mb-2' },
+              d.caseStudyAIResp && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-50 border border-teal-200 rounded-2xl p-5' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
                   h(Sparkles, { size: 14, className: 'text-teal-500' }),
                   h('h4', { className: 'text-sm font-bold text-teal-700' }, 'AI Ethical Insight')
                 ),
@@ -1694,15 +1694,15 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ VALUES CLARIFICATION TAB ═══
-        tab === 'values' && h('div', { className: 'space-y-4' },
-          h('div', { className: 'text-center mb-2' },
+        tab === 'values' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDC8E Values Clarification'),
             h('p', { className: 'text-sm text-slate-600' }, 'What matters most to you? Rank your top values and reflect on why.')
           ),
 
           // Intro or active exercise
-          !d.valuesStarted && h('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border-2 border-rose-200 p-5 text-center' },
-            h('span', { className: 'text-4xl block mb-3' }, '\uD83D\uDC8E'),
+          !d.valuesStarted && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border-2 border-rose-200 p-5 text-center' },
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl block mb-3' }, '\uD83D\uDC8E'),
             h('h4', { className: 'text-base font-bold text-rose-800 mb-2' }, 'What Do You Value Most?'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'There are no wrong answers here. Your values are yours \u2014 they shape how you see the world and make decisions. Tap or click on values to select your top 5, then rank them from most to least important to you.'),
             h('button', { 'aria-label': 'Begin values exploration', onClick: function() { updMulti({ valuesStarted: true, valuesSelected: [], valuesRanked: [], valuesReflection: '', valuesComplete: false, valuesAIResp: null }); },
@@ -1713,11 +1713,11 @@ window.SelHub = window.SelHub || {
           // Step 1: Select top 5
           d.valuesStarted && !d.valuesComplete && !(d.valuesRanked && d.valuesRanked.length === 5) && (function() {
             var selected = d.valuesSelected || [];
-            return h('div', { className: 'space-y-4' },
-              h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-center' },
+            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-center' },
                 h('p', { className: 'text-sm font-bold text-rose-700' }, 'Step 1: Select Your Top 5 Values (' + selected.length + '/5)')
               ),
-              h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
                 VALUES_LIST.map(function(v) {
                   var isSelected = selected.indexOf(v.id) !== -1;
                   var canSelect = selected.length < 5 || isSelected;
@@ -1733,14 +1733,14 @@ window.SelHub = window.SelHub || {
                     className: 'p-3 rounded-xl border-2 text-left transition-all ' +
                       (isSelected ? 'border-rose-400 bg-rose-50 shadow-md' : canSelect ? 'border-slate-200 bg-white hover:border-rose-300' : 'border-slate-100 bg-slate-50 opacity-40 cursor-not-allowed')
                   },
-                    h('div', { className: 'flex items-center gap-2' },
-                      h('span', { className: 'text-lg' }, v.emoji),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, v.emoji),
                       h('div', null,
-                        h('div', { className: 'font-bold text-xs ' + (isSelected ? 'text-rose-800' : 'text-slate-700') }, v.name),
-                        h('div', { className: 'text-[10px] text-slate-600 leading-tight' }, v.desc.substring(0, 50) + '...')
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-xs ' + (isSelected ? 'text-rose-800' : 'text-slate-700') }, v.name),
+                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 leading-tight' }, v.desc.substring(0, 50) + '...')
                       )
                     ),
-                    isSelected && h('div', { className: 'mt-1 text-[11px] text-rose-500 font-bold' }, '\u2713 Selected')
+                    isSelected && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-1 text-[11px] text-rose-500 font-bold' }, '\u2713 Selected')
                   );
                 })
               ),
@@ -1759,18 +1759,18 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-center' },
                 h('p', { className: 'text-sm font-bold text-rose-700' }, 'Step 2: Rank Your Top 5 (tap arrows to reorder)')
               ),
-              h('div', { className: 'space-y-2' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
                 ranked.map(function(vid, idx) {
                   var v = VALUES_LIST.find(function(val) { return val.id === vid; });
                   if (!v) return null;
-                  return h('div', { key: vid, className: 'flex items-center gap-3 p-3 rounded-xl border-2 border-rose-200 bg-white' },
-                    h('span', { className: 'text-lg font-black text-rose-600 w-6 text-center shrink-0' }, '#' + (idx + 1)),
-                    h('span', { className: 'text-xl' }, v.emoji),
-                    h('div', { className: 'flex-1' },
-                      h('div', { className: 'font-bold text-sm text-slate-800' }, v.name),
-                      h('div', { className: 'text-[10px] text-slate-600' }, v.desc)
+                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: vid, className: 'flex items-center gap-3 p-3 rounded-xl border-2 border-rose-200 bg-white' },
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-black text-rose-600 w-6 text-center shrink-0' }, '#' + (idx + 1)),
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, v.emoji),
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, v.name),
+                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, v.desc)
                     ),
-                    h('div', { className: 'flex flex-col gap-1 shrink-0' },
+                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col gap-1 shrink-0' },
                       idx > 0 && h('button', { 'aria-label': 'Move up', onClick: function() {
                         var newRanked = ranked.slice();
                         var tmp = newRanked[idx - 1];
@@ -1791,7 +1791,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Reflection
-              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-4' },
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Why did you rank "' + (function() { var v = VALUES_LIST.find(function(val) { return val.id === ranked[0]; }); return v ? v.name : ''; })() + '" highest?'),
                 h('textarea', { value: d.valuesReflection || '', onChange: function(e) { upd('valuesReflection', e.target.value); },
                   placeholder: 'I ranked this highest because...',
@@ -1842,8 +1842,8 @@ window.SelHub = window.SelHub || {
             ),
 
             // AI insight
-            d.valuesAIResp && h('div', { className: 'bg-rose-50 border border-rose-200 rounded-2xl p-5' },
-              h('div', { className: 'flex items-center gap-2 mb-2' },
+            d.valuesAIResp && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-rose-50 border border-rose-200 rounded-2xl p-5' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
                 h(Sparkles, { size: 14, className: 'text-rose-500' }),
                 h('h4', { className: 'text-sm font-bold text-rose-700' }, 'AI Values Insight')
               ),
@@ -1857,14 +1857,14 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ DECISION TREE BUILDER TAB ═══
-        tab === 'decisiontree' && h('div', { className: 'space-y-4' },
-          h('div', { className: 'text-center mb-2' },
+        tab === 'decisiontree' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF32 Ethical Decision Tree Builder'),
             h('p', { className: 'text-sm text-slate-600' }, 'Walk through ethical reasoning step by step and build your decision tree.')
           ),
 
-          !d.dtStarted && h('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 p-5 text-center' },
-            h('span', { className: 'text-4xl block mb-3' }, '\uD83C\uDF32'),
+          !d.dtStarted && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 p-5 text-center' },
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl block mb-3' }, '\uD83C\uDF32'),
             h('h4', { className: 'text-base font-bold text-green-800 mb-2' }, 'Build Your Ethical Decision Tree'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'Think through an ethical question step by step. At each step, you\u2019ll go deeper into the reasoning. At the end, you\u2019ll have a clear summary of your thinking process.'),
             h('button', { 'aria-label': ', dtDecision:', onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
@@ -1912,22 +1912,22 @@ window.SelHub = window.SelHub || {
                 }),
 
                 // Framework helper on step 4
-                step === 3 && h('div', { className: 'mt-3 bg-green-50 rounded-lg p-3 border border-green-200' },
+                step === 3 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-green-50 rounded-lg p-3 border border-green-200' },
                   h('p', { className: 'text-[10px] font-bold text-green-700 mb-1' }, '\uD83C\uDFDB\uFE0F Frameworks you\u2019ve learned:'),
-                  h('div', { className: 'flex flex-wrap gap-1' },
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1' },
                     (FRAMEWORKS_BY_BAND[gradeBand] || FRAMEWORKS_BY_BAND.elementary).map(function(fw) {
-                      return h('span', { key: fw.id, className: 'px-2 py-0.5 bg-white border border-green-200 rounded text-[11px] text-green-700 font-medium' }, fw.emoji + ' ' + fw.name);
+                      return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: fw.id, className: 'px-2 py-0.5 bg-white border border-green-200 rounded text-[11px] text-green-700 font-medium' }, fw.emoji + ' ' + fw.name);
                     })
                   )
                 )
               ),
 
               // Navigation
-              h('div', { className: 'flex gap-2' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                 step > 0 && h('button', { 'aria-label': 'dtStep', onClick: function() { upd('dtStep', step - 1); },
                   className: 'px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200'
                 }, '\u2190 Previous'),
-                h('div', { className: 'flex-1' }),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' }),
                 step < steps.length - 1 && h('button', { 'aria-label': ') +', onClick: function() {
                   if (d[currentStep.field] && d[currentStep.field].length > 5) {
                     upd('dtStep', step + 1);
@@ -1957,10 +1957,10 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Decision tree complete
-          d.decisionTreeComplete && h('div', { className: 'space-y-4' },
-            h('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 p-5' },
-              h('div', { className: 'flex items-center gap-2 mb-3' },
-                h('span', { className: 'text-3xl' }, '\uD83C\uDF32'),
+          d.decisionTreeComplete && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 p-5' },
+              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-3' },
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, '\uD83C\uDF32'),
                 h('h4', { className: 'text-base font-bold text-green-800' }, 'Your Ethical Decision Tree')
               ),
               h('pre', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-sans bg-white rounded-xl p-4 border border-green-200' }, d.dtSummary)
@@ -1986,14 +1986,14 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ PHILOSOPHY CORNER TAB ═══
-        tab === 'philosophy' && h('div', { className: 'space-y-4' },
-          h('div', { className: 'text-center mb-2' },
+        tab === 'philosophy' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDDD0 Philosophy Corner'),
             h('p', { className: 'text-sm text-slate-600' }, 'Meet the thinkers who shaped how we reason about right and wrong.')
           ),
 
           // Grade band selector
-          h('div', { className: 'flex justify-center gap-2 mb-3' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-2 mb-3' },
             ['elementary', 'middle', 'high'].map(function(band) {
               return h('button', { 'aria-label': 'philBand', key: band, onClick: function() { upd('philBand', band); },
                 className: 'px-3 py-1 rounded-full text-[10px] font-bold transition-all ' +
@@ -2006,7 +2006,7 @@ window.SelHub = window.SelHub || {
           (PHILOSOPHERS[d.philBand || gradeBand] || PHILOSOPHERS.elementary).map(function(phil) {
             var isExpanded = d.philExpanded === phil.id;
             var explored = (d.philosophersExplored || []).slice();
-            return h('div', { key: phil.id,
+            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: phil.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isExpanded ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-white hover:border-purple-300')
             },
               h('button', { 'aria-label': 'px-4 pb-4 space-y-3', onClick: function() {
@@ -2041,7 +2041,7 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-xs text-amber-800 italic' }, '"' + phil.famousQuote + '"')
                 ),
 
-                h('div', { className: 'bg-green-50 rounded-xl p-3 border border-green-200' },
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-green-50 rounded-xl p-3 border border-green-200' },
                   h('p', { className: 'text-[10px] font-bold text-green-700 mb-1' }, '\uD83E\uDDEA Try It Yourself:'),
                   h('p', { className: 'text-xs text-green-800' }, phil.tryIt)
                 ),

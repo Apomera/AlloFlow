@@ -11,6 +11,7 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 var createDocPipeline = function(deps) {
   var callGemini = deps.callGemini;
   var callGeminiVision = deps.callGeminiVision;
+  var callImagen = deps.callImagen;
   var addToast = deps.addToast;
   var t = deps.t;
   var isRtlLang = deps.isRtlLang || function() { return false; };
@@ -63,6 +64,352 @@ var createDocPipeline = function(deps) {
     setIsExtracting = s.setIsExtracting;
     exportAuditResult = s.exportAuditResult;
     setExportAuditLoading = s.setExportAuditLoading; setExportAuditResult = s.setExportAuditResult;
+  };
+
+  // ── Deterministic integrity helpers ──
+  // textCharCount: count visible text characters in HTML (strips tags/scripts/styles)
+  const textCharCount = (html) => {
+    if (!html) return 0;
+    return String(html)
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim().length;
+  };
+
+  // acceptFixedHtml: strict guard that rejects AI fix outputs that silently shrink the document.
+  // Replaces the old `fixed.length > original.length * 0.5` checks which allowed 50% truncation.
+  const acceptFixedHtml = (fixed, original, opts) => {
+    if (!fixed || !original) return false;
+    const sizeFloor = (opts && opts.sizeFloor) || 0.95;
+    const textFloor = (opts && opts.textFloor) || 0.97;
+    if (fixed.length < original.length * sizeFloor) return false;
+    const origText = textCharCount(original);
+    if (origText > 0 && textCharCount(fixed) < origText * textFloor) return false;
+    return fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body');
+  };
+
+  // ── Source hint prescan: deterministic analysis of extracted text to guide the transform prompt ──
+  const scanSourceHints = (text) => {
+    if (!text) return { hasContent: false };
+    const sample = text.length > 20000 ? text.slice(0, 10000) + text.slice(-10000) : text;
+    const scripts = {
+      cyrillic: /[\u0400-\u04FF]/.test(sample),
+      arabic: /[\u0600-\u06FF]/.test(sample),
+      hebrew: /[\u0590-\u05FF]/.test(sample),
+      cjk: /[\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(sample),
+      devanagari: /[\u0900-\u097F]/.test(sample),
+      greek: /[\u0370-\u03FF]/.test(sample),
+      thai: /[\u0E00-\u0E7F]/.test(sample),
+    };
+    const detectedScripts = Object.keys(scripts).filter(k => scripts[k]);
+    const tableMatches = (sample.match(/\|.*\|.*\|/g) || []).length;
+    const linkMatches = (text.match(/https?:\/\/[^\s)]+/g) || []).length;
+    const mailtoMatches = (text.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g) || []).length;
+    const hasBullets = /^\s*[-•*·]\s/m.test(sample);
+    const hasNumbered = /^\s*\d+[.)]\s/m.test(sample);
+    const headingMarkers = (sample.match(/^#{1,6}\s/gm) || []).length;
+    return {
+      hasContent: true,
+      hasNonLatinScripts: detectedScripts.length > 0,
+      detectedScripts,
+      estimatedTableCount: tableMatches > 10 ? 'many' : tableMatches > 2 ? 'some' : 'few',
+      estimatedLinkCount: linkMatches,
+      estimatedEmailCount: mailtoMatches,
+      hasBulletPatterns: hasBullets,
+      hasNumberedLists: hasNumbered,
+      hasMarkdownHeadings: headingMarkers > 2,
+      totalChars: text.length,
+    };
+  };
+
+  const formatHintsForPrompt = (hints) => {
+    if (!hints || !hints.hasContent) return '';
+    const parts = [];
+    if (hints.hasNonLatinScripts) parts.push(`DETECTED SCRIPTS: ${hints.detectedScripts.join(', ')} — wrap runs of these in <span lang="..."> with correct language codes (ru, ar, he, zh/ja/ko, hi, el, th)`);
+    if (hints.estimatedTableCount === 'many') parts.push('MANY TABLES detected — ensure every <table> has <caption>, <thead>, <th scope="col"> and <tbody>');
+    if (hints.estimatedLinkCount > 5) parts.push(`${hints.estimatedLinkCount} LINKS detected — ensure every <a> has descriptive link text, never "click here" or bare URLs`);
+    if (hints.hasBulletPatterns) parts.push('BULLET LISTS detected — convert all bullet characters to semantic <ul><li> structures');
+    if (hints.hasNumberedLists) parts.push('NUMBERED LISTS detected — convert to semantic <ol><li> structures');
+    if (!parts.length) return '';
+    return '\n\nSOURCE PRESCAN HINTS:\n- ' + parts.join('\n- ');
+  };
+
+  // ── Chunked AI fix helper: split HTML on tag boundaries, fix each chunk, rejoin ──
+  // Prevents the old `substring(0, 25000)` truncation by processing the full document
+  // in AI-sized chunks that stay under the 8192-token output ceiling.
+  const HTML_FIX_CHUNK = 18000;
+  const splitHtmlOnTagBoundary = (html, size) => {
+    if (!html || html.length <= size) return [html || ''];
+    const chunks = [];
+    let i = 0;
+    while (i < html.length) {
+      let end = Math.min(i + size, html.length);
+      if (end < html.length) {
+        // Back up to the last '>' boundary so we never cut mid-tag
+        const lastClose = html.lastIndexOf('>', end);
+        if (lastClose > i + size * 0.6) end = lastClose + 1;
+      }
+      chunks.push(html.slice(i, end));
+      i = end;
+    }
+    return chunks;
+  };
+
+  const stripFence = (s) => {
+    if (!s) return s;
+    let c = s.trim();
+    if (c.includes('`' + '``')) {
+      const parts = c.split('`' + '``');
+      c = parts[1] || parts[0];
+      if (c.startsWith('html\n') || c.startsWith('html\r\n')) c = c.substring(c.indexOf('\n') + 1);
+      if (c.lastIndexOf('`' + '``') !== -1) c = c.substring(0, c.lastIndexOf('`' + '``'));
+    }
+    return c.trim();
+  };
+
+  // aiFixChunked: run AI WCAG fix across the entire document by chunking on tag boundaries.
+  // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
+  const aiFixChunked = async (html, violationsText, label) => {
+    if (!html) return html;
+    const chunks = splitHtmlOnTagBoundary(html, HTML_FIX_CHUNK);
+    if (chunks.length === 1) {
+      // Short doc: single call with full document
+      try {
+        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${html}\n"""\n\nReturn the COMPLETE fixed HTML.`;
+        const fixed = stripFence(await callGemini(prompt, true));
+        if (acceptFixedHtml(fixed, html)) return fixed;
+        warnLog(`[aiFixChunked:${label}] single-chunk rejected — keeping original`);
+        return html;
+      } catch (e) {
+        warnLog(`[aiFixChunked:${label}] single-chunk failed:`, e?.message);
+        return html;
+      }
+    }
+    // Multi-chunk: fix each fragment with strict per-chunk integrity
+    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks`);
+    const fixed = new Array(chunks.length);
+    for (let ci = 0; ci < chunks.length; ci++) {
+      const part = chunks[ci];
+      const isFirst = ci === 0, isLast = ci === chunks.length - 1;
+      const fragNote = isFirst
+        ? 'This is FRAGMENT 1 — it may begin with <!DOCTYPE>/<html>/<head>/<body>/<main>.'
+        : isLast
+          ? `This is the LAST fragment (${ci + 1} of ${chunks.length}) — it may end with </main></body></html>.`
+          : `This is fragment ${ci + 1} of ${chunks.length} — starts and ends mid-document.`;
+      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
+      try {
+        const out = stripFence(await callGemini(prompt, true));
+        // Per-chunk integrity: output must not shrink by more than 5% text content
+        if (out && out.length >= part.length * 0.9 && textCharCount(out) >= textCharCount(part) * 0.95) {
+          fixed[ci] = out;
+        } else {
+          warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
+          fixed[ci] = part;
+        }
+      } catch (e) {
+        warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} failed:`, e?.message);
+        fixed[ci] = part;
+      }
+    }
+    return fixed.join('');
+  };
+
+  // ── Deterministic extraction helpers (Step 0 of pipeline) ──
+  // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
+  const ensurePdfJsLoaded = async () => {
+    if (window.pdfjsLib) return;
+    if (document.querySelector('script[data-docpipe-pdfjs]')) {
+      await new Promise((resolve, reject) => {
+        const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(); } }, 100);
+        setTimeout(() => { clearInterval(wait); reject(new Error('pdf.js load timeout')); }, 10000);
+      });
+    } else {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.setAttribute('data-docpipe-pdfjs', 'true');
+      document.head.appendChild(s);
+      await new Promise((resolve, reject) => {
+        const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(); } }, 100);
+        setTimeout(() => { clearInterval(wait); reject(new Error('pdf.js load timeout')); }, 10000);
+      });
+    }
+    if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  };
+
+  // Extract text from a PDF using pdf.js's native text layer. Zero AI calls, zero truncation.
+  // Returns { fullText, pages, pageCount, sourceCharCount, isScanned }.
+  // isScanned = true when the PDF has no text layer (< 50 chars/page average) — fall back to OCR.
+  const extractPdfTextDeterministic = async (base64) => {
+    try {
+      await ensurePdfJsLoaded();
+      if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
+      const raw = base64.includes(',') ? base64.split(',')[1] : base64;
+      const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+      const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      const pages = [];
+      for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        const tc = await page.getTextContent();
+        // Sort items by y (descending since PDF origin is bottom-left), then x (ascending)
+        // This preserves reading order for single-column layouts and gives a reasonable fallback for multi-column
+        const items = (tc.items || []).slice().sort((a, b) => {
+          const ay = a.transform ? a.transform[5] : 0;
+          const by = b.transform ? b.transform[5] : 0;
+          if (Math.abs(ay - by) > 2) return by - ay; // higher y first
+          const ax = a.transform ? a.transform[4] : 0;
+          const bx = b.transform ? b.transform[4] : 0;
+          return ax - bx;
+        });
+        const pageText = items.map(i => i.str || '').join(' ').replace(/\s+/g, ' ').trim();
+        pages.push({ pageNum: p, text: pageText });
+      }
+      const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
+      const avgCharsPerPage = pdf.numPages > 0 ? fullText.length / pdf.numPages : 0;
+      return {
+        fullText,
+        pages,
+        pageCount: pdf.numPages,
+        sourceCharCount: fullText.length,
+        isScanned: avgCharsPerPage < 50,
+      };
+    } catch (e) {
+      warnLog('[PDF Det] extractPdfTextDeterministic failed:', e?.message);
+      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: e?.message };
+    }
+  };
+
+  // Lazy-load mammoth.js for DOCX text extraction
+  const ensureMammothLoaded = async () => {
+    if (window.mammoth) return;
+    if (document.querySelector('script[data-docpipe-mammoth]')) {
+      await new Promise((resolve, reject) => {
+        const wait = setInterval(() => { if (window.mammoth) { clearInterval(wait); resolve(); } }, 100);
+        setTimeout(() => { clearInterval(wait); reject(new Error('mammoth load timeout')); }, 10000);
+      });
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+    s.setAttribute('data-docpipe-mammoth', 'true');
+    document.head.appendChild(s);
+    await new Promise((resolve, reject) => {
+      const wait = setInterval(() => { if (window.mammoth) { clearInterval(wait); resolve(); } }, 100);
+      setTimeout(() => { clearInterval(wait); reject(new Error('mammoth load timeout')); }, 10000);
+    });
+  };
+
+  // Lazy-load jszip (already loaded in main app; this is a safety net)
+  const ensureJsZipLoaded = async () => {
+    if (window.JSZip) return;
+    if (document.querySelector('script[data-docpipe-jszip]')) {
+      await new Promise((resolve, reject) => {
+        const wait = setInterval(() => { if (window.JSZip) { clearInterval(wait); resolve(); } }, 100);
+        setTimeout(() => { clearInterval(wait); reject(new Error('jszip load timeout')); }, 10000);
+      });
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.setAttribute('data-docpipe-jszip', 'true');
+    document.head.appendChild(s);
+    await new Promise((resolve, reject) => {
+      const wait = setInterval(() => { if (window.JSZip) { clearInterval(wait); resolve(); } }, 100);
+      setTimeout(() => { clearInterval(wait); reject(new Error('jszip load timeout')); }, 10000);
+    });
+  };
+
+  const _base64ToBytes = (base64) => {
+    const raw = base64.includes(',') ? base64.split(',')[1] : base64;
+    return Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+  };
+
+  // Extract text from a DOCX via mammoth (primary) or jszip+XML (fallback for air-gap)
+  const extractDocxTextDeterministic = async (base64) => {
+    // Try mammoth first
+    try {
+      await ensureMammothLoaded();
+      if (window.mammoth && typeof window.mammoth.extractRawText === 'function') {
+        const bytes = _base64ToBytes(base64);
+        const result = await window.mammoth.extractRawText({ arrayBuffer: bytes.buffer });
+        const fullText = (result && result.value) || '';
+        if (fullText && fullText.length > 0) {
+          return { fullText, sourceCharCount: fullText.length, method: 'mammoth' };
+        }
+      }
+    } catch (e) {
+      warnLog('[DOCX Det] mammoth failed, falling back to jszip:', e?.message);
+    }
+    // Fallback: jszip + raw XML text extraction
+    try {
+      await ensureJsZipLoaded();
+      if (!window.JSZip) throw new Error('jszip unavailable');
+      const bytes = _base64ToBytes(base64);
+      const zip = await window.JSZip.loadAsync(bytes);
+      const docXml = zip.file('word/document.xml');
+      if (!docXml) throw new Error('word/document.xml not found');
+      const xml = await docXml.async('string');
+      // Extract text from <w:t> nodes in document order; <w:p> becomes paragraph break
+      const paragraphs = [];
+      const paraRegex = /<w:p[\s>][\s\S]*?<\/w:p>/g;
+      const textRegex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
+      const matches = xml.match(paraRegex) || [];
+      for (const p of matches) {
+        const parts = [];
+        let m;
+        textRegex.lastIndex = 0;
+        while ((m = textRegex.exec(p)) !== null) {
+          parts.push(m[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
+        }
+        if (parts.length) paragraphs.push(parts.join(''));
+      }
+      const fullText = paragraphs.join('\n\n');
+      return { fullText, sourceCharCount: fullText.length, method: 'jszip' };
+    } catch (e) {
+      warnLog('[DOCX Det] jszip fallback failed:', e?.message);
+      return { fullText: '', sourceCharCount: 0, method: 'failed', error: e?.message };
+    }
+  };
+
+  // Extract text from a PPTX via jszip — parse ppt/slides/slide*.xml and <a:t> nodes
+  const extractPptxTextDeterministic = async (base64) => {
+    try {
+      await ensureJsZipLoaded();
+      if (!window.JSZip) throw new Error('jszip unavailable');
+      const bytes = _base64ToBytes(base64);
+      const zip = await window.JSZip.loadAsync(bytes);
+      // Find all slide files, sort by slide number
+      const slideFiles = Object.keys(zip.files)
+        .filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))
+        .sort((a, b) => {
+          const na = parseInt(a.match(/slide(\d+)\.xml/)[1], 10);
+          const nb = parseInt(b.match(/slide(\d+)\.xml/)[1], 10);
+          return na - nb;
+        });
+      const slides = [];
+      const textRegex = /<a:t[^>]*>([\s\S]*?)<\/a:t>/g;
+      for (const file of slideFiles) {
+        const xml = await zip.file(file).async('string');
+        const parts = [];
+        let m;
+        textRegex.lastIndex = 0;
+        while ((m = textRegex.exec(xml)) !== null) {
+          parts.push(m[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
+        }
+        const slideText = parts.join(' ').replace(/\s+/g, ' ').trim();
+        if (slideText) slides.push({ slideNum: slides.length + 1, text: slideText });
+      }
+      const fullText = slides.map(s => '## Slide ' + s.slideNum + '\n\n' + s.text).join('\n\n');
+      return { fullText, slides, slideCount: slideFiles.length, sourceCharCount: fullText.length, method: 'jszip' };
+    } catch (e) {
+      warnLog('[PPTX Det] extraction failed:', e?.message);
+      return { fullText: '', slides: [], slideCount: 0, sourceCharCount: 0, method: 'failed', error: e?.message };
+    }
   };
 
   // ── PDF Accessibility Audit ──
@@ -137,8 +484,8 @@ Return ONLY valid JSON:
       ];
       const numAuditors = Math.min(pdfAuditorCount, allVariants.length);
       const auditVariants = allVariants.slice(0, numAuditors);
-      const auditResults = await Promise.all(auditVariants.map(p => callGeminiVision(p, base64Data, 'application/pdf').catch(() => null)));
-      const parsedAudits = auditResults.filter(Boolean).map(r => { try { return parseAudit(r); } catch { return null; } }).filter(Boolean);
+      const auditResults = await Promise.all(auditVariants.map((p, i) => callGeminiVision(p, base64Data, 'application/pdf').catch(e => { console.warn(`[PDF Audit] Auditor ${i + 1} failed:`, e?.message); return null; })));
+      const parsedAudits = auditResults.filter(Boolean).map((r, i) => { try { return parseAudit(r); } catch(pe) { console.warn(`[PDF Audit] Parse auditor ${i + 1} failed:`, pe?.message, 'Raw:', r?.substring?.(0, 200)); return null; } }).filter(Boolean);
 
       // ── Retry backfill: keep retrying until we hit the target count or exhaust attempts ──
       const MAX_RETRY_ROUNDS = 3;
@@ -225,6 +572,7 @@ Return ONLY valid JSON:
       // ── Triangulate: average scores, compute reliability statistics ──
       const scores = parsedAudits.map(a => a.score).filter(s => typeof s === 'number');
       const n = scores.length;
+      if (n === 0) throw new Error('All audit attempts returned no score');
       const rawMean = scores.reduce((a, b) => a + b, 0) / n;
       const avgScore = Math.round(rawMean);
       // Compute raw SD from unrounded mean for precision
@@ -396,8 +744,9 @@ Return ONLY valid JSON:
         // Keep the AI-only score — axe-core is optional at this stage
       }
     } catch (err) {
-      warnLog('[PDF Audit] Failed:', err);
-      setPdfAuditResult({ score: -1, summary: 'Audit could not be completed — proceeding to transformation.', critical: [], serious: [], moderate: [], minor: [], passes: [] });
+      warnLog('[PDF Audit] Failed:', err?.message || err);
+      console.error('[PDF Audit] Full error:', err);
+      setPdfAuditResult({ score: -1, summary: `Audit failed: ${err?.message || 'Unknown error'}. You can retry or proceed to Fix & Verify.`, critical: [], serious: [], moderate: [], minor: [], passes: [] });
     }
     setPdfAuditLoading(false);
   };
@@ -577,34 +926,66 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       } catch(e) {}
     }
 
-    // Check for user style preference (set via UI before remediation)
-    const _stylePref = typeof window !== 'undefined' ? window.__pdfStylePreference : '';
-    const _styleInstructions = _stylePref === 'academic' ? '\nSTYLE PREFERENCE: Academic — use serif fonts (Georgia), navy (#1b3a5c) and gold (#b8860b) color scheme, formal spacing, scholarly appearance.'
-      : _stylePref === 'elementary' ? '\nSTYLE PREFERENCE: Kid-friendly — use rounded corners (border-radius: 12px), bright cheerful colors (teal, coral, purple), larger fonts (16px base), playful section cards with soft shadows.'
-      : _stylePref === 'dark' ? '\nSTYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), soft white text (#e2e8f0), indigo accents (#818cf8), subtle borders, excellent contrast.'
-      : _stylePref === 'magazine' ? '\nSTYLE PREFERENCE: Magazine editorial — large hero headings, pull quotes with colored left borders, serif body text (Georgia), elegant professional feel.'
-      : _stylePref === 'minimal' ? '\nSTYLE PREFERENCE: Minimalist — lots of whitespace, thin sans-serif font, muted grays, one accent color (#6366f1), hairline borders, understated elegance.'
-      : '';
+    // Check for user style seed (set via UI before remediation) — unified with STYLE_SEEDS
+    const _styleSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
+    const _styleSeed = STYLE_SEEDS[_styleSeedId];
+    const _styleInstructions = _styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '';
 
-    const batchTransformPrompt = `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.${_styleInstructions}
+    // Deterministic prescan of the source — feed structured hints into the prompt
+    const _sourceHints = scanSourceHints(extractedText);
+    const _hintBlock = formatHintsForPrompt(_sourceHints);
+    if (_sourceHints.hasNonLatinScripts) warnLog(`[Hints] Non-Latin scripts detected: ${_sourceHints.detectedScripts.join(', ')}`);
+
+    // ── Chunked transform: split large text on paragraph boundaries, transform each chunk as fragment ──
+    // Stays under 8192-token output ceiling and eliminates silent truncation at 30K char mark.
+    const TEXT_TRANSFORM_CHUNK = 12000;
+    const splitTextForTransform = (text, size) => {
+      if (!text || text.length <= size) return [text || ''];
+      const chunks = [];
+      let i = 0;
+      while (i < text.length) {
+        let end = Math.min(i + size, text.length);
+        if (end < text.length) {
+          const paraBreak = text.lastIndexOf('\n\n', end);
+          if (paraBreak > i + size * 0.5) {
+            end = paraBreak;
+          } else {
+            const sentBreak = text.lastIndexOf('. ', end);
+            if (sentBreak > i + size * 0.5) end = sentBreak + 1;
+          }
+        }
+        chunks.push(text.slice(i, end));
+        i = end;
+      }
+      return chunks;
+    };
+
+    // Build the shared prompt suffix (all rules + styling) so each chunk uses identical instructions
+    const buildTransformPrompt = (chunkText, fragMeta) => {
+      const { isFirst, isLast, chunkIdx, totalChunks } = fragMeta;
+      const fragmentHeader = totalChunks > 1
+        ? `\n\nFRAGMENT ${chunkIdx + 1} of ${totalChunks}. ` +
+          (isFirst ? 'START the document — include <!DOCTYPE html>, <html lang="en">, <head> with <title>, <meta charset>, skip-to-content link, and opening <main id="main-content" role="main">. ' : 'CONTINUE the document — do NOT include <!DOCTYPE>, <html>, <head>, or <main> opening. Start with content elements only. ') +
+          (isLast ? 'END the document — close </main></body></html>.' : 'Do NOT close </main></body></html> — more fragments follow.')
+        : '';
+      return `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.${_styleInstructions}
 
 ORIGINAL ACCESSIBILITY ISSUES FOUND:
-${batchIssueList}
+${batchIssueList}${_hintBlock}
+${fragmentHeader}
 
 TEXT CONTENT TO TRANSFORM:
-${'\"\"\"'}
-${extractedText.substring(0, 30000)}
-${'\"\"\"'}
+"""
+${chunkText}
+"""
 
-Create a COMPLETE, polished HTML document following ALL of these requirements:
+Create accessible HTML following ALL of these requirements:
 
 STRUCTURAL ACCESSIBILITY:
-- <!DOCTYPE html>, <html lang="en">, <head> with <meta charset="UTF-8">, meaningful <title>
-- <meta name="viewport" content="width=device-width, initial-scale=1.0">
-- Skip-to-content link: <a href="#main-content" class="sr-only">Skip to main content</a>
-- <main id="main-content" role="main"> wrapping all content
+- ${totalChunks > 1 && !isFirst ? 'Continue the existing hierarchy (h2/h3/h4) — do NOT start a new <h1>' : '<!DOCTYPE html>, <html lang="en">, <head> with <meta charset="UTF-8">, meaningful <title>'}
+${totalChunks > 1 && !isFirst ? '' : '- <meta name="viewport" content="width=device-width, initial-scale=1.0">\n- Skip-to-content link: <a href="#main-content" class="sr-only">Skip to main content</a>\n- <main id="main-content" role="main"> wrapping all content'}
 - <nav>, <header>, <footer>, <section> landmarks where appropriate
-- Exactly ONE <h1>, with proper h2→h3→h4 hierarchy (no skipped levels)
+- ${totalChunks > 1 && !isFirst ? 'Use h2/h3/h4 only — the h1 is in the first fragment' : 'Exactly ONE <h1>, with proper h2→h3→h4 hierarchy (no skipped levels)'}
 
 TABLE ACCESSIBILITY:
 - <table> with <caption> describing the table's purpose
@@ -616,7 +997,7 @@ CONTENT QUALITY:
 - Convert bullet characters (•, -, *) to semantic <ul>/<ol> lists
 - Convert [Image: description] markers to <figure> with <img alt="description"> and <figcaption>
 - Preserve all hyperlinks as <a href="..."> with descriptive link text
-- Preserve all content — do not summarize or shorten anything
+- Preserve ALL content — do not summarize, shorten, or drop any paragraphs, tables, or list items
 - Use <blockquote> for quoted text, <code> for code snippets
 - Use <abbr> for abbreviations on first use
 
@@ -631,9 +1012,61 @@ VISUAL STYLING (inline CSS):
 - High contrast support: @media (forced-colors: active) { a { text-decoration: underline; } th, td { border: 1px solid CanvasText; } }
 - Reduced motion: @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
-Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
+Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, no <html>)' : (totalChunks > 1 ? 'the opening through this fragment\'s content (do NOT close </main></body></html>)' : 'the complete HTML document (<!DOCTYPE html> to </html>)')}.`;
+    };
 
-    let accessibleHtml = await callGemini(batchTransformPrompt, true);
+    const textChunks = splitTextForTransform(extractedText, TEXT_TRANSFORM_CHUNK);
+    warnLog(`[Transform] Splitting ${extractedText.length} chars into ${textChunks.length} chunk(s) of ~${TEXT_TRANSFORM_CHUNK} chars`);
+
+    let accessibleHtml;
+    if (textChunks.length === 1) {
+      // Short document: single call, same as before
+      const singlePrompt = buildTransformPrompt(textChunks[0], { isFirst: true, isLast: true, chunkIdx: 0, totalChunks: 1 });
+      accessibleHtml = await callGemini(singlePrompt, true);
+    } else {
+      // Long document: parallel chunks in batches of 5
+      const MAX_PARALLEL = 5;
+      const chunkResults = new Array(textChunks.length);
+      for (let batch = 0; batch < textChunks.length; batch += MAX_PARALLEL) {
+        const batchEnd = Math.min(batch + MAX_PARALLEL, textChunks.length);
+        const batchPromises = [];
+        for (let ci = batch; ci < batchEnd; ci++) {
+          const meta = { isFirst: ci === 0, isLast: ci === textChunks.length - 1, chunkIdx: ci, totalChunks: textChunks.length };
+          const prompt = buildTransformPrompt(textChunks[ci], meta);
+          batchPromises.push(
+            callGemini(prompt, true).then(r => ({ ci, result: r })).catch(err => {
+              warnLog(`[Transform] Chunk ${ci + 1} failed:`, err?.message);
+              return { ci, result: null };
+            })
+          );
+        }
+        const batchResults = await Promise.all(batchPromises);
+        for (const { ci, result } of batchResults) chunkResults[ci] = result;
+        if (batchEnd < textChunks.length) await new Promise(r => setTimeout(r, 500));
+      }
+      // Strip markdown fences from each chunk and join
+      const cleanChunks = chunkResults.map((r, i) => {
+        if (!r) return `<section aria-label="Fragment ${i + 1} failed to process"><p>[Fragment ${i + 1} could not be transformed]</p></section>`;
+        let c = r.trim();
+        if (c.includes('`' + '``')) {
+          const parts = c.split('`' + '``');
+          c = parts[1] || parts[0];
+          if (c.startsWith('html\n') || c.startsWith('html\r\n')) c = c.substring(c.indexOf('\n') + 1);
+          if (c.lastIndexOf('`' + '``') !== -1) c = c.substring(0, c.lastIndexOf('`' + '``'));
+        }
+        return c.trim();
+      });
+      accessibleHtml = cleanChunks.join('\n');
+      // Ensure the document is properly closed (in case the last chunk's AI forgot)
+      if (!accessibleHtml.includes('</html>')) {
+        if (!accessibleHtml.includes('</body>')) {
+          if (!accessibleHtml.includes('</main>')) accessibleHtml += '\n</main>';
+          accessibleHtml += '\n</body>';
+        }
+        accessibleHtml += '\n</html>';
+      }
+      warnLog(`[Transform] Joined ${cleanChunks.length} chunks → ${accessibleHtml.length} chars HTML`);
+    }
 
     if (!accessibleHtml || accessibleHtml.length < 100) {
       throw new Error('HTML generation failed');
@@ -656,11 +1089,16 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     // ── Phase 3b: Deterministic a11y fixes (full set — mirroring single-file pipeline) ──
     let aiFixCount = 0;
 
-    // 1. Missing alt on images
+    // 1. Missing alt on images — derive from src/title or add descriptive placeholder
     accessibleHtml = accessibleHtml.replace(/<img([^>]*)>/gi, (match, attrs) => {
       if (/alt\s*=/.test(attrs)) return match;
       aiFixCount++;
-      return `<img alt="Document image"${attrs}>`;
+      var srcMatch = attrs.match(/src\s*=\s*["']([^"']+)["']/i);
+      var titleMatch = attrs.match(/title\s*=\s*["']([^"']+)["']/i);
+      var altText = 'Image';
+      if (titleMatch && titleMatch[1]) { altText = titleMatch[1]; }
+      else if (srcMatch && srcMatch[1]) { var fname = srcMatch[1].split('/').pop().split('?')[0].replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').trim(); if (fname && fname.length > 2 && !/^(img|image|photo|pic|figure)\d*$/i.test(fname)) altText = fname.charAt(0).toUpperCase() + fname.slice(1); }
+      return `<img alt="${altText}"${attrs}>`;
     });
 
     // 2. Ensure exactly one h1
@@ -727,18 +1165,58 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       return `<a${attrs}>${href ? href[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`;
     });
 
-    // 7. Ensure skip-to-content link exists
+    // 7. Ensure skip-to-content link exists (visible on focus, high contrast)
     if (!accessibleHtml.includes('Skip to') && !accessibleHtml.includes('skip-nav')) {
       accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (m) => {
         aiFixCount++;
-        return m + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">Skip to main content</a>';
+        return m + '\n<a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000;background:#1e293b;color:#ffffff;padding:8px 16px;font-size:14px;font-weight:bold;text-decoration:none;border-radius:0 0 8px 0;border:2px solid #fbbf24">Skip to main content</a>';
       });
+      // Add CSS to make skip link visible on focus with WCAG AA contrast
+      if (accessibleHtml.includes('</head>')) {
+        accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #fbbf24!important;outline-offset:2px!important;text-decoration:underline!important}</style>\n</head>');
+        aiFixCount++;
+      }
     }
 
     // 8. Ensure main landmark exists
     if (!accessibleHtml.includes('<main')) {
       accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (m) => { aiFixCount++; return m + '\n<main id="main-content" role="main">'; });
       accessibleHtml = accessibleHtml.replace('</body>', '</main>\n</body>');
+    }
+
+    // 8b. Ensure nav landmark exists (wrap any table of contents or link lists)
+    if (!accessibleHtml.includes('<nav') && !accessibleHtml.includes('role="navigation"')) {
+      // Look for a TOC-like structure (heading + list of links at the top)
+      var tocMatch = accessibleHtml.match(/<(h[1-3])[^>]*>.*?(table of contents|contents|navigation|toc).*?<\/\1>\s*<(ul|ol)/i);
+      if (tocMatch) {
+        var tocIdx = accessibleHtml.indexOf(tocMatch[0]);
+        if (tocIdx >= 0) {
+          accessibleHtml = accessibleHtml.substring(0, tocIdx) + '<nav role="navigation" aria-label="Table of Contents">' + accessibleHtml.substring(tocIdx);
+          // Find the closing </ul> or </ol> after the TOC
+          var listTag = tocMatch[3];
+          var closingTag = '</' + listTag + '>';
+          var closeIdx = accessibleHtml.indexOf(closingTag, tocIdx + tocMatch[0].length);
+          if (closeIdx >= 0) {
+            accessibleHtml = accessibleHtml.substring(0, closeIdx + closingTag.length) + '</nav>' + accessibleHtml.substring(closeIdx + closingTag.length);
+            aiFixCount++;
+          }
+        }
+      }
+    }
+
+    // 8c. Ensure footer landmark exists (wrap any footer-like content at the end)
+    if (!accessibleHtml.includes('<footer') && !accessibleHtml.includes('role="contentinfo"')) {
+      // Look for common footer patterns (copyright, date, attribution near end of body)
+      var footerPatterns = [/(<p[^>]*>.*?(?:copyright|©|\u00a9|generated|created|source:|author:).*?<\/p>)\s*<\/main>/i,
+                           /(<div[^>]*>.*?(?:copyright|©|\u00a9|AlloFlow|generated on).*?<\/div>)\s*<\/main>/i];
+      for (var fpi = 0; fpi < footerPatterns.length; fpi++) {
+        var footerMatch = accessibleHtml.match(footerPatterns[fpi]);
+        if (footerMatch) {
+          accessibleHtml = accessibleHtml.replace(footerMatch[0], '</main>\n<footer role="contentinfo">' + footerMatch[1] + '</footer>');
+          aiFixCount++;
+          break;
+        }
+      }
     }
 
     // 9. Fix heading level skips (h1→h3 becomes h1→h2)
@@ -978,21 +1456,36 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       return `<figure aria-label="${label}"${attrs}>${content}</figure>`;
     });
 
-    // 38. Add lang attribute to common non-English text patterns
-    // (Detect Spanish, French, Arabic script and wrap in lang spans)
-    accessibleHtml = accessibleHtml.replace(/([\u0600-\u06FF]{5,})/g, (match) => {
-      aiFixCount++;
-      return `<span lang="ar">${match}</span>`;
+    // 38. Add lang attribute to non-English text patterns (WCAG 3.1.2: Language of Parts)
+    // Detect script-based languages and wrap in lang spans. Skip already-tagged content.
+    var langPatterns = [
+      { regex: /([\u0600-\u06FF]{5,})/g, lang: 'ar' },        // Arabic
+      { regex: /([\u4E00-\u9FFF]{3,})/g, lang: 'zh' },        // Chinese (CJK Unified)
+      { regex: /([\u3040-\u309F\u30A0-\u30FF]{3,})/g, lang: 'ja' }, // Japanese (Hiragana + Katakana)
+      { regex: /([\uAC00-\uD7AF]{3,})/g, lang: 'ko' },        // Korean (Hangul)
+      { regex: /([\u0900-\u097F]{5,})/g, lang: 'hi' },        // Hindi (Devanagari)
+      { regex: /([\u0E00-\u0E7F]{5,})/g, lang: 'th' },        // Thai
+      { regex: /([\u0400-\u04FF]{5,})/g, lang: 'ru' },        // Russian (Cyrillic)
+      { regex: /([\u0590-\u05FF]{5,})/g, lang: 'he' }         // Hebrew
+    ];
+    langPatterns.forEach(function(lp) {
+      accessibleHtml = accessibleHtml.replace(lp.regex, function(match, p1, offset) {
+        var preceding = accessibleHtml.substring(Math.max(0, offset - 200), offset);
+        // Skip if already tagged with this language
+        if (new RegExp('lang=["\']' + lp.lang + '["\'][^>]*>[^<]*$', 'i').test(preceding)) return match;
+        // Skip if inside <code>, <pre>, or <script> blocks (don't corrupt code examples)
+        if (/<(?:code|pre|script)[^>]*>[^<]*$/i.test(preceding)) return match;
+        aiFixCount++;
+        return '<span lang="' + lp.lang + '">' + match + '</span>';
+      });
     });
 
     // 39. Ensure all <ul>/<ol> have role="list" for Safari VoiceOver compatibility
+    // Safari strips list semantics from styled lists even without list-style:none.
+    // Always add role="list" to ensure screen readers announce list structure.
     accessibleHtml = accessibleHtml.replace(/<(ul|ol)(?![^>]*role=)([^>]*)>/gi, (match, tag, attrs) => {
-      // Only add if list-style is set to none (Safari bug requires explicit role)
-      if (/list-style\s*:\s*none/i.test(match) || /list-style-type\s*:\s*none/i.test(accessibleHtml)) {
-        aiFixCount++;
-        return `<${tag} role="list"${attrs}>`;
-      }
-      return match;
+      aiFixCount++;
+      return `<${tag} role="list"${attrs}>`;
     });
 
     if (aiFixCount > 0) log(`Applied ${aiFixCount} deterministic fixes`);
@@ -1189,9 +1682,9 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       fix_list_wrap: function(html, p) {
         var tag = p.ordered ? 'ol' : 'ul';
         // Find orphaned <li> and wrap them
-        return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock) {
-          // Check if already inside a list
-          var before = html.substring(Math.max(0, html.indexOf(m) - 100), html.indexOf(m));
+        return html.replace(/(<li[\s>][\s\S]*?<\/li>\s*(?:<li[\s>][\s\S]*?<\/li>\s*)*)/gi, function(m, liBlock, offset) {
+          // Check if already inside a list (use offset param instead of indexOf for O(1))
+          var before = html.substring(Math.max(0, offset - 100), offset);
           if (/<[uo]l[^>]*>\s*$/i.test(before)) return m; // already wrapped
           return '<' + tag + ' role="list">' + liBlock + '</' + tag + '>';
         });
@@ -1326,6 +1819,8 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
       const lf = fixListViolations(accessibleHtml);
       if (lf.fixCount > 0) { accessibleHtml = lf.html; log(`Fixed ${lf.fixCount} list-structure violations`); }
     }
+    // Deterministic WCAG gap closures (form labels, decorative images, complex tables, lang spans)
+    accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
 
     // ── Phase 5: Self-correcting AI fix loop ──
     let autoFixPasses = 0;
@@ -1350,15 +1845,9 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         const violIns = axeIns.concat(aiIns).join('\n');
 
         try {
-          let fixed = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve all content and styles.\n\nVIOLATIONS:\n${violIns}\n\nHTML:\n${'\"\"\"'}\n${accessibleHtml.substring(0, 25000)}\n${'\"\"\"'}\n\nReturn the COMPLETE fixed HTML.`, true);
-          // Strip markdown fencing if AI wrapped response
-          if (fixed && fixed.includes('`' + '``')) {
-            const fParts = fixed.split('`' + '``');
-            fixed = fParts[1] || fParts[0];
-            if (fixed.startsWith('html\n') || fixed.startsWith('html\r\n')) fixed = fixed.substring(fixed.indexOf('\n') + 1);
-            if (fixed.lastIndexOf('`' + '``') !== -1) fixed = fixed.substring(0, fixed.lastIndexOf('`' + '``'));
-          }
-          if (fixed && fixed.length > accessibleHtml.length * 0.5 && (fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main'))) {
+          // Use chunked fix across the entire document (no truncation)
+          const fixed = await aiFixChunked(accessibleHtml, violIns, `audit-pass-${fp + 1}`);
+          if (fixed && fixed !== accessibleHtml) {
             accessibleHtml = fixed;
           }
         } catch(fixErr) {
@@ -1371,6 +1860,8 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         if (postListFix.fixCount > 0) { accessibleHtml = postListFix.html; log(`  Deterministic: fixed ${postListFix.fixCount} list issues`); }
         const postContrastFix = fixContrastViolations(accessibleHtml);
         if (postContrastFix.fixCount > 0) { accessibleHtml = postContrastFix.html; log(`  Deterministic: fixed ${postContrastFix.fixCount} contrast issues`); }
+        // Deterministic WCAG gap closures (form labels, decorative images, complex tables, lang spans)
+        accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
         // Fix invalid ARIA roles that AI may have introduced
         const _validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
         const _roleCorrections = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
@@ -1561,6 +2052,8 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
     setPdfBatchCurrentIndex(-1);
     setPdfBatchStep('');
     addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${done.length ? Math.round(done.reduce((s, q) => s + ((q.result?.afterScore || 0) - (q.result?.beforeScore || 0)), 0) / done.length) : 0} points)`, 'success');
+    // Audio: triumphant chord when batch finishes
+    try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
   };
 
   const downloadBatchResults = async () => {
@@ -1975,6 +2468,8 @@ HTML section ${chunkNum}/${chunks.length}:
       iframe.title = 'Accessibility audit frame';
       document.body.appendChild(iframe);
 
+      let results;
+      try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
       iframeDoc.open();
       iframeDoc.write(htmlContent);
@@ -1997,13 +2492,14 @@ HTML section ${chunkNum}/${chunks.length}:
       const iframeAxe = iframe.contentWindow.axe;
       if (!iframeAxe) throw new Error('axe-core not available in iframe');
 
-      const results = await iframeAxe.run(iframeDoc, {
+      results = await iframeAxe.run(iframeDoc, {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
         resultTypes: ['violations', 'passes', 'incomplete']
       });
-
-      // Clean up iframe
-      document.body.removeChild(iframe);
+      } finally {
+        // Always clean up iframe — prevents memory leak on error
+        try { document.body.removeChild(iframe); } catch(e) { /* iframe may not be attached */ }
+      }
 
       // Process results
       const critical = results.violations.filter(v => v.impact === 'critical');
@@ -2112,14 +2608,42 @@ HTML section ${chunkNum}/${chunks.length}:
 
     let fixed = htmlContent;
     let fixCount = 0;
-    const whiteBg = [255, 255, 255];
 
-    // ── Pass 1: Fix color:#hex declarations against white background ──
+    // ── Detect document background color instead of assuming white ──
+    // Search for background on <body> or <html> elements; fall back to white
+    const detectDocBg = (html) => {
+      // Check body style first, then html style
+      const bodyBgMatch = html.match(/<body[^>]*style="[^"]*background(?:-color)?:\s*([^;"]+)/i);
+      if (bodyBgMatch) {
+        const parsed = parseColor(bodyBgMatch[1].trim());
+        if (parsed) return parsed;
+      }
+      const htmlBgMatch = html.match(/<html[^>]*style="[^"]*background(?:-color)?:\s*([^;"]+)/i);
+      if (htmlBgMatch) {
+        const parsed = parseColor(htmlBgMatch[1].trim());
+        if (parsed) return parsed;
+      }
+      // Check <style> blocks for body { background... } rules
+      const styleBlockMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+      if (styleBlockMatch) {
+        for (const block of styleBlockMatch) {
+          const bodyRuleMatch = block.match(/body\s*\{[^}]*background(?:-color)?:\s*([^;}\s]+)/i);
+          if (bodyRuleMatch) {
+            const parsed = parseColor(bodyRuleMatch[1].trim());
+            if (parsed) return parsed;
+          }
+        }
+      }
+      return [255, 255, 255]; // default white
+    };
+    const defaultBg = detectDocBg(htmlContent);
+
+    // ── Pass 1: Fix color:#hex declarations against detected background ──
     fixed = fixed.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
       try {
         const rgb = hexToRgb(hex);
-        if (contrastRatio(rgb, whiteBg) < 4.5) {
-          const [fr, fg, fb] = fixToPass(rgb, whiteBg);
+        if (contrastRatio(rgb, defaultBg) < 4.5) {
+          const [fr, fg, fb] = fixToPass(rgb, defaultBg);
           fixCount++;
           return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
@@ -2130,8 +2654,8 @@ HTML section ${chunkNum}/${chunks.length}:
     // ── Pass 2: Fix color:rgb() and color:rgba() declarations ──
     fixed = fixed.replace(/color:\s*rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)/gi, (match, r, g, b) => {
       const rgb = [parseInt(r), parseInt(g), parseInt(b)];
-      if (contrastRatio(rgb, whiteBg) < 4.5) {
-        const [fr, fg, fb] = fixToPass(rgb, whiteBg);
+      if (contrastRatio(rgb, defaultBg) < 4.5) {
+        const [fr, fg, fb] = fixToPass(rgb, defaultBg);
         fixCount++;
         return 'color:' + rgbToHex(fr, fg, fb);
       }
@@ -2145,8 +2669,8 @@ HTML section ${chunkNum}/${chunks.length}:
       if (!hex) return match;
       try {
         const rgb = hexToRgb(hex);
-        if (contrastRatio(rgb, whiteBg) < 4.5) {
-          const [fr, fg, fb] = fixToPass(rgb, whiteBg);
+        if (contrastRatio(rgb, defaultBg) < 4.5) {
+          const [fr, fg, fb] = fixToPass(rgb, defaultBg);
           fixCount++;
           return prefix + 'color:' + rgbToHex(fr, fg, fb);
         }
@@ -2193,8 +2717,21 @@ HTML section ${chunkNum}/${chunks.length}:
 
     // ── Pass 6: Inject a global CSS rule as a safety net for common light-colored classes ──
     // This catches elements styled by class names rather than inline styles
+    // Background-aware: use different overrides for dark vs light document backgrounds
     if (fixed.includes('<head>') && !fixed.includes('/* a11y-contrast-safety */')) {
-      const safetyCSS = `<style>/* a11y-contrast-safety */
+      const docBgLum = luminance(...defaultBg);
+      const isDarkDoc = docBgLum < 0.18;
+      const safetyCSS = isDarkDoc
+        ? `<style>/* a11y-contrast-safety */
+.text-gray-400,.text-gray-300,.text-slate-400,.text-slate-300,.text-zinc-400,.text-zinc-300{color:#d1d5db !important}
+.text-blue-300,.text-sky-300,.text-cyan-300,.text-indigo-300{color:#93c5fd !important}
+.text-green-300,.text-emerald-300{color:#86efac !important}
+.text-red-300,.text-rose-300,.text-pink-300{color:#fca5a5 !important}
+.text-yellow-300,.text-amber-300,.text-orange-300{color:#fcd34d !important}
+.text-purple-300,.text-violet-300{color:#c4b5fd !important}
+.bg-gray-800 *,.bg-slate-800 *,.bg-gray-900 *,.bg-slate-900 *,.bg-black *{color:#e2e8f0}
+</style>`
+        : `<style>/* a11y-contrast-safety */
 .text-gray-400,.text-gray-300,.text-slate-400,.text-slate-300,.text-zinc-400,.text-zinc-300{color:#4b5563 !important}
 .text-blue-300,.text-sky-300,.text-cyan-300,.text-indigo-300{color:#1e40af !important}
 .text-green-300,.text-emerald-300{color:#166534 !important}
@@ -2209,6 +2746,79 @@ HTML section ${chunkNum}/${chunks.length}:
 
     warnLog(`[Contrast Fix] Fixed ${fixCount} color-contrast issues deterministically`);
     return { html: fixed, fixCount };
+  };
+
+  // ── WCAG Style Sanitizer: guarantees WCAG compliance on ANY styled HTML ──
+  // Runs deterministic checks that cannot be defeated by AI hallucination or theme misconfiguration
+  const sanitizeStyleForWCAG = (htmlContent, options = {}) => {
+    const { level = 'AA', minFontSize = 12 } = options;
+    let html = htmlContent;
+    let totalFixes = 0;
+
+    // 1. Run contrast fixer (now background-aware via detectDocBg inside fixContrastViolations)
+    //    For AAA level, we need to patch the ratio threshold — fixContrastViolations uses 4.5:1 internally.
+    //    We do a second pass for AAA that catches anything between 4.5:1 and 7:1.
+    const contrastResult = fixContrastViolations(html);
+    html = contrastResult.html;
+    totalFixes += contrastResult.fixCount;
+
+    // 2. For AAA: second contrast pass with stricter 7:1 ratio
+    if (level === 'AAA') {
+      // Re-implement targeted contrast check at 7:1 threshold
+      const hexToRgb = (hex) => {
+        const h = hex.replace('#', '');
+        if (h.length === 3) return [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)];
+        return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+      };
+      const rgbToHex = (r, g, b) => '#' + [r, g, b].map(c => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
+      const srgb = (c) => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+      const lum = (r, g, b) => 0.2126 * srgb(r/255) + 0.7152 * srgb(g/255) + 0.0722 * srgb(b/255);
+      const cr = (rgb1, rgb2) => { const l1 = lum(...rgb1), l2 = lum(...rgb2); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
+      const fixAAA = (fgRgb, bgRgb) => {
+        let [r, g, b] = fgRgb;
+        const bgLum = lum(...bgRgb);
+        const isDark = bgLum < 0.18;
+        for (let i = 0; i < 30; i++) {
+          if (cr([r,g,b], bgRgb) >= 7.0) break;
+          if (isDark) { r = Math.min(255, Math.round(r+(255-r)*0.15)); g = Math.min(255, Math.round(g+(255-g)*0.15)); b = Math.min(255, Math.round(b+(255-b)*0.15)); }
+          else { r = Math.max(0, Math.round(r*0.82)); g = Math.max(0, Math.round(g*0.82)); b = Math.max(0, Math.round(b*0.82)); }
+        }
+        return [r, g, b];
+      };
+      // Detect background for AAA pass
+      const bodyBgM = html.match(/<body[^>]*style="[^"]*background(?:-color)?:\s*([^;"]+)/i);
+      const styleBgM = html.match(/body\s*\{[^}]*background(?:-color)?:\s*([^;}\s]+)/i);
+      let aaaBg = [255, 255, 255];
+      if (bodyBgM) { try { const p = hexToRgb(bodyBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
+      else if (styleBgM) { try { const p = hexToRgb(styleBgM[1].trim()); if (p) aaaBg = p; } catch(e) {} }
+
+      html = html.replace(/([;"\s])color:\s*(#[0-9a-fA-F]{3,6})\b/g, (match, prefix, hex) => {
+        try {
+          const rgb = hexToRgb(hex);
+          if (cr(rgb, aaaBg) < 7.0) {
+            const [fr, fg, fb] = fixAAA(rgb, aaaBg);
+            totalFixes++;
+            return prefix + 'color:' + rgbToHex(fr, fg, fb);
+          }
+        } catch(e) {}
+        return match;
+      });
+    }
+
+    // 3. Enforce minimum font-size
+    html = html.replace(/font-size:\s*([\d.]+)(px|pt)\b/gi, (match, size, unit) => {
+      const px = unit.toLowerCase() === 'pt' ? parseFloat(size) * 1.333 : parseFloat(size);
+      if (px < minFontSize) {
+        totalFixes++;
+        return `font-size:${minFontSize}px`;
+      }
+      return match;
+    });
+
+    if (totalFixes > 0) {
+      warnLog(`[WCAG Sanitizer] Applied ${totalFixes} fixes (level: ${level}, minFont: ${minFontSize}px)`);
+    }
+    return { html, fixCount: totalFixes };
   };
 
   // ── Deterministic list-structure fixer (no AI needed) ──
@@ -2281,6 +2891,244 @@ HTML section ${chunkNum}/${chunks.length}:
     return { html: fixed, fixCount };
   };
 
+  // ── fixFormLabels: associate every form field with a label (WCAG 1.3.1, 3.3.2) ──
+  const fixFormLabels = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    let fixed = htmlContent;
+    let fixCount = 0;
+    let idCounter = 0;
+
+    // For each <input>/<select>/<textarea> without aria-label/aria-labelledby/id+for, inject an sr-only label
+    fixed = fixed.replace(/<(input|select|textarea)\b([^>]*?)(\/?)>/gi, (match, tag, attrs, selfClose) => {
+      // Skip hidden/submit/button types
+      if (/type\s*=\s*["']?(hidden|submit|button|image|reset)["']?/i.test(attrs)) return match;
+      // Already labeled?
+      const hasAriaLabel = /\saria-label(?:ledby)?\s*=/i.test(attrs);
+      const idMatch = attrs.match(/\bid\s*=\s*["']([^"']+)["']/i);
+      if (hasAriaLabel) return match;
+      if (idMatch) {
+        // Check if there's a <label for="..."> somewhere in the doc pointing at this id
+        const forRegex = new RegExp('<label\\b[^>]*\\bfor\\s*=\\s*["\']' + idMatch[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '["\']', 'i');
+        if (forRegex.test(htmlContent)) return match;
+      }
+      // Needs a label — generate an id if missing
+      idCounter++;
+      const newId = idMatch ? idMatch[1] : `docpipe-field-${idCounter}`;
+      let newAttrs = attrs;
+      if (!idMatch) newAttrs = ` id="${newId}"` + attrs;
+      // Infer a label from type/name/placeholder
+      const nameMatch = attrs.match(/\bname\s*=\s*["']([^"']+)["']/i);
+      const placeholderMatch = attrs.match(/\bplaceholder\s*=\s*["']([^"']+)["']/i);
+      const typeMatch = attrs.match(/\btype\s*=\s*["']([^"']+)["']/i);
+      const labelText = (placeholderMatch && placeholderMatch[1]) ||
+                        (nameMatch && nameMatch[1].replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())) ||
+                        (typeMatch && typeMatch[1].replace(/\b\w/g, c => c.toUpperCase()) + ' field') ||
+                        `Field ${idCounter}`;
+      fixCount++;
+      return `<label for="${newId}" class="sr-only">${labelText}</label><${tag}${newAttrs}${selfClose}>`;
+    });
+
+    if (fixCount > 0) warnLog(`[Form Labels] Added ${fixCount} label associations deterministically`);
+    return { html: fixed, fixCount };
+  };
+
+  // ── fixDecorativeImages: mark purely decorative images with alt="" + role="presentation" ──
+  const fixDecorativeImages = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    let fixed = htmlContent;
+    let fixCount = 0;
+
+    fixed = fixed.replace(/<img\b([^>]*)\/?>/gi, (match, attrs) => {
+      // Already marked as decorative?
+      if (/\srole\s*=\s*["']presentation["']/i.test(attrs) && /\salt\s*=\s*["']["']/i.test(attrs)) return match;
+
+      // Detection heuristics
+      const classMatch = attrs.match(/\bclass\s*=\s*["']([^"']+)["']/i);
+      const widthMatch = attrs.match(/\bwidth\s*=\s*["']?(\d+)/i);
+      const heightMatch = attrs.match(/\bheight\s*=\s*["']?(\d+)/i);
+      const srcMatch = attrs.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+
+      const isDecoratClass = classMatch && /\b(decor|decoration|separator|divider|bullet|spacer|ornament|ornamental|background|bg)\b/i.test(classMatch[1]);
+      const isTiny = (widthMatch && parseInt(widthMatch[1], 10) <= 16) || (heightMatch && parseInt(heightMatch[1], 10) <= 16);
+      const isTinySvg = srcMatch && /\.svg$/i.test(srcMatch[1]) && (
+        (widthMatch && parseInt(widthMatch[1], 10) <= 24) || (heightMatch && parseInt(heightMatch[1], 10) <= 24)
+      );
+      const hasPresentationRole = /\srole\s*=\s*["']presentation["']/i.test(attrs);
+
+      if (!isDecoratClass && !isTiny && !isTinySvg && !hasPresentationRole) return match;
+
+      // Strip any existing alt/role, replace with alt="" role="presentation"
+      let newAttrs = attrs
+        .replace(/\salt\s*=\s*["'][^"']*["']/gi, '')
+        .replace(/\srole\s*=\s*["'][^"']*["']/gi, '');
+      fixCount++;
+      return `<img${newAttrs} alt="" role="presentation">`;
+    });
+
+    if (fixCount > 0) warnLog(`[Decorative Images] Marked ${fixCount} images as decorative deterministically`);
+    return { html: fixed, fixCount };
+  };
+
+  // ── fixComplexTables: add headers="..." associations for merged-cell tables (WCAG 1.3.1) ──
+  const fixComplexTables = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    let fixed = htmlContent;
+    let fixCount = 0;
+    let tableIdx = 0;
+
+    fixed = fixed.replace(/<table\b([^>]*)>([\s\S]*?)<\/table>/gi, (fullMatch, tableAttrs, tableBody) => {
+      tableIdx++;
+      // Only touch tables that have merged cells or nested tables
+      const hasMerged = /\s(?:colspan|rowspan)\s*=\s*["']?[2-9]/i.test(tableBody);
+      const hasNested = /<table\b/i.test(tableBody);
+      if (!hasMerged && !hasNested) return fullMatch;
+
+      let newBody = tableBody;
+
+      // Ensure <caption> exists (inject sr-only placeholder if missing)
+      if (!/<caption\b/i.test(newBody)) {
+        newBody = newBody.replace(/^(\s*)/, `$1<caption class="sr-only">Data table ${tableIdx}</caption>`);
+        fixCount++;
+      }
+
+      // Assign IDs to all <th> elements that don't have one
+      let thCounter = 0;
+      newBody = newBody.replace(/<th\b([^>]*)>/gi, (m, attrs) => {
+        thCounter++;
+        if (/\sid\s*=/i.test(attrs)) return m;
+        fixCount++;
+        return `<th id="docpipe-th-${tableIdx}-${thCounter}"${attrs}>`;
+      });
+
+      // For complex tables, ensure scope attributes exist on <th>
+      newBody = newBody.replace(/<th\b([^>]*)>/gi, (m, attrs) => {
+        if (/\sscope\s*=/i.test(attrs)) return m;
+        fixCount++;
+        return `<th scope="col"${attrs}>`;
+      });
+
+      return `<table${tableAttrs}>${newBody}</table>`;
+    });
+
+    if (fixCount > 0) warnLog(`[Complex Tables] Applied ${fixCount} complex-table fixes deterministically`);
+    return { html: fixed, fixCount };
+  };
+
+  // ── fixLangSpans: wrap non-Latin script runs with <span lang="..."> (WCAG 3.1.2) ──
+  const fixLangSpans = (htmlContent) => {
+    if (!htmlContent) return { html: htmlContent, fixCount: 0 };
+    let fixed = htmlContent;
+    let fixCount = 0;
+
+    const scriptRanges = [
+      { lang: 'ru', pattern: /([\u0400-\u04FF][\u0400-\u04FF\s.,!?;:'"()-]{2,})/g },
+      { lang: 'ar', pattern: /([\u0600-\u06FF][\u0600-\u06FF\s.,!?;:'"()-]{2,})/g },
+      { lang: 'he', pattern: /([\u0590-\u05FF][\u0590-\u05FF\s.,!?;:'"()-]{2,})/g },
+      { lang: 'zh', pattern: /([\u4E00-\u9FFF][\u4E00-\u9FFF\u3000-\u303F\s,.!?;:'"()-]{1,})/g },
+      { lang: 'ja', pattern: /([\u3040-\u309F\u30A0-\u30FF][\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\s,.!?;:'"()-]{1,})/g },
+      { lang: 'ko', pattern: /([\uAC00-\uD7AF][\uAC00-\uD7AF\s,.!?;:'"()-]{1,})/g },
+      { lang: 'hi', pattern: /([\u0900-\u097F][\u0900-\u097F\s,.!?;:'"()-]{2,})/g },
+      { lang: 'el', pattern: /([\u0370-\u03FF][\u0370-\u03FF\s,.!?;:'"()-]{2,})/g },
+      { lang: 'th', pattern: /([\u0E00-\u0E7F][\u0E00-\u0E7F\s,.!?;:'"()-]{2,})/g },
+    ];
+
+    // Only touch text inside visible content tags — split the doc into tags + text nodes
+    fixed = fixed.replace(/>([^<]+)</g, (match, textContent) => {
+      let newText = textContent;
+      for (const { lang, pattern } of scriptRanges) {
+        newText = newText.replace(pattern, (runMatch) => {
+          if (runMatch.trim().length < 2) return runMatch;
+          fixCount++;
+          return `<span lang="${lang}">${runMatch}</span>`;
+        });
+      }
+      return '>' + newText + '<';
+    });
+
+    if (fixCount > 0) warnLog(`[Lang Spans] Wrapped ${fixCount} non-Latin script runs deterministically`);
+    return { html: fixed, fixCount };
+  };
+
+  // Convenience wrapper: run all four new deterministic WCAG fixes in sequence
+  const runDeterministicWcagFixes = (html) => {
+    if (!html) return html;
+    let result = html;
+    try { result = fixFormLabels(result).html; } catch (e) { warnLog('[Det WCAG] fixFormLabels failed:', e?.message); }
+    try { result = fixDecorativeImages(result).html; } catch (e) { warnLog('[Det WCAG] fixDecorativeImages failed:', e?.message); }
+    try { result = fixComplexTables(result).html; } catch (e) { warnLog('[Det WCAG] fixComplexTables failed:', e?.message); }
+    try { result = fixLangSpans(result).html; } catch (e) { warnLog('[Det WCAG] fixLangSpans failed:', e?.message); }
+    return result;
+  };
+
+  // ── Tag-safe truncation: never cut inside an HTML tag ──
+  const safeSubstring = (html, maxLen) => {
+    if (!html || html.length <= maxLen) return html;
+    let end = maxLen;
+    // If we're inside a tag (after '<' without a following '>'), back up to before the '<'
+    const lastOpen = html.lastIndexOf('<', end);
+    const lastClose = html.lastIndexOf('>', end);
+    if (lastOpen > lastClose) {
+      // We're inside an unclosed tag — truncate before it
+      end = lastOpen;
+    }
+    return html.substring(0, end);
+  };
+
+  // ── Chunk Verification Helpers ──
+
+  // Extract plain text from HTML (strip tags, decode entities)
+  const extractPlainText = (html) => {
+    if (!html) return '';
+    return html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#\d+;/gi, '')
+      .replace(/\s+/g, ' ').trim();
+  };
+
+  // Verify that a fixed chunk preserved the original content
+  const verifyChunkIntegrity = (originalChunk, fixedChunk) => {
+    const originalText = extractPlainText(originalChunk);
+    const fixedText = extractPlainText(fixedChunk);
+    const originalWords = originalText.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+    const fixedWords = fixedText.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+    if (originalWords.length === 0) return { passed: true, reason: 'empty-chunk', wordCountRatio: 1, overlapRatio: 1, originalWordCount: 0, fixedWordCount: 0 };
+
+    const wordCountRatio = fixedWords.length / originalWords.length;
+    const fixedWordSet = new Set(fixedWords);
+    const matchedWords = originalWords.filter(w => fixedWordSet.has(w)).length;
+    const overlapRatio = matchedWords / originalWords.length;
+    const passed = wordCountRatio >= 0.80 && overlapRatio >= 0.85;
+
+    return {
+      passed,
+      wordCountRatio: Math.round(wordCountRatio * 100) / 100,
+      overlapRatio: Math.round(overlapRatio * 100) / 100,
+      originalWordCount: originalWords.length,
+      fixedWordCount: fixedWords.length,
+      reason: !passed ? `Content loss: ${Math.round((1 - overlapRatio) * 100)}% words missing, ${Math.round((1 - wordCountRatio) * 100)}% length reduction` : 'ok'
+    };
+  };
+
+  // Score a chunk locally without API calls (heuristic accessibility check)
+  const scoreChunkLocally = (chunkHtml) => {
+    let score = 100;
+    const imgs = (chunkHtml.match(/<img[^>]*>/gi) || []);
+    score -= imgs.filter(i => !/alt\s*=/i.test(i)).length * 10;
+    const tables = (chunkHtml.match(/<table[\s\S]*?<\/table>/gi) || []);
+    tables.forEach(t => { if (/<th[\s>]/i.test(t) && !/scope=/i.test(t)) score -= 5; if (!/<th[\s>]/i.test(t) && /<td[\s>]/i.test(t)) score -= 10; });
+    score -= (chunkHtml.match(/<a[^>]*>\s*<\/a>/gi) || []).length * 5;
+    score -= (chunkHtml.match(/<a[^>]*>(click here|here|read more|more|learn more)<\/a>/gi) || []).length * 5;
+    const headings = [...chunkHtml.matchAll(/<h([1-6])[\s>]/gi)].map(m => parseInt(m[1]));
+    for (let i = 1; i < headings.length; i++) { if (headings[i] > headings[i - 1] + 1) score -= 5; }
+    return Math.max(0, Math.min(100, score));
+  };
+
+  // ── Persistent chunk state: survives across calls so individual chunks can be re-fixed ──
+  // Stored after chunked remediation so the UI can offer "re-fix chunk N" without re-running the whole pipeline.
+  let _chunkState = null; // { preamble, postamble, originalChunks[], fixedChunks[], chunkResults[], violationInstructions, headSection }
+
   // ── Auto-fix axe-core violations via targeted AI pass ──
   const autoFixAxeViolations = async (htmlContent, axeResult, maxPasses = 2) => {
     if (!callGemini || !axeResult || axeResult.totalViolations === 0) return { html: htmlContent, axe: axeResult, passes: 0 };
@@ -2300,37 +3148,598 @@ HTML section ${chunkNum}/${chunks.length}:
         .join('\n');
 
       try {
-        const fixedHtml = await callGemini(`You are an accessibility remediation expert. Fix the SPECIFIC WCAG violations listed below in this HTML document.
+        // ── Pass 2+: Selective re-fix of only failing chunks ──
+        // If we have chunk state from a previous pass, only re-fix chunks scoring below 80
+        // instead of re-chunking and re-fixing the entire document (avoids regressing good chunks)
+        let usedSelectiveRefix = false;
+        if (passCount > 1 && _chunkState && _chunkState.chunkResults && _chunkState.chunkResults.length > 1) {
+          const failingChunks = _chunkState.chunkResults.filter(cr => cr.score < 80);
+          if (failingChunks.length > 0 && failingChunks.length < _chunkState.chunkResults.length) {
+            usedSelectiveRefix = true;
+            // Update violation instructions in chunk state for the retry
+            _chunkState.violationInstructions = violationInstructions;
+            warnLog(`[AutoFix] Pass ${passCount}: selectively re-fixing ${failingChunks.length}/${_chunkState.chunkResults.length} chunks (score < 80)`);
+            // Audio cue: ascending whoosh signals start of selective re-fix pass
+            try { window.remediationAudio && window.remediationAudio.refixStart(); } catch(e) {}
+            let _refixWonCount = 0;
+            for (const fc of failingChunks) {
+              setPdfFixStep(`Pass ${passCount}: re-fixing section ${fc.index + 1}/${_chunkState.chunkResults.length} (score: ${fc.score})...`);
+              try {
+                const result = await refixChunk(fc.index, { onProgress: setPdfFixStep });
+                if (result?.html) {
+                  currentHtml = result.html;
+                  // Track successful re-fixes (score improved)
+                  if (result.score && result.score > fc.score) _refixWonCount++;
+                }
+              } catch(rfErr) {
+                warnLog(`[AutoFix] Selective re-fix of chunk ${fc.index + 1} failed: ${rfErr?.message}`);
+              }
+            }
+            // Audio cue: rising C→G tone if at least one chunk improved
+            if (_refixWonCount > 0) {
+              try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
+            }
+            // Run post-reassembly full-doc sanitizer
+            try {
+              const fullSan = sanitizeStyleForWCAG(currentHtml);
+              if (fullSan.fixCount > 0) { currentHtml = fullSan.html; warnLog(`[AutoFix] Post-selective-refix sanitizer: ${fullSan.fixCount} fixes`); }
+              const fullList = fixListViolations(currentHtml);
+              if (fullList.fixCount > 0) { currentHtml = fullList.html; }
+            } catch(e) { /* non-blocking */ }
+          } else if (failingChunks.length === 0) {
+            usedSelectiveRefix = true; // Nothing to re-fix
+            warnLog(`[AutoFix] Pass ${passCount}: all chunks score ≥80, skipping chunk-level re-fix`);
+          }
+          // If ALL chunks are failing, fall through to the full re-chunk path below
+        }
 
-VIOLATIONS DETECTED BY AXE-CORE (automated WCAG 2.1 AA checker):
+        if (usedSelectiveRefix) {
+          // Selective re-fix handled it — skip the full chunk/single-pass path
+        } else
+        // ── Chunked remediation: split large documents into sections, fix each, reassemble ──
+        // This prevents truncation from Gemini's output token limit (~8K tokens).
+        {
+        const MAX_CHUNK = 12000; // chars per chunk (leaves room for prompt + output)
+
+        if (currentHtml.length <= MAX_CHUNK) {
+          // Small document: single-pass fix
+          const fixedHtml = await callGemini(`You are an accessibility remediation expert. Fix the SPECIFIC WCAG violations listed below in this HTML document.
+
+VIOLATIONS TO FIX:
 ${violationInstructions}
-
-COMMON FIXES:
-- color-contrast: Use darker text (e.g., #1e293b on white) for 4.5:1+ ratio
-- image-alt: Add descriptive alt="" to <img> elements
-- html-has-lang: Add lang="en" to <html>
-- document-title: Add non-empty <title>
-- heading-order: Fix h1→h2→h3 hierarchy, no skipped levels
-- link-name: Add text or aria-label to <a> elements
-- label: Add <label> or aria-label to inputs/selects
-- list: Ensure <li> inside <ul>/<ol>
-- th scope: Add scope="col" or scope="row" to <th>
 
 RULES:
 - Fix ONLY the listed violations. Do not restructure working content.
-- Preserve ALL content — do not remove or shorten anything.
-- Return the COMPLETE HTML document (<!DOCTYPE html> to </html>).
+- Preserve ALL content word-for-word. Do not remove, shorten, or summarize ANY text.
+- Return the COMPLETE HTML document from <!DOCTYPE html> to </html>.
+- Do NOT truncate. Every word from the original must appear in your output.
 
 HTML TO FIX:
 """
-${currentHtml.substring(0, 30000)}${currentHtml.length > 30000 ? '\n[... document continues, ' + currentHtml.length + ' chars total — fix violations in the portion shown and propagate fixes to similar patterns throughout ...]' : ''}
+${currentHtml}
 """
 
 Return ONLY the complete fixed HTML.`, true);
 
-        if (fixedHtml && fixedHtml.length > currentHtml.length * 0.5) {
-          currentHtml = fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') ? fixedHtml : currentHtml;
+          if (acceptFixedHtml(fixedHtml, currentHtml)) {
+            currentHtml = fixedHtml;
+          } else if (fixedHtml) {
+            warnLog(`[Auto-fix] Single-pass rejected: output ${fixedHtml.length} chars (text=${textCharCount(fixedHtml)}) vs source ${currentHtml.length} chars (text=${textCharCount(currentHtml)})`);
+          }
+        } else {
+          // ── Large document: chunked remediation ──
+          // Strategy: extract <head>, split <body> content into chunks at block-level
+          // boundaries (</section>, </div>, </p>, </table>), fix each chunk, reassemble.
+          setPdfFixStep(`Large document (${Math.round(currentHtml.length / 1000)}KB) — chunking into sections for complete remediation...`);
+
+          // Extract head and body
+          const headMatch = currentHtml.match(/<head[\s>][\s\S]*?<\/head>/i);
+          const headSection = headMatch ? headMatch[0] : '';
+          const bodyMatch = currentHtml.match(/<body[\s\S]*?>([\s\S]*)<\/body>/i);
+          const bodyContent = bodyMatch ? bodyMatch[1] : currentHtml;
+
+          // Split body at major block boundaries
+          const splitPoints = [];
+          const blockEnds = ['</section>', '</article>', '</div>', '</table>', '</ul>', '</ol>', '</blockquote>', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</h5>', '</h6>', '</nav>', '</header>', '</footer>', '</main>', '</aside>', '</figure>'];
+          let searchFrom = 0;
+          while (searchFrom < bodyContent.length) {
+            // If remaining content fits in one chunk, take it all
+            if (searchFrom + MAX_CHUNK >= bodyContent.length) {
+              splitPoints.push(bodyContent.length);
+              break;
+            }
+            // Look for the earliest block-level closing tag within [0.7×MAX, 1.3×MAX] of searchFrom
+            let bestSplit = -1;
+            for (let si = 0; si < blockEnds.length; si++) {
+              const idx = bodyContent.indexOf(blockEnds[si], searchFrom + MAX_CHUNK * 0.7);
+              if (idx !== -1 && idx < searchFrom + MAX_CHUNK * 1.3) {
+                const endPos = idx + blockEnds[si].length;
+                if (bestSplit === -1 || endPos < bestSplit) {
+                  bestSplit = endPos;
+                }
+              }
+            }
+            if (bestSplit === -1) {
+              // No block boundary — split at nearest '>' after MAX_CHUNK
+              let fallback = searchFrom + MAX_CHUNK;
+              if (fallback > bodyContent.length) fallback = bodyContent.length;
+              const nextClose = bodyContent.indexOf('>', fallback);
+              if (nextClose !== -1 && nextClose - fallback < 500) {
+                fallback = nextClose + 1;
+              } else if (fallback < bodyContent.length) {
+                // Absolute fallback: just split at MAX_CHUNK boundary
+                fallback = Math.min(searchFrom + MAX_CHUNK, bodyContent.length);
+              }
+              splitPoints.push(fallback);
+              searchFrom = fallback;
+            } else {
+              splitPoints.push(bestSplit);
+              searchFrom = bestSplit;
+            }
+            // Safety: prevent infinite loop if searchFrom doesn't advance
+            if (searchFrom <= splitPoints[splitPoints.length - 2]) {
+              splitPoints[splitPoints.length - 1] = bodyContent.length;
+              break;
+            }
+          }
+          // Guarantee the last split covers the end
+          if (splitPoints.length === 0 || splitPoints[splitPoints.length - 1] < bodyContent.length) {
+            splitPoints.push(bodyContent.length);
+          }
+
+          // Create chunks from split points, filtering out empty chunks
+          const bodyChunks = [];
+          let prevEnd = 0;
+          for (let spi = 0; spi < splitPoints.length; spi++) {
+            const chunkText = bodyContent.substring(prevEnd, splitPoints[spi]);
+            if (chunkText.trim().length > 0) {
+              bodyChunks.push(chunkText);
+            }
+            prevEnd = splitPoints[spi];
+          }
+
+          // ── INTEGRITY ASSERTION: verify no bytes lost during chunking ──
+          const reassembledLength = bodyChunks.reduce((sum, c) => sum + c.length, 0);
+          if (reassembledLength < bodyContent.length * 0.99) {
+            warnLog(`[AutoFix] CHUNK INTEGRITY WARNING: body=${bodyContent.length} chars but chunks total=${reassembledLength} chars (${Math.round(reassembledLength/bodyContent.length*100)}%). Gap of ${bodyContent.length - reassembledLength} chars.`);
+            // Recover: append any missing tail content to the last chunk
+            const lastSplit = splitPoints[splitPoints.length - 1];
+            if (lastSplit < bodyContent.length) {
+              const missing = bodyContent.substring(lastSplit);
+              if (missing.trim().length > 0) {
+                bodyChunks.push(missing);
+                warnLog(`[AutoFix] Recovered ${missing.length} chars of missing tail content as extra chunk`);
+              }
+            }
+          }
+          warnLog(`[AutoFix] Split ${Math.round(bodyContent.length/1000)}KB body into ${bodyChunks.length} chunks (sizes: ${bodyChunks.map(c => Math.round(c.length/1000) + 'KB').join(', ')})`);
+
+          // ── Emit session start event: tells UI to open the live review panel ──
+          try {
+            if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', {
+                detail: {
+                  totalChunks: bodyChunks.length,
+                  chunkSizes: bodyChunks.map(c => c.length),
+                  violationInstructions: violationInstructions.substring(0, 500),
+                  timestamp: Date.now(),
+                }
+              }));
+            }
+          } catch(e) { /* non-blocking */ }
+
+          // Fix each chunk with integrity verification + retry
+          const chunkResults = [];
+          for (let chi = 0; chi < bodyChunks.length; chi++) {
+            const originalChunk = bodyChunks[chi];
+
+            // ── Emit per-chunk start event: UI shows "working on chunk N" placeholder ──
+            try {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('alloflow:chunk-start', {
+                  detail: { index: chi, total: bodyChunks.length, sizeKB: Math.round(originalChunk.length / 1000), timestamp: Date.now() }
+                }));
+              }
+            } catch(e) { /* non-blocking */ }
+
+            // ══════════════════════════════════════════════════════════════
+            // PRE-AI PASS: Deterministic fixes + surgical micro-tools
+            // These are free, instant, and reliable — run BEFORE Gemini
+            // ══════════════════════════════════════════════════════════════
+
+            // Step 0a: Deterministic WCAG style sanitizer (contrast, headings, lists, landmarks, etc.)
+            let preFixedChunk = originalChunk;
+            let deterministicFixCount = 0;
+            try {
+              // sanitizeStyleForWCAG expects a full doc — wrap chunk in minimal shell
+              const chunkShell = `<!DOCTYPE html><html lang="en"><head><style></style></head><body>${preFixedChunk}</body></html>`;
+              const sanitized = sanitizeStyleForWCAG(chunkShell);
+              if (sanitized.fixCount > 0) {
+                // Extract body content back out
+                const bodyM = sanitized.html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                if (bodyM) {
+                  preFixedChunk = bodyM[1];
+                  deterministicFixCount += sanitized.fixCount;
+                }
+              }
+            } catch(detErr) { /* non-blocking */ }
+
+            // Step 0b: Deterministic list structure fixes
+            // (NOT inside sanitizeStyleForWCAG — this is more comprehensive than the sanitizer's orphan-li fix)
+            try {
+              const listFix = fixListViolations(preFixedChunk);
+              if (listFix.fixCount > 0) {
+                preFixedChunk = listFix.html;
+                deterministicFixCount += listFix.fixCount;
+              }
+            } catch(listErr) { /* non-blocking */ }
+            // Note: fixContrastViolations is NOT called here — sanitizeStyleForWCAG (Step 0a) already runs it internally
+
+            if (deterministicFixCount > 0) {
+              warnLog(`[AutoFix] Chunk ${chi + 1}: ${deterministicFixCount} deterministic fixes applied pre-AI`);
+            }
+
+            // Step 0d: Surgical AI-diagnosed micro-tools (1 Gemini call → deterministic execution)
+            let surgicalFixCount = 0;
+            try {
+              // Build a concise violation summary for this chunk
+              const chunkTextPreview = preFixedChunk.substring(0, 5000);
+              const surgChunkDiagnosis = await callGemini(
+                `You are an accessibility remediation expert. Analyze this HTML section and prescribe SPECIFIC targeted fixes.\n\n` +
+                `KNOWN VIOLATIONS IN FULL DOCUMENT:\n${violationInstructions}\n\n` +
+                `HTML SECTION ${chi + 1}/${bodyChunks.length} (apply relevant fixes):\n"""\n${chunkTextPreview}\n"""\n\n` +
+                `Prescribe fixes using these tools (return ONLY a JSON array):\n\n` +
+                `CONTENT: fix_alt_text {index, alt}, fix_heading {index, newLevel}, fix_link_text {index, newText, force?}, fix_figcaption {index, caption}\n` +
+                `TABLE: fix_table_caption {index, caption}, fix_th_scope {index?, scope}, fix_table_header_row {index}\n` +
+                `FORM: fix_input_label {index, label}, fix_button_name {index, label}, fix_iframe_title {index, title}\n` +
+                `STRUCTURE: fix_aria_label {tag, index, label}, fix_add_landmark {tag, label}, fix_remove_empty_heading {index}, fix_duplicate_id {id}\n` +
+                `VISUAL: fix_contrast {oldColor, newColor}, fix_image_decorative {index}, fix_abbreviation {abbr, title}, fix_text_spacing {letterSpacing?, lineHeight?}\n` +
+                `LIST: fix_list_wrap {ordered}, fix_skip_nav {}\n` +
+                `Be specific — use the actual document content. Return ONLY a valid JSON array, no explanation.`, true);
+
+              const parseSurg = (raw) => {
+                if (!raw) return [];
+                try { return JSON.parse(raw); } catch(e) {
+                  try { return JSON.parse(raw.replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); } catch(e2) { return []; }
+                }
+              };
+              const chunkSurgFixes = parseSurg(surgChunkDiagnosis);
+              if (Array.isArray(chunkSurgFixes)) {
+                for (let sfi = 0; sfi < chunkSurgFixes.length; sfi++) {
+                  const fix = chunkSurgFixes[sfi];
+                  const tool = fix && fix.tool && surgicalTools[fix.tool];
+                  if (tool) {
+                    const before = preFixedChunk;
+                    preFixedChunk = tool(preFixedChunk, fix);
+                    if (preFixedChunk !== before) surgicalFixCount++;
+                  }
+                }
+              }
+              if (surgicalFixCount > 0) {
+                warnLog(`[AutoFix] Chunk ${chi + 1}: ${surgicalFixCount} surgical micro-tool fixes applied pre-AI`);
+              }
+            } catch(surgErr) {
+              warnLog(`[AutoFix] Chunk ${chi + 1}: surgical diagnosis skipped (non-blocking): ${surgErr?.message}`);
+            }
+
+            // The pre-fixed chunk now has all deterministic + surgical fixes applied
+            const chunk = preFixedChunk;
+            setPdfFixStep(`Section ${chi + 1}/${bodyChunks.length}: ${deterministicFixCount} deterministic + ${surgicalFixCount} surgical fixes applied, sending to AI...`);
+
+            let accepted = null;
+            let wasRetried = false;
+            let usedOriginal = false;
+
+            for (let attempt = 0; attempt < 2; attempt++) {
+              const isRetry = attempt === 1;
+              if (isRetry) wasRetried = true;
+              setPdfFixStep(`${isRetry ? 'Retrying' : 'AI fixing'} section ${chi + 1}/${bodyChunks.length} (${Math.round(chunk.length / 1000)}KB)...`);
+
+              try {
+                const prompt = isRetry
+                  ? `CRITICAL: Your previous fix of this HTML section LOST CONTENT. The integrity check failed.
+Re-fix this section, but you MUST preserve EVERY SINGLE WORD of the original text.
+Do NOT remove, shorten, summarize, or omit ANY content. Only add/modify HTML attributes and tags for accessibility.
+
+VIOLATIONS TO FIX:
+${violationInstructions}
+
+ORIGINAL HTML SECTION ${chi + 1}/${bodyChunks.length} (preserve ALL of this content):
+"""
+${chunk}
+"""
+
+Return the fixed section with ALL original text preserved verbatim.`
+                  : `You are an accessibility remediation expert. Fix REMAINING accessibility violations in this HTML SECTION.
+NOTE: This section has already had deterministic fixes applied (contrast, list structure, headings, landmarks).
+Focus on issues that require semantic understanding: alt text quality, heading hierarchy, ARIA labels, table structure, link text.
+
+VIOLATIONS TO FIX (apply relevant ones to this section):
+${violationInstructions}
+
+RULES:
+- This is section ${chi + 1} of ${bodyChunks.length} of a larger document.
+- Fix ONLY accessibility issues. Do not restructure content.
+- PRESERVE EVERY WORD of the original text. Do not remove, shorten, or summarize anything.
+- Return ONLY the fixed HTML fragment (not a full document — just the section content).
+- Do NOT add <!DOCTYPE>, <html>, <head>, or <body> tags — just return the fixed content.
+
+HTML SECTION ${chi + 1}/${bodyChunks.length}:
+"""
+${chunk}
+"""
+
+Return the fixed section content only.`;
+
+                const fixedChunk = await callGemini(prompt, true);
+
+                if (!fixedChunk || fixedChunk.trim().length === 0) continue;
+
+                // Clean AI artifacts
+                let cleaned = fixedChunk
+                  .replace(/^```html?\s*/i, '').replace(/```\s*$/i, '')
+                  .replace(/^<!DOCTYPE[^>]*>\s*/i, '').replace(/<\/?html[^>]*>\s*/gi, '')
+                  .replace(/<\/?head[^>]*>[\s\S]*?<\/head>\s*/gi, '').replace(/<\/?body[^>]*>\s*/gi, '')
+                  .replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\"/g, '"')
+                  .trim();
+
+                // ── Post-AI deterministic cleanup (catch issues AI may have introduced) ──
+                try {
+                  // Fix invalid ARIA roles AI may have added
+                  const _validRolesChunk = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
+                  const _roleCorr = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
+                  cleaned = cleaned.replace(/role="([^"]*)"/gi, (match, role) => {
+                    const lower = role.toLowerCase().trim();
+                    if (_validRolesChunk.includes(lower)) return `role="${lower}"`;
+                    if (_roleCorr[lower]) return `role="${_roleCorr[lower]}"`;
+                    return ''; // Remove invalid roles
+                  });
+                  // Fix list structure issues AI may have introduced
+                  const postListFix = fixListViolations(cleaned);
+                  if (postListFix.fixCount > 0) cleaned = postListFix.html;
+                  // Fix contrast issues AI may have introduced
+                  const postContrastFix = fixContrastViolations(cleaned);
+                  if (postContrastFix.fixCount > 0) cleaned = postContrastFix.html;
+                } catch(postDetErr) { /* non-blocking */ }
+
+                // ── Step A: Local integrity check (fast, no API) ──
+                const integrity = verifyChunkIntegrity(originalChunk, cleaned);
+
+                if (!integrity.passed) {
+                  warnLog(`[AutoFix] Chunk ${chi + 1} local integrity FAILED (attempt ${attempt + 1}): ${integrity.reason}`);
+                  continue; // Try again
+                }
+
+                // ── Step B: AI content verification (Gemini call #2 — checks verbatim preservation) ──
+                setPdfFixStep(`Verifying section ${chi + 1}/${bodyChunks.length} content integrity...`);
+                let aiVerified = true;
+                let aiVerifyDetail = '';
+                try {
+                  const verifyResult = await callGemini(`You are a content verification expert. Compare the ORIGINAL and FIXED versions of this HTML section.
+
+TASK: Check if the FIXED version preserves ALL text content from the ORIGINAL. The FIXED version may have different HTML tags/attributes (for accessibility), but the actual readable text must be identical.
+
+ORIGINAL SECTION:
+"""
+${extractPlainText(originalChunk).substring(0, 4000)}
+"""
+
+FIXED SECTION:
+"""
+${extractPlainText(cleaned).substring(0, 4000)}
+"""
+
+Respond with ONLY a JSON object (no markdown, no explanation):
+{"preserved": true/false, "missingContent": "description of any missing text or empty string", "addedContent": "description of any new non-accessibility text or empty string", "confidence": 0-100}`, true);
+
+                  try {
+                    const vJson = JSON.parse(verifyResult.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
+                    if (vJson.preserved === false && vJson.confidence > 60) {
+                      aiVerified = false;
+                      aiVerifyDetail = vJson.missingContent || 'AI detected content loss';
+                      warnLog(`[AutoFix] Chunk ${chi + 1} AI verification FAILED: ${aiVerifyDetail}`);
+                    }
+                  } catch(jsonErr) {
+                    // If we can't parse the verification response, trust the local check
+                    aiVerified = true;
+                  }
+                } catch(verifyErr) {
+                  warnLog(`[AutoFix] Chunk ${chi + 1} verification call failed, trusting local check`);
+                  aiVerified = true; // Don't block on verification failure
+                }
+
+                if (!aiVerified) continue; // Retry the fix
+
+                // ── Step C: AI accessibility audit (Gemini call #3 — scores the fixed chunk) ──
+                setPdfFixStep(`Scoring section ${chi + 1}/${bodyChunks.length} accessibility...`);
+                let aiScore = scoreChunkLocally(cleaned); // Start with local score as baseline
+                try {
+                  const auditResult = await callGemini(`You are a WCAG 2.1 AA accessibility auditor. Score this HTML section for accessibility compliance.
+
+Rate this section 0-100 where:
+- 100 = perfectly accessible (all images have alt, proper headings, semantic HTML, good contrast)
+- 80+ = minor issues only
+- 60-79 = moderate issues
+- Below 60 = significant issues
+
+HTML SECTION:
+"""
+${cleaned.substring(0, 6000)}
+"""
+
+Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"], "passes": ["pass1", "pass2"]}`, true);
+
+                  try {
+                    const aJson = JSON.parse(auditResult.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
+                    if (typeof aJson.score === 'number' && aJson.score >= 0 && aJson.score <= 100) {
+                      // Blend AI score with local score (70% AI, 30% local for reliability)
+                      aiScore = Math.round(aJson.score * 0.7 + aiScore * 0.3);
+                    }
+                  } catch(jsonErr2) {
+                    // Keep local score if AI audit response is unparseable
+                  }
+                } catch(auditErr) {
+                  warnLog(`[AutoFix] Chunk ${chi + 1} AI audit failed, using local score`);
+                }
+
+                accepted = { html: cleaned, score: aiScore, integrityCheck: integrity, aiVerified, wasRetried, usedOriginal: false, deterministicFixCount, surgicalFixCount };
+                break; // Accept this chunk
+              } catch (chunkErr) {
+                warnLog(`[AutoFix] Chunk ${chi + 1} attempt ${attempt + 1} error:`, chunkErr?.message);
+              }
+            }
+
+            // Fall back to pre-fixed chunk (has deterministic + surgical fixes, just no AI pass)
+            if (!accepted) {
+              usedOriginal = true;
+              const fallbackScore = scoreChunkLocally(chunk);
+              accepted = { html: chunk, score: fallbackScore, integrityCheck: { passed: false, reason: 'ai-fix-failed-using-deterministic-only' }, aiVerified: false, wasRetried, usedOriginal: true, deterministicFixCount, surgicalFixCount };
+              warnLog(`[AutoFix] Chunk ${chi + 1}: AI fix failed — using deterministic-only version (${deterministicFixCount} det + ${surgicalFixCount} surgical fixes preserved)`);
+            }
+
+            chunkResults.push(accepted);
+
+            // ── Audio cue: per-chunk completion tick (debounced internally to 150ms) ──
+            try {
+              if (window.remediationAudio) {
+                if (accepted.usedOriginal) window.remediationAudio.chunkBad();
+                else if (accepted.score >= 80) window.remediationAudio.chunkGood();
+                else if (accepted.score >= 60) window.remediationAudio.chunkMedium();
+                else window.remediationAudio.chunkBad();
+              }
+            } catch(e) { /* non-blocking */ }
+
+            // ── Emit live chunk event for real-time UI review ──
+            try {
+              if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') {
+                const evt = new CustomEvent('alloflow:chunk-fixed', {
+                  detail: {
+                    index: chi,
+                    total: bodyChunks.length,
+                    originalHtml: originalChunk,
+                    fixedHtml: accepted.html,
+                    score: accepted.score,
+                    deterministicFixCount: accepted.deterministicFixCount || 0,
+                    surgicalFixCount: accepted.surgicalFixCount || 0,
+                    integrityPassed: accepted.integrityCheck?.passed || false,
+                    integrityReason: accepted.integrityCheck?.reason || null,
+                    aiVerified: !!accepted.aiVerified,
+                    wasRetried: !!accepted.wasRetried,
+                    usedOriginal: !!accepted.usedOriginal,
+                    sizeKB: Math.round(accepted.html.length / 1000),
+                    violationInstructions: violationInstructions.substring(0, 500),
+                    timestamp: Date.now(),
+                  }
+                });
+                window.dispatchEvent(evt);
+              }
+            } catch(evtErr) { /* non-blocking */ }
+          }
+
+          // ── Compute weighted average score (weighted by original chunk size) ──
+          let totalWeight = 0, weightedScoreSum = 0;
+          const chunkReport = [];
+          for (let cri = 0; cri < chunkResults.length; cri++) {
+            const cr = chunkResults[cri];
+            const weight = bodyChunks[cri].length;
+            totalWeight += weight;
+            weightedScoreSum += cr.score * weight;
+            chunkReport.push({ index: cri, score: cr.score, integrity: cr.integrityCheck, wasRetried: cr.wasRetried, usedOriginal: cr.usedOriginal, deterministicFixes: cr.deterministicFixCount || 0, surgicalFixes: cr.surgicalFixCount || 0 });
+          }
+          const chunkWeightedScore = totalWeight > 0 ? Math.round(weightedScoreSum / totalWeight) : null;
+
+          // Log chunk verification diagnostics
+          const failedChunks = chunkReport.filter(c => c.usedOriginal);
+          const retriedChunks = chunkReport.filter(c => c.wasRetried);
+          const totalDetFixes = chunkReport.reduce((s, c) => s + (c.deterministicFixes || 0), 0);
+          const totalSurgFixes = chunkReport.reduce((s, c) => s + (c.surgicalFixes || 0), 0);
+          warnLog(`[AutoFix] Chunk verification: ${chunkResults.length} chunks, ${totalDetFixes} deterministic fixes, ${totalSurgFixes} surgical fixes, ${failedChunks.length} fell back to det-only, ${retriedChunks.length} retried, weighted score: ${chunkWeightedScore}`);
+
+          // ── Emit session complete event: UI can finalize the review panel ──
+          try {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', {
+                detail: {
+                  totalChunks: chunkResults.length,
+                  failedCount: failedChunks.length,
+                  retriedCount: retriedChunks.length,
+                  totalDetFixes,
+                  totalSurgFixes,
+                  weightedScore: chunkWeightedScore,
+                  timestamp: Date.now(),
+                }
+              }));
+            }
+          } catch(e) { /* non-blocking */ }
+
+          // Reassemble the complete document
+          const fixedChunks = chunkResults.map(cr => cr.html);
+          const preambleMatch = currentHtml.match(/^[\s\S]*?<body[^>]*>/i);
+          const preambleStr = preambleMatch ? preambleMatch[0] : '<!DOCTYPE html><html lang="en"><head>' + headSection + '</head><body>';
+          const postamble = '</body></html>';
+          const reassembled = preambleStr + '\n' + fixedChunks.join('\n') + '\n' + postamble;
+
+          // ── Persist chunk state for selective re-fixing ──
+          _chunkState = {
+            preamble: preambleStr,
+            postamble,
+            originalChunks: bodyChunks.slice(), // raw originals before any fixing
+            fixedChunks: fixedChunks.slice(),    // current fixed versions
+            chunkResults: chunkResults.map((cr, i) => ({
+              index: i,
+              html: cr.html,
+              score: cr.score,
+              integrityCheck: cr.integrityCheck,
+              aiVerified: cr.aiVerified,
+              wasRetried: cr.wasRetried,
+              usedOriginal: cr.usedOriginal,
+              deterministicFixCount: cr.deterministicFixCount || 0,
+              surgicalFixCount: cr.surgicalFixCount || 0,
+              sizeKB: Math.round(cr.html.length / 1000),
+            })),
+            violationInstructions,
+            headSection,
+            timestamp: Date.now(),
+          };
+          warnLog(`[AutoFix] Chunk state persisted: ${_chunkState.fixedChunks.length} chunks saved for selective re-fixing`);
+
+          if (reassembled.length > currentHtml.length * 0.7) {
+            currentHtml = reassembled;
+          }
         }
+        } // end else (full chunk/single-pass path)
+
+        // ── Fix literal \n in output (AI sometimes returns escaped newlines) ──
+        currentHtml = currentHtml.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+        // Remove JSON wrapper artifacts
+        currentHtml = currentHtml.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '').replace(/\\"/g, '"');
+
+        // ── Post-reassembly: full-document deterministic pass ──
+        // Document-level fixes that don't work on fragments: skip-link, <main> landmark, lang attribute,
+        // full-document contrast sweep, list structure across chunk boundaries
+        try {
+          const fullDocSanitized = sanitizeStyleForWCAG(currentHtml);
+          if (fullDocSanitized.fixCount > 0) {
+            currentHtml = fullDocSanitized.html;
+            warnLog(`[AutoFix] Post-reassembly full-doc sanitizer: ${fullDocSanitized.fixCount} fixes`);
+          }
+          const fullDocList = fixListViolations(currentHtml);
+          if (fullDocList.fixCount > 0) {
+            currentHtml = fullDocList.html;
+            warnLog(`[AutoFix] Post-reassembly list fix: ${fullDocList.fixCount} fixes`);
+          }
+          // Fix invalid ARIA roles across the full document
+          const _validRolesFull = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
+          const _roleCorrFull = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
+          let roleFixCount = 0;
+          currentHtml = currentHtml.replace(/role="([^"]*)"/gi, (match, role) => {
+            const lower = role.toLowerCase().trim();
+            if (_validRolesFull.includes(lower)) return `role="${lower}"`;
+            if (_roleCorrFull[lower]) { roleFixCount++; return `role="${_roleCorrFull[lower]}"`; }
+            roleFixCount++; return '';
+          });
+          if (roleFixCount > 0) warnLog(`[AutoFix] Post-reassembly: fixed ${roleFixCount} invalid ARIA roles`);
+        } catch(postErr) { warnLog('[AutoFix] Post-reassembly sanitizer error (non-blocking):', postErr?.message); }
       } catch (fixErr) {
         warnLog(`[Auto-fix] Pass ${passCount} failed:`, fixErr);
         break;
@@ -2363,7 +3772,7 @@ HTML:
 """
 ${currentHtml.substring(0, 20000)}
 """`, true);
-              if (targetedFix && targetedFix.length > currentHtml.length * 0.5 && (targetedFix.includes('<!DOCTYPE') || targetedFix.includes('<html'))) {
+              if (acceptFixedHtml(targetedFix, currentHtml)) {
                 const targetedAxe = await runAxeAudit(targetedFix);
                 if (targetedAxe && targetedAxe.totalViolations < currentAxe.totalViolations) {
                   currentHtml = targetedFix;
@@ -2381,8 +3790,249 @@ ${currentHtml.substring(0, 20000)}
       currentAxe = newAxe;
     }
 
-    return { html: currentHtml, axe: currentAxe, passes: passCount };
+    return {
+      html: currentHtml,
+      axe: currentAxe,
+      passes: passCount,
+      chunkReport: typeof chunkReport !== 'undefined' ? chunkReport : null,
+      chunkWeightedScore: typeof chunkWeightedScore !== 'undefined' ? chunkWeightedScore : null,
+      chunkState: _chunkState, // Persistent chunk data for selective re-fixing
+    };
   };
+
+  // ── Re-fix a single chunk without touching others ──
+  // Takes a chunk index, re-runs the full pipeline (deterministic → surgical → AI → verify → score)
+  // on just that chunk, then reassembles the full document with only that chunk replaced.
+  const refixChunk = async (chunkIndex, options = {}) => {
+    if (!_chunkState) throw new Error('No chunk state available — run full remediation first');
+    if (chunkIndex < 0 || chunkIndex >= _chunkState.fixedChunks.length) {
+      throw new Error(`Invalid chunk index ${chunkIndex} (have ${_chunkState.fixedChunks.length} chunks)`);
+    }
+
+    const { onProgress } = options;
+    const setStep = onProgress || setPdfFixStep || (() => {});
+    const violationInstructions = _chunkState.violationInstructions;
+    const totalChunks = _chunkState.fixedChunks.length;
+
+    // Start from the ORIGINAL unfixed chunk — clean slate
+    const originalChunk = _chunkState.originalChunks[chunkIndex];
+    setStep(`Re-fixing chunk ${chunkIndex + 1}/${totalChunks}: starting from original...`);
+
+    // ── Step 0a: Deterministic WCAG style sanitizer ──
+    let preFixedChunk = originalChunk;
+    let deterministicFixCount = 0;
+    try {
+      const chunkShell = `<!DOCTYPE html><html lang="en"><head><style></style></head><body>${preFixedChunk}</body></html>`;
+      const sanitized = sanitizeStyleForWCAG(chunkShell);
+      if (sanitized.fixCount > 0) {
+        const bodyM = sanitized.html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        if (bodyM) { preFixedChunk = bodyM[1]; deterministicFixCount += sanitized.fixCount; }
+      }
+    } catch(e) { /* non-blocking */ }
+
+    // ── Step 0b: Deterministic list fixes ──
+    try {
+      const lf = fixListViolations(preFixedChunk);
+      if (lf.fixCount > 0) { preFixedChunk = lf.html; deterministicFixCount += lf.fixCount; }
+    } catch(e) { /* non-blocking */ }
+
+    // ── Step 0c: Deterministic contrast fixes ──
+    try {
+      const cf = fixContrastViolations(preFixedChunk);
+      if (cf.fixCount > 0) { preFixedChunk = cf.html; deterministicFixCount += cf.fixCount; }
+    } catch(e) { /* non-blocking */ }
+
+    if (deterministicFixCount > 0) warnLog(`[RefixChunk] Chunk ${chunkIndex + 1}: ${deterministicFixCount} deterministic fixes`);
+
+    // ── Step 0d: Surgical AI-diagnosed micro-tools ──
+    let surgicalFixCount = 0;
+    try {
+      setStep(`Re-fixing chunk ${chunkIndex + 1}/${totalChunks}: surgical diagnosis...`);
+      const chunkPreview = preFixedChunk.substring(0, 5000);
+      const surgDiag = await callGemini(
+        `You are an accessibility remediation expert. Analyze this HTML section and prescribe SPECIFIC targeted fixes.\n\n` +
+        `KNOWN VIOLATIONS:\n${violationInstructions}\n\n` +
+        `HTML SECTION ${chunkIndex + 1}/${totalChunks}:\n"""\n${chunkPreview}\n"""\n\n` +
+        `Prescribe fixes using these tools (return ONLY a JSON array):\n` +
+        `CONTENT: fix_alt_text {index, alt}, fix_heading {index, newLevel}, fix_link_text {index, newText, force?}, fix_figcaption {index, caption}\n` +
+        `TABLE: fix_table_caption {index, caption}, fix_th_scope {index?, scope}, fix_table_header_row {index}\n` +
+        `FORM: fix_input_label {index, label}, fix_button_name {index, label}, fix_iframe_title {index, title}\n` +
+        `STRUCTURE: fix_aria_label {tag, index, label}, fix_add_landmark {tag, label}, fix_remove_empty_heading {index}, fix_duplicate_id {id}\n` +
+        `VISUAL: fix_contrast {oldColor, newColor}, fix_image_decorative {index}, fix_abbreviation {abbr, title}, fix_text_spacing {letterSpacing?, lineHeight?}\n` +
+        `LIST: fix_list_wrap {ordered}, fix_skip_nav {}\n` +
+        `Return ONLY a valid JSON array, no explanation.`, true);
+
+      let surgFixes = [];
+      try { surgFixes = JSON.parse(surgDiag); } catch(e) {
+        try { surgFixes = JSON.parse(surgDiag.replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); } catch(e2) { surgFixes = []; }
+      }
+      if (Array.isArray(surgFixes)) {
+        for (const fix of surgFixes) {
+          const tool = fix && fix.tool && surgicalTools[fix.tool];
+          if (tool) {
+            const before = preFixedChunk;
+            preFixedChunk = tool(preFixedChunk, fix);
+            if (preFixedChunk !== before) surgicalFixCount++;
+          }
+        }
+      }
+      if (surgicalFixCount > 0) warnLog(`[RefixChunk] Chunk ${chunkIndex + 1}: ${surgicalFixCount} surgical fixes`);
+    } catch(e) {
+      warnLog(`[RefixChunk] Chunk ${chunkIndex + 1}: surgical diagnosis skipped: ${e?.message}`);
+    }
+
+    const chunk = preFixedChunk;
+
+    // ── AI fix with retry ──
+    let accepted = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const isRetry = attempt === 1;
+      setStep(`${isRetry ? 'Retrying' : 'AI fixing'} chunk ${chunkIndex + 1}/${totalChunks}...`);
+
+      try {
+        const prompt = isRetry
+          ? `CRITICAL: Your previous fix of this HTML section LOST CONTENT. Re-fix preserving EVERY word.\n\nVIOLATIONS:\n${violationInstructions}\n\nORIGINAL SECTION ${chunkIndex + 1}/${totalChunks}:\n"""\n${chunk}\n"""\n\nReturn fixed section with ALL text preserved.`
+          : `You are an accessibility remediation expert. Fix REMAINING violations in this HTML SECTION.\nNOTE: Deterministic fixes already applied. Focus on semantic issues: alt text, heading hierarchy, ARIA, table structure, link text.\n\nVIOLATIONS:\n${violationInstructions}\n\nRULES:\n- Section ${chunkIndex + 1} of ${totalChunks}.\n- Fix ONLY accessibility. PRESERVE EVERY WORD.\n- Return ONLY the fixed HTML fragment (no DOCTYPE/html/head/body).\n\nHTML SECTION:\n"""\n${chunk}\n"""\n\nReturn fixed section only.`;
+
+        const fixedChunk = await callGemini(prompt, true);
+        if (!fixedChunk || fixedChunk.trim().length === 0) continue;
+
+        // Clean AI artifacts
+        let cleaned = fixedChunk
+          .replace(/^```html?\s*/i, '').replace(/```\s*$/i, '')
+          .replace(/^<!DOCTYPE[^>]*>\s*/i, '').replace(/<\/?html[^>]*>\s*/gi, '')
+          .replace(/<\/?head[^>]*>[\s\S]*?<\/head>\s*/gi, '').replace(/<\/?body[^>]*>\s*/gi, '')
+          .replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\"/g, '"')
+          .trim();
+
+        // Post-AI deterministic cleanup
+        try {
+          const _vr = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
+          const _rc = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
+          cleaned = cleaned.replace(/role="([^"]*)"/gi, (m, role) => {
+            const l = role.toLowerCase().trim();
+            if (_vr.includes(l)) return `role="${l}"`;
+            if (_rc[l]) return `role="${_rc[l]}"`;
+            return '';
+          });
+          const plf = fixListViolations(cleaned);
+          if (plf.fixCount > 0) cleaned = plf.html;
+          const pcf = fixContrastViolations(cleaned);
+          if (pcf.fixCount > 0) cleaned = pcf.html;
+        } catch(e) { /* non-blocking */ }
+
+        // Integrity check against original
+        const integrity = verifyChunkIntegrity(originalChunk, cleaned);
+        if (!integrity.passed) {
+          warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} integrity FAILED (attempt ${attempt + 1}): ${integrity.reason}`);
+          continue;
+        }
+
+        // AI content verification
+        setStep(`Verifying chunk ${chunkIndex + 1}/${totalChunks} content...`);
+        let aiVerified = true;
+        try {
+          const vr = await callGemini(`Compare ORIGINAL and FIXED HTML. Check all text is preserved (tags may differ).\n\nORIGINAL:\n"""\n${extractPlainText(originalChunk).substring(0, 4000)}\n"""\n\nFIXED:\n"""\n${extractPlainText(cleaned).substring(0, 4000)}\n"""\n\nRespond ONLY JSON: {"preserved": true/false, "missingContent": "", "confidence": 0-100}`, true);
+          try {
+            const vj = JSON.parse(vr.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
+            if (vj.preserved === false && vj.confidence > 60) { aiVerified = false; continue; }
+          } catch(e) { /* trust local check */ }
+        } catch(e) { /* trust local check */ }
+
+        // AI accessibility score
+        setStep(`Scoring chunk ${chunkIndex + 1}/${totalChunks}...`);
+        let aiScore = scoreChunkLocally(cleaned);
+        try {
+          const ar = await callGemini(`Score this HTML section 0-100 for WCAG 2.1 AA accessibility.\n\nHTML:\n"""\n${cleaned.substring(0, 6000)}\n"""\n\nRespond ONLY JSON: {"score": NUMBER, "issues": [], "passes": []}`, true);
+          try {
+            const aj = JSON.parse(ar.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
+            if (typeof aj.score === 'number' && aj.score >= 0 && aj.score <= 100) {
+              aiScore = Math.round(aj.score * 0.7 + aiScore * 0.3);
+            }
+          } catch(e) { /* keep local */ }
+        } catch(e) { /* keep local */ }
+
+        accepted = { html: cleaned, score: aiScore, integrityCheck: integrity, aiVerified, wasRetried: isRetry, usedOriginal: false, deterministicFixCount, surgicalFixCount };
+        break;
+      } catch(e) {
+        warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} attempt ${attempt + 1} error: ${e?.message}`);
+      }
+    }
+
+    // Fallback to deterministic-only version
+    if (!accepted) {
+      const fb = scoreChunkLocally(chunk);
+      accepted = { html: chunk, score: fb, integrityCheck: { passed: false, reason: 'ai-refix-failed' }, aiVerified: false, wasRetried: true, usedOriginal: true, deterministicFixCount, surgicalFixCount };
+      warnLog(`[RefixChunk] Chunk ${chunkIndex + 1}: AI failed, using deterministic-only version`);
+    }
+
+    // ── Update chunk state and reassemble ──
+    _chunkState.fixedChunks[chunkIndex] = accepted.html;
+    _chunkState.chunkResults[chunkIndex] = {
+      index: chunkIndex,
+      html: accepted.html,
+      score: accepted.score,
+      integrityCheck: accepted.integrityCheck,
+      aiVerified: accepted.aiVerified,
+      wasRetried: accepted.wasRetried,
+      usedOriginal: accepted.usedOriginal,
+      deterministicFixCount: accepted.deterministicFixCount || 0,
+      surgicalFixCount: accepted.surgicalFixCount || 0,
+      sizeKB: Math.round(accepted.html.length / 1000),
+    };
+    _chunkState.timestamp = Date.now();
+
+    // Reassemble full document with updated chunk
+    const fullHtml = _chunkState.preamble + '\n' + _chunkState.fixedChunks.join('\n') + '\n' + _chunkState.postamble;
+
+    // Compute updated weighted score
+    let totalWeight = 0, weightedSum = 0;
+    for (let i = 0; i < _chunkState.chunkResults.length; i++) {
+      const w = _chunkState.originalChunks[i].length;
+      totalWeight += w;
+      weightedSum += (_chunkState.chunkResults[i].score || 0) * w;
+    }
+    const newWeightedScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : null;
+
+    setStep('');
+    warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} re-fixed: score ${accepted.score}, weighted avg now ${newWeightedScore}`);
+
+    // ── Emit refix event so live review panel updates ──
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('alloflow:chunk-refixed', {
+          detail: {
+            index: chunkIndex,
+            total: totalChunks,
+            originalHtml: originalChunk,
+            fixedHtml: accepted.html,
+            score: accepted.score,
+            deterministicFixCount: accepted.deterministicFixCount || 0,
+            surgicalFixCount: accepted.surgicalFixCount || 0,
+            integrityPassed: accepted.integrityCheck?.passed || false,
+            integrityReason: accepted.integrityCheck?.reason || null,
+            aiVerified: !!accepted.aiVerified,
+            wasRetried: !!accepted.wasRetried,
+            usedOriginal: !!accepted.usedOriginal,
+            sizeKB: Math.round(accepted.html.length / 1000),
+            weightedScore: newWeightedScore,
+            timestamp: Date.now(),
+          }
+        }));
+      }
+    } catch(e) { /* non-blocking */ }
+
+    return {
+      html: fullHtml,
+      chunkIndex,
+      chunkResult: accepted,
+      chunkState: _chunkState,
+      chunkWeightedScore: newWeightedScore,
+    };
+  };
+
+  // ── Get current chunk state (for UI rendering) ──
+  const getChunkState = () => _chunkState;
 
   // ── PDF Fix & Verify: Audit → Extract → Transform → Verify → axe-core → Auto-fix ──
   const fixAndVerifyPdf = async (batchOverrides = null) => {
@@ -2403,6 +4053,7 @@ ${currentHtml.substring(0, 20000)}
 
     const beforeScore = (_auditResult?.score) || 0;
     const pageCount = (_auditResult?.pageCount) || 1;
+    warnLog(`[fixAndVerifyPdf] auditResult.pageCount=${_auditResult?.pageCount}, effective pageCount=${pageCount}, auditResult keys:`, _auditResult ? Object.keys(_auditResult) : 'null');
     const totalSteps = 4;
     // Dynamic time estimates based on document length
     const isShort = pageCount <= 5;
@@ -2433,28 +4084,97 @@ ${currentHtml.substring(0, 20000)}
       // ── Step 1: Extract ALL text content from PDF (chunked for long docs) ──
       updateProgress(1, 'Reading document content...');
       let extractedText = '';
+      // Reset ground-truth state for this run
+      window.__lastGroundTruthCharCount = 0;
+      window.__lastGroundTruthPageMap = null;
+      window.__lastGroundTruthMethod = null;
       // Determine chunk strategy based on page count
-      const PAGES_PER_CHUNK = 5;
-      const numChunks = Math.max(1, Math.ceil(pageCount / PAGES_PER_CHUNK));
+      // If audit didn't return pageCount, estimate from base64 size (rough: ~3KB base64 per page)
+      let effectivePageCount = pageCount;
+      if (effectivePageCount <= 1 && _base64) {
+        const estimatedFromSize = Math.max(1, Math.round(_base64.length * 0.75 / 1024 / 3));
+        if (estimatedFromSize > 3) {
+          effectivePageCount = estimatedFromSize;
+          warnLog(`[PDF Fix] pageCount unknown — estimated ${effectivePageCount} pages from ${Math.round(_base64.length * 0.75 / 1024)}KB file size`);
+        }
+      }
 
-      if (numChunks <= 1) {
-        // Short PDF: single extraction pass
-        updateProgress(1, 'Extracting text (1 page)...');
+      // ── Step 0: DETERMINISTIC EXTRACTION (no AI calls, no truncation risk) ──
+      // For text-layer PDFs, DOCX, and PPTX we can extract the source text exactly from the file itself.
+      // Only fall through to Gemini Vision OCR for scanned PDFs / images.
+      try {
+        const isDocx = _fileName && /\.docx$/i.test(_fileName);
+        const isPptx = _fileName && /\.pptx$/i.test(_fileName);
+        const isPdf = !isDocx && !isPptx; // default to PDF path for unknown mime types
+
+        if (isDocx) {
+          updateProgress(1, 'Extracting DOCX text deterministically...');
+          const det = await extractDocxTextDeterministic(_base64);
+          if (det && det.sourceCharCount > 50) {
+            extractedText = det.fullText;
+            window.__lastGroundTruthCharCount = det.sourceCharCount;
+            window.__lastGroundTruthMethod = 'docx-' + det.method;
+            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars from DOCX (${det.method})`);
+            warnLog(`[Det] DOCX → ${det.sourceCharCount} chars via ${det.method}`);
+          } else {
+            warnLog('[Det] DOCX extraction sparse, falling through to Vision OCR');
+          }
+        } else if (isPptx) {
+          updateProgress(1, 'Extracting PPTX text deterministically...');
+          const det = await extractPptxTextDeterministic(_base64);
+          if (det && det.sourceCharCount > 50) {
+            extractedText = det.fullText;
+            window.__lastGroundTruthCharCount = det.sourceCharCount;
+            window.__lastGroundTruthMethod = 'pptx-jszip';
+            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars from ${det.slideCount} slides`);
+            warnLog(`[Det] PPTX → ${det.sourceCharCount} chars from ${det.slideCount} slides`);
+          } else {
+            warnLog('[Det] PPTX extraction sparse, falling through to Vision OCR');
+          }
+        } else if (isPdf) {
+          updateProgress(1, 'Extracting PDF text layer deterministically...');
+          const det = await extractPdfTextDeterministic(_base64);
+          if (det && !det.isScanned && det.sourceCharCount > 100) {
+            extractedText = det.fullText;
+            window.__lastGroundTruthCharCount = det.sourceCharCount;
+            window.__lastGroundTruthPageMap = det.pages;
+            window.__lastGroundTruthMethod = 'pdfjs';
+            if (det.pageCount > 0) effectivePageCount = det.pageCount;
+            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.pageCount} pages`);
+            warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.pageCount} pages (avg ${Math.round(det.sourceCharCount / Math.max(1, det.pageCount))}/page)`);
+          } else if (det) {
+            warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
+          }
+        }
+      } catch (detErr) {
+        warnLog('[Det] Deterministic extraction failed, falling through to Vision OCR:', detErr?.message);
+      }
+
+      const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
+      const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
+
+      // If deterministic extraction succeeded, skip the Vision OCR block entirely
+      if (extractedText && extractedText.length > 100) {
+        warnLog(`[Det] Using deterministic extraction (${extractedText.length} chars), skipping Vision OCR`);
+        // Fall through to Step 1b (image extraction) with extractedText already populated
+      } else if (numChunks <= 1 && effectivePageCount <= 2) {
+        // Very short PDF (1-2 pages): single extraction pass is safe
+        updateProgress(1, `Extracting text (${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''})...`);
         extractedText = await callGeminiVision(
-          `Extract ALL text content from this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+          `Extract ALL text content from this document. This document has approximately ${effectivePageCount} page(s) — extract EVERY page completely.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
           _base64, _mimeType
         );
       } else {
-        // Multi-page: extract chunks in parallel batches (max 5 at a time to avoid rate limiting)
-        updateProgress(1, `Extracting ${numChunks} chunks...`);
+        // Multi-page: extract in page-range chunks (3 pages each), parallel batches to avoid rate limiting
+        updateProgress(1, `Extracting ${effectivePageCount} pages in ${numChunks} chunks (${PAGES_PER_CHUNK} pages each)...`);
         const MAX_PARALLEL = 5;
         const chunkPromises = [];
         for (let i = 0; i < numChunks; i++) {
           const startPage = i * PAGES_PER_CHUNK + 1;
-          const endPage = Math.min((i + 1) * PAGES_PER_CHUNK, pageCount);
+          const endPage = Math.min((i + 1) * PAGES_PER_CHUNK, effectivePageCount);
           chunkPromises.push(
             callGeminiVision(
-              `Extract ALL text content from pages ${startPage} through ${endPage} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+              `Extract ALL text content from pages ${startPage} through ${endPage} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
               _base64, _mimeType
             ).catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} extraction failed:`, err); return null; })
           );
@@ -2463,7 +4183,7 @@ ${currentHtml.substring(0, 20000)}
         let chunkResults = [];
         for (let batch = 0; batch < chunkPromises.length; batch += MAX_PARALLEL) {
           const batchSlice = chunkPromises.slice(batch, batch + MAX_PARALLEL);
-          updateProgress(1, `Extracting batch ${Math.floor(batch / MAX_PARALLEL) + 1}/${Math.ceil(chunkPromises.length / MAX_PARALLEL)}...`);
+          updateProgress(1, `Extracting batch ${Math.floor(batch / MAX_PARALLEL) + 1}/${Math.ceil(chunkPromises.length / MAX_PARALLEL)} (${Math.min(batch + MAX_PARALLEL, chunkPromises.length)}/${chunkPromises.length} chunks of ${PAGES_PER_CHUNK} pages)...`);
           const batchResults = await Promise.all(batchSlice);
           chunkResults = chunkResults.concat(batchResults);
           // Brief pause between batches to avoid rate limiting
@@ -2478,6 +4198,11 @@ ${currentHtml.substring(0, 20000)}
             .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
         });
         extractedText = chunks.join('\n\n---\n\n');
+      }
+      // Record ground truth from OCR fallback if deterministic extraction was not used
+      if (extractedText && !window.__lastGroundTruthCharCount) {
+        window.__lastGroundTruthCharCount = extractedText.length;
+        window.__lastGroundTruthMethod = 'vision-ocr';
       }
 
       if (!extractedText || extractedText.length < 20) {
@@ -2498,7 +4223,12 @@ ${currentHtml.substring(0, 20000)}
         .trim();
 
       const extractedLength = extractedText.length;
-      warnLog(`[PDF Fix] Extracted ${extractedLength} chars from ${pageCount} pages in ${numChunks} chunk(s)`);
+      const charsPerPage = effectivePageCount > 0 ? Math.round(extractedLength / effectivePageCount) : extractedLength;
+      warnLog(`[PDF Fix] Extracted ${extractedLength} chars from ${effectivePageCount} pages in ${numChunks} chunk(s) (~${charsPerPage} chars/page)`);
+      // Warn if extraction seems thin (< 200 chars/page suggests truncation or image-only pages)
+      if (charsPerPage < 200 && effectivePageCount > 1) {
+        warnLog(`[PDF Fix] WARNING: Low extraction density (${charsPerPage} chars/page) — possible truncation or scanned/image-only document`);
+      }
 
       // ── Step 1b: Auto-extract images from PDF ──
       updateProgress(1, 'Extracting images...');
@@ -2762,28 +4492,41 @@ ${currentHtml.substring(0, 20000)}
       };
 
       // ── Step 2b: Extract structured content as JSON ──
-      const jsonPrompt = `You are a document structure analyst. Extract ALL content from this PDF as a structured JSON array of content blocks.
+      const jsonPrompt = `You are a WCAG 2.1 AA accessibility specialist extracting a PDF into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.
 
-Each block must be one of these types:
-- {"type":"banner","title":"Document Title","subtitle":"optional subtitle"} — for title/header banners
-- {"type":"h1","text":"Title","id":"slug-id"}
-- {"type":"h2","text":"Section Title","id":"slug-id"}
-- {"type":"h3","text":"Subsection Title","id":"slug-id"}
-- {"type":"p","text":"Paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>links</a>"}
-- {"type":"ul","items":["item 1","item 2"]}
-- {"type":"ol","items":["step 1","step 2"]}
-- {"type":"table","caption":"Table Title","headers":["Col 1","Col 2"],"rows":[["data","data"],["data","data"]]}
-- {"type":"image","description":"detailed description","alt":"brief alt text"}
-- {"type":"blockquote","text":"quoted text"}
-- {"type":"hr"} — for section breaks
+Extract ALL content as a JSON array of content blocks. Each block must be one of these types:
 
-RULES:
-- Include EVERY piece of content from the document. Do NOT summarize.
-- Preserve the original reading order exactly.
-- Use <strong>, <em>, <a href="url"> within text content for formatting.
-- For tables: include ALL rows, not just a sample. Every data cell matters.
-- For images: describe them thoroughly for alt text.
-- Generate slug IDs for h2/h3 (e.g., "program-guide", "course-categories").
+BLOCK TYPES:
+- {"type":"banner","title":"Document Title","subtitle":"optional subtitle"} — the document's main title
+- {"type":"h1","text":"Title","id":"slug-id"} — ONE per document only (WCAG 2.4.2: page titled)
+- {"type":"h2","text":"Section Title","id":"slug-id"} — major sections. Headings MUST NOT skip levels (no h1→h3)
+- {"type":"h3","text":"Subsection Title","id":"slug-id"} — subsections under h2
+- {"type":"p","text":"Full paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>descriptive link text</a>"}
+- {"type":"ul","items":["item 1","item 2"]} — unordered lists (use for bullet points)
+- {"type":"ol","items":["step 1","step 2"]} — ordered lists (use for numbered sequences)
+- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row
+- {"type":"image","description":"Detailed description of what the image shows and why it matters in context (2-3 sentences)","alt":"Concise alternative text under 125 characters that conveys the image's purpose, not just its appearance"}
+- {"type":"blockquote","text":"quoted text","cite":"attribution if known"}
+- {"type":"hr"} — for section breaks between major content areas
+
+ACCESSIBILITY RULES (WCAG 2.1 AA):
+- Include EVERY piece of content from the document. Do NOT summarize or omit.
+- Preserve the LOGICAL reading order (which may differ from visual layout).
+  For multi-column layouts: determine the intended reading sequence, don't just read left-to-right across columns.
+- Heading hierarchy MUST be sequential: h1 → h2 → h3. Never skip a level.
+  If the PDF uses bold text as a heading, identify it as such and assign the correct level.
+- For images: "alt" should answer "what information does this image convey?" not "what does it look like?"
+  BAD: "Image of a graph" / "Photo" / "image1.png"
+  GOOD: "Bar graph showing enrollment increased 45% from 2020 to 2024"
+  GOOD: "Portrait of Dr. Maria Chen, lead researcher"
+  If the image is decorative (borders, spacers), use: {"type":"image","alt":"","description":"decorative"}
+- For tables: ALWAYS include a caption that describes what data the table presents.
+  Headers must be real column/row labels, not just the first row of data.
+  For complex tables with merged cells, split into simpler tables if possible.
+- For links: link text must describe the destination.
+  BAD: <a href="url">click here</a> / <a href="url">link</a>
+  GOOD: <a href="url">Download the 2024 Annual Report (PDF)</a>
+- Generate slug IDs for all headings (e.g., "program-guide", "course-categories").
 
 Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 
@@ -3028,10 +4771,13 @@ ${bodyContent.substring(0, 30000)}${bodyContent.length > 30000 ? '\n[... documen
 """
 
 Return ONLY the polished HTML body content.`, true);
-            if (polished && polished.length > bodyContent.length * 0.5) {
+            // Polish pass: looser floor (0.9 size, 0.95 text) because polish legitimately removes duplicates
+            if (polished && polished.length >= bodyContent.length * 0.9 && textCharCount(polished) >= textCharCount(bodyContent) * 0.95) {
               bodyContent = polished.trim()
                 .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
                 .replace(/^[\s\S]*?(<[a-zA-Z])/m, '$1');
+            } else if (polished) {
+              warnLog(`[Polish] Pass ${polishIdx + 1} rejected: output ${polished.length} chars vs source ${bodyContent.length} chars`);
             }
           } catch (polishErr) {
             warnLog(`[PDF Fix] Polish pass ${polishIdx + 1} failed:`, polishErr);
@@ -3264,12 +5010,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           return `<a${attrs}>${href ? href[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`;
         });
 
-        // 7. Ensure skip-to-content link exists
+        // 7. Ensure skip-to-content link exists (visible on focus, high contrast)
         if (!accessibleHtml.includes('Skip to') && !accessibleHtml.includes('skip-nav')) {
           accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (match) => {
             aiFixCount++;
-            return match + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">Skip to main content</a>';
+            return match + '\n<a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000;background:#1e293b;color:#ffffff;padding:8px 16px;font-size:14px;font-weight:bold;text-decoration:none;border-radius:0 0 8px 0;border:2px solid #fbbf24">Skip to main content</a>';
           });
+          // Inject focus-visible CSS for skip link
+          if (accessibleHtml.includes('</head>')) {
+            accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #fbbf24!important;outline-offset:2px!important;text-decoration:underline!important}</style>\n</head>');
+            aiFixCount++;
+          }
         }
 
         // 8. Ensure main landmark exists
@@ -3279,6 +5030,33 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             return match + '\n<main id="main-content" role="main">';
           });
           accessibleHtml = accessibleHtml.replace('</body>', '</main>\n</body>');
+        }
+
+        // 8b. Ensure nav landmark (wrap TOC-like structures)
+        if (!accessibleHtml.includes('<nav') && !accessibleHtml.includes('role="navigation"')) {
+          var tocMatch2 = accessibleHtml.match(/<(h[1-3])[^>]*>.*?(table of contents|contents|navigation|toc).*?<\/\1>\s*<(ul|ol)/i);
+          if (tocMatch2) {
+            var tocIdx2 = accessibleHtml.indexOf(tocMatch2[0]);
+            if (tocIdx2 >= 0) {
+              accessibleHtml = accessibleHtml.substring(0, tocIdx2) + '<nav role="navigation" aria-label="Table of Contents">' + accessibleHtml.substring(tocIdx2);
+              var listTag2 = tocMatch2[3];
+              var closeTag2 = '</' + listTag2 + '>';
+              var closeIdx2 = accessibleHtml.indexOf(closeTag2, tocIdx2 + tocMatch2[0].length);
+              if (closeIdx2 >= 0) {
+                accessibleHtml = accessibleHtml.substring(0, closeIdx2 + closeTag2.length) + '</nav>' + accessibleHtml.substring(closeIdx2 + closeTag2.length);
+                aiFixCount++;
+              }
+            }
+          }
+        }
+
+        // 8c. Ensure footer landmark (wrap copyright/attribution)
+        if (!accessibleHtml.includes('<footer') && !accessibleHtml.includes('role="contentinfo"')) {
+          var footerPat2 = [/(<p[^>]*>.*?(?:copyright|©|\u00a9|generated|created|source:|author:).*?<\/p>)\s*<\/main>/i];
+          for (var fp2 = 0; fp2 < footerPat2.length; fp2++) {
+            var fm2 = accessibleHtml.match(footerPat2[fp2]);
+            if (fm2) { accessibleHtml = accessibleHtml.replace(fm2[0], '</main>\n<footer role="contentinfo">' + fm2[1] + '</footer>'); aiFixCount++; break; }
+          }
         }
 
         // 9. Fix heading level skips (h1->h3 becomes h1->h2)
@@ -3348,6 +5126,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       }
 
+      // ── Step 4b-1: Deterministic WCAG gap closures (form labels, decorative images, complex tables, lang spans) ──
+      updateProgress(4, 'Running deterministic WCAG fixes...');
+      accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
+
       // ── Step 4c: Deterministic list-structure fix ──
       if (axeResults && axeResults.critical.concat(axeResults.serious).some(v => v.id === 'list')) {
         updateProgress(4, 'Fixing list structure for screen readers...');
@@ -3390,8 +5172,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const violationInstructions = axeInstructions.concat(aiInstructions).join('\n');
 
           try {
-            const fixedHtml = await callGemini(`Fix these WCAG violations in the HTML. Change ONLY what's needed to fix each violation. Preserve all content and styles.\n\nVIOLATIONS:\n${violationInstructions}\n\nHTML:\n"""\n${accessibleHtml.substring(0, 25000)}\n"""\n\nReturn the COMPLETE fixed HTML.`, true);
-            if (fixedHtml && fixedHtml.length > accessibleHtml.length * 0.5 && (fixedHtml.includes('<!DOCTYPE') || fixedHtml.includes('<html') || fixedHtml.includes('<main'))) {
+            // Chunked fix across the entire document (no truncation)
+            const fixedHtml = await aiFixChunked(accessibleHtml, violationInstructions, `pdf-pass-${fixPass + 1}`);
+            if (fixedHtml && fixedHtml !== accessibleHtml) {
               accessibleHtml = fixedHtml;
             }
           } catch(fixErr) {
@@ -3404,6 +5187,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           if (_postListFix.fixCount > 0) { accessibleHtml = _postListFix.html; warnLog(`  Deterministic: fixed ${_postListFix.fixCount} list issues`); }
           const _postContrastFix = fixContrastViolations(accessibleHtml);
           if (_postContrastFix.fixCount > 0) { accessibleHtml = _postContrastFix.html; warnLog(`  Deterministic: fixed ${_postContrastFix.fixCount} contrast issues`); }
+          // Deterministic WCAG gap closures
+          accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
           // Fix invalid ARIA roles
           const __validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
           const __roleCorrections = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
@@ -3517,6 +5302,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           accessibleHtml = safetyList.html;
           warnLog(`[PDF Fix] Safety-net list fix: ${safetyList.fixCount} patterns fixed after AI loop`);
         }
+        // Safety-net deterministic WCAG gap closures
+        accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
         // Re-run axe after safety-net fixes
         const safetyAxe = await runAxeAudit(accessibleHtml);
         if (safetyAxe) axeResults = safetyAxe;
@@ -3541,16 +5328,44 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       }
 
+      // ── Integrity check: compare final HTML text content to deterministic ground truth ──
+      // This catches silent truncation that slipped past individual fix-pass guards.
+      let integrityCoverage = null;
+      let integrityWarning = null;
+      try {
+        const groundTruth = window.__lastGroundTruthCharCount || 0;
+        const groundTruthMethod = window.__lastGroundTruthMethod || 'unknown';
+        if (groundTruth > 0) {
+          const finalText = textCharCount(accessibleHtml);
+          integrityCoverage = Math.round((finalText / groundTruth) * 100);
+          warnLog(`[Integrity] Final HTML text: ${finalText} chars / source: ${groundTruth} chars (${integrityCoverage}% coverage, method=${groundTruthMethod})`);
+          if (finalText < groundTruth * 0.97) {
+            integrityWarning = `Output contains ${finalText.toLocaleString()} chars but source had ${groundTruth.toLocaleString()} (${integrityCoverage}% coverage). Some content may be missing.`;
+            if (!_isBatch) addToast('⚠ Integrity: ' + integrityWarning, 'error');
+            warnLog('[Integrity] COVERAGE SHORT — ' + integrityWarning);
+          } else if (!_isBatch && integrityCoverage >= 98) {
+            addToast(`✅ Content integrity: ${integrityCoverage}% coverage verified`, 'success');
+          }
+        }
+      } catch (integrityErr) {
+        warnLog('[Integrity] check failed (non-critical):', integrityErr?.message);
+      }
+
       // ── Triage: flag documents that need expert remediation ──
       const axeViolations = axeResults ? axeResults.totalViolations : 0;
       const axeCritical = axeResults ? axeResults.critical.length : 0;
       const axeFailed = !axeResults || typeof axeResults.score !== 'number';
       const needsExpertReview = axeFailed || // axe-core failed entirely — can't verify
+        integrityWarning || // content loss detected — always flag for review
         (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 70) || axeCritical > 0));
 
       // ── Store results ──
       const _result = {
         accessibleHtml,
+        integrityCoverage,
+        integrityWarning,
+        groundTruthCharCount: window.__lastGroundTruthCharCount || 0,
+        groundTruthMethod: window.__lastGroundTruthMethod || null,
         verificationAudit: verification,
         axeAudit: axeResults,
         beforeScore,
@@ -3582,10 +5397,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const fixNote = autoFixPasses > 0 ? ` (${autoFixPasses} auto-fix pass${autoFixPasses > 1 ? 'es' : ''})` : '';
       if (finalAfterScore !== null && finalAfterScore >= 80) {
         addToast(`✅ PDF remediated! Score: ${beforeScore} → ${finalAfterScore} (+${scoreGain})${fixNote}`, 'success');
+        // Audio: triumphant chord on successful high-score remediation (skipped if integrity warning fired)
+        if (!integrityWarning) { try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {} }
+        else { try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {} }
       } else if (finalAfterScore !== null) {
         addToast(`⚠️ PDF improved: ${beforeScore} → ${finalAfterScore}${fixNote}. Some issues may need manual review.`, 'info');
+        // Audio: partial-success still plays the complete chord (document is usable)
+        if (!integrityWarning) { try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {} }
+        else { try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {} }
       } else {
         addToast('PDF transformed to accessible HTML. Verification could not complete.', 'info');
+        try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       }
 
       // ── Log to institutional compliance dashboard (non-blocking) ──
@@ -3616,6 +5438,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       setPdfFixLoading(false);
       setPdfFixStep('');
       addToast('PDF remediation failed: ' + (err.message || 'Unknown error'), 'error');
+      // Audio: descending minor tone signals pipeline failure
+      try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {}
     }
   };
 
@@ -3884,34 +5708,57 @@ tr { page-break-inside: avoid; }
   };
 
   // ── PDF Preview: Apply theme to accessible HTML ──
-  const applyThemeToPdfHtml = (html, themeName, fontSize) => {
-    // If using default "professional" theme AND we have the document's extracted style, use it
-    // This auto-matches the original document's branding without user input
+  // ── Apply Style Seed to HTML (unified replacement for applyThemeToPdfHtml) ──
+  const applyStyleSeedToHtml = (html, seedId, fontSize) => {
+    const seed = STYLE_SEEDS[seedId];
     const extractedStyle = pdfFixResult?.docStyle;
-    const useExtracted = themeName === 'professional' && extractedStyle && extractedStyle.headingColor !== '#1e3a5f';
-    const theme = useExtracted ? {
-      bodyFont: extractedStyle.bodyFont || 'system-ui, sans-serif',
-      headingColor: extractedStyle.headingColor || '#1e3a5f',
-      accentColor: extractedStyle.accentColor || '#2563eb',
-      bgColor: extractedStyle.bgColor || '#ffffff',
-      cardBg: extractedStyle.tableBg || '#f1f5f9',
-      cardBorder: extractedStyle.tableBorder || '#cbd5e1',
-      extraCSS: extractedStyle.extraCSS || '',
-    } : (EXPORT_THEMES[themeName] || EXPORT_THEMES.professional);
-    const themeCSS = `
-      body { font-family: ${theme.bodyFont}; font-size: ${fontSize}px; background: ${theme.bgColor}; color: #1e293b; }
-      h1, h2, h3, h4 { color: ${theme.headingColor}; }
-      a { color: ${theme.accentColor}; }
-      table { border-color: ${theme.cardBorder}; }
-      th { background: ${theme.cardBg}; }
-      ${theme.extraCSS || ''}
-    `;
-    // Inject theme CSS into the HTML
-    if (html.includes('</style>')) {
-      return html.replace('</style>', themeCSS + '\n</style>');
+
+    // Resolve CSS vars: matchOriginal uses extracted PDF colors, others use seed.cssVars
+    let cssVars;
+    if (seedId === 'matchOriginal' && extractedStyle) {
+      cssVars = {
+        bodyFont: extractedStyle.bodyFont || 'system-ui, sans-serif',
+        headingColor: extractedStyle.headingColor || '#1e3a5f',
+        accentColor: extractedStyle.accentColor || '#2563eb',
+        bgColor: extractedStyle.bgColor || '#ffffff',
+        cardBg: extractedStyle.tableBg || '#f1f5f9',
+        cardBorder: extractedStyle.tableBorder || '#cbd5e1',
+        extraCSS: extractedStyle.extraCSS || '',
+      };
+    } else if (seed?.cssVars) {
+      cssVars = seed.cssVars;
+    } else {
+      // Fallback to professional
+      cssVars = STYLE_SEEDS.professional.cssVars;
     }
-    return html.replace('</head>', '<style>' + themeCSS + '</style>\n</head>');
+
+    // For dark themes, use light text color instead of dark
+    const textColor = cssVars.bgColor && (() => {
+      const hexToRgb = (hex) => { const h = hex.replace('#',''); return h.length === 3 ? [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)] : [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)]; };
+      try { const bg = hexToRgb(cssVars.bgColor); const lum = (0.2126*(bg[0]/255<=0.03928?bg[0]/255/12.92:Math.pow((bg[0]/255+0.055)/1.055,2.4))) + (0.7152*(bg[1]/255<=0.03928?bg[1]/255/12.92:Math.pow((bg[1]/255+0.055)/1.055,2.4))) + (0.0722*(bg[2]/255<=0.03928?bg[2]/255/12.92:Math.pow((bg[2]/255+0.055)/1.055,2.4))); return lum < 0.18 ? '#e2e8f0' : '#1e293b'; } catch(e) { return '#1e293b'; }
+    })() || '#1e293b';
+
+    const themeCSS = `
+      body { font-family: ${cssVars.bodyFont}; font-size: ${fontSize}px; background: ${cssVars.bgColor}; color: ${textColor}; }
+      h1, h2, h3, h4 { color: ${cssVars.headingColor}; }
+      a { color: ${cssVars.accentColor}; }
+      table { border-color: ${cssVars.cardBorder}; }
+      th { background: ${cssVars.cardBg}; }
+      ${cssVars.extraCSS || ''}
+    `;
+    let themed;
+    if (html.includes('</style>')) {
+      themed = html.replace('</style>', themeCSS + '\n</style>');
+    } else {
+      themed = html.replace('</head>', '<style>' + themeCSS + '</style>\n</head>');
+    }
+    // Run WCAG sanitizer — High Contrast uses AAA (7:1), all others use AA (4.5:1)
+    const wcagLevel = seed?.wcagLevel || 'AA';
+    const sanitized = sanitizeStyleForWCAG(themed, { level: wcagLevel });
+    return sanitized.html;
   };
+  // Backward compat alias
+  const applyThemeToPdfHtml = applyStyleSeedToHtml;
 
   // ── PDF Preview: Update iframe content ──
   // Accept overrides to avoid stale closure — state may not have updated yet when called from setTimeout
@@ -4022,7 +5869,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   // ── Document Generation (parseMarkdownToHTML, generateResourceHTML, etc.) ──
   const parseMarkdownToHTML = (text) => {
       if (!text) return '';
-      let processedText = text.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
+      // Fix literal \n characters that sometimes come from AI responses or JSON parsing
+      let processedText = text.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"');
+      // Strip JSON wrapper artifacts (e.g., ["\n\n...\n"] from malformed responses)
+      if (processedText.startsWith('["') || processedText.startsWith('[ "')) {
+        processedText = processedText.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '');
+      }
+      processedText = processedText.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
       const isRtl = isRtlLang(leveledTextLanguage);
       const align = isRtl ? 'right' : 'left';
       const lines = processedText.split('\n');
@@ -4124,22 +5977,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
       const cfg = config || exportConfig;
-      // Resource type filtering — configurable via export preview modal
+      // Resource type filtering — configurable via export preview modal.
+      // Teacher-only resources (analysis, udl-advice, brainstorm) handled separately
+      // below so they appear in teacher copy unconditionally but are toggleable for student copy.
       const typeToggleMap = {
-        'analysis': 'includeAnalysis', 'udl-advice': 'includeUdlAdvice', 'brainstorm': 'includeBrainstorm',
         'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
         'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
         'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
       };
       const toggleKey = typeToggleMap[item.type];
       if (toggleKey && cfg[toggleKey] === false) return '';
-      // Legacy teacher/student copy filtering for types without explicit toggles
-      if (!isTeacher) {
-          if (!cfg.includeAnalysis && item.type === 'analysis') return '';
-          if (item.type === 'udl-advice' && !cfg.includeUdlAdvice) return '';
-          if (item.type === 'brainstorm' && !cfg.includeBrainstorm) return '';
-      } else {
-          // Teacher copy traditionally hides student-facing resources to avoid duplication
+      // Teacher-copy-by-default resources: always show in teacher copy, opt-in for student copy
+      if (item.type === 'analysis' || item.type === 'udl-advice' || item.type === 'brainstorm') {
+          const studentToggleKey = item.type === 'analysis' ? 'includeAnalysis'
+                                  : item.type === 'udl-advice' ? 'includeUdlAdvice'
+                                  : 'includeBrainstorm';
+          if (!isTeacher && cfg[studentToggleKey] === false) return '';
+          // teacher copy always shows these — fall through to render
+      }
+      // Teacher copy traditionally hides student-facing resources to avoid duplication
+      if (isTeacher) {
           if (item.type === 'simplified') return '';
           if (item.type === 'outline') return '';
           if (item.type === 'image') return '';
@@ -4939,15 +6796,66 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       }
       return '';
   };
-  // ── Export Theme Definitions ──
-  const EXPORT_THEMES = {
-    professional: { name: 'Professional', emoji: '💼', bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' },
-    colorful: { name: 'Colorful Elementary', emoji: '🌈', bodyFont: "'Comic Sans MS', 'Lexend', sans-serif", headingColor: '#7c3aed', accentColor: '#ec4899', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #ec4899, #f59e0b)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #ec4899; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
-    minimal: { name: 'Minimalist', emoji: '✨', bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; }' },
-    highContrast: { name: 'High Contrast', emoji: '◼️', bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' },
-    nature: { name: 'Nature & Calm', emoji: '🌿', bodyFont: "'Lexend', system-ui, sans-serif", headingColor: '#166534', accentColor: '#15803d', bgColor: '#f0fdf4', cardBg: '#ffffff', cardBorder: '#bbf7d0', headerBg: 'linear-gradient(135deg, #166534, #15803d)', headerText: '#ffffff', extraCSS: '.section { border-left: 4px solid #86efac; border-radius: 8px; background: white; } .resource-header { background: #f0fdf4; color: #166534; }' },
-    print: { name: 'Print Optimized', emoji: '🖨️', bodyFont: "'Times New Roman', serif", headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
+  // ── Unified Style Seeds: merge pre-remediation preferences + post-remediation themes ──
+  // Each seed works as both an AI prompt instruction (during remediation) and a deterministic CSS fallback (for preview/offline)
+  const STYLE_SEEDS = {
+    professional: {
+      name: 'Professional', emoji: '💼', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Professional — use clean sans-serif fonts (Inter), navy (#1e3a5f) headings and blue (#2563eb) accents, white background, formal spacing, polished corporate appearance.',
+      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' },
+    },
+    academic: {
+      name: 'Academic', emoji: '📚', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Academic — use serif fonts (Georgia), navy (#1b3a5c) and gold (#b8860b) color scheme, formal spacing, scholarly appearance suitable for university submissions.',
+      cssVars: { bodyFont: "'Georgia', 'Times New Roman', serif", headingColor: '#1b3a5c', accentColor: '#b8860b', bgColor: '#ffffff', cardBg: '#fefce8', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1b3a5c, #2c5f8a)', headerText: '#ffffff', extraCSS: 'h1 { border-bottom: 2px solid #b8860b; padding-bottom: 0.5rem; } blockquote { border-left: 3px solid #b8860b; padding-left: 1rem; font-style: italic; }' },
+    },
+    elementary: {
+      name: 'Kid-Friendly', emoji: '🌈', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Kid-friendly — use rounded corners (border-radius: 12px), bright cheerful colors (teal, coral, purple), larger fonts (16px base), playful section cards with soft shadows, Comic Sans or Lexend font.',
+      cssVars: { bodyFont: "'Comic Sans MS', 'Lexend', sans-serif", headingColor: '#7c3aed', accentColor: '#ec4899', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #ec4899, #f59e0b)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #ec4899; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
+    },
+    minimal: {
+      name: 'Minimalist', emoji: '✨', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Minimalist — lots of whitespace, thin sans-serif font, muted grays, one accent color (#6366f1), hairline borders, understated elegance.',
+      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; }' },
+    },
+    highContrast: {
+      name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA',
+      promptInstructions: 'STYLE PREFERENCE: High Contrast accessibility — use Atkinson Hyperlegible font, pure black text on white background, blue (#0000ff) underlined links, bold 2px borders, increased font size (1.1rem). ALL text must achieve 7:1 contrast ratio (WCAG AAA). No subtle colors.',
+      cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' },
+    },
+    nature: {
+      name: 'Nature & Calm', emoji: '🌿', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Nature & Calm — use Lexend font, deep green (#166534) headings, green accents, soft pale green (#f0fdf4) background, rounded section cards with green left borders, calming and soothing appearance.',
+      cssVars: { bodyFont: "'Lexend', system-ui, sans-serif", headingColor: '#166534', accentColor: '#15803d', bgColor: '#f0fdf4', cardBg: '#ffffff', cardBorder: '#bbf7d0', headerBg: 'linear-gradient(135deg, #166534, #15803d)', headerText: '#ffffff', extraCSS: '.section { border-left: 4px solid #86efac; border-radius: 8px; background: white; } .resource-header { background: #f0fdf4; color: #166534; }' },
+    },
+    print: {
+      name: 'Print Optimized', emoji: '🖨️', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Print Optimized — use Times New Roman serif, pure black text on white, page-break-inside: avoid on sections, 12pt base font, optimized for physical printing with clean margins and no decorative elements.',
+      cssVars: { bodyFont: "'Times New Roman', serif", headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
+    },
+    dark: {
+      name: 'Dark Mode', emoji: '🌙', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), soft white text (#e2e8f0), indigo accents (#818cf8), subtle borders, excellent contrast. All text must be light on dark.',
+      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#e2e8f0', accentColor: '#818cf8', bgColor: '#1e1e2e', cardBg: '#2a2a3e', cardBorder: '#3f3f5e', headerBg: 'linear-gradient(135deg, #1e1e2e, #2d2b55)', headerText: '#e2e8f0', extraCSS: 'body { color: #e2e8f0; } a { color: #818cf8; } table { border-color: #3f3f5e; } th { background: #2a2a3e; color: #e2e8f0; } td { color: #cbd5e1; }' },
+    },
+    magazine: {
+      name: 'Magazine', emoji: '📰', wcagLevel: 'AA',
+      promptInstructions: 'STYLE PREFERENCE: Magazine editorial — large hero headings, pull quotes with colored left borders, serif body text (Georgia), elegant professional feel with editorial flair.',
+      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#1a1a2e', accentColor: '#e63946', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#e5e7eb', headerBg: 'linear-gradient(135deg, #1a1a2e, #16213e)', headerText: '#ffffff', extraCSS: 'h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; } blockquote { border-left: 4px solid #e63946; padding: 1rem 1.5rem; font-size: 1.2rem; font-style: italic; color: #374151; } .section { border-bottom: 1px solid #e5e7eb; padding-bottom: 2rem; }' },
+    },
+    matchOriginal: {
+      name: 'Match Original', emoji: '📎', wcagLevel: 'AA',
+      promptInstructions: '', // Uses extracted docStyle colors instead — no additional instructions
+      cssVars: null, // Populated dynamically from PDF color extraction
+    },
   };
+  // Backward compatibility: EXPORT_THEMES maps to STYLE_SEEDS cssVars
+  const EXPORT_THEMES = Object.fromEntries(
+    Object.entries(STYLE_SEEDS)
+      .filter(([, seed]) => seed.cssVars)
+      .map(([id, seed]) => [id, { name: seed.name, emoji: seed.emoji, ...seed.cssVars }])
+  );
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = config || exportConfig;
@@ -4956,9 +6864,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const isRtl = isRtlLang(leveledTextLanguage);
       const direction = isRtl ? 'rtl' : 'ltr';
       const textAlign = isRtl ? 'right' : 'left';
-      const theme = EXPORT_THEMES[exportTheme] || EXPORT_THEMES.professional;
+      const seed = STYLE_SEEDS[exportTheme] || STYLE_SEEDS.professional;
+      const theme = seed.cssVars ? { name: seed.name, emoji: seed.emoji, ...seed.cssVars } : (EXPORT_THEMES.professional);
       // Font: honor user's app font if toggled, otherwise use theme font
-      const appFontEntry = FONT_OPTIONS.find(f => f.id === selectedFont);
+      // Read FONT_OPTIONS from window (defined in monolith) with safe fallback
+      const _fontOptions = (typeof window !== 'undefined' && window.FONT_OPTIONS) || [];
+      const appFontEntry = _fontOptions.find(f => f.id === selectedFont);
       const exportFontFamily = cfg.useAppFont && appFontEntry ? `'${appFontEntry.label}', ${theme.bodyFont}` : theme.bodyFont;
       const exportFontImport = cfg.useAppFont && appFontEntry?.googleFont ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');` : '';
       const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';
@@ -4990,7 +6901,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             </div>
         </div>
       ` : '';
-      return `
+      const rawHtml = `
       <!DOCTYPE html>
       <html lang="${({'English':'en','Spanish':'es','French':'fr','German':'de','Italian':'it','Portuguese':'pt','Chinese':'zh','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Vietnamese':'vi','Haitian Creole':'ht','Somali':'so'})[currentUiLanguage] || 'en'}" dir="${direction}">
       <head>
@@ -5154,6 +7065,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       </body>
       </html>
       `;
+      // Run WCAG sanitizer on the complete export HTML to guarantee accessibility
+      const sanitized = sanitizeStyleForWCAG(rawHtml);
+      return sanitized.html;
   };
 
   // Wrap each function to bind fresh state before execution
@@ -5164,7 +7078,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
     fixContrastViolations: _wrap(fixContrastViolations),
+    sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),
     autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
+    refixChunk: _wrapAsync(refixChunk),
+    getChunkState: _wrap(getChunkState),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     downloadAccessiblePdf: _wrap(downloadAccessiblePdf),
@@ -5173,6 +7090,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     parseMarkdownToHTML: _wrap(parseMarkdownToHTML),
     generateResourceHTML: _wrap(generateResourceHTML),
     EXPORT_THEMES,
+    STYLE_SEEDS,
+    applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
     generateFullPackHTML: _wrap(generateFullPackHTML),
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),

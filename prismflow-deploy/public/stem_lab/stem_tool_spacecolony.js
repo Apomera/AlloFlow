@@ -1210,7 +1210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   React.createElement('button', { onClick: function () { upd('colonyZoom', Math.min(3.0, colonyZoom * 1.25)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600 font-bold', title: 'Zoom In' }, '+'),
                   React.createElement('button', { onClick: function () { upd('colonyZoom', Math.max(0.4, colonyZoom * 0.8)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600 font-bold', title: 'Zoom Out' }, '\u2212'),
                   React.createElement('button', { onClick: function () { upd('colonyZoom', 1.0); }, className: 'px-1.5 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600', title: 'Reset Zoom' }, '1:1'),
-                  React.createElement('span', { className: 'text-[11px] text-slate-500 ml-1' }, Math.round(colonyZoom * 100) + '%'),
+                  React.createElement('span', { className: 'text-[11px] text-slate-600 ml-1' }, Math.round(colonyZoom * 100) + '%'),
                 React.createElement('span', { className: 'text-[10px] text-slate-600 ml-2 hidden sm:inline' }, 'WASD pan \u2022 +/- zoom \u2022 Esc clear \u2022 H home')
                 ),
                 React.createElement('span', { className: 'text-[11px] text-slate-600' }, mapSize + '\u00D7' + mapSize + ' (' + camX + ',' + camY + ')')
@@ -1295,7 +1295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 React.createElement('div', { className: 'flex items-center justify-between' },
                   React.createElement('div', null,
                     React.createElement('span', { className: 'text-sm font-bold text-white' }, selectedTile.tile.icon + ' ' + selectedTile.tile.name),
-                    React.createElement('span', { className: 'text-[10px] text-slate-500 ml-2' }, '(' + selectedTile.x + ',' + selectedTile.y + ')' + (selectedTile.tile.res !== 'none' ? ' +' + selectedTile.tile.res : '') + (selectedTile.tile.hasAnomaly ? ' \u26A0\uFE0F Anomaly detected!' : ''))
+                    React.createElement('span', { className: 'text-[10px] text-slate-600 ml-2' }, '(' + selectedTile.x + ',' + selectedTile.y + ')' + (selectedTile.tile.res !== 'none' ? ' +' + selectedTile.tile.res : '') + (selectedTile.tile.hasAnomaly ? ' \u26A0\uFE0F Anomaly detected!' : ''))
                   ),
                   selectedTile.tile.hasAnomaly && selectedTile.tile.explored && !d.anomalyLoading && React.createElement('button', {
                     onClick: function () {

@@ -845,7 +845,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     addToast('Could not generate problem. Try again.', 'error');
                   });
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-700')
+                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-700')
               }, d.loadingWP ? '\u23F3 Generating...' : '\u2728 Generate')
             ),
 

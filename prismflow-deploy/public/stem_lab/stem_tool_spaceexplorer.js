@@ -778,7 +778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     if (addToast) addToast('\u26A1 ' + tech.name + ' unlocked!', 'success');
                     addXP(15);
                   },
-                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
                 }, tech.cost + ' \uD83D\uDD2C')
               );
             })

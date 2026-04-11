@@ -988,7 +988,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Check',
               onClick: checkChallengeAnswer,
               disabled: !challengeAnswer.trim(),
-              className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+              className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
             }, '\u2714 Check')
           ),
           // Result feedback

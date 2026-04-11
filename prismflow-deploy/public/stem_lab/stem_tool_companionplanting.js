@@ -4476,7 +4476,7 @@ var d = (labToolData.companionPlanting) || {};
                       h('div', { className: 'flex items-center gap-2 mb-1' },
                         h('span', null, ref.emoji || '📝'),
                         h('span', { className: 'text-[10px] font-bold text-violet-800' }, ref.title || entry.id),
-                        h('span', { className: 'text-[10px] text-slate-500 ml-auto' }, new Date(entry.ts).toLocaleDateString())),
+                        h('span', { className: 'text-[10px] text-slate-600 ml-auto' }, new Date(entry.ts).toLocaleDateString())),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, entry.response));
                   })))
             );

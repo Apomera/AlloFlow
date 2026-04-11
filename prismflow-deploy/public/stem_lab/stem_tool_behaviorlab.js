@@ -3495,7 +3495,7 @@ var d = labToolData || {};
 
                       ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]"
 
-                      : "bg-slate-700 text-slate-500 cursor-not-allowed"),
+                      : "bg-slate-700 text-slate-600 cursor-not-allowed"),
 
                   style: pulseStyle
 
@@ -3939,7 +3939,7 @@ var d = labToolData || {};
 
                   className: "flex-1 py-2 rounded-xl font-bold text-xs transition-all " +
 
-                    (blCcPhase !== 'pairing' ? "bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md hover:from-rose-700 hover:to-pink-700 hover:scale-[1.02]" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                    (blCcPhase !== 'pairing' ? "bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md hover:from-rose-700 hover:to-pink-700 hover:scale-[1.02]" : "bg-slate-700 text-slate-600 cursor-not-allowed")
 
                 }, "\uD83D\uDD14 Ring Bell" + (blCcPhase === 'baseline' ? ' (Baseline)' : blCcPhase === 'test' ? ' (Test CR)' : blCcPhase === 'extinction' ? ' (Extinction)' : '')),
 
@@ -4011,7 +4011,7 @@ var d = labToolData || {};
 
                   className: "flex-1 py-2 rounded-xl font-bold text-xs transition-all " +
 
-                    (blCcPhase === 'pairing' ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                    (blCcPhase === 'pairing' ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]" : "bg-slate-700 text-slate-600 cursor-not-allowed")
 
                 }, "\uD83D\uDD14+\uD83C\uDF55 Pair (" + blPairCount + "/5)")
 

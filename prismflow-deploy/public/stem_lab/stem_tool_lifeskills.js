@@ -1415,7 +1415,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-[10px] font-bold text-slate-600' }, 'Original: ' + cookRecipe.servings + ' servings'),
               h('span', { className: 'text-slate-600' }, '\u2192'),
               h('span', { className: 'text-[10px] font-bold text-teal-600' }, 'Desired: ' + cookDesiredServings + ' servings'),
-              h('span', { className: 'text-[11px] text-slate-500 ml-auto' }, 'Scale: ' + cookScale.toFixed(2) + 'x')
+              h('span', { className: 'text-[11px] text-slate-600 ml-auto' }, 'Scale: ' + cookScale.toFixed(2) + 'x')
             ),
             slider('Servings', cookScale, 0.25, 4, 0.25, 'cookScale', function(v) { return Math.round(cookRecipe.servings * v) + ' servings (' + v + 'x)'; }),
             h('div', { className: 'mt-2' },

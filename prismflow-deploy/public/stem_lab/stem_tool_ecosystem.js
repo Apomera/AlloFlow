@@ -2363,7 +2363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ),
             h('div', { className: 'flex items-center gap-2 mt-1 pt-1 border-t border-slate-200 dark:border-slate-600' },
               h('span', { className: 'text-[11px] text-slate-600' }, 'Total events: ' + eventHistory.length),
-              h('span', { className: 'text-[11px] text-slate-500 ml-auto' },
+              h('span', { className: 'text-[11px] text-slate-600 ml-auto' },
                 'Unique: ' + Object.keys(eventsTriggered).length + '/5'
               )
             )
