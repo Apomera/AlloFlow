@@ -1460,7 +1460,7 @@
         container.appendChild(cnv);
         engine.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true, powerPreference: 'high-performance' });
         engine.renderer.setSize(container.clientWidth, container.clientHeight);
-        engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
         engine.renderer.shadowMap.enabled = true;
         engine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         engine.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1472,7 +1472,8 @@
         var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
         sun.position.set(20, 40, 20);
         sun.castShadow = true;
-        sun.shadow.mapSize.set(2048, 2048);
+        var shadowRes = isMobile ? 1024 : 2048; // Lower shadow quality on mobile
+        sun.shadow.mapSize.set(shadowRes, shadowRes);
         sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 100;
         sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
         sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
@@ -2762,6 +2763,7 @@
               var camGx = Math.floor(cam.x), camGy = Math.floor(cam.y - EYE_HEIGHT + 0.5), camGz = Math.floor(cam.z);
               var waterBlock = engine.blocks[camGx + ',' + camGy + ',' + camGz];
               engine._inWater = waterBlock && waterBlock.userData.blockType === 'water';
+              engine._inLava = waterBlock && waterBlock.userData.blockType === 'lava';
 
               // Head-bump detection
               var headY = cam.y + (PLAYER_HEIGHT - EYE_HEIGHT);
@@ -4218,6 +4220,20 @@
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'R'), 'Rotate shape 90\u00b0',
             el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'T'), 'Ruler (2 points)'
           ),
+          // Mobile touch controls section (shown on touch devices)
+          isMobile && el('div', { style: { marginBottom: '8px' } },
+            el('div', { style: { fontWeight: 700, color: '#f472b6', marginBottom: '4px', fontSize: '12px' } }, '\uD83D\uDCF1 Touch Controls'),
+            el('div', { style: { display: 'grid', gridTemplateColumns: '50px 1fr', gap: '2px 8px', marginBottom: '8px' } },
+              el('span', { style: { color: '#f472b6', fontWeight: 600 } }, 'Left'), 'Drag to move (joystick)',
+              el('span', { style: { color: '#f472b6', fontWeight: 600 } }, 'Right'), 'Swipe to look around',
+              el('span', { style: { color: '#60a5fa', fontWeight: 600 } }, '\u2B06\uFE0F'), 'Jump / fly up',
+              el('span', { style: { color: '#22c55e', fontWeight: 600 } }, '\uD83E\uDDF1'), 'Place block',
+              el('span', { style: { color: '#ef4444', fontWeight: 600 } }, '\u26CF\uFE0F'), 'Break block',
+              el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, '\uD83D\uDCCF'), 'Measure',
+              el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, '\uD83D\uDDE3\uFE0F'), 'Talk to NPC',
+              el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, '\u21A9'), 'Undo last action'
+            )
+          ),
           el('div', { style: { fontWeight: 700, color: '#22d3ee', marginBottom: '4px', fontSize: '12px' } }, '\uD83D\uDCCF Formulas'),
           el('div', { style: { background: '#0c4a6e', borderRadius: '6px', padding: '6px 8px', marginBottom: '8px', fontFamily: 'monospace', fontSize: '11px' } },
             el('div', null, 'Volume = L \u00d7 W \u00d7 H'),
@@ -4727,7 +4743,12 @@
                 else if (addToast) addToast('No NPC nearby — walk closer!', 'info');
               },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(124,58,237,0.4)', border: '2px solid rgba(124,58,237,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-            }, '\uD83D\uDDE3\uFE0F')
+            }, '\uD83D\uDDE3\uFE0F'),
+            // Undo button
+            engine._undoStack && engine._undoStack.length > 0 && el('button', {
+              onTouchStart: function(ev) { ev.stopPropagation(); if (engine.undo) engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); },
+              style: { width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(251,191,36,0.3)', border: '2px solid rgba(251,191,36,0.5)', color: '#fff', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, '\u21A9')
           ),
           // Label hints
           el('div', { style: { position: 'absolute', bottom: '65px', left: '20px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', width: '100px', pointerEvents: 'none' } }, 'MOVE'),
@@ -4738,6 +4759,13 @@
           style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5, pointerEvents: 'none',
             background: 'rgba(33,150,243,0.15)', transition: 'background 0.3s ease' }
         }),
+        // Lava submersion red tint + warning
+        engine && engine._inLava && el('div', {
+          style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5, pointerEvents: 'none',
+            background: 'rgba(255,87,34,0.25)', transition: 'background 0.3s ease' }
+        },
+          el('div', { style: { position: 'absolute', bottom: '50%', left: '50%', transform: 'translate(-50%,50%)', fontSize: '14px', fontWeight: 800, color: '#ff5722', textShadow: '0 2px 8px rgba(0,0,0,0.8)' } }, '\uD83D\uDD25 In Lava! Move away!')
+        ),
         // ── Action feedback toast (center-bottom, fades in/out) ──
         actionFeedback && el('div', {
           style: { position: 'absolute', bottom: '135px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
@@ -4811,10 +4839,10 @@
           el('div', { style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(8px)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '14px', padding: '14px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'auto' } },
             el('div', { 'aria-hidden': 'true', style: { fontSize: '10px', color: '#a78bfa', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.5px' } }, 'TUTORIAL \u2014 Step ' + (tutorialStep + 1) + ' of 4'),
             el('div', { role: 'status', style: { fontSize: '14px', color: '#e2e8f0', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4 } },
-              tutorialStep === 0 ? '\uD83D\uDDB1\uFE0F Click the 3D world to look around. Use WASD to move.' :
-              tutorialStep === 1 ? '\uD83D\uDC64 Walk up to a purple character and press E to talk.' :
-              tutorialStep === 2 ? '\uD83D\uDCCF Point at the blue blocks and press M to measure.' :
-              '\uD83E\uDDF1 Right-click on any block face to place a new block!'
+              tutorialStep === 0 ? (isMobile ? '\uD83D\uDC46 Swipe right side to look. Drag left side to move.' : '\uD83D\uDDB1\uFE0F Click the 3D world to look around. Use WASD to move.') :
+              tutorialStep === 1 ? (isMobile ? '\uD83D\uDC64 Walk near a purple character and tap the \uD83D\uDDE3\uFE0F button.' : '\uD83D\uDC64 Walk up to a purple character and press E to talk.') :
+              tutorialStep === 2 ? (isMobile ? '\uD83D\uDCCF Point at the blue blocks and tap the \uD83D\uDCCF button.' : '\uD83D\uDCCF Point at the blue blocks and press M to measure.') :
+              (isMobile ? '\uD83E\uDDF1 Point at a block and tap the \uD83E\uDDF1 button to place!' : '\uD83E\uDDF1 Right-click on any block face to place a new block!')
             ),
             // Progress dots
             el('div', { style: { display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '8px' } },
