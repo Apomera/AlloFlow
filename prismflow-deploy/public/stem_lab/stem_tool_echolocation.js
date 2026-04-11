@@ -904,6 +904,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng.euler = new THREE.Euler(0, 0, 0, 'YXZ');
           eng.velocity = { x: 0, y: 0, z: 0 };
           eng.mothsFound = 0;
+          eng.mothsCaught = 0;
+          eng.score = 0;
+
+          // ── Energy system ──
+          eng.energy = 100; // 0-100
+          eng.energyMax = 100;
+          eng.energyDrain = 0.12; // per second while flying
+          eng.perching = false;
+          eng.perchRegen = 8; // per second while perched
+          eng.gameOver = false;
+          eng.survivalTime = 0;
+
+          // ── Insect types (different food values) ──
+          var INSECT_TYPES = [
+            { name: 'Moth', color: 0x44ff88, energy: 15, size: 0.15, speed: 0.3 },
+            { name: 'Luna Moth', color: 0x88ffcc, energy: 25, size: 0.22, speed: 0.2 },
+            { name: 'Mosquito Swarm', color: 0xaaaacc, energy: 8, size: 0.1, speed: 0.5 },
+            { name: 'Beetle', color: 0xffaa44, energy: 20, size: 0.18, speed: 0.15 }
+          ];
+
+          // Spawn initial insects
+          function spawnInsect(type) {
+            var iType = type || INSECT_TYPES[Math.floor(Math.random() * INSECT_TYPES.length)];
+            var mGeo = new THREE.SphereGeometry(iType.size, 8, 8);
+            var mMat = new THREE.MeshBasicMaterial({ color: iType.color, transparent: true, opacity: 0.0 });
+            var mMesh = new THREE.Mesh(mGeo, mMat);
+            mMesh.position.set((Math.random() - 0.5) * 14, 1 + Math.random() * 4, (Math.random() - 0.5) * 28);
+            mMesh._type = iType;
+            mMesh._found = false;
+            mMesh._caught = false;
+            mMesh._baseY = mMesh.position.y;
+            mMesh._movePhase = Math.random() * 6.28;
+            eng.scene.add(mMesh);
+            eng.moths.push(mMesh);
+            return mMesh;
+          }
+
+          // Replace static moths with spawned insects
+          eng.moths.forEach(function(m) { eng.scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
+          eng.moths = [];
+          for (var ii = 0; ii < 8; ii++) spawnInsect();
+
+          // Respawn timer
+          eng._respawnTimer = 0;
 
           // Controls
           eng.keys = {};
@@ -931,21 +975,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             var dt = Math.min(eng.clock.getDelta(), 0.1);
             var t = eng.clock.getElapsedTime();
 
-            // Movement (WASD)
+            // ── Game over check ──
+            if (eng.gameOver) {
+              eng.renderer.render(eng.scene, eng.camera);
+              return;
+            }
+            eng.survivalTime += dt;
+
+            // ── Energy system ──
+            var isMoving = eng.keys['KeyW'] || eng.keys['KeyS'] || eng.keys['KeyA'] || eng.keys['KeyD'];
+            // Perching: press P or land on floor (y < 0.8)
+            var nearFloor = eng.camera.position.y < 0.8;
+            var nearCeiling = eng.camera.position.y > 5.2;
+            eng.perching = eng.keys['KeyP'] || nearFloor || nearCeiling;
+
+            if (eng.perching) {
+              // Regenerate energy while perched
+              eng.energy = Math.min(eng.energyMax, eng.energy + eng.perchRegen * dt);
+            } else if (isMoving) {
+              // Drain energy while flying
+              eng.energy -= eng.energyDrain * 60 * dt;
+            } else {
+              // Hovering drains less
+              eng.energy -= eng.energyDrain * 20 * dt;
+            }
+            // Sonar pulses cost energy
+            // (handled below in pulse emission)
+
+            // Game over when energy hits 0
+            if (eng.energy <= 0) {
+              eng.energy = 0;
+              eng.gameOver = true;
+              if (addToast) addToast('\uD83E\uDD87 Out of energy! You caught ' + eng.mothsCaught + ' insects and survived ' + Math.round(eng.survivalTime) + 's. Press R to restart.', 'error');
+            }
+
+            // Restart on R key
+            if (eng.keys['KeyR'] && eng.gameOver) {
+              eng.gameOver = false;
+              eng.energy = eng.energyMax;
+              eng.mothsCaught = 0;
+              eng.score = 0;
+              eng.survivalTime = 0;
+              eng.camera.position.set(0, 2, 0);
+              // Respawn all insects
+              eng.moths.forEach(function(m) { eng.scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
+              eng.moths = [];
+              for (var ri = 0; ri < 8; ri++) spawnInsect();
+            }
+
+            // Movement (WASD) — only if not game over
             var fwd = new THREE.Vector3();
             eng.camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
             var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
-            if (eng.keys['KeyW']) eng.camera.position.addScaledVector(fwd, 4 * dt);
-            if (eng.keys['KeyS']) eng.camera.position.addScaledVector(fwd, -4 * dt);
-            if (eng.keys['KeyA']) eng.camera.position.addScaledVector(right, -4 * dt);
-            if (eng.keys['KeyD']) eng.camera.position.addScaledVector(right, 4 * dt);
+            var moveSpeed = eng.perching ? 0 : 4;
+            if (eng.keys['KeyW']) eng.camera.position.addScaledVector(fwd, moveSpeed * dt);
+            if (eng.keys['KeyS']) eng.camera.position.addScaledVector(fwd, -moveSpeed * dt);
+            if (eng.keys['KeyA']) eng.camera.position.addScaledVector(right, -moveSpeed * dt);
+            if (eng.keys['KeyD']) eng.camera.position.addScaledVector(right, moveSpeed * dt);
             // Fly up/down
-            if (eng.keys['Space']) eng.camera.position.y += 3 * dt;
-            if (eng.keys['ShiftLeft'] || eng.keys['ShiftRight']) eng.camera.position.y -= 3 * dt;
-            eng.camera.position.y = Math.max(0.5, Math.min(5.5, eng.camera.position.y));
+            if (!eng.perching) {
+              if (eng.keys['Space']) eng.camera.position.y += 3 * dt;
+              if (eng.keys['ShiftLeft'] || eng.keys['ShiftRight']) eng.camera.position.y -= 3 * dt;
+            }
+            eng.camera.position.y = Math.max(0.3, Math.min(5.7, eng.camera.position.y));
 
-            // Emit sonar pulse (Space bar)
-            if (eng.keys['KeyE'] && (!eng._lastPulse || t - eng._lastPulse > 0.5)) {
+            // ── Insect respawning (every 8 seconds, up to 12 active) ──
+            eng._respawnTimer += dt;
+            if (eng._respawnTimer > 8 && eng.moths.filter(function(m) { return !m._caught; }).length < 10) {
+              eng._respawnTimer = 0;
+              spawnInsect();
+            }
+
+            // Emit sonar pulse (E key, costs 2 energy)
+            if (eng.keys['KeyE'] && (!eng._lastPulse || t - eng._lastPulse > 0.5) && eng.energy > 2) {
+              eng.energy -= 2;
               eng._lastPulse = t;
               var pulseGeo = new THREE.RingGeometry(0.1, 0.15, 32);
               var pulseMat = new THREE.MeshBasicMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
@@ -981,19 +1084,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }
               });
 
-              // Check moths
+              // Check insects — reveal with sonar, then catch by flying close
               eng.moths.forEach(function(m) {
-                if (m._found) return;
+                if (m._caught) return;
                 var dist = p.position.distanceTo(m.position);
-                if (dist < radius + 1) {
-                  m.material.opacity = Math.min(1, m.material.opacity + 0.3);
-                  // Found moth if revealed enough
-                  if (m.material.opacity > 0.8 && !m._found) {
+                if (dist < radius + 1.5) {
+                  // Sonar reveals the insect
+                  m.material.opacity = Math.min(1, m.material.opacity + 0.25);
+                  if (!m._found && m.material.opacity > 0.6) {
                     m._found = true;
                     m.material.color.setHex(0xffff00);
                     eng.mothsFound++;
-                    if (addToast) addToast('\uD83E\uDD8B Moth found! (' + eng.mothsFound + '/5)', 'success');
-                    if (typeof awardXP === 'function') awardXP('echolocation', 5, 'Found moth in 3D cave');
                   }
                 }
               });
@@ -1014,12 +1115,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               }
             });
 
-            // Moth hover animation
-            eng.moths.forEach(function(m, i) {
-              m.position.y = m._baseY + Math.sin(t * 2 + i * 1.3) * 0.2;
-              // Fade out found moths slowly
-              if (m._found) m.material.opacity *= 0.998;
-            });
+            // Insect behavior: hover, drift, catch-by-proximity
+            for (var mi2 = eng.moths.length - 1; mi2 >= 0; mi2--) {
+              var m = eng.moths[mi2];
+              if (m._caught) continue;
+              // Hover + drift
+              m.position.y = m._baseY + Math.sin(t * 2 + mi2 * 1.3) * 0.2;
+              m.position.x += Math.sin(t * (m._type.speed || 0.3) + m._movePhase) * 0.01;
+              m.position.z += Math.cos(t * (m._type.speed || 0.3) * 0.7 + m._movePhase) * 0.01;
+              // Revealed insects fade slightly if not caught
+              if (m._found && !m._caught) {
+                m.material.opacity = Math.max(0.3, m.material.opacity - 0.002);
+              }
+              // Catch: fly within 1.2 blocks of a revealed insect
+              if (m._found && !m._caught) {
+                var catchDist = eng.camera.position.distanceTo(m.position);
+                if (catchDist < 1.2) {
+                  m._caught = true;
+                  var foodEnergy = m._type.energy || 15;
+                  eng.energy = Math.min(eng.energyMax, eng.energy + foodEnergy);
+                  eng.mothsCaught++;
+                  eng.score += foodEnergy;
+                  if (addToast) addToast('\uD83E\uDD8B Caught ' + m._type.name + '! +' + foodEnergy + ' energy (' + eng.mothsCaught + ' total)', 'success');
+                  if (typeof awardXP === 'function') awardXP('echolocation', 3, 'Caught ' + m._type.name);
+                  if (typeof beep === 'function') beep(1200, 0.06, 0.08);
+                  // Remove caught insect after brief flash
+                  m.material.color.setHex(0xffffff);
+                  m.material.opacity = 1;
+                  (function(mesh) {
+                    setTimeout(function() {
+                      eng.scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose();
+                    }, 300);
+                  })(m);
+                }
+              }
+            }
+            // Clean up caught moths from array
+            eng.moths = eng.moths.filter(function(m) { return !m._caught || m.material.opacity > 0; });
+
+            // ── Energy-based visual effects ──
+            // Low energy: darken the ambient light
+            eng.ambient.intensity = 0.15 * Math.max(0.2, eng.energy / eng.energyMax);
+            // Very low energy: red tint fog
+            if (eng.energy < 20) {
+              eng.scene.fog.color.setRGB(0.08, 0.01, 0.01);
+            } else {
+              eng.scene.fog.color.setRGB(0.008, 0.008, 0.03);
+            }
 
             eng.renderer.render(eng.scene, eng.camera);
           }
@@ -1054,12 +1196,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             style: { width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', border: '2px solid ' + (isDark ? '#1e3a3a' : '#a7f3d0'), position: 'relative', background: '#020208', cursor: 'crosshair' }
           },
             // HUD overlay
-            h('div', { style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10, pointerEvents: 'none', fontSize: '11px', color: '#4ade80' } },
-              h('div', null, '\uD83E\uDD87 3D Echolocation Cave'),
-              h('div', null, 'WASD = fly \u2022 Mouse = look \u2022 E = sonar pulse'),
-              h('div', null, 'Space/Shift = up/down \u2022 Click to lock mouse'),
-              cave3dEngineRef.current && h('div', { style: { color: '#fbbf24', fontWeight: 700, marginTop: '4px' } },
-                '\uD83E\uDD8B Moths: ' + (cave3dEngineRef.current.mothsFound || 0) + '/5')
+            h('div', { style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10, pointerEvents: 'none', fontSize: '11px', color: '#4ade80', maxWidth: '200px' } },
+              h('div', { style: { fontWeight: 700 } }, '\uD83E\uDD87 3D Echolocation Cave'),
+              h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart'),
+              // Energy bar
+              cave3dEngineRef.current && h('div', { style: { marginTop: '4px' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' } },
+                  h('span', { style: { fontSize: '9px', color: '#f59e0b' } }, '\u26A1 Energy'),
+                  h('span', { style: { fontSize: '9px', color: cave3dEngineRef.current.energy > 30 ? '#f59e0b' : '#ef4444', fontWeight: 700 } }, Math.round(cave3dEngineRef.current.energy) + '%')
+                ),
+                h('div', { style: { width: '120px', height: '6px', borderRadius: '3px', background: 'rgba(100,116,139,0.3)', overflow: 'hidden' } },
+                  h('div', { style: { width: Math.round(cave3dEngineRef.current.energy) + '%', height: '100%', borderRadius: '3px',
+                    background: cave3dEngineRef.current.energy > 50 ? '#f59e0b' : cave3dEngineRef.current.energy > 20 ? '#f97316' : '#ef4444',
+                    transition: 'width 0.3s, background 0.5s' } })
+                )
+              ),
+              // Stats
+              cave3dEngineRef.current && h('div', { style: { marginTop: '4px', fontSize: '10px' } },
+                h('div', { style: { color: '#fbbf24', fontWeight: 700 } }, '\uD83E\uDD8B Caught: ' + (cave3dEngineRef.current.mothsCaught || 0)),
+                h('div', { style: { color: '#4ade80' } }, '\uD83C\uDFAF Score: ' + (cave3dEngineRef.current.score || 0)),
+                h('div', { style: { color: '#94a3b8' } }, '\u23F1 ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
+                cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)')
+              ),
+              // Game over overlay
+              cave3dEngineRef.current && cave3dEngineRef.current.gameOver && h('div', {
+                style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', textAlign: 'center',
+                  background: 'rgba(15,23,42,0.9)', borderRadius: '12px', padding: '16px 24px', border: '2px solid #ef4444' }
+              },
+                h('div', { style: { fontSize: '24px' } }, '\uD83E\uDD87\uD83D\uDCA4'),
+                h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#ef4444', marginBottom: '4px' } }, 'Out of Energy!'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } },
+                  'Caught ' + (cave3dEngineRef.current.mothsCaught || 0) + ' insects \u2022 Score: ' + (cave3dEngineRef.current.score || 0) + ' \u2022 Survived: ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
+                h('div', { style: { fontSize: '12px', color: '#fbbf24', fontWeight: 700 } }, 'Press R to restart')
+              )
             )
           ),
           // Controls help
