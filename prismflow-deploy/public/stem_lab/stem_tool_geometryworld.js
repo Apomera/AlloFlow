@@ -1974,11 +1974,14 @@
           var progressKey = 'gw_progress_' + (lesson.title || 'untitled').replace(/\W+/g, '_').toLowerCase();
           var savedProgress = null;
           try { savedProgress = JSON.parse(localStorage.getItem(progressKey)); } catch(e) {}
+          // Restore chat history from localStorage
+          var savedChat = null;
+          try { savedChat = JSON.parse(localStorage.getItem('gw_chat_' + (lesson._id || Object.keys(SAMPLE_LESSONS).find(function(k) { return SAMPLE_LESSONS[k] === lesson; }) || 'unknown'))); } catch(e) {}
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, worldActive: true });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, worldActive: true });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true });
           }
           engine._progressKey = progressKey;
         };
@@ -3379,6 +3382,27 @@
       // ── Render ──
       // ══════════════════════════════════════════════════════════
 
+      // Mobile detection — friendly message for touch devices
+      var isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || (window.innerWidth < 768 && 'ontouchstart' in window);
+      if (isMobile && !d._mobileDismissed) {
+        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '16px', color: '#94a3b8', background: 'linear-gradient(180deg, #0f172a 0%, #1e1b3a 100%)', padding: '24px', textAlign: 'center' } },
+          el('div', { style: { fontSize: '48px' } }, '\uD83D\uDCF1'),
+          el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#e2e8f0' } }, 'Desktop Recommended'),
+          el('div', { style: { fontSize: '13px', color: '#94a3b8', maxWidth: '320px', lineHeight: 1.6 } },
+            'Geometry World uses a 3D engine with mouse + keyboard controls (WASD, pointer lock). For the best experience, open this on a laptop or desktop computer.'),
+          el('div', { style: { fontSize: '11px', color: '#64748b', maxWidth: '280px', lineHeight: 1.5 } },
+            'You can still try it below, but some features (pointer lock, right-click) may not work on mobile browsers.'),
+          el('button', {
+            onClick: function() { upd('_mobileDismissed', true); },
+            style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' }
+          }, 'Try Anyway \u2192'),
+          el('button', {
+            onClick: function() { upd('_mobileDismissed', true); },
+            style: { background: 'none', border: 'none', color: '#64748b', fontSize: '11px', cursor: 'pointer', marginTop: '4px' }
+          }, 'I\u2019m on a tablet with keyboard')
+        );
+      }
+
       if (!threeReady) {
         var loadingTips = [
           '\uD83D\uDCA1 Tip: Use WASD to move and the mouse to look around!',
@@ -4357,8 +4381,8 @@
                 ctx.fillRect(bpx, bpz, scale, scale);
               }
             }
-            // Draw structure blocks (above ground)
-            ctx.fillStyle = 'rgba(148,163,184,0.4)';
+            // Draw structure blocks (above ground, color-coded by type)
+            var mmBlockColors = { stone: 'rgba(128,128,128,0.5)', diamond: 'rgba(0,188,212,0.6)', gold: 'rgba(255,215,0,0.6)', wood: 'rgba(141,110,99,0.5)', sand: 'rgba(245,222,179,0.5)', glass: 'rgba(227,242,253,0.4)', water: 'rgba(33,150,243,0.5)', brick: 'rgba(183,28,28,0.5)', ice: 'rgba(179,229,252,0.5)', lava: 'rgba(255,87,34,0.6)' };
             for (var bi2 = 0; bi2 < blockKeys.length; bi2 += 2) {
               var bm2 = engine.blocks[blockKeys[bi2]];
               if (!bm2 || !bm2.userData.gridPos) continue;
@@ -4367,6 +4391,7 @@
               var bpx2 = w / 2 + (bp2.x - camX) * scale;
               var bpz2 = h / 2 + (bp2.z - camZ) * scale;
               if (bpx2 >= 0 && bpx2 < w && bpz2 >= 0 && bpz2 < h) {
+                ctx.fillStyle = mmBlockColors[bm2.userData.blockType] || 'rgba(148,163,184,0.4)';
                 ctx.fillRect(bpx2, bpz2, scale, scale);
               }
             }
@@ -4412,6 +4437,10 @@
             // Player dot
             ctx.beginPath(); ctx.arc(w / 2, h / 2, 2.5, 0, Math.PI * 2); ctx.fill();
 
+            // Compass rose labels
+            ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('N', w / 2, 8); ctx.fillText('S', w / 2, h - 2);
+            ctx.fillText('W', 5, h / 2 + 3); ctx.fillText('E', w - 5, h / 2 + 3);
             // Border
             ctx.strokeStyle = 'rgba(100,116,139,0.4)'; ctx.lineWidth = 1;
             ctx.strokeRect(0, 0, w, h);
@@ -4447,7 +4476,7 @@
           })
         ),
         // Block toolbar (bottom overlay) — with key hints and glow
-        el('div', { style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)' } },
+        el('div', { style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '95vw' } },
           BLOCK_TYPES.map(function(bt, i) {
             var isActive = i === selectedBlock;
             return el('div', {
@@ -4759,7 +4788,28 @@
                 style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px',
                   padding: '10px 20px', fontSize: '12px', color: '#94a3b8', cursor: 'pointer', fontWeight: 600 }
               }, '\uD83D\uDD04 Replay'),
-              !nextLesson && el('div', { style: { fontSize: '11px', color: '#fbbf24', fontWeight: 600, marginTop: '4px' } }, '\u2B50 You completed all lessons!')
+              !nextLesson && el('div', { style: { textAlign: 'center', marginTop: '8px' } },
+                el('div', { style: { fontSize: '32px', marginBottom: '4px' } }, '\uD83C\uDFC6\u2B50\uD83C\uDF1F'),
+                el('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' } }, 'All Lessons Complete!'),
+                el('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.6, marginBottom: '8px' } },
+                  'You\u2019ve mastered all 9 geometry lessons! Here\u2019s your journey:'),
+                el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', color: '#cbd5e1' } },
+                  el('div', { style: { background: 'rgba(124,58,237,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
+                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#a78bfa' } }, String(Object.keys(earnedBadges).length)),
+                    'badges earned'),
+                  el('div', { style: { background: 'rgba(251,191,36,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
+                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#fbbf24' } }, String(engine ? engine.blocksPlaced || 0 : 0)),
+                    'blocks placed'),
+                  el('div', { style: { background: 'rgba(34,197,94,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
+                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#22c55e' } }, String(measureHistory.length)),
+                    'measurements'),
+                  el('div', { style: { background: 'rgba(59,130,246,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
+                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#3b82f6' } }, String(score)),
+                    'questions answered')
+                ),
+                el('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '8px', fontStyle: 'italic' } },
+                  '\u201CEvery block you placed made your brain stronger.\u201D')
+              )
             );
           })()
         ),
@@ -5027,6 +5077,7 @@
                     callGemini(npcPrompt, true).then(function(r) {
                       var uh = Object.assign({}, npcChatHistory); uh[dialogNpcIdx] = history.concat([{ role: 'npc', text: r }]);
                       upd({ npcChatHistory: uh, npcChatLoading: false });
+                      try { localStorage.setItem('gw_chat_' + activeLesson, JSON.stringify(uh)); } catch(e) {}
                     }).catch(function() { upd('npcChatLoading', false); });
                   },
                   disabled: npcChatLoading || !npcChatInput.trim(),
