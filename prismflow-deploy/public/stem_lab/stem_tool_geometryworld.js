@@ -1123,6 +1123,8 @@
       var npcChatInput = d.npcChatInput || '';
       var npcChatHistory = d.npcChatHistory || {};
       var npcChatLoading = d.npcChatLoading || false;
+      var npcTypewriterPos = d.npcTypewriterPos || 0;
+      var npcTypewriterNpc = d.npcTypewriterNpc || -1; // which NPC the typewriter is for
       var showHelp = d.showHelp || false;
       var creatorMode = d.creatorMode || false;
       var creatorNpcName = d.creatorNpcName || '';
@@ -1554,6 +1556,36 @@
           return tex;
         }
 
+        function makeWoodTexture() {
+          if (_procTexCache.wood) return _procTexCache.wood;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          // Base wood color
+          ctx.fillStyle = '#8D6E63'; ctx.fillRect(0, 0, 64, 64);
+          // Wood grain lines (horizontal, slightly curved)
+          ctx.strokeStyle = 'rgba(90,50,30,0.35)'; ctx.lineWidth = 1;
+          for (var g = 0; g < 12; g++) {
+            var gy = g * 5.5 + Math.random() * 2;
+            ctx.beginPath(); ctx.moveTo(0, gy);
+            ctx.bezierCurveTo(16, gy + Math.random() * 3 - 1.5, 48, gy + Math.random() * 3 - 1.5, 64, gy + Math.random() * 2 - 1);
+            ctx.stroke();
+          }
+          // Knot (occasional dark oval)
+          if (Math.random() > 0.5) {
+            ctx.fillStyle = 'rgba(70,40,20,0.4)';
+            ctx.beginPath(); ctx.ellipse(20 + Math.random() * 24, 20 + Math.random() * 24, 4, 6, Math.random(), 0, Math.PI * 2); ctx.fill();
+          }
+          // Subtle noise
+          for (var n = 0; n < 60; n++) {
+            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.04)' : 'rgba(255,200,150,0.04)';
+            ctx.fillRect(Math.random() * 64, Math.random() * 64, 2, 2);
+          }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          _procTexCache.wood = tex;
+          return tex;
+        }
+
         // Block material cache — avoids creating duplicate materials per type
         engine._matCache = {};
         function getBlockMaterial(type) {
@@ -1566,6 +1598,8 @@
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.15, metalness: 0.35, envMapIntensity: 1.2 });
           } else if (type === 'gold') {
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.7 });
+          } else if (type === 'wood') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeWoodTexture(), roughness: 0.85, metalness: 0.0 });
           } else if (type === 'sand') {
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.95, metalness: 0.0 });
           } else if (type === 'water') {
@@ -2104,7 +2138,7 @@
                 var dist = engine.camera.position.distanceTo(n.body.position);
                 if (dist < minD) { minD = dist; nearest = i; }
               });
-              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest }); sfxNpcChime(); if (tutorialStep === 1 && !tutorialDismissed) upd('tutorialStep', 2); }
+              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); if (tutorialStep === 1 && !tutorialDismissed) upd('tutorialStep', 2); }
               break;
             case 'KeyM':
               engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
@@ -2166,7 +2200,7 @@
             var hit = hits[0];
             if (hit.object.userData.isNPC) {
               if (document.pointerLockElement) document.exitPointerLock();
-              upd({ showNpcDialog: true, dialogNpcIdx: hit.object.userData.npcIndex });
+              upd({ showNpcDialog: true, dialogNpcIdx: hit.object.userData.npcIndex, npcTypewriterPos: 0, npcTypewriterNpc: hit.object.userData.npcIndex });
               sfxNpcChime();
               return;
             }
@@ -2507,8 +2541,15 @@
               if (dist < 6) {
                 var targetRot = Math.atan2(dx, dz);
                 npc.body.rotation.y += (targetRot - npc.body.rotation.y) * Math.min(1, dt * 3);
+                // Head tilt: look slightly toward player's eye level
+                var lookDy = engine.camera.position.y - npc.head.position.y;
+                var headTilt = Math.max(-0.3, Math.min(0.3, lookDy * 0.15));
+                npc.head.rotation.x += (headTilt - npc.head.rotation.x) * Math.min(1, dt * 4);
+                npc.head.rotation.y += (targetRot - npc.head.rotation.y) * Math.min(1, dt * 3);
               } else {
                 npc.body.rotation.y += dt * 0.5;
+                npc.head.rotation.x *= 0.95;
+                npc.head.rotation.y = npc.body.rotation.y;
               }
             } else {
               npc.body.rotation.y += dt * 0.5;
@@ -2984,6 +3025,19 @@
           if (engine._matCache) Object.values(engine._matCache).forEach(function(m) { if (m.dispose) m.dispose(); });
           if (engine.renderer) { engine.renderer.dispose(); }
           delete window[engineKey];
+        }
+      }
+
+      // ── Typewriter effect: auto-advance character position ──
+      if (showNpcDialog && npcTypewriterNpc === dialogNpcIdx) {
+        var eng = window[engineKey];
+        var npcData = eng && eng.npcs && eng.npcs[dialogNpcIdx] && eng.npcs[dialogNpcIdx].data;
+        var dialogueLen = npcData ? (npcData.dialogue || '').length : 0;
+        if (npcTypewriterPos < dialogueLen) {
+          clearTimeout(window._gwTypewriterTimer);
+          window._gwTypewriterTimer = setTimeout(function() {
+            upd('npcTypewriterPos', Math.min(npcTypewriterPos + 2, dialogueLen)); // 2 chars per tick for speed
+          }, 25); // ~80 chars/sec
         }
       }
 
@@ -4044,6 +4098,21 @@
           engine.flyMode && el('div', { style: { background: 'rgba(99,102,241,0.25)', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#a5b4fc', fontWeight: 600 } }, '\uD83D\uDD4A\uFE0F FLY'),
           engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600 } }, '\uD83D\uDCCF GRID')
         ),
+        // ── Undo/Redo indicator ──
+        engine && (engine._undoStack && engine._undoStack.length > 0 || engine._redoStack && engine._redoStack.length > 0) && el('div', {
+          style: { position: 'absolute', bottom: '10px', left: '220px', zIndex: 20, display: 'flex', gap: '4px', alignItems: 'center' }
+        },
+          engine._undoStack && engine._undoStack.length > 0 && el('div', {
+            style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer' },
+            onClick: function() { if (engine.undo) engine.undo(); },
+            title: 'Undo (Ctrl+Z) — ' + engine._undoStack.length + ' actions'
+          }, '\u21A9 ' + engine._undoStack.length),
+          engine._redoStack && engine._redoStack.length > 0 && el('div', {
+            style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer' },
+            onClick: function() { if (engine.redo) engine.redo(); },
+            title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
+          }, '\u21AA ' + engine._redoStack.length)
+        ),
         // ── Block inventory widget (top-right, shows counts per type) ──
         engine && (engine.blocksPlaced || 0) > 0 && el('div', {
           style: { position: 'absolute', top: '48px', right: '8px', zIndex: 19, background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '10px', padding: '8px 10px', fontSize: '10px', maxWidth: '140px' }
@@ -4157,7 +4226,12 @@
             ),
             // Body content
             el('div', { style: { padding: '12px 16px' } },
-            el('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6, marginBottom: homeLang !== 'en' ? '4px' : '10px' } }, data.dialogue),
+            el('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6, marginBottom: homeLang !== 'en' ? '4px' : '10px', minHeight: '20px' } },
+              // Typewriter effect: reveal characters progressively
+              npcTypewriterNpc === dialogNpcIdx && npcTypewriterPos < (data.dialogue || '').length
+                ? el('span', null, (data.dialogue || '').slice(0, npcTypewriterPos), el('span', { style: { opacity: 0.4, animation: 'pulse 0.8s infinite' } }, '\u2588'))
+                : data.dialogue
+            ),
             // Bilingual translation line (click to hear)
             homeLang !== 'en' && translation && el('div', {
               onClick: function() {
