@@ -1133,32 +1133,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               spawnInsect();
             }
 
-            // Emit sonar pulse (E key, costs 2 energy)
+            // ── Wing flap sound (while flying, every 0.4s) ──
+            if (isMoving && !eng.perching) {
+              if (!eng._flapTimer) eng._flapTimer = 0;
+              eng._flapTimer += dt;
+              if (eng._flapTimer > 0.4) {
+                eng._flapTimer = 0;
+                if (typeof beep === 'function') beep(150 + Math.random() * 80, 0.02, 0.015);
+              }
+            }
+
+            // Emit sonar pulse (E key, costs 2 energy) — 3D expanding sphere
             if (eng.keys['KeyE'] && (!eng._lastPulse || t - eng._lastPulse > 0.5) && eng.energy > 2) {
               eng.energy -= 2;
               eng._lastPulse = t;
-              var pulseGeo = new THREE.RingGeometry(0.1, 0.15, 32);
-              var pulseMat = new THREE.MeshBasicMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
+              // Sonar sphere (wireframe sphere instead of flat ring)
+              var pulseGeo = new THREE.SphereGeometry(0.3, 16, 12);
+              var pulseMat = new THREE.MeshBasicMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.6, wireframe: true });
               var pulse = new THREE.Mesh(pulseGeo, pulseMat);
               pulse.position.copy(eng.camera.position);
-              pulse.lookAt(eng.camera.position.clone().add(fwd));
               pulse._born = t;
+              pulse._origin = eng.camera.position.clone();
               pulse._dir = fwd.clone();
               eng.scene.add(pulse);
               eng.pulses.push(pulse);
-              // Sound effect
+              // Sound effect — chirp sweep (like real bat call)
               if (typeof beep === 'function') beep(2000, 0.05, 0.08);
             }
 
-            // Update sonar pulses — expand outward, reveal objects
+            // Update sonar pulses — sphere expands outward from origin, reveal objects
             for (var pi = eng.pulses.length - 1; pi >= 0; pi--) {
               var p = eng.pulses[pi];
               var age = t - p._born;
-              var radius = age * 12; // expands at 12 units/sec
+              var radius = age * 10; // expands at 10 units/sec (sphere radiates from origin)
               p.scale.setScalar(radius);
-              p.material.opacity = Math.max(0, 0.6 - age * 0.4);
-              // Move forward
-              p.position.addScaledVector(p._dir, 12 * dt);
+              p.material.opacity = Math.max(0, 0.5 - age * 0.25);
+              // Sphere stays at origin (expands in place, like real sonar)
+              // but moves slightly forward for visual directional feel
+              p.position.addScaledVector(p._dir, 3 * dt);
 
               // Check proximity to walls — light them up
               eng.walls.forEach(function(w) {
@@ -1246,7 +1258,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   eng.score += foodEnergy;
                   if (addToast) addToast('\uD83E\uDD8B Caught ' + m._type.name + '! +' + foodEnergy + ' energy (' + eng.mothsCaught + ' total)', 'success');
                   if (typeof awardXP === 'function') awardXP('echolocation', 3, 'Caught ' + m._type.name);
-                  if (typeof beep === 'function') beep(1200, 0.06, 0.08);
+                  if (typeof beep === 'function') { beep(1200, 0.06, 0.08); setTimeout(function() { if (typeof beep === 'function') beep(1600, 0.04, 0.06); }, 60); }
+                  // Catch particle burst — satisfying explosion
+                  var catchPos = m.position.clone();
+                  var catchColors = [0x44ff88, 0xffff00, 0x00ffaa, 0xff8844, 0xffffff];
+                  for (var cpi = 0; cpi < 10; cpi++) {
+                    var cpGeo = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+                    var cpMat = new THREE.MeshBasicMaterial({ color: catchColors[cpi % catchColors.length], transparent: true, opacity: 1 });
+                    var cpMesh = new THREE.Mesh(cpGeo, cpMat);
+                    cpMesh.position.copy(catchPos);
+                    cpMesh.userData._age = 0; cpMesh.userData._life = 0.8 + Math.random() * 0.5;
+                    cpMesh.userData._vel = { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.3) * 3, z: (Math.random() - 0.5) * 4 };
+                    eng.scene.add(cpMesh);
+                    if (!eng._catchParticles) eng._catchParticles = [];
+                    eng._catchParticles.push(cpMesh);
+                  }
+                  // Score milestone checks
+                  if (eng.mothsCaught === 5) { if (addToast) addToast('\uD83C\uDF1F 5 insects caught! You\u2019re getting the hang of it!', 'info'); }
+                  if (eng.mothsCaught === 15) { if (addToast) addToast('\u2B50 15 insects! Expert hunter!', 'info'); if (typeof awardXP === 'function') awardXP('echolocation', 10, '15 insects milestone'); }
+                  if (eng.mothsCaught === 30) { if (addToast) addToast('\uD83C\uDFC6 30 insects! Master echolocator!', 'info'); if (typeof awardXP === 'function') awardXP('echolocation', 15, '30 insects milestone'); }
                   // Remove caught insect after brief flash
                   m.material.color.setHex(0xffffff);
                   m.material.opacity = 1;
@@ -1260,6 +1290,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             }
             // Clean up caught moths from array
             eng.moths = eng.moths.filter(function(m) { return !m._caught || m.material.opacity > 0; });
+
+            // ── Update catch particles ──
+            if (eng._catchParticles) {
+              for (var cpi2 = eng._catchParticles.length - 1; cpi2 >= 0; cpi2--) {
+                var cp = eng._catchParticles[cpi2];
+                cp.userData._age += dt;
+                if (cp.userData._age >= cp.userData._life) {
+                  eng.scene.remove(cp); cp.geometry.dispose(); cp.material.dispose();
+                  eng._catchParticles.splice(cpi2, 1); continue;
+                }
+                cp.userData._vel.y -= 5 * dt; // gravity
+                cp.position.x += cp.userData._vel.x * dt;
+                cp.position.y += cp.userData._vel.y * dt;
+                cp.position.z += cp.userData._vel.z * dt;
+                cp.material.opacity = 1 - (cp.userData._age / cp.userData._life);
+              }
+            }
+
+            // ── Perch visual feedback ──
+            if (eng.perching && !eng._perchTint) {
+              eng._perchTint = true;
+              eng.scene.fog.color.setRGB(0.01, 0.02, 0.06); // calm blue tint
+            } else if (!eng.perching && eng._perchTint) {
+              eng._perchTint = false;
+            }
 
             // ── Energy-based visual effects ──
             // Low energy: darken the ambient light
@@ -1327,6 +1382,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 cave3dEngineRef.current.highScore && cave3dEngineRef.current.highScore.score > 0 && h('div', { style: { color: '#7c3aed', fontSize: '9px' } }, '\uD83C\uDFC6 Best: ' + cave3dEngineRef.current.highScore.score + ' (' + (cave3dEngineRef.current.highScore.time || 0) + 's)'),
                 cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)'),
                 eng.survivalTime > 5 && h('div', { style: { color: '#64748b', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1))
+              ),
+              // Tutorial overlay (first 8 seconds)
+              cave3dEngineRef.current && cave3dEngineRef.current.survivalTime < 8 && !cave3dEngineRef.current.gameOver && h('div', {
+                style: { position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', zIndex: 15,
+                  background: 'rgba(0,40,30,0.85)', borderRadius: '12px', padding: '10px 20px', border: '1px solid rgba(0,255,170,0.3)', maxWidth: '280px' }
+              },
+                h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#4ade80', marginBottom: '4px' } }, '\uD83E\uDD87 How to Echolocate:'),
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.5 } },
+                  cave3dEngineRef.current.survivalTime < 3
+                    ? 'Press E to send a sonar pulse. It reveals hidden cave walls and insects!'
+                    : cave3dEngineRef.current.survivalTime < 5
+                    ? 'Fly close to glowing insects to catch them. They restore your energy!'
+                    : 'Press P or land on the floor/ceiling to perch and rest. Energy recharges while perched.'
+                )
               ),
               // Game over overlay
               cave3dEngineRef.current && cave3dEngineRef.current.gameOver && h('div', {
