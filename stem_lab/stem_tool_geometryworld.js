@@ -1146,6 +1146,10 @@
       var aiCurrentPass = d.aiCurrentPass || 0;
       var showMyLessons = d.showMyLessons || false;
       var showLessonEditor = d.showLessonEditor || false;
+      var showLessonIntro = d.showLessonIntro || false;
+      var soundMuted = d.soundMuted || false;
+      var showReflection = d.showReflection || false;
+      var reflectionText = d.reflectionText || '';
       var lessonEditorJson = d.lessonEditorJson || '';
       var aiRefinePrompt = d.aiRefinePrompt || '';
       var lastGeneratedLesson = d.lastGeneratedLesson || null;
@@ -3317,6 +3321,11 @@
         }
       }
 
+      // ── Auto-show lesson intro on first load ──
+      if (threeReady && !worldActive && !showLessonIntro && !d._introShownOnce) {
+        upd({ showLessonIntro: true, _introShownOnce: true });
+      }
+
       // ── Typewriter effect: auto-advance character position ──
       if (showNpcDialog && npcTypewriterNpc === dialogNpcIdx) {
         var eng = window[engineKey];
@@ -3396,6 +3405,19 @@
       }
 
       // ── Multi-pass AI generation handler ──
+      // ── Load a lesson by key (used from intro screen, dropdown, Next Lesson) ──
+      function loadLessonByKey(lessonKey) {
+        var eng = window[engineKey];
+        if (eng && SAMPLE_LESSONS[lessonKey]) {
+          eng.loadLesson(SAMPLE_LESSONS[lessonKey]);
+        } else if (lessonKey && lessonKey.indexOf('ai_') === 0) {
+          var myL = getMyLessons();
+          var found = myL.filter(function(l) { return l._id === lessonKey; })[0];
+          if (found && eng) { eng.loadLesson(found); upd({ lastGeneratedLesson: found, lessonEditorJson: JSON.stringify(found, null, 2) }); }
+        }
+        upd({ showLessonIntro: false, showReflection: false, measureHistory: [] });
+      }
+
       var generateWorld = function() {
         if (!callGemini || !aiPrompt.trim()) return;
         var passes = aiPassCount;
@@ -3616,16 +3638,7 @@
             value: activeLesson,
             onChange: function(ev) {
               var lessonKey = ev.target.value;
-              upd('activeLesson', lessonKey);
-              var eng = window[engineKey];
-              if (eng && SAMPLE_LESSONS[lessonKey]) {
-                eng.loadLesson(SAMPLE_LESSONS[lessonKey]);
-              } else if (lessonKey.indexOf('ai_') === 0) {
-                // Load from My Lessons library
-                var myL = getMyLessons();
-                var found = myL.filter(function(l) { return l._id === lessonKey; })[0];
-                if (found && eng) { eng.loadLesson(found); upd({ lastGeneratedLesson: found, lessonEditorJson: JSON.stringify(found, null, 2) }); }
-              }
+              upd({ activeLesson: lessonKey, showLessonIntro: true, showReflection: false });
             },
             style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
@@ -3669,6 +3682,22 @@
             onClick: function() { upd('showHelp', !showHelp); },
             style: { background: '#1e293b', border: 'none', color: '#94a3b8', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }
           }, showHelp ? 'Hide Help' : '? Help'),
+          // Sound mute toggle
+          el('button', {
+            onClick: function() {
+              var newMuted = !soundMuted;
+              upd('soundMuted', newMuted);
+              // Actually mute/unmute the audio context
+              var ac = getAC();
+              if (ac) {
+                if (newMuted) { ac.suspend(); } else { ac.resume(); }
+              }
+              if (addToast) addToast(newMuted ? '\uD83D\uDD07 Sound muted' : '\uD83D\uDD0A Sound on', 'info');
+            },
+            title: soundMuted ? 'Unmute sounds' : 'Mute all sounds',
+            'aria-label': soundMuted ? 'Unmute sounds' : 'Mute all sounds',
+            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', color: soundMuted ? '#ef4444' : '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
+          }, soundMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
           // Environment preset selector
           el('select', {
             'aria-label': 'Time of day / environment preset',
@@ -4581,8 +4610,81 @@
             ct === 'npc_question' && el('div', { style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, 'Press E')
           );
         })(),
+        // ── Lesson Intro Screen ──
+        showLessonIntro && el('div', {
+          style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40,
+            background: 'linear-gradient(180deg, rgba(15,23,42,0.97) 0%, rgba(30,27,58,0.97) 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto' }
+        },
+          el('div', { style: { maxWidth: '420px', width: '90%', textAlign: 'center' } },
+            el('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83E\uDDF1'),
+            el('div', { style: { fontSize: '22px', fontWeight: 800, color: '#e2e8f0', marginBottom: '6px' } }, currentLesson.title || 'Geometry World'),
+            el('div', { style: { fontSize: '13px', color: '#94a3b8', lineHeight: 1.6, marginBottom: '16px' } }, currentLesson.description || ''),
+            // Objectives preview
+            currentLesson.objectives && el('div', { style: { textAlign: 'left', background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' } },
+              el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px', marginBottom: '6px' } }, '\uD83C\uDFAF Objectives'),
+              currentLesson.objectives.map(function(obj, i) {
+                return el('div', { key: i, style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '3px', fontSize: '11px', color: '#cbd5e1' } },
+                  el('span', { style: { color: '#7c3aed' } }, (i + 1) + '.'),
+                  el('span', null, obj)
+                );
+              })
+            ),
+            // Key formulas
+            el('div', { style: { background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '10px', padding: '10px', marginBottom: '20px', fontSize: '12px', color: '#fbbf24', fontWeight: 600 } },
+              '\uD83D\uDCDD V = L \u00d7 W \u00d7 H \u2022 Area = L \u00d7 W'
+            ),
+            // NPC count
+            el('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '16px' } },
+              (currentLesson.npcs || []).length + ' NPCs \u2022 ' +
+              (currentLesson.npcs || []).filter(function(n) { return n.question; }).length + ' questions \u2022 ' +
+              (currentLesson.structures || []).length + ' structures'
+            ),
+            // Start button
+            el('button', {
+              onClick: function() { loadLessonByKey(activeLesson); },
+              style: { background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff', border: 'none', borderRadius: '12px',
+                padding: '14px 40px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.4)', letterSpacing: '0.5px' }
+            }, '\u25B6\uFE0F Start Lesson'),
+            // Skip intro for returning students
+            el('button', {
+              onClick: function() { loadLessonByKey(activeLesson); },
+              style: { display: 'block', margin: '10px auto 0', background: 'none', border: 'none', color: '#64748b', fontSize: '10px', cursor: 'pointer' }
+            }, 'or press Enter to jump in')
+          )
+        ),
+        // ── Student Reflection Prompt (before Next Lesson) ──
+        showReflection && score >= totalQ && totalQ > 0 && el('div', {
+          style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 36, pointerEvents: 'auto',
+            background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(12px)', border: '2px solid rgba(124,58,237,0.4)', borderRadius: '18px',
+            padding: '24px 28px', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(124,58,237,0.2)' }
+        },
+          el('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '\uD83E\uDD14'),
+          el('div', { style: { fontSize: '16px', fontWeight: 700, color: '#e2e8f0', marginBottom: '4px' } }, 'Quick Reflection'),
+          el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '12px' } }, 'Take a moment to think about what you learned:'),
+          el('textarea', {
+            value: reflectionText,
+            onChange: function(ev) { upd('reflectionText', ev.target.value); },
+            placeholder: 'What was the most interesting thing you discovered? What strategy helped you solve problems?',
+            style: { width: '100%', height: '70px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px', color: '#e2e8f0', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }
+          }),
+          el('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' } },
+            el('button', {
+              onClick: function() {
+                upd('showReflection', false);
+                var eng = window[engineKey];
+                if (eng && eng.logEvent) eng.logEvent('reflection', { text: reflectionText, lesson: currentLesson.title });
+              },
+              style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, reflectionText.trim() ? '\u2705 Save & Continue' : 'Skip'),
+            el('button', {
+              onClick: function() { upd('showReflection', false); },
+              style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px', padding: '8px 16px', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
+            }, 'Skip')
+          )
+        ),
         // ── Lesson Completion overlay with Next Lesson ──
-        score >= totalQ && totalQ > 0 && !showNpcDialog && el('div', {
+        score >= totalQ && totalQ > 0 && !showNpcDialog && !showReflection && el('div', {
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'auto', textAlign: 'center',
             background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '2px solid rgba(251,191,36,0.5)', borderRadius: '20px',
             padding: '24px 32px', maxWidth: '380px', boxShadow: '0 12px 40px rgba(251,191,36,0.2)' }
@@ -4751,6 +4853,8 @@
                           if (newScore >= totalQ && totalQ > 0) {
                             sfxComplete();
                             if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
+                              // Trigger reflection prompt after a delay
+                              setTimeout(function() { upd({ showReflection: true, reflectionText: '' }); }, 5000);
                             if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);
                             if (eng && !eng.completionTriggered) {
                               eng.completionTriggered = true; eng.completionProgress = 0;
@@ -4799,7 +4903,23 @@
                 })
               );
             })(),
-            isAnswered && el('div', { style: { color: '#4ade80', fontWeight: 700, fontSize: '12px' } }, '\u2705 Already answered correctly!'),
+            isAnswered && el('div', { style: { borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: '8px', marginTop: '4px' } },
+              el('div', { style: { color: '#4ade80', fontWeight: 700, fontSize: '12px', marginBottom: '6px' } }, '\u2705 Great job!'),
+              el('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.5, background: 'rgba(34,197,94,0.08)', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(34,197,94,0.15)' } },
+                // Bonus fun fact based on dialogue content
+                data.dialogue.indexOf('volume') >= 0 || data.dialogue.indexOf('Volume') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: The word "volume" comes from Latin "volumen" meaning a roll of papyrus. Ancient mathematicians measured volume by filling containers with water!'
+                  : data.dialogue.indexOf('area') >= 0 || data.dialogue.indexOf('Area') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: The ancient Egyptians used area calculations to resurvey farmland after Nile floods. That\u2019s how geometry (earth-measuring) got its name!'
+                  : data.dialogue.indexOf('layer') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: A stack of 1,000 sheets of paper is about 4 inches tall. Each sheet is a "layer" \u2014 just like counting block layers to find volume!'
+                  : data.dialogue.indexOf('L-block') >= 0 || data.dialogue.indexOf('composite') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: Architects decompose complex buildings into rectangular sections (just like you did!) to calculate materials needed for construction.'
+                  : data.dialogue.indexOf('fraction') >= 0 || data.dialogue.indexOf('half') >= 0
+                  ? '\uD83E\uDDE0 Fun fact: A pizza box is about 1728 cubic inches (12\u00d712\u00d712). If you eat half, you\u2019ve consumed 864 cubic inches of pizza-space!'
+                  : '\uD83E\uDDE0 Fun fact: The largest known rectangular prism building is the Boeing Everett Factory at 472 million cubic feet \u2014 big enough to hold Disneyland!'
+              )
+            ),
             // ── AI Chat with NPC (ask anything) ──
             callGemini && el('div', { style: { marginTop: '10px', borderTop: '1px solid #334155', paddingTop: '8px' } },
               el('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', marginBottom: '4px' } }, '\uD83D\uDCAC Ask ' + data.name + ' anything:'),
