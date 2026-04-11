@@ -3130,6 +3130,40 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     }
     .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* ═══ WCAG 2.1 AA Remediation — Context-Aware Contrast Fixes ═══ */
+    /* Only targets elements on LIGHT backgrounds. Dark container children are excluded
+       via :not() selectors to prevent false-positive "fixes" that would break dark UIs. */
+
+    /* 1. Focus indicators (WCAG 2.4.7) — ALL interactive elements get visible focus */
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+    textarea:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible,
+    summary:focus-visible, details:focus-visible {
+      outline: 2px solid #4f46e5 !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 4px rgba(79,70,229,0.15) !important;
+    }
+
+    /* 2. Hover-only actions must also show on focus-within (WCAG 2.1.1) */
+    .group:focus-within .group-hover\\:opacity-100 { opacity: 1 !important; }
+    .group:focus-within .group-hover\\:visible { visibility: visible !important; }
+
+    /* 3. Reduced motion (WCAG 2.3.3) */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-spin, .animate-pulse, .animate-bounce, .animate-ping,
+      [class*="animate-in"], [class*="slide-in"], [class*="fade-in"], [class*="zoom-in"] {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    /* 4. Minimum touch target size (WCAG 2.5.8) */
+    @media (pointer: coarse) {
+      button, [role="button"], a, input[type="checkbox"], input[type="radio"] {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
   `;
     document.head.appendChild(style);
     const disabledEls = document.querySelectorAll('button[disabled], input[disabled], textarea[disabled]');
