@@ -7018,6 +7018,23 @@ const AlloFlowContent = () => {
   const [isAppReady, setIsAppReady] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [hasSelectedMode, setHasSelectedMode] = useState(false);
+  const [micBannerDismissed, setMicBannerDismissed] = useState(false);
+  const [micPermissionStatus, setMicPermissionStatus] = useState('unknown');
+  const requestMicPermission = useCallback(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { setMicPermissionStatus('unavailable'); setMicBannerDismissed(true); return; }
+    setMicPermissionStatus('requesting');
+    try {
+      const recognition = new SR();
+      recognition.onstart = () => { setMicPermissionStatus('granted'); recognition.stop(); setMicBannerDismissed(true); };
+      recognition.onerror = (event) => {
+        if (event.error === 'not-allowed' || event.error === 'permission-denied') { setMicPermissionStatus('denied'); }
+        else { setMicPermissionStatus('granted'); }
+        setMicBannerDismissed(true);
+      };
+      recognition.start();
+    } catch (e) { setMicPermissionStatus('denied'); setMicBannerDismissed(true); }
+  }, []);
   const [guidedMode, setGuidedMode] = useState(false);
   const [guidedStep, setGuidedStep] = useState(0);
   const GUIDED_STEPS = [
@@ -7729,27 +7746,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7765,7 +7782,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@16b369e/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f17f61/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -54863,6 +54880,74 @@ Return ONLY the plain language summary in ${lang}.`, false);
             <h1 style={{ fontSize: '32px', fontWeight: 900, color: 'white', margin: '0 0 8px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
             <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{t('launch_pad.subtitle')}</p>
           </div>
+          {/* ── Mic Permission Banner ── */}
+          {!micBannerDismissed && (
+            <div style={{
+              maxWidth: '620px', width: '100%', padding: '0 24px', marginBottom: '24px',
+              animation: 'fadeIn 0.5s ease-out',
+            }}>
+              <div style={{
+                backdropFilter: 'blur(20px)',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(129,140,248,0.3)',
+                borderRadius: '20px',
+                padding: '20px 24px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>🎤</span>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>
+                      {t('launch_pad.mic_title') || 'Microphone Setup'}
+                    </p>
+                    <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.7)', margin: 0, lineHeight: '1.5' }}>
+                      {t('launch_pad.mic_desc') || 'Some tools use your microphone for dictation, recording, and voice input.'}
+                    </p>
+                  </div>
+                </div>
+                {_isCanvasEnv && (
+                  <p style={{ fontSize: '10px', color: '#fbbf24', margin: 0, textAlign: 'center', lineHeight: '1.5', fontWeight: 600 }}>
+                    ⚠️ {t('launch_pad.mic_canvas_warning') || 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.'}
+                  </p>
+                )}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <button
+                    onClick={requestMicPermission}
+                    disabled={micPermissionStatus === 'requesting'}
+                    aria-label="Enable microphone access"
+                    style={{
+                      padding: '10px 24px', borderRadius: '14px', border: 'none', cursor: 'pointer',
+                      background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+                      color: 'white', fontSize: '13px', fontWeight: 700,
+                      opacity: micPermissionStatus === 'requesting' ? 0.6 : 1,
+                      transition: 'all 0.2s',
+                      boxShadow: '0 4px 20px rgba(99,102,241,0.4)',
+                    }}
+                  >
+                    {micPermissionStatus === 'requesting' ? '⏳ Requesting...' : '🎤 Enable Microphone'}
+                  </button>
+                  <button
+                    onClick={() => setMicBannerDismissed(true)}
+                    aria-label="Skip microphone setup"
+                    style={{
+                      padding: '10px 24px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.2)',
+                      cursor: 'pointer', background: 'rgba(255,255,255,0.06)',
+                      color: 'rgba(165,180,252,0.8)', fontSize: '13px', fontWeight: 600,
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    Skip for Now
+                  </button>
+                </div>
+                {micPermissionStatus === 'granted' && (
+                  <p style={{ fontSize: '11px', color: '#34d399', margin: 0, fontWeight: 700 }}>✅ Microphone enabled!</p>
+                )}
+                {micPermissionStatus === 'denied' && (
+                  <p style={{ fontSize: '11px', color: '#f87171', margin: 0, fontWeight: 600 }}>Microphone was denied. You can enable it later in browser settings.</p>
+                )}
+              </div>
+            </div>
+          )}
           <div className="lp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', maxWidth: '620px', width: '100%', padding: '0 24px' }}>
             <div className="lp-card" style={{ animationDelay: '0.1s' }} onClick={() => { setHasSelectedMode(true); }}>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }}>🚀</div>
