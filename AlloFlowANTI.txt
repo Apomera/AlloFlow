@@ -155,6 +155,33 @@ if (!window._alloGamepadGlobal) {
     _gpad.cursorMode = false; _gpadCur.style.display = 'none';
     if (_gpad.lastHovered) { try { _gpad.lastHovered.style.outline = ''; } catch(e) {} _gpad.lastHovered = null; }
   }
+  // ── Haptic feedback (vibration) ──
+  // Works on Xbox, PlayStation, Switch Pro controllers. Gracefully no-ops on unsupported hardware.
+  window._alloHaptic = function(type) {
+    try {
+      const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+      let gp = null;
+      for (let i = 0; i < gamepads.length; i++) { if (gamepads[i]) { gp = gamepads[i]; break; } }
+      if (!gp || !gp.vibrationActuator) return;
+      const va = gp.vibrationActuator;
+      switch (type) {
+        case 'tap':       va.playEffect('dual-rumble', { duration: 50,  strongMagnitude: 0.2, weakMagnitude: 0.4 }); break;
+        case 'click':     va.playEffect('dual-rumble', { duration: 30,  strongMagnitude: 0.1, weakMagnitude: 0.3 }); break;
+        case 'bump':      va.playEffect('dual-rumble', { duration: 120, strongMagnitude: 0.7, weakMagnitude: 0.3 }); break;
+        case 'place':     va.playEffect('dual-rumble', { duration: 40,  strongMagnitude: 0.15, weakMagnitude: 0.3 }); break;
+        case 'break':     va.playEffect('dual-rumble', { duration: 80,  strongMagnitude: 0.5, weakMagnitude: 0.2 }); break;
+        case 'correct':   va.playEffect('dual-rumble', { duration: 60,  strongMagnitude: 0.2, weakMagnitude: 0.5 });
+                          setTimeout(() => { try { va.playEffect('dual-rumble', { duration: 60, strongMagnitude: 0.2, weakMagnitude: 0.5 }); } catch(e){} }, 120); break;
+        case 'wrong':     va.playEffect('dual-rumble', { duration: 200, strongMagnitude: 0.4, weakMagnitude: 0.1 }); break;
+        case 'achieve':   [0,120,240].forEach((d2) => { setTimeout(() => { try { va.playEffect('dual-rumble', { duration: 80, strongMagnitude: 0.15 + d2/800, weakMagnitude: 0.4 + d2/600 }); } catch(e){} }, d2); }); break;
+        case 'launch':    va.playEffect('dual-rumble', { duration: 500, strongMagnitude: 0.6, weakMagnitude: 0.3 }); break;
+        case 'echo':      va.playEffect('dual-rumble', { duration: 30,  strongMagnitude: 0.05, weakMagnitude: 0.15 }); break;
+        case 'land':      va.playEffect('dual-rumble', { duration: 150, strongMagnitude: 0.5, weakMagnitude: 0.2 }); break;
+        default:          va.playEffect('dual-rumble', { duration: 40,  strongMagnitude: 0.15, weakMagnitude: 0.2 }); break;
+      }
+    } catch(e) { /* Vibration not supported — graceful no-op */ }
+  };
+
   function _gpadCursorClick() {
     if (!_gpad.cursorMode) return;
     try {
@@ -162,6 +189,7 @@ if (!window._alloGamepadGlobal) {
       if (!el) return;
       _gpadCur.style.width = '20px'; _gpadCur.style.height = '20px';
       setTimeout(() => { _gpadCur.style.width = '28px'; _gpadCur.style.height = '28px'; }, 120);
+      window._alloHaptic('click');
       const target = el.closest('button,a,[role="button"],input,select,textarea,[tabindex]') || el;
       target.focus(); target.click();
       if (window.speechSynthesis) {
@@ -440,6 +468,7 @@ if (!window._alloGamepadGlobal) {
     }
   };
   _gpadPoll();
+  }
 }
 // #endregion --- GLOBAL GAMEPAD ---
 
@@ -7666,27 +7695,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7702,7 +7731,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b201e4/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
