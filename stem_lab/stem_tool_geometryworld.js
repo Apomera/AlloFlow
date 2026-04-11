@@ -1767,7 +1767,7 @@
           mesh.castShadow = true; mesh.receiveShadow = true;
           addBlockEdges(mesh, shapeId);
           var shapeDef = BLOCK_SHAPES.find(function(s) { return s.id === shapeId; }) || BLOCK_SHAPES[0];
-          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot };
+          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks };
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
           pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId });
@@ -1781,10 +1781,20 @@
           }
         };
 
-        engine.removeBlock = function(x, y, z) {
+        engine.removeBlock = function(x, y, z, forceRemove) {
           var key = x + ',' + y + ',' + z;
           var mesh = engine.blocks[key];
           if (mesh) {
+            // Lesson blocks (ground + structures) are indestructible unless force-removed (reset)
+            if (mesh.userData._lessonBlock && !forceRemove) {
+              // Visual feedback: flash the block red briefly
+              if (mesh.material && mesh.material.emissive) {
+                mesh.material.emissive.setHex(0xff0000);
+                setTimeout(function() { try { mesh.material.emissive.setHex(0x000000); } catch(e) {} }, 200);
+              }
+              if (window._alloHaptic) window._alloHaptic('bump');
+              return; // Block is protected
+            }
             // Record type/shape for undo before destroying
             var removedType = mesh.userData.blockType || 'stone';
             var removedShape = mesh.userData.shape || 'cube';
@@ -1951,6 +1961,8 @@
           engine.blocksPlaced = 0;
           if (engine.stars) { engine.scene.remove(engine.stars); engine.stars = null; engine.starsCreated = false; }
           if (engine.congratsSprite) { engine.scene.remove(engine.congratsSprite); engine.congratsSprite = null; engine.congratsCreated = false; }
+          // Place ground and structures as indestructible lesson blocks
+          engine._placingLessonBlocks = true;
           if (lesson.ground) {
             var g = lesson.ground;
             engine.fillBlocks(g.xMin, g.y, g.zMin, g.xMax, g.y, g.zMax, g.type || 'grass');
@@ -1958,6 +1970,7 @@
           if (lesson.structures) lesson.structures.forEach(function(s) {
             if (s.type === 'fill') engine.fillBlocks(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2, s.block);
           });
+          engine._placingLessonBlocks = false;
           if (lesson.npcs) lesson.npcs.forEach(function(n) { engine.createNPC(n); });
           // Smooth camera entry — start high above spawn, swoop down
           if (lesson.spawnPoint) {
@@ -2417,13 +2430,87 @@
           upd('selectedBlock', newIdx);
         }, { passive: false });
 
+        // ── Touch controls (mobile-friendly Minecraft-style) ──
+        engine._touchActive = false;
+        engine._touchLookId = null; // active touch ID for look (right side)
+        engine._touchMoveId = null; // active touch ID for move (left side)
+        engine._touchLookStart = null;
+        engine._touchMoveStart = null;
+        engine._touchMoveVec = { x: 0, z: 0 };
+
+        canvas.addEventListener('touchstart', function(ev) {
+          ev.preventDefault();
+          engine._touchActive = true;
+          engine.isLocked = true; // Treat touch as "locked" for rendering purposes
+          for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+            var touch = ev.changedTouches[ti];
+            var isLeftSide = touch.clientX < window.innerWidth / 2;
+            if (isLeftSide && engine._touchMoveId === null) {
+              engine._touchMoveId = touch.identifier;
+              engine._touchMoveStart = { x: touch.clientX, y: touch.clientY };
+            } else if (!isLeftSide && engine._touchLookId === null) {
+              engine._touchLookId = touch.identifier;
+              engine._touchLookStart = { x: touch.clientX, y: touch.clientY };
+            }
+          }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', function(ev) {
+          ev.preventDefault();
+          for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+            var touch = ev.changedTouches[ti];
+            if (touch.identifier === engine._touchLookId && engine._touchLookStart) {
+              // Look: apply rotation from swipe delta
+              var dx = touch.clientX - engine._touchLookStart.x;
+              var dy = touch.clientY - engine._touchLookStart.y;
+              engine.euler.setFromQuaternion(engine.camera.quaternion);
+              engine.euler.y -= dx * 0.004;
+              engine.euler.x -= dy * 0.004;
+              engine.euler.x = Math.max(-Math.PI * 0.49, Math.min(Math.PI * 0.49, engine.euler.x));
+              engine.camera.quaternion.setFromEuler(engine.euler);
+              engine._touchLookStart = { x: touch.clientX, y: touch.clientY };
+            } else if (touch.identifier === engine._touchMoveId && engine._touchMoveStart) {
+              // Move: compute joystick vector
+              var mx = touch.clientX - engine._touchMoveStart.x;
+              var mz = touch.clientY - engine._touchMoveStart.y;
+              var mag = Math.sqrt(mx * mx + mz * mz);
+              if (mag > 10) {
+                engine._touchMoveVec = { x: mx / mag, z: mz / mag };
+                engine.moveState.forward = mz < -15;
+                engine.moveState.backward = mz > 15;
+                engine.moveState.left = mx < -15;
+                engine.moveState.right = mx > 15;
+              } else {
+                engine._touchMoveVec = { x: 0, z: 0 };
+                engine.moveState.forward = false; engine.moveState.backward = false;
+                engine.moveState.left = false; engine.moveState.right = false;
+              }
+            }
+          }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', function(ev) {
+          for (var ti = 0; ti < ev.changedTouches.length; ti++) {
+            var touch = ev.changedTouches[ti];
+            if (touch.identifier === engine._touchMoveId) {
+              engine._touchMoveId = null; engine._touchMoveStart = null;
+              engine._touchMoveVec = { x: 0, z: 0 };
+              engine.moveState.forward = false; engine.moveState.backward = false;
+              engine.moveState.left = false; engine.moveState.right = false;
+            }
+            if (touch.identifier === engine._touchLookId) {
+              engine._touchLookId = null; engine._touchLookStart = null;
+            }
+          }
+        }, { passive: false });
+
         // ── Block placement preview ghost + break highlight + crosshair targeting ──
         engine._ghostMesh = null;
         engine._highlightMesh = null;
         engine._crosshairTarget = 'none'; // 'none' | 'block' | 'npc' | 'npc_question'
         function updateGhostPreview() {
           var THREE = window.THREE;
-          if (!engine.isLocked || !THREE) {
+          if ((!engine.isLocked && !engine._touchActive) || !THREE) {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
             engine._crosshairTarget = 'none';
@@ -2456,9 +2543,12 @@
             }
             engine._highlightMesh.position.set(hp.x + 0.5, hp.y + 0.5, hp.z + 0.5);
             engine._highlightMesh.visible = true;
+            // Color: red for protected lesson blocks, white for breakable
+            var isProtected = hits[0].object.userData._lessonBlock;
+            engine._highlightMesh.material.color.setHex(isProtected ? 0xff4444 : 0xffffff);
             // Pulse the highlight opacity
             var pulseT = engine.clock.getElapsedTime();
-            engine._highlightMesh.material.opacity = 0.4 + Math.sin(pulseT * 6) * 0.2;
+            engine._highlightMesh.material.opacity = isProtected ? 0.3 : (0.4 + Math.sin(pulseT * 6) * 0.2);
           } else {
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
           }
@@ -3391,7 +3481,7 @@
           el('div', { style: { fontSize: '13px', color: '#94a3b8', maxWidth: '320px', lineHeight: 1.6 } },
             'Geometry World uses a 3D engine with mouse + keyboard controls (WASD, pointer lock). For the best experience, open this on a laptop or desktop computer.'),
           el('div', { style: { fontSize: '11px', color: '#64748b', maxWidth: '280px', lineHeight: 1.5 } },
-            'You can still try it below, but some features (pointer lock, right-click) may not work on mobile browsers.'),
+            'Touch controls are available! Swipe the right side to look, use the left joystick to move, and tap the action buttons to build, break, measure, and talk to NPCs.'),
           el('button', {
             onClick: function() { upd('_mobileDismissed', true); },
             style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' }
@@ -4556,6 +4646,92 @@
             onClick: function() { if (engine.redo) engine.redo(); },
             title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
           }, '\u21AA ' + engine._redoStack.length)
+        ),
+        // ── Mobile touch controls overlay (visible on touch devices) ──
+        isMobile && worldActive && engine && el('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },
+          // Left side: virtual joystick zone indicator
+          el('div', { style: { position: 'absolute', bottom: '80px', left: '20px', width: '100px', height: '100px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' } },
+            el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' } }),
+            el('div', { style: { position: 'absolute', top: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25B2'),
+            el('div', { style: { position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25BC'),
+            el('div', { style: { position: 'absolute', left: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25C0'),
+            el('div', { style: { position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25B6')
+          ),
+          // Right side: action buttons
+          el('div', { style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
+            // Jump button
+            el('button', {
+              onTouchStart: function(ev) { ev.stopPropagation(); if (!engine.flyMode && engine.onGround) { engine.velocity.y = 6; sfxJump(); } else if (engine.flyMode) { engine.moveState.flyUp = true; } },
+              onTouchEnd: function() { engine.moveState.flyUp = false; },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(99,102,241,0.4)', border: '2px solid rgba(99,102,241,0.6)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, '\u2B06\uFE0F'),
+            // Place block button
+            el('button', {
+              onTouchStart: function(ev) {
+                ev.stopPropagation();
+                var THREE2 = window.THREE; if (!THREE2) return;
+                engine.raycaster.setFromCamera(new THREE2.Vector2(0, 0), engine.camera);
+                var h2 = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+                if (h2.length > 0 && h2[0].face) {
+                  var pp = h2[0].object.userData.gridPos; var nn = h2[0].face.normal;
+                  var px = pp.x + Math.round(nn.x), py = pp.y + Math.round(nn.y), pz = pp.z + Math.round(nn.z);
+                  if (Object.keys(engine.blocks).length < MAX_BLOCKS) {
+                    engine.placeBlock(px, py, pz, BLOCK_TYPES[selectedBlock].id, BLOCK_SHAPES[selectedShape].id, blockRotation);
+                    sfxPlace(BLOCK_TYPES[selectedBlock].id);
+                    spawnPlaceParticles(engine, px + 0.5, py + 0.5, pz + 0.5);
+                    engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
+                  }
+                }
+              },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(34,197,94,0.4)', border: '2px solid rgba(34,197,94,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, '\uD83E\uDDF1'),
+            // Break block button
+            el('button', {
+              onTouchStart: function(ev) {
+                ev.stopPropagation();
+                var THREE2 = window.THREE; if (!THREE2) return;
+                engine.raycaster.setFromCamera(new THREE2.Vector2(0, 0), engine.camera);
+                var h2 = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+                if (h2.length > 0 && h2[0].object.userData.gridPos) {
+                  var pp = h2[0].object.userData.gridPos;
+                  engine.removeBlock(pp.x, pp.y, pp.z); sfxBreak(h2[0].object.userData.blockType || 'stone');
+                }
+              },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.4)', border: '2px solid rgba(239,68,68,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, '\u26CF\uFE0F'),
+            // Measure button
+            el('button', {
+              onTouchStart: function(ev) {
+                ev.stopPropagation();
+                var THREE2 = window.THREE; if (!THREE2) return;
+                engine.raycaster.setFromCamera(new THREE2.Vector2(0, 0), engine.camera);
+                var h2 = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+                if (h2.length > 0 && h2[0].object.userData.gridPos) {
+                  var gp = h2[0].object.userData.gridPos;
+                  var m = engine.measureStructure(gp.x, gp.y, gp.z, h2[0].object.userData.blockType);
+                  if (m) { sfxMeasure(); upd('measureResult', m); }
+                }
+              },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(251,191,36,0.4)', border: '2px solid rgba(251,191,36,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, '\uD83D\uDCCF'),
+            // Talk to NPC button
+            el('button', {
+              onTouchStart: function(ev) {
+                ev.stopPropagation();
+                var minD = 5, nearest = -1;
+                engine.npcs.forEach(function(n, i) {
+                  var dist = engine.camera.position.distanceTo(n.body.position);
+                  if (dist < minD) { minD = dist; nearest = i; }
+                });
+                if (nearest >= 0) { upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); }
+                else if (addToast) addToast('No NPC nearby — walk closer!', 'info');
+              },
+              style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(124,58,237,0.4)', border: '2px solid rgba(124,58,237,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            }, '\uD83D\uDDE3\uFE0F')
+          ),
+          // Label hints
+          el('div', { style: { position: 'absolute', bottom: '65px', left: '20px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', width: '100px', pointerEvents: 'none' } }, 'MOVE'),
+          el('div', { style: { position: 'absolute', bottom: '65px', right: '12px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', width: '52px', pointerEvents: 'none' } }, 'ACTIONS')
         ),
         // ── Water submersion blue tint ──
         engine && engine._inWater && el('div', {
