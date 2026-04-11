@@ -17,6 +17,13 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
 
+  // ── Audio (auto-injected) ──
+  var _applabAC = null;
+  function getApplabAC() { if (!_applabAC) { try { _applabAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_applabAC && _applabAC.state === "suspended") { try { _applabAC.resume(); } catch(e) {} } return _applabAC; }
+  function applabTone(f,d,tp,v) { var ac = getApplabAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxApplabClick() { applabTone(600, 0.03, "sine", 0.04); }
+
+
   // ── WCAG Live Region ──
   (function() {
     if (document.getElementById('allo-live-applab')) return;
@@ -100,57 +107,120 @@ window.StemLab = window.StemLab || {
       var _suggestions = useState([]); var suggestions = _suggestions[0]; var setSuggestions = _suggestions[1];
       var _sugLoading = useState(false); var sugLoading = _sugLoading[0]; var setSugLoading = _sugLoading[1];
       var _fullscreen = useState(false); var fullscreen = _fullscreen[0]; var setFullscreen = _fullscreen[1];
+      var _iframeErrors = useState([]); var iframeErrors = _iframeErrors[0]; var setIframeErrors = _iframeErrors[1];
       var iframeRef = useRef(null);
 
-      // ── Generate App ──
+      // ── Clean AI HTML response ──
+      function cleanHtmlResponse(result) {
+        var cleaned = (result || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+        if (!cleaned.toLowerCase().startsWith('<!doctype') && !cleaned.toLowerCase().startsWith('<html')) {
+          var htmlIdx = cleaned.toLowerCase().indexOf('<!doctype');
+          if (htmlIdx === -1) htmlIdx = cleaned.toLowerCase().indexOf('<html');
+          if (htmlIdx > 0) cleaned = cleaned.substring(htmlIdx);
+        }
+        return cleaned;
+      }
+
+      // ── Multi-Agent Generate App (Architect → Builder → Reviewer → Fixer) ──
       var generateApp = useCallback(async function(userPrompt) {
         if (!callGemini || !userPrompt.trim()) return;
         setIsGenerating(true);
-        setGenStep('Designing your app...');
         setShowCode(false);
         try {
           var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
-          var sysPrompt = 'You are an expert web developer creating educational interactive mini-apps.\n\n'
-            + 'Create a complete, self-contained HTML document for: "' + userPrompt.trim() + '"\n\n'
-            + 'Requirements:\n'
-            + '- Grade level: ' + gradeLevel + (isElem ? ' (use simple language, large buttons, bright colors)' : '') + '\n'
-            + '- MUST be a single HTML file with ALL CSS and JavaScript inline (no external dependencies, no CDN links)\n'
-            + '- Make it interactive — sliders, buttons, animations, or user input\n'
-            + '- Use modern CSS (flexbox, gradients, rounded corners, shadows) for a polished look\n'
-            + '- Use HTML5 Canvas for simulations/visualizations where appropriate\n'
-            + '- Include clear labels and educational explanations\n'
-            + '- Mobile-friendly (responsive layout)\n'
-            + '- Use a clean, modern color scheme (not default browser styles)\n'
-            + '- Add a title at the top of the page\n\n'
-            + 'Return ONLY the complete HTML document starting with <!DOCTYPE html> and ending with </html>.\n'
-            + 'Do NOT wrap in markdown code blocks. Do NOT include any explanation text outside the HTML.';
+          var gradeCtx = 'Grade level: ' + gradeLevel + (isElem ? ' (use simple language, large buttons, bright colors)' : '');
 
-          // Check if prompt is long enough to need chunking
-          var result = await callGemini(sysPrompt, false);
+          // ═══ AGENT 1: ARCHITECT — plan the app structure ═══
+          setGenStep('🏗️ Agent 1/4: Architecting...');
+          var planPrompt = 'You are a software architect planning an educational mini-app.\n\n'
+            + 'App request: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\n'
+            + 'Create a concise technical plan:\n'
+            + '1. Key features (3-5 bullet points)\n'
+            + '2. UI layout (what sections, controls, displays)\n'
+            + '3. Core logic (algorithms, data structures, interactions)\n'
+            + '4. Accessibility: keyboard nav, aria-labels, color contrast 4.5:1+\n'
+            + '5. Edge cases to handle\n\n'
+            + 'Be specific and concise. Under 300 words.';
+          var plan = await callGemini(planPrompt, false);
 
-          // Clean the result — strip any markdown wrapper
-          var cleaned = result || '';
-          cleaned = cleaned.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
-          // Ensure it starts with doctype or html tag
-          if (!cleaned.toLowerCase().startsWith('<!doctype') && !cleaned.toLowerCase().startsWith('<html')) {
-            var htmlIdx = cleaned.toLowerCase().indexOf('<!doctype');
-            if (htmlIdx === -1) htmlIdx = cleaned.toLowerCase().indexOf('<html');
-            if (htmlIdx > 0) cleaned = cleaned.substring(htmlIdx);
+          // ═══ AGENT 2: BUILDER — generate code from the plan ═══
+          setGenStep('🔨 Agent 2/4: Building...');
+          var buildPrompt = 'You are an expert web developer building an educational mini-app.\n\n'
+            + 'APP REQUEST: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\n'
+            + 'ARCHITECTURE PLAN:\n' + (plan || '').substring(0, 2000) + '\n\n'
+            + 'REQUIREMENTS:\n'
+            + '- Single HTML file with ALL CSS and JavaScript inline (NO external dependencies, NO CDN links)\n'
+            + '- Interactive: sliders, buttons, animations, user input\n'
+            + '- Modern CSS: flexbox, gradients, rounded corners, shadows, custom properties\n'
+            + '- HTML5 Canvas for simulations/visualizations where appropriate\n'
+            + '- WCAG 2.1 AA accessible:\n'
+            + '  * All interactive elements must have aria-labels\n'
+            + '  * Color contrast minimum 4.5:1 for text\n'
+            + '  * Keyboard navigable (tabindex, focus styles)\n'
+            + '  * Semantic HTML (main, nav, section, button not div)\n'
+            + '  * prefers-reduced-motion respected for animations\n'
+            + '- Mobile-friendly responsive layout (@media queries)\n'
+            + '- Clean modern color scheme with CSS custom properties\n'
+            + '- Educational: clear labels, explanations, tooltips\n'
+            + '- Error handling: graceful fallbacks if Canvas/features unavailable\n'
+            + '- Title at top, footer with "Made with AlloFlow App Lab"\n\n'
+            + 'Return ONLY the complete HTML document. No markdown, no explanation.';
+          var builtHtml = cleanHtmlResponse(await callGemini(buildPrompt, false));
+
+          if (!builtHtml || builtHtml.length < 100) {
+            throw new Error('Builder agent produced empty output');
           }
 
-          if (cleaned.length > 100) {
-            setHtml(cleaned);
-            setEditHtml(cleaned);
-            // Save to history for undo
-            setHistory(function(prev) { return prev.concat([cleaned]); });
-            setHistoryIdx(function(prev) { return prev + 1; });
-            upd('appsGenerated', (d.appsGenerated || 0) + 1);
-            if (awardXP) awardXP('appLab', 15);
-            if (announceToSR) announceToSR('App generated successfully!');
-            addToast && addToast('App created! Interact with it below.', 'success');
+          // ═══ AGENT 3: REVIEWER — check for issues ═══
+          setGenStep('🔍 Agent 3/4: Reviewing...');
+          var reviewPrompt = 'You are a code reviewer checking an educational HTML mini-app for issues.\n\n'
+            + 'Review this code for:\n'
+            + '1. JavaScript errors (syntax, runtime, logic)\n'
+            + '2. CSS issues (broken layouts, missing responsive rules)\n'
+            + '3. Accessibility gaps (missing aria-labels, poor contrast, no keyboard nav)\n'
+            + '4. UX problems (confusing UI, missing instructions, broken interactions)\n'
+            + '5. Educational quality (clear explanations? grade-appropriate?)\n\n'
+            + 'CODE:\n```html\n' + builtHtml.substring(0, 12000) + '\n```\n\n'
+            + 'Return a JSON array of issues found. Each issue: {"type":"error|warning|a11y","description":"what is wrong","fix":"how to fix it"}\n'
+            + 'If the code is perfect, return []. Return ONLY JSON.';
+          var reviewResult = '[]';
+          try {
+            reviewResult = await callGemini(reviewPrompt, true);
+            reviewResult = (typeof reviewResult === 'string' ? reviewResult : JSON.stringify(reviewResult)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+          } catch(e) { reviewResult = '[]'; }
+
+          var issues = [];
+          try { issues = JSON.parse(reviewResult); } catch(e) { issues = []; }
+          if (!Array.isArray(issues)) issues = [];
+
+          // ═══ AGENT 4: FIXER — repair issues if any ═══
+          var finalHtml = builtHtml;
+          if (issues.length > 0) {
+            setGenStep('🔧 Agent 4/4: Fixing ' + issues.length + ' issue(s)...');
+            var issueList = issues.map(function(iss, i) {
+              return (i + 1) + '. [' + (iss.type || 'issue') + '] ' + (iss.description || '') + ' → Fix: ' + (iss.fix || '');
+            }).join('\n');
+            var fixPrompt = 'Fix these issues in the HTML mini-app. Apply each fix precisely.\n\n'
+              + 'ISSUES TO FIX:\n' + issueList + '\n\n'
+              + 'CURRENT CODE:\n```html\n' + builtHtml.substring(0, 15000) + '\n```\n\n'
+              + 'Return the COMPLETE fixed HTML document. No markdown, no explanation.';
+            var fixedResult = cleanHtmlResponse(await callGemini(fixPrompt, false));
+            if (fixedResult && fixedResult.length > builtHtml.length * 0.5) {
+              finalHtml = fixedResult;
+            }
+            addToast && addToast('🔧 Fixed ' + issues.length + ' issue(s) found by code reviewer', 'info');
           } else {
-            addToast && addToast('Generation failed — response too short. Try again.', 'error');
+            setGenStep('✅ Review passed — no issues found!');
           }
+
+          setHtml(finalHtml);
+          setEditHtml(finalHtml);
+          setHistory(function(prev) { return prev.concat([finalHtml]); });
+          setHistoryIdx(function(prev) { return prev + 1; });
+          upd('appsGenerated', (d.appsGenerated || 0) + 1);
+          if (awardXP) awardXP('appLab', 15);
+          if (announceToSR) announceToSR('App generated successfully with multi-agent pipeline!');
+          addToast && addToast('✅ App created! 4-agent pipeline: planned, built, reviewed' + (issues.length > 0 ? ', fixed ' + issues.length + ' issues' : ', passed review') + '.', 'success');
         } catch(err) {
           addToast && addToast('Generation failed: ' + err.message, 'error');
         }
@@ -241,6 +311,24 @@ window.StemLab = window.StemLab || {
         addToast && addToast('HTML file exported!', 'success');
       }, [html, addToast]);
 
+      // ── Import HTML file ──
+      var importHtml = useCallback(function(file) {
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          var content = ev.target.result;
+          if (content && content.length > 50) {
+            setHtml(content);
+            setEditHtml(content);
+            setHistory(function(prev) { return prev.concat([content]); });
+            setHistoryIdx(function(prev) { return prev + 1; });
+            setPrompt(file.name.replace(/\.html?$/i, ''));
+            addToast && addToast('Imported ' + file.name + '!', 'success');
+          }
+        };
+        reader.readAsText(file);
+      }, [addToast]);
+
       // ── Apply code edits ──
       var applyCodeEdit = useCallback(function() {
         if (editHtml !== html) {
@@ -277,6 +365,10 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: function() { setShowCode(!showCode); }, style: btn(showCode ? PURPLE : '#f1f5f9', showCode ? '#fff' : '#374151', false), 'aria-label': 'Toggle code view' }, showCode ? '</> Hide Code' : '</> View Code'),
             h('button', { onClick: saveToGallery, style: btn('#f1f5f9', '#374151', false), title: 'Save to gallery', 'aria-label': 'Save to gallery' }, '💾'),
             h('button', { onClick: exportHtml, style: btn('#f1f5f9', '#374151', false), title: 'Export as HTML file', 'aria-label': 'Export as HTML file' }, '📥'),
+            h('label', { style: Object.assign({}, btn('#f1f5f9', '#374151', false), { cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }), title: 'Import HTML file', 'aria-label': 'Import HTML file' },
+              '📂',
+              h('input', { type: 'file', accept: '.html,.htm', style: { display: 'none' }, onChange: function(ev) { if (ev.target.files && ev.target.files[0]) importHtml(ev.target.files[0]); ev.target.value = ''; } })
+            ),
             h('button', { onClick: function() { setFullscreen(!fullscreen); }, style: btn('#f1f5f9', '#374151', false), 'aria-label': 'Toggle fullscreen' }, fullscreen ? '🗗' : '⛶')
           )
         ),
@@ -379,7 +471,7 @@ window.StemLab = window.StemLab || {
               spellCheck: false, 'aria-label': 'HTML source code editor' })
           ),
 
-          // Preview iframe
+          // Preview iframe with error capture
           h('div', { style: { flex: showCode ? 1 : 1, display: 'flex', flexDirection: 'column', minHeight: fullscreen ? '80vh' : '300px', position: 'relative' } },
             h('iframe', {
               ref: iframeRef,
@@ -387,8 +479,31 @@ window.StemLab = window.StemLab || {
               sandbox: 'allow-scripts',
               title: 'AppLab preview',
               'aria-label': 'Interactive app preview: ' + (prompt || 'generated app'),
-              style: { flex: 1, border: '2px solid #e5e7eb', borderRadius: '12px', background: '#fff', width: '100%' }
+              style: { flex: 1, border: '2px solid #e5e7eb', borderRadius: '12px', background: '#fff', width: '100%' },
+              onLoad: function() {
+                // Inject error listener into iframe to capture runtime errors
+                setIframeErrors([]);
+                try {
+                  var iDoc = iframeRef.current && iframeRef.current.contentWindow;
+                  if (iDoc) {
+                    iDoc.onerror = function(msg, src, line, col) {
+                      setIframeErrors(function(prev) { return prev.concat([{ msg: msg, line: line, col: col }]).slice(-5); });
+                      return true; // prevent default
+                    };
+                  }
+                } catch(e) { /* sandbox may block */ }
+              }
             }),
+            // Error overlay (shows runtime errors from generated app)
+            iframeErrors.length > 0 && h('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(220,38,38,0.95)', color: '#fff', padding: '8px 12px', borderRadius: '0 0 12px 12px', fontSize: '11px', fontFamily: 'monospace', maxHeight: '80px', overflowY: 'auto', zIndex: 10 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
+                h('span', { style: { fontWeight: 'bold' } }, '\u26A0\uFE0F ' + iframeErrors.length + ' error(s) in generated app'),
+                h('button', { onClick: function() { setIframeErrors([]); }, style: { background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '10px' } }, '\u2715')
+              ),
+              iframeErrors.map(function(err, i) {
+                return h('div', { key: i, style: { fontSize: '10px', opacity: 0.9 } }, 'Line ' + (err.line || '?') + ': ' + (err.msg || 'Unknown error'));
+              })
+            ),
             // Enhance bar (below preview)
             h('div', { style: { display: 'flex', gap: '6px', marginTop: '6px', flexShrink: 0 } },
               h('input', { type: 'text', value: enhancePrompt, onChange: function(ev) { setEnhancePrompt(ev.target.value); },
