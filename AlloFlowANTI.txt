@@ -7351,27 +7351,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7387,7 +7387,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c0a0ce9/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d64d86b/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18284,7 +18284,8 @@ Return ONLY valid JSON:
   };
   // STYLE_SEEDS: unified style system (replaces EXPORT_THEMES)
   // Each seed has cssVars (deterministic CSS), promptInstructions (for AI during remediation), and wcagLevel
-  const STYLE_SEEDS = _docPipeline?.STYLE_SEEDS || {
+  // Note: _docPipeline is declared later (let/const TDZ) — access via window to avoid ReferenceError
+  const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
     highContrast: { name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA', cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' } },
     matchOriginal: { name: 'Match Original', emoji: '📎', wcagLevel: 'AA', cssVars: null },
@@ -34558,7 +34559,7 @@ Return ONLY JSON:
                         <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.topic')}</label>
                         <input
                           type="text"
-                          value={sourceTopic} aria-label="Source topic"
+                          value={sourceTopic}
                           onChange={(e) => setSourceTopic(e.target.value)}
                           placeholder={t('wizard.topic_placeholder')}
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
@@ -34736,7 +34737,7 @@ Return ONLY JSON:
                         </label>
                         <input
                           type="text"
-                          value={sourceVocabulary} aria-label="Vocabulary terms"
+                          value={sourceVocabulary}
                           onChange={(e) => setSourceVocabulary(e.target.value)}
                           placeholder={t('wizard.vocab_placeholder')}
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
@@ -34749,7 +34750,7 @@ Return ONLY JSON:
                         </label>
                         <input
                           type="number"
-                          value={sourceLength} aria-label="Target word count"
+                          value={sourceLength}
                           onChange={(e) => setSourceLength(e.target.value)}
                           placeholder="250"
                           step="50"
@@ -35000,7 +35001,7 @@ Return ONLY JSON:
                     <div className="flex gap-2 mb-3" data-help-key="glossary_language_input">
                     <input
                         type="text"
-                        value={languageInput} aria-label="Target language"
+                        value={languageInput}
                         onChange={(e) => setLanguageInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={t('glossary.language_placeholder')}
@@ -36445,7 +36446,7 @@ Return ONLY JSON:
                                     <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
                                         <p className="text-sm font-bold text-amber-800 mb-2">🤔 What is the volume of this rectangular prism?</p>
                                         <div className="flex gap-2 items-center">
-                                            <input type="number" value={cubeAnswer} aria-label="Volume answer"
+                                            <input type="number" value={cubeAnswer}
                                                 onChange={(e) => setCubeAnswer(e.target.value)}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) { const ans = parseInt(cubeAnswer); setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: '✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units' } : { correct: false, msg: '❌ Not quite. Try V = L × W × H' }); } }}
                                                 placeholder="Enter volume..."
@@ -50219,7 +50220,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="px-3 pb-3 pt-1 space-y-3">
                     {/* Branding source */}
                     <div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Brand Colors</div>
+                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Brand Colors</div>
+                      <p className="text-[8px] text-slate-400 mb-1">Where do the colors come from?</p>
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
@@ -50266,8 +50268,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                     {/* Style Seeds — unified pre-remediation style selection */}
                     <div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Style Seed</div>
-                      <p className="text-[8px] text-slate-400 mb-1.5">AI styling applied during remediation — WCAG compliance guaranteed by deterministic sanitizer.</p>
+                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Style Seed</div>
+                      <p className="text-[8px] text-slate-400 mb-1.5">What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.</p>
                       <div className="flex flex-wrap gap-1">
                         {[
                           { id: 'professional', label: '💼 Professional', desc: 'Clean, corporate' },
@@ -54580,7 +54582,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ))}
                   </div>
                   <div className="flex gap-1">
-                    <input type="text" value={exportStylePrompt} aria-label="Custom style description" onChange={(e) => setExportStylePrompt(e.target.value)}
+                    <input type="text" value={exportStylePrompt} onChange={(e) => setExportStylePrompt(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter' && exportStylePrompt.trim()) generateCustomExportStyle(); }}
                       placeholder="Describe a style or click a preset above..."
                       className="flex-1 text-[10px] p-1.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
