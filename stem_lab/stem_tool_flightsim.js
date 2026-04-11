@@ -3694,15 +3694,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var db = d.lastDebrief;
         var mins = Math.floor(db.flightTime / 60);
         var secs = db.flightTime % 60;
-        var grade = db.distance > 100 && db.airports > 0 ? '🌟 Excellent Flight!' : db.distance > 50 ? '✈️ Great Exploration!' : db.flightTime > 120 ? '🛫 Good Practice!' : '📝 Quick Hop';
+        var gradeIcon, gradeText, gradeColor, gradeXP;
+        if (db.distance > 200 && db.airports > 0 && db.bestLanding && db.bestLanding < 200) {
+          gradeIcon = '\uD83C\uDFC6'; gradeText = 'OUTSTANDING — Expert pilot!'; gradeColor = '#fbbf24'; gradeXP = 40;
+        } else if (db.distance > 100 && db.airports > 0) {
+          gradeIcon = '\uD83C\uDF1F'; gradeText = 'Excellent Flight!'; gradeColor = '#fbbf24'; gradeXP = 25;
+        } else if (db.distance > 50) {
+          gradeIcon = '\u2708\uFE0F'; gradeText = 'Great Exploration!'; gradeColor = '#60a5fa'; gradeXP = 15;
+        } else if (db.flightTime > 120) {
+          gradeIcon = '\uD83D\uDEEB'; gradeText = 'Good Practice!'; gradeColor = '#4ade80'; gradeXP = 10;
+        } else {
+          gradeIcon = '\uD83D\uDCDD'; gradeText = 'Quick Hop'; gradeColor = '#94a3b8'; gradeXP = 5;
+        }
+        // Generate educational tip based on flight data
+        var tip = '';
+        if (db.maxAlt < 1000 && db.flightTime > 60) tip = '\uD83D\uDCA1 Try climbing higher! At altitude, you can see more terrain and discover landmarks. Use W to pitch up.';
+        else if (db.maxSpeed > 200 && !db.bestLanding) tip = '\uD83D\uDCA1 You flew fast! Try landing next time — slow to 80 knots near an airport, descend gently, and pitch up just before the runway.';
+        else if (db.distance < 20 && db.flightTime > 60) tip = '\uD83D\uDCA1 Fly further! Use the heading tape at the top to navigate toward airports shown on the mini-map.';
+        else if (db.discovered < 3) tip = '\uD83D\uDCA1 Fly over cities and landmarks to discover them! There are 50+ places to find around the world.';
+        else if (db.bestLanding && db.bestLanding > 400) tip = '\uD83D\uDCA1 Your landing was a bit hard (' + db.bestLanding + ' fpm). Try reducing descent rate before touchdown — flare by pressing W gently just before the runway.';
+        else if (db.bestLanding && db.bestLanding < 100) tip = '\uD83E\uDDC8 Butter landing! (' + db.bestLanding + ' fpm) — you\u2019re a natural. Try a crosswind landing next time!';
+        else tip = '\uD83D\uDCA1 Great flying! Try using the Flight Planner on the menu to plan a route between two airports.';
+
         return h('div', { style: { minHeight: '400px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', padding: '24px', color: '#fff', overflow: 'auto' } },
-          h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '40px', marginBottom: '8px' } }, '📋'),
-            h('div', { style: { fontSize: '22px', fontWeight: 900 } }, 'FLIGHT DEBRIEF'),
-            h('div', { style: { fontSize: '14px', color: '#fbbf24', fontWeight: 700, marginTop: '4px' } }, grade)
+          // Grade card header
+          h('div', { style: { textAlign: 'center', marginBottom: '16px', padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(59,130,246,0.08))', border: '1px solid rgba(255,255,255,0.08)' } },
+            h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, gradeIcon),
+            h('div', { style: { fontSize: '22px', fontWeight: 900, letterSpacing: '1px' } }, 'FLIGHT DEBRIEF'),
+            h('div', { style: { fontSize: '15px', color: gradeColor, fontWeight: 800, marginTop: '6px' } }, gradeText),
+            h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '4px' } }, 'Aircraft: ' + db.aircraft + ' \u2022 +' + gradeXP + ' XP')
           ),
-          // Aircraft used
-          h('div', { style: { textAlign: 'center', fontSize: '12px', color: '#94a3b8', marginBottom: '16px' } }, 'Aircraft: ' + db.aircraft),
+          // Educational tip
+          tip && h('div', { style: { padding: '10px 14px', borderRadius: '10px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: '16px', fontSize: '12px', color: '#a5b4fc', lineHeight: 1.5 } }, tip),
           // Stats grid
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' } },
             [['⏱️', mins + ':' + String(secs).padStart(2, '0'), 'Flight Time'],

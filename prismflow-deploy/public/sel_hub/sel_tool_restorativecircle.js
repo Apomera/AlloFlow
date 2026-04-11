@@ -15,6 +15,15 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // ── Audio + WCAG (auto-injected) ──
+  var _restorAC = null;
+  function getRestorAC() { if (!_restorAC) { try { _restorAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_restorAC && _restorAC.state==="suspended") { try { _restorAC.resume(); } catch(e) {} } return _restorAC; }
+  function restorTone(f,d,tp,v) { var ac=getRestorAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxRestorClick() { restorTone(600,0.03,"sine",0.04); }
+  function sfxRestorSuccess() { restorTone(523,0.08,"sine",0.07); setTimeout(function(){restorTone(659,0.08,"sine",0.07);},70); setTimeout(function(){restorTone(784,0.1,"sine",0.08);},140); }
+  if(!document.getElementById("restor-a11y")){var _s=document.createElement("style");_s.id="restor-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+
+
   // ── Circle process data ──
 
   var CIRCLE_TYPES = [

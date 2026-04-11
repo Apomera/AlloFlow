@@ -16,6 +16,15 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // ── Audio + WCAG (auto-injected) ──
+  var _ethicAC = null;
+  function getEthicAC() { if (!_ethicAC) { try { _ethicAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_ethicAC && _ethicAC.state==="suspended") { try { _ethicAC.resume(); } catch(e) {} } return _ethicAC; }
+  function ethicTone(f,d,tp,v) { var ac=getEthicAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxEthicClick() { ethicTone(600,0.03,"sine",0.04); }
+  function sfxEthicSuccess() { ethicTone(523,0.08,"sine",0.07); setTimeout(function(){ethicTone(659,0.08,"sine",0.07);},70); setTimeout(function(){ethicTone(784,0.1,"sine",0.08);},140); }
+  if(!document.getElementById("ethic-a11y")){var _s=document.createElement("style");_s.id="ethic-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+
+
   // ── Grade-Banded Ethical Frameworks ──
   var FRAMEWORKS_BY_BAND = {
     elementary: [

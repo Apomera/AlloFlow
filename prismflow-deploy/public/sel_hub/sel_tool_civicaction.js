@@ -15,6 +15,15 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // ── Audio + WCAG (auto-injected) ──
+  var _civicAC = null;
+  function getCivicAC() { if (!_civicAC) { try { _civicAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_civicAC && _civicAC.state==="suspended") { try { _civicAC.resume(); } catch(e) {} } return _civicAC; }
+  function civicTone(f,d,tp,v) { var ac=getCivicAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxCivicClick() { civicTone(600,0.03,"sine",0.04); }
+  function sfxCivicSuccess() { civicTone(523,0.08,"sine",0.07); setTimeout(function(){civicTone(659,0.08,"sine",0.07);},70); setTimeout(function(){civicTone(784,0.1,"sine",0.08);},140); }
+  if(!document.getElementById("civic-a11y")){var _s=document.createElement("style");_s.id="civic-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+
+
   // ── Data ──
 
   var TABS = [
