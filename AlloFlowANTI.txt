@@ -135,7 +135,42 @@ async function loadWordAudioBank() {
 // This runs globally — works in STEM Lab, SEL Hub, BehaviorLens, and the main app.
 if (!window._alloGamepadGlobal) {
   window._alloGamepadGlobal = true;
-  const _gpad = { prev: {}, axisKeys: {}, deadzone: 0.2, connected: false, scrollAccum: 0 };
+  const _gpad = { prev: {}, axisKeys: {}, deadzone: 0.2, connected: false, scrollAccum: 0,
+    cursorMode: false, cursorX: 0, cursorY: 0, cursorSpeed: 8, lastHovered: null };
+
+  // ── Visible cursor reticle for spatial pointing ──
+  const _gpadCur = document.createElement('div');
+  _gpadCur.id = 'alloflow-gpad-cursor';
+  _gpadCur.setAttribute('aria-hidden', 'true');
+  _gpadCur.style.cssText = 'position:fixed;width:28px;height:28px;border-radius:50%;border:2px solid #6366f1;background:rgba(99,102,241,0.12);pointer-events:none;z-index:99999;display:none;box-shadow:0 0 8px rgba(99,102,241,0.3);transform:translate(-50%,-50%);transition:width 0.1s,height 0.1s';
+  const _gpadDot = document.createElement('div');
+  _gpadDot.style.cssText = 'position:absolute;top:50%;left:50%;width:4px;height:4px;background:#6366f1;border-radius:50%;transform:translate(-50%,-50%)';
+  _gpadCur.appendChild(_gpadDot);
+  document.body.appendChild(_gpadCur);
+
+  function _gpadShowCursor() {
+    if (!_gpad.cursorMode) { _gpad.cursorMode = true; _gpad.cursorX = window.innerWidth / 2; _gpad.cursorY = window.innerHeight / 2; _gpadCur.style.display = 'block'; }
+  }
+  function _gpadHideCursor() {
+    _gpad.cursorMode = false; _gpadCur.style.display = 'none';
+    if (_gpad.lastHovered) { try { _gpad.lastHovered.style.outline = ''; } catch(e) {} _gpad.lastHovered = null; }
+  }
+  function _gpadCursorClick() {
+    if (!_gpad.cursorMode) return;
+    try {
+      const el = document.elementFromPoint(_gpad.cursorX, _gpad.cursorY);
+      if (!el) return;
+      _gpadCur.style.width = '20px'; _gpadCur.style.height = '20px';
+      setTimeout(() => { _gpadCur.style.width = '28px'; _gpadCur.style.height = '28px'; }, 120);
+      const target = el.closest('button,a,[role="button"],input,select,textarea,[tabindex]') || el;
+      target.focus(); target.click();
+      if (window.speechSynthesis) {
+        const lbl = target.getAttribute('aria-label') || target.title || (target.textContent||'').trim().substring(0,80);
+        if (lbl) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(lbl); u.rate = 1.1; u.volume = 0.7; window.speechSynthesis.speak(u); }
+      }
+    } catch(e) {}
+  }
+
 
   window.addEventListener('gamepadconnected', (e) => {
     _gpad.connected = true;
@@ -191,33 +226,66 @@ if (!window._alloGamepadGlobal) {
     _gpadAxis(gp.axes[1], 'KeyW', 'KeyS', 'ls_y');
     _gpadAxis(gp.axes[0], 'KeyA', 'KeyD', 'ls_x');
 
-    // Right stick → Arrow keys (camera in 3D, scroll in UI)
+    // Right stick: 3D = Arrow keys (camera), UI = cursor mode OR scroll
+    const inCanvas3d = document.activeElement && document.activeElement.tagName === 'CANVAS';
     if (gp.axes.length >= 4) {
-      _gpadAxis(gp.axes[3], 'ArrowUp', 'ArrowDown', 'rs_y');
-      _gpadAxis(gp.axes[2], 'ArrowLeft', 'ArrowRight', 'rs_x');
-      // Also scroll the focused scrollable container with right stick Y
-      if (Math.abs(gp.axes[3]) > _gpad.deadzone) {
-        _gpad.scrollAccum += gp.axes[3] * 4;
-        if (Math.abs(_gpad.scrollAccum) >= 1) {
-          const scrollAmt = Math.round(_gpad.scrollAccum);
-          _gpad.scrollAccum -= scrollAmt;
+      const rsX = gp.axes[2], rsY = gp.axes[3];
+      const rsActive = Math.abs(rsX) > _gpad.deadzone || Math.abs(rsY) > _gpad.deadzone;
+
+      if (inCanvas3d) {
+        // In 3D: arrow keys for camera, no cursor
+        _gpadAxis(rsY, 'ArrowUp', 'ArrowDown', 'rs_y');
+        _gpadAxis(rsX, 'ArrowLeft', 'ArrowRight', 'rs_x');
+        if (_gpad.cursorMode) _gpadHideCursor();
+      } else if (_gpad.cursorMode) {
+        // Cursor mode: move the visible reticle
+        if (rsActive) {
+          _gpad.cursorX = Math.max(0, Math.min(window.innerWidth, _gpad.cursorX + rsX * _gpad.cursorSpeed));
+          _gpad.cursorY = Math.max(0, Math.min(window.innerHeight, _gpad.cursorY + rsY * _gpad.cursorSpeed));
+          _gpadCur.style.left = _gpad.cursorX + 'px';
+          _gpadCur.style.top = _gpad.cursorY + 'px';
+          // Highlight element under cursor
           try {
-            const scrollTarget = document.activeElement?.closest('[style*="overflow"]') || document.querySelector('.overflow-auto, .overflow-y-auto, [style*="overflow"]') || document.scrollingElement;
-            if (scrollTarget) scrollTarget.scrollTop += scrollAmt * 8;
+            const hoverEl = document.elementFromPoint(_gpad.cursorX, _gpad.cursorY);
+            const clickable = hoverEl?.closest('button,a,[role="button"],input,select,textarea,[tabindex]');
+            if (clickable !== _gpad.lastHovered) {
+              if (_gpad.lastHovered) _gpad.lastHovered.style.outline = '';
+              if (clickable) clickable.style.outline = '2px solid #6366f1';
+              _gpad.lastHovered = clickable || null;
+            }
           } catch(e) {}
+        }
+        // Suppress arrow key generation in cursor mode
+      } else {
+        // Tab navigation mode (no cursor): arrow keys + scroll
+        _gpadAxis(rsY, 'ArrowUp', 'ArrowDown', 'rs_y');
+        _gpadAxis(rsX, 'ArrowLeft', 'ArrowRight', 'rs_x');
+        if (Math.abs(rsY) > _gpad.deadzone) {
+          _gpad.scrollAccum += rsY * 4;
+          if (Math.abs(_gpad.scrollAccum) >= 1) {
+            const sa = Math.round(_gpad.scrollAccum); _gpad.scrollAccum -= sa;
+            try { (document.activeElement?.closest('[style*="overflow"]') || document.scrollingElement).scrollTop += sa * 8; } catch(e) {}
+          }
+        }
+        // Auto-activate cursor mode when right stick moves significantly in UI
+        if (rsActive && (Math.abs(rsX) > 0.5 || Math.abs(rsY) > 0.5)) {
+          _gpadShowCursor();
         }
       }
     }
 
     const btns = gp.buttons;
     if (btns.length >= 4) {
-      // A/Cross → Space (jump in 3D) OR Enter (activate button in UI)
+      // A/Cross → cursor click (if cursor mode) OR space/click (otherwise)
       if (_gpadBtnEdge(0, btns[0].pressed)) {
-        const ae = document.activeElement;
-        if (ae && (ae.tagName === 'BUTTON' || ae.tagName === 'A' || ae.getAttribute('role') === 'button')) {
-          ae.click(); // Activate focused button
+        if (_gpad.cursorMode) {
+          _gpadCursorClick();
         } else {
-          _gpadKey('Space', 'keydown');
+          const ae = document.activeElement;
+          if (ae && (ae.tagName === 'BUTTON' || ae.tagName === 'A' || ae.getAttribute('role') === 'button')) {
+            ae.click();
+          } else {
+            _gpadKey('Space', 'keydown');
           setTimeout(() => _gpadKey('Space', 'keyup'), 100);
         }
       }
@@ -254,7 +322,12 @@ if (!window._alloGamepadGlobal) {
       }
     }
     if (btns.length >= 8) {
-      if (_gpadBtnEdge(4, btns[4].pressed)) _gpadKey('KeyQ', 'keydown');  // LB
+      const inCanvas = document.activeElement && document.activeElement.tagName === 'CANVAS';
+      // LB: 3D = cycle tool (Q), UI = open AlloBot chat
+      if (_gpadBtnEdge(4, btns[4].pressed)) {
+        if (inCanvas) { _gpadKey('KeyQ', 'keydown'); }
+        else { window.dispatchEvent(new CustomEvent('alloflow:open-bot')); }
+      }
       if (_gpadBtnEdge(5, btns[5].pressed)) _gpadClick(2);                 // RB → right-click
       // LT → Shift (analog threshold)
       if (btns[6].value > 0.3 && !_gpad.axisKeys['lt']) { _gpadKey('ShiftLeft', 'keydown'); _gpad.axisKeys['lt'] = true; }
@@ -262,8 +335,20 @@ if (!window._alloGamepadGlobal) {
       if (_gpadBtnEdge(7, btns[7].pressed)) _gpadClick(0);                 // RT → left-click
     }
     if (btns.length >= 10) {
-      if (_gpadBtnEdge(8, btns[8].pressed)) _gpadKey('KeyG', 'keydown');   // Select → grid
-      if (_gpadBtnEdge(9, btns[9].pressed)) _gpadKey('KeyF', 'keydown');   // Start → fly
+      const inCanvas2 = document.activeElement && document.activeElement.tagName === 'CANVAS';
+      // Select: 3D = grid, UI = toggle cursor/tab navigation mode
+      if (_gpadBtnEdge(8, btns[8].pressed)) {
+        if (inCanvas2) { _gpadKey('KeyG', 'keydown'); }
+        else {
+          if (_gpad.cursorMode) { _gpadHideCursor(); if (window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Tab navigation'); u.rate = 1.2; window.speechSynthesis.speak(u); } }
+          else { _gpadShowCursor(); if (window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Cursor mode'); u.rate = 1.2; window.speechSynthesis.speak(u); } }
+        }
+      }
+      // Start: 3D = fly toggle (F), UI = open AlloBot chat
+      if (_gpadBtnEdge(9, btns[9].pressed)) {
+        if (inCanvas2) { _gpadKey('KeyF', 'keydown'); }
+        else { window.dispatchEvent(new CustomEvent('alloflow:open-bot')); }
+      }
     }
     // ── L3 (left stick click, index 10) → Read focused element aloud ──
     // Unlike a full screen reader that reads everything, this speaks ONLY the
@@ -7581,27 +7666,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7617,7 +7702,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@89de736/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5b5947a/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -21158,6 +21243,12 @@ ${t('export.readme_json_desc')}`;
           setTimeout(() => udlInputRef.current?.focus(), 100);
       }
   }, [isTeacherMode]);
+  // Gamepad / adaptive controller: listen for custom event to open AlloBot
+  useEffect(() => {
+    const onOpenBot = () => { handleBotClick(); };
+    window.addEventListener('alloflow:open-bot', onOpenBot);
+    return () => window.removeEventListener('alloflow:open-bot', onOpenBot);
+  }, [handleBotClick]);
   const handleAutoFillToggle = (e) => {
       const checked = e.target.checked;
       setIsAutoFillMode(checked);
