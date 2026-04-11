@@ -830,6 +830,7 @@
     var feedbackState = useState('');
     var feedback = feedbackState[0], setFeedback = feedbackState[1];
     var canvasRef = useRef(null);
+    var playerPosRef = useRef({ r: 0, c: 0 });
     var timerRef = useRef(null);
     var monsterTimerRef = useRef(null);
     var inputRef = useRef(null);
@@ -847,7 +848,7 @@
     function startMaze() {
       var newMaze = generateMaze(MAZE_ROWS, MAZE_COLS);
       setMaze(newMaze);
-      setPlayerPos({ r: 0, c: 0 });
+      setPlayerPos({ r: 0, c: 0 }); playerPosRef.current = { r: 0, c: 0 };
       setMonsterPos({ r: 0, c: 0 });
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
@@ -863,7 +864,7 @@
           setMonsterPos(function(mp) {
             // BFS toward player — simple chase AI
             // Just move one step closer (Manhattan distance)
-            var pr = playerPos.r, pc = playerPos.c;
+            var pr = playerPosRef.current.r, pc = playerPosRef.current.c;
             var mr = mp.r, mc = mp.c;
             if (mr < pr) return { r: mr + 1, c: mc };
             if (mr > pr) return { r: mr - 1, c: mc };
@@ -896,7 +897,8 @@
       var ans = parseInt(userInput);
       if (ans === currentProblem.problem.answer) {
         // Correct — move to new cell
-        setPlayerPos({ r: currentProblem.targetR, c: currentProblem.targetC });
+        var newPos = { r: currentProblem.targetR, c: currentProblem.targetC };
+        setPlayerPos(newPos); playerPosRef.current = newPos;
         setCorrect(function(p) { return p + 1; });
         setScore(function(p) { return p + 10; });
         setMoveCount(function(p) { return p + 1; });
@@ -1080,8 +1082,153 @@
       );
     }
 
+    // ── 3D Maze Rendering (Three.js) ──
+    var maze3dRef = useRef(null);
+    var maze3dEngRef = useRef(null);
+    var maze3dAnimRef = useRef(0);
+
+    useEffect(function() {
+      if (mode !== 'playing' || !maze) return;
+      var container = maze3dRef.current;
+      var THREE = window.THREE;
+      if (!container || !THREE) return;
+      if (maze3dEngRef.current) return; // already initialized
+
+      var eng = {};
+      maze3dEngRef.current = eng;
+
+      // Scene
+      eng.scene = new THREE.Scene();
+      eng.scene.background = new THREE.Color(0x0a0a1a);
+      eng.scene.fog = new THREE.Fog(0x0a0a1a, 1, 15);
+
+      // Camera
+      eng.camera = new THREE.PerspectiveCamera(80, container.clientWidth / Math.max(1, container.clientHeight), 0.1, 50);
+      eng.camera.position.set(0.5, 1.2, 0.5);
+
+      // Renderer
+      var cnv = document.createElement('canvas');
+      cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block'; cnv.style.borderRadius = '10px';
+      container.appendChild(cnv);
+      eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+      eng.renderer.setSize(container.clientWidth, container.clientHeight);
+      eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+      // Lighting
+      eng.scene.add(new THREE.AmbientLight(0x222244, 0.3));
+      var torchLight = new THREE.PointLight(0xffaa44, 1.2, 8);
+      torchLight.position.set(0, 2, 0);
+      eng.camera.add(torchLight); // torch follows camera
+      eng.scene.add(eng.camera);
+
+      // Floor
+      var floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.9 });
+      var floor = new THREE.Mesh(new THREE.PlaneGeometry(MAZE_COLS * 2, MAZE_ROWS * 2), floorMat);
+      floor.rotation.x = -Math.PI / 2; floor.position.set(MAZE_COLS, 0, MAZE_ROWS);
+      eng.scene.add(floor);
+
+      // Ceiling
+      var ceil = new THREE.Mesh(new THREE.PlaneGeometry(MAZE_COLS * 2, MAZE_ROWS * 2), new THREE.MeshStandardMaterial({ color: 0x0a0a18, roughness: 0.9 }));
+      ceil.rotation.x = Math.PI / 2; ceil.position.set(MAZE_COLS, 2.5, MAZE_ROWS);
+      eng.scene.add(ceil);
+
+      // Build walls from maze grid
+      var wallMat = new THREE.MeshStandardMaterial({ color: 0x2a2a4a, roughness: 0.8 });
+      for (var r = 0; r < MAZE_ROWS; r++) {
+        for (var c = 0; c < MAZE_COLS; c++) {
+          var cell = maze[r][c];
+          var cx = c * 2 + 1, cz = r * 2 + 1;
+          if (cell.walls.top) {
+            var w = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.5, 0.15), wallMat);
+            w.position.set(cx, 1.25, cz - 1); eng.scene.add(w);
+          }
+          if (cell.walls.bottom) {
+            var w2 = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.5, 0.15), wallMat);
+            w2.position.set(cx, 1.25, cz + 1); eng.scene.add(w2);
+          }
+          if (cell.walls.left) {
+            var w3 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.5, 2.1), wallMat);
+            w3.position.set(cx - 1, 1.25, cz); eng.scene.add(w3);
+          }
+          if (cell.walls.right) {
+            var w4 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.5, 2.1), wallMat);
+            w4.position.set(cx + 1, 1.25, cz); eng.scene.add(w4);
+          }
+        }
+      }
+
+      // Exit marker (golden glow at bottom-right)
+      var exitLight = new THREE.PointLight(0xfbbf24, 1.5, 6);
+      exitLight.position.set((MAZE_COLS - 1) * 2 + 1, 1.5, (MAZE_ROWS - 1) * 2 + 1);
+      eng.scene.add(exitLight);
+      var exitGeo = new THREE.SphereGeometry(0.3, 8, 8);
+      var exitMesh = new THREE.Mesh(exitGeo, new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.6 }));
+      exitMesh.position.copy(exitLight.position); exitMesh.position.y = 0.5;
+      eng.scene.add(exitMesh);
+
+      // Monster mesh (chase mode)
+      if (chaseMode) {
+        var monMat = new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0x880000, emissiveIntensity: 0.5 });
+        eng.monsterMesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.6), monMat);
+        eng.monsterMesh.position.set(1, 0.6, 1);
+        eng.scene.add(eng.monsterMesh);
+        var monLight = new THREE.PointLight(0xff3333, 0.8, 4);
+        monLight.position.set(1, 1.5, 1);
+        eng.monsterMesh.add(monLight);
+      }
+
+      eng.clock = new THREE.Clock();
+      eng.facing = 0; // 0=down(+z), 1=right(+x), 2=up(-z), 3=left(-x)
+
+      function animate() {
+        maze3dAnimRef.current = requestAnimationFrame(animate);
+        var t2 = eng.clock.getElapsedTime();
+        // Position camera at player cell
+        var pr = playerPosRef.current;
+        var targetX = pr.c * 2 + 1, targetZ = pr.r * 2 + 1;
+        eng.camera.position.x += (targetX - eng.camera.position.x) * 0.1;
+        eng.camera.position.z += (targetZ - eng.camera.position.z) * 0.1;
+        eng.camera.position.y = 1.2 + Math.sin(t2 * 3) * 0.03; // subtle bob
+
+        // Exit glow pulse
+        exitMesh.material.opacity = 0.4 + Math.sin(t2 * 3) * 0.2;
+        exitMesh.scale.setScalar(1 + Math.sin(t2 * 2) * 0.15);
+
+        // Monster position
+        if (eng.monsterMesh) {
+          var mp = monsterPos;
+          var mtx = mp.c * 2 + 1, mtz = mp.r * 2 + 1;
+          eng.monsterMesh.position.x += (mtx - eng.monsterMesh.position.x) * 0.08;
+          eng.monsterMesh.position.z += (mtz - eng.monsterMesh.position.z) * 0.08;
+          eng.monsterMesh.position.y = 0.6 + Math.sin(t2 * 5) * 0.1;
+          eng.monsterMesh.rotation.y += 0.02;
+        }
+
+        eng.renderer.render(eng.scene, eng.camera);
+      }
+      animate();
+
+      return function() {
+        cancelAnimationFrame(maze3dAnimRef.current);
+        if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
+        maze3dEngRef.current = null;
+      };
+    }, [mode === 'playing', maze]);
+
+    // Camera facing: update on each move
+    useEffect(function() {
+      var eng = maze3dEngRef.current;
+      if (!eng || !eng.camera) return;
+      // Look in the direction of last move
+      var pr = playerPosRef.current;
+      var lookX = pr.c * 2 + 1, lookZ = pr.r * 2 + 1 + 2; // default: look forward (+z)
+      eng.camera.lookAt(lookX, 1.2, lookZ);
+    }, [playerPos]);
+
+    var has3D = !!window.THREE;
+
     // Playing mode
-    return h('div', { style: { maxWidth: 420, margin: '0 auto', position: 'relative' } },
+    return h('div', { style: { maxWidth: 500, margin: '0 auto', position: 'relative' } },
       // HUD
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: '#f1f5f9', borderRadius: '10px', marginBottom: '6px', fontSize: '11px' } },
         h('span', { style: { color: '#22c55e', fontWeight: 700 } }, '\u2705 ' + correct),
@@ -1090,8 +1237,11 @@
         h('span', { style: { color: '#64748b' } }, '\u23F1 ' + elapsed + 's'),
         chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!')
       ),
-      // Canvas
-      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '2px solid #e2e8f0', display: 'block', imageRendering: 'pixelated' } }),
+      // 3D View (or 2D fallback)
+      has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: '320px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a' } }) :
+      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '2px solid #e2e8f0', display: 'block' } }),
+      // 2D minimap overlay (top-right of 3D view)
+      has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
       // Problem overlay (when at junction)
       currentProblem && h('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px 28px', textAlign: 'center', border: '2px solid #7c3aed', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 10 } },
         h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#e2e8f0', marginBottom: '12px', fontFamily: 'monospace' } }, currentProblem.problem.text + ' = ?'),
@@ -1107,13 +1257,12 @@
       // Arrow buttons (mobile friendly)
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', maxWidth: '160px', margin: '8px auto 0' } },
         h('div'),
-        h('button', { onClick: function() { tryMove('up'); }, style: { padding: '8px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '16px', cursor: 'pointer' } }, '\u25B2'),
+        h('button', { onClick: function() { tryMove('up'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B2'),
         h('div'),
-        h('button', { onClick: function() { tryMove('left'); }, style: { padding: '8px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '16px', cursor: 'pointer' } }, '\u25C0'),
-        h('button', { onClick: function() { tryMove('down'); }, style: { padding: '8px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '16px', cursor: 'pointer' } }, '\u25BC'),
-        h('button', { onClick: function() { tryMove('right'); }, style: { padding: '8px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '16px', cursor: 'pointer' } }, '\u25B6')
+        h('button', { onClick: function() { tryMove('left'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25C0'),
+        h('button', { onClick: function() { tryMove('down'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25BC'),
+        h('button', { onClick: function() { tryMove('right'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B6')
       ),
-      // Instructions
       h('p', { style: { fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '6px' } }, 'Arrow keys or WASD to move \u2022 Solve each problem to advance')
     );
   }
