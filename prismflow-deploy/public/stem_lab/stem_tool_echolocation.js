@@ -868,6 +868,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             eng.scene.add(rwMesh); eng.walls.push(rwMesh);
           }
 
+          // ── Side chamber (branching passage with high-value insects) ──
+          var chamberMat = new THREE.MeshStandardMaterial({ color: 0x1a1a30, roughness: 0.85 });
+          // Entrance (gap in right wall at z=0)
+          // Chamber walls
+          var chamberWalls = [
+            { pos: [14, 3, -2], size: [2, 7, 8] },  // back wall
+            { pos: [14, 3, 6], size: [2, 7, 8] },   // front wall
+            { pos: [18, 3, 2], size: [2, 7, 12] },   // far wall
+            { pos: [10, 3, -2], size: [2, 7, 2] },   // entrance right
+            { pos: [10, 3, 4], size: [2, 7, 2] },    // entrance left
+          ];
+          chamberWalls.forEach(function(cw) {
+            var cwGeo = new THREE.BoxGeometry(cw.size[0], cw.size[1], cw.size[2]);
+            var cwMesh = new THREE.Mesh(cwGeo, chamberMat.clone());
+            cwMesh.position.set(cw.pos[0], cw.pos[1], cw.pos[2]);
+            eng.scene.add(cwMesh); eng.walls.push(cwMesh);
+          });
+          // Chamber floor
+          var chFloor = new THREE.Mesh(new THREE.PlaneGeometry(10, 14), new THREE.MeshStandardMaterial({ color: 0x15152a, roughness: 0.9 }));
+          chFloor.rotation.x = -Math.PI / 2; chFloor.position.set(14, 0.01, 2);
+          eng.scene.add(chFloor);
+          // Glowing crystal (landmark in chamber)
+          var crystalGeo = new THREE.ConeGeometry(0.3, 1.5, 5);
+          var crystalMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x4c1d95, emissiveIntensity: 0.3, roughness: 0.2, metalness: 0.5 });
+          var crystal = new THREE.Mesh(crystalGeo, crystalMat);
+          crystal.position.set(14, 0.75, 2); eng.scene.add(crystal);
+          // Crystal point light (very dim — just enough to hint)
+          var crystalLight = new THREE.PointLight(0x7c3aed, 0.3, 4);
+          crystalLight.position.set(14, 1.5, 2); eng.scene.add(crystalLight);
+          // High-value Luna Moths in the chamber
+          for (var lmi = 0; lmi < 3; lmi++) {
+            spawnInsect({ name: 'Luna Moth', color: 0x88ffcc, energy: 25, size: 0.22, speed: 0.2 });
+            eng.moths[eng.moths.length - 1].position.set(12 + Math.random() * 4, 2 + Math.random() * 2, -1 + Math.random() * 6);
+            eng.moths[eng.moths.length - 1]._baseY = eng.moths[eng.moths.length - 1].position.y;
+          }
+
           // Stalactites (hanging from ceiling)
           for (var si = 0; si < 8; si++) {
             var sGeo = new THREE.ConeGeometry(0.3 + Math.random() * 0.4, 1 + Math.random() * 2, 6);
@@ -1094,6 +1130,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             }
             eng.camera.position.y = Math.max(0.3, Math.min(5.7, eng.camera.position.y));
 
+            // ── Camera head bob (wing rhythm while flying) ──
+            if (isMoving && !eng.perching) {
+              if (!eng._bobPhase) eng._bobPhase = 0;
+              eng._bobPhase += dt * 8; // wing beat frequency
+              eng.camera.position.y += Math.sin(eng._bobPhase) * 0.04;
+              // Subtle lateral sway
+              eng.camera.position.x += Math.sin(eng._bobPhase * 0.5) * 0.008;
+            }
+
             // ── Wall collision: push back if inside any wall mesh ──
             var camPos = eng.camera.position;
             for (var ci = 0; ci < eng.walls.length; ci++) {
@@ -1172,16 +1217,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               // but moves slightly forward for visual directional feel
               p.position.addScaledVector(p._dir, 3 * dt);
 
-              // Check proximity to walls — light them up
+              // Check proximity to walls — light them up + spawn impact point light
               eng.walls.forEach(function(w) {
                 var dist = p.position.distanceTo(w.position);
                 if (dist < radius + 2 && dist > radius - 2) {
-                  // Illuminate wall briefly
+                  // Illuminate wall emissive
                   w.material.emissive = w.material.emissive || new THREE.Color(0);
                   w.material.emissive.setHex(0x1a3a5a);
                   w.material.emissiveIntensity = Math.max(w.material.emissiveIntensity || 0, 0.8 - age * 0.5);
+                  // Spawn brief point light at impact (max 5 active for performance)
+                  if (!eng._impactLights) eng._impactLights = [];
+                  if (eng._impactLights.length < 5 && Math.random() < 0.15) {
+                    var il = new THREE.PointLight(0x00ffaa, 1.5, 6);
+                    il.position.copy(w.position);
+                    il._born = t;
+                    eng.scene.add(il);
+                    eng._impactLights.push(il);
+                  }
                 }
               });
+              // Distance calculation for educational HUD
+              if (!eng._lastEchoDistance && age > 0.1 && radius > 2) {
+                // Find closest wall hit
+                var closestWallDist = Infinity;
+                eng.walls.forEach(function(w) {
+                  var d2 = p._origin.distanceTo(w.position);
+                  if (d2 < closestWallDist) closestWallDist = d2;
+                });
+                if (closestWallDist < 20) {
+                  eng._lastEchoDistance = closestWallDist;
+                  eng._lastEchoTime = (closestWallDist / 343).toFixed(4); // time in seconds at speed of sound
+                  eng._echoDisplayUntil = t + 3; // show for 3 seconds
+                }
+              }
 
               // Check insects — reveal with sonar, then catch by flying close
               eng.moths.forEach(function(m) {
@@ -1210,6 +1278,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 eng.scene.remove(p); p.geometry.dispose(); p.material.dispose();
                 eng.pulses.splice(pi, 1);
               }
+            }
+
+            // Fade and remove impact point lights
+            if (eng._impactLights) {
+              for (var ili = eng._impactLights.length - 1; ili >= 0; ili--) {
+                var il2 = eng._impactLights[ili];
+                var ilAge = t - il2._born;
+                il2.intensity = Math.max(0, 1.5 - ilAge * 3);
+                if (ilAge > 0.5) {
+                  eng.scene.remove(il2); il2.dispose();
+                  eng._impactLights.splice(ili, 1);
+                }
+              }
+            }
+            // Clear echo distance display after timeout
+            if (eng._echoDisplayUntil && t > eng._echoDisplayUntil) {
+              eng._lastEchoDistance = null;
             }
 
             // Fade wall illumination
@@ -1381,7 +1466,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { style: { color: '#94a3b8' } }, '\u23F1 ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
                 cave3dEngineRef.current.highScore && cave3dEngineRef.current.highScore.score > 0 && h('div', { style: { color: '#7c3aed', fontSize: '9px' } }, '\uD83C\uDFC6 Best: ' + cave3dEngineRef.current.highScore.score + ' (' + (cave3dEngineRef.current.highScore.time || 0) + 's)'),
                 cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)'),
-                eng.survivalTime > 5 && h('div', { style: { color: '#64748b', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1))
+                eng.survivalTime > 5 && h('div', { style: { color: '#64748b', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1)),
+                // Echolocation distance calculation (educational)
+                cave3dEngineRef.current._lastEchoDistance && h('div', { style: { marginTop: '4px', background: 'rgba(0,40,30,0.8)', borderRadius: '6px', padding: '4px 6px', border: '1px solid rgba(0,255,170,0.2)' } },
+                  h('div', { style: { color: '#4ade80', fontSize: '9px', fontWeight: 700 } }, '\uD83D\uDCCF Echo Return:'),
+                  h('div', { style: { color: '#94a3b8', fontSize: '8px', fontFamily: 'monospace' } },
+                    'd = ' + cave3dEngineRef.current._lastEchoDistance.toFixed(1) + 'm'),
+                  h('div', { style: { color: '#64748b', fontSize: '7px', fontFamily: 'monospace' } },
+                    't = ' + cave3dEngineRef.current._lastEchoTime + 's'),
+                  h('div', { style: { color: '#475569', fontSize: '7px', fontFamily: 'monospace' } },
+                    'd = v\u00d7t/2 = 343\u00d7' + cave3dEngineRef.current._lastEchoTime + '/2')
+                )
               ),
               // Tutorial overlay (first 8 seconds)
               cave3dEngineRef.current && cave3dEngineRef.current.survivalTime < 8 && !cave3dEngineRef.current.gameOver && h('div', {
@@ -4479,7 +4574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               className: 'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
                 (active
                   ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                  : (isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'))
+                  : (isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-700'))
             }, h('span', { 'aria-hidden': 'true' }, tb.icon), tb.label);
           })
         ),
