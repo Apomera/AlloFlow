@@ -1237,6 +1237,189 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
         if (html.includes('</head>')) return html.replace('</head>', style + '</head>');
         return style + html;
       },
+
+      // ── PHASE 2: Advanced micro-tools ──
+
+      // 24. Fix reading order — reorder HTML elements based on logical flow
+      // Expert provides the correct order as an array of content identifiers
+      fix_reading_order: function(html, p) {
+        if (!p.order || !Array.isArray(p.order) || p.order.length < 2) return html;
+        // Extract sections by id or heading text
+        var sections = [];
+        var remaining = html;
+        // Find all section/div blocks with ids
+        html.replace(/<(section|div|article)([^>]*id=["']([^"']+)["'][^>]*)>([\s\S]*?)<\/\1>/gi, function(match, tag, attrs, id, content, offset) {
+          sections.push({ id: id, match: match, offset: offset });
+        });
+        if (sections.length < 2) return html; // can't reorder without multiple sections
+        // Reorder: for each id in p.order, move that section to the front
+        var reordered = html;
+        var insertPoint = sections[0].offset;
+        var orderedContent = '';
+        p.order.forEach(function(targetId) {
+          var sec = sections.find(function(s) { return s.id === targetId || s.id.indexOf(targetId) >= 0; });
+          if (sec) {
+            orderedContent += sec.match + '\n';
+            reordered = reordered.replace(sec.match, '<!-- reordered: ' + targetId + ' -->');
+          }
+        });
+        // Replace the placeholder markers with the reordered content
+        var firstMarker = reordered.indexOf('<!-- reordered:');
+        if (firstMarker >= 0) {
+          reordered = reordered.substring(0, firstMarker) + orderedContent + reordered.substring(firstMarker).replace(/<!-- reordered: [^>]+ -->\n?/g, '');
+        }
+        return reordered;
+      },
+
+      // 25. Reconstruct form fields from text descriptions
+      // AI detects "Name: ___" or "[ ] checkbox" patterns and creates proper form elements
+      fix_forms: function(html, p) {
+        var modified = html;
+        // Convert text input patterns: "Name: ___" or "Name: _________"
+        modified = modified.replace(/([A-Za-z\s]+):\s*_{3,}/g, function(match, label) {
+          var labelText = label.trim();
+          var fieldId = 'field-' + labelText.toLowerCase().replace(/\s+/g, '-');
+          return '<label for="' + fieldId + '" style="font-weight:bold">' + labelText + ':</label> ' +
+            '<input type="text" id="' + fieldId + '" name="' + fieldId + '" aria-label="' + labelText + '" ' +
+            'style="border:1px solid #999;padding:4px 8px;border-radius:4px;min-width:200px" />';
+        });
+        // Convert checkbox patterns: "[ ]" or "[x]" before text
+        modified = modified.replace(/\[(\s|x|X)?\]\s*([^\n<]+)/g, function(match, checked, labelText) {
+          var isChecked = checked && checked.trim().toLowerCase() === 'x';
+          var fieldId = 'check-' + labelText.trim().substring(0, 20).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer">' +
+            '<input type="checkbox" id="' + fieldId + '"' + (isChecked ? ' checked' : '') + ' aria-label="' + labelText.trim() + '" /> ' +
+            '<span>' + labelText.trim() + '</span></label>';
+        });
+        // Add form wrapper if fields were created and no <form> exists
+        if (modified !== html && !/<form[\s>]/i.test(modified)) {
+          // Wrap the first cluster of form elements
+          var firstInput = modified.indexOf('<input');
+          if (firstInput > 0) {
+            var beforeInput = modified.lastIndexOf('<', firstInput - 1);
+            if (beforeInput >= 0) {
+              // Find the container div/section
+              modified = modified.replace(/<input/, '<form role="form" aria-label="' + (p.formLabel || 'Document form') + '">\n<input');
+              // Add close form after the last input in the cluster
+              var lastInput = modified.lastIndexOf('</label>');
+              if (lastInput > 0) modified = modified.substring(0, lastInput + 8) + '\n</form>' + modified.substring(lastInput + 8);
+            }
+          }
+        }
+        return modified;
+      },
+
+      // 26. Convert math notation to MathML with aria-label fallback
+      fix_math: function(html, p) {
+        var modified = html;
+        // Common math patterns → MathML
+        // Superscripts: x^2, x^n, a^{bc}
+        modified = modified.replace(/(\w)\^(\w)/g, function(m, base, exp) {
+          return '<math aria-label="' + base + ' to the power of ' + exp + '"><msup><mi>' + base + '</mi><mn>' + exp + '</mn></msup></math>';
+        });
+        modified = modified.replace(/(\w)\^\{([^}]+)\}/g, function(m, base, exp) {
+          return '<math aria-label="' + base + ' to the power of ' + exp + '"><msup><mi>' + base + '</mi><mrow><mn>' + exp + '</mn></mrow></msup></math>';
+        });
+        // Subscripts: x_2, H_2O
+        modified = modified.replace(/(\w)_(\w)/g, function(m, base, sub) {
+          return '<math aria-label="' + base + ' sub ' + sub + '"><msub><mi>' + base + '</mi><mn>' + sub + '</mn></msub></math>';
+        });
+        // Fractions: a/b (only when surrounded by spaces or at word boundaries)
+        modified = modified.replace(/(?:^|\s)(\d+)\s*\/\s*(\d+)(?:\s|$|[.,;])/g, function(m, num, den) {
+          return ' <math aria-label="' + num + ' over ' + den + '"><mfrac><mn>' + num + '</mn><mn>' + den + '</mn></mfrac></math> ';
+        });
+        // Square root: sqrt(x), √x
+        modified = modified.replace(/(?:sqrt|√)\(([^)]+)\)/g, function(m, content) {
+          return '<math aria-label="square root of ' + content + '"><msqrt><mi>' + content + '</mi></msqrt></math>';
+        });
+        modified = modified.replace(/√(\w+)/g, function(m, content) {
+          return '<math aria-label="square root of ' + content + '"><msqrt><mi>' + content + '</mi></msqrt></math>';
+        });
+        // Plus/minus/equals with proper mo elements (only if inside math context or if p.wrapAll)
+        if (p && p.wrapAll) {
+          modified = modified.replace(/(\d+)\s*([+\-×÷=≤≥≠])\s*(\d+)/g, function(m, a, op, b) {
+            var spoken = a + ' ' + ({'+':'plus','-':'minus','×':'times','÷':'divided by','=':'equals','≤':'is less than or equal to','≥':'is greater than or equal to','≠':'is not equal to'}[op] || op) + ' ' + b;
+            return '<math aria-label="' + spoken + '"><mn>' + a + '</mn><mo>' + op + '</mo><mn>' + b + '</mn></math>';
+          });
+        }
+        return modified;
+      },
+
+      // 27. Fix non-text contrast (borders, outlines, focus indicators)
+      fix_nontext_contrast: function(html, p) {
+        var modified = html;
+        // Inject focus indicator styles (WCAG 2.4.7 + 1.4.11)
+        var focusCSS = '<style id="alloflow-nontext-contrast">' +
+          '/* WCAG 1.4.11: Non-text contrast — 3:1 minimum */\n' +
+          'a:focus, button:focus, input:focus, select:focus, textarea:focus, [tabindex]:focus { ' +
+            'outline: 3px solid #2563eb !important; outline-offset: 2px !important; box-shadow: 0 0 0 4px rgba(37,99,235,0.25) !important; }\n' +
+          'input, select, textarea { border: 1px solid #6b7280 !important; }\n' +
+          'input:hover, select:hover, textarea:hover { border-color: #374151 !important; }\n' +
+          'table, th, td { border-color: #6b7280 !important; }\n' +
+          'hr { border-color: #9ca3af !important; }\n' +
+          // Fix light borders that fail 3:1
+          'img { border-color: #6b7280 !important; }\n' +
+          '</style>';
+        if (modified.includes('</head>')) {
+          modified = modified.replace('</head>', focusCSS + '</head>');
+        } else {
+          modified = focusCSS + modified;
+        }
+        // Fix inline border styles that are too light
+        modified = modified.replace(/border(?:-[a-z]+)?:\s*\d+px\s+solid\s+(#[a-fA-F0-9]{3,8}|rgb[a]?\([^)]+\))/gi, function(match, color) {
+          // Parse color and check luminance
+          var hex = color.replace('#', '');
+          if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+          if (hex.length >= 6) {
+            var r = parseInt(hex.substring(0, 2), 16) / 255;
+            var g = parseInt(hex.substring(2, 4), 16) / 255;
+            var b = parseInt(hex.substring(4, 6), 16) / 255;
+            var lum = 0.2126 * (r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4)) +
+                      0.7152 * (g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4)) +
+                      0.0722 * (b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4));
+            // If border is too light (luminance > 0.5), darken it
+            if (lum > 0.5) {
+              return match.replace(color, '#6b7280');
+            }
+          }
+          return match;
+        });
+        return modified;
+      },
+
+      // 28. Add responsive reflow CSS (WCAG 1.4.10)
+      fix_reflow: function(html) {
+        var reflowCSS = '<style id="alloflow-reflow">' +
+          '/* WCAG 1.4.10: Reflow — content readable at 320px without horizontal scroll */\n' +
+          '@media (max-width: 640px) {\n' +
+          '  body { padding: 0.5rem !important; max-width: 100% !important; font-size: 14px !important; }\n' +
+          '  img { max-width: 100% !important; height: auto !important; }\n' +
+          '  table { display: block; overflow-x: auto; max-width: 100%; font-size: 0.85em; }\n' +
+          '  .grid { display: block !important; }\n' +
+          '  .grid > * { margin-bottom: 0.5rem; }\n' +
+          '  pre, code { white-space: pre-wrap !important; word-break: break-word !important; }\n' +
+          '  h1 { font-size: 1.4rem !important; } h2 { font-size: 1.2rem !important; } h3 { font-size: 1.05rem !important; }\n' +
+          '}\n' +
+          '@media (max-width: 320px) {\n' +
+          '  body { padding: 0.25rem !important; font-size: 13px !important; }\n' +
+          '  table { font-size: 0.75em; }\n' +
+          '  .section { padding: 0.5rem !important; }\n' +
+          '}\n' +
+          '/* Fluid widths */\n' +
+          'img, video, iframe, object, embed { max-width: 100%; height: auto; }\n' +
+          'table { max-width: 100%; }\n' +
+          '</style>';
+        // Replace fixed-width inline styles
+        var modified = html.replace(/width:\s*\d{3,}px/gi, function(match) {
+          return 'max-width: 100%';
+        });
+        if (modified.includes('</head>')) {
+          modified = modified.replace('</head>', reflowCSS + '</head>');
+        } else {
+          modified = reflowCSS + modified;
+        }
+        return modified;
+      },
     };
 
     // Run surgical diagnosis (1 API call) + deterministic execution
@@ -1282,6 +1465,12 @@ Return ONLY the complete HTML document (<!DOCTYPE html> to </html>).`;
           '- fix_table_header_row: { "tool": "fix_table_header_row", "index": <table# 0-based> }\n' +
           '- fix_list_wrap: { "tool": "fix_list_wrap", "ordered": false }\n' +
           '- fix_skip_nav: { "tool": "fix_skip_nav" }\n\n' +
+          'ADVANCED FIXES:\n' +
+          '- fix_reading_order: { "tool": "fix_reading_order", "order": ["section-id-1", "section-id-2"] } — reorder sections by ID\n' +
+          '- fix_forms: { "tool": "fix_forms" } — convert text input patterns (Name: ___) to accessible form fields\n' +
+          '- fix_math: { "tool": "fix_math" } — convert math notation (x^2, fractions) to MathML with aria-labels\n' +
+          '- fix_nontext_contrast: { "tool": "fix_nontext_contrast" } — fix borders, focus indicators, UI contrast\n' +
+          '- fix_reflow: { "tool": "fix_reflow" } — add responsive CSS for WCAG 1.4.10 reflow at 320px\n\n' +
           'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' +
           'Return ONLY a valid JSON array, no explanation or markdown.', true);
 
@@ -2738,8 +2927,11 @@ ${currentHtml.substring(0, 20000)}
       '- fix_skip_nav: {} (no params)\n' +
       '- fix_lang: {lang: "en"}\n' +
       '- fix_input_label: {index: N, label: "text"}\n' +
-      '- fix_math: {index: N} (detect and convert math notation)\n' +
-      '- fix_reflow: {} (add responsive CSS)\n\n' +
+      '- fix_math: {} (convert x^2, fractions, sqrt to MathML with aria-labels)\n' +
+      '- fix_nontext_contrast: {} (fix borders, focus indicators, UI element contrast)\n' +
+      '- fix_reflow: {} (add responsive CSS for 320px reflow)\n' +
+      '- fix_reading_order: {order: ["id1","id2"]} (reorder sections by ID)\n' +
+      '- fix_forms: {} (convert text patterns like "Name: ___" to accessible form fields)\n\n' +
       'EXPERT COMMAND: "' + command + '"\n\n' +
       'HTML PREVIEW (first 1500 chars):\n' + currentHtml.substring(0, 1500) + '\n\n' +
       'Return ONLY JSON:\n' +
