@@ -1160,6 +1160,9 @@
       var creatorNpcCorrect = d.creatorNpcCorrect || 0;
       var showCreatorPanel = d.showCreatorPanel || false;
       var selectedShape = d.selectedShape || 0; // index into BLOCK_SHAPES
+      var blockRotation = d.blockRotation || 0; // 0-3 = 0°, 90°, 180°, 270° around Y axis
+      var measureHistory = d.measureHistory || []; // past measurements
+      var actionFeedback = d.actionFeedback || ''; // brief key action text
       var homeLang = d.homeLang || 'en';
       var npcTranslations = d.npcTranslations || {};
       var consecutiveWrong = d.consecutiveWrong || 0;
@@ -1732,10 +1735,11 @@
         };
 
         // Block operations
-        engine.placeBlock = function(x, y, z, type, shape) {
+        engine.placeBlock = function(x, y, z, type, shape, rotation) {
           var key = x + ',' + y + ',' + z;
           if (engine.blocks[key]) return;
           var shapeId = shape || 'cube';
+          var rot = rotation || 0; // 0-3 = 0°, 90°, 180°, 270°
           var geo = createShapeGeometry(shapeId);
           var mat = getBlockMaterial(type);
           var mesh = new THREE.Mesh(geo, mat);
@@ -1743,14 +1747,18 @@
           if (shapeId === 'halfB') {
             mesh.position.set(x + 0.5, y + 0.25, z + 0.5);
           } else if (shapeId === 'halfA' || shapeId === 'quarter') {
-            mesh.position.set(x, y, z); // origin-based geometry
+            mesh.position.set(x + 0.5, y, z + 0.5); // center for rotation
           } else {
             mesh.position.set(x + 0.5, y + 0.5, z + 0.5);
+          }
+          // Apply rotation (Y-axis, 90° increments) for non-cube shapes
+          if (rot > 0 && shapeId !== 'cube') {
+            mesh.rotation.y = rot * Math.PI / 2;
           }
           mesh.castShadow = true; mesh.receiveShadow = true;
           addBlockEdges(mesh, shapeId);
           var shapeDef = BLOCK_SHAPES.find(function(s) { return s.id === shapeId; }) || BLOCK_SHAPES[0];
-          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume };
+          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot };
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
           pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId });
@@ -1952,7 +1960,18 @@
           // Reset undo stacks on lesson load
           engine._undoStack = [];
           engine._redoStack = [];
-          upd({ totalQ: (lesson.npcs || []).filter(function(n) { return n.question; }).length, score: 0, answeredNpcs: {}, worldActive: true });
+          var totalQCount = (lesson.npcs || []).filter(function(n) { return n.question; }).length;
+          // Restore saved progress for this lesson (if any)
+          var progressKey = 'gw_progress_' + (lesson.title || 'untitled').replace(/\W+/g, '_').toLowerCase();
+          var savedProgress = null;
+          try { savedProgress = JSON.parse(localStorage.getItem(progressKey)); } catch(e) {}
+          if (savedProgress && savedProgress.score > 0) {
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, worldActive: true });
+            if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
+          } else {
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, worldActive: true });
+          }
+          engine._progressKey = progressKey;
         };
 
         // Measure connected blocks
@@ -2210,7 +2229,11 @@
                 var m = engine.measureStructure(gp.x, gp.y, gp.z, hits[0].object.userData.blockType);
                 if (m) {
                   sfxMeasure();
-                  upd('measureResult', m);
+                  // Save to measurement history (last 10)
+                  var mh = (d.measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.hasFractions ? m.formattedVolume : m.boundingVolume, blocks: m.count, t: Date.now() }]);
+                  if (mh.length > 10) mh = mh.slice(-10);
+                  upd({ measureResult: m, measureHistory: mh, actionFeedback: '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) });
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2500);
                   // Show 3D dimension lines + selection glow around the measured structure
                   if (engine._dimTimer) clearTimeout(engine._dimTimer);
                   showDimLines(m, m.minX, m.minY, m.minZ);
@@ -2234,7 +2257,15 @@
               if (BLOCK_TYPES.length >= 10) upd('selectedBlock', 9);
               break;
             case 'KeyQ': // Cycle through shapes
-              upd('selectedShape', (selectedShape + 1) % BLOCK_SHAPES.length);
+              upd({ selectedShape: (selectedShape + 1) % BLOCK_SHAPES.length, blockRotation: 0 });
+              upd('actionFeedback', 'Shape: ' + BLOCK_SHAPES[(selectedShape + 1) % BLOCK_SHAPES.length].name);
+              setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+              break;
+            case 'KeyR': // Rotate block 90° (for half/quarter shapes)
+              var newRot = (blockRotation + 1) % 4;
+              upd('blockRotation', newRot);
+              upd('actionFeedback', 'Rotate: ' + (newRot * 90) + '\u00b0');
+              setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
             case 'KeyZ':
@@ -2283,7 +2314,7 @@
               var n = hit.face.normal;
               var placeX = p.x + Math.round(n.x), placeY = p.y + Math.round(n.y), placeZ = p.z + Math.round(n.z);
               var placeType = BLOCK_TYPES[selectedBlock].id;
-              engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[selectedShape].id);
+              engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[selectedShape].id, blockRotation);
               sfxPlace(placeType);
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
@@ -3845,7 +3876,8 @@
             el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Y'), 'Redo',
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, '2\u00d7Space'), 'Toggle fly (or F key)',
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'G'), 'Toggle grid',
-            el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)'
+            el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)',
+            el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'R'), 'Rotate shape 90\u00b0'
           ),
           el('div', { style: { fontWeight: 700, color: '#22d3ee', marginBottom: '4px', fontSize: '12px' } }, '\uD83D\uDCCF Formulas'),
           el('div', { style: { background: '#0c4a6e', borderRadius: '6px', padding: '6px 8px', marginBottom: '8px', fontFamily: 'monospace', fontSize: '11px' } },
@@ -4144,6 +4176,12 @@
         // Shape selector (above block toolbar) — matching glass style
         el('div', { style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
           el('span', { style: { fontSize: '9px', color: '#6b7280', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
+          // Rotation badge (only when non-cube shape selected)
+          selectedShape > 0 && el('span', {
+            style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#475569', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
+            onClick: function() { upd('blockRotation', (blockRotation + 1) % 4); },
+            title: 'Click or press R to rotate (' + (blockRotation * 90) + '\u00b0)'
+          }, '\u21BB' + (blockRotation > 0 ? blockRotation * 90 + '\u00b0' : '')),
           BLOCK_SHAPES.map(function(bs, i) {
             return el('div', {
               key: bs.id,
@@ -4243,6 +4281,33 @@
             onClick: function() { if (engine.redo) engine.redo(); },
             title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
           }, '\u21AA ' + engine._redoStack.length)
+        ),
+        // ── Action feedback toast (center-bottom, fades in/out) ──
+        actionFeedback && el('div', {
+          style: { position: 'absolute', bottom: '135px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
+            background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '10px',
+            padding: '6px 16px', fontSize: '12px', color: '#e2e8f0', fontWeight: 600, whiteSpace: 'nowrap',
+            animation: 'fadeIn 0.2s ease-out' }
+        }, actionFeedback),
+        // ── Block rotation indicator (near shape selector) ──
+        blockRotation > 0 && selectedShape > 0 && el('div', {
+          style: { position: 'absolute', bottom: '80px', left: '50%', transform: 'translateX(-50%) translateX(80px)', zIndex: 20, pointerEvents: 'none',
+            background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '6px',
+            padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600 }
+        }, '\u21BB ' + (blockRotation * 90) + '\u00b0 (R)'),
+        // ── Measurement history panel (bottom-left, above position HUD) ──
+        measureHistory.length > 0 && el('div', {
+          style: { position: 'absolute', bottom: '80px', left: '8px', zIndex: 19,
+            background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '8px',
+            padding: '6px 8px', fontSize: '9px', color: '#94a3b8', maxWidth: '150px' }
+        },
+          el('div', { style: { fontWeight: 700, fontSize: '8px', color: '#64748b', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS'),
+          measureHistory.slice(-5).reverse().map(function(mh, mi) {
+            return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#64748b', fontWeight: mi === 0 ? 600 : 400 } },
+              el('span', null, mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
+              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#475569' } }, '=' + mh.vol)
+            );
+          })
         ),
         // ── Block inventory widget (top-right, shows counts per type) ──
         engine && (engine.blocksPlaced || 0) > 0 && el('div', {
@@ -4432,6 +4497,8 @@
                           newAnswered[dialogNpcIdx] = true;
                           var newScore = score + 1;
                           upd({ score: newScore, answeredNpcs: newAnswered });
+                          // Auto-save progress to localStorage
+                          try { var pk = eng && eng._progressKey; if (pk) localStorage.setItem(pk, JSON.stringify({ score: newScore, answeredNpcs: newAnswered, npcFollowUpStep: npcFollowUpStep })); } catch(e) {}
                           if (addToast) addToast('\u2705 Correct! +1', 'success');
                           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
                           if (typeof announceToSR === 'function') announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
