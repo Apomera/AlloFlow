@@ -7746,27 +7746,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -7782,7 +7782,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@651fb6e/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@96e493b/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -31578,7 +31578,7 @@ Return ONLY JSON:
                     addToast(`Failed to fetch ${name}: ${err.message}. The file may require LMS authentication.`, 'error');
                   }
                 }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5">
-                  <span className="bg-white/20 px-1 py-0.5 rounded text-[9px] font-bold">{name.split('.').pop()?.toUpperCase() || 'FILE'}</span>
+                  <span className="bg-white/20 px-1 py-0.5 rounded text-[10px] font-bold">{name.split('.').pop()?.toUpperCase() || 'FILE'}</span>
                   <span className="max-w-[200px] truncate">{name}</span>
                 </button>
               );
@@ -32439,7 +32439,7 @@ Return ONLY JSON:
                                                     <label className="text-xs font-bold flex items-center gap-1 text-slate-500 dark:text-slate-500">{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
                                                     <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{readingTheme === 'default' ? 'Default' : readingTheme}</span>
                                                 </div>
-                                                <p className="text-[9px] text-slate-600 mb-2">{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
+                                                <p className="text-[10px] text-slate-600 mb-2">{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
                                                 <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Reading theme">
                                                     {[
                                                         { id: 'default', label: 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
@@ -32461,7 +32461,7 @@ Return ONLY JSON:
                                                             style={{ background: th.bg, color: th.fg, borderColor: isActive ? '#6366f1' : th.border }}
                                                         >
                                                             <span className="text-sm leading-none">{th.emoji}</span>
-                                                            <span className="text-[8px] font-bold leading-none" style={{ color: th.fg }}>{th.label}</span>
+                                                            <span className="text-[10px] font-bold leading-none" style={{ color: th.fg }}>{th.label}</span>
                                                         </button>;
                                                     })}
                                                 </div>
@@ -32975,7 +32975,7 @@ Return ONLY JSON:
                                     <div className="text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5">{"\ud83d\udcc4"} Documents</div>
                                     <button role="menuitem" onClick={() => openExportPreview('print')} className="w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1">{"\ud83d\udee0\ufe0f"} Document Builder</button>
                                     {customExportCSS && <div className="text-[11px] text-green-600 font-medium px-2 mb-1">✓ Custom style active</div>}
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcc4"} Print & PDF</div>
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcc4"} Print & PDF</div>
                                     <button role="menuitem"
                                         aria-label="Open Document Builder for PDF"
                                         onClick={() => openExportPreview('print')}
@@ -32991,7 +32991,7 @@ Return ONLY JSON:
                                     >
                                         <FileText size={14} /> {t('export_menu.worksheet')}
                                     </button>
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcbb"} Digital Formats</div>
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcbb"} Digital Formats</div>
                                     <button role="menuitem"
                                         onClick={() => openExportPreview('html')}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font-bold transition-colors"
@@ -33008,7 +33008,7 @@ Return ONLY JSON:
                                         {!pptxLoaded ? <RefreshCw size={14} className="animate-spin"/> : <MonitorPlay size={14} />}
                                         {t('export_menu.slides')}
                                     </button>
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} LMS Integration</div>
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} LMS Integration</div>
                                     {activeView === 'quiz' && !isIndependentMode && (
                                         <button role="menuitem"
                                             onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
@@ -33676,7 +33676,7 @@ Return ONLY JSON:
                                                     )}
                                                     {!isUser && <span className="block text-[10px] text-slate-600 mt-1 opacity-70">🔊 Click any sentence to listen</span>}
                                                  </div>
-                                                 <span className="text-[9px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider">
+                                                 <span className="text-[10px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider">
                                                     {speakerLabel}
                                                  </span>
                                             </div>
@@ -36442,7 +36442,7 @@ Return ONLY JSON:
                                     placeholder={"https://www.loc.gov/item/example-document/\nhttps://founders.archives.gov/documents/...\nhttps://www.archives.gov/milestone-documents/..."}
                                     className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none h-20 font-mono"
                                     aria-label="Document URLs for DBQ" />
-                                <p className="text-[9px] text-slate-600 mt-1">Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.</p>
+                                <p className="text-[10px] text-slate-600 mt-1">Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.</p>
                             </div>
                         )}
                         {/* Teacher Documents mode — paste your own documents */}
@@ -36451,7 +36451,7 @@ Return ONLY JSON:
                                 <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
                                     <p className="text-[10px] text-indigo-700 mb-2"><strong>Paste each document below.</strong> Separate documents with <code className="bg-indigo-100 px-1 rounded">---</code> on its own line. Or use the import buttons to fetch from a URL or upload an image of a document.</p>
                                     <p className="text-[10px] text-indigo-500">For each document, optionally include a title and source on the first lines:</p>
-                                    <pre className="text-[9px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap">Title: Letter from Abigail Adams to John Adams{'\n'}Source: March 31, 1776{'\n'}Remember the Ladies, and be more generous and favourable to them than your ancestors...{'\n'}---{'\n'}Title: Declaration of Independence (excerpt){'\n'}Source: Thomas Jefferson, July 4, 1776{'\n'}We hold these truths to be self-evident, that all men are created equal...</pre>
+                                    <pre className="text-[10px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap">Title: Letter from Abigail Adams to John Adams{'\n'}Source: March 31, 1776{'\n'}Remember the Ladies, and be more generous and favourable to them than your ancestors...{'\n'}---{'\n'}Title: Declaration of Independence (excerpt){'\n'}Source: Thomas Jefferson, July 4, 1776{'\n'}We hold these truths to be self-evident, that all men are created equal...</pre>
                                 </div>
                                 {/* Import tools — URL fetch + image upload */}
                                 <div className="flex gap-2 flex-wrap items-end">
@@ -46443,7 +46443,7 @@ Return only the corrected version of this exact text:`;
                                       <a href={activeDoc.sourceUrl} target="_blank" rel="noopener noreferrer"
                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline">
                                         🔗 View Original Source
-                                        <span className="text-[9px] font-normal text-indigo-400 max-w-[200px] truncate">{(() => { try { return new URL(activeDoc.sourceUrl).hostname; } catch { return ''; } })()}</span>
+                                        <span className="text-[10px] font-normal text-indigo-400 max-w-[200px] truncate">{(() => { try { return new URL(activeDoc.sourceUrl).hostname; } catch { return ''; } })()}</span>
                                       </a>
                                     )}
                                     {/* Document Excerpt with Annotation */}
@@ -50226,7 +50226,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                           🔍 Fetch
                         </button>
                       </div>
-                      <p className="text-[9px] text-slate-600 mt-1">Or paste HTML source code directly below</p>
+                      <p className="text-[10px] text-slate-600 mt-1">Or paste HTML source code directly below</p>
                     </div>
 
                     {/* HTML Input */}
@@ -50406,9 +50406,9 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                       <div className="mb-4 p-4 bg-green-50 rounded-xl border border-green-200">
                         <h4 className="text-sm font-black text-green-800 mb-2">{'\u2705'} Batch Complete</h4>
                         <div className="grid grid-cols-3 gap-2 mb-3">
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-600">{pdfBatchSummary.succeeded}/{pdfBatchSummary.total}</div><div className="text-[9px] text-slate-600">Succeeded</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[9px] text-slate-600">Avg Improvement</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[9px] text-slate-600">Scored 90+</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-600">{pdfBatchSummary.succeeded}/{pdfBatchSummary.total}</div><div className="text-[10px] text-slate-600">Succeeded</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[10px] text-slate-600">Avg Improvement</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[10px] text-slate-600">Scored 90+</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
                           <p>{'\ud83d\udcc8'} Average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter}</p>
@@ -50621,18 +50621,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="px-3 pb-3 pt-1 space-y-3">
                     {/* Branding source */}
                     <div>
-                      <div className="text-[9px] font-bold text-slate-600 uppercase mb-0.5">Brand Colors</div>
+                      <div className="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Brand Colors</div>
                       <p className="text-[10px] text-slate-600 mb-1">Where do the colors come from?</p>
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200">
-                          <div className="text-[9px] font-bold text-slate-700">🎨 Match Original</div>
+                          <div className="text-[10px] font-bold text-slate-700">🎨 Match Original</div>
                           <div className="text-[10px] text-slate-500">Extract colors from this PDF</div>
                         </button>
                         <label data-brand-mode="upload"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 cursor-pointer">
-                          <div className="text-[9px] font-bold text-slate-700">📎 Upload Brand Guide</div>
+                          <div className="text-[10px] font-bold text-slate-700">📎 Upload Brand Guide</div>
                           <div className="text-[10px] text-slate-500">Use a different doc/logo</div>
                           <input type="file" accept="image/*,.pdf" className="hidden" onChange={async (e) => {
                             const file = e.target.files?.[0]; if (!file || !callGeminiVision) return;
@@ -50662,14 +50662,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button onClick={() => { window.__pdfBrandMode = 'none'; window.__pdfBrandOverride = null; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="none"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="none"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
-                          <div className="text-[9px] font-bold text-slate-700">⬜ No Branding</div>
+                          <div className="text-[10px] font-bold text-slate-700">⬜ No Branding</div>
                           <div className="text-[10px] text-slate-500">Use default palette</div>
                         </button>
                       </div>
                     </div>
                     {/* Style Seeds — unified pre-remediation style selection */}
                     <div>
-                      <div className="text-[9px] font-bold text-slate-600 uppercase mb-0.5">Style Seed</div>
+                      <div className="text-[10px] font-bold text-slate-600 uppercase mb-0.5">Style Seed</div>
                       <p className="text-[10px] text-slate-600 mb-1.5">What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.</p>
                       <div className="flex flex-wrap gap-1">
                         {[
@@ -50687,7 +50687,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button key={s.id} onClick={() => { window.__pdfStyleSeed = s.id; window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                             data-style-pref={s.id}
                             className={`px-2 py-1.5 rounded-lg border text-left transition-all ${s.id === 'professional' ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
-                            <div className="text-[9px] font-bold text-slate-700">{s.label}</div>
+                            <div className="text-[10px] font-bold text-slate-700">{s.label}</div>
                             <div className="text-[10px] text-slate-500">{s.desc}</div>
                           </button>
                         ))}
@@ -50715,14 +50715,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           addToast && addToast('Custom style "' + s.name + '" applied!', 'success');
                                         }}
                                           className="px-2 py-1.5 rounded-l-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
-                                          <div className="text-[9px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
+                                          <div className="text-[10px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
                                           <div className="text-[10px] text-slate-500">{s.font || 'Custom'}</div>
                                         </button>
                                         <button onClick={() => {
                                           var updated = {...saved}; delete updated[k];
                                           try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(updated)); } catch(e) {}
                                           addToast && addToast('Deleted "' + s.name + '"', 'info');
-                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[9px] text-red-400 hover:text-red-600 hover:bg-red-50">✕</button>
+                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50">✕</button>
                                       </div>
                                     );
                                   })}
@@ -50730,7 +50730,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </div>
                             )}
                             <details className="mt-2">
-                              <summary className="text-[9px] font-bold text-indigo-500 cursor-pointer hover:text-indigo-700">+ Create Custom Style</summary>
+                              <summary className="text-[10px] font-bold text-indigo-500 cursor-pointer hover:text-indigo-700">+ Create Custom Style</summary>
                               <div className="mt-2 bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
@@ -50882,7 +50882,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                   {/* ── Why Accessibility Matters ── */}
                   <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 space-y-2" style={{ animation: 'fadeInUp 0.7s ease-out 5s both' }}>
-                    <div className="text-[9px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">⚖️ Why Digital Accessibility Matters</div>
+                    <div className="text-[10px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">⚖️ Why Digital Accessibility Matters</div>
                     <p className="text-[10px] text-slate-700 leading-relaxed">
                       <strong className="text-amber-900">The Americans with Disabilities Act (ADA) Title II</strong> requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published <strong>final regulations</strong> mandating <strong>WCAG 2.1 Level AA</strong> compliance for all web content and mobile applications, with compliance deadlines ranging from <strong>April 2026 to April 2027</strong> depending on population size.
                     </p>
@@ -50891,41 +50891,41 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </p>
                     <div className="grid grid-cols-2 gap-1.5">
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
-                        <div className="text-[9px] font-black text-emerald-700">🌍 Broader Reach</div>
-                        <div className="text-[9px] text-slate-600 leading-snug">Accessible content works on any device, any bandwidth, any assistive technology — reaching more users</div>
+                        <div className="text-[10px] font-black text-emerald-700">🌍 Broader Reach</div>
+                        <div className="text-[10px] text-slate-600 leading-snug">Accessible content works on any device, any bandwidth, any assistive technology — reaching more users</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
-                        <div className="text-[9px] font-black text-blue-700">🔍 Better SEO & Findability</div>
-                        <div className="text-[9px] text-slate-600 leading-snug">Structured headings, alt text, and semantic HTML improve search ranking and content discovery</div>
+                        <div className="text-[10px] font-black text-blue-700">🔍 Better SEO & Findability</div>
+                        <div className="text-[10px] text-slate-600 leading-snug">Structured headings, alt text, and semantic HTML improve search ranking and content discovery</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
-                        <div className="text-[9px] font-black text-violet-700">🧠 Cognitive Clarity</div>
-                        <div className="text-[9px] text-slate-600 leading-snug">Clear navigation, consistent layouts, and plain language help all users — especially in high-cognitive-load contexts</div>
+                        <div className="text-[10px] font-black text-violet-700">🧠 Cognitive Clarity</div>
+                        <div className="text-[10px] text-slate-600 leading-snug">Clear navigation, consistent layouts, and plain language help all users — especially in high-cognitive-load contexts</div>
                       </div>
                       <div className="bg-white/90 rounded-lg p-2 border border-amber-100">
-                        <div className="text-[9px] font-black text-rose-700">⚡ Future-Proofing</div>
-                        <div className="text-[9px] text-slate-600 leading-snug">WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies</div>
+                        <div className="text-[10px] font-black text-rose-700">⚡ Future-Proofing</div>
+                        <div className="text-[10px] text-slate-600 leading-snug">WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies</div>
                       </div>
                     </div>
-                    <p className="text-[9px] text-amber-700 italic leading-relaxed">WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being.</p>
+                    <p className="text-[10px] text-amber-700 italic leading-relaxed">WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being.</p>
                   </div>
 
                   {/* Services Grid */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[9px] font-black text-indigo-600 uppercase tracking-wider">🔍 Auditing & Testing</div>
+                      <div className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">🔍 Auditing & Testing</div>
                       <div className="text-[10px] text-slate-600 leading-snug">Expert WCAG audits and document remediation by certified professionals</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[9px] font-black text-indigo-600 uppercase tracking-wider">♿ AccessWorks</div>
+                      <div className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">♿ AccessWorks</div>
                       <div className="text-[10px] text-slate-600 leading-snug">Real-world usability testing by people who use assistive technology daily</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[9px] font-black text-indigo-600 uppercase tracking-wider">📄 Document Remediation</div>
+                      <div className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">📄 Document Remediation</div>
                       <div className="text-[10px] text-slate-600 leading-snug">Specialist team for PDF and MS Office docs — full usability with assistive technology</div>
                     </div>
                     <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[9px] font-black text-indigo-600 uppercase tracking-wider">🎓 Training & AccessU</div>
+                      <div className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">🎓 Training & AccessU</div>
                       <div className="text-[10px] text-slate-600 leading-snug">Annual conference and on-demand courses — beginner to advanced accessibility skills</div>
                     </div>
                   </div>
@@ -50934,15 +50934,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="bg-white/70 rounded-lg border border-indigo-100 p-2.5">
                     <div className="flex gap-4 justify-center text-center">
                       <div>
-                        <div className="text-[9px] font-bold text-slate-600 uppercase">Web</div>
+                        <div className="text-[10px] font-bold text-slate-600 uppercase">Web</div>
                         <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility.org</a>
                       </div>
                       <div>
-                        <div className="text-[9px] font-bold text-slate-600 uppercase">Email</div>
+                        <div className="text-[10px] font-bold text-slate-600 uppercase">Email</div>
                         <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility@knowbility.org</a>
                       </div>
                       <div>
-                        <div className="text-[9px] font-bold text-slate-600 uppercase">Phone</div>
+                        <div className="text-[10px] font-bold text-slate-600 uppercase">Phone</div>
                         <a href="tel:+15125273138" className="text-[11px] font-bold text-slate-700 hover:text-indigo-700">512-527-3138</a>
                       </div>
                     </div>
@@ -51029,7 +51029,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           )}
                         </div>
-                        <div className="text-[9px] text-indigo-600 space-y-0.5">
+                        <div className="text-[10px] text-indigo-600 space-y-0.5">
                           <div>SEM: ±{pdfAuditResult.scoreSEM} | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
                           <div>Individual scores: {pdfAuditResult.scores.join(', ')}</div>
                           <div>{pdfAuditResult.icc >= 0.9 ? '✅ Excellent agreement — auditors highly consistent' : pdfAuditResult.icc >= 0.75 ? '✅ Good agreement — scores clustered tightly' : pdfAuditResult.icc >= 0.5 ? '⚠️ Moderate agreement — some variation between auditors' : '⚠️ Variable agreement — consider increasing auditor count'}</div>
@@ -51068,7 +51068,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
                         <div className="flex justify-between text-red-700 font-bold"><span>Issues found</span><span>{totalIssues}</span></div>
                         {totalIssues > 0 && (
-                          <div className="text-[9px] text-slate-600 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
+                          <div className="text-[10px] text-slate-600 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
                         )}
                       </div>
                       {/* Two-engine scores side by side */}
@@ -51076,15 +51076,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {/* AI Rubric */}
                         <div className="bg-purple-100 rounded-lg border-2 border-purple-300 p-2.5">
                           <div className="flex justify-between items-baseline mb-1">
-                            <span className="font-black text-purple-900 text-sm">{aiScore}<span className="text-[9px] font-bold text-purple-500">/100</span></span>
-                            <span className="text-[8px] font-black text-purple-600 uppercase">AI Rubric</span>
+                            <span className="font-black text-purple-900 text-sm">{aiScore}<span className="text-[10px] font-bold text-purple-500">/100</span></span>
+                            <span className="text-[10px] font-black text-purple-600 uppercase">AI Rubric</span>
                           </div>
-                          <div className="text-[9px] text-purple-800 space-y-0.5">
+                          <div className="text-[10px] text-purple-800 space-y-0.5">
                             <div>Starts at 100, deducts per issue type</div>
                             {totalIssues > 0 && <div>{totalIssues} issues found</div>}
                             {passBenefit > 0 && <div className="text-green-700 font-bold">{passCount} passes recovered +{passBenefit} pts</div>}
                           </div>
-                          <details className="mt-1 text-[8px]">
+                          <details className="mt-1 text-[10px]">
                             <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">How AI scores</summary>
                             <div className="mt-1 space-y-0.5 text-purple-700">
                               <div>Critical: -15 each (lang, title, alt, landmark, contrast)</div>
@@ -51098,14 +51098,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {isBlended && axeAudit && (
                         <div className="bg-blue-100 rounded-lg border-2 border-blue-300 p-2.5">
                           <div className="flex justify-between items-baseline mb-1">
-                            <span className="font-black text-blue-900 text-sm">{axeScore}<span className="text-[9px] font-bold text-blue-500">/100</span></span>
-                            <span className="text-[8px] font-black text-blue-600 uppercase">axe-core</span>
+                            <span className="font-black text-blue-900 text-sm">{axeScore}<span className="text-[10px] font-bold text-blue-500">/100</span></span>
+                            <span className="text-[10px] font-black text-blue-600 uppercase">axe-core</span>
                           </div>
-                          <div className="text-[9px] text-blue-800 space-y-0.5">
+                          <div className="text-[10px] text-blue-800 space-y-0.5">
                             <div>Deque automated WCAG 2.1 AA checker</div>
                             <div>{axeAudit.totalViolations} violation{axeAudit.totalViolations !== 1 ? 's' : ''}, {axeAudit.totalPasses} passed</div>
                           </div>
-                          <details className="mt-1 text-[8px]">
+                          <details className="mt-1 text-[10px]">
                             <summary className="cursor-pointer text-blue-500 hover:text-blue-800 font-bold">How axe-core scores</summary>
                             <div className="mt-1 space-y-0.5 text-blue-700">
                               <div>100 - (critical x15) - (serious x10) - (moderate x5) - (minor x2)</div>
@@ -51374,24 +51374,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Benefits grid */}
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[9px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🎓 Equitable Education</div>
+                              <div className="text-[10px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🎓 Equitable Education</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Accessible materials support Universal Design for Learning (UDL) — benefiting <em>all</em> learners regardless of ability, language, or learning style</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[9px] font-black text-sky-700 uppercase tracking-wider mb-0.5">👥 Better UX for Everyone</div>
+                              <div className="text-[10px] font-black text-sky-700 uppercase tracking-wider mb-0.5">👥 Better UX for Everyone</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Clear headings, logical structure, and sufficient contrast make documents easier to read for <em>all</em> users — including on mobile and in bright sunlight</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[9px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🔍 Improved SEO & Findability</div>
+                              <div className="text-[10px] font-black text-sky-700 uppercase tracking-wider mb-0.5">🔍 Improved SEO & Findability</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Semantic HTML, alt text, and proper headings help search engines index content — boosting discoverability and organic reach</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-sky-100 p-2.5">
-                              <div className="text-[9px] font-black text-sky-700 uppercase tracking-wider mb-0.5">💡 Innovation Driver</div>
+                              <div className="text-[10px] font-black text-sky-700 uppercase tracking-wider mb-0.5">💡 Innovation Driver</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Voice recognition, closed captioning, and screen readers all began as accessibility features — then became essential tools used by millions</div>
                             </div>
                           </div>
 
-                          <p className="text-[9px] text-slate-600 text-center leading-relaxed italic">
+                          <p className="text-[10px] text-slate-600 text-center leading-relaxed italic">
                             Accessibility is the digital expression of equity. When we design for the margins, we create better experiences for the center.
                           </p>
                         </div>
@@ -51418,22 +51418,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Timeline and scope */}
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
-                              <div className="text-[9px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📅 Compliance Deadlines</div>
+                              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📅 Compliance Deadlines</div>
                               <div className="text-[10px] text-slate-600 leading-snug">
                                 <strong className="text-rose-700">April 24, 2026</strong> — entities serving 50,000+ people<br/>
                                 <strong className="text-amber-700">April 26, 2027</strong> — entities serving fewer than 50,000 and special districts
                               </div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
-                              <div className="text-[9px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📋 What's Covered</div>
+                              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📋 What's Covered</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
-                              <div className="text-[9px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🏛️ Who Must Comply</div>
+                              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🏛️ Who Must Comply</div>
                               <div className="text-[10px] text-slate-600 leading-snug">All state and local government entities — including public schools, universities, courts, libraries, transit agencies, and municipal services</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
-                              <div className="text-[9px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🎯 Why It Matters</div>
+                              <div className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-0.5">🎯 Why It Matters</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Beyond legal compliance: accessible documents ensure people with disabilities can equally access education, public services, employment, and civic participation</div>
                             </div>
                           </div>
@@ -51443,7 +51443,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <strong className="text-amber-800">The standard AlloFlow targets — WCAG 2.1 Level AA — is the exact standard required by this federal rule.</strong>{' '}
                               This remediation pipeline helps ensure your documents meet the technical requirements set by the DOJ.
                             </p>
-                            <a href="https://www.ada.gov/resources/web-guidance/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-bold text-amber-700 hover:text-amber-900 underline decoration-amber-300">
+                            <a href="https://www.ada.gov/resources/web-guidance/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-amber-700 hover:text-amber-900 underline decoration-amber-300">
                               Read the official guidance on ADA.gov →
                             </a>
                           </div>
@@ -51472,19 +51472,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Services grid */}
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[9px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🔍 Testing & Auditing</div>
+                              <div className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🔍 Testing & Auditing</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[9px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">📄 Document Remediation</div>
+                              <div className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">📄 Document Remediation</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Specialist team for PDF and MS Office documents — ensuring full usability with assistive technology</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[9px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">♿ AccessWorks</div>
+                              <div className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">♿ AccessWorks</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Real-world usability testing by people with disabilities who use assistive technology daily</div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[9px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🎓 Training & AccessU</div>
+                              <div className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🎓 Training & AccessU</div>
                               <div className="text-[10px] text-slate-600 leading-snug">Annual conference and on-demand courses — from beginner to advanced accessibility skills</div>
                             </div>
                           </div>
@@ -51493,15 +51493,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="bg-white/80 rounded-lg border border-indigo-100 p-3">
                             <div className="grid grid-cols-3 gap-2 text-center">
                               <div>
-                                <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Web</div>
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Web</div>
                                 <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility.org</a>
                               </div>
                               <div>
-                                <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Email</div>
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Email</div>
                                 <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility@knowbility.org</a>
                               </div>
                               <div>
-                                <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Phone</div>
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Phone</div>
                                 <a href="tel:+15125273138" className="text-[11px] font-bold text-slate-700 hover:text-indigo-700">512-527-3138</a>
                               </div>
                             </div>
@@ -51518,7 +51518,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex-1 border-t border-indigo-100"></div>
                           </div>
 
-                          <p className="text-[9px] text-slate-600 text-center leading-relaxed italic">
+                          <p className="text-[10px] text-slate-600 text-center leading-relaxed italic">
                             While AlloFlow handles automated fixes, Knowbility's team ensures documents are
                             fully usable by people with disabilities — not just technically compliant. Serving
                             corporations, government agencies, educational institutions, and nonprofits since 1999.
@@ -51584,10 +51584,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2">♿ Remediation Complete</h4>
                       {pdfFixResult.pageCount && (
                         <div className="flex gap-2 flex-wrap">
-                          <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📄 {pdfFixResult.pageCount} pages processed</span>
-                          <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📝 {(pdfFixResult.extractedChars || 0).toLocaleString()} chars extracted</span>
-                          <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">🌐 {(pdfFixResult.htmlChars || 0).toLocaleString()} chars HTML</span>
-                          {pdfFixResult.imageCount > 0 && <span className="text-[9px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">🖼️ {pdfFixResult.imageCount} images identified</span>}
+                          <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📄 {pdfFixResult.pageCount} pages processed</span>
+                          <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📝 {(pdfFixResult.extractedChars || 0).toLocaleString()} chars extracted</span>
+                          <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">🌐 {(pdfFixResult.htmlChars || 0).toLocaleString()} chars HTML</span>
+                          {pdfFixResult.imageCount > 0 && <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">🖼️ {pdfFixResult.imageCount} images identified</span>}
                         </div>
                       )}
 
@@ -51629,7 +51629,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         )}
                       </div>
                       {/* Individual engine scores with /2 formula */}
-                      <div className="text-center mt-1 text-[9px]">
+                      <div className="text-center mt-1 text-[10px]">
                         <div className="inline-flex items-center gap-1">
                           <span className="text-slate-400">(</span>
                           <span className="text-purple-700 font-bold" title="AI Rubric">AI: {initialAi ?? '?'}{'\u2192'}{afterAi ?? '?'}</span>
@@ -51672,7 +51672,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <span className="text-lg">🔬</span>
                               <div>
                                 <div className="text-xs font-bold text-indigo-800">axe-core Automated WCAG Checker</div>
-                                <div className="text-[9px] text-indigo-500">Industry-standard engine (Deque) v{pdfFixResult.axeAudit.version} — WCAG 2.1 AA</div>
+                                <div className="text-[10px] text-indigo-500">Industry-standard engine (Deque) v{pdfFixResult.axeAudit.version} — WCAG 2.1 AA</div>
                               </div>
                             </div>
                             <div className={`text-2xl font-black ${pdfFixResult.axeAudit.totalViolations === 0 ? 'text-green-600' : pdfFixResult.axeAudit.totalViolations <= 3 ? 'text-amber-600' : 'text-red-600'}`}>
@@ -51723,12 +51723,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Expandable passes detail */}
                           {pdfFixResult.axeAudit.passes && pdfFixResult.axeAudit.passes.length > 0 && (
                             <details className="w-full">
-                              <summary className="text-[9px] font-bold text-green-600 cursor-pointer hover:text-green-800 transition-colors">
+                              <summary className="text-[10px] font-bold text-green-600 cursor-pointer hover:text-green-800 transition-colors">
                                 ✅ {pdfFixResult.axeAudit.totalPasses} accessibility checks passed (click to view)
                               </summary>
                               <div className="mt-1 max-h-40 overflow-y-auto bg-green-50 rounded-lg p-2 border border-green-200 space-y-0.5">
                                 {pdfFixResult.axeAudit.passes.map((p, pi) => (
-                                  <div key={pi} className="text-[9px] text-green-800 flex items-start gap-1">
+                                  <div key={pi} className="text-[10px] text-green-800 flex items-start gap-1">
                                     <span className="text-green-500 shrink-0">✓</span>
                                     <span className="font-medium">{typeof p === 'string' ? p : p.description}</span>
                                     {p.id && <span className="text-green-400 shrink-0 font-mono">({p.id})</span>}
@@ -51740,9 +51740,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
 
                           <div className="flex gap-2 flex-wrap items-center">
-                            <span className="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">✅ {pdfFixResult.axeAudit.totalPasses} passed</span>
-                            {pdfFixResult.axeAudit.totalIncomplete > 0 && <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">⏳ {pdfFixResult.axeAudit.totalIncomplete} need manual review</span>}
-                            {pdfFixResult.autoFixPasses > 0 && <span className="text-[9px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">🔧 {pdfFixResult.autoFixPasses} auto-fix pass{pdfFixResult.autoFixPasses > 1 ? 'es' : ''} applied</span>}
+                            <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">✅ {pdfFixResult.axeAudit.totalPasses} passed</span>
+                            {pdfFixResult.axeAudit.totalIncomplete > 0 && <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">⏳ {pdfFixResult.axeAudit.totalIncomplete} need manual review</span>}
+                            {pdfFixResult.autoFixPasses > 0 && <span className="text-[10px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">🔧 {pdfFixResult.autoFixPasses} auto-fix pass{pdfFixResult.autoFixPasses > 1 ? 'es' : ''} applied</span>}
                             {pdfFixResult.axeAudit.totalViolations > 0 && !pdfFixLoading && (
                               <button onClick={async () => {
                                 setPdfFixLoading(true);
@@ -51762,7 +51762,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 setPdfFixLoading(false);
                                 setPdfFixStep('');
                                 addToast(result.axe.totalViolations === 0 ? '✅ All violations fixed!' : `Fixed ${pdfFixResult.axeAudit.totalViolations - result.axe.totalViolations} more — ${result.axe.totalViolations} remaining`, result.axe.totalViolations === 0 ? 'success' : 'info');
-                              }} className="text-[9px] bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer focus:ring-2 focus:ring-indigo-400" aria-label={`Auto-fix ${pdfFixResult.axeAudit.totalViolations} accessibility violations`}>
+                              }} className="text-[10px] bg-indigo-600 text-white px-2.5 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer focus:ring-2 focus:ring-indigo-400" aria-label={`Auto-fix ${pdfFixResult.axeAudit.totalViolations} accessibility violations`}>
                                 🔧 Auto-fix {pdfFixResult.axeAudit.totalViolations} violation{pdfFixResult.axeAudit.totalViolations !== 1 ? 's' : ''}
                               </button>
                             )}
@@ -51810,13 +51810,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <div className="text-xs font-bold text-slate-800">Knowbility</div>
                                   <div className="text-[10px] text-slate-600">W3C/WAI accredited, IAAP-certified testers, 25+ years of digital accessibility leadership</div>
                                   <div className="flex gap-2 mt-1.5 flex-wrap">
-                                    <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[9px] font-bold text-indigo-600 hover:text-indigo-800 underline">knowbility.org</a>
-                                    <a href="mailto:knowbility@knowbility.org" className="text-[9px] font-bold text-indigo-600 hover:text-indigo-800 underline">knowbility@knowbility.org</a>
-                                    <span className="text-[9px] text-slate-600">512-527-3138</span>
+                                    <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline">knowbility.org</a>
+                                    <a href="mailto:knowbility@knowbility.org" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline">knowbility@knowbility.org</a>
+                                    <span className="text-[10px] text-slate-600">512-527-3138</span>
                                   </div>
                                 </div>
                               </div>
-                              <p className="text-[9px] text-amber-600 mt-2 italic">
+                              <p className="text-[10px] text-amber-600 mt-2 italic">
                                 AlloFlow handled the automated remediation. For the remaining barriers, expert human evaluation ensures
                                 the document is fully usable by people with disabilities, not just technically compliant.
                               </p>
@@ -52208,7 +52208,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           📑 Alternative Formats <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-3 space-y-1.5">
-                          <p className="text-[9px] text-slate-600">Download the remediated document in accessible alternative formats</p>
+                          <p className="text-[10px] text-slate-600">Download the remediated document in accessible alternative formats</p>
 
                           {/* ePub */}
                           <button onClick={() => {
@@ -52352,7 +52352,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                       {/* Expert Workbench — Advanced Remediation Command Bar */}
                       <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl p-3 space-y-2">
-                        <div className="text-[10px] font-bold text-purple-300 uppercase tracking-widest flex items-center gap-1">🤖 Expert Workbench {isAgentRunning && <span className="text-[9px] text-amber-300 animate-pulse ml-1">Running...</span>}</div>
+                        <div className="text-[10px] font-bold text-purple-300 uppercase tracking-widest flex items-center gap-1">🤖 Expert Workbench {isAgentRunning && <span className="text-[10px] text-amber-300 animate-pulse ml-1">Running...</span>}</div>
                         <form className="flex gap-1" onSubmit={async (e) => {
                           e.preventDefault();
                           if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
@@ -52400,7 +52400,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             ))}
                           </div>
                         )}
-                        <p className="text-[9px] text-slate-600">Commands: <span className="text-slate-400">audit</span> · <span className="text-slate-400">auto</span> · <span className="text-slate-400">contrast</span> · or describe what to fix in plain language</p>
+                        <p className="text-[10px] text-slate-600">Commands: <span className="text-slate-400">audit</span> · <span className="text-slate-400">auto</span> · <span className="text-slate-400">contrast</span> · or describe what to fix in plain language</p>
                       </div>
 
                       {/* Differentiation Tools */}
@@ -52607,7 +52607,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           ✨ Full Differentiation Pipeline
                         </button>
 
-                        <p className="text-[9px] text-violet-500">Translations and simplifications stack — add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.</p>
+                        <p className="text-[10px] text-violet-500">Translations and simplifications stack — add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.</p>
                       </div>
                       <div className="flex gap-2">
                         {callTTS && <button id="pdf-audio-dl-btn" onClick={async () => {
@@ -52710,20 +52710,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <p className="text-[10px] text-slate-600">Generate an easy-to-read version for parents, guardians, or community members.</p>
                           <div className="flex gap-2">
                             <div className="flex-1">
-                              <label className="text-[9px] font-bold text-slate-600 uppercase">Language</label>
+                              <label className="text-[10px] font-bold text-slate-600 uppercase">Language</label>
                               <input id="summary-lang" aria-label="Translation language" list="summary-lang-list" className="w-full text-[10px] border border-blue-200 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
                               <datalist id="summary-lang-list">
                                 <option value="English" /><option value="Spanish" /><option value="French" /><option value="Arabic" /><option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" /><option value="Mandarin Chinese" /><option value="Haitian Creole" /><option value="Russian" />
                               </datalist>
                             </div>
                             <div className="w-20">
-                              <label className="text-[9px] font-bold text-slate-600 uppercase">Level</label>
+                              <label className="text-[10px] font-bold text-slate-600 uppercase">Level</label>
                               <select id="summary-level" className="w-full text-[10px] border border-blue-200 rounded-lg px-1 py-1.5 bg-white" defaultValue="5">
                                 <option value="3">3rd</option><option value="5">5th</option><option value="8">8th</option><option value="adult">Adult</option>
                               </select>
                             </div>
                             <div className="w-20">
-                              <label className="text-[9px] font-bold text-slate-600 uppercase">Length</label>
+                              <label className="text-[10px] font-bold text-slate-600 uppercase">Length</label>
                               <select id="summary-length" className="w-full text-[10px] border border-blue-200 rounded-lg px-1 py-1.5 bg-white" defaultValue="medium">
                                 <option value="brief">Brief</option><option value="medium">Medium</option><option value="detailed">Detailed</option>
                               </select>
@@ -52855,17 +52855,17 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       } catch(err) { addToast('Style failed — try again', 'error'); }
                       setIsGeneratingStyle(false);
                     }}
-                      className={`px-2 py-1 rounded-md text-[9px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700'}`}
+                      className={`px-2 py-1 rounded-md text-[10px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700'}`}
                     >{isGeneratingStyle ? '⏳ Styling...' : preset.label}</button>
                   ))}
                   {pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle') && (
                     <button onClick={() => {
                       const old = pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle');
                       if (old) { old.remove(); addToast('AI style removed', 'info'); }
-                    }} className="px-2 py-1 bg-red-50 border border-red-200 rounded-md text-[9px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
+                    }} className="px-2 py-1 bg-red-50 border border-red-200 rounded-md text-[10px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
                   )}
                 </div>
-                <p className="text-[9px] text-slate-600 mb-2">One-click AI restyling. These override the theme above.</p>
+                <p className="text-[10px] text-slate-600 mb-2">One-click AI restyling. These override the theme above.</p>
               </div>
 
               {/* Reference document theme extraction */}
@@ -52945,7 +52945,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         }}
                         className="w-6 h-6 rounded border border-slate-300 cursor-pointer p-0" />
                       <span className="text-[10px] text-slate-600">{item.label}</span>
-                      {item.isText && <span className="contrast-badge text-[8px] font-bold" style={{color: '#16a34a'}}>✅ 4.5+:1</span>}
+                      {item.isText && <span className="contrast-badge text-[10px] font-bold" style={{color: '#16a34a'}}>✅ 4.5+:1</span>}
                     </div>
                   ))}
                   <div className="flex items-center gap-2">
@@ -53002,7 +53002,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <input type="range" min="12" max="28" value={pdfPreviewFontSize}
                   onChange={(e) => { const v = parseInt(e.target.value); setPdfPreviewFontSize(v); setTimeout(() => updatePdfPreview(undefined, v), 50); }}
                   className="w-full" aria-label="Font size" />
-                <div className="flex justify-between text-[9px] text-slate-500"><span>12px</span><span>28px</span></div>
+                <div className="flex justify-between text-[10px] text-slate-500"><span>12px</span><span>28px</span></div>
               </div>
 
               {/* A11y Inspect toggle */}
@@ -53011,7 +53011,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 🔍 A11y Inspect {pdfPreviewA11yInspect ? 'ON' : 'OFF'}
               </button>
               {pdfPreviewA11yInspect && (
-                <div className="text-[9px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2">
+                <div className="text-[10px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2">
                   <div><span className="inline-block w-3 h-2 bg-violet-600 rounded mr-1"></span> Headings (H1-H6)</div>
                   <div><span className="inline-block w-3 h-2 bg-blue-600 rounded mr-1"></span> Images + alt text</div>
                   <div><span className="inline-block w-3 h-2 bg-emerald-600 rounded mr-1"></span> Tables + headers</div>
@@ -53146,7 +53146,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         ✨ Generate & Insert
                       </button>
                     </div>
-                    <p className="text-[9px] text-slate-500">Or click an image in the preview, then:</p>
+                    <p className="text-[10px] text-slate-500">Or click an image in the preview, then:</p>
                     <button onClick={async () => {
                       const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                       const sel = doc.getSelection();
@@ -53174,7 +53174,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   📐 Layout & Design <span className="text-[10px] text-slate-500 group-open:hidden">▸</span>
                 </summary>
                 <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200">
-                  <div className="text-[9px] font-bold text-slate-600 uppercase">Insert Blocks</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase">Insert Blocks</div>
                   <div className="grid grid-cols-2 gap-1">
                     {[
                       { label: 'Info Box', icon: 'ℹ️', html: '<div style="background:#eff6ff;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:8px;margin:12px 0"><strong style="color:#1e40af">Note:</strong> <span>Enter info here</span></div>' },
@@ -53209,14 +53209,14 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           sel.addRange(range);
                         }
                         doc.execCommand('insertHTML', false, block.html);
-                      }} className="text-[9px] font-bold text-slate-600 px-1.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left"
+                      }} className="text-[10px] font-bold text-slate-600 px-1.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left"
                         aria-label={`Insert ${block.label}`} title={`Insert ${block.label}`}>
                         {block.icon} {block.label}
                       </button>
                     ))}
                   </div>
 
-                  <div className="text-[9px] font-bold text-slate-600 uppercase mt-2">Spacing</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mt-2">Spacing</div>
                   <div className="flex gap-1">
                     {[
                       { label: 'Compact', val: '0.25rem' },
@@ -53229,12 +53229,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         doc.querySelectorAll('p, li, h2, h3, h4, table, figure, blockquote, div').forEach(el => {
                           el.style.marginBottom = sp.val;
                         });
-                      }} className="flex-1 text-[8px] font-bold text-slate-500 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                      }} className="flex-1 text-[10px] font-bold text-slate-500 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                         title={sp.label}>{sp.label}</button>
                     ))}
                   </div>
 
-                  <div className="text-[9px] font-bold text-slate-600 uppercase mt-2">Header / Branding</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mt-2">Header / Branding</div>
                   <button onClick={() => {
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                     const existing = doc.getElementById('doc-header-brand');
@@ -53247,7 +53247,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     const main = doc.querySelector('main') || doc.body;
                     main.insertBefore(header, main.firstChild);
                     addToast('Header added — click to edit text, click again to remove', 'info');
-                  }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                  }} className="w-full text-[10px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     🏛️ Toggle Document Header
                   </button>
 
@@ -53262,11 +53262,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     footer.innerHTML = '<span>Institution Name · Confidential</span><span>Page __</span>';
                     (doc.querySelector('main') || doc.body).appendChild(footer);
                     addToast('Footer added — click to edit', 'info');
-                  }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                  }} className="w-full text-[10px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     📋 Toggle Document Footer
                   </button>
 
-                  <div className="text-[9px] font-bold text-slate-600 uppercase mt-2">Templates</div>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase mt-2">Templates</div>
                   <select onChange={(e) => {
                     if (!e.target.value) return;
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
@@ -53310,7 +53310,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     try { savedTemplates = JSON.parse(localStorage.getItem('alloflow_templates') || '[]'); } catch(e) {}
                     return savedTemplates.length > 0 ? (
                       <div className="mt-1.5">
-                        <div className="text-[9px] font-bold text-slate-600 uppercase mb-1">Saved Accessible Templates</div>
+                        <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Saved Accessible Templates</div>
                         <div className="space-y-1">
                           {savedTemplates.map((tmpl, i) => (
                             <button key={i} onClick={() => {
@@ -53342,9 +53342,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               doc.open(); doc.write(html); doc.close();
                               try { doc.designMode = 'on'; } catch(e) {}
                               addToast('📐 Template "' + tmpl.name + '" applied — click any text to edit', 'success');
-                            }} className="w-full text-[9px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
+                            }} className="w-full text-[10px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
                               <span>📐 {tmpl.name}</span>
-                              <span className="text-[8px] text-amber-400">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
+                              <span className="text-[10px] text-amber-400">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
                             </button>
                           ))}
                         </div>
@@ -53353,7 +53353,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   })()}
 
                   {/* Upload template JSON file */}
-                  <label className="mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[9px] font-bold text-amber-600 hover:bg-amber-50 cursor-pointer transition-colors">
+                  <label className="mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[10px] font-bold text-amber-600 hover:bg-amber-50 cursor-pointer transition-colors">
                     📂 Load Template File (.json)
                     <input type="file" accept=".json" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0]; if (!file) return;
@@ -53426,7 +53426,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       `<span>📑 ${headings} headings</span><span>🖼️ ${images} images</span><span>📊 ${tables} tables</span><span>🔗 ${links} links</span>` +
                       `</div>`;
                     doc.body.appendChild(overlay);
-                  }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                  }} className="w-full text-[10px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     📊 Toggle Reading Level & Stats
                   </button>
                   <button onClick={async () => {
@@ -53448,7 +53448,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     overlay.innerHTML = '<div style="font-weight:800;font-size:13px;color:#92400e;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">⚠️ A11y Quick Check (' + fixable + ') <span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#94a3b8;font-size:18px">&times;</span></div>' +
                       issues.map(i => '<div style="padding:4px 0;border-bottom:1px solid #fef3c7;line-height:1.4">' + i + '</div>').join('');
                     doc.body.appendChild(overlay);
-                  }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors">
+                  }} className="w-full text-[10px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors">
                     ♿ Quick A11y Check
                   </button>
                   <button onClick={async () => {
@@ -53488,7 +53488,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       } catch(e) { warnLog('[Alt Gen] Failed for image:', e); img.alt = 'Image'; fixed++; }
                     }
                     addToast('✅ Generated alt text for ' + fixed + '/' + needsAlt.length + ' images', 'success');
-                  }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+                  }} className="w-full text-[10px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
                     🖼️ Auto-Generate Alt Text (AI)
                   </button>
                 </div>
@@ -53549,7 +53549,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 `;
                 (doc.querySelector('main') || doc.body).appendChild(stmt);
                 addToast('♿ Accessibility compliance statement added', 'success');
-              }} className="w-full text-[9px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5">
+              }} className="w-full text-[10px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5">
                 ♿ Insert Compliance Statement
               </button>
 
@@ -53587,7 +53587,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 const main = doc.querySelector('main') || doc.body;
                 main.insertBefore(toc, main.firstChild);
                 addToast('📑 Table of contents added — click to remove', 'success');
-              }} className="w-full text-[9px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+              }} className="w-full text-[10px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                 📑 Toggle Table of Contents
               </button>
 
@@ -53616,13 +53616,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       el.textContent = wm.label;
                       doc.body.appendChild(el);
                       addToast('Watermark "' + wm.label + '" added — click again to remove', 'success');
-                    }} className="w-full text-[9px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2"
+                    }} className="w-full text-[10px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2"
                       aria-label={`Toggle ${wm.label} watermark`}>
                       🔒 {wm.label}
                     </button>
                   ))}
                   <div className="border-t border-slate-200 pt-1.5 mt-1">
-                    <div className="text-[9px] font-bold text-slate-600 uppercase mb-1">Version Stamp</div>
+                    <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Version Stamp</div>
                     {[
                       { label: 'Version 1.0', icon: '📌' },
                       { label: 'Revised ' + new Date().toLocaleDateString(), icon: '📝' },
@@ -53638,7 +53638,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         el.textContent = stamp.icon + ' ' + stamp.label;
                         doc.body.appendChild(el);
                         addToast('Version stamp added', 'success');
-                      }} className="w-full text-[9px] font-bold text-slate-600 py-1 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5">
+                      }} className="w-full text-[10px] font-bold text-slate-600 py-1 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5">
                         {stamp.icon} {stamp.label}
                       </button>
                     ))}
@@ -53693,7 +53693,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   section.style.display = 'none';
                 });
                 addToast('📐 Bilingual layout applied — paste translations in the right column. Click again to remove.', 'success');
-              }} className="w-full text-[9px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+              }} className="w-full text-[10px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                 🌐 Toggle Bilingual Side-by-Side
               </button>
 
@@ -55061,7 +55061,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
 
                 {/* ── SECTION: Quick Start ── */}
-                <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Presets */}
                 <div>
@@ -55105,7 +55105,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
 
                 {/* ── SECTION: Appearance ── */}
-                <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Style */}
                 <div>
@@ -55149,7 +55149,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             ms.textContent = `@media print { @page { margin: ${m.val}; } } body { padding-left: ${m.val}; padding-right: ${m.val}; }`;
                           }
                         }}
-                          className="flex-1 text-[8px] font-bold text-slate-500 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                          className="flex-1 text-[10px] font-bold text-slate-500 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                           title={`${m.label} margins (${m.val})`} aria-label={`Set ${m.label} page margins`}>{m.label}</button>
                       ))}
                     </div>
@@ -55159,7 +55159,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 {/* Word count + goal */}
                 <div className="bg-slate-50 rounded-lg border border-slate-200 p-2">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-bold text-slate-600 uppercase">Word Count</span>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase">Word Count</span>
                     <span className="text-[10px] font-mono text-slate-600" aria-live="polite">
                       {(() => {
                         const iframe = exportPreviewRef.current;
@@ -55169,7 +55169,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-[9px] text-slate-500 shrink-0" htmlFor="word-goal-input">Goal:</label>
+                    <label className="text-[10px] text-slate-500 shrink-0" htmlFor="word-goal-input">Goal:</label>
                     <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
                       className="flex-1 text-[10px] border border-slate-200 rounded px-2 py-1 bg-white"
                       aria-label="Target word count goal"
@@ -55196,7 +55196,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
 
                 {/* ── SECTION: Content ── */}
-                <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Resource Toggles */}
                 <div>
@@ -55247,7 +55247,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         return (
                           <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
                             <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
-                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[9px] text-indigo-400 font-bold">(also in student copy)</span>}</span>
+                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[10px] text-indigo-400 font-bold">(also in student copy)</span>}</span>
                           </label>
                         );
                       });
@@ -55263,13 +55263,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
                       <p className="text-[10px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
                       <p className="text-[10px] text-amber-600">{skipped.join(', ')}</p>
-                      <p className="text-[9px] text-amber-500 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
+                      <p className="text-[10px] text-amber-500 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
                     </div>
                   );
                 })()}
 
                 {/* ── SECTION: Export ── */}
-                <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
 
                 {/* Additional Options */}
                 <div>
@@ -55321,7 +55321,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ].map(preset => (
                       <button key={preset.label} onClick={() => { setExportStylePrompt(preset.prompt); setTimeout(() => generateCustomExportStyle(), 50); }}
                         disabled={isGeneratingStyle}
-                        className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[9px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 transition-colors"
+                        className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[10px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 transition-colors"
                       >{preset.label}</button>
                     ))}
                   </div>
@@ -55338,7 +55338,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                   {customExportCSS && <div className="flex items-center gap-2 mt-1">
                     <div className="text-[10px] text-green-600 font-medium">✓ Custom style active</div>
-                    <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[9px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
+                    <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[10px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
                   </div>}
                 </div>
 
