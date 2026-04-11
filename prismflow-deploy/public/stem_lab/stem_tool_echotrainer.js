@@ -1101,7 +1101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 if (announceToSR) announceToSR('Environment: ' + env.name + '. ' + env.desc + (ENV_3D_READY[env.id] ? ' 3D mode.' : ' 2D mode.') + ' Press Space to click.');
               },
               style: { padding: '6px 12px', borderRadius: '8px', border: '1px solid ' + (active ? '#6366f1' : (isDark ? '#334155' : '#e2e8f0')), background: active ? '#6366f1' : (isDark ? '#1e293b' : '#fff'), color: active ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-            }, env.icon + ' ' + env.name + ' ' + '\u2B50'.repeat(env.complexity));
+            }, env.icon + ' ' + env.name + ' ' + '\u2B50'.repeat(env.complexity) + (ENV_3D_READY[env.id] ? ' [3D]' : ''));
           })
         ),
 
