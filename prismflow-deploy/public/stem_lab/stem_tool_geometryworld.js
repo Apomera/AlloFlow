@@ -59,15 +59,17 @@
   };
   function sfxPlace(blockType) {
     var p = _sfxProfiles[blockType] || _sfxProfiles.stone;
-    tone(p.placeF, 0.04, p.placeW, 0.05);
-    tone(p.placeF * 1.26, 0.04, p.placeW, 0.04);
-    setTimeout(function() { tone(p.placeF * 1.5, 0.06, 'sine', 0.06); }, 25);
+    var pitchVar = 0.95 + Math.random() * 0.1; // ±5% pitch variation per placement
+    tone(p.placeF * pitchVar, 0.04, p.placeW, 0.05);
+    tone(p.placeF * 1.26 * pitchVar, 0.04, p.placeW, 0.04);
+    setTimeout(function() { tone(p.placeF * 1.5 * pitchVar, 0.06, 'sine', 0.06); }, 20 + Math.random() * 15);
   }
   function sfxBreak(blockType) {
     var p = _sfxProfiles[blockType] || _sfxProfiles.stone;
-    noiseBurst(0.06, 0.05, p.noiseHz);
-    tone(p.breakF, 0.06, p.breakW, 0.04);
-    setTimeout(function() { noiseBurst(0.04, 0.03, p.noiseHz * 0.7); tone(p.breakF * 0.72, 0.08, p.breakW, 0.03); }, 40);
+    var pitchVar = 0.92 + Math.random() * 0.16; // ±8% pitch variation
+    noiseBurst(0.06, 0.05, p.noiseHz * pitchVar);
+    tone(p.breakF * pitchVar, 0.06, p.breakW, 0.04);
+    setTimeout(function() { noiseBurst(0.04, 0.03, p.noiseHz * 0.7 * pitchVar); tone(p.breakF * 0.72 * pitchVar, 0.08, p.breakW, 0.03); }, 30 + Math.random() * 20);
   }
   function sfxCorrect() { tone(523, 0.08, 'sine', 0.07); setTimeout(function() { tone(659, 0.08, 'sine', 0.07); }, 80); setTimeout(function() { tone(784, 0.12, 'sine', 0.08); }, 160); }
   function sfxWrong() { tone(300, 0.15, 'sawtooth', 0.06); setTimeout(function() { tone(250, 0.2, 'sawtooth', 0.05); }, 100); }
@@ -2742,6 +2744,28 @@
               npc.eyeR.scale.set(1, eyeScale, 1);
             }
 
+            // ── Answered NPC green tint + checkmark glow ──
+            if (answeredNpcs[i] && npc.data.question) {
+              // Green emissive tint on body
+              if (!npc._answeredTinted) {
+                npc._answeredTinted = true;
+                npc.body.material.emissive = new THREE.Color(0x22c55e);
+                npc.body.material.emissiveIntensity = 0.15;
+              }
+              // Pulsing green glow intensity
+              npc.body.material.emissiveIntensity = 0.1 + Math.sin(t * 2 + i) * 0.05;
+              // Green checkmark particle (occasional)
+              if (Math.random() < 0.003) {
+                var cpGeo = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+                var cpMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.8 });
+                var cpMesh = new THREE.Mesh(cpGeo, cpMat);
+                cpMesh.position.set(npc.body.position.x + (Math.random() - 0.5) * 0.5, npc.body.position.y + 0.5 + Math.random(), npc.body.position.z + (Math.random() - 0.5) * 0.5);
+                cpMesh.userData._age = 0; cpMesh.userData._life = 1.5;
+                cpMesh.userData._vel = { x: (Math.random() - 0.5) * 0.3, y: 0.8 + Math.random() * 0.5, z: (Math.random() - 0.5) * 0.3 };
+                engine.scene.add(cpMesh); engine._particles.push(cpMesh);
+              }
+            }
+
             // Proximity glow ring on ground beneath NPC
             if (!npc._ring) {
               var THREE = window.THREE;
@@ -2966,6 +2990,38 @@
               applyEnvPreset(engine, presetKeys[nextIdx]);
               upd('envPreset', presetKeys[nextIdx]);
             }
+          }
+
+          // ── Ambient dust motes (floating particles near player) ──
+          if (!engine._dustMotes) engine._dustMotes = [];
+          if (engine._dustMotes.length < 12 && Math.random() < 0.03) {
+            var camPos = engine.camera.position;
+            var dGeo = new THREE.SphereGeometry(0.02, 4, 4);
+            var dMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
+            var dust = new THREE.Mesh(dGeo, dMat);
+            dust.position.set(camPos.x + (Math.random() - 0.5) * 8, camPos.y + (Math.random() - 0.5) * 3, camPos.z + (Math.random() - 0.5) * 8);
+            dust._phase = Math.random() * 6.28;
+            dust._speed = 0.2 + Math.random() * 0.3;
+            dust._life = 8 + Math.random() * 6; // 8-14 seconds
+            dust._age = 0;
+            engine.scene.add(dust);
+            engine._dustMotes.push(dust);
+          }
+          for (var di = engine._dustMotes.length - 1; di >= 0; di--) {
+            var dm = engine._dustMotes[di];
+            dm._age += dt;
+            if (dm._age >= dm._life) {
+              engine.scene.remove(dm); dm.geometry.dispose(); dm.material.dispose();
+              engine._dustMotes.splice(di, 1);
+              continue;
+            }
+            // Gentle floating: sinusoidal drift
+            dm.position.x += Math.sin(t * 0.5 + dm._phase) * 0.003;
+            dm.position.y += Math.sin(t * 0.3 + dm._phase * 2) * 0.002 + dm._speed * dt * 0.05;
+            dm.position.z += Math.cos(t * 0.4 + dm._phase * 1.5) * 0.003;
+            // Fade in/out over life
+            var lifePct = dm._age / dm._life;
+            dm.material.opacity = lifePct < 0.1 ? lifePct * 2.5 : lifePct > 0.8 ? (1 - lifePct) * 5 : 0.25;
           }
 
           // ── Animate clouds — slow UV drift ──
@@ -4171,7 +4227,28 @@
           ),
           currentLesson.objectives && currentLesson.objectives.map(function(obj, i) {
             var isDone = i < score;
-            return el('div', { key: i, style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '4px', color: isDone ? '#4ade80' : '#cbd5e1', opacity: isDone ? 0.6 : 1, transition: 'all 0.3s ease' } },
+            return el('div', { key: i,
+              onClick: function() {
+                if (isDone) return;
+                // Navigate camera toward the NPC that corresponds to this objective
+                var eng = window[engineKey];
+                if (!eng || !eng.npcs) return;
+                // Find the i-th NPC with a question (objectives map 1:1 to question NPCs)
+                var qNpcs = eng.npcs.filter(function(n) { return n.data.question; });
+                var targetNpc = qNpcs[i];
+                if (targetNpc && targetNpc.body) {
+                  // Teleport camera near the NPC (but not on top of them)
+                  var np = targetNpc.data.position;
+                  eng.camera.position.set(np[0] - 2, np[1] + 2, np[2] - 2);
+                  eng.camera.lookAt(np[0] + 0.5, np[1] + 1, np[2] + 0.5);
+                  upd('actionFeedback', '\uD83D\uDCCD Navigate to: ' + (targetNpc.data.name || 'NPC'));
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                  sfxNpcChime();
+                }
+              },
+              style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '4px', color: isDone ? '#4ade80' : '#cbd5e1', opacity: isDone ? 0.6 : 1, transition: 'all 0.3s ease', cursor: isDone ? 'default' : 'pointer' },
+              title: isDone ? 'Completed!' : 'Click to navigate to this NPC'
+            },
               el('span', { style: { fontSize: '10px', flexShrink: 0, marginTop: '1px' } }, isDone ? '\u2705' : '\u25CB'),
               el('span', { style: { textDecoration: isDone ? 'line-through' : 'none', fontSize: '10px', lineHeight: 1.4 } }, obj)
             );
