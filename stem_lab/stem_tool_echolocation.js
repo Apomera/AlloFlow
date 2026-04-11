@@ -785,6 +785,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         );
       }
 
+      // ═══════════════════════════════════════════════════════════════
+      // Spatial echolocation has been extracted to standalone tool: stem_tool_echotrainer.js
+      // These useRef hooks are preserved to maintain React hook call order (removing them would crash).
+      var spatialAudioRef = useRef(null);
+      var spatialMapRef = useRef(null);
+      var spatialPlayerRef = useRef(null);
+      var spatialCanvasRef = useRef(null);
+      var spatialAnimRef = useRef(null);
+      var spatialKeysRef = useRef(null);
+      var spatialRevealRef = useRef(null);
+      // (Spatial functions removed — see stem_tool_echotrainer.js)
+
       function renderSonarTab() {
         var sonarCanvasEl = h('canvas', { 'aria-label': 'Echolocation visualization',
           ref: sonarCanvasRef,
@@ -1068,13 +1080,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var maxR = sp.sonarRange ? sp.sonarRange * 1.6 : 400;
         st.pulses.push({ x: st.batX, y: st.batY, radius: 5, maxRadius: maxR, width: sp.sonarWidth || Math.PI * 2 });
         st.pulseCount++;
-        // Audio chirp — frugivore uses tongue click
-        if (typeof beep === 'function') {
-          try {
-            if (sp.diet === 'fruit') { beep(800, 0.02, 0.1); }
-            else { beep(2000, 0.03, 0.15); }
-          } catch(e) {}
-        }
+        // Audio chirp — species-specific echolocation call
+        // Insectivores: high-frequency FM sweep (frequency drops during call)
+        // Frugivores: tongue click (short broadband impulse)
+        try {
+          var ac = window._echoLabAC || (window._echoLabAC = new (window.AudioContext || window.webkitAudioContext)());
+          if (ac.state === 'suspended') ac.resume();
+          if (sp.diet === 'fruit') {
+            // Tongue click — short noise burst
+            var cBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.01), ac.sampleRate);
+            var cData = cBuf.getChannelData(0);
+            for (var ci2 = 0; ci2 < cData.length; ci2++) cData[ci2] = (Math.random() * 2 - 1) * Math.exp(-ci2 / (cData.length * 0.2));
+            var cSrc = ac.createBufferSource(); cSrc.buffer = cBuf;
+            var cG = ac.createGain(); cG.gain.value = 0.1;
+            cSrc.connect(cG); cG.connect(ac.destination); cSrc.start();
+          } else {
+            // FM chirp — frequency sweeps down (like real bat calls)
+            var chirpO = ac.createOscillator();
+            var chirpG = ac.createGain();
+            chirpO.type = 'sine';
+            chirpO.frequency.setValueAtTime(sp.freqMax || 8000, ac.currentTime);
+            chirpO.frequency.exponentialRampToValueAtTime(sp.freqMin || 2000, ac.currentTime + 0.015);
+            chirpG.gain.setValueAtTime(0.08, ac.currentTime);
+            chirpG.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.02);
+            chirpO.connect(chirpG); chirpG.connect(ac.destination);
+            chirpO.start(); chirpO.stop(ac.currentTime + 0.02);
+          }
+          if (window._alloHaptic) window._alloHaptic('echo');
+        } catch(e) {}
         srAnnounce('Sonar pulse emitted');
       }
 
@@ -1456,6 +1489,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 if (hit.type === 'passage') typeLabel = 'hidden passage';
                 if (hit.type === 'web') typeLabel = 'spider web';
                 srAnnounce('Object discovered: ' + typeLabel + ' at distance ' + Math.round(dist) + ' pixels');
+                // Discovery chime + echo return proportional to distance
+                try {
+                  var dAc = window._echoLabAC;
+                  if (dAc) {
+                    // Discovery chime
+                    var dO = dAc.createOscillator(); var dG = dAc.createGain();
+                    dO.type = 'sine'; dO.frequency.value = 1200; dG.gain.setValueAtTime(0.08, dAc.currentTime);
+                    dG.gain.exponentialRampToValueAtTime(0.001, dAc.currentTime + 0.08);
+                    dO.connect(dG); dG.connect(dAc.destination); dO.start(); dO.stop(dAc.currentTime + 0.08);
+                    setTimeout(function() {
+                      var dO2 = dAc.createOscillator(); var dG2 = dAc.createGain();
+                      dO2.type = 'sine'; dO2.frequency.value = 1500; dG2.gain.setValueAtTime(0.06, dAc.currentTime);
+                      dG2.gain.exponentialRampToValueAtTime(0.001, dAc.currentTime + 0.06);
+                      dO2.connect(dG2); dG2.connect(dAc.destination); dO2.start(); dO2.stop(dAc.currentTime + 0.06);
+                    }, 60);
+                    if (window._alloHaptic) window._alloHaptic('correct');
+                  }
+                } catch(e) {}
                 if (typeof beep === 'function') {
                   try { beep(1200, 0.05, 0.1); } catch(e) {}
                 }
