@@ -117,17 +117,38 @@
   function applyEnvPreset(engine, presetKey) {
     var p = ENV_PRESETS[presetKey];
     if (!p || !engine) return;
-    engine.scene.background.setRGB(p.sky[0], p.sky[1], p.sky[2]);
-    engine.scene.fog.color.setRGB(p.fog[0], p.fog[1], p.fog[2]);
-    engine.scene.fog.near = p.fogNear;
-    engine.scene.fog.far = p.fogFar;
-    if (engine.sun) engine.sun.intensity = p.sunIntensity;
-    // Update ambient light (first child that's AmbientLight)
-    engine.scene.children.forEach(function(c) {
-      if (c.isAmbientLight) c.intensity = p.ambientIntensity;
-    });
-    if (engine._cloudPlane) engine._cloudPlane.material.opacity = p.cloudOpacity;
+    // Store target values for smooth transition
+    engine._envTarget = {
+      sky: p.sky.slice(), fog: p.fog.slice(),
+      fogNear: p.fogNear, fogFar: p.fogFar,
+      sunIntensity: p.sunIntensity, ambientIntensity: p.ambientIntensity,
+      cloudOpacity: p.cloudOpacity
+    };
+    engine._envTransition = 0; // 0 to 1 over ~1.5 seconds
     engine._currentEnv = presetKey;
+  }
+  // Called in animate() to smoothly interpolate environment
+  function updateEnvTransition(engine, dt) {
+    if (!engine._envTarget || engine._envTransition >= 1) return;
+    engine._envTransition = Math.min(1, engine._envTransition + dt * 0.7); // ~1.4 seconds
+    var t = engine._envTransition;
+    var ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // ease-in-out
+    var tgt = engine._envTarget;
+    var bg = engine.scene.background;
+    bg.r += (tgt.sky[0] - bg.r) * ease * 0.1;
+    bg.g += (tgt.sky[1] - bg.g) * ease * 0.1;
+    bg.b += (tgt.sky[2] - bg.b) * ease * 0.1;
+    var fc = engine.scene.fog.color;
+    fc.r += (tgt.fog[0] - fc.r) * ease * 0.1;
+    fc.g += (tgt.fog[1] - fc.g) * ease * 0.1;
+    fc.b += (tgt.fog[2] - fc.b) * ease * 0.1;
+    engine.scene.fog.near += (tgt.fogNear - engine.scene.fog.near) * ease * 0.1;
+    engine.scene.fog.far += (tgt.fogFar - engine.scene.fog.far) * ease * 0.1;
+    if (engine.sun) engine.sun.intensity += (tgt.sunIntensity - engine.sun.intensity) * ease * 0.1;
+    engine.scene.children.forEach(function(c) {
+      if (c.isAmbientLight) c.intensity += (tgt.ambientIntensity - c.intensity) * ease * 0.1;
+    });
+    if (engine._cloudPlane) engine._cloudPlane.material.opacity += (tgt.cloudOpacity - engine._cloudPlane.material.opacity) * ease * 0.1;
   }
 
   // ── Block Types ──
@@ -1788,9 +1809,33 @@
           promptSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.5, data.position[2] + 0.5);
           engine.scene.add(promptSprite);
 
+          // Floating question mark indicator (for NPCs with questions)
+          var qMarkSprite = null;
+          if (data.question) {
+            var qCanvas = document.createElement('canvas'); qCanvas.width = 64; qCanvas.height = 64;
+            var qcx = qCanvas.getContext('2d');
+            // Glowing circle background
+            var grd = qcx.createRadialGradient(32, 32, 8, 32, 32, 28);
+            grd.addColorStop(0, 'rgba(251,191,36,0.9)'); grd.addColorStop(1, 'rgba(251,191,36,0)');
+            qcx.fillStyle = grd; qcx.fillRect(0, 0, 64, 64);
+            // Question mark
+            qcx.fillStyle = '#fff'; qcx.font = 'bold 36px sans-serif'; qcx.textAlign = 'center'; qcx.textBaseline = 'middle';
+            qcx.fillText('?', 32, 34);
+            qMarkSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(qCanvas), transparent: true, depthTest: false }));
+            qMarkSprite.scale.set(0.6, 0.6, 1);
+            qMarkSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.7, data.position[2] + 0.5);
+            engine.scene.add(qMarkSprite);
+          }
+
+          // Eye white/iris for expressiveness
+          var eyeWhiteL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          eyeWhiteL.position.set(-0.1, 0.04, 0.22); head.add(eyeWhiteL);
+          var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          eyeWhiteR.position.set(0.1, 0.04, 0.22); head.add(eyeWhiteR);
+
           body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
           head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
-          engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, data: data });
+          engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, qMark: qMarkSprite, eyeL: eyeL, eyeR: eyeR, data: data });
         };
 
         engine.loadLesson = function(lesson) {
@@ -2161,18 +2206,31 @@
           upd('selectedBlock', newIdx);
         }, { passive: false });
 
-        // ── Block placement preview ghost + break highlight ──
+        // ── Block placement preview ghost + break highlight + crosshair targeting ──
         engine._ghostMesh = null;
-        engine._highlightMesh = null; // wireframe outline on targeted block
+        engine._highlightMesh = null;
+        engine._crosshairTarget = 'none'; // 'none' | 'block' | 'npc' | 'npc_question'
         function updateGhostPreview() {
           var THREE = window.THREE;
           if (!engine.isLocked || !THREE) {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
+            engine._crosshairTarget = 'none';
             return;
           }
           engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+          // Check NPC hits first (for crosshair coloring)
+          var npcBodies = engine.npcs.map(function(n) { return n.body; }).concat(engine.npcs.map(function(n) { return n.head; }));
+          var npcHits = engine.raycaster.intersectObjects(npcBodies);
+          if (npcHits.length > 0 && npcHits[0].distance < 5) {
+            var npcIdx = npcHits[0].object.userData.npcIndex;
+            var npcData = engine.npcs[npcIdx] && engine.npcs[npcIdx].data;
+            engine._crosshairTarget = (npcData && npcData.question && !answeredNpcs[npcIdx]) ? 'npc_question' : 'npc';
+          } else {
+            engine._crosshairTarget = 'none';
+          }
           var hits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+          if (hits.length > 0) engine._crosshairTarget = engine._crosshairTarget === 'none' ? 'block' : engine._crosshairTarget;
 
           // ── Break highlight — colored wireframe on the targeted block ──
           if (hits.length > 0 && hits[0].object.userData.gridPos) {
@@ -2237,6 +2295,9 @@
         function animate() {
           requestAnimationFrame(animate);
           var dt = Math.min(engine.clock.getDelta(), 0.1);
+
+          // ── Smooth environment transitions ──
+          updateEnvTransition(engine, dt);
 
           // ── Update break particles ──
           for (var pi = engine._particles.length - 1; pi >= 0; pi--) {
@@ -2452,6 +2513,34 @@
             } else {
               npc.body.rotation.y += dt * 0.5;
             }
+            // ── Floating question mark: bob + spin, hide when answered ──
+            if (npc.qMark) {
+              var isNpcAnswered = answeredNpcs[i];
+              if (isNpcAnswered) {
+                // Hide question mark when answered (fade out)
+                if (npc.qMark.material.opacity > 0.01) {
+                  npc.qMark.material.opacity -= dt * 2;
+                } else if (npc.qMark.visible) {
+                  npc.qMark.visible = false;
+                }
+              } else {
+                npc.qMark.material.opacity = 1;
+                npc.qMark.visible = true;
+                npc.qMark.position.y = npc.data.position[1] + 2.7 + Math.sin(t * 3 + i * 1.5) * 0.15;
+                // Subtle scale pulse
+                var qScale = 0.55 + Math.sin(t * 4 + i) * 0.08;
+                npc.qMark.scale.set(qScale, qScale, 1);
+              }
+            }
+
+            // ── Eye blink animation ──
+            if (npc.eyeL && npc.eyeR) {
+              var blinkCycle = (t * 0.7 + i * 2.3) % 4; // blink every ~4 seconds
+              var eyeScale = blinkCycle < 0.1 ? 0.2 : 1.0; // squash during blink
+              npc.eyeL.scale.set(1, eyeScale, 1);
+              npc.eyeR.scale.set(1, eyeScale, 1);
+            }
+
             // Proximity glow ring on ground beneath NPC
             if (!npc._ring) {
               var THREE = window.THREE;
@@ -2903,10 +2992,32 @@
       // ══════════════════════════════════════════════════════════
 
       if (!threeReady) {
-        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '12px', color: '#6b7280' } },
-          el('div', { style: { fontSize: '48px' } }, '\uD83E\uDDF1'),
-          el('div', { style: { fontSize: '16px', fontWeight: 700 } }, 'Loading 3D Engine...'),
-          el('div', { style: { fontSize: '12px' } }, 'Three.js is loading from CDN')
+        var loadingTips = [
+          '\uD83D\uDCA1 Tip: Use WASD to move and the mouse to look around!',
+          '\uD83D\uDCA1 Tip: Press M while looking at a structure to measure its volume.',
+          '\uD83D\uDCA1 Tip: Walk up to purple characters and press E to talk to them.',
+          '\uD83D\uDCA1 Tip: Right-click on a block face to place a new block.',
+          '\uD83D\uDCA1 Tip: Volume = Length \u00d7 Width \u00d7 Height. Count the blocks!',
+          '\uD83D\uDCA1 Tip: Use the scroll wheel to switch between block types.',
+          '\uD83D\uDCA1 Tip: Press Q to cycle between cube, half-block, and quarter-wedge shapes.',
+          '\uD83D\uDCA1 Tip: Try the Geometry Garden lesson for a relaxing exploration experience!'
+        ];
+        var tipIdx = Math.floor(Date.now() / 4000) % loadingTips.length;
+        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '16px', color: '#94a3b8', background: 'linear-gradient(180deg, #0f172a 0%, #1e1b3a 100%)' } },
+          // Animated blocks
+          el('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px' } },
+            ['\uD83E\uDDF1', '\uD83D\uDC8E', '\uD83C\uDFC6', '\uD83E\uDDF1'].map(function(em, ei) {
+              return el('span', { key: ei, style: { fontSize: '32px', animation: 'pulse 1.5s infinite', animationDelay: (ei * 0.2) + 's', opacity: 0.3 + (ei * 0.2) } }, em);
+            })
+          ),
+          el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.5px' } }, '\uD83C\uDF0D Geometry World'),
+          el('div', { style: { fontSize: '13px', color: '#7c3aed', fontWeight: 600 } }, 'Loading 3D engine...'),
+          // Progress bar animation
+          el('div', { style: { width: '200px', height: '4px', background: 'rgba(100,116,139,0.2)', borderRadius: '4px', overflow: 'hidden' } },
+            el('div', { style: { width: '60%', height: '100%', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)', borderRadius: '4px', animation: 'pulse 1.5s infinite' } })
+          ),
+          // Rotating tip
+          el('div', { style: { fontSize: '11px', color: '#64748b', maxWidth: '300px', textAlign: 'center', marginTop: '8px', lineHeight: 1.5 } }, loadingTips[tipIdx])
         );
       }
 
@@ -3985,17 +4096,22 @@
             }, 'Skip tutorial')
           )
         ),
-        // Crosshair — crisp dot + thin lines
-        el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '20px', height: '20px' } },
-          // Center dot
-          el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', boxShadow: '0 0 2px rgba(0,0,0,0.5)' } }),
-          // Horizontal lines
-          el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: 'rgba(255,255,255,0.6)' } }),
-          el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: 'rgba(255,255,255,0.6)' } }),
-          // Vertical lines
-          el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: 'rgba(255,255,255,0.6)' } }),
-          el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: 'rgba(255,255,255,0.6)' } })
-        ),
+        // Crosshair — interactive (changes color based on target)
+        (function() {
+          var ct = engine ? (engine._crosshairTarget || 'none') : 'none';
+          var chColor = ct === 'npc_question' ? '#fbbf24' : ct === 'npc' ? '#a78bfa' : ct === 'block' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)';
+          var chGlow = ct === 'npc_question' ? '0 0 6px #fbbf24' : ct === 'npc' ? '0 0 4px #a78bfa' : '0 0 2px rgba(0,0,0,0.5)';
+          var chSize = ct === 'npc_question' ? '5px' : ct === 'npc' ? '4px' : '3px';
+          return el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '22px', height: '22px', transition: 'all 0.15s ease' } },
+            el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: chSize, height: chSize, borderRadius: '50%', background: chColor, boxShadow: chGlow, transition: 'all 0.15s ease' } }),
+            el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, transition: 'background 0.15s' } }),
+            // Target label hint
+            ct === 'npc_question' && el('div', { style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, 'Press E')
+          );
+        })(),
         // NPC Dialog overlay
         showNpcDialog && engine && engine.npcs[dialogNpcIdx] && (function() {
           var npc = engine.npcs[dialogNpcIdx];
