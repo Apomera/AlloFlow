@@ -2154,8 +2154,19 @@
             case 'KeyA': engine.moveState.left = true; break;
             case 'KeyD': engine.moveState.right = true; break;
             case 'Space':
-              if (engine.flyMode) { engine.velocity.y = 6; }
-              else if (engine.onGround) { engine.velocity.y = 6; sfxJump(); }
+              ev.preventDefault();
+              // Double-tap Space = toggle fly mode (like Minecraft creative)
+              var now = Date.now();
+              if (engine._lastSpaceTime && now - engine._lastSpaceTime < 300) {
+                engine.flyMode = !engine.flyMode;
+                engine.velocity.y = 0;
+                if (addToast) addToast(engine.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON (double-tap Space again to land)' : '\uD83D\uDC63 Walk mode', 'info');
+                engine._lastSpaceTime = 0;
+                break;
+              }
+              engine._lastSpaceTime = now;
+              if (engine.flyMode) { engine.moveState.flyUp = true; }
+              else if (engine.onGround && !engine._jumpLock) { engine.velocity.y = 6; sfxJump(); engine._jumpLock = true; }
               break;
             case 'KeyF':
               if (!ev.ctrlKey) {
@@ -2241,6 +2252,7 @@
             case 'KeyA': engine.moveState.left = false; break;
             case 'KeyD': engine.moveState.right = false; break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = false; break;
+            case 'Space': engine._jumpLock = false; engine.moveState.flyUp = false; break;
           }
         });
 
@@ -2455,16 +2467,14 @@
             var cam = engine.camera.position;
 
             if (engine.flyMode) {
-              // ── Fly mode: no gravity, no collision, fly up with Space, down with Shift ──
+              // ── Fly mode: no gravity, no collision, Space=up, Shift=down ──
               var flySpeed = isSprinting ? 12 : 7;
               cam.x += engine.velocity.x * dt;
               cam.z += engine.velocity.z * dt;
-              // Vertical: Space = up, Shift (when not moving forward) = down
               var flyVertical = 0;
+              if (engine.moveState.flyUp) flyVertical = flySpeed;
               if (engine.moveState.sprint && !engine.moveState.forward) flyVertical = -flySpeed;
-              if (engine.velocity.y > 0) cam.y += flySpeed * dt;
               cam.y += flyVertical * dt;
-              engine.velocity.y *= 0.9; // dampen
               engine.onGround = false;
             } else {
               // ── Walk mode: full gravity + collision ──
@@ -3833,7 +3843,7 @@
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, '1-9,0'), 'Select block',
             el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Z'), 'Undo',
             el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'Ctrl+Y'), 'Redo',
-            el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'F'), 'Toggle fly',
+            el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, '2\u00d7Space'), 'Toggle fly (or F key)',
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'G'), 'Toggle grid',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)'
           ),
@@ -4203,10 +4213,20 @@
           })()
         ),
         // ── Mode indicators (fly, grid) ──
-        engine && (engine.flyMode || engine._gridHelper) && el('div', {
+        engine && el('div', {
           style: { position: 'absolute', bottom: '10px', left: '130px', zIndex: 20, display: 'flex', gap: '4px' }
         },
-          engine.flyMode && el('div', { style: { background: 'rgba(99,102,241,0.25)', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#a5b4fc', fontWeight: 600 } }, '\uD83D\uDD4A\uFE0F FLY'),
+          // Fly mode toggle (always visible as a button)
+          el('button', {
+            onClick: function() {
+              var eng = window[engineKey];
+              if (!eng) return;
+              eng.flyMode = !eng.flyMode; eng.velocity.y = 0;
+              if (addToast) addToast(eng.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON — Space=up, Shift=down, double-tap Space to land' : '\uD83D\uDC63 Walk mode', 'info');
+            },
+            title: 'Toggle fly mode (or double-tap Space)',
+            style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#64748b', fontWeight: 600, cursor: 'pointer' }
+          }, engine.flyMode ? '\uD83D\uDD4A\uFE0F FLY' : '\uD83D\uDD4A\uFE0F Fly'),
           engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600 } }, '\uD83D\uDCCF GRID')
         ),
         // ── Undo/Redo indicator ──
