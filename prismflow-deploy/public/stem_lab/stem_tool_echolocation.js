@@ -608,6 +608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var tab = d.tab || 'sonar';
       var TABS = [
         { id: 'sonar', label: 'Sonar Vision', icon: '\uD83E\uDD87' },
+        { id: 'cave3d', label: '3D Cave', icon: '\uD83D\uDD26' },
         { id: 'waves', label: 'Sound Waves', icon: '\uD83C\uDF0A' },
         { id: 'doppler', label: 'Doppler Effect', icon: '\uD83D\uDEA8' },
         { id: 'biology', label: 'Bat Biology', icon: '\uD83E\uDDA0' },
@@ -782,6 +783,305 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'text-[9px] ' + (isDark ? 'text-slate-500' : 'text-slate-400') },
               'You can change species anytime using the toggle in the game HUD.')
           ) : null
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // Spatial echolocation has been extracted to standalone tool: stem_tool_echotrainer.js
+      // These useRef hooks are preserved to maintain React hook call order (removing them would crash).
+      var spatialAudioRef = useRef(null);
+      var spatialMapRef = useRef(null);
+      var spatialPlayerRef = useRef(null);
+      var spatialCanvasRef = useRef(null);
+      var spatialAnimRef = useRef(null);
+      var spatialKeysRef = useRef(null);
+      var spatialRevealRef = useRef(null);
+      // (Spatial functions removed — see stem_tool_echotrainer.js)
+
+      // ═══════════════════════════════════════════════════════════
+      // ── 3D CAVE MODE — First-person echolocation in Three.js ──
+      // ═══════════════════════════════════════════════════════════
+      var cave3dRef = useRef(null);
+      var cave3dEngineRef = useRef(null);
+      var cave3dAnimRef = useRef(0);
+
+      function renderCave3dTab() {
+        // Initialize Three.js cave on mount
+        useEffect(function() {
+          var container = cave3dRef.current;
+          if (!container || !window.THREE || cave3dEngineRef.current) return;
+          var THREE = window.THREE;
+          var eng = {};
+          cave3dEngineRef.current = eng;
+
+          // Scene
+          eng.scene = new THREE.Scene();
+          eng.scene.background = new THREE.Color(0x020208);
+          eng.scene.fog = new THREE.Fog(0x020208, 1, 25);
+
+          // Camera (first person bat view)
+          eng.camera = new THREE.PerspectiveCamera(90, container.clientWidth / container.clientHeight, 0.1, 100);
+          eng.camera.position.set(0, 2, 0);
+
+          // Renderer
+          var cnv = document.createElement('canvas');
+          cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block';
+          container.appendChild(cnv);
+          eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+          eng.renderer.setSize(container.clientWidth, container.clientHeight);
+          eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+          // Ambient light (very dim — cave is dark)
+          eng.ambient = new THREE.AmbientLight(0x111122, 0.15);
+          eng.scene.add(eng.ambient);
+
+          // ── Build cave geometry ──
+          // Floor
+          var floorGeo = new THREE.PlaneGeometry(40, 40);
+          var floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.95 });
+          var floor = new THREE.Mesh(floorGeo, floorMat);
+          floor.rotation.x = -Math.PI / 2; floor.position.y = 0;
+          eng.scene.add(floor);
+
+          // Ceiling
+          var ceilGeo = new THREE.PlaneGeometry(40, 40);
+          var ceilMat = new THREE.MeshStandardMaterial({ color: 0x0a0a18, roughness: 0.9 });
+          var ceil = new THREE.Mesh(ceilGeo, ceilMat);
+          ceil.rotation.x = Math.PI / 2; ceil.position.y = 6;
+          eng.scene.add(ceil);
+
+          // Cave walls (irregular tunnel using boxes)
+          eng.walls = [];
+          var wallMat = new THREE.MeshStandardMaterial({ color: 0x1e1e3a, roughness: 0.85 });
+          // Left wall segments
+          for (var wi = 0; wi < 10; wi++) {
+            var wGeo = new THREE.BoxGeometry(2 + Math.random() * 2, 7, 4);
+            var wMesh = new THREE.Mesh(wGeo, wallMat.clone());
+            wMesh.position.set(-8 - Math.random() * 2, 3, wi * 4 - 18 + Math.random() * 2);
+            eng.scene.add(wMesh); eng.walls.push(wMesh);
+          }
+          // Right wall segments
+          for (var wr = 0; wr < 10; wr++) {
+            var rwGeo = new THREE.BoxGeometry(2 + Math.random() * 2, 7, 4);
+            var rwMesh = new THREE.Mesh(rwGeo, wallMat.clone());
+            rwMesh.position.set(8 + Math.random() * 2, 3, wr * 4 - 18 + Math.random() * 2);
+            eng.scene.add(rwMesh); eng.walls.push(rwMesh);
+          }
+
+          // Stalactites (hanging from ceiling)
+          for (var si = 0; si < 8; si++) {
+            var sGeo = new THREE.ConeGeometry(0.3 + Math.random() * 0.4, 1 + Math.random() * 2, 6);
+            var sMesh = new THREE.Mesh(sGeo, new THREE.MeshStandardMaterial({ color: 0x2a2a4a, roughness: 0.8 }));
+            sMesh.position.set((Math.random() - 0.5) * 12, 5.5 - Math.random(), (Math.random() - 0.5) * 30);
+            sMesh.rotation.z = Math.PI; // point downward
+            eng.scene.add(sMesh); eng.walls.push(sMesh);
+          }
+
+          // Stalagmites (rising from floor)
+          for (var gi = 0; gi < 6; gi++) {
+            var gGeo = new THREE.ConeGeometry(0.2 + Math.random() * 0.3, 0.8 + Math.random() * 1.5, 6);
+            var gMesh = new THREE.Mesh(gGeo, new THREE.MeshStandardMaterial({ color: 0x222244, roughness: 0.8 }));
+            gMesh.position.set((Math.random() - 0.5) * 10, (0.8 + Math.random() * 1.5) / 2, (Math.random() - 0.5) * 25);
+            eng.scene.add(gMesh); eng.walls.push(gMesh);
+          }
+
+          // Moths (glowing targets to find)
+          eng.moths = [];
+          var mothMat = new THREE.MeshBasicMaterial({ color: 0x44ff88, transparent: true, opacity: 0.0 });
+          for (var mi = 0; mi < 5; mi++) {
+            var mGeo = new THREE.SphereGeometry(0.15, 8, 8);
+            var mMesh = new THREE.Mesh(mGeo, mothMat.clone());
+            mMesh.position.set((Math.random() - 0.5) * 12, 1.5 + Math.random() * 3, (Math.random() - 0.5) * 25);
+            mMesh._found = false;
+            mMesh._baseY = mMesh.position.y;
+            eng.scene.add(mMesh); eng.moths.push(mMesh);
+          }
+
+          // Sonar pulses (expanding ring meshes)
+          eng.pulses = [];
+          eng.clock = new THREE.Clock();
+          eng.batPos = eng.camera.position.clone();
+          eng.euler = new THREE.Euler(0, 0, 0, 'YXZ');
+          eng.velocity = { x: 0, y: 0, z: 0 };
+          eng.mothsFound = 0;
+
+          // Controls
+          eng.keys = {};
+          eng._keyDown = function(e) { eng.keys[e.code] = true; };
+          eng._keyUp = function(e) { eng.keys[e.code] = false; };
+          document.addEventListener('keydown', eng._keyDown);
+          document.addEventListener('keyup', eng._keyUp);
+
+          // Mouse look
+          eng._mouseMove = function(e) {
+            if (!eng._locked) return;
+            eng.euler.setFromQuaternion(eng.camera.quaternion);
+            eng.euler.y -= e.movementX * 0.002;
+            eng.euler.x -= e.movementY * 0.002;
+            eng.euler.x = Math.max(-1.2, Math.min(1.2, eng.euler.x));
+            eng.camera.quaternion.setFromEuler(eng.euler);
+          };
+          document.addEventListener('mousemove', eng._mouseMove);
+          cnv.addEventListener('click', function() { cnv.requestPointerLock(); });
+          document.addEventListener('pointerlockchange', function() { eng._locked = !!document.pointerLockElement; });
+
+          // ── Animate ──
+          function animate() {
+            cave3dAnimRef.current = requestAnimationFrame(animate);
+            var dt = Math.min(eng.clock.getDelta(), 0.1);
+            var t = eng.clock.getElapsedTime();
+
+            // Movement (WASD)
+            var fwd = new THREE.Vector3();
+            eng.camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
+            var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+            if (eng.keys['KeyW']) eng.camera.position.addScaledVector(fwd, 4 * dt);
+            if (eng.keys['KeyS']) eng.camera.position.addScaledVector(fwd, -4 * dt);
+            if (eng.keys['KeyA']) eng.camera.position.addScaledVector(right, -4 * dt);
+            if (eng.keys['KeyD']) eng.camera.position.addScaledVector(right, 4 * dt);
+            // Fly up/down
+            if (eng.keys['Space']) eng.camera.position.y += 3 * dt;
+            if (eng.keys['ShiftLeft'] || eng.keys['ShiftRight']) eng.camera.position.y -= 3 * dt;
+            eng.camera.position.y = Math.max(0.5, Math.min(5.5, eng.camera.position.y));
+
+            // Emit sonar pulse (Space bar)
+            if (eng.keys['KeyE'] && (!eng._lastPulse || t - eng._lastPulse > 0.5)) {
+              eng._lastPulse = t;
+              var pulseGeo = new THREE.RingGeometry(0.1, 0.15, 32);
+              var pulseMat = new THREE.MeshBasicMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
+              var pulse = new THREE.Mesh(pulseGeo, pulseMat);
+              pulse.position.copy(eng.camera.position);
+              pulse.lookAt(eng.camera.position.clone().add(fwd));
+              pulse._born = t;
+              pulse._dir = fwd.clone();
+              eng.scene.add(pulse);
+              eng.pulses.push(pulse);
+              // Sound effect
+              if (typeof beep === 'function') beep(2000, 0.05, 0.08);
+            }
+
+            // Update sonar pulses — expand outward, reveal objects
+            for (var pi = eng.pulses.length - 1; pi >= 0; pi--) {
+              var p = eng.pulses[pi];
+              var age = t - p._born;
+              var radius = age * 12; // expands at 12 units/sec
+              p.scale.setScalar(radius);
+              p.material.opacity = Math.max(0, 0.6 - age * 0.4);
+              // Move forward
+              p.position.addScaledVector(p._dir, 12 * dt);
+
+              // Check proximity to walls — light them up
+              eng.walls.forEach(function(w) {
+                var dist = p.position.distanceTo(w.position);
+                if (dist < radius + 2 && dist > radius - 2) {
+                  // Illuminate wall briefly
+                  w.material.emissive = w.material.emissive || new THREE.Color(0);
+                  w.material.emissive.setHex(0x1a3a5a);
+                  w.material.emissiveIntensity = Math.max(w.material.emissiveIntensity || 0, 0.8 - age * 0.5);
+                }
+              });
+
+              // Check moths
+              eng.moths.forEach(function(m) {
+                if (m._found) return;
+                var dist = p.position.distanceTo(m.position);
+                if (dist < radius + 1) {
+                  m.material.opacity = Math.min(1, m.material.opacity + 0.3);
+                  // Found moth if revealed enough
+                  if (m.material.opacity > 0.8 && !m._found) {
+                    m._found = true;
+                    m.material.color.setHex(0xffff00);
+                    eng.mothsFound++;
+                    if (addToast) addToast('\uD83E\uDD8B Moth found! (' + eng.mothsFound + '/5)', 'success');
+                    if (typeof awardXP === 'function') awardXP('echolocation', 5, 'Found moth in 3D cave');
+                  }
+                }
+              });
+
+              // Remove old pulses
+              if (age > 3) {
+                eng.scene.remove(p); p.geometry.dispose(); p.material.dispose();
+                eng.pulses.splice(pi, 1);
+              }
+            }
+
+            // Fade wall illumination
+            eng.walls.forEach(function(w) {
+              if (w.material.emissiveIntensity > 0.01) {
+                w.material.emissiveIntensity *= 0.96;
+              } else {
+                w.material.emissiveIntensity = 0;
+              }
+            });
+
+            // Moth hover animation
+            eng.moths.forEach(function(m, i) {
+              m.position.y = m._baseY + Math.sin(t * 2 + i * 1.3) * 0.2;
+              // Fade out found moths slowly
+              if (m._found) m.material.opacity *= 0.998;
+            });
+
+            eng.renderer.render(eng.scene, eng.camera);
+          }
+          animate();
+
+          return function() {
+            cancelAnimationFrame(cave3dAnimRef.current);
+            document.removeEventListener('keydown', eng._keyDown);
+            document.removeEventListener('keyup', eng._keyUp);
+            document.removeEventListener('mousemove', eng._mouseMove);
+            if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
+            cave3dEngineRef.current = null;
+          };
+        }, [tab === 'cave3d']);
+
+        var threeReady = window.THREE;
+
+        return h('div', { className: 'space-y-3' },
+          // Header
+          h('div', { className: 'text-center' },
+            h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '\uD83D\uDD26 3D Cave Echolocation'),
+            h('p', { className: 'text-xs ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, 'Navigate a dark cave using sonar pulses. Press E to emit a pulse. Find all 5 moths!')
+          ),
+          // Three.js not loaded
+          !threeReady && h('div', { className: 'text-center p-8 text-slate-500' },
+            h('p', null, 'Loading 3D engine... (Three.js required)'),
+            h('p', { className: 'text-xs mt-2' }, 'Three.js loads automatically when you open any 3D tool.')
+          ),
+          // 3D Canvas container
+          threeReady && h('div', {
+            ref: cave3dRef,
+            style: { width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', border: '2px solid ' + (isDark ? '#1e3a3a' : '#a7f3d0'), position: 'relative', background: '#020208', cursor: 'crosshair' }
+          },
+            // HUD overlay
+            h('div', { style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10, pointerEvents: 'none', fontSize: '11px', color: '#4ade80' } },
+              h('div', null, '\uD83E\uDD87 3D Echolocation Cave'),
+              h('div', null, 'WASD = fly \u2022 Mouse = look \u2022 E = sonar pulse'),
+              h('div', null, 'Space/Shift = up/down \u2022 Click to lock mouse'),
+              cave3dEngineRef.current && h('div', { style: { color: '#fbbf24', fontWeight: 700, marginTop: '4px' } },
+                '\uD83E\uDD8B Moths: ' + (cave3dEngineRef.current.mothsFound || 0) + '/5')
+            )
+          ),
+          // Controls help
+          h('div', { className: 'grid grid-cols-3 gap-2 text-center text-xs ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
+            h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-800' : 'bg-emerald-50') },
+              h('div', { className: 'text-lg' }, '\uD83D\uDD26'),
+              h('div', { className: 'font-bold' }, 'E = Sonar Pulse'),
+              h('div', null, 'Reveals cave walls & moths')),
+            h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-800' : 'bg-emerald-50') },
+              h('div', { className: 'text-lg' }, '\uD83E\uDD87'),
+              h('div', { className: 'font-bold' }, 'WASD = Fly'),
+              h('div', null, 'Navigate the dark cave')),
+            h('div', { className: 'p-2 rounded-lg ' + (isDark ? 'bg-slate-800' : 'bg-emerald-50') },
+              h('div', { className: 'text-lg' }, '\uD83E\uDD8B'),
+              h('div', { className: 'font-bold' }, 'Find 5 Moths'),
+              h('div', null, 'Hidden in the darkness'))
+          ),
+          // Science explanation
+          h('div', { className: 'p-3 rounded-xl border text-xs ' + (isDark ? 'bg-slate-800/50 border-slate-700 text-slate-300' : 'bg-emerald-50 border-emerald-200 text-slate-700'), style: { lineHeight: 1.6 } },
+            h('strong', null, '\uD83E\uDDE0 How Real Echolocation Works: '),
+            'Bats emit ultrasonic pulses (20-200 kHz) from their mouths or noses. These sound waves bounce off objects and return to the bat\u2019s ears. The time delay tells the bat how far away objects are, and the frequency shift (Doppler effect) tells it whether objects are moving toward or away. In this 3D simulation, each sonar pulse you emit travels outward and illuminates cave walls and moths as it passes them \u2014 just like a real bat\u2019s sonar cone!'
+          )
         );
       }
 
@@ -1068,13 +1368,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var maxR = sp.sonarRange ? sp.sonarRange * 1.6 : 400;
         st.pulses.push({ x: st.batX, y: st.batY, radius: 5, maxRadius: maxR, width: sp.sonarWidth || Math.PI * 2 });
         st.pulseCount++;
-        // Audio chirp — frugivore uses tongue click
-        if (typeof beep === 'function') {
-          try {
-            if (sp.diet === 'fruit') { beep(800, 0.02, 0.1); }
-            else { beep(2000, 0.03, 0.15); }
-          } catch(e) {}
-        }
+        // Audio chirp — species-specific echolocation call
+        // Insectivores: high-frequency FM sweep (frequency drops during call)
+        // Frugivores: tongue click (short broadband impulse)
+        try {
+          var ac = window._echoLabAC || (window._echoLabAC = new (window.AudioContext || window.webkitAudioContext)());
+          if (ac.state === 'suspended') ac.resume();
+          if (sp.diet === 'fruit') {
+            // Tongue click — short noise burst
+            var cBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.01), ac.sampleRate);
+            var cData = cBuf.getChannelData(0);
+            for (var ci2 = 0; ci2 < cData.length; ci2++) cData[ci2] = (Math.random() * 2 - 1) * Math.exp(-ci2 / (cData.length * 0.2));
+            var cSrc = ac.createBufferSource(); cSrc.buffer = cBuf;
+            var cG = ac.createGain(); cG.gain.value = 0.1;
+            cSrc.connect(cG); cG.connect(ac.destination); cSrc.start();
+          } else {
+            // FM chirp — frequency sweeps down (like real bat calls)
+            var chirpO = ac.createOscillator();
+            var chirpG = ac.createGain();
+            chirpO.type = 'sine';
+            chirpO.frequency.setValueAtTime(sp.freqMax || 8000, ac.currentTime);
+            chirpO.frequency.exponentialRampToValueAtTime(sp.freqMin || 2000, ac.currentTime + 0.015);
+            chirpG.gain.setValueAtTime(0.08, ac.currentTime);
+            chirpG.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.02);
+            chirpO.connect(chirpG); chirpG.connect(ac.destination);
+            chirpO.start(); chirpO.stop(ac.currentTime + 0.02);
+          }
+          if (window._alloHaptic) window._alloHaptic('echo');
+        } catch(e) {}
         srAnnounce('Sonar pulse emitted');
       }
 
@@ -1456,6 +1777,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 if (hit.type === 'passage') typeLabel = 'hidden passage';
                 if (hit.type === 'web') typeLabel = 'spider web';
                 srAnnounce('Object discovered: ' + typeLabel + ' at distance ' + Math.round(dist) + ' pixels');
+                // Discovery chime + echo return proportional to distance
+                try {
+                  var dAc = window._echoLabAC;
+                  if (dAc) {
+                    // Discovery chime
+                    var dO = dAc.createOscillator(); var dG = dAc.createGain();
+                    dO.type = 'sine'; dO.frequency.value = 1200; dG.gain.setValueAtTime(0.08, dAc.currentTime);
+                    dG.gain.exponentialRampToValueAtTime(0.001, dAc.currentTime + 0.08);
+                    dO.connect(dG); dG.connect(dAc.destination); dO.start(); dO.stop(dAc.currentTime + 0.08);
+                    setTimeout(function() {
+                      var dO2 = dAc.createOscillator(); var dG2 = dAc.createGain();
+                      dO2.type = 'sine'; dO2.frequency.value = 1500; dG2.gain.setValueAtTime(0.06, dAc.currentTime);
+                      dG2.gain.exponentialRampToValueAtTime(0.001, dAc.currentTime + 0.06);
+                      dO2.connect(dG2); dG2.connect(dAc.destination); dO2.start(); dO2.stop(dAc.currentTime + 0.06);
+                    }, 60);
+                    if (window._alloHaptic) window._alloHaptic('correct');
+                  }
+                } catch(e) {}
                 if (typeof beep === 'function') {
                   try { beep(1200, 0.05, 0.1); } catch(e) {}
                 }
@@ -3778,6 +4117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         // Tab content
         tab === 'sonar' && renderSonarTab(),
+        tab === 'cave3d' && renderCave3dTab(),
         tab === 'waves' && renderWavesTab(),
         tab === 'doppler' && renderDopplerTab(),
         tab === 'biology' && renderBiologyTab(),
