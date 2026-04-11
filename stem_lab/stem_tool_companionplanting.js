@@ -33,6 +33,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
 
 (function() {
   'use strict';
+
+  // ── Audio + WCAG (auto-injected) ──
+  var _plantAC = null;
+  function getPlantAC() { if (!_plantAC) { try { _plantAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_plantAC && _plantAC.state==="suspended") { try { _plantAC.resume(); } catch(e) {} } return _plantAC; }
+  function plantTone(f,d,tp,v) { var ac=getPlantAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxPlantClick() { plantTone(600,0.03,"sine",0.04); }
+  function sfxPlantSuccess() { plantTone(523,0.08,"sine",0.07); setTimeout(function(){plantTone(659,0.08,"sine",0.07);},70); setTimeout(function(){plantTone(784,0.1,"sine",0.08);},140); }
+  if(!document.getElementById("plant-a11y")){var _s=document.createElement("style");_s.id="plant-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-companionplanting')) return;
