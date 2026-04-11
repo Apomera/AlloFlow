@@ -185,8 +185,10 @@ var useReducedMotion = () => {
   return prefersReduced;
 };
 var LAYOUT_MODES = {
-  "prose": { label: "Prose", emoji: "\u{1F4C4}", desc: "Traditional paragraph layout" },
-  "comic": { label: "Comic Panels", emoji: "\u{1F4AC}", desc: "Graphic novel panel grid" }
+  "prose": { label: "Prose", emoji: "\u{1F4C4}", desc: "Traditional paragraph layout", writeBg: "bg-white", writeBorder: "border-slate-200", accent: "rose" },
+  "comic": { label: "Comic", emoji: "\u{1F4AC}", desc: "Panel grid with speech bubbles", writeBg: "bg-slate-50", writeBorder: "border-slate-800", accent: "blue" },
+  "journal": { label: "Journal", emoji: "\u{1F4D3}", desc: "Lined notebook diary style", writeBg: "bg-amber-50", writeBorder: "border-amber-300", accent: "amber" },
+  "dark": { label: "Dark", emoji: "\u{1F319}", desc: "Dark mode cyberpunk aesthetic", writeBg: "bg-slate-900", writeBorder: "border-slate-600", accent: "cyan" }
 };
 var VOICE_POOL = ["Kore", "Puck", "Charon", "Fenrir", "Aoede", "Leda", "Orus", "Zephyr"];
 var ART_STYLE_MAP = {
@@ -331,6 +333,8 @@ var StoryForge = React.memo(({
   const [helpMeParagraphIdx, setHelpMeParagraphIdx] = useState(-1);
   const [layoutMode, setLayoutMode] = useState("prose");
   const [dictatingParagraphIdx, setDictatingParagraphIdx] = useState(-1);
+  const [focusMode, setFocusMode] = useState(false);
+  const [focusParagraphIdx, setFocusParagraphIdx] = useState(0);
   const [language, setLanguage] = useState("en");
   const [customLanguage, setCustomLanguage] = useState("");
   const [hasExported, setHasExported] = useState(false);
@@ -382,6 +386,10 @@ var StoryForge = React.memo(({
   }, [currentLevel]);
   const [imageEditState, setImageEditState] = useState(null);
   const [panelStickers, setPanelStickers] = useState({});
+  const [panelDialogue, setPanelDialogue] = useState({});
+  const updatePanelDialogue = function(pId, field, value) {
+    setPanelDialogue(function(prev) { var u = Object.assign({}, prev); u[pId] = Object.assign({}, u[pId] || {}, {}); u[pId][field] = value; return u; });
+  };
   const [illustrations, setIllustrations] = useState({});
   const [coverArt, setCoverArt] = useState(null);
   const [coverArtLoading, setCoverArtLoading] = useState(false);

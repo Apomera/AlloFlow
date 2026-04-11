@@ -687,7 +687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Migration visualization',
               ref: canvasRef,
               role: 'img',
               'aria-label': 'V-formation simulator canvas. Drag birds to reposition them. Leader bird shown with star. Energy bars above each bird show current energy level. Green cones behind each bird show upwash zones where trailing birds save energy. Red zone directly behind shows downwash area.',
@@ -730,7 +730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'flex items-center gap-2 ml-auto' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, 'Birds:'),
               h('input', {
-                type: 'range', min: 5, max: 15, value: birdCount,
+                type: 'range', 'aria-label': 'bird count', min: 5, max: 15, value: birdCount,
                 'aria-label': 'Number of birds in flock: ' + birdCount,
                 className: 'w-20 accent-sky-500',
                 onChange: function(e) {
@@ -746,7 +746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'flex items-center gap-2' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, 'Speed:'),
               h('input', {
-                type: 'range', min: 0.5, max: 3, step: 0.5, value: simSpeed,
+                type: 'range', 'aria-label': 'sim speed', min: 0.5, max: 3, step: 0.5, value: simSpeed,
                 'aria-label': 'Simulation speed: ' + simSpeed + 'x',
                 className: 'w-16 accent-sky-500',
                 onChange: function(e) { upd('vSpeed', parseFloat(e.target.value)); }
@@ -1123,7 +1123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return h('div', { className: 'space-y-3' },
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Migration visualization',
               ref: canvasRef,
               role: 'img',
               'aria-label': 'Wind currents sandbox. Click to place objects that affect wind patterns. Particles show wind speed and direction. ' + windSpeed + ' mph ' + getBeaufort(windSpeed) + ' wind.',
@@ -1208,7 +1208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'flex items-center gap-2 flex-1 min-w-[180px]' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, '\uD83C\uDF2C\uFE0F Wind:'),
               h('input', {
-                type: 'range', min: 0, max: 50, value: windSpeed,
+                type: 'range', 'aria-label': 'wind speed', min: 0, max: 50, value: windSpeed,
                 'aria-label': 'Wind speed: ' + windSpeed + ' mph, ' + getBeaufort(windSpeed),
                 className: 'flex-1 accent-sky-500',
                 onChange: function(e) { upd('windSpeed', parseInt(e.target.value, 10)); }
@@ -1616,7 +1616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return h('div', { className: 'space-y-3' },
           // Map canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Migration visualization',
               ref: canvasRef,
               role: 'img',
               'aria-label': 'Migration route map of North America showing four flyways: Atlantic, Mississippi, Central, and Pacific. ' + (selectedSpecies ? 'Currently tracking ' + getSpeciesById(selectedSpecies).name : 'Select a species to see its route.'),
@@ -1811,7 +1811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('thead', null,
                   h('tr', { className: 'border-b ' + borderCol },
                     ['Species', 'Distance', 'Speed', 'Altitude', 'Weight', 'Flyway', 'Formation'].map(function(col) {
-                      return h('th', { key: col, className: 'text-left py-1.5 px-1 font-bold ' + textPrimary }, col);
+                      return h('th', { key: col, scope: 'col', className: 'text-left py-1.5 px-1 font-bold ' + textPrimary }, col);
                     })
                   )
                 ),
@@ -2194,7 +2194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return h('div', { className: 'space-y-3' },
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Migration visualization',
               ref: canvasRef,
               role: 'img',
               'aria-label': 'Aerodynamics lab showing airfoil cross-section with streamlines. Current angle of attack: ' + aoa + ' degrees. ' + (isStalling ? 'Wing is stalling, flow separation occurring.' : 'Lift coefficient: ' + cl.toFixed(2) + ', Drag coefficient: ' + cd.toFixed(3) + ', L/D ratio: ' + ldRatio.toFixed(1)),
@@ -2211,7 +2211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           h('div', { className: 'flex items-center gap-3' },
             h('label', { className: 'text-xs font-bold ' + textPrimary }, 'Angle of Attack:'),
             h('input', {
-              type: 'range', min: 0, max: 20, value: aoa,
+              type: 'range', 'aria-label': 'aoa', min: 0, max: 20, value: aoa,
               'aria-label': 'Angle of attack: ' + aoa + ' degrees',
               className: 'flex-1 accent-sky-500',
               onChange: function(e) { upd('aoa', parseInt(e.target.value, 10)); }
@@ -2689,7 +2689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return h('div', { className: 'space-y-4' },
           // Night sky navigation canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Migration visualization',
               ref: navCanvasRef,
               role: 'img',
               'aria-label': 'Animated night sky showing nocturnal bird migration. Stars twinkle around Polaris, magnetic field lines curve across the sky, and a small flock migrates through the scene. Demonstrates how birds use stars and magnetic sense to navigate at night.',

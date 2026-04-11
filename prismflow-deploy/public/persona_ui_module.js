@@ -1,5 +1,7 @@
 (function() {
 'use strict';
+  // WCAG 2.1 AA: Accessibility CSS
+  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }
 // persona_ui_source.jsx — InteractiveBlueprintCard, HarmonyMeter, CharacterColumn
 // Extracted from AlloFlowANTI.txt for CDN modularization

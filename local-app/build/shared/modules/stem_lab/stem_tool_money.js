@@ -1183,7 +1183,7 @@ window.StemLab = window.StemLab || {
                         })
                       ),
                       React.createElement("button", { "aria-label": "ENTER", onClick: submitCashierAnswer, disabled: !crAnswer,
-                        className: "px-6 bg-emerald-700 text-white font-black rounded-xl hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md text-lg active:scale-95"
+                        className: "px-6 bg-emerald-700 text-white font-black rounded-xl hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md text-lg active:scale-95"
                       }, "ENTER")
                     )
                   ) : null,

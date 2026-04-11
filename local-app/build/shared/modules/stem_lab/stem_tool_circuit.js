@@ -46,6 +46,25 @@ window.StemLab = window.StemLab || {
     };
   };
 
+  // ── Circuit Builder CSS animations ──
+  if (!document.getElementById('circuit-css-anims')) {
+    var circStyle = document.createElement('style');
+    circStyle.id = 'circuit-css-anims';
+    circStyle.textContent = [
+      '@keyframes circuitPulse { 0%, 100% { box-shadow: 0 0 4px rgba(59,130,246,0.15); } 50% { box-shadow: 0 0 12px rgba(59,130,246,0.3); } }',
+      '@keyframes circuitZap { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }',
+      '@keyframes circuitSlideIn { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }',
+      '@keyframes circuitShortSpark { 0% { opacity: 0; } 20% { opacity: 1; background: rgba(239,68,68,0.15); } 100% { opacity: 0; } }',
+      '@keyframes electronGlow { 0%, 100% { filter: drop-shadow(0 0 2px rgba(59,130,246,0.4)); } 50% { filter: drop-shadow(0 0 6px rgba(59,130,246,0.8)); } }',
+      '@keyframes circuitBadgePop { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }',
+      '.circuit-card { animation: circuitSlideIn 0.3s ease-out; }',
+      '.circuit-badge { animation: circuitBadgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
+      '.circuit-active { animation: circuitPulse 2s ease-in-out infinite; }',
+      '.circuit-short { animation: circuitShortSpark 0.8s ease-out; }'
+    ].join('\n');
+    document.head.appendChild(circStyle);
+  }
+
   // ── Sound effects ──
   var _audioCtx = null;
   function getAudioCtx() {
@@ -82,8 +101,23 @@ window.StemLab = window.StemLab || {
         setTimeout(function() { playTone(800, 0.04, 'square', 0.05); }, 30);
         break;
       case 'shortCircuit':
+        // Intense spark + crackle
         playTone(150, 0.3, 'sawtooth', 0.1);
-        setTimeout(function() { playTone(160, 0.3, 'sawtooth', 0.08); }, 50);
+        playTone(160, 0.3, 'sawtooth', 0.08);
+        // Spark noise
+        (function() {
+          var ac = getAudioCtx(); if (!ac) return;
+          try {
+            var bufSize = Math.floor(ac.sampleRate * 0.15);
+            var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+            var data = buf.getChannelData(0);
+            for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.2));
+            var src = ac.createBufferSource(); src.buffer = buf;
+            var filt = ac.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 3000; filt.Q.value = 1.5;
+            var g = ac.createGain(); g.gain.setValueAtTime(0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
+            src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
+          } catch(e) {}
+        })();
         break;
       case 'challengeComplete':
         playTone(523, 0.1, 'sine', 0.1);
@@ -104,6 +138,41 @@ window.StemLab = window.StemLab || {
         setTimeout(function() { playTone(659, 0.08, 'sine', 0.1); }, 70);
         setTimeout(function() { playTone(784, 0.08, 'sine', 0.1); }, 140);
         setTimeout(function() { playTone(1047, 0.2, 'sine', 0.14); }, 210);
+        break;
+      case 'electricHum':
+        // 60Hz mains hum — brief pulse
+        playTone(60, 0.3, 'sine', 0.04);
+        playTone(120, 0.25, 'sine', 0.02); // 2nd harmonic
+        break;
+      case 'capacitorCharge':
+        // Rising pitch — charging sound
+        (function() {
+          var ac = getAudioCtx(); if (!ac) return;
+          try {
+            var osc = ac.createOscillator(); var g = ac.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(200, ac.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(2000, ac.currentTime + 0.4);
+            g.gain.setValueAtTime(0.06, ac.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+            osc.connect(g); g.connect(ac.destination); osc.start(); osc.stop(ac.currentTime + 0.4);
+          } catch(e) {}
+        })();
+        break;
+      case 'resistorHiss':
+        // Gentle thermal noise
+        (function() {
+          var ac = getAudioCtx(); if (!ac) return;
+          try {
+            var bufSize = Math.floor(ac.sampleRate * 0.06);
+            var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+            var data = buf.getChannelData(0);
+            for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+            var src = ac.createBufferSource(); src.buffer = buf;
+            var filt = ac.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 1500; filt.Q.value = 3;
+            var g = ac.createGain(); g.gain.setValueAtTime(0.025, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.06);
+            src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
+          } catch(e) {}
+        })();
         break;
       default:
         playTone(440, 0.08, 'sine', 0.06);
@@ -903,7 +972,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-3 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83D\uDD0B'),
                 h('input', {
-                  type: 'range', min: 1, max: 24, step: 0.5,
+                  type: 'range', 'aria-label': 'Circuit slider', min: 1, max: 24, step: 0.5,
                   value: voltage,
                   onChange: function(e) { upd('voltage', parseFloat(e.target.value)); },
                   className: 'flex-1 accent-yellow-600'
@@ -1348,7 +1417,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'ml-auto text-[11px] text-slate-500 font-mono' },
                   voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\u03A9')
               ),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Circuit visualization', 
                 ref: function(canvas) {
                   if (!canvas) return;
                   var oc = canvas.getContext('2d');

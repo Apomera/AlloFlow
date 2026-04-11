@@ -993,7 +993,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       }
       if (isDialogueMode && text) {
         try {
-          const dialogueData = safeJsonParse(text);
+          var _sjp = (window.__alloUtils && window.__alloUtils.safeJsonParse) || function(t) { try { return JSON.parse(t.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim()); } catch(e) { return null; } };
+          const dialogueData = _sjp(text);
           if (dialogueData && dialogueData.dialogue && Array.isArray(dialogueData.dialogue)) {
             var _dialogueData$charact, _dialogueData$charact2;
             let formattedScript = '';

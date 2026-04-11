@@ -316,7 +316,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'flex items-center gap-2 mt-1' },
           h('span', { className: 'text-xs text-slate-500 w-20 shrink-0' }, label),
           h('input', {
-            type: 'range', min: min, max: max, step: step, value: value,
+            type: 'range', 'aria-label': 'value', min: min, max: max, step: step, value: value,
             onChange: function(e) { onChange(parseFloat(e.target.value)); },
             className: 'flex-1 accent-cyan-500 h-1.5',
             'aria-label': label
@@ -591,7 +591,7 @@ window.StemLab = window.StemLab || {
               });
             })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-bandgap-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': 'Band gap diagram for ' + mat.name + ' at ' + tempK + 'K'
@@ -760,7 +760,7 @@ window.StemLab = window.StemLab || {
               });
             })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-doping-canvas', width: 440, height: 300,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': 'Crystal lattice showing ' + (d.dopant !== 'none' ? dopant.name + ' doped silicon' : 'intrinsic silicon')
@@ -966,7 +966,7 @@ window.StemLab = window.StemLab || {
         }, [d.pnBias, d.pnShowField, d.pnShowCarriers, d.pnShowDepletion, d.pnShowIV, d.pnLedMode]);
 
         return h('div', null,
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-pn-canvas', width: 440, height: 280,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': 'P-N junction with ' + bias.toFixed(1) + 'V bias'
@@ -1219,7 +1219,7 @@ window.StemLab = window.StemLab || {
             pill('NPN BJT', type === 'bjt-npn' && !showCMOS, function() { updMulti({ transistorType: 'bjt-npn', showCMOS: false }); tryAwardXP('bjt', 10, 'Explored BJT'); }),
             pill('\u2699\uFE0F CMOS Inverter', showCMOS, function() { updMulti({ showCMOS: !showCMOS }); tryAwardXP('cmos', 15, 'Explored CMOS inverter'); })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-transistor-canvas', width: 440, height: showCMOS ? 200 : 220,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': (showCMOS ? 'CMOS inverter' : type + ' transistor') + ', Vg=' + Vg.toFixed(1) + 'V'
@@ -1390,7 +1390,7 @@ window.StemLab = window.StemLab || {
               });
             })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-gates-canvas', width: 440, height: 180,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': gateType + ' gate: A=' + (inA ? 1 : 0) + (gate.inputs === 2 ? ' B=' + (inB ? 1 : 0) : '') + ' Q=' + (output ? 1 : 0)
@@ -1562,7 +1562,7 @@ window.StemLab = window.StemLab || {
             pill('LED', device === 'led', function() { upd('ivDevice', 'led'); tryAwardXP('iv-led', 10, 'Explored LED I-V'); }),
             pill('Resistor', device === 'resistor', function() { upd('ivDevice', 'resistor'); tryAwardXP('iv-resistor', 5, 'Explored resistor I-V'); })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-iv-canvas', width: 440, height: 260,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': 'I-V curve for ' + device + ' at V=' + sweepV.toFixed(2) + 'V, I=' + iDisplay
@@ -1880,7 +1880,7 @@ window.StemLab = window.StemLab || {
         }, [d.fabStage]);
 
         return h('div', null,
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-fab-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': 'Wafer fabrication stage ' + (stage + 1) + ': ' + currentStage.name
@@ -2068,7 +2068,7 @@ window.StemLab = window.StemLab || {
               }, a11yClick ? a11yClick(function() { upd('ledMaterial', key); }) : {}), m.name.split(' ')[0]);
             })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-led-canvas', width: 440, height: 220,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': mixMode ? 'RGB color mixing' : mat.name + ' LED at ' + mat.wavelength + 'nm'
@@ -2260,7 +2260,7 @@ window.StemLab = window.StemLab || {
               });
             })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-solar-canvas', width: 440, height: 230,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': sMat.name + ' solar cell producing ' + Pmax.toFixed(1) + ' watts'
@@ -2418,7 +2418,7 @@ window.StemLab = window.StemLab || {
         }, [d.mooreYear, d.mooreShowPred, d.mooreLogScale]);
 
         return h('div', null,
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-moore-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': 'Moore\'s Law graph showing transistor counts from 1965 to 2030'
@@ -2617,7 +2617,7 @@ window.StemLab = window.StemLab || {
               });
             })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-qw-canvas', width: 440, height: 260,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': 'Quantum well potential with ' + levels.length + ' energy levels'
@@ -2898,7 +2898,7 @@ window.StemLab = window.StemLab || {
               });
             })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-mem-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': mt.name + ' memory cell storing bit ' + bitVal
@@ -2908,7 +2908,7 @@ window.StemLab = window.StemLab || {
               upd('memBitValue', bitVal ? 0 : 1);
               tryAwardXP('mem-flip', 5, 'Flipped memory bit');
               if (announceToSR) announceToSR('Bit set to ' + (bitVal ? 0 : 1));
-            }, bitVal ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'),
+            }, bitVal ? 'bg-emerald-700 text-white hover:bg-emerald-700' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'),
             btn(writeEn ? '\uD83D\uDD13 Write ON' : '\uD83D\uDD12 Write OFF', function() {
               upd('memWriteEnable', !writeEn);
             }, writeEn ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'),
@@ -3094,7 +3094,7 @@ window.StemLab = window.StemLab || {
               });
             })
           ),
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Semiconductor visualization',
             id: 'semi-amp-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': amp.name + ' amplifier with gain ' + amp.gain
@@ -3231,7 +3231,7 @@ window.StemLab = window.StemLab || {
                 var isCorrect = opt === current.a;
                 var showResult = d.challengeFeedback !== null;
                 var optClass = 'px-3 py-2 rounded-lg text-xs font-semibold text-left transition-all ';
-                if (showResult && isSelected && isCorrect) optClass += 'bg-emerald-600 text-white ring-2 ring-emerald-400';
+                if (showResult && isSelected && isCorrect) optClass += 'bg-emerald-700 text-white ring-2 ring-emerald-400';
                 else if (showResult && isSelected && !isCorrect) optClass += 'bg-red-600 text-white';
                 else if (showResult && isCorrect) optClass += 'bg-emerald-600/30 text-emerald-300 border border-emerald-500';
                 else optClass += 'bg-slate-700 text-slate-200 hover:bg-slate-600';
@@ -3380,7 +3380,7 @@ window.StemLab = window.StemLab || {
                 var isSelected = d.battleFeedback === opt || (showResult && feedback === 'wrong-' + opt);
                 var isCorrect = opt === currentRound.answer;
                 var optClass = 'px-3 py-2 rounded-lg text-xs font-semibold text-left transition-all ';
-                if (showResult && isCorrect) optClass += 'bg-emerald-600 text-white ring-2 ring-emerald-400';
+                if (showResult && isCorrect) optClass += 'bg-emerald-700 text-white ring-2 ring-emerald-400';
                 else if (showResult && isSelected) optClass += 'bg-red-600 text-white';
                 else optClass += 'bg-slate-700 text-slate-200 hover:bg-slate-600';
 

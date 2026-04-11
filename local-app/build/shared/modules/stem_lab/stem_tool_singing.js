@@ -2661,7 +2661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-400 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
-          (isDark ? 'bg-rose-600 hover:bg-rose-500 text-white focus:ring-rose-400' : 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500');
+          (isDark ? 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-400' : 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500');
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
           (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400');
         var btnDanger = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
@@ -2740,7 +2740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 '\u2194\uFE0F', 'Cents Meter'),
               h('p', { className: subTextClass + ' mb-2' },
                 'How sharp or flat you are. Aim for the green center zone (\u00B110 cents).'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Singing visualization',
                 ref: centsMeterCanvasRef,
                 width: 400,
                 height: 40,
@@ -2756,7 +2756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 '\uD83C\uDFB9', 'Piano Roll'),
               h('p', { className: subTextClass + ' mb-2' },
                 'Your pitch over time, mapped to musical notes. Green = on pitch, yellow = close, red = off.'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Singing visualization',
                 ref: pitchRollCanvasRef,
                 width: 600,
                 height: 200,
@@ -2779,7 +2779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     key: rn.midi,
                     className: 'px-2 py-1.5 rounded text-xs font-mono font-bold transition-colors ' +
                       (isActive
-                        ? 'bg-rose-500 text-white ring-2 ring-rose-300'
+                        ? 'bg-rose-700 text-white ring-2 ring-rose-300'
                         : (isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-700')),
                     onClick: function() {
                       if (isActive) {
@@ -2992,7 +2992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 displayLow && displayHigh
                   ? 'Green keys show your vocal range from ' + midiToNoteName(displayLow).str + ' to ' + midiToNoteName(displayHigh).str + '.'
                   : 'Complete the range test above to see your range highlighted.'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Singing visualization',
                 ref: rangeKeyboardCanvasRef,
                 width: 600,
                 height: 80,
@@ -3116,7 +3116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 '\uD83C\uDF0A', 'Vibrato Waveform'),
               h('p', { className: subTextClass + ' mb-2' },
                 'Sustain a note to see your vibrato pattern. The center line is your average pitch.'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Singing visualization',
                 ref: vibratoCanvasRef,
                 width: 600,
                 height: 160,
@@ -3236,7 +3236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         key: lvl,
                         className: 'w-8 h-8 rounded-lg text-xs font-bold transition-colors ' +
                           (intervalLevel >= lvl
-                            ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-500 text-white')
+                            ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
                             : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-600')),
                         onClick: function() { setIntervalLevel(lvl); },
                         'aria-label': 'Set level to ' + lvl
@@ -3310,7 +3310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     ' (' + Math.round(Math.abs(currentNote.midi - intervalActive.targetMidi) * 100) + '\u00A2 off)')
                 ),
                 // Staff canvas
-                h('canvas', {
+                h('canvas', { 'aria-label': 'Singing visualization',
                   ref: intervalStaffCanvasRef,
                   width: 400,
                   height: 120,
@@ -3506,7 +3506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
                 // Canvas diagram
                 h('div', { className: 'flex justify-center' },
-                  h('canvas', {
+                  h('canvas', { 'aria-label': 'Singing visualization',
                     ref: anatomyCanvasRef,
                     width: 500,
                     height: 400,
@@ -3604,7 +3604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         key: v.id,
                         className: 'px-3 py-1 rounded text-xs font-semibold transition-colors ' +
                           (isActive
-                            ? (isDark ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white')
+                            ? (isDark ? 'bg-emerald-700 text-white' : 'bg-emerald-700 text-white')
                             : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
                         onClick: function() { setAnatomyVowelIdx(vi); }
                       }, v.label);
@@ -4105,21 +4105,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'generate'
-                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-500 text-white')
+                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
                       : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
                   onClick: function() { setSrSource('generate'); }
                 }, 'Random'),
                 h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'melody'
-                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-500 text-white')
+                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
                       : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
                   onClick: function() { setSrSource('melody'); }
                 }, 'Melodies'),
                 callGemini && h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                     (srSource === 'ai'
-                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-500 text-white')
+                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
                       : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
                   onClick: function() { setSrSource('ai'); }
                 }, 'AI Generate')
@@ -4160,7 +4160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       key: mel.id,
                       className: 'text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ' +
                         (isActive
-                          ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-500 text-white')
+                          ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
                       onClick: function() { setSrMelodyId(mel.id); }
                     },
@@ -4190,7 +4190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             srNotes && h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                 '\uD83C\uDFB5', 'Staff'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Singing visualization',
                 ref: sightReadCanvasRef,
                 width: 700,
                 height: 160,
@@ -4248,7 +4248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 h('div', { className: 'flex items-center gap-2 ml-auto' },
                   h('label', { className: subTextClass }, 'Tempo:'),
                   h('input', {
-                    type: 'range',
+                    type: 'range', 'aria-label': 'Singing slider',
                     min: 40,
                     max: 120,
                     value: srTempo,

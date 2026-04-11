@@ -299,7 +299,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
             breakers.map(function(b, i) {
               var active = i === cycleIdx;
-              return h('div', { key: i, onClick: function() { upd('cycleIdx', i); if (soundOn) sfxClick(); },
+              return h('div', { key: i, role: 'button', tabIndex: 0, 'aria-label': b.title, onClick: function() { upd('cycleIdx', i); if (soundOn) sfxClick(); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('cycleIdx', i); if (soundOn) sfxClick(); } },
                 style: { background: active ? BL : '#fff', border: active ? '2px solid #93c5fd' : '1px solid #e5e7eb', borderRadius: '14px', padding: '16px', cursor: 'pointer', transition: 'all 0.15s' }
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: active ? '8px' : '0' } },

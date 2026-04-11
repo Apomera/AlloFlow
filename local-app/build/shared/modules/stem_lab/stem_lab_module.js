@@ -235,7 +235,11 @@
           '.stem-lab-modal button:focus-visible, .stem-lab-modal input:focus-visible, .stem-lab-modal select:focus-visible, .stem-lab-modal textarea:focus-visible, .stem-lab-modal [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
           '.stem-lab-modal canvas:focus-visible { outline: 3px solid #6366f1 !important; outline-offset: 2px !important; }',
           // Skip mouse users — only show outlines for keyboard
-          '.stem-lab-modal :focus:not(:focus-visible) { outline: none !important; }'
+          '.stem-lab-modal :focus:not(:focus-visible) { outline: none !important; }',
+          // WCAG 2.3.3: Reduced motion — disable ALL animations for users who prefer
+          '@media (prefers-reduced-motion: reduce) { .stem-lab-modal *, .stem-lab-modal *::before, .stem-lab-modal *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
+          // WCAG 1.4.11: Ensure focus indicators have adequate contrast on all backgrounds
+          '.stem-lab-modal [role="button"]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; }'
         ].join('\n');
         document.head.appendChild(s);
         return function () { var el = document.getElementById('stem-xp-keyframes'); if (el) el.remove(); };
@@ -285,6 +289,35 @@
         }
         document.head.appendChild(s);
         return function () { var el = document.getElementById(id); if (el) el.remove(); };
+      }, [isDark, isContrast]);
+
+      // ── WCAG 1.4.3: Minimum contrast fixes for standard mode ──
+      // text-slate-400 (#94a3b8) on white (#fff) = 2.97:1 ratio — FAILS AA.
+      // Upgrading to text-slate-500 (#64748b) = 4.63:1 ratio — PASSES AA.
+      React.useEffect(function() {
+        if (isDark || isContrast) return; // Dark/HC modes handle their own contrast
+        var id = 'stem-contrast-fix';
+        if (document.getElementById(id)) return;
+        var s = document.createElement('style');
+        s.id = id;
+        s.textContent = [
+          // Upgrade low-contrast slate-400 text to slate-500 (4.63:1 on white)
+          '[data-stem-lab] .text-slate-400 { color: #64748b !important; }',
+          '[data-stem-lab] .text-\\[10px\\].text-slate-400 { color: #64748b !important; }',
+          // Upgrade low-contrast [9px] and [8px] text (small text needs 4.5:1)
+          '[data-stem-lab] .text-\\[9px\\] { font-size: 10px !important; }',
+          '[data-stem-lab] .text-\\[8px\\] { font-size: 9px !important; }',
+          // Ensure slate-500 meets AA on light backgrounds
+          '[data-stem-lab] .text-slate-500 { color: #475569 !important; }',
+          // Fix rose-400 on white (used in vocab bars) — upgrade to rose-500
+          '[data-stem-lab] .text-rose-400 { color: #e11d48 !important; }',
+          // Fix amber-400 on white — upgrade to amber-600
+          '[data-stem-lab] .text-amber-400 { color: #d97706 !important; }',
+          // Fix cyan-400 on white — upgrade to cyan-600
+          '[data-stem-lab] .text-cyan-400 { color: #0891b2 !important; }',
+        ].join('\n');
+        document.head.appendChild(s);
+        return function() { var el = document.getElementById(id); if (el) el.remove(); };
       }, [isDark, isContrast]);
 
       // ── STEM Lab XP System (per-activity cap: 100 XP) ──
@@ -819,6 +852,60 @@
         setA11yAnnouncement(msg);
         try { var liveEl = document.getElementById('stem-a11y-live'); if (liveEl) liveEl.textContent = msg; } catch (e) { }
         setTimeout(function () { setA11yAnnouncement(''); try { var liveEl = document.getElementById('stem-a11y-live'); if (liveEl) liveEl.textContent = ''; } catch (e) { } }, 3000);
+      }
+
+      // ── WCAG Auto-Fixer: Runs after tool renders to catch unlabeled interactive elements ──
+      // This is a safety net — tools should be accessible by default, but this catches gaps.
+      if (!window._stemA11yFixerActive) {
+        window._stemA11yFixerActive = true;
+        setInterval(function() {
+          try {
+            var modal = document.querySelector('.stem-lab-modal');
+            if (!modal) return;
+            // 1. Auto-label role=button elements that lack aria-label
+            var roleButtons = modal.querySelectorAll('[role="button"]:not([aria-label])');
+            roleButtons.forEach(function(el) {
+              var text = (el.textContent || '').trim().substring(0, 50);
+              if (text) el.setAttribute('aria-label', text);
+            });
+            // 2. Auto-label close buttons (×) that lack aria-label
+            var closeBtns = modal.querySelectorAll('button:not([aria-label])');
+            closeBtns.forEach(function(el) {
+              var text = (el.textContent || '').trim();
+              if (text === '\u00d7' || text === 'X' || text === '\u2715' || text === '\u2716') {
+                el.setAttribute('aria-label', 'Close');
+              } else if (text && text.length <= 60) {
+                el.setAttribute('aria-label', text);
+              }
+            });
+            // 3. Auto-label canvas elements that lack aria-label
+            var canvases = modal.querySelectorAll('canvas:not([aria-label])');
+            canvases.forEach(function(el) {
+              el.setAttribute('role', 'img');
+              el.setAttribute('aria-label', 'Interactive visualization. Use controls above and below to interact.');
+              if (!el.getAttribute('tabindex')) el.setAttribute('tabindex', '0');
+            });
+            // 4. Auto-label select elements that lack aria-label
+            var selects = modal.querySelectorAll('select:not([aria-label]):not([aria-labelledby])');
+            selects.forEach(function(el) {
+              var prev = el.previousElementSibling;
+              if (prev && prev.textContent) {
+                el.setAttribute('aria-label', prev.textContent.trim().substring(0, 50));
+              } else {
+                el.setAttribute('aria-label', 'Selection menu');
+              }
+            });
+            // 5. Auto-label inputs without labels
+            var inputs = modal.querySelectorAll('input:not([aria-label]):not([aria-labelledby]):not([id])');
+            inputs.forEach(function(el) {
+              var placeholder = el.getAttribute('placeholder');
+              if (placeholder) el.setAttribute('aria-label', placeholder);
+            });
+            // 6. Ensure all images in tool have alt text
+            var imgs = modal.querySelectorAll('img:not([alt])');
+            imgs.forEach(function(el) { el.setAttribute('alt', 'Illustration'); });
+          } catch(e) { /* safety net — never crash the app */ }
+        }, 2000); // Run every 2 seconds
       }
 
       // ── Canvas Narration: Dual-Channel (aria-live + TTS) with Smart Detection & Adaptive Verbosity ──
@@ -2797,6 +2884,7 @@
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
+              { id: 'spaceExplorer', label: 'Space Explorer', icon: '\uD83C\uDF0C', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
               { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
 
               { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
@@ -2810,7 +2898,18 @@
               { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
               { id: 'geometryWorld', icon: '\uD83E\uDDF1', label: 'Geometry World', desc: 'Explore a 3D world where geometry questions unlock new areas. Talk to NPCs and solve shape puzzles!', color: 'purple', ready: true },
-              { id: 'logicLab', icon: '\uD83E\uDDE9', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true }
+              { id: 'logicLab', icon: '\uD83E\uDDE9', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true },
+
+              { id: '_cat_SoundSpeech', icon: '', label: '\uD83C\uDFA4 Sound, Speech & Music', desc: '', color: 'slate', category: true },
+              { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
+              { id: 'oratory', icon: '\uD83C\uDFA4', label: 'Oratory & Speech Lab', desc: 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
+              { id: 'singing', icon: '\uD83C\uDFA4', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'pink', ready: true },
+
+              { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', category: true },
+              { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
+
+              { id: '_cat_Technology', icon: '', label: '\uD83D\uDCF1 Technology & AI', desc: '', color: 'slate', category: true },
+              { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true }
             ];
             // ── Tool search filter ──
             var _searchLower = _stemToolSearch.toLowerCase().trim();
@@ -3336,7 +3435,7 @@
                         key: qt.id,
                         'aria-label': 'Quest type: ' + qt.label,
                         onClick: function() { upd('_questBuilderType', qt.id); },
-                        className: "px-1.5 py-1.5 rounded-lg text-[9px] font-bold text-center transition-all border " + (isActive ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
+                        className: "px-1.5 py-1.5 rounded-lg text-[9px] font-bold text-center transition-all border " + (isActive ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
                       },
                         React.createElement("div", { className: "text-sm" }, qt.icon),
                         React.createElement("div", null, qt.label)
@@ -3431,7 +3530,7 @@
                         upd('_questBuilderParam', null);
                         upd('_questBuilderPrompt', '');
                       },
-                      className: "px-3 py-1.5 rounded-lg text-[10px] font-bold text-white bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className: "px-3 py-1.5 rounded-lg text-[10px] font-bold text-white bg-amber-700 hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     }, "+ Add Quest")
                   )
                 )
@@ -3847,7 +3946,9 @@
             beehive: true,
             echolocation: true,
             oratory: true,
-            singing: true
+            singing: true,
+            migration: true,
+            appLab: true
           };
           console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
           if (!_pluginOnlyTools[stemLabTool]) return null;

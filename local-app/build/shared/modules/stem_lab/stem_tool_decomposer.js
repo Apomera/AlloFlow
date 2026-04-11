@@ -1705,7 +1705,7 @@
                 // Scene visual — all objects always visible
                 h('div', { className: 'relative rounded-2xl border-2 overflow-hidden mb-4', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '320px', boxShadow: '0 4px 20px ' + scene.accent + '15' } },
                   // Canvas background
-                  h('canvas', {
+                  h('canvas', { 'aria-label': 'Decomposer visualization', 
                     ref: function(canvas) {
                       if (!canvas) return;
                       if (canvas._sceneDrawn === scene.id) return;
@@ -2256,7 +2256,7 @@
                 h('span', { className: 'text-[10px] font-bold text-red-600' }, '\uD83D\uDD25 Hot')
               ),
               h('input', {
-                type: 'range', min: -200, max: 500, step: 5,
+                type: 'range', 'aria-label': 'Decomposer slider', min: -200, max: 500, step: 5,
                 value: d._simTemp != null ? d._simTemp : 25,
                 onChange: function(e) { upd('_simTemp', parseInt(e.target.value, 10)); },
                 style: { width: '100%', accentColor: (d._simTemp || 25) < 0 ? '#3b82f6' : (d._simTemp || 25) > 200 ? '#ef4444' : '#f59e0b' }
@@ -2282,7 +2282,7 @@
 
             // Particle canvas
             h('div', { className: 'rounded-xl border-2 border-slate-200 overflow-hidden mb-3' },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Decomposer interactive visualization',
                 ref: function(canvas) {
                   if (!canvas) return;
                   var c2 = canvas.getContext('2d');
@@ -2461,7 +2461,7 @@
 
             /* Canvas */
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-indigo-200 overflow-hidden mb-3' },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Decomposer visualization',
                 ref: canvasRef,
                 className: 'w-full cursor-pointer',
                 style: { height: '280px', display: 'block' },

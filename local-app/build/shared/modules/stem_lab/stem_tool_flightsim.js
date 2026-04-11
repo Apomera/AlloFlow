@@ -779,7 +779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
 
       // ── Draw terrain perspective ──
-      var drawTerrain = function(gfx, W, H, horizonY, state, time) {
+      var drawTerrain = function(gfx, W, H, horizonY, state, time, dayNight2) {
         var rows = 16;
         var alt = Math.max(100, state.altitude);
         var hdgRad = state.heading * Math.PI / 180;
@@ -893,6 +893,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.moveTo(terrainHash(r, 3) * W, y);
               gfx.lineTo(terrainHash(r, 4) * W, y + rowH);
               gfx.stroke();
+            }
+          }
+
+          // City lights at night (near known waypoints)
+          if (!water && depth > 0.15 && alt < 20000) {
+            var isNearCity = false;
+            for (var ci2 = 0; ci2 < WAYPOINTS.length; ci2++) {
+              var cdist = Math.abs(scanLat - WAYPOINTS[ci2].lat) + Math.abs(scanLon - WAYPOINTS[ci2].lon);
+              if (cdist < 3) { isNearCity = true; break; }
+            }
+            // Urban areas: lights at night, grey patches by day
+            if (isNearCity && elev < 1500) {
+              var isNight2 = typeof dayNight2 !== 'undefined' && dayNight2 && dayNight2.isNight;
+              if (isNight2) {
+                // City lights: orange/white dots
+                var lightDensity = Math.min(8, Math.floor(depth * 12));
+                for (var li = 0; li < lightDensity; li++) {
+                  var lx = terrainHash(scanLat * 30 + li, scanLon * 30) * W;
+                  var isStreet = terrainHash(li + r * 7, scanLat * 20) > 0.6;
+                  gfx.fillStyle = isStreet ? 'rgba(255,180,50,' + (0.3 + terrainHash(li, r) * 0.4) + ')' : 'rgba(255,255,200,' + (0.15 + terrainHash(li + 5, r) * 0.25) + ')';
+                  gfx.fillRect(lx, y - elevBump + li * 1.5, isStreet ? 3 : 1.5, 1.5);
+                }
+              } else {
+                // Daytime urban: grey patches
+                if (terrainHash(scanLat * 15, scanLon * 15) > 0.5) {
+                  gfx.fillStyle = 'rgba(140,140,145,' + (0.08 * depth) + ')';
+                  var uw = 30 + terrainHash(r + 3, scanLat * 8) * 50;
+                  gfx.fillRect(terrainHash(scanLat * 12, scanLon * 12) * W, y - elevBump, uw, rowH * 0.6);
+                }
+              }
             }
           }
 
@@ -1401,29 +1431,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
       };
 
-      var drawWeatherEffects = function(gfx, W, H, horizonY, time) {
+      var drawWeatherEffects = function(gfx, W, H, horizonY, time, state) {
         var wx = weatherRef.current;
-        // Visibility haze
+        // Visibility haze (gets worse with low altitude in overcast/stormy)
         if (wx.visibility < 1) {
-          var haze = 1 - wx.visibility;
-          gfx.fillStyle = 'rgba(180,190,200,' + (haze * 0.5) + ')';
+          var haze = (1 - wx.visibility) * (state && state.altitude < 5000 ? 1.3 : 1);
+          gfx.fillStyle = 'rgba(180,190,200,' + Math.min(0.7, haze * 0.5) + ')';
           gfx.fillRect(0, 0, W, H);
         }
-        // Rain
+        // Rain streaks on windshield
         if (wx.type === 'stormy' || wx.type === 'overcast') {
-          gfx.strokeStyle = 'rgba(150,180,220,' + (wx.type === 'stormy' ? 0.4 : 0.15) + ')';
+          var isHeavy = wx.type === 'stormy';
+          // Background rain streaks (distant)
+          gfx.strokeStyle = 'rgba(150,180,220,' + (isHeavy ? 0.35 : 0.12) + ')';
           gfx.lineWidth = 1;
-          var rainCount = wx.type === 'stormy' ? 60 : 20;
+          var rainCount = isHeavy ? 80 : 25;
           for (var i = 0; i < rainCount; i++) {
-            var rx = (i * 73 + time * 200) % W;
-            var ry = (i * 41 + time * 800) % H;
-            gfx.beginPath(); gfx.moveTo(rx, ry); gfx.lineTo(rx - 2, ry + 12); gfx.stroke();
+            var rx = (i * 73 + time * 250) % W;
+            var ry = (i * 41 + time * 900) % H;
+            var rLen = isHeavy ? 15 + Math.sin(i * 3.7) * 5 : 10;
+            gfx.beginPath(); gfx.moveTo(rx, ry); gfx.lineTo(rx - 2, ry + rLen); gfx.stroke();
+          }
+          // Windshield droplets (close-up rain drops, only in heavy rain)
+          if (isHeavy && state && state.speed > 50) {
+            gfx.fillStyle = 'rgba(180,210,240,0.08)';
+            for (var wi = 0; wi < 15; wi++) {
+              var wx2 = (wi * 137 + Math.floor(time * 3) * 89) % W;
+              var wy = (wi * 97 + Math.floor(time * 2) * 61) % H;
+              // Raindrop streak (elongated by speed)
+              gfx.beginPath();
+              gfx.ellipse(wx2, wy, 2, 6 + state.speed * 0.02, -0.3, 0, Math.PI * 2);
+              gfx.fill();
+            }
           }
         }
-        // Lightning flash
-        if (wx.type === 'stormy' && Math.sin(time * 7.3) > 0.98) {
-          gfx.fillStyle = 'rgba(255,255,255,0.15)';
-          gfx.fillRect(0, 0, W, H);
+        // Lightning bolt (storm only, occasional)
+        if (wx.type === 'stormy') {
+          var flashPhase = Math.sin(time * 7.3);
+          if (flashPhase > 0.97) {
+            // Screen flash
+            gfx.fillStyle = 'rgba(255,255,255,' + ((flashPhase - 0.97) * 5) + ')';
+            gfx.fillRect(0, 0, W, H);
+            // Lightning bolt shape
+            var bx = (Math.floor(time * 2) * 317) % W;
+            gfx.strokeStyle = 'rgba(200,220,255,0.8)'; gfx.lineWidth = 2;
+            gfx.beginPath(); gfx.moveTo(bx, 0);
+            gfx.lineTo(bx + 15, horizonY * 0.3);
+            gfx.lineTo(bx - 10, horizonY * 0.3);
+            gfx.lineTo(bx + 20, horizonY * 0.7);
+            gfx.lineTo(bx + 5, horizonY * 0.7);
+            gfx.lineTo(bx + 25, horizonY);
+            gfx.stroke();
+            // Glow around bolt
+            gfx.strokeStyle = 'rgba(150,180,255,0.3)'; gfx.lineWidth = 6;
+            gfx.stroke();
+          }
+        }
+        // Icing warning overlay (high altitude + precipitation)
+        if (state && state.altitude > 10000 && state.altitude < 25000 && (wx.type === 'overcast' || wx.type === 'stormy')) {
+          var iceAlpha = Math.min(0.15, (state.altitude - 10000) / 50000);
+          // Frost creep from edges
+          gfx.fillStyle = 'rgba(200,220,240,' + iceAlpha + ')';
+          var frostW = 40 + iceAlpha * 200;
+          gfx.fillRect(0, 0, frostW, H);
+          gfx.fillRect(W - frostW, 0, frostW, H);
+          gfx.fillRect(0, 0, W, frostW * 0.5);
+          // Frost crystal pattern (top corners)
+          if (iceAlpha > 0.05) {
+            gfx.strokeStyle = 'rgba(220,235,250,' + (iceAlpha * 2) + ')'; gfx.lineWidth = 0.5;
+            for (var fi2 = 0; fi2 < 8; fi2++) {
+              var angle = fi2 * Math.PI / 4;
+              gfx.beginPath(); gfx.moveTo(15, 15);
+              gfx.lineTo(15 + Math.cos(angle) * 20, 15 + Math.sin(angle) * 20);
+              gfx.stroke();
+              gfx.beginPath(); gfx.moveTo(W - 15, 15);
+              gfx.lineTo(W - 15 + Math.cos(angle) * 20, 15 + Math.sin(angle) * 20);
+              gfx.stroke();
+            }
+          }
         }
       };
 
@@ -1637,6 +1722,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var stopEngineSound = function() {
         var a = audioRef.current;
         if (a.gain) { try { a.gain.gain.setTargetAtTime(0, a.ctx.currentTime, 0.05); } catch(e) {} }
+        // Stop oscillator and close context after fade-out
+        setTimeout(function() {
+          try { if (a.osc) { a.osc.stop(); a.osc.disconnect(); } } catch(e) {}
+          try { if (a.ctx && a.ctx.state !== 'closed') a.ctx.close(); } catch(e) {}
+          a.started = false;
+        }, 150);
       };
 
       // ── Aircraft Selection State ──
@@ -2269,6 +2360,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         timeRef.current = 0;
         flyingRef.current = true;
         blackBoxRef.current = [];
+        // Reset quiz state for fresh flight
+        geoQuizRef.current = { active: false, place: null, options: [], answer: null, correct: null, showResult: false, score: 0, total: 0 };
+        logRef.current = { distance: 0, maxAlt: wp.alt, maxSpeed: 0, airports: [], startTime: 0 };
         updMulti({ view: 'flying', showForces: d.showForces || false, nearestWaypoint: null, weatherLesson: null });
       };
 
@@ -2279,9 +2373,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var showForces = d.showForces;
 
         var loop = function() {
+          try {
           if (!flyingRef.current) return;
-          var W = canvas.width = canvas.clientWidth || canvas.parentElement.clientWidth || 800;
-          var H = canvas.height = canvas.clientHeight || canvas.parentElement.clientHeight || 500;
+          var W = canvas.width = canvas.clientWidth || canvas.parentElement?.clientWidth || 800;
+          var H = canvas.height = canvas.clientHeight || canvas.parentElement?.clientHeight || 500;
           var dt = 1 / 30;
           timeRef.current += dt;
 
@@ -2417,7 +2512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           horizonY = Math.max(H * 0.2, Math.min(H * 0.8, horizonY));
 
           // Procedural terrain (replaces flat gradient)
-          drawTerrain(gfx, W, H, horizonY, state, timeRef.current);
+          drawTerrain(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
           // Horizon line
           gfx.save(); gfx.translate(W/2, horizonY); gfx.rotate(-ctrl.bank * Math.PI / 180 * 0.3);
@@ -2449,6 +2544,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           }
 
+          // Day/night cycle (computed early so sun/lens flare/haze can use it)
+          var dayNight = getDayNight(state.lon || 0, timeRef.current || 0) || { brightness: 0.8, isNight: false, isDusk: false, solarHour: 12 };
+
           // Sun/moon glow
           var sunX = W * 0.8; var sunY = Math.max(20, horizonY * 0.2);
           var sunGrad = gfx.createRadialGradient(sunX, sunY, 5, sunX, sunY, 80);
@@ -2459,7 +2557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = '#fffde0'; gfx.beginPath(); gfx.arc(sunX, sunY, 8, 0, Math.PI * 2); gfx.fill();
 
           // Lens flare (when looking toward sun)
-          if (typeof dayNight !== 'undefined' && dayNight && !dayNight.isNight) {
+          if (dayNight && !dayNight.isNight) {
             var flareAlpha = Math.max(0, 0.12 - Math.abs(sunX - W / 2) / W * 0.3);
             if (flareAlpha > 0.01) {
               var flarePoints = [0.3, 0.5, 0.65, 0.8];
@@ -2525,6 +2623,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillText('THR', W - 22, 152);
           gfx.fillText(Math.round(ctrl.throttle * 100) + '%', W - 22, 14);
 
+          // ── Additional Instruments (bottom-right cluster) ──
+          var instrX = W - 55; var instrY = H - 55;
+          // Outside Air Temperature (ISA lapse rate: 15°C - 2°C per 1000ft)
+          var oat = Math.round(15 - state.altitude * 0.002);
+          gfx.fillStyle = 'rgba(0,0,0,0.5)'; gfx.beginPath(); gfx.roundRect(instrX - 28, instrY - 15, 56, 30, 5); gfx.fill();
+          gfx.fillStyle = oat < 0 ? '#67e8f9' : '#fbbf24'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(oat + '°C OAT', instrX, instrY + 2);
+          gfx.fillStyle = '#94a3b8'; gfx.font = '7px system-ui';
+          gfx.fillText(oat < -20 ? 'ICING RISK' : oat < 0 ? 'Below freezing' : 'Normal', instrX, instrY + 12);
+
+          // Flight timer
+          var fltMins = Math.floor(timeRef.current / 60); var fltSecs = Math.floor(timeRef.current) % 60;
+          gfx.fillStyle = 'rgba(0,0,0,0.5)'; gfx.beginPath(); gfx.roundRect(instrX - 28, instrY - 42, 56, 22, 5); gfx.fill();
+          gfx.fillStyle = '#a78bfa'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(String(fltMins).padStart(2, '0') + ':' + String(fltSecs).padStart(2, '0'), instrX, instrY - 27);
+
+          // GPS coordinates
+          gfx.fillStyle = 'rgba(0,0,0,0.4)'; gfx.font = '8px monospace'; gfx.textAlign = 'right';
+          gfx.fillText(Math.abs(state.lat).toFixed(2) + '°' + (state.lat >= 0 ? 'N' : 'S') + ' ' + Math.abs(state.lon).toFixed(2) + '°' + (state.lon >= 0 ? 'E' : 'W'), W - 10, H - 70);
+
           // ── Status Bar (top) ──
           gfx.fillStyle = 'rgba(0,0,0,0.5)';
           gfx.fillRect(0, 0, W, 32);
@@ -2575,16 +2693,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Mini-map (top-right area)
           drawMiniMapEnhanced(gfx, W - 140, 38, 90, state);
 
-          // Day/night cycle
-          var dayNight = getDayNight(state.lon, timeRef.current);
-          gfx._time = timeRef.current; // pass to lighting fn
+          // Apply sky lighting (dayNight was computed earlier, before sun rendering)
+          gfx._time = timeRef.current;
           applySkyLighting(gfx, W, H, dayNight, altFactor);
 
           // Runway when near airport
           drawRunway(gfx, W, H, horizonY, state, nearWp, nearDist);
 
           // Weather effects (rain, haze, lightning)
-          drawWeatherEffects(gfx, W, H, horizonY, timeRef.current);
+          drawWeatherEffects(gfx, W, H, horizonY, timeRef.current, state);
 
           // Geography labels on terrain
           drawGeography(gfx, W, H, horizonY, state, timeRef.current);
@@ -2908,16 +3025,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillText('W/S: Pitch | A/D: Bank | Shift/Ctrl: Throttle | Q: Quiz | F: Forces | Space: Pause | I: Info', W - 10, H - 8);
 
           animRef.current = requestAnimationFrame(loop);
+          } catch(loopErr) { console.error('[SkySchool] Render loop error:', loopErr); animRef.current = requestAnimationFrame(loop); }
         };
 
         flyingRef.current = true;
         animRef.current = requestAnimationFrame(loop);
-        return function() { flyingRef.current = false; cancelAnimationFrame(animRef.current); };
+        return function() {
+          flyingRef.current = false;
+          cancelAnimationFrame(animRef.current);
+          stopEngineSound();
+          updateStallHorn(false);
+          // Close stall horn audio context
+          try { if (stallHornRef.current.ctx && stallHornRef.current.ctx.state !== 'closed') stallHornRef.current.ctx.close(); } catch(e) {}
+          // Exit fullscreen if active
+          try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
+        };
       }, [view, d.showForces]);
 
       // ── MENU VIEW ──
       if (view === 'menu') {
-        return h('div', { style: { minHeight: '500px', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', overflow: 'hidden' } },
+        return h('div', { style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', overflow: 'auto' } },
           // Back button
           h('div', { style: { padding: '12px 16px 0', display: 'flex', alignItems: 'center', gap: '8px' } },
             h('button', {
@@ -3139,14 +3266,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── FLYING VIEW ──
       if (view === 'flying') {
-        return h('div', { style: { position: 'relative', width: '100%', height: '70vh', minHeight: '400px', maxHeight: '800px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
+        return h('div', { id: 'skyschool-flight-container', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '12px', overflow: 'hidden', background: '#000', display: 'flex', flexDirection: 'column' } },
           h('canvas', {
             ref: canvasRef,
             role: 'application',
             'aria-label': 'Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.',
             'aria-roledescription': 'Flight simulator',
             tabIndex: 0,
-            style: { width: '100%', height: '100%', display: 'block', outline: 'none' },
+            style: { width: '100%', flex: 1, display: 'block', outline: 'none' },
             onFocus: function() { skyAnnounce('SkySchool flight display focused. Press I for flight status. Space to pause.'); }
           }),
           // Overlay controls
@@ -3169,6 +3296,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             },
               style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '✕ Exit'),
+            h('button', { onClick: function() {
+              var container = document.getElementById('skyschool-flight-container');
+              if (!container) return;
+              if (document.fullscreenElement) { document.exitFullscreen(); }
+              else { container.requestFullscreen().catch(function() {}); }
+            },
+              'aria-label': 'Toggle fullscreen flight view',
+              style: { padding: '6px 10px', borderRadius: '6px', background: document.fullscreenElement ? 'rgba(34,211,238,0.3)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, '⛶ Fullscreen'),
             h('button', { onClick: function() { upd('showForces', !d.showForces); },
               style: { padding: '6px 10px', borderRadius: '6px', background: d.showForces ? 'rgba(34,211,238,0.3)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.showForces ? '#22d3ee' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, d.showForces ? '⚡ Forces ON' : '⚡ Forces'),
@@ -3200,7 +3336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var mins = Math.floor(db.flightTime / 60);
         var secs = db.flightTime % 60;
         var grade = db.distance > 100 && db.airports > 0 ? '🌟 Excellent Flight!' : db.distance > 50 ? '✈️ Great Exploration!' : db.flightTime > 120 ? '🛫 Good Practice!' : '📝 Quick Hop';
-        return h('div', { style: { minHeight: '400px', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', padding: '24px', color: '#fff' } },
+        return h('div', { style: { minHeight: '400px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', padding: '24px', color: '#fff', overflow: 'auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '40px', marginBottom: '8px' } }, '📋'),
             h('div', { style: { fontSize: '22px', fontWeight: 900 } }, 'FLIGHT DEBRIEF'),
@@ -3229,7 +3365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Flight Path Map (from black box data)
           blackBoxRef.current.length > 3 ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: '8px' } }, '🗺️ Flight Path'),
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Flightsim interactive visualization',
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
@@ -3298,7 +3434,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 g.fillText(bb.length + ' data points · Color = altitude (blue=high, red=low)', cW - 4, cH - 3);
               },
               style: { width: '100%', height: '120px', borderRadius: '6px', display: 'block' }
-            })
+            }),
+            // Altitude + Speed profile chart
+            h('canvas', { 'aria-label': 'Flightsim visualization', 
+              ref: function(canvas) {
+                if (!canvas) return;
+                var g = canvas.getContext('2d');
+                var cW = canvas.width = canvas.offsetWidth;
+                var cH = canvas.height = 80;
+                var bb = blackBoxRef.current;
+                if (bb.length < 3) return;
+                g.fillStyle = '#0a1628'; g.fillRect(0, 0, cW, cH);
+                // Grid + labels
+                g.strokeStyle = 'rgba(255,255,255,0.05)'; g.lineWidth = 0.5;
+                for (var gl2 = 0; gl2 <= 4; gl2++) { var gy = gl2 * cH / 4; g.beginPath(); g.moveTo(0, gy); g.lineTo(cW, gy); g.stroke(); }
+                var maxA3 = Math.max.apply(null, bb.map(function(p) { return p.alt; })) || 1;
+                var maxS = Math.max.apply(null, bb.map(function(p) { return p.spd; })) || 1;
+                // Altitude area
+                g.fillStyle = 'rgba(96,165,250,0.15)'; g.beginPath(); g.moveTo(0, cH);
+                bb.forEach(function(p, i) { g.lineTo(i / (bb.length - 1) * cW, cH - (p.alt / maxA3) * cH * 0.9); });
+                g.lineTo(cW, cH); g.closePath(); g.fill();
+                // Altitude line
+                g.strokeStyle = '#60a5fa'; g.lineWidth = 1.5; g.beginPath();
+                bb.forEach(function(p, i) { var px = i / (bb.length - 1) * cW; var py = cH - (p.alt / maxA3) * cH * 0.9; if (i === 0) g.moveTo(px, py); else g.lineTo(px, py); });
+                g.stroke();
+                // Speed line
+                g.strokeStyle = '#fbbf24'; g.lineWidth = 1; g.setLineDash([3, 3]); g.beginPath();
+                bb.forEach(function(p, i) { var px = i / (bb.length - 1) * cW; var py = cH - (p.spd / maxS) * cH * 0.85; if (i === 0) g.moveTo(px, py); else g.lineTo(px, py); });
+                g.stroke(); g.setLineDash([]);
+                // Labels
+                g.fillStyle = '#60a5fa'; g.font = '8px system-ui'; g.textAlign = 'left';
+                g.fillText('ALT: ' + Math.round(maxA3).toLocaleString() + ' ft max', 4, 10);
+                g.fillStyle = '#fbbf24'; g.fillText('SPD: ' + maxS + ' kts max', 4, 20);
+                g.fillStyle = 'rgba(255,255,255,0.3)'; g.font = '7px system-ui'; g.textAlign = 'right';
+                g.fillText('Time →', cW - 4, cH - 3);
+              },
+              style: { width: '100%', height: '80px', borderRadius: '6px', display: 'block', marginTop: '8px' }
+            }),
+            // Export flight data button
+            h('button', {
+              onClick: function() {
+                var bb = blackBoxRef.current;
+                var rows = [['Time(s)', 'Lat', 'Lon', 'Alt(ft)', 'Speed(kts)', 'Heading']];
+                bb.forEach(function(p) { rows.push([p.t, p.lat.toFixed(4), p.lon.toFixed(4), p.alt, p.spd, p.hdg]); });
+                var csv = rows.map(function(r) { return r.join(','); }).join('\n');
+                var blob = new Blob([csv], { type: 'text/csv' }); var url = URL.createObjectURL(blob);
+                var a = document.createElement('a'); a.href = url; a.download = 'flight_data_' + new Date().toISOString().slice(0, 10) + '.csv';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                if (addToast) addToast('📊 Flight data exported!', 'success');
+              },
+              style: { marginTop: '8px', padding: '6px 14px', borderRadius: '6px', background: 'rgba(96,165,250,0.2)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
+            }, '📊 Export Flight Data (CSV)')
           ) : null,
           // Educational takeaways
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },

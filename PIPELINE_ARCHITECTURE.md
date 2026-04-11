@@ -232,7 +232,8 @@ For each pass (up to 8 by default):
 - Inline CSS with accessibility features (high contrast support, reduced motion, print styles)
 - Skip-to-content link, proper lang attribute, descriptive title
 - Images with alt text, tables with headers and captions
-- Optionally styled with a user-selected visual theme (Academic, Kid-Friendly, Dark Mode, Magazine, Minimal)
+- Styled via a unified **Style Seed** system (Professional, Academic, Kid-Friendly, Minimalist, High Contrast/AAA, Nature, Print, Dark Mode, Magazine, Match Original) — AI prompt instructions during remediation + deterministic CSS fallback for preview/offline
+- All styling paths run through `sanitizeStyleForWCAG()` — a deterministic WCAG validator that guarantees contrast ratios, minimum font sizes, and accessibility compliance regardless of AI output
 
 ### Accessibility Audit Report
 A professional PDF-ready report containing:
@@ -336,7 +337,7 @@ Input: PDF/DOCX/PPTX
   │   └── axe-core baseline on extracted text
   │
   ├── Phase 2: Text extraction (Gemini Vision API, chunked for long docs)
-  │   └── Optional: Style preference applied to transform prompt
+  │   └── Style Seed applied to transform prompt (unified STYLE_SEEDS system)
   │
   ├── Phase 3: HTML generation
   │   ├── 3a: 39 deterministic fixes (zero API cost)
@@ -369,7 +370,42 @@ Output: Accessible HTML + Audit Report + Alternative Formats
 |------|------|---------|
 | `doc_pipeline_source.jsx` | 5,098 lines (328 KB) | All pipeline logic — auditing, fixes, scoring, reports, exports |
 | `doc_pipeline_module.js` | 337 KB (compiled) | Browser-ready version loaded via CDN |
-| `AlloFlowANTI.txt` (pipeline UI sections) | ~3,500 lines | Score display, audit panels, preview, theme picker, restyle buttons, settings |
+| `AlloFlowANTI.txt` (pipeline UI sections) | ~3,500 lines | Score display, audit panels, preview, style seed picker, AI restyle, settings |
+
+---
+
+## Unified Style Seed System
+
+The pipeline uses a **Style Seed** model that unifies pre-remediation AI styling with post-remediation preview themes into a single system. Each seed contains:
+
+- **`promptInstructions`** — Injected into the Gemini prompt during Phase 3, so the AI generates styled HTML that matches the desired aesthetic
+- **`cssVars`** — Deterministic CSS properties (colors, fonts, spacing) for instant restyling in the preview without re-running remediation
+- **`wcagLevel`** — `'AA'` or `'AAA'` (High Contrast targets AAA = 7:1 contrast ratio)
+
+### Available Seeds
+| Seed | WCAG | Description |
+|------|------|-------------|
+| Professional | AA | Inter font, navy/blue, corporate |
+| Academic | AA | Georgia serif, navy/gold, scholarly |
+| Kid-Friendly | AA | Comic Sans, bright colors, rounded corners |
+| Minimalist | AA | Georgia, muted grays, whitespace |
+| High Contrast | AAA | Atkinson Hyperlegible, black/white, bold borders |
+| Nature & Calm | AA | Lexend, greens, calming |
+| Print Optimized | AA | Times New Roman, black/white, page breaks |
+| Dark Mode | AA | Charcoal background, light text, indigo accents |
+| Magazine | AA | Large headings, pull quotes, editorial |
+| Match Original | AA | Extracts colors from the original PDF |
+
+### WCAG Style Sanitizer (`sanitizeStyleForWCAG`)
+
+A deterministic function that runs **after every styling change** — whether from AI-generated CSS, theme/seed application, or user edits in the preview. It guarantees WCAG compliance using mathematical checks:
+
+1. **Background detection** — Parses the document's actual `<body>` background color instead of assuming white
+2. **Contrast enforcement** — Adjusts any text color below the target ratio (4.5:1 for AA, 7:1 for AAA)
+3. **Font size floor** — Clamps any `font-size` below 12px up to 12px
+4. **Safety-net CSS** — Injects override rules for common utility classes that fail contrast
+
+**Key guarantee:** No AI hallucination, theme misconfiguration, or user edit can bypass this sanitizer. It is the final gate before any styled content is displayed or exported.
 
 ---
 

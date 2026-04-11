@@ -6,6 +6,32 @@
 (function () {
   'use strict';
 
+  // WCAG 2.1 AA: Accessibility CSS injection
+  if (!document.getElementById('sa-a11y-css')) {
+    var saA11yStyle = document.createElement('style');
+    saA11yStyle.id = 'sa-a11y-css';
+    saA11yStyle.textContent = [
+      '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+      '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 textarea:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
+      '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
+      '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
+      '.fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }',
+    ].join('\n');
+    document.head.appendChild(saA11yStyle);
+  }
+
+  // WCAG 4.1.3: Live region for screen reader announcements
+  if (!document.getElementById('allo-live-analytics')) {
+    var saLive = document.createElement('div');
+    saLive.id = 'allo-live-analytics';
+    saLive.setAttribute('aria-live', 'polite');
+    saLive.setAttribute('aria-atomic', 'true');
+    saLive.setAttribute('role', 'status');
+    saLive.className = 'sr-only';
+    saLive.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(saLive);
+  }
+
   // Ensure React and ReactDOM are available
   var React = window.React;
   var ReactDOM = window.ReactDOM;
@@ -18,6 +44,17 @@
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useRef = React.useRef;
+
+  // Fluency analysis functions — defined in monolith, exposed via window.__alloUtils.
+  // Lazy-resolve at call time (module may load before monolith populates window).
+  function calculateRunningRecordMetrics(wordData, insertionsArr) {
+    var fn = window.__alloUtils && window.__alloUtils.calculateRunningRecordMetrics;
+    return typeof fn === 'function' ? fn(wordData, insertionsArr) : null;
+  }
+  function getBenchmarkComparison(wcpm, grade, season, customNorms) {
+    var fn = window.__alloUtils && window.__alloUtils.getBenchmarkComparison;
+    return typeof fn === 'function' ? fn(wcpm, grade, season, customNorms) : null;
+  }
   // WCAG 2.4.3: Focus management — save/restore focus on modal open/close
   var _alloFocusTrigger = null;
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
@@ -1384,14 +1421,14 @@
       const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level'];
       const rows = fluencyRecords.map(r => {
         const m = r.data.metrics;
-        const rrm = typeof calculateRunningRecordMetrics === 'function' && r.data.wordData ? calculateRunningRecordMetrics(r.data.wordData, r.data.fullAnalysis?.insertions || []) : {
+        const rrm = r.data.wordData ? (calculateRunningRecordMetrics(r.data.wordData, r.data.fullAnalysis?.insertions || []) || {
           substitutions: 0,
           omissions: 0,
           insertions: 0,
           selfCorrections: 0,
           errorRate: 0,
           readingLevel: 'unknown'
-        };
+        }) : { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' };
         const passageTitle = (r.data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
         return [new Date(r.timestamp).toLocaleDateString(), '"' + passageTitle + '"', m.wcpm || 0, m.accuracy || 0, m.totalWords || 0, Math.round(m.durationSeconds || 0), rrm.substitutions || 0, rrm.omissions || 0, rrm.insertions || 0, rrm.selfCorrections || 0, '1:' + (rrm.errorRate || 0), rrm.readingLevel || 'unknown'].join(',');
       });
@@ -2900,7 +2937,7 @@
     };
     const generateFluencyScoreSheet = (result, sourceText) => {
       if (!result || !result.wordData) return;
-      const rrm = typeof calculateRunningRecordMetrics === 'function' ? calculateRunningRecordMetrics(result.wordData, result.insertions || []) : {
+      const rrm = calculateRunningRecordMetrics(result.wordData, result.insertions || []) || {
         substitutions: 0,
         omissions: 0,
         insertions: 0,
@@ -2984,7 +3021,7 @@
       const fluencyAssessments = student.data?.fluencyAssessments;
       if (fluencyAssessments?.length > 0) {
         const latest = fluencyAssessments[fluencyAssessments.length - 1];
-        if (latest?.wordData && typeof calculateRunningRecordMetrics === 'function') {
+        if (latest?.wordData) {
           const rr = calculateRunningRecordMetrics(latest.wordData, latest.insertions || []);
           if (rr) {
             const accColor = rr.accuracy >= 95 ? '#16a34a' : rr.accuracy >= 90 ? '#d97706' : '#dc2626';
@@ -6707,7 +6744,7 @@
     }, (() => {
       const latest = selectedStudent.data.fluencyAssessments[selectedStudent.data.fluencyAssessments.length - 1];
       if (!latest?.wordData) return null;
-      const rr = typeof calculateRunningRecordMetrics === 'function' ? calculateRunningRecordMetrics(latest.wordData, latest.insertions || []) : null;
+      const rr = calculateRunningRecordMetrics(latest.wordData, latest.insertions || []);
       if (!rr) return null;
       return /*#__PURE__*/React.createElement("div", {
         "data-help-key": "dashboard_detail_running_record",
@@ -6756,7 +6793,7 @@
       ref: trendChartRef
     })), (() => {
       const latest = selectedStudent.data.fluencyAssessments[selectedStudent.data.fluencyAssessments.length - 1];
-      if (!latest?.wcpm || typeof getBenchmarkComparison !== 'function') return null;
+      if (!latest?.wcpm) return null;
       const result = getBenchmarkComparison(latest.wcpm, '2', 'winter');
       if (!result) return null;
       const levelColors = {

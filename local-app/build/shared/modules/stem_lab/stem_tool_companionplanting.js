@@ -691,6 +691,9 @@ var d = (labToolData.companionPlanting) || {};
 
             _lastGardenCanvas = canvasEl;
 
+            // Cancel any orphaned animation from previous mount
+            if (canvasEl._gardenAnim) { cancelAnimationFrame(canvasEl._gardenAnim); canvasEl._gardenAnim = null; }
+
             if (canvasEl._gardenInit) return;
 
             canvasEl._gardenInit = true;
@@ -705,6 +708,9 @@ var d = (labToolData.companionPlanting) || {};
 
             var tick = 0;
             var animStartTime = performance.now();
+            var _cachedSeason = -1;
+            var _cachedSkyGrad = null;
+            var _cachedGroundGrad = null;
 
             var _gt = growthTime;
 
@@ -1591,8 +1597,8 @@ var d = (labToolData.companionPlanting) || {};
             function draw() {
 
               // Use time-based animation for smooth, frame-rate-independent motion
-              var elapsed = (performance.now() - animStartTime) / 1000; // seconds
-              tick = Math.round(elapsed * 60); // normalized to ~60fps equivalent for existing formulas
+              var elapsed = (performance.now() - animStartTime) / 1000; // seconds (continuous float)
+              tick = elapsed * 60; // continuous (NOT rounded) — smoother sin() curves
 
               // Read data attrs for latest state
 
@@ -1642,14 +1648,22 @@ var d = (labToolData.companionPlanting) || {};
 
               var ssky = seasonSkies[_season];
 
-              var skyGrad = ctx.createLinearGradient(0, 0, 0, cH * 0.45);
-
-              skyGrad.addColorStop(0, 'hsl(' + ssky.topH + ',' + Math.round(ssky.topS + dayPhase * 10) + '%,' + Math.round(ssky.topL + dayPhase * 10) + '%)');
-
-              skyGrad.addColorStop(1, 'hsl(' + ssky.botH + ',' + Math.round(ssky.botS + dayPhase * 15) + '%,' + Math.round(ssky.botL + dayPhase * 8) + '%)');
-
-              ctx.fillStyle = skyGrad;
-
+              // Cache sky gradient — only rebuild when season changes (not every frame)
+              if (_cachedSeason !== _season) {
+                _cachedSeason = _season;
+                _cachedSkyGrad = ctx.createLinearGradient(0, 0, 0, cH * 0.45);
+                _cachedSkyGrad.addColorStop(0, 'hsl(' + ssky.topH + ',' + ssky.topS + '%,' + ssky.topL + '%)');
+                _cachedSkyGrad.addColorStop(1, 'hsl(' + ssky.botH + ',' + ssky.botS + '%,' + ssky.botL + '%)');
+                // Also cache ground gradient per season
+                var gc2 = groundColors[_season];
+                _cachedGroundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
+                _cachedGroundGrad.addColorStop(0, gc2[0]); _cachedGroundGrad.addColorStop(0.3, gc2[1]); _cachedGroundGrad.addColorStop(1, gc2[2]);
+              }
+              // Apply subtle dayPhase brightness shift via globalAlpha overlay (cheaper than new gradient)
+              ctx.fillStyle = _cachedSkyGrad;
+              ctx.fillRect(0, 0, cW, cH * 0.45);
+              // Subtle brightness variation from day phase (avoids recreating gradient)
+              ctx.fillStyle = 'rgba(255,255,200,' + (dayPhase * 0.06) + ')';
               ctx.fillRect(0, 0, cW, cH * 0.45);
 
 
@@ -1744,17 +1758,7 @@ var d = (labToolData.companionPlanting) || {};
 
               ];
 
-              var gc = groundColors[_season];
-
-              var groundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
-
-              groundGrad.addColorStop(0, gc[0]);
-
-              groundGrad.addColorStop(0.3, gc[1]);
-
-              groundGrad.addColorStop(1, gc[2]);
-
-              ctx.fillStyle = groundGrad;
+              ctx.fillStyle = _cachedGroundGrad || '#5a7040';
 
               ctx.fillRect(0, cH * 0.4, cW, cH * 0.6);
 
@@ -2305,7 +2309,13 @@ var d = (labToolData.companionPlanting) || {};
             yarrow:    { emoji: '🤍', label: 'Yarrow',    days: 70, water: 1, sun: 3, nEffect: 0,  family: 'daisy', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  regen: true, native: true, desc: 'Native perennial. Attracts ladybugs, lacewings, parasitic wasps. Medicinal. Drought-proof.' },
             bee_hotel: { emoji: '🏨', label: 'Bee Hotel',  days: 10, water: 0, sun: 2, nEffect: 0,  family: 'structure', harvest: 0, cost: 5, needsPoll: false, pollinator: true, regen: true, isStructure: true, desc: 'Nesting habitat for solitary bees (mason bees, leafcutter bees). Boosts pollination in a 3-cell radius. Solitary bees pollinate 95% of wild plants!' },
             compost_bin: { emoji: '♻️', label: 'Compost Bin', days: 15, water: 0, sun: 0, nEffect: 2, family: 'structure', harvest: 0, cost: 4, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: 'Converts organic matter into rich humus. Boosts nitrogen and soil health in adjacent cells. The ultimate closed-loop nutrient cycle.' },
-            rain_barrel: { emoji: '🛢️', label: 'Rain Barrel', days: 5, water: 0, sun: 0, nEffect: 0, family: 'structure', harvest: 0, cost: 3, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: 'Captures rainwater for irrigation. Reduces moisture decay rate for the whole garden by 20%. Free water from the sky!' }
+            rain_barrel: { emoji: '🛢️', label: 'Rain Barrel', days: 5, water: 0, sun: 0, nEffect: 0, family: 'structure', harvest: 0, cost: 3, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: 'Captures rainwater for irrigation. Reduces moisture decay rate for the whole garden by 20%. Free water from the sky!' },
+            // ── Perennial Plants (persist across years, increasing yields) ──
+            strawberry: { emoji: '🍓', label: 'Strawberry', days: 60, water: 3, sun: 3, nEffect: -1, family: 'rose', harvest: 12, cost: 6, needsPoll: true, pollinator: false, perennial: true, yearsToMature: 1, desc: 'Perennial. First-year yield is low; doubles in year 2. Runners spread to fill gaps. Great ground cover.' },
+            asparagus:  { emoji: '🌱', label: 'Asparagus',  days: 120, water: 2, sun: 3, nEffect: 0, family: 'asparagus', harvest: 18, cost: 8, needsPoll: false, pollinator: false, perennial: true, yearsToMature: 3, desc: 'Perennial. Don\'t harvest for 3 years! Then produces for 20+ years. Deep roots improve soil structure.' },
+            blueberry:  { emoji: '🫐', label: 'Blueberry',  days: 100, water: 3, sun: 3, nEffect: 0, family: 'heath', harvest: 20, cost: 10, needsPoll: true, pollinator: false, perennial: true, yearsToMature: 3, desc: 'Perennial. Needs ACIDIC soil (pH 4.5-5.5). Takes 3 years to mature. Partner with azaleas.' },
+            garlic:     { emoji: '🧄', label: 'Garlic',     days: 90, water: 1, sun: 2, nEffect: 0, family: 'allium', harvest: 8, cost: 3, needsPoll: false, pollinator: false, desc: 'Plant in fall, harvest in spring. Strong pest repellent. Deters aphids, spider mites, Japanese beetles.' },
+            rhubarb:    { emoji: '🟥', label: 'Rhubarb',    days: 90, water: 2, sun: 2, nEffect: 0, family: 'buckwheat', harvest: 10, cost: 5, needsPoll: false, pollinator: false, perennial: true, yearsToMature: 2, desc: 'Perennial. Don\'t harvest year 1. Leaves are toxic (oxalic acid) — only eat the stalks! Produces for 10+ years.' }
           };
 
           // ── Companion Interactions (bidirectional) ──
@@ -2453,6 +2463,63 @@ var d = (labToolData.companionPlanting) || {};
           var cgSelectedPlant = cg.selectedPlant || null;
           var cgSpeed = cg.speed || 1;
           var cgSeasonHistory = cg.seasonHistory || []; // tracks what was planted each season for rotation
+
+          // ── Enhanced Soil Chemistry (NPK + pH + organic matter) ──
+          var cgPhosphorus = typeof cg.phosphorus === 'number' ? cg.phosphorus : 40;
+          var cgPotassium = typeof cg.potassium === 'number' ? cg.potassium : 45;
+          var cgPH = typeof cg.pH === 'number' ? cg.pH : 6.5;
+          var cgOrganicMatter = typeof cg.organicMatter === 'number' ? cg.organicMatter : 3.0;
+
+          // ── Economics ──
+          var cgBudget = typeof cg.budget === 'number' ? cg.budget : 50.00;
+          var cgRevenue = cg.revenue || 0;
+          var cgExpenses = cg.expenses || 0;
+
+          // ── Pest Lifecycle ──
+          var cgPestPop = typeof cg.pestPop === 'number' ? cg.pestPop : 0;
+          var cgBeneficialPop = typeof cg.beneficialPop === 'number' ? cg.beneficialPop : 5;
+
+          // ── Multi-Year ──
+          var cgYear = cg.year || 1;
+
+          // ── AI Advisor cooldown ──
+          var cgAdvisorCooldown = cg.advisorCooldown || 0;
+          var cgAdvisorResponse = cg.advisorResponse || null;
+
+          // NPK consumption rates per plant (per growth day)
+          var PLANT_NPK = {
+            tomato: { n: -2.5, p: -2, k: -1.5, idealPH: [6.0, 6.8] },
+            corn: { n: -3, p: -1.5, k: -1, idealPH: [6.0, 7.0] },
+            beans: { n: 2, p: -0.5, k: -0.5, idealPH: [6.0, 7.0] },
+            squash: { n: -2, p: -1.5, k: -2, idealPH: [6.0, 7.0] },
+            lettuce: { n: -1, p: -0.5, k: -0.5, idealPH: [6.0, 7.0] },
+            carrot: { n: -0.5, p: -1.5, k: -1, idealPH: [6.0, 6.8] },
+            pepper: { n: -2, p: -2, k: -1.5, idealPH: [6.0, 6.8] },
+            onion: { n: -1, p: -1, k: -0.5, idealPH: [6.0, 7.0] },
+            potato: { n: -2.5, p: -2, k: -2.5, idealPH: [4.8, 6.5] },
+            cucumber: { n: -1.5, p: -1, k: -1, idealPH: [6.0, 7.0] },
+            peas: { n: 1.5, p: -0.5, k: -0.5, idealPH: [6.0, 7.5] },
+            broccoli: { n: -2.5, p: -1.5, k: -1, idealPH: [6.0, 7.0] },
+            basil: { n: -0.5, p: -0.3, k: -0.3, idealPH: [6.0, 7.0] },
+            marigold: { n: 0, p: -0.2, k: -0.2, idealPH: [6.0, 7.5] },
+            sunflower: { n: -1, p: -1, k: -0.5, idealPH: [6.0, 7.5] },
+            radish: { n: -0.3, p: -0.3, k: -0.3, idealPH: [6.0, 7.0] },
+            clover: { n: 3, p: -0.2, k: -0.2, idealPH: [6.0, 7.0] },
+            // Perennials
+            strawberry: { n: -1, p: -1, k: -1.5, idealPH: [5.5, 6.5] },
+            asparagus: { n: -1.5, p: -1, k: -1, idealPH: [6.5, 7.5] },
+            blueberry: { n: -0.5, p: -0.5, k: -0.5, idealPH: [4.5, 5.5] },
+            garlic: { n: -1, p: -0.5, k: -0.5, idealPH: [6.0, 7.0] },
+            rhubarb: { n: -1.5, p: -1, k: -1, idealPH: [6.0, 6.8] }
+          };
+
+          // Market prices for harvest revenue
+          var MARKET_PRICES = {
+            tomato: 3.50, corn: 2.00, beans: 2.50, squash: 3.00, lettuce: 2.00,
+            carrot: 1.50, pepper: 4.00, onion: 1.50, potato: 1.00, cucumber: 2.00,
+            peas: 3.00, broccoli: 3.50, basil: 5.00, radish: 1.00, sunflower: 2.00,
+            strawberry: 6.00, asparagus: 5.50, blueberry: 8.00, garlic: 4.00, rhubarb: 3.00
+          };
 
           // Initialize grid if empty
           if (cgGrid.length === 0) {
@@ -2629,21 +2696,120 @@ var d = (labToolData.companionPlanting) || {};
               }
             }
 
+            // ── Enhanced Soil Chemistry: NPK + pH + Organic Matter ──
+            var pDelta = 0; var kDelta = 0; var omDelta = 0;
+            newGrid.forEach(function(cell) {
+              if (!cell.plantId) return;
+              var npk = PLANT_NPK[cell.plantId];
+              if (npk) {
+                pDelta += npk.p * 0.3;
+                kDelta += npk.k * 0.3;
+              }
+            });
+            if (hasCompostBin) { pDelta += 0.3; kDelta += 0.3; omDelta += 0.1; }
+            // Cover crops build organic matter
+            newGrid.forEach(function(cell) {
+              if (cell.plantId && CG_PLANTS[cell.plantId] && CG_PLANTS[cell.plantId].regen) omDelta += 0.05;
+            });
+            var newP = Math.max(0, Math.min(100, cgPhosphorus + pDelta));
+            var newK = Math.max(0, Math.min(100, cgPotassium + kDelta));
+            var newOM = Math.max(0.5, Math.min(10, cgOrganicMatter + omDelta));
+            // pH drift: legumes slightly acidify, lime crops raise. Slow drift toward 6.5 naturally.
+            var phDrift = (6.5 - cgPH) * 0.005; // natural buffering
+            var newPH = Math.max(4.0, Math.min(8.5, cgPH + phDrift));
+
+            // Organic matter improves moisture retention
+            var omMoistureBonus = (newOM - 3) * 0.1; // each 1% above baseline = 10% less moisture loss
+            if (omMoistureBonus > 0) newMoisture += omMoistureBonus;
+
+            // pH lockout affects growth (applied to health)
+            newGrid = newGrid.map(function(cell) {
+              if (!cell.plantId) return cell;
+              var npk = PLANT_NPK[cell.plantId];
+              if (npk && npk.idealPH) {
+                if (newPH < npk.idealPH[0] || newPH > npk.idealPH[1]) {
+                  // pH outside ideal range — nutrient lockout reduces health
+                  return Object.assign({}, cell, { health: Math.max(0, cell.health - 0.5) });
+                }
+              }
+              // Low phosphorus hurts fruiting crops
+              if (newP < 15 && CG_PLANTS[cell.plantId] && CG_PLANTS[cell.plantId].needsPoll) {
+                return Object.assign({}, cell, { health: Math.max(0, cell.health - 0.3) });
+              }
+              return cell;
+            });
+
+            // ── Pest Lifecycle Model ──
+            var plantedCount = newGrid.filter(function(c) { return c.plantId && !CG_PLANTS[c.plantId].isStructure; }).length;
+            var seasonPestMul = [0.5, 1.2, 0.4, 0.05][cgSeason];
+            // Companion pest suppression
+            var companionRepel = 0;
+            newGrid.forEach(function(c) {
+              if (c.plantId && (c.plantId === 'marigold' || c.plantId === 'nasturtium' || c.plantId === 'onion' || c.plantId === 'garlic' || c.plantId === 'basil')) companionRepel += 0.08;
+            });
+            var newPestPop = Math.max(0, cgPestPop * (1 + 0.06 * seasonPestMul - companionRepel) + (plantedCount > 4 ? 0.3 * seasonPestMul : 0));
+            // Beneficials eat pests
+            var newBeneficialPop = Math.max(0, cgBeneficialPop + newPestPop * 0.02 - 0.1);
+            var pollinatorPlants = newGrid.filter(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].pollinator; }).length;
+            newBeneficialPop += pollinatorPlants * 0.05; // flowers attract beneficials
+            newPestPop = Math.max(0, newPestPop - newBeneficialPop * 0.15); // beneficials consume pests
+            // Apply pest population to individual cell pest levels
+            if (newPestPop > 10) {
+              newGrid = newGrid.map(function(c) {
+                if (!c.plantId || CG_PLANTS[c.plantId].isStructure) return c;
+                return Object.assign({}, c, { pests: Math.min(100, c.pests + newPestPop * 0.05) });
+              });
+            }
+
+            // ── Multi-Year: season rollover + year advancement ──
+            var newDay = cgDay + 1;
+            var newYear = cgYear;
+            if (newDay > 0 && newDay % 120 === 0) {
+              newYear = cgYear + 1;
+              // Perennials persist; annuals die at year boundary
+              newGrid = newGrid.map(function(cell) {
+                if (!cell.plantId) return cell;
+                var plant = CG_PLANTS[cell.plantId];
+                if (plant && plant.perennial) {
+                  // Perennials survive and get stronger
+                  return Object.assign({}, cell, { growthDay: Math.max(0, cell.growthDay - 10), health: Math.min(100, cell.health + 5) });
+                }
+                // Annuals die at year end
+                return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
+              });
+            }
+
             cgUpd({
               grid: newGrid,
-              day: cgDay + 1,
+              day: newDay,
+              year: newYear,
               nitrogen: Math.min(100, newNitrogen + extraNitrogen),
-              moisture: Math.min(100, newMoisture + extraMoisture),
-              activeEvent: newEvent
+              moisture: Math.min(100, Math.max(0, newMoisture + extraMoisture)),
+              phosphorus: newP,
+              potassium: newK,
+              pH: Math.round(newPH * 10) / 10,
+              organicMatter: Math.round(newOM * 100) / 100,
+              pestPop: Math.round(newPestPop * 10) / 10,
+              beneficialPop: Math.round(newBeneficialPop * 10) / 10,
+              activeEvent: newEvent,
+              advisorCooldown: Math.max(0, cgAdvisorCooldown - 1)
             });
           }
 
           // ── CG: plant in cell ──
           function cgPlantCell(idx) {
             if (!cgSelectedPlant || cgPhase !== 'plan') return;
+            var plant = CG_PLANTS[cgSelectedPlant];
+            if (!plant) return;
+            // Economics: deduct seed cost from budget
+            var seedCost = plant.cost ? plant.cost * 0.10 : 0.50; // cost field is points; convert to dollars
+            if (cgBudget < seedCost) {
+              if (addToast) addToast('\uD83D\uDCB0 Not enough budget! Need $' + seedCost.toFixed(2) + ' (have $' + cgBudget.toFixed(2) + ')', 'info');
+              return;
+            }
             var newGrid = cgGrid.slice();
             newGrid[idx] = { plantId: cgSelectedPlant, growthDay: 0, health: 100, watered: false, pests: 0 };
-            cgUpd({ grid: newGrid });
+            cgUpd({ grid: newGrid, budget: Math.round((cgBudget - seedCost) * 100) / 100, expenses: cgExpenses + seedCost });
             if (awardStemXP) awardStemXP(5);
           }
 
@@ -2671,10 +2837,95 @@ var d = (labToolData.companionPlanting) || {};
             if (awardStemXP) awardStemXP(3);
           }
 
-          // ── CG: compost action ──
+          // ── CG: compost action (enhanced: adds NPK + OM) ──
           function cgCompost() {
-            cgUpd({ nitrogen: Math.min(100, cgNitrogen + 15) });
+            cgUpd({
+              nitrogen: Math.min(100, cgNitrogen + 15),
+              phosphorus: Math.min(100, cgPhosphorus + 8),
+              potassium: Math.min(100, cgPotassium + 5),
+              organicMatter: Math.min(10, cgOrganicMatter + 0.3)
+            });
             if (awardStemXP) awardStemXP(3);
+            if (addToast) addToast('\u267B\uFE0F Compost added: +15N +8P +5K +0.3% OM', 'success');
+          }
+
+          // ── CG: soil amendment actions ──
+          function cgAddLime() {
+            var cost = 0.50;
+            if (cgBudget < cost) { if (addToast) addToast('\uD83D\uDCB0 Need $' + cost.toFixed(2), 'info'); return; }
+            cgUpd({ pH: Math.min(8.5, Math.round((cgPH + 0.3) * 10) / 10), budget: Math.round((cgBudget - cost) * 100) / 100, expenses: cgExpenses + cost });
+            if (addToast) addToast('\uD83E\uDEA8 Lime added: pH raised to ' + Math.min(8.5, Math.round((cgPH + 0.3) * 10) / 10), 'success');
+          }
+          function cgAddSulfur() {
+            var cost = 0.50;
+            if (cgBudget < cost) { if (addToast) addToast('\uD83D\uDCB0 Need $' + cost.toFixed(2), 'info'); return; }
+            cgUpd({ pH: Math.max(4.0, Math.round((cgPH - 0.3) * 10) / 10), budget: Math.round((cgBudget - cost) * 100) / 100, expenses: cgExpenses + cost });
+            if (addToast) addToast('\uD83D\uDFE1 Sulfur added: pH lowered to ' + Math.max(4.0, Math.round((cgPH - 0.3) * 10) / 10), 'success');
+          }
+
+          // ── IPM (Integrated Pest Management) Actions ──
+          function cgIPMAction(action) {
+            var cost = { ladybugs: 1.50, neem: 1.00, handpick: 0, rowcovers: 2.00 }[action] || 0;
+            if (cgBudget < cost) { if (addToast) addToast('\uD83D\uDCB0 Need $' + cost.toFixed(2), 'info'); return; }
+            var newPest = cgPestPop;
+            var newBen = cgBeneficialPop;
+            var msg = '';
+            if (action === 'ladybugs') {
+              newPest *= 0.5; newBen += 10;
+              msg = '\uD83D\uDC1E Released ladybugs! -50% pests, +10 beneficials';
+            } else if (action === 'neem') {
+              newPest *= 0.7; newBen *= 0.9;
+              msg = '\uD83C\uDF3F Neem spray: -30% all pests, -10% beneficials (broad-spectrum)';
+            } else if (action === 'handpick') {
+              newPest = Math.max(0, newPest - 20);
+              msg = '\u270B Hand-picked pests: -20 pest population (free but labor-intensive)';
+            } else if (action === 'rowcovers') {
+              // Reduce future pest growth for 10 days
+              newPest *= 0.6;
+              msg = '\uD83E\uDDF5 Row covers installed: -40% current pests, blocks new entry';
+            }
+            var newGrid = cgGrid.map(function(c) {
+              if (!c.plantId) return c;
+              var reduction = action === 'ladybugs' ? 15 : action === 'neem' ? 10 : action === 'handpick' ? 8 : 5;
+              return Object.assign({}, c, { pests: Math.max(0, c.pests - reduction) });
+            });
+            cgUpd({
+              grid: newGrid,
+              pestPop: Math.round(newPest * 10) / 10,
+              beneficialPop: Math.round(newBen * 10) / 10,
+              budget: Math.round((cgBudget - cost) * 100) / 100,
+              expenses: cgExpenses + cost
+            });
+            if (addToast) addToast(msg, 'success');
+            if (awardStemXP) awardStemXP(5);
+          }
+
+          // ── AI Garden Advisor (Gemini) ──
+          function cgAskAdvisor() {
+            if (!callGemini) { if (addToast) addToast('AI advisor requires Gemini API', 'info'); return; }
+            if (cgAdvisorCooldown > 0) { if (addToast) addToast('Advisor available in ' + cgAdvisorCooldown + ' more days', 'info'); return; }
+            cgUpd({ advisorCooldown: 30, advisorResponse: 'Thinking...' });
+            var planted = cgGrid.filter(function(c) { return c.plantId; }).map(function(c) {
+              var p = CG_PLANTS[c.plantId];
+              return c.plantId + ' (health:' + Math.round(c.health) + '%, growth:' + Math.round(c.growthDay) + '/' + (p ? p.days : '?') + ', pests:' + Math.round(c.pests) + ')';
+            }).join(', ');
+            var seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
+            var prompt = 'You are a friendly, knowledgeable garden advisor for a K-12 student\'s companion planting simulator.\n\n' +
+              'GARDEN STATUS:\n' +
+              '- Season: ' + seasonNames[cgSeason] + ', Day ' + cgDay + ', Year ' + cgYear + '\n' +
+              '- Soil: N=' + Math.round(cgNitrogen) + '/100, P=' + Math.round(cgPhosphorus) + '/100, K=' + Math.round(cgPotassium) + '/100, pH=' + cgPH + ', OM=' + cgOrganicMatter + '%\n' +
+              '- Moisture: ' + Math.round(cgMoisture) + '/100\n' +
+              '- Pest pressure: ' + Math.round(cgPestPop) + ' pests, ' + Math.round(cgBeneficialPop) + ' beneficials\n' +
+              '- Budget: $' + cgBudget.toFixed(2) + ' (spent $' + cgExpenses.toFixed(2) + ', earned $' + cgRevenue.toFixed(2) + ')\n' +
+              '- Plants: ' + (planted || 'none planted yet') + '\n\n' +
+              'Give 3 SHORT, specific, actionable tips (2 sentences each max). Focus on the most urgent issue. Use simple language for students. Include one fun science fact.';
+            callGemini(prompt, true).then(function(result) {
+              var text = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+              cgUpd({ advisorResponse: text.substring(0, 600) });
+              if (addToast) addToast('\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor has tips!', 'success');
+            }).catch(function() {
+              cgUpd({ advisorResponse: 'The advisor is thinking... try again later. In the meantime: check your soil nutrients (NPK), water regularly, and plant companions together!' });
+            });
           }
 
           // ── CG: dismiss event ──
@@ -2753,6 +3004,7 @@ var d = (labToolData.companionPlanting) || {};
           function cgHarvest() {
             var points = 0;
             var harvested = 0;
+            var harvestRevenue = 0;
             var newGrid = cgGrid.map(function(cell) {
               if (!cell.plantId) return cell;
               var plant = CG_PLANTS[cell.plantId];
@@ -2760,8 +3012,13 @@ var d = (labToolData.companionPlanting) || {};
               if (cell.growthDay >= plant.days && cell.health > 20) {
                 var bonus = getCellBonus(cgGrid, cgGrid.indexOf(cell));
                 var yieldMult = 1 + Math.max(0, bonus.total) / 100;
-                // Pollination check: crops needing pollinators get 50% penalty if no pollinator plants nearby
-                // Bee hotel covers entire garden; flower plants cover 2-cell radius
+                // Perennial maturity bonus: yield increases with years
+                if (plant.perennial && plant.yearsToMature && cgYear < plant.yearsToMature) {
+                  yieldMult *= 0.3; // immature perennial — reduced yield
+                } else if (plant.perennial && cgYear >= (plant.yearsToMature || 1)) {
+                  yieldMult *= 1 + Math.min(1, (cgYear - plant.yearsToMature) * 0.2); // mature perennials yield more each year
+                }
+                // Pollination check
                 if (plant.needsPoll) {
                   var hasBeeHotel = cgGrid.some(function(c2) { return c2.plantId === 'bee_hotel'; });
                   var hasNearbyPollinator = hasBeeHotel;
@@ -2778,8 +3035,16 @@ var d = (labToolData.companionPlanting) || {};
                   if (!hasNearbyPollinator) yieldMult *= 0.5;
                 }
                 var healthMult = cell.health / 100;
-                points += Math.round(plant.harvest * yieldMult * healthMult);
+                var cropPoints = Math.round(plant.harvest * yieldMult * healthMult);
+                points += cropPoints;
+                // Economics: calculate revenue from market price
+                var price = MARKET_PRICES[cell.plantId] || 1.50;
+                harvestRevenue += Math.round(price * yieldMult * healthMult * 100) / 100;
                 harvested++;
+                // Perennials don't get removed — they reset growth for next cycle
+                if (plant.perennial) {
+                  return Object.assign({}, cell, { growthDay: 0, watered: false });
+                }
                 return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
               }
               return cell;
@@ -2799,9 +3064,11 @@ var d = (labToolData.companionPlanting) || {};
                 grid: newGrid,
                 score: cgScore + points,
                 totalHarvested: cgTotalHarvested + harvested,
-                cellHistory: newHistory
+                cellHistory: newHistory,
+                budget: Math.round((cgBudget + harvestRevenue) * 100) / 100,
+                revenue: cgRevenue + harvestRevenue
               });
-              if (addToast) addToast('🌾 Harvested ' + harvested + ' crop' + (harvested !== 1 ? 's' : '') + ' for ' + points + ' points!', 'success');
+              if (addToast) addToast('\uD83C\uDF3E Harvested ' + harvested + ' crop' + (harvested !== 1 ? 's' : '') + ' for ' + points + ' pts + $' + harvestRevenue.toFixed(2) + ' revenue!', 'success');
               // SEL: first harvest reflection
               if (cgTotalHarvested === 0) setTimeout(function() { cgTriggerReflection('first_harvest'); }, 1000);
               // SEL: biodiversity check
@@ -2933,6 +3200,257 @@ var d = (labToolData.companionPlanting) || {};
                     className: 'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                   }, h('span', { 'aria-hidden': 'true' }, layer.emoji), layer.label);
                 })),
+
+              // ── Microscope Canvas: animated biological visualization ──
+              h('canvas', {
+                'aria-label': 'Microscope visualization of ' + plant.label + ' — ' + cgMicroscopeLayer + ' layer',
+                style: { width: '100%', height: '180px', borderRadius: '10px', display: 'block', border: '1px solid rgba(99,102,241,0.3)' },
+                ref: function(mcvEl) {
+                  if (!mcvEl) return;
+                  var mx = mcvEl.getContext('2d');
+                  var MW = mcvEl.width = mcvEl.offsetWidth * 2; var MH = mcvEl.height = 360;
+                  if (mcvEl._microAnim) cancelAnimationFrame(mcvEl._microAnim);
+                  var mStart = performance.now();
+                  var activeLayer = cgMicroscopeLayer;
+                  var isLeg = isLegume;
+                  var mHealth = cell.health;
+                  var mMoist = cgMoisture;
+                  function drawMicro() {
+                    mcvEl._microAnim = requestAnimationFrame(drawMicro);
+                    var mt = (performance.now() - mStart) / 1000;
+                    mx.clearRect(0, 0, MW, MH);
+
+                    if (activeLayer === 'roots') {
+                      // Underground soil cross-section with root system
+                      var soilG = mx.createLinearGradient(0, 0, 0, MH);
+                      soilG.addColorStop(0, '#5a4030'); soilG.addColorStop(0.3, '#4a3525'); soilG.addColorStop(1, '#3a2a1a');
+                      mx.fillStyle = soilG; mx.fillRect(0, 0, MW, MH);
+                      // Soil particles (sand, clay, organic)
+                      mx.fillStyle = 'rgba(180,150,100,0.15)';
+                      for (var sp = 0; sp < 60; sp++) {
+                        mx.beginPath(); mx.arc((sp * 71 + 13) % MW, (sp * 43 + 17) % MH, 2 + (sp % 4), 0, Math.PI * 2); mx.fill();
+                      }
+                      // Main taproot / fibrous roots
+                      mx.strokeStyle = '#8aaa60'; mx.lineWidth = 3;
+                      mx.beginPath(); mx.moveTo(MW / 2, 0); mx.quadraticCurveTo(MW / 2 + Math.sin(mt * 0.5) * 5, MH * 0.5, MW / 2, MH * 0.85); mx.stroke();
+                      // Lateral roots
+                      for (var lr = 0; lr < 8; lr++) {
+                        var ry = MH * (0.15 + lr * 0.08);
+                        var side = lr % 2 === 0 ? 1 : -1;
+                        var rootLen = 30 + lr * 12 + Math.sin(mt * 0.8 + lr) * 5;
+                        mx.strokeStyle = 'rgba(138,170,96,' + (0.6 - lr * 0.05) + ')'; mx.lineWidth = 2 - lr * 0.15;
+                        mx.beginPath(); mx.moveTo(MW / 2, ry);
+                        mx.quadraticCurveTo(MW / 2 + side * rootLen * 0.6, ry + 5, MW / 2 + side * rootLen, ry + 10 + Math.sin(mt + lr) * 3);
+                        mx.stroke();
+                        // Root hairs
+                        for (var rh = 0; rh < 4; rh++) {
+                          var rhx = MW / 2 + side * rootLen * (0.3 + rh * 0.2);
+                          mx.strokeStyle = 'rgba(138,170,96,0.3)'; mx.lineWidth = 0.5;
+                          mx.beginPath(); mx.moveTo(rhx, ry + rh * 2);
+                          mx.lineTo(rhx + side * (5 + Math.sin(mt * 2 + rh + lr) * 3), ry + rh * 2 + 4); mx.stroke();
+                        }
+                      }
+                      // Rhizobium nodules (if legume)
+                      if (isLeg) {
+                        mx.fillStyle = '#cc6666';
+                        for (var nd = 0; nd < 5; nd++) {
+                          var nx = MW / 2 + (nd % 2 === 0 ? -1 : 1) * (15 + nd * 8);
+                          var ny = MH * (0.25 + nd * 0.1);
+                          var nr = 4 + Math.sin(mt * 2 + nd) * 1;
+                          mx.beginPath(); mx.arc(nx, ny, nr, 0, Math.PI * 2); mx.fill();
+                          // Pulsing glow
+                          mx.fillStyle = 'rgba(200,100,100,' + (0.15 + Math.sin(mt * 3 + nd) * 0.1) + ')';
+                          mx.beginPath(); mx.arc(nx, ny, nr * 2, 0, Math.PI * 2); mx.fill();
+                          mx.fillStyle = '#cc6666';
+                        }
+                        // N2 symbols floating up
+                        mx.fillStyle = '#88ccff'; mx.font = 'bold 10px monospace';
+                        for (var n2 = 0; n2 < 3; n2++) {
+                          var n2y = MH * 0.3 - (mt * 15 + n2 * 40) % (MH * 0.3);
+                          mx.globalAlpha = 0.4 + Math.sin(mt + n2) * 0.2;
+                          mx.fillText('N\u2082', MW / 2 - 30 + n2 * 30 + Math.sin(mt + n2) * 10, n2y);
+                        }
+                        mx.globalAlpha = 1;
+                      }
+                      // Water droplets moving through soil
+                      mx.fillStyle = 'rgba(100,180,255,0.4)';
+                      for (var wd = 0; wd < 6; wd++) {
+                        var wdx = (wd * 67 + mt * 20) % MW;
+                        var wdy = (wd * 41 + mt * 30) % MH;
+                        mx.beginPath(); mx.arc(wdx, wdy, 2, 0, Math.PI * 2); mx.fill();
+                      }
+
+                    } else if (activeLayer === 'cells') {
+                      // Plant cell cross-section
+                      mx.fillStyle = '#0a2010'; mx.fillRect(0, 0, MW, MH);
+                      // Cell wall (rectangular)
+                      var cMargin = 30;
+                      mx.strokeStyle = '#6aaa40'; mx.lineWidth = 6;
+                      mx.strokeRect(cMargin, cMargin, MW - cMargin * 2, MH - cMargin * 2);
+                      // Cell membrane (just inside wall)
+                      mx.strokeStyle = 'rgba(100,180,100,0.5)'; mx.lineWidth = 2;
+                      mx.strokeRect(cMargin + 8, cMargin + 8, MW - cMargin * 2 - 16, MH - cMargin * 2 - 16);
+                      // Large central vacuole
+                      var vacX = MW * 0.5; var vacY = MH * 0.5;
+                      mx.fillStyle = 'rgba(80,160,220,0.15)';
+                      mx.beginPath(); mx.ellipse(vacX, vacY, MW * 0.28, MH * 0.28, 0, 0, Math.PI * 2); mx.fill();
+                      mx.strokeStyle = 'rgba(80,160,220,0.3)'; mx.lineWidth = 1;
+                      mx.beginPath(); mx.ellipse(vacX, vacY, MW * 0.28, MH * 0.28, 0, 0, Math.PI * 2); mx.stroke();
+                      mx.fillStyle = 'rgba(100,180,240,0.08)'; mx.font = '10px system-ui'; mx.textAlign = 'center';
+                      mx.fillText('Central Vacuole', vacX, vacY + 4);
+                      // Nucleus
+                      var nucX = MW * 0.3; var nucY = MH * 0.35;
+                      mx.fillStyle = 'rgba(150,100,180,0.4)'; mx.beginPath(); mx.arc(nucX, nucY, 22, 0, Math.PI * 2); mx.fill();
+                      mx.strokeStyle = 'rgba(180,120,200,0.6)'; mx.lineWidth = 2; mx.beginPath(); mx.arc(nucX, nucY, 22, 0, Math.PI * 2); mx.stroke();
+                      // Nucleolus
+                      mx.fillStyle = 'rgba(200,150,220,0.6)'; mx.beginPath(); mx.arc(nucX + 3, nucY - 2, 7, 0, Math.PI * 2); mx.fill();
+                      // Label
+                      mx.fillStyle = '#c0a0e0'; mx.font = 'bold 9px system-ui'; mx.fillText('Nucleus', nucX, nucY + 32);
+                      // Chloroplasts (green ovals, scattered)
+                      for (var ch = 0; ch < 12; ch++) {
+                        var chx = cMargin + 50 + (ch * 43) % (MW - cMargin * 2 - 80);
+                        var chy = cMargin + 50 + (ch * 29) % (MH - cMargin * 2 - 80);
+                        // Avoid overlapping nucleus and vacuole
+                        var distNuc = Math.sqrt((chx - nucX) * (chx - nucX) + (chy - nucY) * (chy - nucY));
+                        var distVac = Math.sqrt((chx - vacX) * (chx - vacX) + (chy - vacY) * (chy - vacY));
+                        if (distNuc < 35 || distVac < MW * 0.25) continue;
+                        mx.fillStyle = 'rgba(50,160,50,' + (0.5 + Math.sin(mt * 2 + ch) * 0.15) + ')';
+                        mx.beginPath(); mx.ellipse(chx, chy, 8, 4, ch * 0.5 + Math.sin(mt * 0.5 + ch) * 0.2, 0, Math.PI * 2); mx.fill();
+                        // Thylakoid stacks (internal lines)
+                        mx.strokeStyle = 'rgba(30,120,30,0.4)'; mx.lineWidth = 0.5;
+                        for (var th = -2; th <= 2; th++) {
+                          mx.beginPath(); mx.moveTo(chx - 5, chy + th * 1.5); mx.lineTo(chx + 5, chy + th * 1.5); mx.stroke();
+                        }
+                      }
+                      mx.fillStyle = '#60cc60'; mx.font = 'bold 8px system-ui'; mx.textAlign = 'left';
+                      mx.fillText('Chloroplasts', cMargin + 12, MH - cMargin - 8);
+                      // Mitochondria (orange ovals)
+                      for (var mi = 0; mi < 6; mi++) {
+                        var mix = MW * 0.6 + (mi * 37) % (MW * 0.3);
+                        var miy = MH * 0.55 + (mi * 23) % (MH * 0.3);
+                        mx.fillStyle = 'rgba(220,130,50,' + (0.4 + Math.sin(mt * 1.5 + mi) * 0.1) + ')';
+                        mx.beginPath(); mx.ellipse(mix, miy, 6, 3, mi * 0.8, 0, Math.PI * 2); mx.fill();
+                        // Cristae folds
+                        mx.strokeStyle = 'rgba(180,100,30,0.3)'; mx.lineWidth = 0.5;
+                        mx.beginPath(); mx.moveTo(mix - 3, miy); mx.quadraticCurveTo(mix, miy - 2, mix + 3, miy); mx.stroke();
+                      }
+                      mx.fillStyle = '#e0a050'; mx.font = 'bold 8px system-ui'; mx.textAlign = 'right';
+                      mx.fillText('Mitochondria', MW - cMargin - 12, MH - cMargin - 8);
+                      // ER (endoplasmic reticulum) — wavy lines near nucleus
+                      mx.strokeStyle = 'rgba(180,180,100,0.25)'; mx.lineWidth = 1;
+                      for (var er = 0; er < 5; er++) {
+                        mx.beginPath();
+                        for (var ex = 0; ex < 8; ex++) {
+                          var erx = nucX + 30 + ex * 12; var ery = nucY - 20 + er * 10 + Math.sin(mt * 1.5 + ex + er) * 3;
+                          if (ex === 0) mx.moveTo(erx, ery); else mx.lineTo(erx, ery);
+                        }
+                        mx.stroke();
+                      }
+                      // Lens vignette
+                      mx.globalAlpha = 0.3;
+                      var vg2 = mx.createRadialGradient(MW / 2, MH / 2, MH * 0.35, MW / 2, MH / 2, MH * 0.55);
+                      vg2.addColorStop(0, 'transparent'); vg2.addColorStop(1, '#000');
+                      mx.fillStyle = vg2; mx.fillRect(0, 0, MW, MH);
+                      mx.globalAlpha = 1;
+
+                    } else if (activeLayer === 'chemistry') {
+                      // Soil cross-section with NPK particles
+                      mx.fillStyle = '#1a1a2e'; mx.fillRect(0, 0, MW, MH);
+                      // NPK molecules floating
+                      var molecules = [
+                        { label: 'NO\u2083\u207B', color: '#4ade80', count: Math.round(cgNitrogen / 10) },
+                        { label: 'PO\u2084\u00B3\u207B', color: '#60a5fa', count: Math.round(cgPhosphorus / 12) },
+                        { label: 'K\u207A', color: '#a78bfa', count: Math.round(cgPotassium / 12) }
+                      ];
+                      molecules.forEach(function(mol, mi2) {
+                        mx.fillStyle = mol.color; mx.font = 'bold 10px monospace';
+                        for (var mc = 0; mc < mol.count; mc++) {
+                          var mcx = (mc * 67 + mi2 * 90 + Math.sin(mt * 0.5 + mc + mi2) * 20) % (MW - 40) + 20;
+                          var mcy = (mc * 43 + mi2 * 60 + Math.cos(mt * 0.3 + mc) * 15) % (MH - 40) + 20;
+                          mx.globalAlpha = 0.4 + Math.sin(mt * 2 + mc + mi2) * 0.2;
+                          mx.fillText(mol.label, mcx, mcy);
+                        }
+                      });
+                      mx.globalAlpha = 1;
+                      // pH indicator bar
+                      mx.fillStyle = 'rgba(0,0,0,0.5)'; mx.fillRect(MW * 0.1, MH - 40, MW * 0.8, 20);
+                      var phGrad = mx.createLinearGradient(MW * 0.1, 0, MW * 0.9, 0);
+                      phGrad.addColorStop(0, '#ef4444'); phGrad.addColorStop(0.35, '#fbbf24'); phGrad.addColorStop(0.5, '#22c55e'); phGrad.addColorStop(0.65, '#3b82f6'); phGrad.addColorStop(1, '#8b5cf6');
+                      mx.fillStyle = phGrad; mx.fillRect(MW * 0.1 + 2, MH - 38, MW * 0.8 - 4, 16);
+                      // pH marker
+                      var phPos = MW * 0.1 + ((cgPH - 4) / 4.5) * MW * 0.8;
+                      mx.fillStyle = '#fff'; mx.beginPath();
+                      mx.moveTo(phPos, MH - 42); mx.lineTo(phPos - 5, MH - 50); mx.lineTo(phPos + 5, MH - 50); mx.fill();
+                      mx.font = 'bold 9px system-ui'; mx.textAlign = 'center'; mx.fillText('pH ' + cgPH, phPos, MH - 54);
+                      // Labels
+                      mx.fillStyle = '#999'; mx.font = '8px system-ui'; mx.textAlign = 'left'; mx.fillText('Acidic (4)', MW * 0.1, MH - 10);
+                      mx.textAlign = 'right'; mx.fillText('Alkaline (8.5)', MW * 0.9, MH - 10);
+
+                    } else if (activeLayer === 'fungi') {
+                      // Underground network visualization
+                      mx.fillStyle = '#1a0a20'; mx.fillRect(0, 0, MW, MH);
+                      // Mycelial network (branching lines)
+                      mx.strokeStyle = 'rgba(180,140,220,0.3)'; mx.lineWidth = 1;
+                      var nodes = [];
+                      for (var fn = 0; fn < 15; fn++) {
+                        nodes.push({ x: (fn * 71 + 30) % (MW - 60) + 30, y: (fn * 47 + 20) % (MH - 40) + 20 });
+                      }
+                      // Draw connections
+                      nodes.forEach(function(n1, i1) {
+                        nodes.forEach(function(n2, i2) {
+                          if (i2 <= i1) return;
+                          var d2 = Math.sqrt((n1.x - n2.x) * (n1.x - n2.x) + (n1.y - n2.y) * (n1.y - n2.y));
+                          if (d2 > 130) return;
+                          var pulse = 0.15 + Math.sin(mt * 1.5 + i1 + i2) * 0.1;
+                          mx.strokeStyle = 'rgba(180,140,220,' + pulse + ')'; mx.lineWidth = 0.8;
+                          mx.beginPath(); mx.moveTo(n1.x, n1.y);
+                          mx.quadraticCurveTo((n1.x + n2.x) / 2 + Math.sin(mt + i1) * 10, (n1.y + n2.y) / 2 + Math.cos(mt + i2) * 8, n2.x, n2.y);
+                          mx.stroke();
+                        });
+                      });
+                      // Nodes (root connection points)
+                      nodes.forEach(function(n, ni) {
+                        var nPulse = 0.5 + Math.sin(mt * 2 + ni * 1.5) * 0.3;
+                        mx.fillStyle = 'rgba(180,140,220,' + nPulse + ')';
+                        mx.beginPath(); mx.arc(n.x, n.y, 3 + Math.sin(mt * 1.5 + ni) * 1, 0, Math.PI * 2); mx.fill();
+                      });
+                      // Nutrient transfer particles flowing along connections
+                      mx.fillStyle = 'rgba(100,255,180,0.6)';
+                      for (var np = 0; np < 8; np++) {
+                        var nIdx = np % nodes.length; var nIdx2 = (np + 3) % nodes.length;
+                        var npT = (mt * 0.4 + np * 0.3) % 1;
+                        var npx = nodes[nIdx].x + (nodes[nIdx2].x - nodes[nIdx].x) * npT;
+                        var npy = nodes[nIdx].y + (nodes[nIdx2].y - nodes[nIdx].y) * npT;
+                        mx.beginPath(); mx.arc(npx, npy, 2, 0, Math.PI * 2); mx.fill();
+                      }
+                      // Plant root anchors at top
+                      mx.fillStyle = '#6a9a50';
+                      for (var pa = 0; pa < 4; pa++) {
+                        var pax = MW * (0.15 + pa * 0.23);
+                        mx.beginPath(); mx.moveTo(pax - 8, 0); mx.lineTo(pax, 25); mx.lineTo(pax + 8, 0); mx.fill();
+                        mx.fillStyle = '#8aba60'; mx.font = '8px system-ui'; mx.textAlign = 'center';
+                        mx.fillText('Root ' + (pa + 1), pax, 35); mx.fillStyle = '#6a9a50';
+                      }
+                    }
+
+                    // Microscope lens border overlay (all layers)
+                    mx.strokeStyle = 'rgba(99,102,241,0.4)'; mx.lineWidth = 3;
+                    mx.beginPath(); mx.arc(MW / 2, MH / 2, Math.min(MW, MH) * 0.47, 0, Math.PI * 2); mx.stroke();
+                    // Crosshair
+                    mx.strokeStyle = 'rgba(255,255,255,0.08)'; mx.lineWidth = 0.5;
+                    mx.beginPath(); mx.moveTo(MW / 2, 10); mx.lineTo(MW / 2, MH - 10); mx.stroke();
+                    mx.beginPath(); mx.moveTo(10, MH / 2); mx.lineTo(MW - 10, MH / 2); mx.stroke();
+                    // Magnification label
+                    mx.fillStyle = 'rgba(255,255,255,0.3)'; mx.font = 'bold 9px monospace'; mx.textAlign = 'right';
+                    mx.fillText(activeLayer === 'cells' ? '400x' : activeLayer === 'fungi' ? '50x' : activeLayer === 'roots' ? '10x' : '100x', MW - 15, 18);
+                  }
+                  drawMicro();
+                  var mobs = new MutationObserver(function() {
+                    if (!document.contains(mcvEl)) { cancelAnimationFrame(mcvEl._microAnim); mobs.disconnect(); }
+                  });
+                  mobs.observe(document.body, { childList: true, subtree: true });
+                }
+              }),
 
               // ── ROOT SYSTEM VIEW ──
               cgMicroscopeLayer === 'roots' && h('div', { className: 'bg-gradient-to-b from-amber-900/30 to-amber-950/50 rounded-xl p-4 space-y-3 border border-amber-700/30' },
@@ -3129,7 +3647,7 @@ var d = (labToolData.companionPlanting) || {};
                 var titleClass = isGood ? 'font-bold text-emerald-800' : 'font-bold text-red-800';
                 var descClass = isGood ? 'text-sm text-emerald-600' : 'text-sm text-red-600';
                 var borderClass = isGood ? 'border-emerald-200' : 'border-red-200';
-                var btnClass = isGood ? 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700' : 'px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700';
+                var btnClass = isGood ? 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-700' : 'px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700';
                 var btnText = isGood ? '🌱 Great!' : '⚔️ Manage & Dismiss';
                 return h('div', { className: bgClass + ' rounded-xl p-4 space-y-2 animate-in slide-in-from-top' },
                   h('div', { className: 'flex items-center gap-2' },
@@ -3222,7 +3740,7 @@ var d = (labToolData.companionPlanting) || {};
                       'aria-label': p.label + (selected ? ' (selected)' : '') + ': ' + p.desc + '. ' + p.days + ' days to harvest. Water: ' + p.water + '/3. Sun: ' + p.sun + '/3.' + (p.nEffect > 0 ? ' Fixes nitrogen.' : p.nEffect < 0 ? ' Heavy feeder.' : '') + (p.pollinator ? ' Attracts pollinators.' : '') + (p.needsPoll ? ' Needs pollinators.' : ''),
                       'aria-pressed': selected ? 'true' : 'false',
                       title: p.label + ': ' + p.desc + ' (' + p.days + ' days)',
-                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-600 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-400')
+                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-400')
                     }, h('span', { 'aria-hidden': 'true' }, p.emoji), p.label);
                   })),
                 // Selected plant info card
@@ -3322,65 +3840,398 @@ var d = (labToolData.companionPlanting) || {};
                     })));
               })(),
 
-              // ── 4x4 Grid ──
-              h('div', { className: 'grid grid-cols-4 gap-1.5', role: 'grid', 'aria-label': 'Garden grid — 4 rows × 4 columns. ' + cgGrid.filter(function(c){return c.plantId;}).length + ' of 16 plots planted.', 'aria-rowcount': 4, 'aria-colcount': 4 },
-                cgGrid.map(function(cell, idx) {
-                  var plant = cell.plantId ? CG_PLANTS[cell.plantId] : null;
-                  var bonus = cell.plantId ? getCellBonus(cgGrid, idx) : { total: 0, pairs: [] };
-                  var growthPct = plant ? Math.min(100, Math.round((cell.growthDay / plant.days) * 100)) : 0;
-                  var isReady = plant && cell.growthDay >= plant.days && cell.health > 20;
-                  var isDead = cell.health <= 0 && cell.plantId;
-                  // Crop rotation warning — check if selected plant matches last season's family in this cell
-                  var rotationWarn = false;
-                  if (cgPhase === 'plan' && cgSelectedPlant && !cell.plantId) {
-                    var selPlant = CG_PLANTS[cgSelectedPlant];
-                    var cellHist = cgCellHistory[idx] || [];
-                    if (selPlant && cellHist.length > 0) {
-                      var lastInCell = CG_PLANTS[cellHist[cellHist.length - 1]];
-                      if (lastInCell && lastInCell.family === selPlant.family) rotationWarn = true;
+              // ═══ ISOMETRIC 2.5D GARDEN CANVAS ═══
+              h('canvas', {
+                role: 'application',
+                'aria-label': 'Isometric community garden view. Click plots to plant or inspect.',
+                tabIndex: 0,
+                style: { width: '100%', height: '380px', borderRadius: '12px', display: 'block', cursor: cgPhase === 'plan' && cgSelectedPlant ? 'crosshair' : 'pointer', background: '#1a2810' },
+                onMouseMove: function(e) {
+                  var rect = e.currentTarget.getBoundingClientRect();
+                  var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
+                  var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
+                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 180; var iTW2 = 90; var iTH2 = 50;
+                  var relX2 = mx - isoOX2; var relY2 = my - isoOY2;
+                  var hCol = Math.floor((relX2 / (iTW2 / 2) + relY2 / (iTH2 / 2)) / 2);
+                  var hRow = Math.floor((relY2 / (iTH2 / 2) - relX2 / (iTW2 / 2)) / 2);
+                  e.currentTarget._hoverCell = (hRow >= 0 && hRow < 4 && hCol >= 0 && hCol < 4) ? hRow * 4 + hCol : -1;
+                },
+                onMouseLeave: function(e) { e.currentTarget._hoverCell = -1; },
+                onClick: function(e) {
+                  // Isometric click detection: convert screen coords to grid cell
+                  var rect = e.currentTarget.getBoundingClientRect();
+                  var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
+                  var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
+                  // Iso grid params (must match draw code)
+                  var isoOX = e.currentTarget.width / 2; var isoOY = 180;
+                  var iTW = 90; var iTH = 50;
+                  // Reverse isometric transform
+                  var relX = mx - isoOX; var relY = my - isoOY;
+                  var iCol = Math.floor((relX / (iTW / 2) + relY / (iTH / 2)) / 2);
+                  var iRow = Math.floor((relY / (iTH / 2) - relX / (iTW / 2)) / 2);
+                  if (iRow >= 0 && iRow < 4 && iCol >= 0 && iCol < 4) {
+                    var cellIdx = iRow * 4 + iCol;
+                    if (cgPhase === 'plan') {
+                      if (cgSelectedPlant && !cgGrid[cellIdx].plantId) { cgPlantCell(cellIdx); }
+                      else if (cgGrid[cellIdx].plantId && !cgSelectedPlant) { cgRemoveCell(cellIdx); }
+                    } else if (cgPhase === 'grow' && cgGrid[cellIdx].plantId) {
+                      cgUpd({ microscopeCell: cellIdx, microscopeLayer: 'roots' });
                     }
                   }
-                  var borderColor = !cell.plantId ? (rotationWarn ? 'border-orange-400' : 'border-slate-200') : bonus.total > 10 ? 'border-emerald-400' : bonus.total < -5 ? 'border-red-400' : 'border-slate-300';
-                  var bgColor = !cell.plantId ? (rotationWarn ? 'bg-orange-50' : 'bg-amber-50') : isDead ? 'bg-red-50' : isReady ? 'bg-yellow-50' : 'bg-white';
+                },
+                ref: function(cvEl) {
+                  if (!cvEl || cvEl._cgCanvasInit) return;
+                  cvEl._cgCanvasInit = true;
+                  var gctx = cvEl.getContext('2d');
+                  var W = cvEl.width = cvEl.offsetWidth * 2;
+                  var H = cvEl.height = 760;
+                  var startT = performance.now();
+                  // Isometric tile parameters
+                  var isoOX = W / 2; var isoOY = 180; // origin (center-top of grid)
+                  var iTW = 90; var iTH = 50; // tile width/height in iso space
+                  // Convert grid (row,col) to screen (x,y) center of diamond
+                  function isoToScreen(row, col) {
+                    return { x: isoOX + (col - row) * iTW / 2, y: isoOY + (col + row) * iTH / 2 };
+                  }
+                  // Pre-cache sky gradient
+                  var skyGrads = [['#87ceeb','#e0f0ff'], ['#4da6ff','#fff8e0'], ['#cc8844','#ffe8cc'], ['#8899aa','#d0dde8']].map(function(c) {
+                    var g = gctx.createLinearGradient(0, 0, 0, H * 0.25); g.addColorStop(0, c[0]); g.addColorStop(1, c[1]); return g;
+                  });
+                  // Plant visual profiles for isometric rendering
+                  var PLANT_VISUALS = {
+                    tomato: { stemColor: '#3a6b20', fruitColor: '#e53e3e', leafColor: '#4a8c30', flowerColor: '#fde047', tall: false },
+                    corn: { stemColor: '#5a8a30', fruitColor: '#f0c040', leafColor: '#6aaa40', tall: true },
+                    beans: { stemColor: '#3a7a25', fruitColor: '#558833', leafColor: '#50a030', flowerColor: '#dda0dd' },
+                    squash: { stemColor: '#4a7a20', fruitColor: '#e08020', leafColor: '#3a8a20', flowerColor: '#fbbf24', wide: true },
+                    lettuce: { stemColor: '#5aaa40', leafColor: '#70cc50', bushy: true },
+                    carrot: { stemColor: '#5a8a30', fruitColor: '#f97316', leafColor: '#60a840' },
+                    pepper: { stemColor: '#3a6b20', fruitColor: '#dc2626', leafColor: '#4a8c30' },
+                    marigold: { stemColor: '#5a8a30', leafColor: '#60a840', flowerColor: '#f59e0b' },
+                    sunflower: { stemColor: '#4a7a20', fruitColor: '#7c3a1a', leafColor: '#4a8a30', flowerColor: '#fbbf24', tall: true },
+                    strawberry: { stemColor: '#3a7020', fruitColor: '#e53e3e', leafColor: '#40a030', flowerColor: '#fff' },
+                    blueberry: { stemColor: '#4a6830', fruitColor: '#3b5998', leafColor: '#4a8040' }
+                  };
+                  var defVis = { stemColor: '#4a7a2e', fruitColor: '#888', leafColor: '#50a030' };
 
-                  return h('button', {
-                    key: idx,
-                    role: 'gridcell',
-                    'aria-label': plant ? plant.label + ' (' + growthPct + '% grown, health ' + Math.round(cell.health) + ')' : 'Empty plot ' + (idx + 1),
-                    onClick: function() {
-                      if (cgPhase === 'plan') {
-                        if (cell.plantId && !cgSelectedPlant) { cgRemoveCell(idx); }
-                        else if (cgSelectedPlant) { cgPlantCell(idx); }
+                  function drawCG() {
+                    cvEl._cgAnim = requestAnimationFrame(drawCG);
+                    var t = (performance.now() - startT) / 1000;
+                    var sSeason = cgSeason; // read directly (canvas re-mounts on state change)
+                    var grid2 = cgGrid;
+
+                    // Clear
+                    gctx.clearRect(0, 0, W, H);
+
+                    // ── Sky ──
+                    gctx.fillStyle = skyGrads[sSeason] || skyGrads[0]; gctx.fillRect(0, 0, W, H * 0.25);
+                    // Sun
+                    var sunX = W * 0.82 + Math.sin(t * 0.3) * 15;
+                    var sunY = 50 + Math.sin(t * 0.2) * 8;
+                    gctx.fillStyle = '#ffd700'; gctx.beginPath(); gctx.arc(sunX, sunY, 20, 0, Math.PI * 2); gctx.fill();
+                    gctx.globalAlpha = 0.12; gctx.beginPath(); gctx.arc(sunX, sunY, 35, 0, Math.PI * 2); gctx.fill(); gctx.globalAlpha = 1;
+                    // Clouds
+                    if (sSeason !== 3) {
+                      gctx.fillStyle = 'rgba(255,255,255,0.2)';
+                      for (var cl2 = 0; cl2 < 3; cl2++) {
+                        var clx2 = (t * 10 + cl2 * W * 0.35) % (W + 120) - 60;
+                        var cly2 = 25 + cl2 * 18;
+                        gctx.beginPath(); gctx.ellipse(clx2, cly2, 30 + cl2 * 10, 10, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(clx2 + 20, cly2 - 4, 20, 8, 0, 0, Math.PI * 2); gctx.fill();
                       }
-                    },
-                    className: 'relative rounded-xl border-2 ' + borderColor + ' ' + bgColor + ' p-2 flex flex-col items-center justify-center aspect-square transition-all hover:shadow-md ' + (isReady ? 'ring-2 ring-yellow-400 animate-pulse' : '')
-                  },
-                    // Plant display
-                    plant ? h('div', { className: 'text-center' },
-                      h('div', { className: 'text-2xl ' + (isDead ? 'grayscale opacity-40' : '') }, plant.emoji),
-                      h('div', { className: 'text-[9px] font-bold text-slate-700 leading-tight mt-0.5' }, plant.label),
-                      // Growth bar
-                      h('div', { className: 'w-full h-1 bg-slate-200 rounded-full mt-1 overflow-hidden' },
-                        h('div', { className: 'h-full rounded-full transition-all', style: { width: growthPct + '%', background: isDead ? '#ef4444' : isReady ? '#facc15' : '#22c55e' } })),
-                      // Companion indicator
-                      bonus.total !== 0 && h('div', { className: 'text-[8px] font-bold mt-0.5 ' + (bonus.total > 0 ? 'text-emerald-600' : 'text-red-500') },
-                        (bonus.total > 0 ? '+' : '') + bonus.total + '%'),
-                      // Pest indicator
-                      cell.pests > 30 && h('div', { className: 'absolute top-0.5 right-0.5 text-[8px]' }, '🐛'),
-                      // Pollinator indicator
-                      plant.pollinator && h('div', { className: 'absolute bottom-0.5 right-0.5 text-[8px]', title: 'Attracts pollinators to nearby crops' }, '🐝'),
-                      // Ready indicator
-                      isReady && h('div', { className: 'absolute top-0.5 left-0.5 text-[10px]' }, '✅'),
-                      // Microscope zoom button
-                      cgPhase === 'grow' && h('button', {
-                        onClick: function(ev) { ev.stopPropagation(); cgUpd({ microscopeCell: idx, microscopeLayer: 'roots' }); },
-                        className: 'absolute bottom-0.5 left-0.5 text-[8px] bg-indigo-500/80 text-white rounded px-1 hover:bg-indigo-600', title: 'Zoom in — see molecular science',
-                        'aria-label': 'Microscope view of ' + plant.label
-                      }, '🔬')
-                    ) : h('div', { className: 'text-center' },
-                      h('div', { className: 'text-slate-300 text-lg' }, cgPhase === 'plan' ? '+' : '·'),
-                      rotationWarn && h('div', { className: 'text-[8px] text-orange-600 font-bold', title: 'Same plant family grew here last season — rotation penalty!' }, '⚠️ Rotation')));
-                })),
+                    }
+
+                    // ── Ground plane (green grass perspective) ──
+                    var grassG = gctx.createLinearGradient(0, H * 0.22, 0, H);
+                    grassG.addColorStop(0, sSeason === 3 ? '#8899aa' : sSeason === 2 ? '#8a7a40' : '#5a8a3e');
+                    grassG.addColorStop(1, sSeason === 3 ? '#667788' : sSeason === 2 ? '#6a5a30' : '#3a6a28');
+                    gctx.fillStyle = grassG; gctx.fillRect(0, H * 0.22, W, H);
+
+                    // ── Background trees (behind garden) ──
+                    var treeLine = isoOY - 40;
+                    gctx.fillStyle = sSeason === 3 ? 'rgba(80,90,100,0.35)' : sSeason === 2 ? 'rgba(140,100,30,0.3)' : 'rgba(35,90,25,0.35)';
+                    for (var bt = 0; bt < 8; bt++) {
+                      var btx = W * 0.08 + bt * W * 0.12;
+                      var bty = treeLine - 5 + Math.sin(bt * 2.3) * 8;
+                      var btSize = 18 + (bt % 3) * 6;
+                      // Canopy
+                      gctx.beginPath(); gctx.arc(btx, bty - btSize * 0.4, btSize, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(btx + btSize * 0.3, bty - btSize * 0.2, btSize * 0.7, 0, Math.PI * 2); gctx.fill();
+                      // Trunk
+                      gctx.fillStyle = 'rgba(80,50,20,0.25)';
+                      gctx.fillRect(btx - 2, bty, 4, 12);
+                      gctx.fillStyle = sSeason === 3 ? 'rgba(80,90,100,0.35)' : sSeason === 2 ? 'rgba(140,100,30,0.3)' : 'rgba(35,90,25,0.35)';
+                    }
+
+                    // ── Garden shed (top-right corner, isometric) ──
+                    var shedPos = isoToScreen(-1, 4);
+                    gctx.fillStyle = '#7a5a3a'; gctx.fillRect(shedPos.x - 18, shedPos.y - 30, 36, 24);
+                    gctx.fillStyle = '#6a4a2a'; // roof
+                    gctx.beginPath(); gctx.moveTo(shedPos.x - 22, shedPos.y - 30); gctx.lineTo(shedPos.x, shedPos.y - 42); gctx.lineTo(shedPos.x + 22, shedPos.y - 30); gctx.fill();
+                    gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x - 4, shedPos.y - 18, 8, 12); // door
+
+                    // ── Isometric stone paths (between rows) ──
+                    gctx.fillStyle = 'rgba(160,150,130,0.2)';
+                    for (var pr = 0; pr < 3; pr++) {
+                      // Horizontal paths between row pr and pr+1
+                      for (var pc = 0; pc < 4; pc++) {
+                        var p1 = isoToScreen(pr, pc);
+                        var p2 = isoToScreen(pr + 1, pc);
+                        var mpx = (p1.x + p2.x) / 2; var mpy = (p1.y + p2.y) / 2;
+                        gctx.beginPath(); gctx.ellipse(mpx, mpy + iTH / 4, 6, 3, 0.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Isometric fence perimeter ──
+                    var fenceColor = '#8a6a4a';
+                    var corners = [isoToScreen(-0.6, -0.6), isoToScreen(-0.6, 3.6), isoToScreen(3.6, 3.6), isoToScreen(3.6, -0.6)];
+                    gctx.strokeStyle = fenceColor; gctx.lineWidth = 2;
+                    gctx.beginPath();
+                    gctx.moveTo(corners[0].x, corners[0].y); gctx.lineTo(corners[1].x, corners[1].y);
+                    gctx.lineTo(corners[2].x, corners[2].y); gctx.lineTo(corners[3].x, corners[3].y);
+                    gctx.closePath(); gctx.stroke();
+                    // Fence posts at corners
+                    corners.forEach(function(fc) {
+                      gctx.fillStyle = fenceColor;
+                      gctx.fillRect(fc.x - 2, fc.y - 10, 4, 12);
+                    });
+                    // Fence rail (top wire/rail)
+                    gctx.strokeStyle = 'rgba(138,106,74,0.4)'; gctx.lineWidth = 1;
+                    gctx.beginPath();
+                    gctx.moveTo(corners[0].x, corners[0].y - 6); gctx.lineTo(corners[1].x, corners[1].y - 6);
+                    gctx.lineTo(corners[2].x, corners[2].y - 6); gctx.lineTo(corners[3].x, corners[3].y - 6);
+                    gctx.closePath(); gctx.stroke();
+
+                    // ── Isometric 4×4 Grid (diamond tiles) ──
+                    var hoverCell2 = cvEl._hoverCell;
+                    var polCount2 = 0;
+                    for (var iR = 0; iR < 4; iR++) {
+                      for (var iC = 0; iC < 4; iC++) {
+                        var pos = isoToScreen(iR, iC);
+                        var ci4 = iR * 4 + iC;
+                        var cell4 = grid2[ci4];
+                        var hasPlant = cell4 && cell4.plantId && CG_PLANTS[cell4.plantId];
+                        var pl3 = hasPlant ? CG_PLANTS[cell4.plantId] : null;
+                        if (pl3 && pl3.pollinator) polCount2++;
+                        var isHovered = hoverCell2 === ci4;
+
+                        // ── Soil tile (isometric diamond) ──
+                        var soilDark2 = cgMoisture > 50 ? 15 : 0;
+                        gctx.fillStyle = hasPlant ? 'rgba(' + (100 - soilDark2) + ',' + (65 - soilDark2 * 0.4) + ',30,0.85)' : 'rgba(110,75,35,0.6)';
+                        gctx.beginPath();
+                        gctx.moveTo(pos.x, pos.y - iTH / 2); // top
+                        gctx.lineTo(pos.x + iTW / 2, pos.y);   // right
+                        gctx.lineTo(pos.x, pos.y + iTH / 2); // bottom
+                        gctx.lineTo(pos.x - iTW / 2, pos.y);   // left
+                        gctx.closePath(); gctx.fill();
+                        // Tile border + hover highlight
+                        gctx.strokeStyle = isHovered ? 'rgba(251,191,36,0.6)' : hasPlant ? 'rgba(80,50,20,0.4)' : 'rgba(80,50,20,0.2)';
+                        gctx.lineWidth = isHovered ? 2 : 1; gctx.stroke();
+                        // Hover glow fill
+                        if (isHovered) {
+                          gctx.fillStyle = 'rgba(251,191,36,0.08)';
+                          gctx.beginPath();
+                          gctx.moveTo(pos.x, pos.y - iTH / 2); gctx.lineTo(pos.x + iTW / 2, pos.y);
+                          gctx.lineTo(pos.x, pos.y + iTH / 2); gctx.lineTo(pos.x - iTW / 2, pos.y);
+                          gctx.closePath(); gctx.fill();
+                        }
+                        // Soil depth side (3D effect — left and bottom faces)
+                        var depth = 8;
+                        gctx.fillStyle = 'rgba(70,45,20,0.5)';
+                        gctx.beginPath();
+                        gctx.moveTo(pos.x - iTW / 2, pos.y);
+                        gctx.lineTo(pos.x, pos.y + iTH / 2);
+                        gctx.lineTo(pos.x, pos.y + iTH / 2 + depth);
+                        gctx.lineTo(pos.x - iTW / 2, pos.y + depth);
+                        gctx.closePath(); gctx.fill();
+                        gctx.fillStyle = 'rgba(60,35,15,0.4)';
+                        gctx.beginPath();
+                        gctx.moveTo(pos.x, pos.y + iTH / 2);
+                        gctx.lineTo(pos.x + iTW / 2, pos.y);
+                        gctx.lineTo(pos.x + iTW / 2, pos.y + depth);
+                        gctx.lineTo(pos.x, pos.y + iTH / 2 + depth);
+                        gctx.closePath(); gctx.fill();
+
+                        // ── Plant rendering (isometric) ──
+                        if (hasPlant) {
+                          var vis2 = PLANT_VISUALS[cell4.plantId] || defVis;
+                          var gp2 = Math.min(1, cell4.growthDay / pl3.days);
+                          var sw2 = Math.sin(t * 1.2 + ci4 * 0.7) * gp2 * 3;
+                          // Drop shadow (isometric ellipse on soil surface)
+                          var shadowAlpha = 0.1 + gp2 * 0.08;
+                          gctx.fillStyle = 'rgba(0,0,0,' + shadowAlpha + ')';
+                          gctx.beginPath();
+                          gctx.ellipse(pos.x + 3, pos.y + 2, 8 + gp2 * 10, 4 + gp2 * 4, 0.3, 0, Math.PI * 2);
+                          gctx.fill();
+                          var baseX = pos.x; var baseY = pos.y - iTH / 2 - 2;
+                          var sH2 = gp2 * (vis2.tall ? 50 : vis2.bushy ? 18 : vis2.wide ? 25 : 35);
+
+                          if (pl3.isStructure) {
+                            // Structure icons (geometric)
+                            gctx.fillStyle = cell4.plantId === 'bee_hotel' ? '#8B6914' : cell4.plantId === 'compost_bin' ? '#5a4030' : '#4a6a8a';
+                            gctx.fillRect(baseX - 6, baseY - 12, 12, 12);
+                            gctx.fillStyle = cell4.plantId === 'rain_barrel' ? '#6a9abb' : '#7a6040';
+                            gctx.fillRect(baseX - 7, baseY - 14, 14, 3);
+                          } else {
+                            // Stem (curved with sway)
+                            gctx.strokeStyle = vis2.stemColor; gctx.lineWidth = 1.5 + gp2;
+                            gctx.beginPath(); gctx.moveTo(baseX, baseY);
+                            gctx.quadraticCurveTo(baseX + sw2 * 0.5, baseY - sH2 * 0.5, baseX + sw2, baseY - sH2);
+                            gctx.stroke();
+                            // Leaves
+                            if (gp2 > 0.2) {
+                              gctx.fillStyle = vis2.leafColor || '#50a030';
+                              var lc2 = vis2.bushy ? 6 : vis2.wide ? 4 : 3;
+                              for (var lf2 = 0; lf2 < lc2; lf2++) {
+                                var lfY2 = baseY - sH2 * (0.25 + lf2 * 0.15);
+                                var lfS2 = lf2 % 2 === 0 ? -1 : 1;
+                                var lfSz2 = (3 + gp2 * 4) * (vis2.bushy ? 1.4 : vis2.wide ? 1.6 : 1);
+                                gctx.beginPath();
+                                gctx.ellipse(baseX + lfS2 * (5 + lf2) + sw2 * (0.4 + lf2 * 0.08), lfY2,
+                                  lfSz2, lfSz2 * 0.45, lfS2 * -0.4, 0, Math.PI * 2);
+                                gctx.fill();
+                              }
+                            }
+                            // Flower
+                            if (vis2.flowerColor && gp2 > 0.5) {
+                              var ftx = baseX + sw2; var fty = baseY - sH2 - 3;
+                              gctx.fillStyle = vis2.flowerColor;
+                              for (var fp = 0; fp < 5; fp++) {
+                                var fa2 = fp * Math.PI * 2 / 5 + t * 0.3;
+                                gctx.beginPath(); gctx.ellipse(ftx + Math.cos(fa2) * 4, fty + Math.sin(fa2) * 4, 3, 1.8, fa2, 0, Math.PI * 2); gctx.fill();
+                              }
+                              gctx.fillStyle = vis2.fruitColor || '#8B6914';
+                              gctx.beginPath(); gctx.arc(ftx, fty, 2, 0, Math.PI * 2); gctx.fill();
+                            }
+                            // Fruit (at 70%+)
+                            if (vis2.fruitColor && gp2 > 0.7 && !vis2.flowerColor) {
+                              gctx.fillStyle = vis2.fruitColor;
+                              var frx2 = baseX + sw2; var fry2 = baseY - sH2 * 0.65;
+                              gctx.beginPath(); gctx.arc(frx2, fry2, 3 + gp2 * 2, 0, Math.PI * 2); gctx.fill();
+                              gctx.fillStyle = 'rgba(255,255,255,0.3)';
+                              gctx.beginPath(); gctx.arc(frx2 - 1, fry2 - 1, 1.5, 0, Math.PI * 2); gctx.fill();
+                            }
+                          }
+                          // Pest dots
+                          if (cell4.pests > 30) {
+                            gctx.fillStyle = 'rgba(220,50,50,0.6)';
+                            for (var pd3 = 0; pd3 < Math.min(3, Math.floor(cell4.pests / 25)); pd3++) {
+                              gctx.beginPath(); gctx.arc(baseX + (pd3 - 1) * 5, baseY - sH2 * 0.4 + Math.sin(t * 3 + pd3 + ci4) * 2, 2, 0, Math.PI * 2); gctx.fill();
+                            }
+                          }
+                          // Harvest glow (golden ring)
+                          if (gp2 >= 1 && cell4.health > 20) {
+                            gctx.strokeStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(t * 3 + ci4) * 0.15) + ')';
+                            gctx.lineWidth = 2;
+                            gctx.beginPath(); gctx.ellipse(pos.x, pos.y, iTW / 2 - 4, iTH / 2 - 2, 0, 0, Math.PI * 2); gctx.stroke();
+                          }
+                          // Growth sparkle
+                          if (gp2 > 0.1 && gp2 < 0.95 && sSeason < 3) {
+                            gctx.fillStyle = 'rgba(200,255,100,' + (0.3 + Math.sin(t * 5 + ci4) * 0.2) + ')';
+                            gctx.beginPath(); gctx.arc(baseX + Math.sin(t * 3 + ci4) * 8, baseY - sH2 * 0.5 - (t * 8 + ci4 * 5) % 15, 1.2, 0, Math.PI * 2); gctx.fill();
+                          }
+                        } else {
+                          // Empty plot indicator (plan phase)
+                          if (cgPhase === 'plan') {
+                            gctx.fillStyle = 'rgba(255,255,255,0.12)'; gctx.font = '14px system-ui'; gctx.textAlign = 'center';
+                            gctx.fillText('+', pos.x, pos.y + 5);
+                          }
+                        }
+
+                        // Companion glow lines (check right and down neighbors)
+                        if (hasPlant) {
+                          [ci4 + 1, ci4 + 4].forEach(function(ni3) {
+                            if (ni3 >= 16 || !grid2[ni3] || !grid2[ni3].plantId) return;
+                            if (ci4 % 4 === 3 && ni3 === ci4 + 1) return;
+                            var nPos = isoToScreen(Math.floor(ni3 / 4), ni3 % 4);
+                            var cm = CG_COMPANIONS.find(function(cp) {
+                              return (cp.a === cell4.plantId && cp.b === grid2[ni3].plantId) || (cp.b === cell4.plantId && cp.a === grid2[ni3].plantId);
+                            });
+                            if (cm) {
+                              gctx.strokeStyle = cm.bonus > 0 ? 'rgba(34,197,94,' + (0.12 + Math.sin(t * 2 + ci4) * 0.06) + ')' : 'rgba(239,68,68,' + (0.12 + Math.sin(t * 2 + ci4) * 0.06) + ')';
+                              gctx.lineWidth = 2;
+                              gctx.beginPath(); gctx.moveTo(pos.x, pos.y); gctx.lineTo(nPos.x, nPos.y); gctx.stroke();
+                            }
+                          });
+                        }
+                      }
+                    }
+
+                    // ── Pollinators (bees/butterflies) ──
+                    for (var bi3 = 0; bi3 < Math.min(5, polCount2); bi3++) {
+                      var bx3 = (t * 20 + bi3 * 100) % (W + 60) - 30;
+                      var by3 = isoOY - 20 + Math.sin(t * 1.5 + bi3 * 2.5) * 25;
+                      gctx.fillStyle = bi3 % 2 === 0 ? '#fbbf24' : '#f97316';
+                      gctx.beginPath(); gctx.arc(bx3, by3, 2.5, 0, Math.PI * 2); gctx.fill();
+                      gctx.fillStyle = 'rgba(255,255,255,0.5)';
+                      var wA2 = Math.sin(t * 8 + bi3) * 0.5;
+                      gctx.beginPath(); gctx.ellipse(bx3 - 2.5, by3 - 1.5, 3, 1.8, wA2, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.ellipse(bx3 + 2.5, by3 - 1.5, 3, 1.8, -wA2, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Weather ──
+                    if (sSeason === 0 || sSeason === 2) { // Rain
+                      gctx.strokeStyle = 'rgba(100,150,220,0.12)'; gctx.lineWidth = 0.8;
+                      for (var ri4 = 0; ri4 < 15; ri4++) {
+                        var rx3 = (ri4 * 53 + t * 50) % W; var ry3 = (ri4 * 37 + t * 100) % (H * 0.5);
+                        gctx.beginPath(); gctx.moveTo(rx3, ry3); gctx.lineTo(rx3 - 1.5, ry3 + 8); gctx.stroke();
+                      }
+                    }
+                    if (sSeason === 3) { // Snow
+                      gctx.fillStyle = 'rgba(255,255,255,0.45)';
+                      for (var si4 = 0; si4 < 25; si4++) {
+                        gctx.beginPath(); gctx.arc((si4 * 41 + t * 6) % W, (si4 * 23 + t * 12) % H, 1.2 + Math.sin(si4 + t * 0.4) * 0.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Hover tooltip (plant info card on canvas) ──
+                    if (hoverCell2 >= 0 && hoverCell2 < 16) {
+                      var hc = grid2[hoverCell2];
+                      var hPos = isoToScreen(Math.floor(hoverCell2 / 4), hoverCell2 % 4);
+                      if (hc && hc.plantId && CG_PLANTS[hc.plantId]) {
+                        var hp = CG_PLANTS[hc.plantId];
+                        var hGrow = Math.min(100, Math.round(hc.growthDay / hp.days * 100));
+                        var hBonus = getCellBonus(grid2, hoverCell2);
+                        var ttx = Math.min(W - 140, Math.max(10, hPos.x - 60));
+                        var tty = Math.max(50, hPos.y - iTH - 55);
+                        // Background
+                        gctx.fillStyle = 'rgba(0,0,0,0.8)'; gctx.beginPath();
+                        gctx.roundRect(ttx, tty, 130, 50, 6); gctx.fill();
+                        gctx.strokeStyle = 'rgba(255,255,255,0.15)'; gctx.lineWidth = 1;
+                        gctx.beginPath(); gctx.roundRect(ttx, tty, 130, 50, 6); gctx.stroke();
+                        // Content
+                        gctx.fillStyle = '#fff'; gctx.font = 'bold 11px system-ui'; gctx.textAlign = 'left';
+                        gctx.fillText(hp.label, ttx + 8, tty + 16);
+                        gctx.fillStyle = '#94a3b8'; gctx.font = '9px system-ui';
+                        gctx.fillText('Growth: ' + hGrow + '%  Health: ' + Math.round(hc.health) + '%', ttx + 8, tty + 30);
+                        var bonusCol = hBonus.total > 0 ? '#4ade80' : hBonus.total < 0 ? '#f87171' : '#94a3b8';
+                        gctx.fillStyle = bonusCol;
+                        gctx.fillText('Companion: ' + (hBonus.total > 0 ? '+' : '') + hBonus.total + '%  Pests: ' + Math.round(hc.pests), ttx + 8, tty + 43);
+                      } else if (!hc || !hc.plantId) {
+                        // Empty plot tooltip
+                        gctx.fillStyle = 'rgba(0,0,0,0.6)'; gctx.beginPath();
+                        gctx.roundRect(hPos.x - 40, hPos.y - iTH - 25, 80, 22, 4); gctx.fill();
+                        gctx.fillStyle = 'rgba(255,255,255,0.6)'; gctx.font = '9px system-ui'; gctx.textAlign = 'center';
+                        gctx.fillText(cgPhase === 'plan' ? 'Click to plant' : 'Empty plot', hPos.x, hPos.y - iTH - 10);
+                      }
+                    }
+
+                    // ── HUD overlay ──
+                    gctx.fillStyle = 'rgba(0,0,0,0.5)'; gctx.beginPath();
+                    gctx.roundRect(6, 6, 200, 30, 6); gctx.fill();
+                    gctx.font = 'bold 11px system-ui'; gctx.textAlign = 'left';
+                    gctx.fillStyle = '#fff';
+                    var seasonLabels = ['Spring', 'Summer', 'Autumn', 'Winter'];
+                    gctx.fillText(seasonLabels[sSeason] + ' \u2022 Day ' + ((cgDay % 30) + 1) + ' \u2022 Year ' + cgYear, 14, 24);
+                    gctx.font = '9px system-ui'; gctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    gctx.fillText(cgPhase === 'plan' ? 'Click a plot to plant' : 'Click a plant to inspect', 14, 48);
+                  }
+                  drawCG();
+                  var obs3 = new MutationObserver(function() {
+                    if (!document.contains(cvEl)) { cancelAnimationFrame(cvEl._cgAnim); obs3.disconnect(); cvEl._cgCanvasInit = false; }
+                  });
+                  obs3.observe(document.body, { childList: true, subtree: true });
+                }
+              }),
 
               // ── Companion interactions preview ──
               cgPhase === 'plan' && (function() {
@@ -3494,13 +4345,13 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'text-xs font-bold text-indigo-800' }, '🎯 ' + ch.title + (isComplete ? ' — ✅ COMPLETE!' : '')),
                       h('div', { className: 'text-[10px] text-indigo-600' }, ch.goal)),
-                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '✕')),
+                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'text-xs text-slate-400 hover:text-slate-600', 'aria-label': 'Close challenge' }, '✕')),
                   !isComplete && h('div', { className: 'text-[10px] text-amber-700 bg-amber-50 rounded-lg p-2 mt-1' }, '💡 Hint: ' + ch.hint));
               })(),
 
               // ── Action buttons ──
               cgPhase === 'plan' && h('div', { className: 'flex gap-2 flex-wrap' },
-                h('button', { onClick: cgStartGrowing, 'aria-label': 'Start growing season', className: 'px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700' }, '▶️ Start Growing'),
+                h('button', { onClick: cgStartGrowing, 'aria-label': 'Start growing season', className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-700' }, '▶️ Start Growing'),
                 h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🗑️ Clear All')),
 
               cgPhase === 'grow' && h('div', { className: 'flex gap-2 flex-wrap items-center' },
@@ -3510,7 +4361,88 @@ var d = (labToolData.companionPlanting) || {};
                 h('button', { onClick: cgWeed, 'aria-label': 'Weed the garden', className: 'px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
                 h('button', { onClick: cgCompost, 'aria-label': 'Add compost', className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
                 h('button', { onClick: cgHarvest, 'aria-label': 'Harvest ready crops', className: 'px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-bold hover:bg-yellow-200' }, '🌾 Harvest Ready'),
-                h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '✏️ Edit Garden')),
+                h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '\u270F\uFE0F Edit Garden')),
+
+              // ── Soil Chemistry + Economics + Pest HUD ──
+              h('div', { className: 'grid grid-cols-2 gap-2' },
+                // Soil Chemistry Panel
+                h('div', { className: 'bg-gradient-to-b from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-2.5' },
+                  h('div', { className: 'text-[10px] font-bold text-amber-800 mb-1.5' }, '\uD83E\uDDEA Soil Chemistry'),
+                  h('div', { className: 'space-y-1' },
+                    [
+                      { label: 'N', val: cgNitrogen, color: '#22c55e', tip: 'Nitrogen' },
+                      { label: 'P', val: cgPhosphorus, color: '#3b82f6', tip: 'Phosphorus' },
+                      { label: 'K', val: cgPotassium, color: '#8b5cf6', tip: 'Potassium' }
+                    ].map(function(r) {
+                      return h('div', { key: r.label, className: 'flex items-center gap-1.5', title: r.tip + ': ' + Math.round(r.val) + '/100' },
+                        h('span', { className: 'text-[9px] font-bold w-3', style: { color: r.color } }, r.label),
+                        h('div', { className: 'flex-1 h-2 bg-slate-200 rounded-full overflow-hidden' },
+                          h('div', { style: { width: Math.round(r.val) + '%', backgroundColor: r.val < 15 ? '#ef4444' : r.color }, className: 'h-full rounded-full transition-all' })
+                        ),
+                        h('span', { className: 'text-[8px] text-slate-500 w-6 text-right' }, Math.round(r.val))
+                      );
+                    })
+                  ),
+                  h('div', { className: 'flex justify-between mt-1.5 text-[9px]' },
+                    h('span', { className: 'text-amber-600', title: 'Soil pH (ideal 6.0-7.0 for most crops)' }, 'pH: ' + cgPH),
+                    h('span', { className: 'text-amber-600', title: 'Organic matter % (higher = better water retention)' }, 'OM: ' + cgOrganicMatter.toFixed(1) + '%')
+                  ),
+                  // Soil actions
+                  h('div', { className: 'flex gap-1 mt-1.5' },
+                    h('button', { onClick: cgAddLime, title: 'Add lime to raise pH (+$0.50)', className: 'flex-1 px-1 py-1 text-[8px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, '\u2B06 Lime'),
+                    h('button', { onClick: cgAddSulfur, title: 'Add sulfur to lower pH (+$0.50)', className: 'flex-1 px-1 py-1 text-[8px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u2B07 Sulfur')
+                  )
+                ),
+                // Economics + Pest Panel
+                h('div', { className: 'space-y-2' },
+                  // Budget
+                  h('div', { className: 'bg-gradient-to-b from-green-50 to-emerald-50 rounded-xl border border-green-200 p-2.5' },
+                    h('div', { className: 'text-[10px] font-bold text-green-800 mb-1' }, '\uD83D\uDCB0 Farm Budget'),
+                    h('div', { className: 'text-lg font-black ' + (cgBudget > 20 ? 'text-green-600' : cgBudget > 5 ? 'text-amber-600' : 'text-red-600') }, '$' + cgBudget.toFixed(2)),
+                    h('div', { className: 'flex justify-between text-[8px] text-slate-500 mt-0.5' },
+                      h('span', null, 'Spent: $' + cgExpenses.toFixed(2)),
+                      h('span', null, 'Earned: $' + cgRevenue.toFixed(2))
+                    ),
+                    (cgRevenue - cgExpenses) !== 0 && h('div', { className: 'text-[9px] font-bold mt-0.5 ' + ((cgRevenue - cgExpenses) >= 0 ? 'text-green-500' : 'text-red-500') },
+                      (cgRevenue - cgExpenses) >= 0 ? '\u2B06 Profit: $' + (cgRevenue - cgExpenses).toFixed(2) : '\u2B07 Loss: $' + Math.abs(cgRevenue - cgExpenses).toFixed(2))
+                  ),
+                  // Pest ecosystem
+                  h('div', { className: 'bg-gradient-to-b from-red-50 to-orange-50 rounded-xl border border-red-200 p-2.5' },
+                    h('div', { className: 'text-[10px] font-bold text-red-800 mb-1' }, '\uD83D\uDC1B Pest Ecosystem'),
+                    h('div', { className: 'flex justify-between text-[10px]' },
+                      h('span', { className: 'text-red-600' }, '\uD83D\uDC1B Pests: ' + Math.round(cgPestPop)),
+                      h('span', { className: 'text-green-600' }, '\uD83D\uDC1E Beneficials: ' + Math.round(cgBeneficialPop))
+                    ),
+                    // IPM action buttons
+                    h('div', { className: 'grid grid-cols-2 gap-1 mt-1.5' },
+                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: 'Release ladybugs ($1.50)', className: 'px-1 py-1 text-[8px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, '\uD83D\uDC1E Ladybugs'),
+                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: 'Neem spray ($1.00)', className: 'px-1 py-1 text-[8px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, '\uD83C\uDF3F Neem'),
+                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: 'Hand-pick pests (free)', className: 'px-1 py-1 text-[8px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, '\u270B Pick'),
+                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: 'Row covers ($2.00)', className: 'px-1 py-1 text-[8px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, '\uD83E\uDDF5 Covers')
+                    )
+                  )
+                )
+              ),
+
+              // ── Year indicator + AI Advisor ──
+              h('div', { className: 'flex items-center gap-2' },
+                h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-1.5 text-[10px] font-bold text-indigo-700' },
+                  '\uD83D\uDCC5 Year ' + cgYear + ' \u2022 ' + ['Spring', 'Summer', 'Autumn', 'Winter'][cgSeason] + ' \u2022 Day ' + (cgDay % 30 + 1)),
+                callGemini && h('button', {
+                  onClick: cgAskAdvisor,
+                  disabled: cgAdvisorCooldown > 0,
+                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-400' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300')
+                }, cgAdvisorCooldown > 0 ? '\uD83E\uDDD1\u200D\uD83C\uDF3E Advisor (wait ' + cgAdvisorCooldown + ' days)' : '\uD83E\uDDD1\u200D\uD83C\uDF3E Ask Garden Advisor')
+              ),
+
+              // ── Advisor Response ──
+              cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('span', { className: 'text-[10px] font-bold text-emerald-700' }, '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor'),
+                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'ml-auto text-[9px] text-slate-400 hover:text-slate-600' }, '\u2715')
+                ),
+                h('p', { className: 'text-[10px] text-slate-600 leading-relaxed whitespace-pre-line' }, cgAdvisorResponse)
+              ),
 
               // ── Achievements ──
               h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3' },
@@ -3554,7 +4486,7 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement('p', { className: 'text-xs text-slate-500' }, 'Plan, plant, and manage a diverse garden ecosystem'))),
                 React.createElement('div', { className: 'flex gap-2' },
                   React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50' }, '🌽 Three Sisters'),
-                  React.createElement('button', { className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white' }, '🏡 Community Garden'))),
+                  React.createElement('button', { className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white' }, '🏡 Community Garden'))),
               renderCommunityGarden());
           }
 

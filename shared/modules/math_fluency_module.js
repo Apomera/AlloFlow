@@ -18,6 +18,19 @@
   })();
 
 
+  // WCAG 2.1 AA: Accessibility CSS injection
+  if (!document.getElementById('mf-a11y-css')) {
+    var mfA11yStyle = document.createElement('style');
+    mfA11yStyle.id = 'mf-a11y-css';
+    mfA11yStyle.textContent = [
+      '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+      '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
+      '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
+      '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
+    ].join('\n');
+    document.head.appendChild(mfA11yStyle);
+  }
+
   // ── Grade-Normed DCPM Benchmarks (Research-Based) ──
   // Sources: AIMSweb, NWEA, Fuchs & Fuchs (2004)
   // Format: { [grade]: { [operation]: { fall, winter, spring } } }

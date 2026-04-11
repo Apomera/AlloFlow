@@ -2565,7 +2565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                 h('span', null, '\uD83D\uDCC8'), 'Pitch Contour'),
               h('p', { className: subTextClass + ' mb-2' }, 'The melody of your speech. Rising pitch = questions, falling = statements, variation = emphasis.'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Oratory visualization',
                 ref: pitchCanvasRef,
                 width: 600,
                 height: 180,
@@ -2596,7 +2596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                   h('span', null, '\u23F1\uFE0F'), 'Pacing'),
                 h('p', { className: subTextClass + ' mb-2' }, 'How fast you are speaking in words per minute.'),
-                h('canvas', {
+                h('canvas', { 'aria-label': 'Oratory visualization',
                   ref: pacingCanvasRef,
                   width: 280,
                   height: 160,
@@ -2610,7 +2610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                   h('span', null, '\uD83D\uDD0A'), 'Volume'),
                 h('p', { className: subTextClass + ' mb-2' }, 'Your speaking volume and steadiness over time.'),
-                h('canvas', {
+                h('canvas', { 'aria-label': 'Oratory visualization',
                   ref: volumeCanvasRef,
                   width: 280,
                   height: 70,
@@ -2625,7 +2625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                 h('span', null, '\u23F8\uFE0F'), 'Pause Detection'),
               h('p', { className: subTextClass + ' mb-2' }, 'Good speakers use pauses! Aim for 20-30% pauses in your speech.'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Oratory visualization',
                 ref: pauseCanvasRef,
                 width: 600,
                 height: 55,
@@ -2698,7 +2698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 // Session comparison chart
                 fluencySessions.length > 0 && h('div', { className: 'mt-3' },
                   h('h4', { className: headingClass + ' text-xs mb-2' }, 'Session History'),
-                  h('canvas', {
+                  h('canvas', { 'aria-label': 'Oratory visualization',
                     ref: fluencyChartCanvasRef,
                     width: 500,
                     height: 150,
@@ -2744,7 +2744,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 ),
 
                 // Vowel space canvas
-                h('canvas', {
+                h('canvas', { 'aria-label': 'Oratory visualization',
                   ref: vowelCanvasRef,
                   width: 500,
                   height: 400,
@@ -2829,7 +2829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
                     // Playback prosody canvas
                     playbackIdx >= 0 && savedRecordings[playbackIdx] && h('div', { className: 'mt-2' },
-                      h('canvas', {
+                      h('canvas', { 'aria-label': 'Oratory visualization',
                         ref: playbackCanvasRef,
                         width: 600,
                         height: 120,
@@ -2873,7 +2873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                             })
                           )
                         ),
-                        h('canvas', {
+                        h('canvas', { 'aria-label': 'Oratory visualization',
                           ref: compareCanvasRef,
                           width: 600,
                           height: 150,
@@ -3198,7 +3198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 // Target pattern canvas
                 h('div', { className: 'mb-3' },
                   h('div', { className: subTextClass + ' mb-1' }, 'Target pitch pattern (green zone = target, orange = your pitch):'),
-                  h('canvas', {
+                  h('canvas', { 'aria-label': 'Oratory visualization',
                     ref: patternCanvasRef,
                     width: 500,
                     height: 120,
@@ -3328,7 +3328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               }, isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start'),
               h('span', { className: subTextClass },
                 isRecording ? 'Listening... speak now!' : 'Click to activate your microphone.')),
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Oratory visualization',
               ref: pitchCanvasRef,
               width: 600,
               height: 120,
@@ -3441,7 +3441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             (multiMode === 'yourTurn' || multiMode === 'comparing') && h('div', { className: cardClass },
               h('h4', { className: headingClass + ' text-sm mb-2' }, 'Prosody Comparison'),
               h('p', { className: subTextClass + ' mb-2' }, 'Dashed line = model, solid line = your speech. Try to make them match!'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Oratory visualization',
                 ref: pitchCanvasRef,
                 width: 600,
                 height: 180,

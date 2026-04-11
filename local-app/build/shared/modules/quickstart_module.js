@@ -6,6 +6,8 @@
  */
 (function() {
   'use strict';
+  // WCAG 2.1 AA: Accessibility CSS
+  if (!document.getElementById("quickstart-module-a11y")) { var _s = document.createElement("style"); _s.id = "quickstart-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }"; document.head.appendChild(_s); }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-quickstart')) return;

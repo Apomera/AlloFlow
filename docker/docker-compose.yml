@@ -1,42 +1,53 @@
 # ══════════════════════════════════════════════════════════════════
-#  AlloFlow Local AI Stack — Docker Compose
-#  
-#  The complete "School Box" AI backend:
-#    PocketBase (DB)    → port 8090   (local-first database, replaces Firebase)
-#    Ollama (LLM)       → port 11434  (text generation)
-#    Flux (Image Gen)   → port 7860   (text-to-image + image editing)
-#    Edge TTS (Speech)  → port 5001   (neural text-to-speech, 28 voices, 20 langs)
-#    Piper (TTS)        → port 5500   (text-to-speech, offline fallback)
-#    SearXNG (Search)   → port 8888   (web search for grounding)
+#  AlloFlow "School Box" — Complete Local AI Stack
 #
-#  Usage:
-#    docker compose up -d          # Start all services
-#    docker compose up flux        # Start just Flux
-#    docker compose logs -f flux   # Watch Flux logs
+#  Run:  cd docker && docker compose up -d
 #
-#  GPU Support:
-#    Flux requires NVIDIA GPU with ≥8GB VRAM for schnell model.
-#    Set FLUX_MODEL to a smaller model if VRAM is limited.
+#  Services:
+#    Frontend (Nginx)  → port 3000  (AlloFlow React app)
+#    PocketBase (DB)   → port 8090  (local database, replaces Firebase)
+#    Ollama (LLM)      → port 11434 (text generation)
+#    Flux (Image Gen)  → port 7860  (text-to-image, requires GPU)
+#    Edge TTS (Speech) → port 5001  (neural text-to-speech)
+#    Piper (TTS)       → port 10200 (offline TTS fallback)
+#    SearXNG (Search)  → port 8888  (web search for grounding)
+#
+#  Minimal (no GPU):
+#    docker compose up -d frontend pocketbase ollama piper searxng
+#
+#  Full (with GPU):
+#    docker compose up -d
 # ══════════════════════════════════════════════════════════════════
 
+version: "3.8"
+
 services:
-  # ── Local Database (PocketBase — replaces Firebase) ─────────
+  # ── Frontend (AlloFlow React App via Nginx) ────────────────────
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        REACT_APP_DATA_BACKEND: auto
+        REACT_APP_POCKETBASE_URL: http://localhost:8090
+    container_name: alloflow-frontend
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Local Database (PocketBase — replaces Firebase) ────────────
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: alloflow-pocketbase
     ports:
-      - "127.0.0.1:8090:8090"
+      - "${PB_PORT:-8090}:8090"
     volumes:
       - pocketbase_data:/pb/pb_data
-      - ./pocketbase/pb_migrations:/pb/pb_migrations
+      - ./pocketbase/pb_schema.json:/pb/pb_migrations/schema.json:ro
     restart: unless-stopped
-    networks:
-      - frontend
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
       interval: 15s
@@ -44,16 +55,14 @@ services:
       start_period: 10s
       retries: 3
 
-  # ── LLM Backend ─────────────────────────────────────────────
+  # ── LLM Backend (Ollama) ───────────────────────────────────────
   ollama:
     image: ollama/ollama:latest
     container_name: alloflow-ollama
     ports:
-      - "127.0.0.1:11434:11434"
+      - "${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
-    networks:
-      - backend
     deploy:
       resources:
         reservations:
@@ -62,22 +71,15 @@ services:
               count: all
               capabilities: [gpu]
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
-  # ── Image Generation (Flux.1-schnell) ──────────────────────
+  # ── Image Generation (Flux.1-schnell — requires GPU) ──────────
   flux:
     build:
       context: ./flux-server
       dockerfile: Dockerfile
     container_name: alloflow-flux
     ports:
-      - "127.0.0.1:7860:7860"
-    networks:
-      - backend
+      - "${FLUX_PORT:-7860}:7860"
     environment:
       - FLUX_MODEL=black-forest-labs/FLUX.1-schnell
       - PORT=7860
@@ -93,55 +95,24 @@ services:
               count: all
               capabilities: [gpu]
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
       interval: 30s
       timeout: 10s
       start_period: 120s
       retries: 3
+    profiles:
+      - gpu  # Only starts with: docker compose --profile gpu up -d
 
-  # ── Text-to-Speech (Piper — offline, 40+ languages) ────────
-  piper:
-    image: rhasspy/wyoming-piper:latest
-    container_name: alloflow-piper
-    ports:
-      - "127.0.0.1:10200:10200"
-    volumes:
-      - piper_data:/data
-    networks:
-      - backend
-    command: >
-      --voice en_US-amy-medium
-      --data-dir /data
-      --download-dir /data
-    restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # ── Neural TTS (Edge TTS — 28 voices, 20 languages) ────────
+  # ── Neural TTS (Edge TTS — 28 voices, 20 languages) ──────────
   edge-tts:
     build:
       context: ./edge-tts-server
       dockerfile: Dockerfile
     container_name: alloflow-edge-tts
     ports:
-      - "127.0.0.1:5001:5001"
-    networks:
-      - backend
+      - "${TTS_PORT:-5001}:5001"
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 30s
@@ -149,25 +120,32 @@ services:
       start_period: 10s
       retries: 3
 
-  # ── Web Search (SearXNG — privacy-first) ───────────────────
+  # ── Offline TTS (Piper — 40+ languages, no internet needed) ───
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    container_name: alloflow-piper
+    ports:
+      - "${PIPER_PORT:-10200}:10200"
+    volumes:
+      - piper_data:/data
+    command: >
+      --voice en_US-amy-medium
+      --data-dir /data
+      --download-dir /data
+    restart: unless-stopped
+
+  # ── Web Search (SearXNG — privacy-first, no tracking) ─────────
   searxng:
     image: searxng/searxng:latest
     container_name: alloflow-searxng
     ports:
-      - "127.0.0.1:8888:8080"
+      - "${SEARCH_PORT:-8888}:8080"
     environment:
       - SEARXNG_BASE_URL=http://localhost:8888
-      - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY}
     volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
       - searxng_data:/etc/searxng
-    networks:
-      - backend
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 volumes:
   pocketbase_data:
@@ -175,10 +153,3 @@ volumes:
   flux_models:
   piper_data:
   searxng_data:
-
-networks:
-  frontend:
-    driver: bridge
-  backend:
-    driver: bridge
-    internal: true  # No external access to backend

@@ -1619,7 +1619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       // ═══ PLAYING VIEW ═══
       if (view === 'playing') {
         return h('div', { style: { position: 'relative', width: '100%', height: '500px', borderRadius: '12px', overflow: 'hidden', background: '#0a1a0a' } },
-          h('canvas', {
+          h('canvas', { 'aria-label': 'Atctower visualization',
             ref: canvasRef,
             role: 'application',
             'aria-label': 'Air Traffic Control radar display. Use Tab to cycle aircraft, H for heading, R for runway, C to clear approach, Space to pause, I for status summary.',

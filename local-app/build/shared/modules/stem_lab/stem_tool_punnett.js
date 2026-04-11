@@ -1665,7 +1665,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[10px] font-bold text-slate-600 block mb-1' }, 'Allele Frequency (p = ' + popFreqA.toFixed(2) + ', q = ' + (1 - popFreqA).toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
+                    type: 'range', 'aria-label': 'pop freq a', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
                     onChange: function(e) { upd('popFreqA', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1675,7 +1675,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[10px] font-bold text-slate-600 block mb-1' }, 'Population Size: ' + popSize),
                   h('input', {
-                    type: 'range', min: '10', max: '1000', step: '10', value: popSize,
+                    type: 'range', 'aria-label': 'pop size', min: '10', max: '1000', step: '10', value: popSize,
                     onChange: function(e) { upd('popSize', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1685,7 +1685,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[10px] font-bold text-slate-600 block mb-1' }, 'Generations: ' + popGens),
                   h('input', {
-                    type: 'range', min: '10', max: '100', step: '5', value: popGens,
+                    type: 'range', 'aria-label': 'pop gens', min: '10', max: '100', step: '5', value: popGens,
                     onChange: function(e) { upd('popGens', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1695,7 +1695,7 @@ window.StemLab = window.StemLab || {
                 (band === 'g68' || band === 'g912') && h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[10px] font-bold text-slate-600 block mb-1' }, 'Selection Against Recessive (s = ' + popSelection.toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', min: '0', max: '1', step: '0.05', value: popSelection,
+                    type: 'range', 'aria-label': 'pop selection', min: '0', max: '1', step: '0.05', value: popSelection,
                     onChange: function(e) { upd('popSelection', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1705,7 +1705,7 @@ window.StemLab = window.StemLab || {
                 band === 'g912' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-2' },
                   h('label', { className: 'text-[10px] font-bold text-slate-600 block mb-1' }, 'Mutation Rate (\u03BC = ' + popMutation.toFixed(4) + ')'),
                   h('input', {
-                    type: 'range', min: '0', max: '0.01', step: '0.0005', value: popMutation,
+                    type: 'range', 'aria-label': 'Enter', min: '0', max: '0.01', step: '0.0005', value: popMutation,
                     onChange: function(e) { upd('popMutation', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer'
                   })

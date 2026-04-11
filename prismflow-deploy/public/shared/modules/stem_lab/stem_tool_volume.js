@@ -608,7 +608,7 @@ window.StemLab = window.StemLab || {
               h('label', { className: 'block text-xs text-emerald-700 mb-1 font-bold uppercase' },
                 dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height'),
               h('input', {
-                type: 'range', min: '1', max: '10', value: dims[dim],
+                type: 'range', 'aria-label': 'Length', min: '1', max: '10', value: dims[dim],
                 onChange: function(e) {
                   var nd = Object.assign({}, dims);
                   nd[dim] = parseInt(e.target.value);
@@ -652,7 +652,7 @@ window.StemLab = window.StemLab || {
         isSlider && h('div', { className: 'flex items-center gap-2 bg-emerald-50 rounded-lg p-2 border border-emerald-100' },
           h('span', { className: 'text-xs font-bold text-emerald-700' }, 'Layers:'),
           h('input', {
-            type: 'range', min: '1', max: dims.h,
+            type: 'range', 'aria-label': 'Volume slider', min: '1', max: dims.h,
             value: showLayers != null ? showLayers : dims.h,
             onChange: function(e) {
               var lv = parseInt(e.target.value);

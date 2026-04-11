@@ -910,7 +910,7 @@ window.StemLab = window.StemLab || {
                     dmOptions.map(function(opt, oi) {
                       var key = oi + '-' + ci;
                       return h('td', { key: oi, className: 'px-2 py-1 text-center' },
-                        h('input', { type: 'range', min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
+                        h('input', { type: 'range', 'aria-label': 'dm scores', min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
                           var s = Object.assign({}, dmScores); s[key] = parseInt(e.target.value); upd('dmScores', s); checkBadge('decisionPro');
                         }, className: 'w-full', 'aria-label': opt + ' ' + c.name }),
                         h('span', { className: 'text-[11px] font-mono' }, dmScores[key] || 3)
@@ -1274,7 +1274,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: typeColor }, cat.name),
                       h('span', { className: 'font-mono text-slate-600' }, fmtMoney(amt))
                     ),
-                    h('input', { type: 'range', min: 0, max: Math.max(Math.round(budgetIncome * 0.5), 1), step: 10, value: amt, onChange: function(e) {
+                    h('input', { type: 'range', min: 0, max: Math.max(Math.round(budgetIncome * 0.5), 1), step: 10, value: amt, 'aria-label': cat.name + ' budget: ' + fmtMoney(amt), onChange: function(e) {
                       var exp = Object.assign({}, budgetExp); exp[cat.name] = parseInt(e.target.value); upd('budgetExp', exp);
                     }, className: 'w-full h-1 rounded-full appearance-none cursor-pointer', style: { accentColor: cat.type === 'need' ? '#3b82f6' : cat.type === 'want' ? '#8b5cf6' : '#059669' } })
                   )
@@ -1325,7 +1325,7 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'text-[10px] font-bold text-slate-700' }, f.icon + ' ' + f.name + ' (' + f.weight + '%)'),
                   h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded ' + (rating >= 4 ? 'bg-emerald-100 text-emerald-700' : rating >= 3 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }, labels[rating - 1])
                 ),
-                h('input', { type: 'range', min: 1, max: 5, value: rating, onChange: function(e) {
+                h('input', { type: 'range', min: 1, max: 5, value: rating, 'aria-label': f.name + ' credit rating: ' + labels[rating - 1], onChange: function(e) {
                   var r = Object.assign({}, creditRatings); r[f.name] = parseInt(e.target.value); upd('creditRatings', r);
                   var explored = Object.keys(r).length;
                   upd('creditExplored', explored);

@@ -224,6 +224,146 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           }
 
+          // ═══ AQUARIUM SOUND SYSTEM ═══
+          var _aquaAC = null;
+          function getAquaAC() {
+            if (!_aquaAC) { try { _aquaAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            if (_aquaAC && _aquaAC.state === 'suspended') { try { _aquaAC.resume(); } catch(e) {} }
+            return _aquaAC;
+          }
+
+          // Individual bubble pop — filtered noise burst
+          function sfxBubble() {
+            var ac = getAquaAC(); if (!ac) return;
+            try {
+              var bufSize = Math.floor(ac.sampleRate * 0.03);
+              var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+              var data = buf.getChannelData(0);
+              for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+              var src = ac.createBufferSource(); src.buffer = buf;
+              var filt = ac.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 1200 + Math.random() * 800; filt.Q.value = 2;
+              var g = ac.createGain(); g.gain.setValueAtTime(0.03 + Math.random() * 0.02, ac.currentTime);
+              g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.03);
+              src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
+            } catch(e) {}
+          }
+
+          // Water splash — short filtered noise
+          function sfxSplash() {
+            var ac = getAquaAC(); if (!ac) return;
+            try {
+              var bufSize = Math.floor(ac.sampleRate * 0.08);
+              var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+              var data = buf.getChannelData(0);
+              for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.3));
+              var src = ac.createBufferSource(); src.buffer = buf;
+              var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 800;
+              var g = ac.createGain(); g.gain.setValueAtTime(0.06, ac.currentTime);
+              g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.08);
+              src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
+            } catch(e) {}
+          }
+
+          // Feed sprinkle — multiple tiny high-freq clicks
+          function sfxFeed() {
+            for (var i = 0; i < 5; i++) {
+              (function(delay) {
+                setTimeout(function() {
+                  var ac = getAquaAC(); if (!ac) return;
+                  try {
+                    var o = ac.createOscillator(); var g = ac.createGain();
+                    o.type = 'sine'; o.frequency.value = 2000 + Math.random() * 1000;
+                    g.gain.setValueAtTime(0.02, ac.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.02);
+                    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.02);
+                  } catch(e) {}
+                }, delay);
+              })(i * 40 + Math.random() * 20);
+            }
+          }
+
+          // Alert chime — water quality warning
+          function sfxAlert() {
+            var ac = getAquaAC(); if (!ac) return;
+            try {
+              [440, 554, 440].forEach(function(freq, i) {
+                setTimeout(function() {
+                  var o = ac.createOscillator(); var g = ac.createGain();
+                  o.type = 'sine'; o.frequency.value = freq;
+                  g.gain.setValueAtTime(0.04, ac.currentTime);
+                  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.1);
+                  o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.1);
+                }, i * 100);
+              });
+            } catch(e) {}
+          }
+
+          // Purchase/add fish chime — ascending pleasant chord
+          function sfxAddFish() {
+            var ac = getAquaAC(); if (!ac) return;
+            try {
+              [523, 659, 784].forEach(function(freq, i) {
+                setTimeout(function() {
+                  var o = ac.createOscillator(); var g = ac.createGain();
+                  o.type = 'sine'; o.frequency.value = freq;
+                  g.gain.setValueAtTime(0.05, ac.currentTime);
+                  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.12);
+                  o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.12);
+                }, i * 80);
+              });
+            } catch(e) {}
+          }
+
+          // UI click — subtle blip
+          function sfxClick() {
+            var ac = getAquaAC(); if (!ac) return;
+            try {
+              var o = ac.createOscillator(); var g = ac.createGain();
+              o.type = 'sine'; o.frequency.value = 600; g.gain.setValueAtTime(0.03, ac.currentTime);
+              g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.04);
+              o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.04);
+            } catch(e) {}
+          }
+
+          // ── Ambient underwater loop — continuous filtered noise with bubble pops ──
+          var _aquaAmbient = null;
+          function startAquaAmbient() {
+            if (_aquaAmbient) return;
+            var ac = getAquaAC(); if (!ac) return;
+            try {
+              var bufSize = ac.sampleRate * 2;
+              var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+              var data = buf.getChannelData(0);
+              for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+              var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+              var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 300; filt.Q.value = 0.8;
+              // LFO for gentle underwater modulation
+              var lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.08;
+              var lfoG = ac.createGain(); lfoG.gain.value = 50;
+              lfo.connect(lfoG); lfoG.connect(filt.frequency);
+              var master = ac.createGain(); master.gain.setValueAtTime(0, ac.currentTime);
+              master.gain.linearRampToValueAtTime(0.012, ac.currentTime + 2);
+              src.connect(filt); filt.connect(master); master.connect(ac.destination);
+              src.start(); lfo.start();
+              _aquaAmbient = { src: src, lfo: lfo, master: master };
+              // Random bubble pops every 2-6 seconds
+              _aquaAmbient._bubbleInterval = setInterval(function() {
+                if (Math.random() > 0.4) sfxBubble();
+              }, 2000 + Math.random() * 4000);
+            } catch(e) {}
+          }
+          function stopAquaAmbient() {
+            if (_aquaAmbient) {
+              try {
+                _aquaAmbient.master.gain.linearRampToValueAtTime(0, (getAquaAC() ? getAquaAC().currentTime : 0) + 0.5);
+                var nodes = _aquaAmbient;
+                if (nodes._bubbleInterval) clearInterval(nodes._bubbleInterval);
+                setTimeout(function() { try { nodes.src.stop(); nodes.lfo.stop(); } catch(e) {} }, 600);
+              } catch(e) {}
+              _aquaAmbient = null;
+            }
+          }
+
           // ═══ ANATOMY VIEWER SYSTEM ═══
 
           var BODY_PLANS = {
@@ -3811,6 +3951,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             updMulti({ tankFish: newFish, fishHealth: newHealth, hungerLevels: newHunger, eventLog: eventLog.concat([{ tick: simTick, msg: '🐟 Added ' + species.name + ' to tank' }]) });
 
+            sfxAddFish(); sfxSplash();
+
           };
 
 
@@ -3967,6 +4109,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             if (addToast) addToast('💧 Water change complete!', 'success');
 
+            sfxSplash(); setTimeout(sfxSplash, 150); setTimeout(sfxBubble, 300);
+
           };
 
 
@@ -4031,6 +4175,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             });
 
+            sfxFeed();
+
           };
 
 
@@ -4094,6 +4240,8 @@ var d = (labToolData && labToolData._aquarium) || {};
               eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83E\uDD90 Live feed added — ' + fedCarnivores + ' carnivores fed' + (ignoredHerbivores > 0 ? ', ' + ignoredHerbivores + ' ignored it' : '') }])
 
             });
+
+            sfxFeed(); sfxSplash();
 
           };
 
@@ -5964,6 +6112,23 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", { className: "ml-auto text-[10px] text-slate-500 font-mono" }, "T:" + simTick)
 
+                  ),
+
+                  // Tank lighting toggle — day/moonlight/night
+                  React.createElement("div", { className: "flex items-center gap-1.5 mt-2" },
+                    React.createElement("span", { className: "text-[10px] font-bold text-slate-500 mr-1" }, "\uD83D\uDCA1 Light:"),
+                    [
+                      { id: 'day', label: '\u2600\uFE0F Day', color: 'bg-amber-100 text-amber-700 border-amber-300' },
+                      { id: 'blue', label: '\uD83D\uDD35 Moonlight', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+                      { id: 'night', label: '\uD83C\uDF19 Night', color: 'bg-slate-700 text-slate-200 border-slate-500' }
+                    ].map(function(lm) {
+                      var active = (d.tankLight || 'day') === lm.id;
+                      return React.createElement("button", {
+                        key: lm.id,
+                        onClick: function() { upd('tankLight', lm.id); sfxClick(); },
+                        className: "px-2 py-1 text-[10px] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-100')
+                      }, lm.label);
+                    })
                   )
 
                 ),
@@ -6460,7 +6625,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   className: "relative rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/20",
 
-                  style: { height: '240px', background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(180deg, #67e8f9 0%, #22d3ee 15%, #0891b2 40%, #155e75 70%, #164e63 100%)' : selectedTank === 'coldwater' ? 'linear-gradient(180deg, #bae6fd 0%, #7dd3fc 15%, #3b82f6 40%, #1e40af 70%, #1e3a5f 100%)' : selectedTank === 'brackish' ? 'linear-gradient(180deg, #a7f3d0 0%, #6ee7b7 15%, #059669 40%, #065f46 70%, #064e3b 100%)' : 'linear-gradient(180deg, #a5f3fc 0%, #67e8f9 15%, #22d3ee 40%, #0891b2 70%, #155e75 100%)' }
+                  style: { height: '240px', transition: 'filter 0.8s ease', filter: (d.tankLight === 'blue') ? 'saturate(0.5) hue-rotate(20deg) brightness(0.55)' : (d.tankLight === 'night') ? 'saturate(0.2) brightness(0.2)' : 'none', background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(180deg, #67e8f9 0%, #22d3ee 15%, #0891b2 40%, #155e75 70%, #164e63 100%)' : selectedTank === 'coldwater' ? 'linear-gradient(180deg, #bae6fd 0%, #7dd3fc 15%, #3b82f6 40%, #1e40af 70%, #1e3a5f 100%)' : selectedTank === 'brackish' ? 'linear-gradient(180deg, #a7f3d0 0%, #6ee7b7 15%, #059669 40%, #065f46 70%, #064e3b 100%)' : 'linear-gradient(180deg, #a5f3fc 0%, #67e8f9 15%, #22d3ee 40%, #0891b2 70%, #155e75 100%)' }
 
                 },
 
@@ -6502,6 +6667,16 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     style: { position: 'absolute', bottom: '24px', left: 0, right: 0, height: '40px', background: 'linear-gradient(0deg, rgba(15,23,42,0.12) 0%, rgba(15,23,42,0.04) 60%, transparent 100%)', zIndex: 2, pointerEvents: 'none', animation: 'aquaDepthFog 8s ease-in-out infinite' }
 
+                  }),
+
+                  // Underwater caustic light pattern — animated mesh of refracted light
+                  React.createElement("div", {
+                    style: {
+                      position: 'absolute', top: '30px', left: 0, right: 0, bottom: '32px', zIndex: 1, pointerEvents: 'none', overflow: 'hidden', opacity: 0.08,
+                      backgroundImage: 'radial-gradient(ellipse 30px 30px at 20% 30%, rgba(255,255,255,0.8) 0%, transparent 70%), radial-gradient(ellipse 40px 25px at 50% 60%, rgba(255,255,255,0.6) 0%, transparent 70%), radial-gradient(ellipse 25px 35px at 75% 40%, rgba(255,255,255,0.7) 0%, transparent 70%), radial-gradient(ellipse 35px 20px at 30% 80%, rgba(255,255,255,0.5) 0%, transparent 70%), radial-gradient(ellipse 28px 32px at 85% 70%, rgba(255,255,255,0.6) 0%, transparent 70%)',
+                      backgroundSize: '100% 100%',
+                      animation: 'aquaCaustic 8s ease-in-out infinite'
+                    }
                   }),
 
                   // Light rays (5 with varied widths/angles)
@@ -7096,13 +7271,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         if (simRunning) {
 
-                          upd('simRunning', false);
+                          upd('simRunning', false); stopAquaAmbient();
 
                           if (window._aquaSimInterval) { clearInterval(window._aquaSimInterval); window._aquaSimInterval = null; }
 
                         } else {
 
-                          upd('simRunning', true);
+                          upd('simRunning', true); startAquaAmbient();
 
                           var speed = simSpeed || 1;
 
@@ -7936,7 +8111,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           key: sp.id,
 
-                          onClick: function (e) { e.stopPropagation(); upd('selectedSpecies', sp.id); openAnatomy(sp.id); },
+                          onClick: function (e) { e.stopPropagation(); upd('selectedSpecies', sp.id); openAnatomy(sp.id); sfxBubble(); },
 
                           className: "px-2.5 py-1 bg-white/25 rounded-full text-[11px] text-white font-bold hover:bg-white/40 hover:shadow-lg transition-all duration-200 backdrop-blur-sm border border-white/10"
 

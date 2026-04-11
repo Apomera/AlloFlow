@@ -37,6 +37,18 @@
       };
     }
 
+    // ── WCAG 2.1 AA: Accessibility CSS ──
+    if (!document.getElementById('sel-a11y-css')) {
+      var selA11yStyle = document.createElement('style');
+      selA11yStyle.id = 'sel-a11y-css';
+      selA11yStyle.textContent = [
+        '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+        '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #8b5cf6 !important; outline-offset: 2px !important; border-radius: 4px; }',
+        '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }'
+      ].join('\n');
+      document.head.appendChild(selA11yStyle);
+    }
+
     // ── CASEL 5 Competency Categories ──
     // Tools are organized by the CASEL framework competencies.
     // Each tool declares its category; the hub groups them under these headers.
@@ -46,6 +58,20 @@
       { id: 'social-awareness',           label: 'Social Awareness',           icon: '\uD83E\uDD1D', desc: 'Empathy, perspective-taking, and appreciating diversity' },
       { id: 'relationship-skills',        label: 'Relationship Skills',        icon: '\uD83D\uDCAC', desc: 'Communication, teamwork, and conflict resolution' },
       { id: 'responsible-decision-making', label: 'Responsible Decision-Making', icon: '\u2696\uFE0F', desc: 'Ethical choices, evaluating consequences, and problem-solving' }
+    ];
+
+    // ── SEL Pathways (Curated Learning Sequences — equivalent to STEM Lab Stations) ──
+    // Teachers can use these presets or create custom ones.
+    // Each pathway filters the tool grid to show only relevant tools.
+    var SEL_PATHWAYS = [
+      { id: 'morning_check', name: 'Morning Check-In', icon: '\uD83C\uDF05', desc: 'Start the day with a mood check, breathing, and goal setting', tools: ['zones', 'mindfulness', 'goals', 'journal'], casel: 'self-awareness' },
+      { id: 'calm_down', name: 'Calm Down Corner', icon: '\uD83E\uDDD8', desc: 'Regulation strategies for when emotions run high', tools: ['zones', 'coping', 'mindfulness'], casel: 'self-management' },
+      { id: 'conflict_unit', name: 'Conflict Resolution Unit', icon: '\u2696\uFE0F', desc: 'Practice resolving disagreements and building repair skills', tools: ['conflict', 'perspective', 'social', 'restorativeCircle'], casel: 'relationship-skills' },
+      { id: 'empathy_week', name: 'Empathy & Perspective Week', icon: '\uD83D\uDC53', desc: 'Build empathy through perspective-taking and cultural awareness', tools: ['perspective', 'emotions', 'community', 'cultureExplorer'], casel: 'social-awareness' },
+      { id: 'decision_making', name: 'Decision-Making Deep Dive', icon: '\uD83E\uDD14', desc: 'Practice ethical reasoning and responsible choices', tools: ['decisions', 'ethicalReasoning', 'safety'], casel: 'responsible-decision-making' },
+      { id: 'self_discovery', name: 'Self-Discovery Journey', icon: '\u2728', desc: 'Explore who you are — strengths, emotions, and growth mindset', tools: ['strengths', 'emotions', 'growthmindset', 'compassion', 'advocacy'], casel: 'self-awareness' },
+      { id: 'friendship', name: 'Friendship & Social Skills', icon: '\uD83E\uDD1D', desc: 'Build healthy friendships and communication skills', tools: ['social', 'friendship', 'teamwork', 'peersupport'], casel: 'relationship-skills' },
+      { id: 'transitions', name: 'Navigating Change', icon: '\uD83C\uDF31', desc: 'Support students through life transitions and new experiences', tools: ['transitions', 'coping', 'journal', 'goals'], casel: 'self-management' },
     ];
 
     // ── Grade-Level Complexity Helpers ──
@@ -97,6 +123,19 @@
       var _selToolSearch  = React.useState('');
       var selToolSearch   = _selToolSearch[0];
       var setSelToolSearch = _selToolSearch[1];
+
+      // Category filter (CASEL competencies)
+      var _selCategoryFilter = React.useState(null); // null = show all
+      var selCategoryFilter = _selCategoryFilter[0];
+      var setSelCategoryFilter = _selCategoryFilter[1];
+
+      // SEL Pathway state (teacher-configured curated sequences)
+      var _selPathway = React.useState(null); // { name, tools[], objectives[] }
+      var activePathway = _selPathway[0];
+      var setActivePathway = _selPathway[1];
+      var _selPathwayProgress = React.useState({});
+      var pathwayProgress = _selPathwayProgress[0];
+      var setPathwayProgress = _selPathwayProgress[1];
 
       // Tool snapshots (save/load)
       var _selSnapshots = React.useState([]);
@@ -262,20 +301,21 @@
       // ══════════════════════════════════════════════════════════════
       if (!showSelHub) return null;
 
-      // ── Screen reader live region ──
-      var srLive = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      // ── Screen reader live region (fixed: removed bogus role=button) ──
+      var srLive = h('div', {
         id: 'sel-sr-announce',
         'aria-live': 'polite',
         'aria-atomic': 'true',
-        className: 'sr-only',
-        style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }
+        role: 'status',
+        style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, padding: 0, margin: '-1px' }
       });
 
-      // ── Header bar ──
-      var header = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      // ── Header bar (fixed: removed bogus role=button from non-interactive containers) ──
+      var header = h('div', {
+        role: 'banner',
         style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
       },
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 12 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
           selHubTool && h('button', {
             onClick: function() { setSelHubTool(null); announceToSR('Returned to tool grid'); },
             'aria-label': 'Back to tools',
@@ -284,20 +324,21 @@
           h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: _t.headerText } },
             '\u2764\uFE0F\u200D\uD83D\uDD25 SEL Hub'
           ),
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+          h('span', {
             style: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
           }, gradeBand(gradeLevel) === 'elementary' ? 'Elementary' : gradeBand(gradeLevel) === 'middle' ? 'Middle School' : 'High School')
         ),
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
           // Theme toggle button
           h('button', {
             onClick: function() { if (typeof window.AlloToggleTheme === 'function') { window.AlloToggleTheme(); setTimeout(function() { setSelToolData(function(p) { return Object.assign({}, p); }); }, 50); } },
             'aria-label': 'Toggle theme (light / dark / high contrast)',
             title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode',
             style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }
-          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
-          // XP badge
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
+          // XP badge (fixed: removed bogus role=button from display-only element)
+          h('div', {
+            'aria-label': selXp + ' SEL experience points',
             style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }
           }, '\u2728 ' + selXp + ' XP'),
           // Close button
@@ -343,9 +384,64 @@
           });
         }
 
-        toolGrid = h('div', { style: { padding: 20 } },
+        // Map tool ids to their CASEL category
+        var _toolCategoryMap = {};
+        var _currentCat = null;
+        _allSelTools.forEach(function(t2) {
+          if (t2.category) { _currentCat = t2.id; }
+          else { _toolCategoryMap[t2.id] = _currentCat; }
+        });
+
+        // Apply category filter on top of search
+        if (selCategoryFilter) {
+          var catHeaderId = '_cat_' + selCategoryFilter.replace(/[-\s]/g, '');
+          // Find the matching category header
+          var matchHeader = _allSelTools.find(function(t2) {
+            return t2.category && t2.id.toLowerCase().indexOf(selCategoryFilter.replace(/[-\s]/g, '').toLowerCase()) >= 0;
+          });
+          if (matchHeader) {
+            _filteredTools = _filteredTools.filter(function(t2) {
+              if (t2.category) return t2.id === matchHeader.id;
+              return _toolCategoryMap[t2.id] === matchHeader.id;
+            });
+          }
+        }
+
+        // If a pathway is active, filter to pathway tools only
+        if (activePathway && activePathway.tools && activePathway.tools.length > 0) {
+          var _pathTools = activePathway.tools;
+          _filteredTools = _filteredTools.filter(function(t2) {
+            if (t2.category) return true;
+            return _pathTools.indexOf(t2.id) >= 0;
+          });
+          // Remove empty category headers
+          _filteredTools = _filteredTools.filter(function(t2, i, arr) {
+            if (!t2.category) return true;
+            for (var j = i + 1; j < arr.length; j++) {
+              if (arr[j].category) return false;
+              return true;
+            }
+            return false;
+          });
+        }
+
+        toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: 20 } },
+          // Active pathway banner
+          activePathway && h('div', {
+            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed15, #6366f115)', border: '1px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+          },
+            h('div', null,
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7c3aed' } }, '\uD83D\uDEE4\uFE0F ' + activePathway.name),
+              h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 2 } }, activePathway.tools.length + ' tools \u2022 ' + Object.keys(pathwayProgress).filter(function(k) { return pathwayProgress[k]; }).length + '/' + activePathway.tools.length + ' completed')
+            ),
+            h('button', {
+              onClick: function() { setActivePathway(null); setPathwayProgress({}); announceToSR('Pathway cleared'); },
+              'aria-label': 'Exit pathway mode',
+              style: { background: 'none', border: '1px solid #7c3aed44', borderRadius: 8, padding: '4px 10px', color: '#7c3aed', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+            }, '\u2715 Exit Pathway')
+          ),
           // Search bar
-          h('div', { style: { marginBottom: 16 } },
+          h('div', { style: { marginBottom: 12 } },
             h('input', {
               type: 'text',
               placeholder: '\uD83D\uDD0D Search SEL tools...',
@@ -355,6 +451,57 @@
               style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #8b5cf6'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
             })
+          ),
+          // CASEL category filter chips
+          h('div', { role: 'group', 'aria-label': 'Filter by CASEL competency', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            h('button', {
+              onClick: function() { setSelCategoryFilter(null); announceToSR('Showing all categories'); },
+              'aria-label': 'Show all categories',
+              'aria-pressed': selCategoryFilter === null ? 'true' : 'false',
+              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? '#7c3aed' : _t.border), background: selCategoryFilter === null ? '#7c3aed' : _t.bgCard, color: selCategoryFilter === null ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }
+            }, 'All'),
+            SEL_CATEGORIES.map(function(cat) {
+              var isActive = selCategoryFilter === cat.id;
+              return h('button', {
+                key: cat.id,
+                onClick: function() { setSelCategoryFilter(isActive ? null : cat.id); announceToSR(isActive ? 'Showing all categories' : 'Filtered to ' + cat.label); },
+                'aria-label': 'Filter: ' + cat.label,
+                'aria-pressed': isActive ? 'true' : 'false',
+                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? '#7c3aed' : _t.border), background: isActive ? '#7c3aed' : _t.bgCard, color: isActive ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4 }
+              }, cat.icon + ' ' + cat.label);
+            })
+          ),
+          // SEL Pathways — curated learning sequences (collapsed by default)
+          !activePathway && h('details', {
+            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+          },
+            h('summary', {
+              style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
+            }, '\uD83D\uDEE4\uFE0F SEL Pathways \u2014 Curated Learning Sequences'),
+            h('div', { style: { padding: '8px 12px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+              SEL_PATHWAYS.map(function(pw) {
+                return h('button', {
+                  key: pw.id,
+                  onClick: function() {
+                    setActivePathway(pw);
+                    setPathwayProgress({});
+                    setSelCategoryFilter(null);
+                    setSelToolSearch('');
+                    announceToSR('Started pathway: ' + pw.name);
+                    if (typeof addToast === 'function') addToast('\uD83D\uDEE4\uFE0F ' + pw.name + ' pathway started!', 'success');
+                  },
+                  'aria-label': pw.name + ': ' + pw.desc,
+                  style: { textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, cursor: 'pointer', transition: 'all 0.15s' }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                    h('span', { style: { fontSize: 16 } }, pw.icon),
+                    h('span', { style: { fontSize: 12, fontWeight: 700, color: _t.text } }, pw.name)
+                  ),
+                  h('div', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.4 } }, pw.desc),
+                  h('div', { style: { fontSize: 9, color: '#7c3aed', fontWeight: 600, marginTop: 4 } }, pw.tools.length + ' activities')
+                );
+              })
+            )
           ),
           // Grid
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 } },
@@ -387,6 +534,10 @@
                   if (isRegistered) {
                     setSelHubTool(tool.id);
                     announceToSR('Opened ' + tool.label);
+                    // Track pathway progress
+                    if (activePathway && activePathway.tools.indexOf(tool.id) >= 0) {
+                      setPathwayProgress(function(prev) { var n = Object.assign({}, prev); n[tool.id] = true; return n; });
+                    }
                   } else {
                     if (typeof addToast === 'function') addToast(tool.label + ' is loading...', 'info');
                   }

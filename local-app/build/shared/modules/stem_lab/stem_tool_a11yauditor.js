@@ -549,7 +549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit Post'),
               h('button', { 'aria-label': 'Rewrite post accessibly',
                 onClick: rewriteAccessibly, disabled: !socialText.trim() || socialRewriteLoading,
-                className: 'flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 disabled:opacity-40 transition-all'
+                className: 'flex-1 px-4 py-2.5 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 disabled:opacity-40 transition-all'
               }, socialRewriteLoading ? 'Rewriting...' : '\u2728 Rewrite Accessibly')
             ),
             // Rewrite result

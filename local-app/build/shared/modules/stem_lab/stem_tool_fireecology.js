@@ -33,6 +33,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
   })();
 
 
+  // ── Fire Ecology CSS animations ──
+  if (!document.getElementById('fire-eco-css')) {
+    var fireStyle = document.createElement('style');
+    fireStyle.id = 'fire-eco-css';
+    fireStyle.textContent = [
+      '@keyframes fireGlow { 0%, 100% { box-shadow: 0 0 8px rgba(251,146,60,0.2); } 50% { box-shadow: 0 0 20px rgba(251,146,60,0.4); } }',
+      '@keyframes firePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
+      '@keyframes fireSlideIn { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }',
+      '@keyframes fireShake { 0%, 100% { transform: translateX(0); } 10% { transform: translateX(-4px) rotate(-1deg); } 30% { transform: translateX(3px) rotate(0.5deg); } 50% { transform: translateX(-2px); } 70% { transform: translateX(2px) rotate(-0.5deg); } 90% { transform: translateX(-1px); } }',
+      '@keyframes emberFloat { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-40px) scale(0) translateX(15px); } }',
+      '@keyframes badgePop { 0% { transform: scale(0); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }',
+      '@keyframes forestGrow { 0% { transform: scaleY(0.8); opacity: 0.7; } 100% { transform: scaleY(1); opacity: 1; } }',
+      '@keyframes statBarFill { 0% { width: 0; } }',
+      '.fire-card { animation: fireSlideIn 0.4s ease-out; }',
+      '.fire-badge { animation: badgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
+      '.fire-burn-btn:hover { animation: fireGlow 1.5s ease-in-out infinite; }',
+      '.fire-wildfire-shake { animation: fireShake 0.5s ease-in-out; }',
+      '.fire-stat-bar { animation: statBarFill 0.8s ease-out; }'
+    ].join('\n');
+    document.head.appendChild(fireStyle);
+  }
+
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
     var g = parseInt(ctx.gradeLevel, 10);
@@ -70,18 +92,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     } catch(e) {}
   }
 
+  // Noise burst helper — for crackle, wind, rain textures
+  function noiseBurst(dur, vol, filterFreq, filterType) {
+    var ac = getAudioCtx(); if (!ac) return;
+    try {
+      var bufSize = Math.floor(ac.sampleRate * (dur || 0.04));
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+      var src = ac.createBufferSource(); src.buffer = buf;
+      var filt = ac.createBiquadFilter(); filt.type = filterType || 'lowpass'; filt.frequency.value = filterFreq || 800;
+      var g = ac.createGain(); g.gain.setValueAtTime(vol || 0.03, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.04));
+      src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
+    } catch(e) {}
+  }
+
   function playSound(type) {
     try {
       switch(type) {
         case 'ignite':
-          playTone(180, 0.15, 'sawtooth', 0.08);
-          setTimeout(function() { playTone(220, 0.12, 'sawtooth', 0.06); }, 80);
-          setTimeout(function() { playTone(330, 0.18, 'sine', 0.10); }, 160);
+          // Rich ignition: low rumble + crackle burst + rising whoosh
+          playTone(120, 0.2, 'sawtooth', 0.08);
+          noiseBurst(0.15, 0.06, 1200, 'bandpass');
+          setTimeout(function() { playTone(180, 0.15, 'sawtooth', 0.06); noiseBurst(0.1, 0.05, 800); }, 80);
+          setTimeout(function() { playTone(330, 0.2, 'sine', 0.10); noiseBurst(0.08, 0.04, 1500, 'bandpass'); }, 160);
+          setTimeout(function() { playTone(440, 0.15, 'sine', 0.06); }, 280);
           break;
         case 'rain':
-          playTone(800, 0.04, 'sine', 0.06);
-          setTimeout(function() { playTone(600, 0.04, 'sine', 0.05); }, 50);
-          setTimeout(function() { playTone(900, 0.04, 'sine', 0.04); }, 100);
+          // Patter of raindrops — multiple rapid filtered clicks
+          for (var ri = 0; ri < 8; ri++) {
+            (function(delay) {
+              setTimeout(function() { noiseBurst(0.02, 0.03 + Math.random() * 0.02, 1500 + Math.random() * 1000, 'bandpass'); }, delay);
+            })(ri * 30 + Math.random() * 20);
+          }
           break;
         case 'grow':
           playTone(440, 0.08, 'sine', 0.06);
@@ -95,6 +139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           break;
         case 'quizWrong':
           playTone(220, 0.25, 'sawtooth', 0.08);
+          setTimeout(function() { playTone(180, 0.15, 'sawtooth', 0.05); }, 120);
           break;
         case 'badge':
           playTone(523, 0.08, 'sine', 0.1);
@@ -103,18 +148,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           setTimeout(function() { playTone(1047, 0.2, 'sine', 0.14); }, 210);
           break;
         case 'wildfire':
-          playTone(100, 0.3, 'sawtooth', 0.12);
-          setTimeout(function() { playTone(150, 0.25, 'sawtooth', 0.10); }, 100);
-          setTimeout(function() { playTone(80, 0.4, 'sawtooth', 0.08); }, 200);
+          // Intense multi-layer roar
+          playTone(80, 0.4, 'sawtooth', 0.12);
+          playTone(120, 0.35, 'sawtooth', 0.08);
+          noiseBurst(0.3, 0.1, 400);
+          setTimeout(function() { playTone(100, 0.3, 'sawtooth', 0.10); noiseBurst(0.25, 0.08, 600); }, 100);
+          setTimeout(function() { playTone(60, 0.5, 'sawtooth', 0.06); noiseBurst(0.2, 0.06, 300); }, 200);
           break;
         case 'snapshot':
           playTone(1200, 0.04, 'sine', 0.08);
           setTimeout(function() { playTone(800, 0.06, 'sine', 0.06); }, 50);
           break;
+        case 'crackle':
+          // Single fire crackle pop
+          noiseBurst(0.03, 0.04, 2000 + Math.random() * 1500, 'bandpass');
+          break;
+        case 'wind':
+          // Wind gust
+          noiseBurst(0.4, 0.04, 250, 'lowpass');
+          break;
+        case 'bird':
+          // Single bird chirp
+          playTone(1800 + Math.random() * 600, 0.04, 'sine', 0.04);
+          setTimeout(function() { playTone(2200 + Math.random() * 400, 0.03, 'sine', 0.03); }, 40);
+          break;
+        case 'cricket':
+          // Cricket chirp
+          playTone(4000, 0.02, 'sine', 0.02);
+          setTimeout(function() { playTone(4200, 0.02, 'sine', 0.02); }, 30);
+          setTimeout(function() { playTone(4000, 0.02, 'sine', 0.02); }, 60);
+          break;
         default:
           playTone(440, 0.08, 'sine', 0.06);
       }
     } catch(e) {}
+  }
+
+  // ── Ambient soundscapes — continuous background audio tied to ecosystem state ──
+  var _fireAmbient = null;
+  function startFireAmbient(isBurning, biodiversity) {
+    stopFireAmbient();
+    var ac = getAudioCtx(); if (!ac) return;
+    try {
+      if (isBurning) {
+        // Fire crackling ambience — filtered noise with LFO
+        var bufSize = ac.sampleRate * 2;
+        var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+        var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+        var filt = ac.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 800; filt.Q.value = 0.8;
+        var lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 3 + Math.random() * 2;
+        var lfoG = ac.createGain(); lfoG.gain.value = 300;
+        lfo.connect(lfoG); lfoG.connect(filt.frequency);
+        var master = ac.createGain(); master.gain.setValueAtTime(0, ac.currentTime);
+        master.gain.linearRampToValueAtTime(0.025, ac.currentTime + 1);
+        src.connect(filt); filt.connect(master); master.connect(ac.destination);
+        src.start(); lfo.start();
+        _fireAmbient = { src: src, lfo: lfo, master: master };
+        // Random crackle pops
+        _fireAmbient._interval = setInterval(function() {
+          if (Math.random() > 0.3) playSound('crackle');
+        }, 400 + Math.random() * 600);
+      } else {
+        // Forest ambience — soft wind + bird/cricket calls based on biodiversity
+        var bufSize2 = ac.sampleRate * 2;
+        var buf2 = ac.createBuffer(1, bufSize2, ac.sampleRate);
+        var data2 = buf2.getChannelData(0);
+        for (var j = 0; j < bufSize2; j++) data2[j] = (Math.random() * 2 - 1);
+        var src2 = ac.createBufferSource(); src2.buffer = buf2; src2.loop = true;
+        var filt2 = ac.createBiquadFilter(); filt2.type = 'lowpass'; filt2.frequency.value = 200;
+        var master2 = ac.createGain(); master2.gain.setValueAtTime(0, ac.currentTime);
+        master2.gain.linearRampToValueAtTime(0.01, ac.currentTime + 2);
+        src2.connect(filt2); filt2.connect(master2); master2.connect(ac.destination);
+        src2.start();
+        _fireAmbient = { src: src2, master: master2 };
+        // Wildlife sounds based on biodiversity level
+        var bio = biodiversity || 50;
+        _fireAmbient._interval = setInterval(function() {
+          if (bio > 60 && Math.random() > 0.5) playSound('bird');
+          else if (bio > 30 && Math.random() > 0.6) playSound('cricket');
+          if (Math.random() > 0.7) playSound('wind');
+        }, 3000 + Math.random() * 4000);
+      }
+    } catch(e) {}
+  }
+  function stopFireAmbient() {
+    if (_fireAmbient) {
+      try {
+        var ac = getAudioCtx();
+        if (ac && _fireAmbient.master) _fireAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5);
+        if (_fireAmbient._interval) clearInterval(_fireAmbient._interval);
+        var nodes = _fireAmbient;
+        setTimeout(function() { try { nodes.src.stop(); if (nodes.lfo) nodes.lfo.stop(); } catch(e) {} }, 600);
+      } catch(e) {}
+      _fireAmbient = null;
+    }
   }
 
   // ── Badge definitions (14 total) ──
@@ -1499,7 +1628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           function renderCanvas() {
             var burning = s.eventLog && s.eventLog.length > 0 && s.eventLog[s.eventLog.length - 1].event && s.eventLog[s.eventLog.length - 1].event.indexOf('CATASTROPHIC') >= 0;
             return h('div', { style: { marginBottom: 16 } },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Fireecology visualization',
                 ref: forestCanvasRef,
                 'data-fuel': s.fuelLoad,
                 'data-canopy': s.canopyCover,
@@ -1528,6 +1657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               newSim.totalBurns = s.totalBurns + 1;
               event = '\uD83D\uDD25 Cultural burn performed. Fuel reduced, understory opened, biodiversity thriving.';
               playSound('ignite');
+              startFireAmbient(true, newSim.biodiversity);
               awardStemXP('fire_sim_burn', 10, 'Cultural burn');
               if (newSim.totalBurns === 1) checkBadge('firstBurn');
               if (newSim.totalBurns >= 5) checkBadge('firekeeper');
@@ -1541,6 +1671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               newSim.carbonStored = clamp(s.carbonStored + 5, 0, 200);
               newSim.yearsSinceLastBurn = s.yearsSinceLastBurn + 10;
               event = '\u26D4 Fire suppressed. Fuel accumulating, understory thickening, biodiversity declining.';
+              startFireAmbient(false, newSim.biodiversity);
 
               // Wildfire risk check
               if (newSim.fuelLoad > 55 && Math.random() < (newSim.fuelLoad - 40) / 80) {
@@ -1556,6 +1687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 newSim.yearsSinceLastBurn = 0;
                 event = '\uD83D\uDCA5 CATASTROPHIC WILDFIRE! Decades of fuel accumulation erupted into an uncontrollable crown fire. Canopy, soil, and biodiversity devastated.';
                 playSound('wildfire');
+                startFireAmbient(true, newSim.biodiversity);
                 checkBadge('suppressionLesson');
               }
             } else if (action === 'prescribe') {
@@ -1592,6 +1724,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             newSim.eventLog = (s.eventLog || []).concat([{ year: newSim.year, event: event }]);
 
             updMulti({ sim: newSim });
+
+            // WCAG 4.1.3: Announce event to screen readers
+            if (typeof announceToSR === 'function') announceToSR('Year ' + newSim.year + '. ' + event.replace(/[\uD83D\uDD25\uD83D\uDCA5\u26D4\uD83C\uDF3F\uD83C\uDF0D]/g, ''));
 
             if (newSim.year >= 50) checkBadge('successionWatcher');
 
@@ -1825,7 +1960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('span', { style: { color: color, fontWeight: 700 } }, value + unit)
               ),
               h('input', {
-                type: 'range', min: min, max: max, step: step, value: value,
+                type: 'range', 'aria-label': 'value', min: min, max: max, step: step, value: value,
                 onChange: function(e) { upd(key, parseFloat(e.target.value)); upd('burnResult', null); },
                 style: { width: '100%', accentColor: color }
               })
@@ -2319,7 +2454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#f97316', fontWeight: 700 } }, carbonAcres.toLocaleString() + ' acres')
               ),
               h('input', {
-                type: 'range', min: 10, max: 10000, step: 10, value: carbonAcres,
+                type: 'range', 'aria-label': 'Enter', min: 10, max: 10000, step: 10, value: carbonAcres,
                 onChange: function(e) { updMulti({ carbonAcres: parseInt(e.target.value), carbonCalculated: false }); },
                 style: { width: '100%', accentColor: '#f97316' }
               }),
@@ -2539,26 +2674,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
             }
 
-            // Fire effect overlay
+            // Fire effect overlay — enhanced with layered flames, heat shimmer, sparks
             if (burning) {
-              for (var ei = 0; ei < 25; ei++) {
-                var ex = (ei * 41 + tick * 0.5) % w;
-                var ey = groundY - Math.random() * 40 - 5;
-                var er = 3 + Math.random() * 8;
-                cx.fillStyle = 'rgba(251,191,36,' + (0.3 + Math.random() * 0.4) + ')';
+              // Base fire glow at ground level
+              var fireGlow = cx.createRadialGradient(w * 0.5, groundY, 0, w * 0.5, groundY, w * 0.6);
+              fireGlow.addColorStop(0, 'rgba(251,146,60,0.25)');
+              fireGlow.addColorStop(0.5, 'rgba(239,68,68,0.12)');
+              fireGlow.addColorStop(1, 'rgba(0,0,0,0)');
+              cx.fillStyle = fireGlow;
+              cx.fillRect(0, 0, w, ht);
+
+              // Layered flame tongues rising from ground
+              for (var ei = 0; ei < 35; ei++) {
+                var ex = (ei * 31 + tick * 0.7) % w;
+                var flameH = 12 + Math.random() * 25 + Math.sin(tick * 0.15 + ei * 1.7) * 8;
+                var ey = groundY - flameH;
+                var er = 2 + Math.random() * 5;
+
+                // Outer flame (yellow-orange)
+                cx.fillStyle = 'rgba(251,191,36,' + (0.25 + Math.random() * 0.3) + ')';
                 cx.beginPath();
-                cx.arc(ex, ey + Math.sin(tick * 0.1 + ei) * 3, er, 0, Math.PI * 2);
+                cx.moveTo(ex - er, groundY);
+                cx.quadraticCurveTo(ex - er * 0.5, ey - er, ex, ey - er * 1.5 + Math.sin(tick * 0.2 + ei) * 3);
+                cx.quadraticCurveTo(ex + er * 0.5, ey - er, ex + er, groundY);
+                cx.fill();
+
+                // Inner flame (bright white-yellow core)
+                if (Math.random() > 0.4) {
+                  cx.fillStyle = 'rgba(255,255,220,' + (0.15 + Math.random() * 0.2) + ')';
+                  cx.beginPath();
+                  cx.arc(ex, groundY - flameH * 0.4, er * 0.5, 0, Math.PI * 2);
+                  cx.fill();
+                }
+              }
+
+              // Smoke columns — rising, expanding, fading
+              for (var si = 0; si < 20; si++) {
+                var sx = (si * 53 + tick * 0.2) % w;
+                var sy = groundY - 45 - si * 6 - Math.sin(tick * 0.015 + si) * 12;
+                var sr = 6 + si * 3.5;
+                var smokeAlpha = Math.max(0, 0.18 - si * 0.007);
+                cx.fillStyle = 'rgba(80,80,80,' + smokeAlpha + ')';
+                cx.beginPath();
+                cx.arc(sx + Math.sin(tick * 0.01 + si * 0.5) * 4, sy, sr, 0, Math.PI * 2);
                 cx.fill();
               }
-              // Smoke
-              for (var si = 0; si < 15; si++) {
-                var sx = (si * 67 + tick * 0.3) % w;
-                var sy = groundY - 50 - si * 8 - Math.sin(tick * 0.02 + si) * 15;
-                var sr = 8 + si * 3;
-                cx.fillStyle = 'rgba(100,100,100,' + (0.15 - si * 0.008) + ')';
+
+              // Flying sparks — bright orange dots rising fast
+              for (var ski = 0; ski < 12; ski++) {
+                var spx = (ski * 73 + tick * 1.5) % w;
+                var spy = groundY - 20 - ((tick * 0.8 + ski * 30) % 80);
+                if (spy > 0) {
+                  cx.fillStyle = 'rgba(251,146,60,' + (0.6 + Math.random() * 0.3) + ')';
+                  cx.fillRect(spx, spy, 1.5, 1.5);
+                }
+              }
+
+              // Heat shimmer distortion (wavy horizontal lines above fire)
+              cx.strokeStyle = 'rgba(255,200,100,0.04)';
+              cx.lineWidth = 1;
+              for (var hi = 0; hi < 6; hi++) {
+                var hy = groundY - 50 - hi * 12;
                 cx.beginPath();
-                cx.arc(sx, sy, sr, 0, Math.PI * 2);
-                cx.fill();
+                for (var hx = 0; hx < w; hx += 4) {
+                  var hdy = Math.sin(hx * 0.08 + tick * 0.06 + hi) * 2;
+                  if (hx === 0) cx.moveTo(hx, hy + hdy);
+                  else cx.lineTo(hx, hy + hdy);
+                }
+                cx.stroke();
+              }
+            }
+
+            // Sun or moon (non-burning: golden sun; burning: red sun through smoke)
+            if (!burning) {
+              var sunX = w * 0.82, sunY = 22;
+              var sunGrad = cx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 15);
+              sunGrad.addColorStop(0, 'rgba(251,191,36,0.9)');
+              sunGrad.addColorStop(0.5, 'rgba(251,191,36,0.3)');
+              sunGrad.addColorStop(1, 'rgba(251,191,36,0)');
+              cx.fillStyle = sunGrad;
+              cx.fillRect(sunX - 20, sunY - 20, 40, 40);
+            }
+
+            // Fireflies at dusk (when not burning and bio > 50)
+            if (!burning && bio > 50) {
+              for (var ffi = 0; ffi < Math.floor(bio / 15); ffi++) {
+                var ffx = (ffi * 97 + Math.sin(tick * 0.03 + ffi * 2.1) * 30) % w;
+                var ffy = groundY - 20 - Math.abs(Math.sin(tick * 0.02 + ffi * 1.3)) * 50;
+                var ffAlpha = 0.3 + Math.sin(tick * 0.1 + ffi * 0.7) * 0.3;
+                if (ffAlpha > 0) {
+                  cx.fillStyle = 'rgba(250,240,100,' + ffAlpha + ')';
+                  cx.beginPath();
+                  cx.arc(ffx, ffy, 1.5, 0, Math.PI * 2);
+                  cx.fill();
+                }
               }
             }
 

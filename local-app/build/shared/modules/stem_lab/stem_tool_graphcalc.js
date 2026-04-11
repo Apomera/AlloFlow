@@ -675,7 +675,7 @@
                   var key = 'slider' + p.toUpperCase(); var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
                   return h('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
                     h('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: '#c4b5fd', fontSize: '12px', width: '16px' } }, p),
-                    h('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, onChange: function(e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#a78bfa' } }),
+                    h('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, 'aria-label': 'Parameter ' + p + ': ' + Number(val.toFixed(1)), onChange: function(e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#a78bfa' } }),
                     h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#e2e8f0', minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
                   );
                 })
@@ -685,7 +685,7 @@
                 h('div', { style: { fontSize: '11px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 TANGENT to y\u2081'),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'x='),
-                  h('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' } }),
+                  h('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, 'aria-label': 'Tangent x position: ' + (d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' } }),
                   h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fb923c', fontWeight: 'bold' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0')
                 )
               ) : null,

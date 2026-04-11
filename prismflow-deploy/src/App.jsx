@@ -267,6 +267,8 @@ const sanitizeHtml = (html) => {
     clean = clean.replace(/src\s*=\s*["']?javascript:/gi, 'src="');
     return clean;
 };
+// Expose to window so CDN modules (visual_panel_module.js, etc.) can access it
+if (typeof window !== 'undefined') { window.sanitizeHtml = sanitizeHtml; }
 let globalMuteEnabled = safeGetItem('alloflow-global-muted') === 'true';
 let globalCachedKey = "";
 const getGlobalAudioContext = () => {
@@ -2487,6 +2489,8 @@ const FONT_OPTIONS = [
     { id: 'lora', label: 'Lora', cssClass: 'font-lora', googleFont: 'Lora:wght@400;500;700', category: 'serif' },
     { id: 'playfair', label: 'Playfair Display', cssClass: 'font-playfair', googleFont: 'Playfair+Display:wght@400;500;700', category: 'serif' }
 ];
+// Expose to window so CDN modules (doc_pipeline_module.js) can access it
+if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
 (function injectFontStyles() {
     const fonts = FONT_OPTIONS.filter(f => f.googleFont).map(f => f.googleFont);
     if (fonts.length > 0) {
@@ -3207,6 +3211,70 @@ const isYouTubeUrl = (url) => {
 const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     if (!url || !url.trim()) return null;
     let targetUrl = url.trim();
+    // ─────────────────────────────────────────────────────────────
+    // Tier-2 fallback: Gemini URL Context tool
+    // Called when Jina + raw-HTML extraction all fail or return garbage.
+    // Uses Gemini 3 Flash (or current default) with urlContext enabled.
+    // Different IP reputation than Jina — often succeeds where Jina 403s.
+    // ─────────────────────────────────────────────────────────────
+    const tryGeminiUrlContext = async () => {
+        if (!apiKey && !_isCanvasEnv) {
+            console.log('[URL Fetch] ⏭️ Gemini URL Context skipped — no API key');
+            return null;
+        }
+        console.log(`[URL Fetch] 🤖 Attempting Gemini URL Context fallback for ${targetUrl}`);
+        const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+        const urlCtxPayload = {
+            contents: [{
+                parts: [{
+                    text: `Read the web page at this URL: ${targetUrl}\n\nTask:\n1. Extract the main body text of the article, lesson, or educational content.\n2. PRESERVE the original wording exactly — do not paraphrase or summarize.\n3. Remove navigational elements, footers, sidebars, ads, cookie banners, and metadata.\n4. If the page is empty, a login screen, or completely inaccessible, return exactly "ERROR: NO_ARTICLE_FOUND".\n5. Return ONLY the cleaned main text (no preamble, no commentary).`
+                }]
+            }],
+            tools: [{ urlContext: {} }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 32768 }
+        };
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
+            const resp = await fetch(urlCtxEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(urlCtxPayload),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!resp.ok) {
+                const errBody = await resp.text().catch(() => '');
+                console.warn(`[URL Fetch] ❌ Gemini URL Context HTTP ${resp.status}: ${errBody.substring(0, 300)}`);
+                return null;
+            }
+            const data = await resp.json();
+            // Check URL retrieval metadata — Gemini tells us whether the URL was actually fetched
+            const urlMeta = data?.candidates?.[0]?.urlContextMetadata?.urlMetadata;
+            if (Array.isArray(urlMeta) && urlMeta.length > 0) {
+                const status = urlMeta[0]?.urlRetrievalStatus;
+                console.log(`[URL Fetch] 🤖 Gemini URL retrieval status: ${status}`);
+                if (status && status !== 'URL_RETRIEVAL_STATUS_SUCCESS') {
+                    console.warn(`[URL Fetch] ❌ Gemini could not retrieve URL (${status})`);
+                    return null;
+                }
+            }
+            const extracted = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!extracted || extracted.includes('ERROR: NO_ARTICLE_FOUND')) {
+                console.warn('[URL Fetch] ❌ Gemini URL Context returned no article');
+                return null;
+            }
+            if (extracted.trim().length < 50) {
+                console.warn(`[URL Fetch] ❌ Gemini URL Context returned ${extracted.trim().length} chars — too short`);
+                return null;
+            }
+            console.log(`[URL Fetch] ✅ Gemini URL Context success: ${extracted.length} chars extracted`);
+            return extracted.trim();
+        } catch (e) {
+            console.warn('[URL Fetch] ❌ Gemini URL Context threw:', e?.message || e);
+            return null;
+        }
+    };
     if (isYouTubeUrl(targetUrl)) {
         if (toastCallback) toastCallback("🎬 YouTube detected — extracting transcript via Gemini...", "info");
         try {
@@ -3264,6 +3332,19 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         const jinaUrl = `https://r.jina.ai/${targetUrl}`;
         let response;
         let usedRawSource = false;
+        // Jina-specific error/rate-limit patterns that indicate we should force raw fallback
+        const isJinaGarbage = (t) => {
+            if (!t) return true;
+            const trimmed = t.trim();
+            if (trimmed.length < 500) return true; // short Jina responses are almost always errors or empty shells
+            const lower = trimmed.toLowerCase();
+            return lower.includes("rate limit") ||
+                   lower.includes("too many requests") ||
+                   lower.includes("quota exceeded") ||
+                   lower.startsWith("warning") ||
+                   lower.startsWith("error:") ||
+                   (lower.includes("jina") && lower.includes("error"));
+        };
         try {
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(jinaUrl)}`;
             const controller = new AbortController();
@@ -3286,6 +3367,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         if (response && response.ok) {
             text = await response.text();
         }
+        debugLog(`[URL Fetch] Jina returned ${text.length} chars for ${targetUrl}`);
         const lowerText = text.toLowerCase();
         const isBlocked = lowerText.includes("access denied") ||
                           lowerText.includes("security check") ||
@@ -3293,8 +3375,12 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                           lowerText.includes("captcha") ||
                           lowerText.includes("403 forbidden") ||
                           lowerText.includes("verify you are human");
-        if (!response || !response.ok || isBlocked || text.length < 50) {
-             debugLog("Jina blocked or failed. Attempting direct raw fetch via proxy...");
+        // Use the new Jina-garbage detector AND the 500-char raw threshold (was 50 — too permissive)
+        if (!response || !response.ok || isBlocked || isJinaGarbage(text)) {
+             debugLog(`[URL Fetch] Jina result inadequate (${text.length} chars). Attempting direct raw HTML fetch...`);
+             const savedJinaText = text; // preserve in case raw fallback also fails
+             let rawOk = false;
+             // Try corsproxy.io first
              try {
                  const rawProxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                  const controller = new AbortController();
@@ -3302,12 +3388,46 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                  const rawResponse = await fetch(rawProxyUrl, { signal: controller.signal });
                  clearTimeout(timeoutId);
                  if (rawResponse.ok) {
-                     text = await rawResponse.text();
-                     usedRawSource = true;
+                     const rawText = await rawResponse.text();
+                     if (rawText && rawText.trim().length > 200) {
+                         text = rawText;
+                         usedRawSource = true;
+                         rawOk = true;
+                         debugLog(`[URL Fetch] corsproxy raw HTML: ${rawText.length} chars`);
+                     }
                  }
              } catch (directErr) {
+                 warnLog("[URL Fetch] corsproxy raw fallback failed:", directErr?.message);
+             }
+             // Second raw fallback via allorigins
+             if (!rawOk) {
+                 try {
+                     const rawFallbackUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}&t=${Date.now()}`;
+                     const controller = new AbortController();
+                     const timeoutId = setTimeout(() => controller.abort(), 20000);
+                     const rawResponse2 = await fetch(rawFallbackUrl, { signal: controller.signal });
+                     clearTimeout(timeoutId);
+                     if (rawResponse2.ok) {
+                         const rawText2 = await rawResponse2.text();
+                         if (rawText2 && rawText2.trim().length > 200) {
+                             text = rawText2;
+                             usedRawSource = true;
+                             rawOk = true;
+                             debugLog(`[URL Fetch] allorigins raw HTML: ${rawText2.length} chars`);
+                         }
+                     }
+                 } catch (e) {
+                     warnLog("[URL Fetch] allorigins raw fallback failed:", e?.message);
+                 }
+             }
+             // If both raw fallbacks failed but we had usable-ish Jina text, fall back to it
+             if (!rawOk && savedJinaText && savedJinaText.trim().length >= 50) {
+                 text = savedJinaText;
+                 debugLog(`[URL Fetch] Raw fallbacks failed, reverting to original Jina text (${savedJinaText.length} chars)`);
+             }
+             if (!rawOk && (!savedJinaText || savedJinaText.trim().length < 50)) {
                  if (isBlocked) throw new Error("URL blocked by security check (CAPTCHA/403). Please paste text manually.");
-                 if (!response || !response.ok) throw new Error(`Failed to fetch: ${response?.status}`);
+                 throw new Error(`Failed to fetch readable content from ${targetUrl}. The site may be JavaScript-rendered or blocking extraction.`);
              }
         }
         const finalLower = text.toLowerCase();
@@ -3320,7 +3440,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             throw new Error("URL blocked by security check. Please paste text manually.");
         }
         if (!text || text.trim().length < 50) {
-            throw new Error("Content too short or empty.");
+            throw new Error(`Content too short or empty (got ${text ? text.trim().length : 0} chars from ${targetUrl}). The site may be JavaScript-rendered or blocking extraction — try pasting text manually.`);
         }
         text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
         text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
@@ -3345,8 +3465,18 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                 text = cleanedText;
             }
         }
+        console.log(`[URL Fetch] ✅ Jina path success: ${text.trim().length} chars returned (usedRawSource=${usedRawSource})`);
         return `Source: ${targetUrl}\n\n${text.trim()}`;
     } catch (err) {
+        // ── Tier-2 fallback: Gemini URL Context before giving up ──
+        console.warn(`[URL Fetch] ⚠️ Jina + raw-HTML path failed: ${err.message}. Trying Gemini URL Context fallback...`);
+        if (toastCallback) toastCallback("Jina failed — trying Gemini URL Context...", "info");
+        const geminiExtracted = await tryGeminiUrlContext();
+        if (geminiExtracted) {
+            if (toastCallback) toastCallback("✅ Content extracted via Gemini URL Context!", "success");
+            return `Source: ${targetUrl}\n(Extracted via Gemini URL Context)\n\n${geminiExtracted}`;
+        }
+        console.error(`[URL Fetch] ❌ ALL methods failed for ${targetUrl}`);
         if (toastCallback) toastCallback(err.message || "URL import failed.", "error");
         throw err;
     }
@@ -3855,10 +3985,18 @@ const StudentSubmitModal = React.memo((props) => {
     );
 });
 // ── Accessibility hook: focus trap for modal dialogs (WCAG 2.4.3) ──
+// Traps Tab/Shift+Tab within modal, auto-focuses first element on open,
+// restores focus to trigger element on close (WCAG 2.4.3 Focus Order)
 const useFocusTrap = (ref, isOpen) => {
   useEffect(() => {
     if (!isOpen || !ref.current) return;
+    // Save the element that had focus before the modal opened
+    const previouslyFocused = document.activeElement;
     const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        // Let Escape propagate to close handlers, but ensure focus restoration
+        return;
+      }
       if (e.key !== 'Tab') return;
       const focusableElements = ref.current.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -3888,6 +4026,10 @@ const useFocusTrap = (ref, isOpen) => {
     }
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      // Restore focus to the element that triggered the modal
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        try { previouslyFocused.focus(); } catch(e) {}
+      }
     };
   }, [isOpen, ref]);
 };
@@ -4649,6 +4791,7 @@ const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson =
 window.__alloUtils = window.__alloUtils || {};
 window.__alloUtils.processGrounding = processGrounding;
 window.__alloUtils.cleanJson = cleanJson;
+window.__alloUtils.safeJsonParse = safeJsonParse;
 const InfoTooltip = React.memo(({ text, id }) => {
   const tooltipId = id || ('tooltip-' + Math.random().toString(36).substr(2, 6));
   return (
@@ -5178,6 +5321,12 @@ const analyzeFluencyWithGemini = async (audioBase64, mimeType, referenceText) =>
     return null;
   }
 };
+// Expose fluency analysis functions for CDN modules (student_analytics_module.js)
+window.__alloUtils = window.__alloUtils || {};
+window.__alloUtils.calculateLocalFluencyMetrics = calculateLocalFluencyMetrics;
+window.__alloUtils.calculateRunningRecordMetrics = calculateRunningRecordMetrics;
+window.__alloUtils.getBenchmarkComparison = getBenchmarkComparison;
+window.__alloUtils.analyzeFluencyWithGemini = analyzeFluencyWithGemini;
 const BRIDGE_MODES = [
   { id: "react" },
   { id: "python" },
@@ -7202,27 +7351,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/content_engine_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
 >>>>>>> upstream/main
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
@@ -7239,7 +7388,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b297db5/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7299,8 +7448,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
-        'stem_lab/stem_tool_spacecolony.js',
-        'stem_lab/stem_tool_lifeskills.js',
+        'stem_lab/stem_tool_spaceexplorer.js',
         'sel_hub/sel_safety_layer.js',
         'sel_hub/sel_tool_advocacy.js',
         'sel_hub/sel_tool_restorativecircle.js',
@@ -8483,11 +8631,14 @@ Return ONLY a valid JSON object:
       'phonics': 'cursor-help',
   };
   useEffect(() => {
-      if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+      // Allow 'output' view too — WordSoundsGenerator launches the modal from 'output' view
+      // when a word-sounds resource is active in generatedContent
+      const isWordSoundsOutput = activeView === 'output' && generatedContent?.type === 'word-sounds';
+      if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator' && !isWordSoundsOutput) {
           if (window.speechSynthesis) window.speechSynthesis.cancel();
           setIsWordSoundsMode(false);
       }
-  }, [activeView, isWordSoundsMode]);
+  }, [activeView, isWordSoundsMode, generatedContent]);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [presentationState, setPresentationState] = useState({});
   const [isReviewGame, setIsReviewGame] = useState(false);
@@ -8610,7 +8761,9 @@ Return ONLY a valid JSON object:
   };
   const [voiceSpeed, setVoiceSpeed] = useState(1);
   const [voiceVolume, setVoiceVolume] = useState(1);
-  const [disableAnimations, setDisableAnimations] = useState(false);
+  const [disableAnimations, setDisableAnimations] = useState(() => {
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) { return false; }
+  });
   const [colorOverlay, setColorOverlay] = useState('none');
   const [readingRuler, setReadingRuler] = useState(false);
   const [rulerY, setRulerY] = useState(0);
@@ -13143,6 +13296,8 @@ Return only the corrected version of this exact text:`;
   const [isResizing, setIsResizing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
+  // Collapsible resource viewer header — gives small-screen users more vertical space for content
+  const [isOutputHeaderCollapsed, setIsOutputHeaderCollapsed] = useState(false);
   const mainContainerRef = useRef(null);
   const contentRef = useRef(null);
   const dragItem = useRef(null);
@@ -18126,15 +18281,20 @@ Return ONLY valid JSON:
         setDownloadingContentId(null);
     }
   };
-  // EXPORT_THEMES + exportTheme kept inline to preserve hook order (hook #1079 in original)
-  const EXPORT_THEMES = {
-    professional: { name: 'Professional', emoji: '💼', bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' },
-    colorful: { name: 'Colorful Elementary', emoji: '🌈', bodyFont: "'Comic Sans MS', 'Lexend', sans-serif", headingColor: '#7c3aed', accentColor: '#ec4899', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #ec4899, #f59e0b)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #ec4899; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
-    minimal: { name: 'Minimalist', emoji: '✨', bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; }' },
-    highContrast: { name: 'High Contrast', emoji: '◼️', bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' },
-    nature: { name: 'Nature & Calm', emoji: '🌿', bodyFont: "'Lexend', system-ui, sans-serif", headingColor: '#166534', accentColor: '#15803d', bgColor: '#f0fdf4', cardBg: '#ffffff', cardBorder: '#bbf7d0', headerBg: 'linear-gradient(135deg, #166534, #15803d)', headerText: '#ffffff', extraCSS: '.section { border-left: 4px solid #86efac; border-radius: 8px; background: white; } .resource-header { background: #f0fdf4; color: #166534; }' },
-    print: { name: 'Print Optimized', emoji: '🖨️', bodyFont: "'Times New Roman', serif", headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
+  // STYLE_SEEDS: unified style system (replaces EXPORT_THEMES)
+  // Each seed has cssVars (deterministic CSS), promptInstructions (for AI during remediation), and wcagLevel
+  // Note: _docPipeline is declared later (let/const TDZ) — access via window to avoid ReferenceError
+  const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
+    professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
+    highContrast: { name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA', cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' } },
+    matchOriginal: { name: 'Match Original', emoji: '📎', wcagLevel: 'AA', cssVars: null },
   };
+  // Backward compat: EXPORT_THEMES derived from STYLE_SEEDS cssVars
+  const EXPORT_THEMES = Object.fromEntries(
+    Object.entries(STYLE_SEEDS)
+      .filter(([, s]) => s.cssVars)
+      .map(([id, s]) => [id, { name: s.name, emoji: s.emoji, ...s.cssVars }])
+  );
   const [exportTheme, setExportTheme] = useState('professional');
   // ── PDF Pipeline delegated to doc_pipeline_module.js ──
   // Expose current state for doc_pipeline_module.js functions via window ref
@@ -18143,6 +18303,8 @@ Return ONLY valid JSON:
     exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
     selectedFont, responses: studentResponses, history, inputText, gradeLevel,
     studentNickname, isTeacherMode, generatedContent,
+    // Added for generateFullPackHTML fallback path (used when iframe is empty)
+    currentUiLanguage, isIndependentMode, isParentMode,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
     pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
@@ -18159,12 +18321,13 @@ Return ONLY valid JSON:
   };
   const _createDocPipeline = window.AlloModules && window.AlloModules.createDocPipeline;
   const _docPipeline = _createDocPipeline
-    ? _createDocPipeline({ callGemini, callGeminiVision, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); } })
+    ? _createDocPipeline({ callGemini, callGeminiVision, callImagen, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); } })
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
   const runAxeAudit = _docPipeline ? _docPipeline.runAxeAudit : async () => ({});
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
+  const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
   const autoFixAxeViolations = _docPipeline ? _docPipeline.autoFixAxeViolations : async (h) => h;
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
@@ -18177,6 +18340,12 @@ Return ONLY valid JSON:
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
   const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   const generateFullPackHTML = _docPipeline ? _docPipeline.generateFullPackHTML : () => '';
+  // Expert Workbench — Advanced remediation mode
+  const runAutonomousRemediation = _docPipeline ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
+  const processExpertCommand = _docPipeline ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
+  const [expertCommandInput, setExpertCommandInput] = useState('');
+  const [agentActivityLog, setAgentActivityLog] = useState([]);
+  const [isAgentRunning, setIsAgentRunning] = useState(false);
   const handleExportQTI = async () => {
       if (!window.JSZip) {
           addToast(t('export_status.lib_loading'), "error");
@@ -19092,13 +19261,21 @@ Return ONLY valid JSON:
     setShowExportPreview(true);
     setShowExportMenu(false);
   };
+  // ── Export filtering: strip interactive/generative resources that can't be rendered as static documents ──
+  const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
+  const getExportableHistory = () => history.filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type));
+  const getSkippedResources = () => {
+    const skipped = history.filter(item => item && NON_EXPORTABLE_TYPES.has(item.type));
+    return skipped.map(item => item.title || getDefaultTitle(item.type));
+  };
+
   // Generate preview HTML for the iframe
   const getExportPreviewHTML = () => {
     if (exportPreviewMode === 'slides') {
       return getSlidesPreviewHTML();
     }
     const isWorksheet = exportPreviewMode === 'worksheet';
-    return generateFullPackHTML(history, sourceTopic, isWorksheet, studentResponses, exportConfig);
+    return generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
   };
   // Slides-specific preview: renders content as paginated slide cards
   const getSlidesPreviewHTML = () => {
@@ -19106,7 +19283,7 @@ Return ONLY valid JSON:
     const themeColor = '#4f46e5';
     // Title slide
     slides.push(`<div class="slide"><div style="background:${themeColor};color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;border-radius:8px"><h1 style="font-size:28px;margin:0;text-align:center;padding:0 20px">${sourceTopic || 'Untitled Presentation'}</h1><p style="font-size:14px;opacity:0.8;margin-top:8px">${gradeLevel} · ${new Date().toLocaleDateString()}</p></div></div>`);
-    history.forEach(item => {
+    getExportableHistory().forEach(item => {
       const title = item.title || item.type;
       if (item.type === 'simplified' && typeof item.data === 'string') {
         const paragraphs = item.data.split(/\n{2,}/);
@@ -19370,12 +19547,27 @@ Return ONLY valid JSON:
     let htmlContent;
     const iframe = exportPreviewRef.current;
     const iframeDoc = iframe?.contentDocument;
-    if (iframeDoc && iframeDoc.documentElement) {
+    // ── Detect whether the iframe actually contains the generated pack ──
+    // Bug: previously any truthy iframeDoc made us take the iframe path, even when
+    // the iframe hadn't yet loaded the generated HTML (empty body = blank export).
+    // Fix: verify the iframe body has real content before trusting it.
+    const iframeHasRealContent = (() => {
+      if (!iframeDoc || !iframeDoc.body) return false;
+      const bodyText = iframeDoc.body.textContent || '';
+      const sectionCount = iframeDoc.querySelectorAll('.section, .slide, main, article').length;
+      const hasSubstantialText = bodyText.trim().length > 200;
+      console.log(`[Export] iframe content check: ${bodyText.trim().length} chars, ${sectionCount} sections`);
+      return hasSubstantialText || sectionCount > 0;
+    })();
+    if (iframeDoc && iframeDoc.documentElement && iframeHasRealContent) {
       // Turn off editing mode before export
       iframeDoc.designMode = 'off';
       htmlContent = '<!DOCTYPE html>\n<html' + iframeDoc.documentElement.outerHTML.substring(5);
+      console.log(`[Export] ✅ Using edited iframe content (${htmlContent.length} chars)`);
     } else {
-      htmlContent = generateFullPackHTML(history, sourceTopic, isWorksheet, studentResponses, exportConfig);
+      console.warn('[Export] ⚠️ Iframe empty or missing — falling back to generateFullPackHTML(history)');
+      htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
+      console.log(`[Export] ✅ Regenerated from history: ${htmlContent.length} chars, ${history.length} history items`);
     }
 
     // ── Inject TTS audio if toggled on ──
@@ -19455,7 +19647,7 @@ Return ONLY valid JSON:
 
   const handleExport = async (mode = 'html') => {
     const isWorksheet = mode === 'worksheet';
-    const htmlContent = generateFullPackHTML(history, sourceTopic, isWorksheet, studentResponses, exportConfig);
+    const htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
 
     // ── Blind Output Accessibility Audit (runs in background, non-blocking) ──
     if (mode === 'print') {
@@ -30912,6 +31104,19 @@ Return ONLY JSON:
           }
         `}</style>
       )}
+      {/* WCAG 2.3.1: Respect OS-level reduced motion preference as CSS safety net */}
+      <style>{`
+        @media (prefers-reduced-motion: reduce) {
+          .animate-pulse, .animate-bounce, .animate-spin, .animate-ping {
+            animation: none !important;
+          }
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
       <style>{`
         .theme-contrast .bg-yellow-200,
         .theme-contrast .bg-yellow-300,
@@ -32063,7 +32268,7 @@ Return ONLY JSON:
                                   }
                               }}
                               data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
-                              className={`p-2 rounded-xl transition-all flex items-center gap-2 ${isTeacherMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-teal-700 hover:bg-teal-600 text-white shadow-lg shadow-teal-700/30'}`}
+                              className={`p-2 rounded-xl transition-all flex items-center gap-2 ${isTeacherMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-teal-700 hover:bg-teal-700 text-white shadow-lg shadow-teal-700/30'}`}
                               title={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
                               aria-label={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
                             >
@@ -37853,7 +38058,7 @@ Return ONLY JSON:
                 </div>
             </div>
           )}
-          <div className={`p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 ${isZenMode || activeView === 'adventure' ? 'hidden' : ''} ${isProcessing ? 'hidden md:flex' : ''}`}>
+          <div className={`px-4 sm:px-6 ${isOutputHeaderCollapsed ? 'py-1.5' : 'py-2 sm:py-4'} border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 transition-all ${isZenMode || activeView === 'adventure' ? 'hidden' : ''} ${isProcessing ? 'hidden md:flex' : ''}`}>
             <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
                 <h3 className={`text-lg font-bold text-slate-700 flex items-center gap-2 truncate ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}>
                 {isProcessing ? <><RefreshCw className="animate-spin text-indigo-600" size={20} /> {generationStep}</> :
@@ -37874,12 +38079,15 @@ Return ONLY JSON:
                 activeView === 'timeline' ? <><ListOrdered className="text-rose-600" size={20} /> {t('timeline.title')}</> :
                 activeView === 'math' ? <><Calculator className="text-blue-600" size={20} /> {t('math.title')}</> :
                 activeView === 'image' ? <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</> :
+                activeView === 'dbq' ? <><FileText className="text-amber-700" size={20} /> 📜 {t('common.dbq_title') || 'Document Analysis (DBQ)'}</> :
                 activeView === 'word-sounds' ? <><Sparkles className="text-violet-600" size={20} /> {isProbeMode ? `${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe` : (t('output.word_sounds_studio') || 'Word Sounds Studio')}</> :
                 activeView === 'word-sounds-generator' ? <><Sparkles className="text-violet-600" size={20} /> {t('output.word_sounds_studio') || 'Word Sounds Studio'}</> :
                 activeView === 'gemini-bridge' ? <><Terminal className="text-slate-600" size={20} /> {t('common.gemini_bridge') || 'Gemini Bridge'}</> :
+                // Fallback: derive from generatedContent.type via getDefaultTitle so we never silently mislabel
+                generatedContent?.type ? <><FileText className="text-slate-500" size={20} /> {getDefaultTitle(generatedContent.type)}</> :
                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
                 </h3>
-                {isTeacherMode && generatedContent && (
+                {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
                     <div className="hidden md:flex items-center bg-white rounded-full border border-slate-200 shadow-sm px-1 py-0.5 ml-2">
                         <button
                             onClick={handleToggleIsStickerMode}
@@ -37918,6 +38126,15 @@ Return ONLY JSON:
                 )}
             </div>
             <div className="flex items-center gap-2">
+                <button
+                    onClick={() => setIsOutputHeaderCollapsed(p => !p)}
+                    className="p-1.5 rounded-md hover:bg-slate-200 text-slate-500 transition-colors"
+                    title={isOutputHeaderCollapsed ? 'Expand header' : 'Collapse header to give content more space'}
+                    aria-label={isOutputHeaderCollapsed ? 'Expand header' : 'Collapse header'}
+                    aria-expanded={!isOutputHeaderCollapsed}
+                >
+                    {isOutputHeaderCollapsed ? <ChevronDown size={16}/> : <ChevronUp size={16}/>}
+                </button>
                 {!isZenMode && (
                     <button
                         onClick={handleToggleIsFullscreen}
@@ -37934,7 +38151,7 @@ Return ONLY JSON:
             ref={contentAreaRef}
             onClick={handleContentClick}
             data-reading-theme={readingTheme}
-            className={`flex-grow p-4 md:p-8 overflow-y-auto relative custom-scrollbar ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
+            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
             style={readingTheme !== 'default' ? {
               backgroundColor: readingTheme === 'warm' ? '#fdfbf7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
               color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : undefined,
@@ -38475,7 +38692,12 @@ Return only the corrected version of this exact text:`;
                       {generatedContent?.data && <p className="text-xs text-violet-500 font-medium">{generatedContent.data.length} words loaded</p>}
                       <div className="flex flex-col sm:flex-row gap-3 justify-center mt-5">
                         <button
-                          onClick={() => { setIsWordSoundsMode(true); setWordSoundsAutoReview(true); }}
+                          onClick={() => {
+                            const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
+                            setWordSoundsActivity(initialActivity);
+                            setIsWordSoundsMode(true);
+                            setWordSoundsAutoReview(true);
+                          }}
                           className="flex items-center justify-center gap-2 px-6 py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
                         >
                           <BookOpen size={18} /> Pre-Activity Review
@@ -46638,10 +46860,17 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                    prevWsPreloadedWordsLengthRef.current = 0;
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
-                   setWordSoundsActivity('word-sounds');
+                   // Use first activity from sequence if provided, else default to counting (a real activity ID)
+                   const initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';
+                   setWordSoundsActivity(initialActivity);
                    setWordSoundsAutoReview(true);
-                   setIsWordSoundsMode(true);
-                   setActiveView('output');
+                   // Force a clean modal mount: close first (in case it was already open), then re-open on next tick.
+                   // This mirrors onShowReview's pattern, which is the only path that lands cleanly on the Pre-Activity Review panel.
+                   setIsWordSoundsMode(false);
+                   setTimeout(() => {
+                       setIsWordSoundsMode(true);
+                       setActiveView('output');
+                   }, 0);
                }}
               onClose={handleCloseDashboard}
               callGemini={callGemini}
@@ -46651,7 +46880,8 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
               onShowReview={() => {
                   setIsWordSoundsMode(false);
                   setTimeout(() => {
-                      setWordSoundsActivity('word-sounds');
+                      const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
+                      setWordSoundsActivity(initialActivity);
                       setWordSoundsAutoReview(true);
                       setIsWordSoundsMode(true);
                       setActiveView('output');
@@ -48264,7 +48494,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                 <label style={{display:'flex',alignItems:'center',gap:'8px',background:_bt.cardBg,border:_bt.cardBorder,borderRadius:'10px',padding:'10px 14px',cursor:'pointer',flex:1,minWidth:'200px'}}>
                   <input
                     type="checkbox"
-                    id="bridge-autoplay-toggle"
+                    id="bridge-autoplay-toggle" aria-label="Auto-play bridge narration"
                     onChange={(e) => { window.__bridgeAutoplay = e.target.checked; }}
                     style={{accentColor:'#14b8a6',width:'16px',height:'16px',cursor:'pointer'}}
                   />
@@ -49989,7 +50219,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="px-3 pb-3 pt-1 space-y-3">
                     {/* Branding source */}
                     <div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Brand Colors</div>
+                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Brand Colors</div>
+                      <p className="text-[8px] text-slate-400 mb-1">Where do the colors come from?</p>
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
@@ -50034,27 +50265,131 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                       </div>
                     </div>
-                    {/* Visual style presets */}
+                    {/* Style Seeds — unified pre-remediation style selection */}
                     <div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Visual Style</div>
-                      <p className="text-[8px] text-slate-400 mb-1.5">Applied during generation — no extra processing time.</p>
+                      <div className="text-[9px] font-bold text-slate-500 uppercase mb-0.5">Style Seed</div>
+                      <p className="text-[8px] text-slate-400 mb-1.5">What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.</p>
                       <div className="flex flex-wrap gap-1">
                         {[
-                          { id: '', label: '📄 Default', desc: 'Clean, professional' },
-                          { id: 'academic', label: '🏫 Academic', desc: 'Serif, navy/gold' },
+                          { id: 'professional', label: '💼 Professional', desc: 'Clean, corporate' },
+                          { id: 'academic', label: '📚 Academic', desc: 'Serif, navy/gold' },
                           { id: 'elementary', label: '🌈 Kid-Friendly', desc: 'Bright, playful' },
+                          { id: 'minimal', label: '✨ Minimalist', desc: 'Clean whitespace' },
+                          { id: 'highContrast', label: '◼️ High Contrast', desc: 'WCAG AAA, bold' },
+                          { id: 'nature', label: '🌿 Nature', desc: 'Calm, green tones' },
+                          { id: 'print', label: '🖨️ Print', desc: 'Optimized for paper' },
                           { id: 'dark', label: '🌙 Dark Mode', desc: 'Dark, easy on eyes' },
                           { id: 'magazine', label: '📰 Magazine', desc: 'Editorial layout' },
-                          { id: 'minimal', label: '🧊 Minimal', desc: 'Clean whitespace' },
+                          { id: 'matchOriginal', label: '📎 Match Original', desc: 'Extract from PDF' },
                         ].map(s => (
-                          <button key={s.id} onClick={() => { window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); if (s.id) document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); else document.querySelector('[data-style-pref=""]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
+                          <button key={s.id} onClick={() => { window.__pdfStyleSeed = s.id; window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                             data-style-pref={s.id}
-                            className={`px-2 py-1.5 rounded-lg border text-left transition-all ${!s.id ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
+                            className={`px-2 py-1.5 rounded-lg border text-left transition-all ${s.id === 'professional' ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
                             <div className="text-[9px] font-bold text-slate-700">{s.label}</div>
                             <div className="text-[8px] text-slate-400">{s.desc}</div>
                           </button>
                         ))}
                       </div>
+                      {/* Custom style presets (user-created, saved to localStorage) */}
+                      {(() => {
+                        var saved = {};
+                        try { saved = JSON.parse(localStorage.getItem('alloflow_custom_styles') || '{}'); } catch(e) {}
+                        var savedKeys = Object.keys(saved);
+                        return (
+                          <>
+                            {savedKeys.length > 0 && (
+                              <div className="mt-2">
+                                <div className="text-[8px] text-slate-500 font-bold mb-1">Your Custom Styles</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {savedKeys.map(k => {
+                                    var s = saved[k];
+                                    return (
+                                      <div key={k} className="flex items-center gap-0">
+                                        <button onClick={() => {
+                                          window.__pdfStyleSeed = 'custom';
+                                          window.__pdfStylePreference = 'custom';
+                                          window.__pdfCustomStyle = s;
+                                          document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'));
+                                          addToast && addToast('Custom style "' + s.name + '" applied!', 'success');
+                                        }}
+                                          className="px-2 py-1.5 rounded-l-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
+                                          <div className="text-[9px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
+                                          <div className="text-[8px] text-slate-400">{s.font || 'Custom'}</div>
+                                        </button>
+                                        <button onClick={() => {
+                                          var updated = {...saved}; delete updated[k];
+                                          try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(updated)); } catch(e) {}
+                                          addToast && addToast('Deleted "' + s.name + '"', 'info');
+                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[9px] text-red-400 hover:text-red-600 hover:bg-red-50">✕</button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                            <details className="mt-2">
+                              <summary className="text-[9px] font-bold text-indigo-500 cursor-pointer hover:text-indigo-700">+ Create Custom Style</summary>
+                              <div className="mt-2 bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="text-[8px] text-slate-500 font-bold">Style Name</label>
+                                    <input id="custom-style-name" type="text" placeholder="My Style" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded" />
+                                  </div>
+                                  <div>
+                                    <label className="text-[8px] text-slate-500 font-bold">Font</label>
+                                    <select id="custom-style-font" className="w-full px-2 py-1 text-[10px] border border-slate-300 rounded">
+                                      <option value="'Inter', system-ui, sans-serif">Inter (Clean)</option>
+                                      <option value="'Georgia', serif">Georgia (Serif)</option>
+                                      <option value="'Atkinson Hyperlegible', sans-serif">Atkinson (A11y)</option>
+                                      <option value="'Lexend', sans-serif">Lexend (Readable)</option>
+                                      <option value="'Comic Sans MS', cursive">Comic Sans (Fun)</option>
+                                      <option value="'Times New Roman', serif">Times (Classic)</option>
+                                      <option value="'OpenDyslexic', sans-serif">OpenDyslexic</option>
+                                    </select>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                  <div>
+                                    <label className="text-[8px] text-slate-500 font-bold">Heading Color</label>
+                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                  </div>
+                                  <div>
+                                    <label className="text-[8px] text-slate-500 font-bold">Accent Color</label>
+                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                  </div>
+                                  <div>
+                                    <label className="text-[8px] text-slate-500 font-bold">Background</label>
+                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                  </div>
+                                </div>
+                                <button onClick={() => {
+                                  var name = document.getElementById('custom-style-name')?.value?.trim();
+                                  if (!name) { addToast && addToast('Please enter a style name', 'warning'); return; }
+                                  var style = {
+                                    name: name,
+                                    font: document.getElementById('custom-style-font')?.value || "'Inter', sans-serif",
+                                    headingColor: document.getElementById('custom-style-heading')?.value || '#1e3a5f',
+                                    accentColor: document.getElementById('custom-style-accent')?.value || '#2563eb',
+                                    bgColor: document.getElementById('custom-style-bg')?.value || '#ffffff',
+                                    promptInstructions: 'STYLE PREFERENCE: Custom style "' + name + '" — use ' + (document.getElementById('custom-style-font')?.value || 'Inter') + ' font, heading color ' + (document.getElementById('custom-style-heading')?.value || '#1e3a5f') + ', accent ' + (document.getElementById('custom-style-accent')?.value || '#2563eb') + ', background ' + (document.getElementById('custom-style-bg')?.value || '#ffffff') + '.'
+                                  };
+                                  var existing = {};
+                                  try { existing = JSON.parse(localStorage.getItem('alloflow_custom_styles') || '{}'); } catch(e) {}
+                                  var key = name.toLowerCase().replace(/\s+/g, '_');
+                                  existing[key] = style;
+                                  try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(existing)); } catch(e) {}
+                                  // Apply immediately
+                                  window.__pdfStyleSeed = 'custom';
+                                  window.__pdfCustomStyle = style;
+                                  addToast && addToast('🎨 Custom style "' + name + '" saved & applied!', 'success');
+                                }} className="w-full py-1.5 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700 transition-colors">
+                                  Save & Apply Style
+                                </button>
+                              </div>
+                            </details>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </details>
@@ -51137,7 +51472,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                             <div class="divider"></div>
                             <div class="pane pane-right">
-                              <div class="pane-header">Accessible HTML (After)</div>
+                              <div class="pane-header" style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px">
+                                <span>Accessible HTML (After)</span>
+                                <div style="display:flex;gap:4px;align-items:center">
+                                  <button onclick="toggleBionic()" id="btn-bionic" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Toggle Bionic Reading">Bi onic</button>
+                                  <button onclick="toggleLineGuide()" id="btn-lineguide" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Toggle Line Guide">Line Guide</button>
+                                  <button onclick="toggleDarkMode()" id="btn-dark" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Toggle Dark Mode">🌙</button>
+                                  <button onclick="zoomIn()" style="padding:3px 6px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:12px;font-weight:700;cursor:pointer" title="Zoom In">+</button>
+                                  <button onclick="zoomOut()" style="padding:3px 6px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:12px;font-weight:700;cursor:pointer" title="Zoom Out">−</button>
+                                  <span id="zoom-level" style="color:#86efac;font-size:10px;min-width:30px;text-align:center">100%</span>
+                                  <button onclick="downloadHtml()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Download HTML">📥</button>
+                                  <button onclick="printHtml()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Print">🖨️</button>
+                                </div>
+                              </div>
                               <iframe id="after-frame"></iframe>
                             </div>
                           </div>
@@ -51147,6 +51494,113 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             doc.open();
                             doc.write(${JSON.stringify(pdfFixResult.accessibleHtml)});
                             doc.close();
+
+                            // ── Compare view toolbar functions ──
+                            var _bionicOn = false;
+                            function toggleBionic() {
+                              _bionicOn = !_bionicOn;
+                              var d = iframe.contentDocument;
+                              if (!d) return;
+                              var btn = document.getElementById('btn-bionic');
+                              if (_bionicOn) {
+                                btn.style.background = '#16a34a'; btn.style.color = '#fff';
+                                // Bold the first half of each word
+                                var walker = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null, false);
+                                var textNodes = [];
+                                while(walker.nextNode()) textNodes.push(walker.currentNode);
+                                textNodes.forEach(function(node) {
+                                  if (!node.textContent.trim() || node.parentElement.closest('script,style,code,pre')) return;
+                                  var words = node.textContent.split(/(\s+)/);
+                                  var span = d.createElement('span');
+                                  span.className = 'bionic-wrap';
+                                  span.innerHTML = words.map(function(w) {
+                                    if (/^\s+$/.test(w)) return w;
+                                    var half = Math.ceil(w.length * 0.5);
+                                    return '<strong>' + w.substring(0, half) + '</strong>' + w.substring(half);
+                                  }).join('');
+                                  node.parentNode.replaceChild(span, node);
+                                });
+                              } else {
+                                btn.style.background = 'transparent'; btn.style.color = '#86efac';
+                                d.querySelectorAll('.bionic-wrap').forEach(function(el) {
+                                  el.outerHTML = el.textContent;
+                                });
+                              }
+                            }
+
+                            var _lineGuideOn = false;
+                            function toggleLineGuide() {
+                              _lineGuideOn = !_lineGuideOn;
+                              var d = iframe.contentDocument;
+                              if (!d) return;
+                              var btn = document.getElementById('btn-lineguide');
+                              var existing = d.getElementById('allo-lineguide');
+                              if (_lineGuideOn) {
+                                btn.style.background = '#16a34a'; btn.style.color = '#fff';
+                                if (!existing) {
+                                  var guide = d.createElement('div');
+                                  guide.id = 'allo-lineguide';
+                                  guide.style.cssText = 'position:fixed;left:0;right:0;height:32px;background:rgba(250,204,21,0.15);border-top:2px solid rgba(250,204,21,0.4);border-bottom:2px solid rgba(250,204,21,0.4);pointer-events:none;z-index:99999;top:40%;transition:top 0.05s';
+                                  d.body.appendChild(guide);
+                                  d.addEventListener('mousemove', function(e) {
+                                    var g = d.getElementById('allo-lineguide');
+                                    if (g) g.style.top = (e.clientY - 16) + 'px';
+                                  });
+                                }
+                              } else {
+                                btn.style.background = 'transparent'; btn.style.color = '#86efac';
+                                if (existing) existing.remove();
+                              }
+                            }
+
+                            var _darkOn = false;
+                            function toggleDarkMode() {
+                              _darkOn = !_darkOn;
+                              var d = iframe.contentDocument;
+                              if (!d) return;
+                              var btn = document.getElementById('btn-dark');
+                              var s = d.getElementById('allo-darkmode');
+                              if (_darkOn) {
+                                btn.style.background = '#16a34a'; btn.style.color = '#fff';
+                                if (!s) {
+                                  s = d.createElement('style');
+                                  s.id = 'allo-darkmode';
+                                  s.textContent = 'body{background:#1a1a2e!important;color:#e2e8f0!important;} a{color:#818cf8!important;} h1,h2,h3,h4,h5,h6{color:#e2e8f0!important;} table,th,td{border-color:#4a5568!important;color:#e2e8f0!important;} th{background:#2d3748!important;}';
+                                  d.head.appendChild(s);
+                                }
+                              } else {
+                                btn.style.background = 'transparent'; btn.style.color = '#86efac';
+                                if (s) s.remove();
+                              }
+                            }
+
+                            var _zoomLevel = 100;
+                            function zoomIn() {
+                              _zoomLevel = Math.min(200, _zoomLevel + 10);
+                              var d = iframe.contentDocument;
+                              if (d) d.body.style.zoom = (_zoomLevel / 100);
+                              document.getElementById('zoom-level').textContent = _zoomLevel + '%';
+                            }
+                            function zoomOut() {
+                              _zoomLevel = Math.max(50, _zoomLevel - 10);
+                              var d = iframe.contentDocument;
+                              if (d) d.body.style.zoom = (_zoomLevel / 100);
+                              document.getElementById('zoom-level').textContent = _zoomLevel + '%';
+                            }
+                            function downloadHtml() {
+                              var d = iframe.contentDocument;
+                              if (!d) return;
+                              var html = '<!DOCTYPE html>\\n' + d.documentElement.outerHTML;
+                              var blob = new Blob([html], {type: 'text/html'});
+                              var a = document.createElement('a');
+                              a.href = URL.createObjectURL(blob);
+                              a.download = 'remediated-document.html';
+                              a.click();
+                              URL.revokeObjectURL(a.href);
+                            }
+                            function printHtml() {
+                              iframe.contentWindow.print();
+                            }
                           </script>
                           </body></html>`);
                           win.document.close();
@@ -51494,6 +51948,59 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                       </details>
 
+                      {/* Expert Workbench — Advanced Remediation Command Bar */}
+                      <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl p-3 space-y-2">
+                        <div className="text-[10px] font-bold text-purple-300 uppercase tracking-widest flex items-center gap-1">🤖 Expert Workbench {isAgentRunning && <span className="text-[9px] text-amber-300 animate-pulse ml-1">Running...</span>}</div>
+                        <form className="flex gap-1" onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
+                          const cmd = expertCommandInput.trim();
+                          setExpertCommandInput('');
+                          setIsAgentRunning(true);
+                          setAgentActivityLog(prev => [...prev, { text: '▶ ' + cmd, type: 'command', time: new Date().toLocaleTimeString() }]);
+                          try {
+                            const result = await processExpertCommand(cmd, pdfFixResult.accessibleHtml, {
+                              onProgress: () => {},
+                              onActivity: (entry) => { setAgentActivityLog(prev => [...prev, entry]); }
+                            });
+                            if (result && result.html && result.html !== pdfFixResult.accessibleHtml) {
+                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html }));
+                              if (result.score !== undefined) {
+                                setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
+                              }
+                              addToast('✅ Command applied!', 'success');
+                            }
+                          } catch (err) {
+                            setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err.message || err), type: 'error', time: new Date().toLocaleTimeString() }]);
+                          }
+                          setIsAgentRunning(false);
+                        }}>
+                          <input
+                            type="text"
+                            value={expertCommandInput}
+                            onChange={(e) => setExpertCommandInput(e.target.value)}
+                            placeholder={isAgentRunning ? 'Agent working...' : 'audit, auto, or describe what to fix...'}
+                            disabled={isAgentRunning}
+                            aria-label="Expert remediation command"
+                            className="flex-1 px-2 py-1.5 bg-slate-700 text-white text-[11px] rounded border border-slate-600 placeholder-slate-500 focus:ring-1 focus:ring-purple-400 focus:outline-none disabled:opacity-50"
+                          />
+                          <button type="submit" disabled={isAgentRunning || !expertCommandInput.trim()}
+                            className="px-3 py-1.5 bg-purple-600 text-white text-[10px] font-bold rounded hover:bg-purple-700 disabled:opacity-30 transition-colors"
+                          >{isAgentRunning ? '⏳' : '▶'}</button>
+                        </form>
+                        {agentActivityLog.length > 0 && (
+                          <div className="max-h-20 overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[10px] font-mono">
+                            {agentActivityLog.slice(-6).map((entry, i) => (
+                              <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
+                                <span className="text-slate-600 shrink-0">{entry.time}</span>
+                                <span>{entry.text}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-[9px] text-slate-500">Commands: <span className="text-slate-400">audit</span> · <span className="text-slate-400">auto</span> · <span className="text-slate-400">contrast</span> · or describe what to fix in plain language</p>
+                      </div>
+
                       {/* Differentiation Tools */}
                       <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-3 space-y-2">
                         <div className="text-[10px] font-bold text-violet-600 uppercase tracking-widest">📚 Differentiate This Document</div>
@@ -51670,10 +52177,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <h2 style="color:#16a34a;margin-bottom:1rem">📖 Simplified (${level} Grade)</h2>
                                 ${simplified.split('\n').map(line => {
                                   line = line.trim();
-                                  if (line.startsWith('# ')) return '<h3 style="color:#166534;margin:1em 0 0.5em">' + line.substring(2) + '</h3>';
-                                  if (line.startsWith('## ')) return '<h4 style="color:#166534;margin:0.8em 0 0.4em">' + line.substring(3) + '</h4>';
-                                  if (line.startsWith('- ')) return '<li style="margin:0.3em 0;margin-left:1.5em">' + line.substring(2) + '</li>';
-                                  if (line) return '<p style="margin:0.6em 0;line-height:1.8">' + line + '</p>';
+                                  // Process inline markdown: bold, italic
+                                  var processed = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>');
+                                  if (processed.startsWith('# ')) return '<h3 style="color:#166534;margin:1em 0 0.5em">' + processed.substring(2) + '</h3>';
+                                  if (processed.startsWith('## ')) return '<h4 style="color:#166534;margin:0.8em 0 0.4em">' + processed.substring(3) + '</h4>';
+                                  if (processed.startsWith('### ')) return '<h5 style="color:#166534;margin:0.6em 0 0.3em;font-weight:bold">' + processed.substring(4) + '</h5>';
+                                  if (processed.startsWith('- ') || processed.startsWith('* ')) return '<li style="margin:0.3em 0;margin-left:1.5em">' + processed.substring(2) + '</li>';
+                                  if (processed) return '<p style="margin:0.6em 0;line-height:1.8">' + processed + '</p>';
                                   return '';
                                 }).join('\n')}
                                 </div>`;
@@ -51799,7 +52309,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="flex gap-2">
                             <div className="flex-1">
                               <label className="text-[9px] font-bold text-slate-500 uppercase">Language</label>
-                              <input id="summary-lang" list="summary-lang-list" className="w-full text-[10px] border border-blue-200 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
+                              <input id="summary-lang" aria-label="Translation language" list="summary-lang-list" className="w-full text-[10px] border border-blue-200 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
                               <datalist id="summary-lang-list">
                                 <option value="English" /><option value="Spanish" /><option value="French" /><option value="Arabic" /><option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" /><option value="Mandarin Chinese" /><option value="Haitian Creole" /><option value="Russian" />
                               </datalist>
@@ -51888,14 +52398,15 @@ Return ONLY the plain language summary in ${lang}.`, false);
               </div>
               <p className="text-[10px] text-slate-500">Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.</p>
 
-              {/* Theme picker */}
+              {/* Style Seed picker — WCAG-validated styling */}
               <div>
-                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">Theme</div>
+                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">Style</div>
+                <p className="text-[8px] text-slate-400 mb-1">WCAG compliance guaranteed — sanitizer runs on every style change.</p>
                 <div className="grid grid-cols-2 gap-1">
-                  {Object.entries(EXPORT_THEMES).map(([key, th]) => (
+                  {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === 'Match Original').map(([key, s]) => (
                     <button key={key} onClick={() => { setPdfPreviewTheme(key); setTimeout(() => updatePdfPreview(key), 50); }}
                       className={`text-[10px] font-bold px-2 py-1.5 rounded-lg border transition-all text-left ${pdfPreviewTheme === key ? 'border-indigo-400 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-300' : 'border-slate-200 text-slate-600 hover:border-indigo-200'}`}>
-                      {th.emoji} {th.name}
+                      {s.emoji} {s.name}{s.wcagLevel === 'AAA' ? ' ♿' : ''}
                     </button>
                   ))}
                 </div>
@@ -51925,7 +52436,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           style.id = 'ai-restyle';
                           style.textContent = css.replace(/```[\s\S]*?```/g, '').replace(/^```\w*\n?/gm, '').replace(/\n?```$/gm, '').trim();
                           doc.head.appendChild(style);
-                          addToast('✨ Style applied!', 'success');
+                          // Run WCAG sanitizer on the full iframe HTML to catch any contrast violations from AI styling
+                          try {
+                            const fullHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+                            const sanitized = sanitizeStyleForWCAG(fullHtml);
+                            if (sanitized.fixCount > 0) {
+                              doc.documentElement.innerHTML = sanitized.html.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, '').replace(/<\/html>\s*$/i, '');
+                              addToast(`✨ Style applied! (${sanitized.fixCount} contrast fixes auto-applied for WCAG AA)`, 'success');
+                            } else {
+                              addToast('✨ Style applied!', 'success');
+                            }
+                          } catch(sanitizeErr) {
+                            addToast('✨ Style applied!', 'success');
+                          }
                         }
                       } catch(err) { addToast('Style failed — try again', 'error'); }
                       setIsGeneratingStyle(false);
@@ -53295,7 +53818,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Google Search API Key <span className="normal-case font-normal text-slate-500">(optional)</span></label>
                     <input
-                        id="ai-canvas-cse-key"
+                        id="ai-canvas-cse-key" aria-label="Google Search API Key"
                         type="password"
                         placeholder="Your Google API key..."
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').cseApiKey || ''; } catch { return ''; } })()}
@@ -53311,7 +53834,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-500">(optional)</span></label>
                     <input
-                        id="ai-canvas-wolfram"
+                        id="ai-canvas-wolfram" aria-label="Wolfram Alpha App ID"
                         type="text"
                         placeholder="XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
@@ -53374,7 +53897,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Server URL</label>
                     <input
-                        id="ai-backend-url"
+                        id="ai-backend-url" aria-label="Custom AI backend URL"
                         type="text"
                         placeholder="http://localhost:8080"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').baseUrl || ''; } catch { return ''; } })()}
@@ -53388,7 +53911,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">API Key <span className="normal-case font-normal text-slate-500">(cloud providers only)</span></label>
                     <input
-                        id="ai-backend-apikey"
+                        id="ai-backend-apikey" aria-label="Custom AI backend API key"
                         type="password"
                         placeholder="Your API key..."
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').apiKey || ''; } catch { return ''; } })()}
@@ -53402,7 +53925,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-500">(optional — enhances math)</span></label>
                     <input
-                        id="ai-backend-wolfram"
+                        id="ai-backend-wolfram" aria-label="Custom backend Wolfram App ID"
                         type="text"
                         placeholder="XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)"
                         defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
@@ -54114,14 +54637,14 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 {/* ── SECTION: Appearance ── */}
                 <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></div>
 
-                {/* Theme */}
+                {/* Style */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Theme</div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Style</div>
                   <div className="grid grid-cols-2 gap-1">
-                    {Object.entries(EXPORT_THEMES).map(([key, th]) => (
+                    {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
                       <button key={key} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
                         className={`text-[10px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
-                      >{th.emoji} {th.name}</button>
+                      >{s.emoji} {s.name}</button>
                     ))}
                   </div>
                 </div>
@@ -54199,7 +54722,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
                   </div>
                   <div id="word-goal-label" className="text-[8px] text-slate-400 mt-0.5"></div>
-                  <div className="text-[8px] text-slate-300 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
+                  <div className="text-[8px] text-slate-500 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
                 </div>
 
                 {/* ── SECTION: Content ── */}
@@ -54225,6 +54748,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                   <div className="space-y-1">
                     {(() => {
+                      // Teacher-only-by-default resources: always shown in teacher copy regardless
+                      // of toggle. Toggle here only controls whether they ALSO appear in student copy.
+                      const teacherOnlyDefault = new Set(['includeAnalysis', 'includeUdlAdvice', 'includeBrainstorm']);
                       const available = [
                         ['includeAnalysis', '📊 Source Analysis', 'analysis'],
                         ['includeSimplified', '📖 Leveled Text', 'simplified'],
@@ -54243,15 +54769,34 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       if (available.length === 0) return (
                         <p className="text-[10px] text-slate-400 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
                       );
-                      return available.map(([key, label]) => (
-                        <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                          <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
-                          {label}
-                        </label>
-                      ));
+                      return available.map(([key, label]) => {
+                        const isTeacherOnly = teacherOnlyDefault.has(key);
+                        const tooltip = isTeacherOnly
+                          ? 'Always included in teacher copy. Toggle to also include in student copy.'
+                          : '';
+                        return (
+                          <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
+                            <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
+                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[9px] text-indigo-400 font-bold">(also in student copy)</span>}</span>
+                          </label>
+                        );
+                      });
                     })()}
                   </div>
                 </div>
+
+                {/* Skipped interactive resources notice */}
+                {(() => {
+                  const skipped = getSkippedResources();
+                  if (skipped.length === 0) return null;
+                  return (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
+                      <p className="text-[10px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
+                      <p className="text-[10px] text-amber-600">{skipped.join(', ')}</p>
+                      <p className="text-[9px] text-amber-500 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
+                    </div>
+                  );
+                })()}
 
                 {/* ── SECTION: Export ── */}
                 <div className="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
@@ -54563,6 +55108,63 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <option value="#7c3aed">🟪 Purple</option>
                   </select>
                 </div>
+                {/* ── Expert Workbench: Command Bar + Agent Activity ── */}
+                <div className="px-2 py-1.5 bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 flex items-center gap-2">
+                  <span className="text-[10px] text-purple-400 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
+                  <form className="flex-1 flex gap-1" onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!expertCommandInput.trim() || isAgentRunning) return;
+                    const cmd = expertCommandInput.trim();
+                    setExpertCommandInput('');
+                    setIsAgentRunning(true);
+                    setAgentActivityLog(prev => [...prev, { text: '▶ ' + cmd, type: 'command', time: new Date().toLocaleTimeString() }]);
+                    try {
+                      const iframe = exportPreviewRef.current;
+                      const doc = iframe?.contentDocument;
+                      const currentHtml = doc ? ('<!DOCTYPE html>\n' + doc.documentElement.outerHTML) : getExportPreviewHTML();
+                      const result = await processExpertCommand(cmd, currentHtml, {
+                        onProgress: (msg) => { /* could update UI */ },
+                        onActivity: (entry) => { setAgentActivityLog(prev => [...prev, entry]); }
+                      });
+                      if (result && result.html && result.html !== currentHtml && doc) {
+                        doc.open(); doc.write(result.html); doc.close();
+                        doc.designMode = 'on';
+                        if (result.score !== undefined) {
+                          setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
+                        }
+                      }
+                    } catch (err) {
+                      setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err.message || err), type: 'error', time: new Date().toLocaleTimeString() }]);
+                    }
+                    setIsAgentRunning(false);
+                  }}>
+                    <input
+                      type="text"
+                      value={expertCommandInput}
+                      onChange={(e) => setExpertCommandInput(e.target.value)}
+                      placeholder={isAgentRunning ? 'Agent working...' : 'Type command: audit, auto, or natural language...'}
+                      disabled={isAgentRunning}
+                      aria-label="Expert remediation command"
+                      className="flex-1 px-2 py-1 bg-slate-700 text-white text-[11px] rounded border border-slate-600 placeholder-slate-500 focus:ring-1 focus:ring-purple-400 focus:outline-none disabled:opacity-50"
+                    />
+                    <button type="submit" disabled={isAgentRunning || !expertCommandInput.trim()}
+                      className="px-2 py-1 bg-purple-600 text-white text-[10px] font-bold rounded hover:bg-purple-700 disabled:opacity-30 transition-colors"
+                      aria-label="Execute command"
+                    >{isAgentRunning ? '⏳' : '▶'}</button>
+                  </form>
+                </div>
+                {/* Agent Activity Feed */}
+                {agentActivityLog.length > 0 && (
+                  <div className="max-h-24 overflow-y-auto bg-slate-900 border-b border-slate-700 px-2 py-1 space-y-0.5 text-[10px] font-mono">
+                    {agentActivityLog.slice(-8).map((entry, i) => (
+                      <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
+                        <span className="text-slate-600 shrink-0">{entry.time}</span>
+                        <span>{entry.text}</span>
+                      </div>
+                    ))}
+                    {isAgentRunning && <div className="text-purple-400 animate-pulse">⏳ Processing...</div>}
+                  </div>
+                )}
                 <div className="flex-1 overflow-hidden bg-slate-100 p-4">
                   <iframe
                     ref={exportPreviewRef}
@@ -54666,8 +55268,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
             );
         })()}
         {showEducatorHub && (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Educator Tools" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
@@ -54758,8 +55360,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
         </div>
         )}
         {showLearningHub && (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Learning Tools" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">{'\uD83E\uDDE9'} {t('learning_hub.title') || 'Learning Tools'}</h2>

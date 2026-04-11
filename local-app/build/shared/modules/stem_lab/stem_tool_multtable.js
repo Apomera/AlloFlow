@@ -685,7 +685,7 @@ window.StemLab = window.StemLab || {
                         (isHighlighted
                           ? 'bg-amber-400 text-amber-900 font-bold ring-2 ring-amber-500 ring-offset-1 rounded scale-110 shadow-lg animate-pulse'
                           : isExact
-                            ? 'bg-pink-500 text-white font-bold scale-110 shadow-lg rounded'
+                            ? 'bg-pink-700 text-white font-bold scale-110 shadow-lg rounded'
                             : isHovered
                               ? 'bg-pink-50 text-pink-800 font-semibold'
                               : isPerfectSquare
