@@ -99,7 +99,7 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
               item.status === 'correct' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
             }`}>
               <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${
-                item.status === 'correct' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                item.status === 'correct' ? 'bg-green-700 text-white' : 'bg-red-700 text-white'
               }`}>
                 {item.status === 'correct' ? '\u2713' : '\u2717'}
               </div>
@@ -1396,7 +1396,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         )}
         {isChecked && item.currentContainer !== 'deck' && item.currentContainer !== item.categoryId && (
              <>
-               <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"><X size={12}/></div>
+               <div className="absolute -top-2 -right-2 bg-red-700 text-white rounded-full p-0.5"><X size={12}/></div>
                <div className="mt-1 text-[10px] font-bold text-red-600 text-center leading-tight">
                  ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
                </div>
@@ -1404,7 +1404,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         )}
         {isChecked && item.currentContainer === item.categoryId && (
              <>
-               <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-0.5"><CheckCircle2 size={12}/></div>
+               <div className="absolute -top-2 -right-2 bg-green-700 text-white rounded-full p-0.5"><CheckCircle2 size={12}/></div>
                <div className="mt-1 text-[10px] font-bold text-green-600 text-center">✓</div>
              </>
         )}
@@ -2481,7 +2481,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                         <button aria-label={t('common.next')}
                             data-help-key="syntax_next" onClick={nextRound}
                             autoFocus
-                            className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in bounce-in"
+                            className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in bounce-in"
                         >
                             {t('games.syntax.next')} <ArrowRight size={18}/>
                         </button>
@@ -2671,7 +2671,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                         </label>
                         <button
                             onClick={onGenerate}
-                            className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm active:scale-95"
+                            className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm active:scale-95"
                             data-help-key="bingo_regenerate_btn" aria-label={t('bingo.regenerate')}
                         >
                             <RefreshCw size={14}/> {t('bingo.regenerate')}
@@ -2692,7 +2692,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                         <div className="w-px h-6 bg-slate-300 mx-2"></div>
                         <button
                             onClick={startCaller}
-                            className="bg-teal-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-700 transition-colors flex items-center gap-2 active:scale-95"
+                            className="bg-teal-700 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-700 transition-colors flex items-center gap-2 active:scale-95"
                             data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria')}
                         >
                             <Mic size={16}/> {t('bingo.launch_caller')}
@@ -2740,7 +2740,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             </button>
                             <button
                                 onClick={toggleAutoPlay}
-                                className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-teal-600 text-white hover:bg-teal-700'}`}
+                                className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? 'bg-red-700 text-white hover:bg-red-600' : 'bg-teal-700 text-white hover:bg-teal-700'}`}
                                 data-help-key="bingo_toggle_autoplay" aria-label={isAutoPlaying ? t('bingo.stop_auto') : t('bingo.start_auto')}
                             >
                                 {isAutoPlaying ? <span className="flex items-center gap-2"><StopCircle size={16}/> {t('bingo.stop_auto')}</span> : <span className="flex items-center gap-2"><MonitorPlay size={16}/> {t('bingo.start_auto')}</span>}

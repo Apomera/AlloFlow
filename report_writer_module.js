@@ -16,6 +16,19 @@
     document.body.appendChild(liveRegion);
   })();
 
+    // WCAG 2.1 AA: Accessibility CSS injection
+    if (!document.getElementById('rw-a11y-css')) {
+        var rwA11yStyle = document.createElement('style');
+        rwA11yStyle.id = 'rw-a11y-css';
+        rwA11yStyle.textContent = [
+            '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+            '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 textarea:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
+            '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
+            '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
+        ].join('\n');
+        document.head.appendChild(rwA11yStyle);
+    }
+
     if (window.AlloModules && window.AlloModules.ReportWriter) {
         console.log("[CDN] ReportWriter already loaded, skipping duplicate");
         return;

@@ -311,18 +311,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             osc.type = d.waveType || 'sine'; osc.frequency.value = freq;
             // Vibrato (pitch LFO)
             var vibDepth = vibratoOverride !== undefined ? vibratoOverride : (d.vibratoDepth || 0);
+            var _vibLFO = null;
             if (vibDepth > 0) {
-              var vibLFO = audio.ctx.createOscillator(); vibLFO.type = 'sine';
-              vibLFO.frequency.value = d.vibratoRate || 5;
+              _vibLFO = audio.ctx.createOscillator(); _vibLFO.type = 'sine';
+              _vibLFO.frequency.value = d.vibratoRate || 5;
               var vibGain = audio.ctx.createGain(); vibGain.gain.value = vibDepth * freq * 0.02;
-              vibLFO.connect(vibGain); vibGain.connect(osc.frequency); vibLFO.start();
+              _vibLFO.connect(vibGain); vibGain.connect(osc.frequency); _vibLFO.start();
             }
             var now = audio.ctx.currentTime;
             var atk = d.attack || 0.02; var dec = d.decay || 0.1; var sus = d.sustain || 0.7;
             env.gain.setValueAtTime(0, now); env.gain.linearRampToValueAtTime(1, now + atk);
             env.gain.linearRampToValueAtTime(sus, now + atk + dec);
             osc.connect(env); env.connect(audio.effects.filter); osc.start(now);
-            window._alloSynthActiveNotes[noteId] = { osc: osc, env: env };
+            var _extras = _vibLFO ? [_vibLFO] : [];
+            window._alloSynthActiveNotes[noteId] = { osc: osc, env: env, extras: _extras };
             // Spawn particles
             var noteIdx = NOTE_NAMES.indexOf(noteId.replace(/[0-9]/g, ''));
             if (noteIdx >= 0) spawnParticles(noteId, NOTE_COLORS[noteIdx]);
@@ -635,6 +637,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.4; noise.start(now); noise.stop(now + 0.08);
             }
           }
+          // Kit-flavored drum synthesis: applies per-kit tonal adjustments to synth drums
+          function playDrumStyled(type, style, vol) {
+            var audio = getCtx(); var ctxA = audio.ctx; var now = ctxA.currentTime;
+            var dm = (style && style.decayMul) || 1.0;
+            var ps = (style && style.pitchShift) || 0;
+            var ff = (style && style.filterFreq) || 6000;
+            var gm = (style && style.gainMul) || 0.8;
+            var v = (vol || 0.8) * gm;
+            var drumGain = ctxA.createGain(); drumGain.connect(audio.effects ? audio.effects.filter : audio.gain);
+            // Apply kit-wide filter coloring for synth sounds
+            var kitFilter = ctxA.createBiquadFilter();
+            kitFilter.type = 'lowpass'; kitFilter.frequency.value = ff; kitFilter.Q.value = 0.7;
+            drumGain.connect(kitFilter); kitFilter.connect(audio.effects ? audio.effects.filter : audio.gain);
+            // Re-route drumGain through the filter
+            drumGain.disconnect(); drumGain.connect(kitFilter);
+            if (type === 'kick') {
+              var baseF = 150 * (1 + ps);
+              var osc = ctxA.createOscillator(); osc.type = 'sine';
+              osc.frequency.setValueAtTime(baseF, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.12 * dm);
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(1, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.4 * dm);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = v; osc.start(now); osc.stop(now + 0.4 * dm);
+            } else if (type === 'snare') {
+              var noise = ctxA.createBufferSource(); var nBuf = ctxA.createBuffer(1, ctxA.sampleRate * 0.15 * dm, ctxA.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var nFilter = ctxA.createBiquadFilter(); nFilter.type = 'highpass'; nFilter.frequency.value = 1000 * (1 + ps * 2);
+              var nGain = ctxA.createGain(); nGain.gain.setValueAtTime(0.7, now); nGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15 * dm);
+              noise.connect(nFilter); nFilter.connect(nGain); nGain.connect(drumGain);
+              var body = ctxA.createOscillator(); body.type = 'triangle'; body.frequency.value = 180 * (1 + ps);
+              var bGain = ctxA.createGain(); bGain.gain.setValueAtTime(0.5, now); bGain.gain.exponentialRampToValueAtTime(0.01, now + 0.08 * dm);
+              body.connect(bGain); bGain.connect(drumGain); drumGain.gain.value = v * 0.875; noise.start(now); noise.stop(now + 0.15 * dm); body.start(now); body.stop(now + 0.08 * dm);
+            } else if (type === 'hihat') {
+              var noise = ctxA.createBufferSource(); var nBuf = ctxA.createBuffer(1, ctxA.sampleRate * 0.05 * dm, ctxA.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var hpf = ctxA.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 7000 + ps * 3000;
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.4, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05 * dm);
+              noise.connect(hpf); hpf.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.625; noise.start(now); noise.stop(now + 0.05 * dm);
+            } else if (type === 'clap') {
+              for (var ci = 0; ci < 3; ci++) {
+                (function(delay) {
+                  var noise = ctxA.createBufferSource(); var nBuf = ctxA.createBuffer(1, ctxA.sampleRate * 0.04 * dm, ctxA.sampleRate);
+                  var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+                  noise.buffer = nBuf;
+                  var bp = ctxA.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2000 * (1 + ps); bp.Q.value = 1.5;
+                  var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.6, now + delay); eg.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.08 * dm);
+                  noise.connect(bp); bp.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.875;
+                  noise.start(now + delay); noise.stop(now + delay + 0.08 * dm);
+                })(ci * 0.012);
+              }
+            } else if (type === 'tom' || type === 'tom1' || type === 'tom2' || type === 'tom3') {
+              var baseF = (type === 'tom2' ? 120 : type === 'tom3' ? 90 : type === 'tom1' ? 200 : 200) * (1 + ps);
+              var osc = ctxA.createOscillator(); osc.type = 'sine';
+              osc.frequency.setValueAtTime(baseF, now); osc.frequency.exponentialRampToValueAtTime(baseF * 0.5, now + 0.2 * dm);
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.7, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.25 * dm);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.75; osc.start(now); osc.stop(now + 0.25 * dm);
+            } else if (type === 'rim') {
+              var osc = ctxA.createOscillator(); osc.type = 'square';
+              osc.frequency.setValueAtTime(800 * (1 + ps * 2), now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.03 * dm);
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.5, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05 * dm);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.625; osc.start(now); osc.stop(now + 0.05 * dm);
+            } else if (type === 'openhat') {
+              var noise = ctxA.createBufferSource(); var nBuf = ctxA.createBuffer(1, ctxA.sampleRate * 0.3 * dm, ctxA.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var hp = ctxA.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000 + ps * 2000;
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.4, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3 * dm);
+              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.625; noise.start(now); noise.stop(now + 0.3 * dm);
+            } else if (type === 'cymbal') {
+              var noise = ctxA.createBufferSource(); var nBuf = ctxA.createBuffer(1, ctxA.sampleRate * 0.5 * dm, ctxA.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var hp = ctxA.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8000 + ps * 2000;
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.3, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.5 * dm);
+              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.5; noise.start(now); noise.stop(now + 0.5 * dm);
+            } else if (type === 'cowbell') {
+              var osc1 = ctxA.createOscillator(); osc1.type = 'square'; osc1.frequency.value = 560 * (1 + ps);
+              var osc2 = ctxA.createOscillator(); osc2.type = 'square'; osc2.frequency.value = 845 * (1 + ps);
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.5, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3 * dm);
+              var bp = ctxA.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700 * (1 + ps); bp.Q.value = 3;
+              osc1.connect(bp); osc2.connect(bp); bp.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.5;
+              osc1.start(now); osc2.start(now); osc1.stop(now + 0.3 * dm); osc2.stop(now + 0.3 * dm);
+            } else if (type === 'clave') {
+              var osc = ctxA.createOscillator(); osc.type = 'triangle'; osc.frequency.value = 2500 * (1 + ps);
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.6, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.04 * dm);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.625; osc.start(now); osc.stop(now + 0.04 * dm);
+            } else if (type === 'shaker') {
+              var noise = ctxA.createBufferSource(); var nBuf = ctxA.createBuffer(1, ctxA.sampleRate * 0.08 * dm, ctxA.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var hp = ctxA.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 5000 + ps * 3000;
+              var eg = ctxA.createGain(); eg.gain.setValueAtTime(0.3, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.08 * dm);
+              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = v * 0.5; noise.start(now); noise.stop(now + 0.08 * dm);
+            } else {
+              // Unknown type — fall back to basic playDrum
+              playDrum(type);
+            }
+          }
           function playClick(accent) {
             var audio = getCtx(); var ctx = audio.ctx; var now = ctx.currentTime;
             var osc = ctx.createOscillator(); osc.type = 'sine';
@@ -753,7 +853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             'Retro': { waveType: 'square', attack: 0.001, decay: 0.08, sustain: 0.3, release: 0.05, volume: 0.45, filterCutoff: 2000, filterQ: 8, synthEngine: 'standard' },
             'Spooky': { waveType: 'sine', attack: 0.5, decay: 0.3, sustain: 0.6, release: 2, volume: 0.3, reverbMix: 0.8, reverbSize: 4, vibratoDepth: 0.5, vibratoRate: 3, synthEngine: 'standard' }
           };
-          function applyPreset(name) {
+          function applyInstrumentPreset(name) {
             var p = PRESETS[name]; if (!p) return;
             Object.keys(p).forEach(function (k) { upd(k, p[k]); });
             upd('activePreset', name);
@@ -1294,8 +1394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           ];
           window._alloBeatPadSounds = BEAT_PAD_SOUNDS;
 
-          // playDrumExt is now an alias for the unified playDrum above
-          var playDrumExt = playDrum;
+          // playDrumStyled handles kit-flavored synthesis; playDrum is the raw fallback
 
 
 
@@ -1504,64 +1603,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             return { name: 'Random #' + Math.floor(Math.random() * 100), pattern: p, desc: 'Try to match this pattern!' };
           }
 
-          // ═══ SEQUENCER ENGINE (runs in background across tabs) ═══
+          // ═══ SEQUENCER ENGINE (setTimeout chain for swing support) ═══
           var _seqTimer = React.useRef(null);
           var _seqStep = React.useRef(0);
+          var _seqTickRef = React.useRef(null);
+          // Shared tick function — reads d (grid, melody, BPM, swing) fresh each render
+          function _seqTick() {
+            var bpm = d.seqBPM || 120;
+            var baseMs = (60000 / bpm) / 4; // 16th note base
+            var swingPct = parseFloat(d.seqSwing || '0') / 100;
+            var step = _seqStep.current;
+            // Play drum grid
+            var grid = d.seqGrid || {};
+            BEAT_PAD_SOUNDS.forEach(function (sound, row) {
+              if (grid[row + '_' + step]) {
+                playSample(sound.type, row);
+              }
+            });
+            // Play melody note (scale-aware)
+            var mel = d.beatMelody || [];
+            var _scD = getScaleNotes();
+            var ni = mel[step];
+            if (ni > 0 && ni <= _scD.freqs.length) {
+              playNoteFor(_scD.freqs[ni - 1], 'bpmel_' + step, baseMs * 0.8);
+            }
+            upd('seqCurrentStep', step);
+            _seqStep.current = (step + 1) % 16;
+            // Schedule next tick with swing: odd steps get delayed, even steps get shortened
+            var isSwungStep = step % 2 === 1;
+            var nextDelay = isSwungStep ? baseMs * (1 + swingPct) : baseMs * (1 - swingPct);
+            if (nextDelay < 10) nextDelay = 10; // safety floor
+            // Use ref indirection so the chain always calls the latest render's tick
+            _seqTimer.current = setTimeout(function() { if (_seqTickRef.current) _seqTickRef.current(); }, nextDelay);
+          }
+          // Keep ref pointing to latest render's _seqTick
+          _seqTickRef.current = _seqTick;
           function startSequencer() {
             if (_seqTimer.current) return;
-            var bpm = d.seqBPM || 120;
-            var stepMs = (60000 / bpm) / 4; // 16th notes
             _seqStep.current = 0;
-            _seqTimer.current = setInterval(function () {
-              var step = _seqStep.current;
-              var grid = d.seqGrid || {};
-              BEAT_PAD_SOUNDS.forEach(function (sound, row) {
-                var key = row + '_' + step;
-                if (grid[key]) {
-                  playSample(sound.type, row);
-                }
-              });
-              // Play melody note (scale-aware)
-              var mel = d.beatMelody || [];
-              var _scD = getScaleNotes();
-              var ni = mel[step];
-              if (ni > 0 && ni <= _scD.freqs.length) {
-                playNoteFor(_scD.freqs[ni - 1], 'bpmel_' + step, stepMs * 0.8);
-              }
-              upd('seqCurrentStep', step);
-              _seqStep.current = (step + 1) % 16;
-            }, stepMs);
+            _seqTick(); // fire first tick immediately, it schedules the chain
             upd('seqPlaying', true);
           }
           function stopSequencer() {
-            if (_seqTimer.current) { clearInterval(_seqTimer.current); _seqTimer.current = null; }
+            if (_seqTimer.current) { clearTimeout(_seqTimer.current); _seqTimer.current = null; }
             upd('seqPlaying', false);
             upd('seqCurrentStep', -1);
           }
           // Clean up on unmount
           React.useEffect(function () { return function () { stopSequencer(); }; }, []);
-          // Restart sequencer when BPM changes while playing
+          // Restart sequencer when BPM changes while playing (preserves step position)
           React.useEffect(function () {
             if (d.seqPlaying && _seqTimer.current) {
-              clearInterval(_seqTimer.current);
+              clearTimeout(_seqTimer.current);
               _seqTimer.current = null;
-              var bpm = d.seqBPM || 120;
-              var stepMs = (60000 / bpm) / 4;
-              _seqTimer.current = setInterval(function () {
-                var step = _seqStep.current;
-                var grid = d.seqGrid || {};
-                BEAT_PAD_SOUNDS.forEach(function (sound, row) {
-                  if (grid[row + '_' + step]) playSample(sound.type);
-                });
-                var mel = d.beatMelody || [];
-                var ni = mel[step];
-                if (ni > 0 && ni <= MELODY_FREQS_BP.length) {
-                  var bpm = d.seqBPM || 120;
-                  playNoteFor(MELODY_FREQS_BP[ni - 1], 'bpmel_' + step, ((60000 / bpm) / 4) * 0.8);
-                }
-                upd('seqCurrentStep', step);
-                _seqStep.current = (step + 1) % 16;
-              }, stepMs);
+              // Re-schedule from current step (don't reset to 0)
+              _seqTick();
             }
           }, [d.seqBPM]);
 
@@ -1577,11 +1673,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // ═══ CDN SAMPLE LOADER (lazy-loads on first Beat Pad open) ═══
           var SAMPLE_CDN = 'https://tonejs.github.io/audio/drum-samples/';
           var SAMPLE_KITS = {
-            'CR78': { name: 'CR-78 Vintage', icon: '\uD83C\uDFDB\uFE0F', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
-            'acoustic-kit': { name: 'Acoustic Kit', icon: '\uD83E\uDD41', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
-            'Techno': { name: 'Techno EDM', icon: '\u26A1', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
-            'LINN': { name: 'LinnDrum', icon: '\uD83D\uDD0A', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
-            '4OP-FM': { name: 'FM Synthesis', icon: '\uD83C\uDF1F', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } }
+            'CR78': { name: 'CR-78 Vintage', icon: '\uD83C\uDFDB\uFE0F',
+              files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', openhat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3', tom3: 'tom3.mp3', clap: 'snare.mp3', rim: 'snare.mp3' },
+              synthStyle: { decayMul: 1.4, pitchShift: -0.1, filterFreq: 3000, gainMul: 0.7, character: 'vintage' } },
+            'acoustic-kit': { name: 'Acoustic Kit', icon: '\uD83E\uDD41',
+              files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', openhat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3', tom3: 'tom3.mp3', clap: 'snare.mp3', rim: 'snare.mp3' },
+              synthStyle: { decayMul: 1.0, pitchShift: 0, filterFreq: 6000, gainMul: 0.8, character: 'acoustic' } },
+            'Techno': { name: 'Techno EDM', icon: '\u26A1',
+              files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', openhat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3', tom3: 'tom3.mp3', clap: 'snare.mp3', rim: 'snare.mp3' },
+              synthStyle: { decayMul: 0.6, pitchShift: 0.15, filterFreq: 9000, gainMul: 0.9, character: 'techno' } },
+            'LINN': { name: 'LinnDrum', icon: '\uD83D\uDD0A',
+              files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', openhat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3', tom3: 'tom3.mp3', clap: 'snare.mp3', rim: 'snare.mp3' },
+              synthStyle: { decayMul: 0.8, pitchShift: 0.05, filterFreq: 7000, gainMul: 0.85, character: 'linn' } },
+            '4OP-FM': { name: 'FM Synthesis', icon: '\uD83C\uDF1F',
+              files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', openhat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3', tom3: 'tom3.mp3', clap: 'snare.mp3', rim: 'snare.mp3' },
+              synthStyle: { decayMul: 0.7, pitchShift: 0.3, filterFreq: 10000, gainMul: 0.8, character: 'fm' } }
           };
           // Sample cache: { kitName: { soundType: AudioBuffer } }
           if (!window._alloSampleCache) window._alloSampleCache = {};
@@ -1625,19 +1731,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             if (row !== undefined && isChMuted(row)) return;
             var vol = (row !== undefined) ? getChVol(row) : 0.8;
             var kit = d.activeKit || '';
+            var kitDef = SAMPLE_KITS[kit];
             var cache = window._alloSampleCache[kit];
             if (cache && cache[type]) {
               var audio = getCtx(); var ctx = audio.ctx;
               var source = ctx.createBufferSource();
               source.buffer = cache[type];
-              var g = ctx.createGain(); g.gain.value = vol;
-              source.connect(g);
+              var g = ctx.createGain();
               var dest = _getBpFxDest(audio);
+              // Creative re-mappings: openhat = hihat with longer envelope
+              if (type === 'openhat') {
+                g.gain.setValueAtTime(vol, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+              } else if (type === 'clap') {
+                // Clap re-maps from snare — pitch up slightly, short burst
+                source.playbackRate.value = 1.3;
+                g.gain.setValueAtTime(vol * 0.8, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+              } else if (type === 'rim') {
+                // Rim re-maps from snare — pitch way up, very short
+                source.playbackRate.value = 1.8;
+                g.gain.setValueAtTime(vol * 0.6, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
+              } else {
+                g.gain.value = vol;
+              }
+              source.connect(g);
               g.connect(dest);
               source.start(0);
               return;
             }
-            playDrumExt(type);
+            // Fall back to synthesis with kit style applied
+            var style = (kitDef && kitDef.synthStyle) ? kitDef.synthStyle : null;
+            playDrumStyled(type, style, vol);
           }
           // Play user-uploaded sample by index
           function playUserSample(idx) {
@@ -1650,16 +1776,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             source.connect(g); g.connect(audio.gain);
             source.start(0);
           }
-          // Melody notes for the sequencer row
-          var MELODY_NOTES_BP = ['C4','D4','E4','F4','G4','A4','B4','C5'];
-          var MELODY_FREQS_BP = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
           var melodySeqBP = d.beatMelody || new Array(16).fill(0);
           // Load default kit on first beatpad visit
           React.useEffect(function () {
             if (synthTab === 'beatpad' && !d.activeKit && !d.samplesLoading) {
               loadSampleKit('CR78');
             }
-          }, [synthTab]);
+          }, [synthTab, d.activeKit, d.samplesLoading]);
           // Keyboard shortcuts for drum pads (number row)
           React.useEffect(function () {
             function handlePadKey(e) {
@@ -1748,7 +1871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 Object.keys(PRESETS).map(function (name) {
                   return React.createElement("button", { "aria-label": "Apply Preset",
                     key: name,
-                    onClick: function () { applyPreset(name); },
+                    onClick: function () { applyInstrumentPreset(name); },
                     className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.activePreset === name ? 'bg-purple-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                   }, (name === 'Plucked' ? '\uD83C\uDFB8' : name === 'Guitar' ? '\uD83C\uDFB8' : name === 'Strings' ? '\uD83C\uDFBB' : name === 'Organ' ? '\u26EA' : name === 'Bass' ? '\uD83C\uDFB8' : name === 'Pad' ? '\u2601\uFE0F' : name === t('stem.periodic.lead') ? '\u26A1' : name === 'Retro' ? '\uD83D\uDC7E' : name === 'Spooky' ? '\uD83D\uDC7B' : '\uD83C\uDFB9') + ' ' + name);
                 })
@@ -1793,10 +1916,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     return React.createElement("button", { "aria-label": eng.label + " engine",
                       key: eng.id,
                       onClick: function () {
-                        // Clear all active notes when switching engines to prevent stale entries blocking playback
+                        // Clear all active notes (including extras: vibLFO, FM modulator, SuperSaw voices)
                         Object.keys(window._alloSynthActiveNotes || {}).forEach(function (nid) {
-                          try { var e = window._alloSynthActiveNotes[nid]; if (e && e.osc) e.osc.stop(); if (e && e.env) { e.env.gain.cancelScheduledValues(0); e.env.gain.value = 0; } } catch (ex) { }
-                          delete window._alloSynthActiveNotes[nid];
+                          stopNote(nid);
                         });
                         upd('synthEngine', eng.id);
                       },
@@ -3047,46 +3169,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 )
               ),
 
-              // ── Notation Teaching View (interactive) ──
+              // ── Notation Teaching View (SVG-based, no unicode font dependency) ──
               React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "\uD83C\uDFBC Musical Notation"),
-                  React.createElement("span", { className: "text-[11px] text-amber-600" }, "Click notes to hear them!")
+                  React.createElement("span", { className: "text-[11px] text-amber-600" }, "Click notes to hear them!"),
+                  !melodySeqBP.some(function(n) { return n > 0; }) && React.createElement("span", { className: "text-[10px] text-amber-400 italic ml-auto" }, "Add melody notes in the grid above \u2191")
                 ),
-                React.createElement("svg", { viewBox: "0 0 560 110", className: "w-full bg-[#fefcf3] rounded-lg border border-amber-100 mb-2", style: { maxHeight: '130px' }, role: "img" },
-                  [0,1,2,3,4].map(function (li) { return React.createElement("line", { key: 'sl_' + li, x1: 35, y1: 25 + li * 10, x2: 540, y2: 25 + li * 10, stroke: '#d4d0c8', strokeWidth: 0.8 }); }),
-                  React.createElement("text", { x: 8, y: 60, fill: "#8b7355", style: { fontSize: '42px', fontFamily: 'serif' } }, "\uD834\uDD1E"),
-                  React.createElement("text", { x: 42, y: 40, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'serif' } }, "4"),
-                  React.createElement("text", { x: 42, y: 57, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'serif' } }, "4"),
-                  [4,8,12].map(function (bl) { return React.createElement("line", { key: 'bar_' + bl, x1: 55 + bl * 30, y1: 25, x2: 55 + bl * 30, y2: 65, stroke: '#bbb', strokeWidth: 0.8 }); }),
-                  melodySeqBP.map(function (ni, idx) {
-                    var x = 70 + idx * 29; var isCur = d.seqPlaying && d.seqCurrentStep === idx;
-                    var scNotes = getScaleNotes();
-                    if (!ni || ni <= 0) return React.createElement("text", { key: 'n_' + idx, x: x, y: 50, textAnchor: "middle", fill: isCur ? '#7c3aed' : '#bbb', style: { fontSize: '14px', fontFamily: 'serif' } }, "\uD834\uDD3D");
-                    var yMap = [70,65,60,55,50,45,40,35,32,28,25,22,18];
-                    var y = yMap[Math.min(ni - 1, yMap.length - 1)] || 50;
-                    var col = isCur ? '#7c3aed' : '#333';
-                    return React.createElement("g", { key: 'n_' + idx, style: { cursor: 'pointer' },
-                      onClick: function () { if (ni > 0 && ni <= scNotes.freqs.length) playNoteFor(scNotes.freqs[ni - 1], 'notclick_' + idx, 400); }
-                    },
-                      React.createElement("ellipse", { cx: x, cy: y, rx: 5, ry: 3.5, fill: col, transform: "rotate(-12 " + x + " " + y + ")" }),
-                      React.createElement("line", { x1: x + 4.5, y1: y, x2: x + 4.5, y2: y - 22, stroke: col, strokeWidth: 1.2 }),
-                      y >= 65 && React.createElement("line", { x1: x - 7, y1: 65, x2: x + 7, y2: 65, stroke: '#999', strokeWidth: 0.5 }),
-                      y >= 70 && React.createElement("line", { x1: x - 7, y1: 70, x2: x + 7, y2: 70, stroke: '#999', strokeWidth: 0.5 }),
-                      React.createElement("text", { x: x, y: y + 14, textAnchor: "middle", fill: '#999', style: { fontSize: '6px' } }, ni <= scNotes.notes.length ? scNotes.notes[ni - 1] : '')
-                    );
-                  }),
-                  d.seqPlaying && React.createElement("line", { x1: 70 + (d.seqCurrentStep || 0) * 29, y1: 20, x2: 70 + (d.seqCurrentStep || 0) * 29, y2: 80, stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.5 })
-                ),
+                // Staff notation: proper note placement on treble clef lines/spaces
+                (function() {
+                  var scNotes = getScaleNotes();
+                  var hasMelody = melodySeqBP.some(function(n) { return n > 0; });
+                  // Map scale note names to staff Y positions (treble clef, middle C = ledger below)
+                  // Staff lines (top to bottom): F5=30, D5=35, B4=40, G4=45, E4=50
+                  // Staff spaces: E5=32.5, C5=37.5, A4=42.5, F4=47.5
+                  var STAFF_Y = { 'C4': 65, 'D4': 60, 'E4': 55, 'F4': 50, 'G4': 45, 'A4': 40, 'B4': 35, 'C5': 30, 'D5': 25, 'E5': 20, 'F5': 15, 'G5': 10 };
+                  // Drum rhythm: check if any drum pads have hits
+                  var grid = d.seqGrid || {};
+                  var hasDrums = Object.keys(grid).some(function(k) { return grid[k]; });
+                  var svgH = hasDrums ? 130 : 100;
+                  return React.createElement("svg", { viewBox: "0 0 560 " + svgH, className: "w-full bg-[#fefcf3] rounded-lg border border-amber-100 mb-2", style: { maxHeight: hasDrums ? '160px' : '130px' }, role: "img", 'aria-label': 'Musical staff notation showing your melody' + (hasDrums ? ' and drum pattern' : '') },
+                    // Staff lines
+                    [0,1,2,3,4].map(function (li) { return React.createElement("line", { key: 'sl_' + li, x1: 35, y1: 25 + li * 10, x2: 540, y2: 25 + li * 10, stroke: '#d4d0c8', strokeWidth: 0.8 }); }),
+                    // Treble clef (SVG path instead of unicode)
+                    React.createElement("g", { transform: "translate(12,26) scale(0.38)", fill: "#8b7355" },
+                      React.createElement("path", { d: "M20 80 C20 60 30 40 30 20 C30 5 25 0 20 0 C15 0 10 5 10 20 C10 40 20 60 20 80 C20 95 15 105 10 105 C5 105 0 95 5 85 C8 80 12 80 15 85 C18 90 15 100 10 100 Z M18 20 C18 10 22 5 22 15 C22 25 18 30 18 20 Z" })
+                    ),
+                    // Time signature
+                    React.createElement("text", { x: 42, y: 40, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'sans-serif' } }, "4"),
+                    React.createElement("text", { x: 42, y: 57, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'sans-serif' } }, "4"),
+                    // Barlines
+                    [4,8,12].map(function (bl) { return React.createElement("line", { key: 'bar_' + bl, x1: 55 + bl * 30, y1: 25, x2: 55 + bl * 30, y2: 65, stroke: '#bbb', strokeWidth: 0.8 }); }),
+                    // Final barline (double)
+                    React.createElement("line", { x1: 538, y1: 25, x2: 538, y2: 65, stroke: '#999', strokeWidth: 0.8 }),
+                    React.createElement("line", { x1: 541, y1: 25, x2: 541, y2: 65, stroke: '#999', strokeWidth: 2 }),
+                    // Melody notes / rests
+                    melodySeqBP.map(function (ni, idx) {
+                      var x = 70 + idx * 29; var isCur = d.seqPlaying && d.seqCurrentStep === idx;
+                      if (!ni || ni <= 0) {
+                        // Quarter rest (SVG drawn, not unicode)
+                        var restCol = isCur ? '#7c3aed' : '#ccc';
+                        return React.createElement("g", { key: 'n_' + idx },
+                          React.createElement("path", { d: "M" + (x-2) + ",38 l3,-5 l-3,-3 l3,-5 l-3,-3 l2,-2", stroke: restCol, fill: "none", strokeWidth: 1.5, strokeLinecap: "round" })
+                        );
+                      }
+                      // Get note name and map to staff Y
+                      var noteName = ni <= scNotes.notes.length ? scNotes.notes[ni - 1] : 'C4';
+                      var y = STAFF_Y[noteName] || (50 - (ni - 1) * 5);
+                      var col = isCur ? '#7c3aed' : '#333';
+                      return React.createElement("g", { key: 'n_' + idx, style: { cursor: 'pointer' },
+                        onClick: function () { if (ni > 0 && ni <= scNotes.freqs.length) playNoteFor(scNotes.freqs[ni - 1], 'notclick_' + idx, 400); }
+                      },
+                        // Filled notehead (ellipse)
+                        React.createElement("ellipse", { cx: x, cy: y, rx: 5, ry: 3.5, fill: col, transform: "rotate(-12 " + x + " " + y + ")" }),
+                        // Stem (up if below middle, down if above)
+                        y >= 45
+                          ? React.createElement("line", { x1: x + 4.5, y1: y, x2: x + 4.5, y2: y - 22, stroke: col, strokeWidth: 1.2 })
+                          : React.createElement("line", { x1: x - 4.5, y1: y, x2: x - 4.5, y2: y + 22, stroke: col, strokeWidth: 1.2 }),
+                        // Ledger lines below staff (C4, D4)
+                        y >= 65 && React.createElement("line", { x1: x - 7, y1: 65, x2: x + 7, y2: 65, stroke: '#999', strokeWidth: 0.6 }),
+                        y >= 70 && React.createElement("line", { x1: x - 7, y1: 70, x2: x + 7, y2: 70, stroke: '#999', strokeWidth: 0.6 }),
+                        // Ledger lines above staff (D5, E5, F5)
+                        y <= 20 && React.createElement("line", { x1: x - 7, y1: 20, x2: x + 7, y2: 20, stroke: '#999', strokeWidth: 0.6 }),
+                        y <= 15 && React.createElement("line", { x1: x - 7, y1: 15, x2: x + 7, y2: 15, stroke: '#999', strokeWidth: 0.6 }),
+                        // Note name label
+                        React.createElement("text", { x: x, y: y + (y >= 45 ? 12 : -8), textAnchor: "middle", fill: isCur ? '#7c3aed' : '#999', style: { fontSize: '6px', fontFamily: 'sans-serif' } }, noteName.replace('4', '').replace('5', '\u2019'))
+                      );
+                    }),
+                    // Playback cursor
+                    d.seqPlaying && React.createElement("rect", { x: 65 + (d.seqCurrentStep || 0) * 29, y: 22, width: 20, height: 46, rx: 2, fill: '#7c3aed', opacity: 0.08 }),
+                    // Drum rhythm notation (below staff)
+                    hasDrums && React.createElement("g", null,
+                      // Rhythm label
+                      React.createElement("text", { x: 8, y: 88, fill: "#999", style: { fontSize: '7px', fontFamily: 'sans-serif' } }, "Drums"),
+                      // Percussion line
+                      React.createElement("line", { x1: 55, y1: 90, x2: 540, y2: 90, stroke: '#e0dcd4', strokeWidth: 0.6 }),
+                      // Drum hits as x noteheads
+                      Array.from({ length: 16 }, function(_, col) {
+                        var hasHit = false;
+                        for (var dr = 0; dr < 12; dr++) { if (grid[dr + '_' + col]) { hasHit = true; break; } }
+                        if (!hasHit) return null;
+                        var x = 70 + col * 29;
+                        var isCur = d.seqPlaying && d.seqCurrentStep === col;
+                        var hitCol = isCur ? '#7c3aed' : '#666';
+                        // Count simultaneous hits for size
+                        var hitCount = 0;
+                        for (var dr2 = 0; dr2 < 12; dr2++) { if (grid[dr2 + '_' + col]) hitCount++; }
+                        return React.createElement("g", { key: 'dh_' + col },
+                          // X notehead for percussion
+                          React.createElement("line", { x1: x - 3, y1: 87, x2: x + 3, y2: 93, stroke: hitCol, strokeWidth: 1.3 }),
+                          React.createElement("line", { x1: x + 3, y1: 87, x2: x - 3, y2: 93, stroke: hitCol, strokeWidth: 1.3 }),
+                          // Stem
+                          React.createElement("line", { x1: x + 3, y1: 87, x2: x + 3, y2: 77, stroke: hitCol, strokeWidth: 1 }),
+                          // Hit count indicator (dot for 2+, double for 3+)
+                          hitCount >= 2 && React.createElement("circle", { cx: x, cy: 97, r: 1.2, fill: hitCol }),
+                          hitCount >= 3 && React.createElement("circle", { cx: x + 4, cy: 97, r: 1.2, fill: hitCol })
+                        );
+                      })
+                    ),
+                    // Empty state hint
+                    !hasMelody && !hasDrums && React.createElement("text", { x: 290, y: 50, textAnchor: "middle", fill: "#ccc", style: { fontSize: '10px', fontFamily: 'sans-serif', fontStyle: 'italic' } }, "Click melody cells in the grid above to see notation here")
+                  );
+                })(),
+                // Note value reference (SVG-based, not unicode)
                 React.createElement("div", { className: "grid grid-cols-4 gap-2" },
                   [
-                    { name: 'Whole Note', beats: '4 beats', sym: '\uD834\uDD5D', desc: 'Held for a full bar' },
-                    { name: 'Half Note', beats: '2 beats', sym: '\uD834\uDD5E', desc: 'Held for half a bar' },
-                    { name: 'Quarter Note', beats: '1 beat', sym: '\u2669', desc: 'One tap per beat' },
-                    { name: 'Eighth Note', beats: '\u00BD beat', sym: '\u266A', desc: 'Two per beat (1 & 2 &)' }
+                    { name: 'Whole Note', beats: '4 beats', desc: 'Held for a full bar', filled: false, stem: false },
+                    { name: 'Half Note', beats: '2 beats', desc: 'Held for half a bar', filled: false, stem: true },
+                    { name: 'Quarter Note', beats: '1 beat', desc: 'One tap per beat', filled: true, stem: true },
+                    { name: 'Eighth Note', beats: '\u00BD beat', desc: 'Two per beat (1 & 2 &)', filled: true, stem: true, flag: true }
                   ].map(function (note) {
                     return React.createElement("div", { key: note.name, className: "bg-white/80 rounded-lg p-2 text-center border border-amber-100" },
-                      React.createElement("div", { className: "text-2xl mb-0.5", style: { fontFamily: 'serif' } }, note.sym),
+                      React.createElement("svg", { viewBox: "0 0 30 40", className: "w-8 h-10 mx-auto mb-0.5" },
+                        React.createElement("ellipse", { cx: 12, cy: 28, rx: 6, ry: 4, fill: note.filled ? '#8b7355' : 'none', stroke: '#8b7355', strokeWidth: note.filled ? 0 : 1.5, transform: "rotate(-12 12 28)" }),
+                        note.stem && React.createElement("line", { x1: 17, y1: 28, x2: 17, y2: 8, stroke: '#8b7355', strokeWidth: 1.5 }),
+                        note.flag && React.createElement("path", { d: "M17,8 C22,12 22,18 17,20", stroke: '#8b7355', strokeWidth: 1.5, fill: 'none' })
+                      ),
                       React.createElement("div", { className: "text-[11px] font-bold text-amber-800" }, note.name),
                       React.createElement("div", { className: "text-[8px] text-amber-600" }, note.beats),
                       React.createElement("div", { className: "text-[7px] text-amber-500 italic mt-0.5" }, note.desc)
@@ -3618,7 +3816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                   setTimeout(function() { upd('waveType', origWave); upd('synthEngine', origEngine); }, 100);
                                 }
                               },
-                              className: "shrink-0 w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center hover:bg-amber-600 transition-all shadow-sm",
+                              className: "shrink-0 w-8 h-8 rounded-full bg-amber-700 text-white flex items-center justify-center hover:bg-amber-600 transition-all shadow-sm",
                               title: "Hear " + inst.name
                             }, "\u25B6"),
                             React.createElement("span", { className: "text-slate-400 text-xs shrink-0" }, isExpanded ? '\u25B2' : '\u25BC')

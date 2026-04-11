@@ -15,6 +15,19 @@
     document.body.appendChild(liveRegion);
   })();
 
+  // WCAG 2.1 AA: Accessibility CSS injection
+  if (!document.getElementById('ws-a11y-css')) {
+    var wsA11yStyle = document.createElement('style');
+    wsA11yStyle.id = 'ws-a11y-css';
+    wsA11yStyle.textContent = [
+      '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+      '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
+      '.fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }',
+      '.fixed.inset-0 .text-slate-500 { color: #475569 !important; }',
+    ].join('\n');
+    document.head.appendChild(wsA11yStyle);
+  }
+
   // WCAG 2.4.3: Focus management for modal dialogs
   var _alloFocusTrigger = null;
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }

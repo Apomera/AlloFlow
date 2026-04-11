@@ -1621,6 +1621,10 @@ const d = labToolData.solarSystem;
 
                 ref: canvasRef,
 
+                role: 'img',
+                'aria-label': 'Interactive 3D solar system model. ' + (sel ? 'Viewing ' + sel.name + '. ' + sel.fact : 'Showing all 9 planets orbiting the Sun. Click a planet to explore it.'),
+                tabIndex: 0,
+
                 className: "solar3d-canvas w-full",
 
                 style: { height: '520px', display: 'block', cursor: 'grab' },
@@ -8605,7 +8609,7 @@ const d = labToolData.solarSystem;
                     React.createElement("div", { className: "flex gap-2" },
                       React.createElement("button", {
                         onClick: function() { upd('poe_seen_' + sel.name, 'predicted'); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
-                        className: "flex-1 px-3 py-2 text-xs font-bold rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                        className: "flex-1 px-3 py-2 text-xs font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-600 transition-all"
                       }, "\uD83D\uDCDD I have a prediction!"),
                       React.createElement("button", {
                         onClick: function() { upd('poe_seen_' + sel.name, 'skipped'); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
@@ -8620,7 +8624,7 @@ const d = labToolData.solarSystem;
                     React.createElement("p", { className: "text-xs font-bold text-emerald-700 mb-1" }, "\uD83D\uDD0D Ready to check your prediction?"),
                     React.createElement("button", {
                       onClick: function() { upd('poe_revealed_' + sel.name, true); },
-                      className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all"
+                      className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-600 transition-all"
                     }, "\u2705 Reveal the answer")
                   ),
 
@@ -8723,8 +8727,8 @@ const d = labToolData.solarSystem;
 
                               upd('quiz', Object.assign({}, d.quiz, { answered: true, correct: correct, chosen: opt, score: d.quiz.score + (correct ? 1 : 0), streak: correct ? d.quiz.streak + 1 : 0 }));
 
-                              if (correct) { addToast('\u2705 Correct! ' + d.quiz.tip, 'success'); playQuizCorrect(); }
-                              else { playQuizWrong(); }
+                              if (correct) { addToast('\u2705 Correct! ' + d.quiz.tip, 'success'); playQuizCorrect(); if (typeof announceToSR === 'function') announceToSR('Correct! ' + d.quiz.tip); }
+                              else { playQuizWrong(); if (typeof announceToSR === 'function') announceToSR('Incorrect. The answer is ' + d.quiz.a); }
 
                             }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
 
@@ -9595,7 +9599,7 @@ const d = labToolData.solarSystem;
                 ),
                 React.createElement("button", {
                   onClick: function() { upd('showJournal', !d.showJournal); },
-                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg " + (d.showJournal ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-amber-500 text-white hover:bg-amber-600') + " transition-all"
+                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg " + (d.showJournal ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-amber-700 text-white hover:bg-amber-600') + " transition-all"
                 }, d.showJournal ? 'Close Journal' : (sel ? 'Write about ' + sel.name : 'Open Journal')),
                 d.showJournal && React.createElement("div", { className: "mt-2 space-y-2" },
                   // New entry form
@@ -9626,7 +9630,7 @@ const d = labToolData.solarSystem;
                         if (p1) p1.value = ''; p2.value = ''; if (p3) p3.value = ''; if (p4) p4.value = '';
                         if (awardStemXP) awardStemXP('solarSystem', 10);
                       },
-                      className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                      className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-600 transition-all"
                     }, "\uD83D\uDCBE Save Entry (+10 XP)")
                   ),
                   // Previous entries

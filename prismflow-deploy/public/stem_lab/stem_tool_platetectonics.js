@@ -1368,7 +1368,7 @@ var d = labToolData.plateTectonics || {};
                 ),
 
                 // Timeline slider
-                React.createElement('input', { type: 'range', min: '0', max: String(ERAS.length - 1), step: '1', value: timelineEra, onChange: function(e) { upd({ timelineEra: parseInt(e.target.value), timelapsePlaying: false }); }, className: 'w-full accent-red-500 mb-2' }),
+                React.createElement('input', { type: 'range', 'aria-label': 'timeline era', min: '0', max: String(ERAS.length - 1), step: '1', value: timelineEra, onChange: function(e) { upd({ timelineEra: parseInt(e.target.value), timelapsePlaying: false }); }, className: 'w-full accent-red-500 mb-2' }),
 
                 // Geological timescale bar
                 React.createElement('div', { className: 'flex rounded-full overflow-hidden h-2 mb-4 shadow-inner' },

@@ -76,7 +76,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       switch (type) {
         case 'predation':
           playTone(120, 0.12, 'sine', 0.10);
+          noiseBurst(0.04, 0.04, 600, 'bandpass');
           setTimeout(function() { playTone(80, 0.08, 'sine', 0.08); }, 60);
+          break;
+        case 'extinction':
+          playTone(200, 0.3, 'sawtooth', 0.08);
+          setTimeout(function() { playTone(150, 0.25, 'sawtooth', 0.06); }, 150);
+          setTimeout(function() { playTone(100, 0.4, 'sine', 0.04); }, 300);
           break;
         case 'birth':
           playTone(440, 0.08, 'sine', 0.06);
@@ -124,6 +130,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           playTone(440, 0.08, 'sine', 0.06);
       }
     } catch (e) { /* audio not available */ }
+  }
+
+  // ── Noise burst helper for richer audio textures ──
+  function noiseBurst(dur, vol, filterFreq, filterType) {
+    var ac = getAudioCtx(); if (!ac) return;
+    try {
+      var bufSize = Math.floor(ac.sampleRate * (dur || 0.04));
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+      var src = ac.createBufferSource(); src.buffer = buf;
+      var filt = ac.createBiquadFilter(); filt.type = filterType || 'lowpass'; filt.frequency.value = filterFreq || 800;
+      var g = ac.createGain(); g.gain.setValueAtTime(vol || 0.03, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.04));
+      src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
+    } catch(e) {}
+  }
+
+  // ── Ambient ecosystem soundscape ──
+  var _ecoAmbient = null;
+  function startEcoAmbient(isDay, preyCount) {
+    stopEcoAmbient();
+    var ac = getAudioCtx(); if (!ac) return;
+    try {
+      // Base wind noise
+      var bufSize = ac.sampleRate * 2;
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+      var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+      var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = isDay ? 220 : 150;
+      var lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.1;
+      var lfoG = ac.createGain(); lfoG.gain.value = 30;
+      lfo.connect(lfoG); lfoG.connect(filt.frequency);
+      var master = ac.createGain(); master.gain.setValueAtTime(0, ac.currentTime);
+      master.gain.linearRampToValueAtTime(0.008, ac.currentTime + 2);
+      src.connect(filt); filt.connect(master); master.connect(ac.destination);
+      src.start(); lfo.start();
+      _ecoAmbient = { src: src, lfo: lfo, master: master };
+      // Wildlife: birds during day (more with high prey = lots of food), crickets at night
+      _ecoAmbient._interval = setInterval(function() {
+        if (isDay) {
+          if (Math.random() > 0.4) {
+            // Bird chirp
+            playTone(1600 + Math.random() * 800, 0.04, 'sine', 0.03);
+            setTimeout(function() { playTone(2000 + Math.random() * 600, 0.03, 'sine', 0.025); }, 50);
+          }
+          if (Math.random() > 0.7) noiseBurst(0.02, 0.015, 300); // gentle wind rustle
+        } else {
+          if (Math.random() > 0.5) {
+            // Cricket chirp
+            playTone(4000, 0.015, 'sine', 0.015);
+            setTimeout(function() { playTone(4200, 0.015, 'sine', 0.015); }, 25);
+            setTimeout(function() { playTone(4000, 0.015, 'sine', 0.015); }, 50);
+          }
+          if (Math.random() > 0.85) {
+            // Owl hoot
+            playTone(300, 0.15, 'sine', 0.025);
+            setTimeout(function() { playTone(250, 0.2, 'sine', 0.02); }, 200);
+          }
+        }
+      }, 2500 + Math.random() * 3000);
+    } catch(e) {}
+  }
+  function stopEcoAmbient() {
+    if (_ecoAmbient) {
+      try {
+        var ac = getAudioCtx();
+        if (ac && _ecoAmbient.master) _ecoAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5);
+        if (_ecoAmbient._interval) clearInterval(_ecoAmbient._interval);
+        var nodes = _ecoAmbient;
+        setTimeout(function() { try { nodes.src.stop(); nodes.lfo.stop(); } catch(e) {} }, 600);
+      } catch(e) {}
+      _ecoAmbient = null;
+    }
+  }
+
+  // ── CSS animations for ecosystem UI ──
+  if (!document.getElementById('eco-css-anims')) {
+    var ecoStyle = document.createElement('style');
+    ecoStyle.id = 'eco-css-anims';
+    ecoStyle.textContent = [
+      '@keyframes ecoSlideIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }',
+      '@keyframes ecoPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }',
+      '@keyframes ecoBadgePop { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }',
+      '@keyframes ecoGlow { 0%, 100% { box-shadow: 0 0 6px rgba(74,222,128,0.2); } 50% { box-shadow: 0 0 16px rgba(74,222,128,0.4); } }',
+      '@keyframes ecoExtinction { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(239,68,68,0.08); } }',
+      '@keyframes ecoBarFill { 0% { width: 0; } }',
+      '.eco-card { animation: ecoSlideIn 0.35s ease-out; }',
+      '.eco-badge { animation: ecoBadgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
+      '.eco-stat-bar { animation: ecoBarFill 0.6s ease-out; }',
+      '.eco-extinction { animation: ecoExtinction 2s ease-in-out infinite; }',
+      '.eco-glow { animation: ecoGlow 2s ease-in-out infinite; }'
+    ].join('\n');
+    document.head.appendChild(ecoStyle);
   }
 
   // ── Badge definitions (14 total) ──
@@ -990,10 +1091,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               } catch (e) { /* ignore */ }
             }
 
-            // Day/night transition sound
+            // Day/night transition sound + ambient switchover
             if (isDay !== wasDay) {
               wasDay = isDay;
               playSound('dayNight');
+              startEcoAmbient(isDay, preyEntities ? preyEntities.filter(function(p) { return p.alive; }).length : 30);
             }
 
             // ── Count alive ──
@@ -2163,8 +2265,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // Canvas container
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-emerald-400', style: { height: 320 } },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Ecosystem simulation',
               ref: canvasRef,
+              role: 'img',
+              'aria-label': 'Ecosystem simulation. ' + biome + ' biome. Prey: ' + (preyCount || '?') + ', Predators: ' + (predCount || '?') + '. ' + (simPaused ? 'Paused.' : 'Running.'),
+              tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-biome': biome,
               'data-paused': simPaused ? '1' : '0',
@@ -2196,10 +2301,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 if (canvasEl) canvasEl.dataset.paused = newPaused ? '1' : '0';
               }
             }, simPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+            // Start/stop ambient on pause/resume — first button triggers on click above
+            !simPaused && !_ecoAmbient && (function() { startEcoAmbient(true, 30); return null; })(),
             h('div', { className: 'flex items-center gap-2 flex-1' },
               h('span', { className: 'text-[10px] font-semibold text-slate-500 dark:text-slate-400' }, 'Speed:'),
               h('input', {
-                type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
+                type: 'range', 'aria-label': 'sim speed', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': 'Simulation speed',
                 className: 'flex-1 h-1.5 accent-emerald-500',
                 onChange: function(e) {
@@ -2288,7 +2395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('span', { className: 'text-amber-600 font-bold' }, carryingCapacity)
             ),
             h('input', {
-              type: 'range', min: 30, max: 200, step: 5, value: carryingCapacity,
+              type: 'range', 'aria-label': 'carrying capacity', min: 30, max: 200, step: 5, value: carryingCapacity,
               'aria-label': 'Carrying capacity',
               className: 'w-full h-1.5 accent-amber-500',
               onChange: function(e) {
@@ -2494,7 +2601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-emerald-600 font-bold' }, prey0)
               ),
               h('input', {
-                type: 'range', min: 5, max: 150, step: 5, value: prey0,
+                type: 'range', 'aria-label': 'prey0', min: 5, max: 150, step: 5, value: prey0,
                 'aria-label': 'Prey start population',
                 className: 'w-full h-1.5 accent-emerald-500',
                 onChange: function(e) { upd('prey0', parseInt(e.target.value, 10)); }
@@ -2507,7 +2614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-red-600 font-bold' }, pred0)
               ),
               h('input', {
-                type: 'range', min: 2, max: 80, step: 2, value: pred0,
+                type: 'range', 'aria-label': 'pred0', min: 2, max: 80, step: 2, value: pred0,
                 'aria-label': 'Predator start population',
                 className: 'w-full h-1.5 accent-red-500',
                 onChange: function(e) { upd('pred0', parseInt(e.target.value, 10)); }
@@ -2520,7 +2627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-green-600 font-bold' }, preyBirth.toFixed(3))
               ),
               h('input', {
-                type: 'range', min: 0.01, max: 0.3, step: 0.005, value: preyBirth,
+                type: 'range', 'aria-label': 'prey birth', min: 0.01, max: 0.3, step: 0.005, value: preyBirth,
                 className: 'w-full h-1.5 accent-green-500',
                 onChange: function(e) { upd('preyBirth', parseFloat(e.target.value)); }
               })
@@ -2532,7 +2639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-red-600 font-bold' }, predDeath.toFixed(3))
               ),
               h('input', {
-                type: 'range', min: 0.01, max: 0.3, step: 0.005, value: predDeath,
+                type: 'range', 'aria-label': 'pred death', min: 0.01, max: 0.3, step: 0.005, value: predDeath,
                 className: 'w-full h-1.5 accent-red-500',
                 onChange: function(e) { upd('predDeath', parseFloat(e.target.value)); }
               })
@@ -2544,7 +2651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-orange-600 font-bold' }, preyDeath.toFixed(3))
               ),
               h('input', {
-                type: 'range', min: 0.001, max: 0.05, step: 0.001, value: preyDeath,
+                type: 'range', 'aria-label': 'prey death', min: 0.001, max: 0.05, step: 0.001, value: preyDeath,
                 className: 'w-full h-1.5 accent-orange-500',
                 onChange: function(e) { upd('preyDeath', parseFloat(e.target.value)); }
               })
@@ -2556,7 +2663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-blue-600 font-bold' }, predBirth.toFixed(3))
               ),
               h('input', {
-                type: 'range', min: 0.001, max: 0.05, step: 0.001, value: predBirth,
+                type: 'range', 'aria-label': 'Enter', min: 0.001, max: 0.05, step: 0.001, value: predBirth,
                 className: 'w-full h-1.5 accent-blue-500',
                 onChange: function(e) { upd('predBirth', parseFloat(e.target.value)); }
               })
@@ -2681,8 +2788,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // Canvas container (same canvas, with sandbox interactivity)
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-teal-400', style: { height: 320 } },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Ecosystem food web visualization',
               ref: canvasRef,
+              role: 'img',
+              'aria-label': 'Ecosystem sandbox. Click to place prey (left) or predators (right). ' + (simPaused ? 'Paused.' : 'Running.'),
+              tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-paused': simPaused ? '1' : '0',
               'data-speed': simSpeed.toString(),
@@ -2747,7 +2857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'flex items-center gap-2 flex-1' },
               h('span', { className: 'text-[10px] font-semibold text-slate-500 dark:text-slate-400' }, 'Speed:'),
               h('input', {
-                type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
+                type: 'range', 'aria-label': 'sim speed', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': 'Sandbox simulation speed',
                 className: 'flex-1 h-1.5 accent-teal-500',
                 onChange: function(e) {
@@ -2783,7 +2893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('span', { className: 'text-amber-600 font-bold' }, carryingCapacity)
             ),
             h('input', {
-              type: 'range', min: 30, max: 200, step: 5, value: carryingCapacity,
+              type: 'range', 'aria-label': 'carrying capacity', min: 30, max: 200, step: 5, value: carryingCapacity,
               className: 'w-full h-1.5 accent-amber-500',
               onChange: function(e) {
                 var newK = parseInt(e.target.value, 10);

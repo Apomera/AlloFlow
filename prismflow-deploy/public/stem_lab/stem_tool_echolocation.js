@@ -786,7 +786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       }
 
       function renderSonarTab() {
-        var sonarCanvasEl = h('canvas', {
+        var sonarCanvasEl = h('canvas', { 'aria-label': 'Echolocation visualization',
           ref: sonarCanvasRef,
           width: 800,
           height: 500,
@@ -860,7 +860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             sceneIdx === 4 ? h('button', {
               'aria-label': 'Add object to custom scene',
               onClick: function() { addCustomObject(); },
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500'
+              className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-500'
             }, '+ Add Object') : null
           ),
           // Controls hint
@@ -935,7 +935,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('thead', null,
                   h('tr', { className: isDark ? 'bg-slate-700/50' : 'bg-slate-100' },
                     ['Feature', 'Little Brown Bat', 'Egyptian Fruit Bat'].map(function(hdr) {
-                      return h('th', { key: hdr, className: 'px-2 py-1.5 text-left font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, hdr);
+                      return h('th', { key: hdr, scope: 'col', className: 'px-2 py-1.5 text-left font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, hdr);
                     })
                   )
                 ),
@@ -1663,7 +1663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83C\uDF0A'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Wave Visualizer')),
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Echolocation visualization',
               ref: waveCanvasRef,
               width: 700,
               height: 180,
@@ -1683,7 +1683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Frequency: ' + waveFreq.toLocaleString() + ' Hz' +
                   (isBatRange ? ' \uD83E\uDD87 Bat range!' : isAudible ? ' \uD83D\uDC42 Audible' : waveFreq < 20 ? ' \uD83D\uDC33 Infrasonic' : ' Beyond ultrasonic')),
                 h('input', {
-                  type: 'range', min: 20, max: 200000, value: waveFreq, step: 10,
+                  type: 'range', 'aria-label': 'wave freq', min: 20, max: 200000, value: waveFreq, step: 10,
                   'aria-label': 'Frequency slider, ' + waveFreq + ' hertz',
                   onChange: function(e) { upd('waveFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -1698,7 +1698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', null,
                 h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Amplitude: ' + (waveAmp * 100).toFixed(0) + '%'),
                 h('input', {
-                  type: 'range', min: 0, max: 100, value: Math.round(waveAmp * 100), step: 1,
+                  type: 'range', 'aria-label': 'math', min: 0, max: 100, value: Math.round(waveAmp * 100), step: 1,
                   'aria-label': 'Amplitude slider, ' + Math.round(waveAmp * 100) + ' percent',
                   onChange: function(e) { upd('waveAmp', parseInt(e.target.value) / 100); },
                   className: 'w-full accent-indigo-500'
@@ -1741,7 +1741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', null,
                 h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Distance to object: ' + distCalcDist + ' m'),
                 h('input', {
-                  type: 'range', min: 1, max: 200, value: distCalcDist, step: 1,
+                  type: 'range', 'aria-label': 'dist calc dist', min: 1, max: 200, value: distCalcDist, step: 1,
                   'aria-label': 'Distance to object, ' + distCalcDist + ' meters',
                   onChange: function(e) { upd('distCalcDist', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -1803,7 +1803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }, mat.label + ' (' + Math.round(mat.reflection * 100) + '%)');
               })
             ),
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Echolocation visualization',
               ref: reflCanvasRef,
               width: 700,
               height: 150,
@@ -1837,7 +1837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCC9'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Inverse Square Law')),
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Echolocation visualization',
               ref: invSqCanvasRef,
               width: 700,
               height: 160,
@@ -2216,7 +2216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDEA8'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Doppler Effect Simulator')),
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Echolocation visualization',
               ref: dopplerCanvasRef,
               width: 700,
               height: 280,
@@ -2237,7 +2237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') },
                   'Moth speed: ' + mothSpeed + (mothSpeed < 0 ? ' (toward bat)' : mothSpeed > 0 ? ' (away from bat)' : ' (stationary)')),
                 h('input', {
-                  type: 'range', min: -10, max: 10, value: mothSpeed, step: 1,
+                  type: 'range', 'aria-label': 'moth speed', min: -10, max: 10, value: mothSpeed, step: 1,
                   'aria-label': 'Moth speed slider',
                   onChange: function(e) { upd('mothSpeed', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -2246,7 +2246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') },
                   'Emitted frequency: ' + (dopplerFreq / 1000).toFixed(0) + ' kHz'),
                 h('input', {
-                  type: 'range', min: 20000, max: 100000, value: dopplerFreq, step: 1000,
+                  type: 'range', 'aria-label': 'doppler freq', min: 20000, max: 100000, value: dopplerFreq, step: 1000,
                   'aria-label': 'Emitted frequency slider',
                   onChange: function(e) { upd('dopplerFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -2294,7 +2294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 var dir = dirs[Math.floor(Math.random() * dirs.length)];
                 updMulti({ dopplerQuizActive: true, dopplerQuizDir: dir, dopplerQuizAnswer: null, dopplerQuizFeedback: '' });
               },
-              className: 'px-4 py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500'
+              className: 'px-4 py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-500'
             }, '\uD83E\uDD87 New Challenge') : h('div', { className: 'space-y-3' },
               h('p', { className: 'text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
                 'A moth is moving. Based on the wave pattern, which direction is it going?'),
@@ -2330,7 +2330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     },
                     className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' +
                       (showResult
-                        ? (isCorrect ? 'bg-emerald-600 text-white ring-2 ring-emerald-400' : isAnswer ? 'bg-red-600 text-white' : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-400'))
+                        ? (isCorrect ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : isAnswer ? 'bg-red-600 text-white' : (isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-400'))
                         : 'bg-indigo-600 text-white hover:bg-indigo-500')
                   }, dir === 'toward' ? '\u2B05\uFE0F Toward' : dir === 'away' ? '\u27A1\uFE0F Away' : '\u2195\uFE0F Sideways');
                 })
@@ -2661,7 +2661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           bioSection === 'anatomy' && h('div', { className: 'space-y-3' },
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDDA0 Bat Anatomy \u2014 Click a part to learn more'),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Echolocation visualization',
                 ref: anatomyCanvasRef,
                 width: 500,
                 height: 300,
@@ -3130,7 +3130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDF33'),
                 h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Night Soundscape \u2014 Toggle animals to hear how they share the frequency space')),
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Echolocation visualization',
                 ref: soundscapeCanvasRef,
                 width: 700,
                 height: 250,
@@ -3170,7 +3170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-red-400' : 'text-red-600') },
                   '\uD83D\uDE97 Human Noise Level: ' + noiseLevel + '%' + (noiseLevel > 50 ? ' \u2014 Animals going silent!' : '')),
                 h('input', {
-                  type: 'range', min: 0, max: 100, value: noiseLevel, step: 1,
+                  type: 'range', 'aria-label': 'noise level', min: 0, max: 100, value: noiseLevel, step: 1,
                   'aria-label': 'Human noise level, ' + noiseLevel + ' percent',
                   onChange: function(e) { upd('noiseLevel', parseInt(e.target.value)); },
                   className: 'w-full accent-red-500'
@@ -3291,7 +3291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-emerald-300' : 'text-slate-600') },
                   'Chirps in 14 seconds: ' + (d.cricketChirps || 30)),
                 h('input', {
-                  type: 'range', min: 5, max: 80, value: d.cricketChirps || 30, step: 1,
+                  type: 'range', 'aria-label': 'd', min: 5, max: 80, value: d.cricketChirps || 30, step: 1,
                   'aria-label': 'Cricket chirps per 14 seconds: ' + (d.cricketChirps || 30),
                   onChange: function(e) { upd('cricketChirps', parseInt(e.target.value)); },
                   className: 'w-full accent-emerald-500'
@@ -3321,7 +3321,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   h('thead', null,
                     h('tr', { className: isDark ? 'bg-slate-700/50' : 'bg-slate-100' },
                       ['Animal', 'Frequency', 'Range', 'Method', 'Medium', 'Precision'].map(function(hdr) {
-                        return h('th', { key: hdr, className: 'px-2 py-1.5 text-left font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, hdr);
+                        return h('th', { key: hdr, scope: 'col', className: 'px-2 py-1.5 text-left font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, hdr);
                       })
                     )
                   ),

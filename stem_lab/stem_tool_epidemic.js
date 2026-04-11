@@ -33,6 +33,22 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
 
+  // ── Epidemic Lab Audio System ──
+  var _epAC = null;
+  function getEpAC() { if (!_epAC) { try { _epAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_epAC && _epAC.state === 'suspended') { try { _epAC.resume(); } catch(e) {} } return _epAC; }
+  function epTone(f, d, t, v) { var ac = getEpAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxInfectionSpread() { epTone(200, 0.12, 'sawtooth', 0.05); setTimeout(function() { epTone(250, 0.1, 'sawtooth', 0.04); }, 60); }
+  function sfxVaccinate() { epTone(523, 0.06, 'sine', 0.06); setTimeout(function() { epTone(659, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { epTone(784, 0.08, 'sine', 0.07); }, 100); }
+  function sfxOutbreakAlert() { epTone(880, 0.08, 'square', 0.06); setTimeout(function() { epTone(660, 0.08, 'square', 0.06); }, 100); setTimeout(function() { epTone(880, 0.08, 'square', 0.06); }, 200); }
+  function sfxQuarantineActivate() { epTone(300, 0.15, 'sine', 0.06); setTimeout(function() { epTone(400, 0.12, 'sine', 0.05); }, 80); }
+  function sfxEpCorrect() { epTone(523, 0.08, 'sine', 0.08); setTimeout(function() { epTone(659, 0.08, 'sine', 0.08); }, 70); setTimeout(function() { epTone(784, 0.12, 'sine', 0.09); }, 140); }
+  function sfxEpWrong() { epTone(220, 0.2, 'sawtooth', 0.06); }
+  function sfxEpClick() { epTone(600, 0.03, 'sine', 0.04); }
+
+  // WCAG 2.1 AA: Accessibility CSS
+  if (!document.getElementById('ep-a11y-css')) { var _s = document.createElement('style'); _s.id = 'ep-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }'; document.head.appendChild(_s); }
+
+
   // ═══════════════════════════════════════════════════════
   // IIFE-Scope Static Data (shared across renders)
   // ═══════════════════════════════════════════════════════
@@ -638,7 +654,7 @@ window.StemLab = window.StemLab || {
         upd('badges', badges);
         awardXP(15, 'Badge: ' + id);
         var b = EPI_BADGES.find(function(x) { return x.id === id; });
-        if (b) upd('badgeToast', b.icon + ' ' + b.name);
+        if (b) { upd('badgeToast', b.icon + ' ' + b.name); sfxVaccinate(); }
         setTimeout(function() { upd('badgeToast', null); }, 3000);
       }
 
@@ -873,7 +889,7 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'text-xs font-mono font-bold', style: { color: key === 'r0' ? r0Color(value) : '#334155' } }, fmt ? fmt(value) : value)
           ),
           h('input', {
-            type: 'range', min: min, max: max, step: step, value: value,
+            type: 'range', 'aria-label': 'value', min: min, max: max, step: step, value: value,
             onChange: function(e) { upd(key, parseFloat(e.target.value)); },
             className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer',
             style: { accentColor: key === 'r0' ? r0Color(value) : '#6366f1' },
@@ -1068,6 +1084,7 @@ window.StemLab = window.StemLab || {
 
       // ── Run simulation badge checks ──
       function runSim() {
+        sfxInfectionSpread();
         upd('hoverDay', null);
         if (tab === 'sir' || tab === 'r0explorer' || tab === 'vaccination') checkBadge('firstSim');
         if (tab === 'seir') checkBadge('seirMaster');
@@ -1303,7 +1320,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-1 text-[10px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600')
               }, particleRunning ? '\u23F9 Stop' : '\u25B6 Start')
             ),
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Epidemic visualization', 
               ref: particleRef,
               className: 'w-full rounded-xl border border-slate-200',
               style: { height: '200px', background: 'rgba(15,23,42,0.85)' }

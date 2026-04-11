@@ -33,6 +33,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   'use strict';
 
   // ═══════════════════════════════════════════════════════════════
+  // AUDIO SYSTEM — Immersive mission sounds
+  // ═══════════════════════════════════════════════════════════════
+  var _mmAC = null;
+  function getMMAC() {
+    if (!_mmAC) { try { _mmAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+    if (_mmAC && _mmAC.state === 'suspended') { try { _mmAC.resume(); } catch(e) {} }
+    return _mmAC;
+  }
+  function mmTone(freq, dur, type, vol) {
+    var ac = getMMAC(); if (!ac) return;
+    try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = freq; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.15)); } catch(e) {}
+  }
+  function mmNoise(dur, vol, filterHz, filterType) {
+    var ac = getMMAC(); if (!ac) return;
+    try {
+      var bufSize = Math.floor(ac.sampleRate * (dur || 0.1));
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+      var src = ac.createBufferSource(); src.buffer = buf;
+      var filt = ac.createBiquadFilter(); filt.type = filterType || 'lowpass'; filt.frequency.value = filterHz || 800;
+      var g = ac.createGain(); g.gain.setValueAtTime(vol || 0.04, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.1));
+      src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
+    } catch(e) {}
+  }
+
+  // Individual mission sounds
+  function sfxCountdown() { mmTone(800, 0.15, 'sine', 0.1); } // Countdown beep
+  function sfxLaunch() {
+    // Deep rumble + roar
+    mmNoise(1.0, 0.12, 200, 'lowpass');
+    mmTone(60, 0.8, 'sawtooth', 0.1);
+    setTimeout(function() { mmTone(80, 0.6, 'sawtooth', 0.08); mmNoise(0.6, 0.08, 300); }, 200);
+    setTimeout(function() { mmTone(100, 0.5, 'sawtooth', 0.06); }, 400);
+  }
+  function sfxEngineIgnition() { mmNoise(0.3, 0.08, 500, 'bandpass'); mmTone(150, 0.2, 'sawtooth', 0.06); }
+  function sfxStageSeparation() {
+    mmNoise(0.15, 0.1, 1200, 'bandpass'); // metallic clank
+    setTimeout(function() { mmTone(400, 0.08, 'sine', 0.06); }, 80);
+    setTimeout(function() { mmTone(300, 0.1, 'sine', 0.04); }, 150);
+  }
+  function sfxRadioChirp() {
+    // Classic NASA radio chirp/static
+    mmNoise(0.04, 0.06, 3000, 'bandpass');
+    setTimeout(function() { mmTone(1200, 0.03, 'sine', 0.05); }, 30);
+  }
+  function sfxAlarm() {
+    mmTone(880, 0.1, 'square', 0.08);
+    setTimeout(function() { mmTone(660, 0.1, 'square', 0.08); }, 120);
+    setTimeout(function() { mmTone(880, 0.1, 'square', 0.08); }, 240);
+  }
+  function sfxThrust() { mmNoise(0.2, 0.06, 300, 'lowpass'); mmTone(80, 0.15, 'sawtooth', 0.04); }
+  function sfxLanding() {
+    mmNoise(0.3, 0.1, 400, 'lowpass');
+    setTimeout(function() { mmTone(200, 0.2, 'sine', 0.06); }, 100);
+    setTimeout(function() { mmTone(300, 0.15, 'sine', 0.08); }, 250);
+  }
+  function sfxBootstep() { mmNoise(0.04, 0.03, 600, 'lowpass'); }
+  function sfxSampleCollect() {
+    mmTone(523, 0.06, 'sine', 0.06);
+    setTimeout(function() { mmTone(659, 0.06, 'sine', 0.06); }, 50);
+    setTimeout(function() { mmTone(784, 0.08, 'sine', 0.07); }, 100);
+  }
+  function sfxSplashdown() {
+    mmNoise(0.5, 0.1, 250, 'lowpass');
+    setTimeout(function() { mmNoise(0.3, 0.06, 400); }, 200);
+  }
+  function sfxQuizCorrect() { mmTone(523, 0.08, 'sine', 0.08); setTimeout(function() { mmTone(659, 0.08, 'sine', 0.08); }, 70); setTimeout(function() { mmTone(784, 0.12, 'sine', 0.1); }, 140); }
+  function sfxQuizWrong() { mmTone(250, 0.2, 'sawtooth', 0.06); }
+  function sfxPhaseAdvance() {
+    mmTone(440, 0.06, 'sine', 0.06);
+    setTimeout(function() { mmTone(554, 0.06, 'sine', 0.06); }, 50);
+    setTimeout(function() { mmTone(659, 0.08, 'sine', 0.07); }, 100);
+    setTimeout(function() { mmTone(880, 0.12, 'sine', 0.08); }, 160);
+  }
+  function sfxMissionComplete() {
+    [523, 659, 784, 1047, 1319].forEach(function(f, i) {
+      setTimeout(function() { mmTone(f, 0.15, 'sine', 0.08); }, i * 120);
+    });
+  }
+
+  // Ambient engine loop
+  var _mmAmbient = null;
+  function startMissionAmbient(type) {
+    stopMissionAmbient();
+    var ac = getMMAC(); if (!ac) return;
+    try {
+      var bufSize = ac.sampleRate * 2;
+      var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+      var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+      var filt = ac.createBiquadFilter();
+      var master = ac.createGain();
+      if (type === 'launch' || type === 'thrust') {
+        filt.type = 'lowpass'; filt.frequency.value = 250;
+        master.gain.setValueAtTime(0, ac.currentTime);
+        master.gain.linearRampToValueAtTime(0.015, ac.currentTime + 1);
+      } else if (type === 'space') {
+        filt.type = 'bandpass'; filt.frequency.value = 400; filt.Q.value = 2;
+        master.gain.setValueAtTime(0, ac.currentTime);
+        master.gain.linearRampToValueAtTime(0.006, ac.currentTime + 2);
+      } else if (type === 'eva') {
+        // EVA suit breathing
+        filt.type = 'bandpass'; filt.frequency.value = 600; filt.Q.value = 3;
+        master.gain.setValueAtTime(0, ac.currentTime);
+        master.gain.linearRampToValueAtTime(0.008, ac.currentTime + 1.5);
+      }
+      src.connect(filt); filt.connect(master); master.connect(ac.destination);
+      src.start();
+      _mmAmbient = { src: src, master: master };
+      // Periodic radio chirps for space/EVA
+      if (type === 'space' || type === 'eva') {
+        _mmAmbient._interval = setInterval(function() {
+          if (Math.random() > 0.5) sfxRadioChirp();
+        }, 4000 + Math.random() * 6000);
+      }
+    } catch(e) {}
+  }
+  function stopMissionAmbient() {
+    if (_mmAmbient) {
+      try {
+        var ac = getMMAC();
+        if (ac && _mmAmbient.master) _mmAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5);
+        if (_mmAmbient._interval) clearInterval(_mmAmbient._interval);
+        var nodes = _mmAmbient;
+        setTimeout(function() { try { nodes.src.stop(); } catch(e) {} }, 600);
+      } catch(e) {}
+      _mmAmbient = null;
+    }
+  }
+
+  // WCAG 2.1 AA: Accessibility CSS
+  if (!document.getElementById('mm-a11y-css')) {
+    var mmStyle = document.createElement('style');
+    mmStyle.id = 'mm-a11y-css';
+    mmStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }';
+    document.head.appendChild(mmStyle);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // SHARED PROCEDURAL DRAWING HELPERS
   // Pure canvas draw functions used across all mission phases.
   // ═══════════════════════════════════════════════════════════════
@@ -249,6 +391,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         upd('missionPhase', p);
         var phaseName = PHASES[p] ? PHASES[p].name : 'Mission Complete';
         if (typeof announceToSR === 'function') announceToSR('Mission phase ' + (p + 1) + ' of 10: ' + phaseName + '. ' + (PHASES[p] ? PHASES[p].desc : 'The mission is complete.'));
+        // Phase-specific sounds + ambient audio
+        sfxPhaseAdvance();
+        if (p === 1) { sfxLaunch(); startMissionAmbient('launch'); }           // Launch
+        else if (p === 2) { sfxStageSeparation(); startMissionAmbient('space'); } // Earth Orbit
+        else if (p === 3) { sfxEngineIgnition(); startMissionAmbient('space'); }  // Trans-Lunar
+        else if (p === 4) { sfxThrust(); startMissionAmbient('space'); }          // Lunar Orbit
+        else if (p === 5) { sfxThrust(); startMissionAmbient('thrust'); }         // Powered Descent
+        else if (p === 6) { sfxLanding(); startMissionAmbient('eva'); }           // Moonwalk EVA
+        else if (p === 7) { sfxEngineIgnition(); startMissionAmbient('thrust'); } // Lunar Ascent
+        else if (p === 8) { sfxStageSeparation(); startMissionAmbient('space'); } // Trans-Earth
+        else if (p === 9) { sfxSplashdown(); stopMissionAmbient(); }              // Re-entry
+        else if (p >= 10) { sfxMissionComplete(); stopMissionAmbient(); }         // Complete
       }
 
       function addXP(amount) {
@@ -637,9 +791,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   if (oi === QUIZ_BANK[quizIdx].a) {
                     upd('quizCorrect', quizCorrect + 1);
                     addXP(10);
+                    sfxQuizCorrect();
                     if (addToast) addToast('\u2705 Correct! +10 XP', 'success');
                     if (typeof announceToSR === 'function') announceToSR('Correct! ' + QUIZ_BANK[quizIdx].fact);
                   } else {
+                    sfxQuizWrong();
                     if (addToast) addToast('\u274C Not quite \u2014 the answer is: ' + QUIZ_BANK[quizIdx].opts[QUIZ_BANK[quizIdx].a], 'info');
                     if (typeof announceToSR === 'function') announceToSR('Incorrect. The correct answer is ' + QUIZ_BANK[quizIdx].opts[QUIZ_BANK[quizIdx].a] + '. ' + QUIZ_BANK[quizIdx].fact);
                   }
@@ -770,7 +926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             // Launch canvas
             h('div', { className: 'relative', style: { height: '400px' } },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Moonmission visualization',
                 'data-launch-canvas': 'true',
                 role: 'img',
                 'aria-label': 'Animated Saturn V rocket launch sequence. 5-second countdown followed by ascent through atmosphere to orbit. Shows altitude, velocity, G-force, and stage separations.',
@@ -798,6 +954,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Countdown phase
                     if (countdown > 0) {
                       countdown--;
+                      // Beep on each second mark (every 60 frames)
+                      if (countdown % 60 === 0 && countdown > 0) sfxCountdown();
                       // Background: launch pad
                       var skyGrad = ctx.createLinearGradient(0, 0, 0, H);
                       skyGrad.addColorStop(0, '#1a3a6a');
@@ -1117,7 +1275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 3 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '280px' } },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Moonmission visualization',
                 role: 'img',
                 'aria-label': 'Animated trans-lunar coast. Earth shrinks on the left, Moon grows on the right as the spacecraft travels 384,400 kilometers over 3 days. Shows distance counter and mission communications.',
                 style: { width: '100%', height: '100%', display: 'block' },
@@ -1240,7 +1398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 4 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '240px' } },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Moonmission visualization',
                 role: 'img',
                 'aria-label': 'Animated view of spacecraft orbiting the Moon at 110 kilometer altitude. Shows the Moon surface with craters, Sea of Tranquility landing site marked in green, and the spacecraft dot orbiting.',
                 style: { width: '100%', height: '100%', display: 'block' },
@@ -1377,7 +1535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           // Game canvas (after onboarding)
           d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '420px' } },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Moonmission visualization',
                 'data-descent-canvas': 'true',
                 role: 'application',
                 'aria-label': 'Interactive lunar descent piloting game. Use W or Up Arrow for thrust, A and D or Left and Right arrows for lateral movement. Land with vertical speed under 3 meters per second and horizontal speed under 5 meters per second.',
@@ -1678,7 +1836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 6 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '70vh', minHeight: '400px', maxHeight: '700px' } },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Moonmission visualization',
                 'data-eva-canvas': 'true',
                 role: 'application',
                 'aria-label': 'Interactive 3D lunar surface EVA. Use WASD to walk, Space to jump in one-sixth gravity, F to collect rock samples, mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.',
@@ -2095,6 +2253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           var newSamples = (d.lunarSamples || []).slice();
                           newSamples.push({ name: sd.name, type: sd.type, icon: sd.icon, fact: sd.fact });
                           upd('lunarSamples', newSamples);
+                          sfxSampleCollect();
                           if (addToast) addToast(sd.icon + ' Collected: ' + sd.name + ' \u2014 ' + sd.fact, 'success');
                           addXP(sd.xp);
                         }
@@ -2258,7 +2417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 9 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-orange-950 to-slate-900 rounded-xl overflow-hidden border border-orange-900/50' },
             h('div', { className: 'relative', style: { height: '320px' } },
-              h('canvas', {
+              h('canvas', { 'aria-label': 'Moonmission visualization',
                 role: 'img',
                 'aria-label': 'Animated re-entry sequence. Command Module enters atmosphere at 39,900 km/h with plasma heating to 2,760 degrees. Shows radio blackout, drogue chutes, main parachutes, and ocean splashdown.',
                 style: { width: '100%', height: '100%', display: 'block' },

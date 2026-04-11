@@ -236,6 +236,8 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_wave.js',
     'stem_lab/stem_tool_oratory.js',
     'stem_lab/stem_tool_singing.js',
+    'stem_lab/stem_tool_applab.js',
+    'stem_lab/stem_tool_migration.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',

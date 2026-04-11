@@ -530,7 +530,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
             h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, 'Denominator (parts)'),
             h('input', {
-              type: 'range', min: '2', max: '20', value: pd,
+              type: 'range', 'aria-label': 'pd', min: '2', max: '20', value: pd,
               onChange: function(e) { var v = parseInt(e.target.value); sfxClick(); upd({ pieces: { denominator: v, numerator: Math.min(pn, v) } }); },
               className: 'w-full accent-rose-600'
             }),
@@ -539,7 +539,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
             h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, 'Numerator (selected)'),
             h('input', {
-              type: 'range', min: '0', max: String(pd), value: pn,
+              type: 'range', 'aria-label': 'pn', min: '0', max: String(pd), value: pn,
               onChange: function(e) { sfxClick(); upd({ pieces: { denominator: pd, numerator: parseInt(e.target.value) } }); },
               className: 'w-full accent-rose-600'
             }),

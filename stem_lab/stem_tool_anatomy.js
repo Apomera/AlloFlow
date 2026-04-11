@@ -1040,8 +1040,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var canvasRef = function(canvas) {
           if (!canvas) return;
           if (canvas._anatomyAnim) { cancelAnimationFrame(canvas._anatomyAnim); canvas._anatomyAnim = null; }
+          // ── HiDPI / Retina scaling: render at native pixel density for crisp anatomical lines ──
+          var dpr = window.devicePixelRatio || 1;
+          var CSS_W = 360, CSS_H = 520;
+          canvas.width = CSS_W * dpr;
+          canvas.height = CSS_H * dpr;
+          canvas.style.width = CSS_W + 'px';
+          canvas.style.height = CSS_H + 'px';
           var cCtx = canvas.getContext('2d');
-          var W = canvas.width, H = canvas.height;
+          cCtx.scale(dpr, dpr);
+          // W and H stay at CSS dimensions — all drawing code uses these logical coordinates
+          var W = CSS_W, H = CSS_H;
+          canvas._dpr = dpr; // store for click/hover coordinate conversion
           var anatTick = 0;
 
           function drawAnatomyFrame() {
@@ -1085,15 +1095,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               skinGrad.addColorStop(1, '#e8cfc0');
             }
 
-            // Helper: draw body part
-            function drawBodyPart(pathFn) {
+            // Helper: draw body part with enhanced shading
+            function drawBodyPart(pathFn, opts) {
               cCtx.save();
-              cCtx.shadowColor = 'rgba(120,100,80,0.15)';
-              cCtx.shadowBlur = 6;
+              cCtx.shadowColor = 'rgba(120,100,80,0.18)';
+              cCtx.shadowBlur = 8;
               cCtx.beginPath(); pathFn(cCtx);
               cCtx.fillStyle = skinGrad; cCtx.fill();
               cCtx.shadowBlur = 0;
-              cCtx.strokeStyle = '#c4aa94'; cCtx.lineWidth = 1.2; cCtx.stroke();
+              // Edge darkening for 3D depth
+              cCtx.strokeStyle = xrayMode ? '#1a1a2a' : '#b89880';
+              cCtx.lineWidth = 1.4; cCtx.stroke();
+              // Inner highlight for roundness (subtle lighter stroke inset)
+              if (!xrayMode) {
+                cCtx.globalAlpha *= 0.3;
+                cCtx.beginPath(); pathFn(cCtx);
+                cCtx.strokeStyle = '#faf0e6';
+                cCtx.lineWidth = 0.5; cCtx.stroke();
+              }
               cCtx.restore();
             }
 
@@ -1374,6 +1393,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             }
             cCtx.restore();
 
+            // ── Anatomical shadow lines for 3D depth ──
+            if (!xrayMode) {
+              cCtx.save(); cCtx.globalAlpha = skinOpacity * 0.15;
+              // Under-chin shadow
+              cCtx.beginPath(); cCtx.moveTo(W * 0.465, H * 0.098); cCtx.quadraticCurveTo(W * 0.50, H * 0.105, W * 0.535, H * 0.098);
+              cCtx.strokeStyle = '#6d4c41'; cCtx.lineWidth = 1.5; cCtx.stroke();
+              // Clavicle shadow (suprasternal notch area)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.44, H * 0.135); cCtx.quadraticCurveTo(W * 0.50, H * 0.14, W * 0.56, H * 0.135);
+              cCtx.strokeStyle = '#8d6e63'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              // Axillary fold shadows (armpit creases)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.34, H * 0.155); cCtx.quadraticCurveTo(W * 0.33, H * 0.17, W * 0.34, H * 0.18);
+              cCtx.strokeStyle = '#8d6e63'; cCtx.lineWidth = 1; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.66, H * 0.155); cCtx.quadraticCurveTo(W * 0.67, H * 0.17, W * 0.66, H * 0.18); cCtx.stroke();
+              // Inguinal fold shadows (hip creases)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.43, H * 0.40); cCtx.quadraticCurveTo(W * 0.44, H * 0.42, W * 0.46, H * 0.43);
+              cCtx.strokeStyle = '#8d6e63'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.57, H * 0.40); cCtx.quadraticCurveTo(W * 0.56, H * 0.42, W * 0.54, H * 0.43); cCtx.stroke();
+              cCtx.restore();
+            }
+
             // ── Restore skin opacity ──
             cCtx.restore();
             cCtx.globalAlpha = 1.0;
@@ -1423,45 +1462,191 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.restore();
             }
 
-            // ── SKELETAL LAYER ── (X-ray: bright glow on dark background)
+            // ── SKELETAL LAYER ── (Enhanced anatomical bones with tapered shapes, fills, and detail)
             if (layerOn('skeletal') || xrayMode) {
               cCtx.save();
-              cCtx.globalAlpha = xrayMode ? 0.85 : 0.45;
+              cCtx.globalAlpha = xrayMode ? 0.85 : 0.50;
               if (xrayMode) { cCtx.shadowColor = '#e0f0ff'; cCtx.shadowBlur = 8; }
               var boneColor = xrayMode ? '#d0e8ff' : '#94a3b8';
-              var boneLW = xrayMode ? 1.3 : 1.0;
-              cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.10);
-              for (var si = 0; si < 18; si++) { var sy = H * (0.11 + si * 0.018); cCtx.lineTo(W * (0.50 + Math.sin(si * 0.3) * 0.003), sy); }
-              cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 3.5; cCtx.stroke();
-              for (var vi2 = 0; vi2 < 18; vi2++) { var vy2 = H * (0.11 + vi2 * 0.018); cCtx.beginPath(); cCtx.moveTo(W * 0.48, vy2); cCtx.lineTo(W * 0.52, vy2); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 2; cCtx.stroke(); }
+              var boneFill = xrayMode ? '#1a2a3a' : '#f5f0e8';
+              var boneStroke = xrayMode ? '#c0d8f0' : '#8895a0';
+              var boneHighlight = xrayMode ? '#e8f4ff' : '#e8e0d0';
+
+              // Helper: draw a tapered bone (wider at epiphyses, narrower at diaphysis)
+              function drawBone(x1, y1, x2, y2, w1, w2, wMid) {
+                if (wMid === undefined) wMid = Math.min(w1, w2) * 0.6;
+                var dx = x2 - x1, dy = y2 - y1;
+                var len = Math.sqrt(dx * dx + dy * dy);
+                var nx = -dy / len, ny = dx / len; // normal
+                var mx = (x1 + x2) * 0.5, my = (y1 + y2) * 0.5;
+                cCtx.beginPath();
+                cCtx.moveTo(x1 + nx * w1, y1 + ny * w1);
+                cCtx.quadraticCurveTo(mx + nx * wMid, my + ny * wMid, x2 + nx * w2, y2 + ny * w2);
+                cCtx.lineTo(x2 - nx * w2, y2 - ny * w2);
+                cCtx.quadraticCurveTo(mx - nx * wMid, my - ny * wMid, x1 - nx * w1, y1 - ny * w1);
+                cCtx.closePath();
+                var bGrad = cCtx.createLinearGradient(x1 + nx * w1, y1, x1 - nx * w1, y2);
+                bGrad.addColorStop(0, boneHighlight); bGrad.addColorStop(0.5, boneFill); bGrad.addColorStop(1, boneHighlight);
+                cCtx.fillStyle = bGrad; cCtx.fill();
+                cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.8; cCtx.stroke();
+              }
+
+              // ── Skull (cranium with mandible) ──
               cCtx.beginPath(); cCtx.arc(W * 0.50, H * 0.055, W * 0.046, 0, Math.PI * 2);
-              cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 2; cCtx.stroke();
-              for (var ri2 = 0; ri2 < 6; ri2++) { var ry2 = H * (0.175 + ri2 * 0.025); cCtx.beginPath(); cCtx.moveTo(W * 0.43, ry2); cCtx.quadraticCurveTo(W * 0.38, ry2 + H * 0.01, W * 0.36, ry2 + H * 0.005); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 1.3; cCtx.stroke(); cCtx.beginPath(); cCtx.moveTo(W * 0.57, ry2); cCtx.quadraticCurveTo(W * 0.62, ry2 + H * 0.01, W * 0.64, ry2 + H * 0.005); cCtx.stroke(); }
-              cCtx.beginPath(); cCtx.moveTo(W * 0.40, H * 0.39); cCtx.quadraticCurveTo(W * 0.36, H * 0.42, W * 0.38, H * 0.45); cCtx.quadraticCurveTo(W * 0.44, H * 0.46, W * 0.50, H * 0.44); cCtx.quadraticCurveTo(W * 0.56, H * 0.46, W * 0.62, H * 0.45); cCtx.quadraticCurveTo(W * 0.64, H * 0.42, W * 0.60, H * 0.39);
-              cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 2.5; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.42, H * 0.138); cCtx.quadraticCurveTo(W * 0.36, H * 0.132, W * 0.30, H * 0.145); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 2; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.58, H * 0.138); cCtx.quadraticCurveTo(W * 0.64, H * 0.132, W * 0.70, H * 0.145); cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.44, H * 0.46); cCtx.lineTo(W * 0.40, H * 0.66); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 2.5; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.56, H * 0.46); cCtx.lineTo(W * 0.60, H * 0.66); cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.40, H * 0.68); cCtx.lineTo(W * 0.37, H * 0.90); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 2; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.41, H * 0.68); cCtx.lineTo(W * 0.39, H * 0.90); cCtx.strokeStyle = '#b0bec5'; cCtx.lineWidth = 1.2; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.60, H * 0.68); cCtx.lineTo(W * 0.63, H * 0.90); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 2; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.59, H * 0.68); cCtx.lineTo(W * 0.61, H * 0.90); cCtx.strokeStyle = '#b0bec5'; cCtx.lineWidth = 1.2; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.30, H * 0.16); cCtx.lineTo(W * 0.22, H * 0.34); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 2; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.70, H * 0.16); cCtx.lineTo(W * 0.78, H * 0.34); cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.22, H * 0.35); cCtx.lineTo(W * 0.17, H * 0.46); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 1.5; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.23, H * 0.35); cCtx.lineTo(W * 0.18, H * 0.46); cCtx.strokeStyle = '#b0bec5'; cCtx.lineWidth = 1; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.78, H * 0.35); cCtx.lineTo(W * 0.83, H * 0.46); cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 1.5; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.77, H * 0.35); cCtx.lineTo(W * 0.82, H * 0.46); cCtx.strokeStyle = '#b0bec5'; cCtx.lineWidth = 1; cCtx.stroke();
+              var skullGrad = cCtx.createRadialGradient(W * 0.49, H * 0.048, W * 0.01, W * 0.50, H * 0.055, W * 0.046);
+              skullGrad.addColorStop(0, boneHighlight); skullGrad.addColorStop(1, boneFill);
+              cCtx.fillStyle = skullGrad; cCtx.fill();
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 1.5; cCtx.stroke();
+              // Eye sockets
+              cCtx.beginPath(); cCtx.ellipse(W * 0.48, H * 0.053, W * 0.008, H * 0.006, 0, 0, Math.PI * 2);
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.8; cCtx.stroke();
+              cCtx.beginPath(); cCtx.ellipse(W * 0.52, H * 0.053, W * 0.008, H * 0.006, 0, 0, Math.PI * 2); cCtx.stroke();
+              // Nasal aperture
+              cCtx.beginPath(); cCtx.moveTo(W * 0.498, H * 0.063); cCtx.lineTo(W * 0.494, H * 0.072); cCtx.lineTo(W * 0.506, H * 0.072); cCtx.closePath();
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.6; cCtx.stroke();
+              // Mandible (jawbone)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.455, H * 0.08);
+              cCtx.quadraticCurveTo(W * 0.46, H * 0.10, W * 0.475, H * 0.098);
+              cCtx.lineTo(W * 0.525, H * 0.098);
+              cCtx.quadraticCurveTo(W * 0.54, H * 0.10, W * 0.545, H * 0.08);
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 1.2; cCtx.stroke();
+              // Zygomatic arches (cheekbones)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.455, H * 0.06); cCtx.quadraticCurveTo(W * 0.44, H * 0.065, W * 0.45, H * 0.075);
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.7; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.545, H * 0.06); cCtx.quadraticCurveTo(W * 0.56, H * 0.065, W * 0.55, H * 0.075); cCtx.stroke();
+
+              // ── Clavicles (collarbones — new!) ──
+              cCtx.beginPath(); cCtx.moveTo(W * 0.47, H * 0.132);
+              cCtx.quadraticCurveTo(W * 0.42, H * 0.126, W * 0.34, H * 0.138);
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 2.2;
+              var clavGrad = cCtx.createLinearGradient(W * 0.47, H * 0.132, W * 0.34, H * 0.138);
+              clavGrad.addColorStop(0, boneHighlight); clavGrad.addColorStop(1, boneFill);
+              cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.53, H * 0.132);
+              cCtx.quadraticCurveTo(W * 0.58, H * 0.126, W * 0.66, H * 0.138);
+              cCtx.stroke();
+
+              // ── Spine (vertebral bodies) ──
+              for (var si = 0; si < 24; si++) {
+                var vy = H * (0.11 + si * 0.014);
+                var vSize = si < 7 ? 3.0 : si < 19 ? 3.5 : 2.8; // cervical < thoracic/lumbar < sacral
+                // Vertebral body (rounded rect)
+                cCtx.beginPath();
+                cCtx.roundRect(W * 0.50 - vSize, vy - 2, vSize * 2, 4, 1.5);
+                cCtx.fillStyle = boneFill; cCtx.fill();
+                cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.6; cCtx.stroke();
+                // Spinous process
+                cCtx.beginPath(); cCtx.moveTo(W * 0.50, vy); cCtx.lineTo(W * 0.50, vy + 3);
+                cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.5; cCtx.stroke();
+              }
+              // Sacrum
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.485, H * 0.44); cCtx.lineTo(W * 0.515, H * 0.44);
+              cCtx.lineTo(W * 0.51, H * 0.46); cCtx.lineTo(W * 0.49, H * 0.46); cCtx.closePath();
+              cCtx.fillStyle = boneFill; cCtx.fill(); cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.7; cCtx.stroke();
+
+              // ── Ribs (curved, with costal cartilage) ──
+              for (var ri2 = 0; ri2 < 12; ri2++) {
+                var ry2 = H * (0.155 + ri2 * 0.018);
+                var ribWidth = ri2 < 7 ? 1.2 : 0.8; // true ribs wider, false ribs thinner
+                var ribExtent = ri2 < 7 ? 0.16 : ri2 < 10 ? 0.14 : 0.08; // floating ribs shorter
+                // Left rib
+                cCtx.beginPath(); cCtx.moveTo(W * 0.48, ry2);
+                cCtx.quadraticCurveTo(W * (0.48 - ribExtent * 0.6), ry2 + H * 0.008, W * (0.48 - ribExtent), ry2 + H * 0.003);
+                cCtx.strokeStyle = boneColor; cCtx.lineWidth = ribWidth; cCtx.stroke();
+                // Right rib
+                cCtx.beginPath(); cCtx.moveTo(W * 0.52, ry2);
+                cCtx.quadraticCurveTo(W * (0.52 + ribExtent * 0.6), ry2 + H * 0.008, W * (0.52 + ribExtent), ry2 + H * 0.003);
+                cCtx.stroke();
+                // Costal cartilage (dashed, connecting ribs 1-7 to sternum)
+                if (ri2 < 7) {
+                  cCtx.save(); cCtx.setLineDash([2, 2]);
+                  cCtx.beginPath(); cCtx.moveTo(W * 0.48, ry2); cCtx.lineTo(W * 0.49, ry2 + H * 0.005);
+                  cCtx.strokeStyle = '#b0bec580'; cCtx.lineWidth = 0.5; cCtx.stroke();
+                  cCtx.beginPath(); cCtx.moveTo(W * 0.52, ry2); cCtx.lineTo(W * 0.51, ry2 + H * 0.005); cCtx.stroke();
+                  cCtx.restore();
+                }
+              }
+              // Sternum
+              drawBone(W * 0.50, H * 0.14, W * 0.50, H * 0.30, 3.5, 2.5, 2);
+
+              // ── Pelvis (iliac crests, pubic symphysis) ──
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.40, H * 0.39);
+              cCtx.quadraticCurveTo(W * 0.36, H * 0.41, W * 0.37, H * 0.44);
+              cCtx.quadraticCurveTo(W * 0.40, H * 0.46, W * 0.46, H * 0.455);
+              cCtx.lineTo(W * 0.50, H * 0.46);
+              cCtx.lineTo(W * 0.54, H * 0.455);
+              cCtx.quadraticCurveTo(W * 0.60, H * 0.46, W * 0.63, H * 0.44);
+              cCtx.quadraticCurveTo(W * 0.64, H * 0.41, W * 0.60, H * 0.39);
+              var pelvisGrad = cCtx.createLinearGradient(W * 0.36, H * 0.39, W * 0.64, H * 0.46);
+              pelvisGrad.addColorStop(0, boneHighlight); pelvisGrad.addColorStop(0.5, boneFill); pelvisGrad.addColorStop(1, boneHighlight);
+              cCtx.fillStyle = pelvisGrad; cCtx.fill();
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 1.8; cCtx.stroke();
+              // Obturator foramina
+              cCtx.beginPath(); cCtx.ellipse(W * 0.44, H * 0.445, W * 0.015, H * 0.01, 0, 0, Math.PI * 2);
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.6; cCtx.stroke();
+              cCtx.beginPath(); cCtx.ellipse(W * 0.56, H * 0.445, W * 0.015, H * 0.01, 0, 0, Math.PI * 2); cCtx.stroke();
+
+              // ── Scapulae (shoulder blades — visible in both views) ──
+              cCtx.beginPath(); cCtx.moveTo(W * 0.42, H * 0.138);
+              cCtx.quadraticCurveTo(W * 0.36, H * 0.132, W * 0.30, H * 0.145);
+              cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 1.5; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.58, H * 0.138);
+              cCtx.quadraticCurveTo(W * 0.64, H * 0.132, W * 0.70, H * 0.145); cCtx.stroke();
+
+              // ── Long bones: tapered with joint bulges ──
+              // Femurs (thigh) — widest bones
+              drawBone(W * 0.44, H * 0.46, W * 0.40, H * 0.66, 5, 4.5, 3);
+              drawBone(W * 0.56, H * 0.46, W * 0.60, H * 0.66, 5, 4.5, 3);
+              // Patellae (kneecaps — new!)
+              cCtx.beginPath(); cCtx.ellipse(W * 0.395, H * 0.675, 4, 5, 0, 0, Math.PI * 2);
+              cCtx.fillStyle = boneFill; cCtx.fill(); cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.8; cCtx.stroke();
+              cCtx.beginPath(); cCtx.ellipse(W * 0.605, H * 0.675, 4, 5, 0, 0, Math.PI * 2);
+              cCtx.fillStyle = boneFill; cCtx.fill(); cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.8; cCtx.stroke();
+              // Tibia + Fibula (lower leg — two parallel bones)
+              drawBone(W * 0.40, H * 0.69, W * 0.37, H * 0.90, 4, 3, 2.2);
+              drawBone(W * 0.41, H * 0.69, W * 0.39, H * 0.90, 2, 1.5, 1);
+              drawBone(W * 0.60, H * 0.69, W * 0.63, H * 0.90, 4, 3, 2.2);
+              drawBone(W * 0.59, H * 0.69, W * 0.61, H * 0.90, 2, 1.5, 1);
+              // Humerus (upper arm)
+              drawBone(W * 0.30, H * 0.16, W * 0.22, H * 0.34, 4, 3.5, 2.5);
+              drawBone(W * 0.70, H * 0.16, W * 0.78, H * 0.34, 4, 3.5, 2.5);
+              // Radius + Ulna (forearm — two parallel bones)
+              drawBone(W * 0.22, H * 0.35, W * 0.17, H * 0.46, 3, 2.5, 1.5);
+              drawBone(W * 0.23, H * 0.35, W * 0.18, H * 0.46, 2, 1.5, 1);
+              drawBone(W * 0.78, H * 0.35, W * 0.83, H * 0.46, 3, 2.5, 1.5);
+              drawBone(W * 0.77, H * 0.35, W * 0.82, H * 0.46, 2, 1.5, 1);
+
+              // ── Posterior view extras ──
               if (view === 'posterior') {
+                // Scapulae (triangle shape — more prominent from back)
                 cCtx.beginPath(); cCtx.moveTo(W * 0.40, H * 0.16); cCtx.lineTo(W * 0.37, H * 0.24); cCtx.lineTo(W * 0.44, H * 0.26); cCtx.closePath();
-                cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 1.5; cCtx.stroke();
-                cCtx.beginPath(); cCtx.moveTo(W * 0.60, H * 0.16); cCtx.lineTo(W * 0.63, H * 0.24); cCtx.lineTo(W * 0.56, H * 0.26); cCtx.closePath(); cCtx.stroke();
+                cCtx.fillStyle = boneFill; cCtx.fill();
+                cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 1.2; cCtx.stroke();
+                // Scapular spine
+                cCtx.beginPath(); cCtx.moveTo(W * 0.40, H * 0.175); cCtx.lineTo(W * 0.44, H * 0.20);
+                cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.8; cCtx.stroke();
+                cCtx.beginPath(); cCtx.moveTo(W * 0.60, H * 0.16); cCtx.lineTo(W * 0.63, H * 0.24); cCtx.lineTo(W * 0.56, H * 0.26); cCtx.closePath();
+                cCtx.fillStyle = boneFill; cCtx.fill();
+                cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 1.2; cCtx.stroke();
+                cCtx.beginPath(); cCtx.moveTo(W * 0.60, H * 0.175); cCtx.lineTo(W * 0.56, H * 0.20); cCtx.stroke();
               }
               cCtx.restore();
             }
 
-            // ── MUSCULAR LAYER ──
+            // ── MUSCULAR LAYER (with fiber texturing) ──
+            // Helper: draw muscle fiber lines inside a muscle shape (must call after filling the muscle path)
+            function drawFibers(cx, cy, rx, ry, angle, count) {
+              cCtx.save(); cCtx.globalAlpha = 0.15;
+              cCtx.translate(cx, cy); cCtx.rotate(angle || 0);
+              for (var fi = 0; fi < (count || 4); fi++) {
+                var offset = (fi - (count || 4) / 2 + 0.5) * (rx * 0.35);
+                cCtx.beginPath(); cCtx.moveTo(offset, -ry * 0.8); cCtx.lineTo(offset, ry * 0.8);
+                cCtx.strokeStyle = '#991b1b'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              }
+              cCtx.restore();
+            }
             if (layerOn('muscular')) {
               cCtx.save(); cCtx.globalAlpha = 0.40;
               if (view === 'posterior') {
@@ -1506,31 +1691,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               }
               cCtx.beginPath(); cCtx.ellipse(W * 0.38, H * 0.77, W * 0.018, H * 0.04, 0.05, 0, Math.PI * 2); cCtx.fillStyle = '#fecaca'; cCtx.fill(); cCtx.strokeStyle = '#dc2626'; cCtx.lineWidth = 0.8; cCtx.stroke();
               cCtx.beginPath(); cCtx.ellipse(W * 0.62, H * 0.77, W * 0.018, H * 0.04, -0.05, 0, Math.PI * 2); cCtx.fillStyle = '#fecaca'; cCtx.fill(); cCtx.strokeStyle = '#dc2626'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              // ── Muscle fiber textures (directional striations) ──
+              if (view !== 'posterior') {
+                // Pectorals — diagonal fibers
+                drawFibers(W * 0.43, H * 0.17, W * 0.06, H * 0.03, -0.3, 5);
+                drawFibers(W * 0.57, H * 0.17, W * 0.06, H * 0.03, 0.3, 5);
+                // Deltoids — vertical fibers
+                drawFibers(W * 0.30, H * 0.16, W * 0.02, H * 0.025, -0.3, 3);
+                drawFibers(W * 0.70, H * 0.16, W * 0.02, H * 0.025, 0.3, 3);
+                // Quadriceps — vertical fibers
+                drawFibers(W * 0.41, H * 0.54, W * 0.028, H * 0.07, 0.08, 5);
+                drawFibers(W * 0.59, H * 0.54, W * 0.028, H * 0.07, -0.08, 5);
+                // Biceps — vertical fibers along arm angle
+                drawFibers(W * 0.25, H * 0.27, W * 0.016, H * 0.035, 0.5, 3);
+                drawFibers(W * 0.75, H * 0.27, W * 0.016, H * 0.035, -0.5, 3);
+              }
+              // Calves — vertical fibers
+              drawFibers(W * 0.38, H * 0.77, W * 0.018, H * 0.04, 0.05, 3);
+              drawFibers(W * 0.62, H * 0.77, W * 0.018, H * 0.04, -0.05, 3);
               cCtx.restore();
             }
 
-            // ── ORGAN LAYER (with breathing animation) ──
+            // ── ORGAN LAYER (with breathing animation + enhanced anatomical detail) ──
             if (layerOn('organs')) {
-              cCtx.save(); cCtx.globalAlpha = 0.50;
+              cCtx.save(); cCtx.globalAlpha = 0.55;
               var breathCycle = 1.0 + Math.sin(anatTick * 0.03) * 0.06;
-              cCtx.save(); cCtx.translate(W * 0.42, H * 0.22); cCtx.scale(breathCycle, breathCycle);
-              cCtx.beginPath(); cCtx.ellipse(0, 0, W * 0.055, H * 0.055, 0, 0, Math.PI * 2); cCtx.fillStyle = '#bfdbfe'; cCtx.fill(); cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 1; cCtx.stroke();
-              cCtx.restore();
-              cCtx.save(); cCtx.translate(W * 0.58, H * 0.22); cCtx.scale(breathCycle, breathCycle);
-              cCtx.beginPath(); cCtx.ellipse(0, 0, W * 0.055, H * 0.055, 0, 0, Math.PI * 2); cCtx.fillStyle = '#bfdbfe'; cCtx.fill(); cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 1; cCtx.stroke();
-              cCtx.restore();
-              cCtx.beginPath();
+
+              // ── Lungs (anatomical shape: wider base, narrower apex, medial cardiac notch) ──
+              function drawLung(cx, cy, flipX) {
+                var s = flipX ? -1 : 1;
+                cCtx.save(); cCtx.translate(cx, cy); cCtx.scale(breathCycle, breathCycle);
+                cCtx.beginPath();
+                cCtx.moveTo(0, -H * 0.04); // apex
+                cCtx.quadraticCurveTo(s * W * 0.06, -H * 0.035, s * W * 0.065, H * 0.01); // lateral wall
+                cCtx.quadraticCurveTo(s * W * 0.06, H * 0.05, s * W * 0.01, H * 0.055); // base
+                cCtx.quadraticCurveTo(0, H * 0.04, 0, H * 0.01); // medial wall (cardiac notch on left)
+                cCtx.closePath();
+                var lungGrad = cCtx.createRadialGradient(s * W * 0.02, 0, W * 0.01, s * W * 0.02, 0, W * 0.07);
+                lungGrad.addColorStop(0, '#dbeafe'); lungGrad.addColorStop(1, '#93c5fd40');
+                cCtx.fillStyle = lungGrad; cCtx.fill();
+                cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 1; cCtx.stroke();
+                // Bronchial branches inside lung
+                cCtx.globalAlpha = 0.3;
+                cCtx.beginPath(); cCtx.moveTo(0, -H * 0.01); cCtx.lineTo(s * W * 0.03, H * 0.02);
+                cCtx.moveTo(s * W * 0.015, H * 0.005); cCtx.lineTo(s * W * 0.04, -H * 0.01);
+                cCtx.moveTo(s * W * 0.015, H * 0.005); cCtx.lineTo(s * W * 0.045, H * 0.035);
+                cCtx.moveTo(s * W * 0.03, H * 0.02); cCtx.lineTo(s * W * 0.05, H * 0.01);
+                cCtx.strokeStyle = '#60a5fa'; cCtx.lineWidth = 0.6; cCtx.stroke();
+                cCtx.globalAlpha = 0.55;
+                // Lobe fissures
+                cCtx.beginPath(); cCtx.moveTo(0, H * 0.005);
+                cCtx.quadraticCurveTo(s * W * 0.03, H * 0.01, s * W * 0.06, H * 0.02);
+                cCtx.strokeStyle = '#3b82f660'; cCtx.lineWidth = 0.5; cCtx.stroke();
+                cCtx.restore();
+              }
+              drawLung(W * 0.42, H * 0.22, false); // left lung
+              drawLung(W * 0.58, H * 0.22, true);  // right lung
+
+              // ── Heart (with chamber detail) ──
               var hx = W * 0.50, hy = H * 0.24;
+              cCtx.beginPath();
               cCtx.moveTo(hx, hy + 6); cCtx.bezierCurveTo(hx - 8, hy - 4, hx - 14, hy, hx - 14, hy + 6); cCtx.bezierCurveTo(hx - 14, hy + 12, hx - 4, hy + 18, hx, hy + 22); cCtx.bezierCurveTo(hx + 4, hy + 18, hx + 14, hy + 12, hx + 14, hy + 6); cCtx.bezierCurveTo(hx + 14, hy, hx + 8, hy - 4, hx, hy + 6);
-              cCtx.fillStyle = '#fca5a5'; cCtx.fill(); cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 1; cCtx.stroke();
-              cCtx.beginPath(); cCtx.ellipse(W * 0.56, H * 0.30, W * 0.045, H * 0.028, 0.2, 0, Math.PI * 2); cCtx.fillStyle = '#a1887f'; cCtx.fill(); cCtx.strokeStyle = '#795548'; cCtx.lineWidth = 0.8; cCtx.stroke();
-              cCtx.beginPath(); cCtx.ellipse(W * 0.47, H * 0.31, W * 0.032, H * 0.028, -0.3, 0, Math.PI * 2); cCtx.fillStyle = '#c8e6c9'; cCtx.fill(); cCtx.strokeStyle = '#43a047'; cCtx.lineWidth = 0.8; cCtx.stroke();
-              cCtx.beginPath(); cCtx.ellipse(W * 0.43, H * 0.35, W * 0.015, H * 0.02, 0, 0, Math.PI * 2); cCtx.fillStyle = '#ef9a9a'; cCtx.fill(); cCtx.strokeStyle = '#c62828'; cCtx.lineWidth = 0.7; cCtx.stroke();
-              cCtx.beginPath(); cCtx.ellipse(W * 0.57, H * 0.35, W * 0.015, H * 0.02, 0, 0, Math.PI * 2); cCtx.fillStyle = '#ef9a9a'; cCtx.fill(); cCtx.strokeStyle = '#c62828'; cCtx.lineWidth = 0.7; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.44, H * 0.35);
-              for (var ii = 0; ii < 8; ii++) { cCtx.lineTo(W * (0.44 + (ii % 2 === 0 ? 0.06 : 0)), H * (0.36 + ii * 0.01)); }
+              var heartGrad = cCtx.createRadialGradient(hx - 2, hy + 8, 2, hx, hy + 10, 16);
+              heartGrad.addColorStop(0, '#fca5a5'); heartGrad.addColorStop(1, '#ef444480');
+              cCtx.fillStyle = heartGrad; cCtx.fill(); cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 1; cCtx.stroke();
+              // Interventricular septum
+              cCtx.beginPath(); cCtx.moveTo(hx, hy + 4); cCtx.lineTo(hx + 1, hy + 20);
+              cCtx.strokeStyle = '#dc262660'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              // Aortic arch
+              cCtx.beginPath(); cCtx.moveTo(hx + 2, hy + 3);
+              cCtx.quadraticCurveTo(hx + 6, hy - 6, hx + 14, hy - 4);
+              cCtx.quadraticCurveTo(hx + 18, hy - 2, hx + 16, hy + 6);
+              cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 2; cCtx.stroke();
+
+              // ── Liver (right lobe larger, left lobe smaller, falciform ligament) ──
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.52, H * 0.295); // midline
+              cCtx.quadraticCurveTo(W * 0.58, H * 0.29, W * 0.62, H * 0.30);
+              cCtx.quadraticCurveTo(W * 0.63, H * 0.32, W * 0.58, H * 0.33);
+              cCtx.quadraticCurveTo(W * 0.54, H * 0.335, W * 0.52, H * 0.325);
+              cCtx.closePath();
+              cCtx.fillStyle = '#a1887f'; cCtx.fill(); cCtx.strokeStyle = '#795548'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              // Left lobe (smaller)
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.52, H * 0.295);
+              cCtx.quadraticCurveTo(W * 0.48, H * 0.29, W * 0.46, H * 0.305);
+              cCtx.quadraticCurveTo(W * 0.48, H * 0.32, W * 0.52, H * 0.325);
+              cCtx.closePath();
+              cCtx.fillStyle = '#8d6e63'; cCtx.fill(); cCtx.strokeStyle = '#795548'; cCtx.lineWidth = 0.6; cCtx.stroke();
+              // Falciform ligament
+              cCtx.beginPath(); cCtx.moveTo(W * 0.52, H * 0.295); cCtx.lineTo(W * 0.52, H * 0.325);
+              cCtx.strokeStyle = '#5d4037'; cCtx.lineWidth = 0.5; cCtx.stroke();
+
+              // ── Stomach (with rugae folds + greater/lesser curvature) ──
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.48, H * 0.30); // cardia
+              cCtx.quadraticCurveTo(W * 0.44, H * 0.305, W * 0.425, H * 0.33); // greater curvature
+              cCtx.quadraticCurveTo(W * 0.43, H * 0.355, W * 0.46, H * 0.36); // pylorus
+              cCtx.quadraticCurveTo(W * 0.48, H * 0.35, W * 0.48, H * 0.33); // lesser curvature
+              cCtx.quadraticCurveTo(W * 0.48, H * 0.31, W * 0.48, H * 0.30);
+              var stomGrad = cCtx.createLinearGradient(W * 0.42, H * 0.30, W * 0.48, H * 0.36);
+              stomGrad.addColorStop(0, '#c8e6c9'); stomGrad.addColorStop(1, '#a5d6a780');
+              cCtx.fillStyle = stomGrad; cCtx.fill(); cCtx.strokeStyle = '#43a047'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              // Rugae folds (wavy internal lines)
+              cCtx.save(); cCtx.globalAlpha = 0.25;
+              for (var rgi = 0; rgi < 3; rgi++) {
+                var rgY = H * (0.315 + rgi * 0.012);
+                cCtx.beginPath(); cCtx.moveTo(W * 0.44, rgY);
+                cCtx.quadraticCurveTo(W * 0.45, rgY - H * 0.003, W * 0.46, rgY);
+                cCtx.quadraticCurveTo(W * 0.47, rgY + H * 0.003, W * 0.48, rgY);
+                cCtx.strokeStyle = '#388e3c'; cCtx.lineWidth = 0.4; cCtx.stroke();
+              }
+              cCtx.restore();
+
+              // ── Kidneys ──
+              cCtx.beginPath(); cCtx.ellipse(W * 0.43, H * 0.35, W * 0.015, H * 0.022, 0, 0, Math.PI * 2);
+              var kidneyGrad = cCtx.createRadialGradient(W * 0.43, H * 0.35, 1, W * 0.43, H * 0.35, W * 0.015);
+              kidneyGrad.addColorStop(0, '#ef9a9a'); kidneyGrad.addColorStop(1, '#c6282880');
+              cCtx.fillStyle = kidneyGrad; cCtx.fill(); cCtx.strokeStyle = '#c62828'; cCtx.lineWidth = 0.7; cCtx.stroke();
+              // Kidney hilum notch
+              cCtx.beginPath(); cCtx.arc(W * 0.44, H * 0.35, 2, -0.5, 0.5); cCtx.strokeStyle = '#b71c1c'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              cCtx.beginPath(); cCtx.ellipse(W * 0.57, H * 0.35, W * 0.015, H * 0.022, 0, 0, Math.PI * 2);
+              cCtx.fillStyle = kidneyGrad; cCtx.fill(); cCtx.strokeStyle = '#c62828'; cCtx.lineWidth = 0.7; cCtx.stroke();
+              cCtx.beginPath(); cCtx.arc(W * 0.56, H * 0.35, 2, Math.PI - 0.5, Math.PI + 0.5); cCtx.strokeStyle = '#b71c1c'; cCtx.lineWidth = 0.5; cCtx.stroke();
+
+              // ── Small intestine (more coils) ──
+              cCtx.beginPath(); cCtx.moveTo(W * 0.44, H * 0.36);
+              for (var ii = 0; ii < 10; ii++) { cCtx.lineTo(W * (0.44 + (ii % 2 === 0 ? 0.07 : 0.01)), H * (0.365 + ii * 0.007)); }
               cCtx.strokeStyle = '#66bb6a'; cCtx.lineWidth = 1.5; cCtx.stroke();
-              cCtx.beginPath(); cCtx.ellipse(W * 0.50, H * 0.43, W * 0.02, H * 0.015, 0, 0, Math.PI * 2); cCtx.fillStyle = '#ffe082'; cCtx.fill(); cCtx.strokeStyle = '#ffa000'; cCtx.lineWidth = 0.7; cCtx.stroke();
+
+              // ── Bladder ──
+              cCtx.beginPath(); cCtx.ellipse(W * 0.50, H * 0.43, W * 0.02, H * 0.015, 0, 0, Math.PI * 2);
+              var bladGrad = cCtx.createRadialGradient(W * 0.50, H * 0.428, 1, W * 0.50, H * 0.43, W * 0.02);
+              bladGrad.addColorStop(0, '#fff9c4'); bladGrad.addColorStop(1, '#ffe08280');
+              cCtx.fillStyle = bladGrad; cCtx.fill(); cCtx.strokeStyle = '#ffa000'; cCtx.lineWidth = 0.7; cCtx.stroke();
               cCtx.restore();
             }
 
@@ -2027,7 +2321,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               }
             });
 
-            // ── Hover tooltip ──
+            // ── Hover tooltip (enhanced callout with leader line) ──
             if (hoverStructure && (!sel || hoverStructure !== sel.id)) {
               var hSt = null;
               for (var hsi = 0; hsi < filtered.length; hsi++) {
@@ -2035,16 +2329,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               }
               if (hSt) {
                 cCtx.save();
+                var pinX = hSt.x * W, pinY = hSt.y * H;
+                // Determine label position (prefer right, fall back to left if near edge)
+                var labelOnRight = pinX < W * 0.65;
+                var offsetX = labelOnRight ? 20 : -20;
+
+                // Structure name
                 cCtx.font = 'bold 9px Inter, system-ui, sans-serif';
                 var htw = cCtx.measureText(hSt.name).width;
-                var htx = hoverX * W + 12;
-                var hty = hoverY * H - 10;
-                if (htx + htw + 12 > W) htx = hoverX * W - htw - 18;
-                if (hty < 12) hty = hoverY * H + 16;
-                cCtx.beginPath(); cCtx.roundRect(htx - 4, hty - 10, htw + 10, 15, 3);
-                cCtx.fillStyle = 'rgba(0,0,0,0.75)'; cCtx.fill();
+                // Brief function text (first 40 chars)
+                var briefFn = hSt.fn ? hSt.fn.substring(0, 45) : '';
+                if (briefFn.length >= 45) briefFn = briefFn.substring(0, briefFn.lastIndexOf(' ')) + '...';
+                cCtx.font = '7px Inter, system-ui, sans-serif';
+                var fnW = briefFn ? cCtx.measureText(briefFn).width : 0;
+                var boxW = Math.max(htw, fnW) + 14;
+                var boxH = briefFn ? 28 : 16;
+
+                var htx = labelOnRight ? pinX + offsetX : pinX - offsetX - boxW;
+                var hty = pinY - boxH / 2;
+                if (hty < 4) hty = 4;
+                if (hty + boxH > H - 4) hty = H - boxH - 4;
+
+                // Leader line from pin to label box
+                cCtx.beginPath();
+                cCtx.moveTo(pinX, pinY);
+                cCtx.lineTo(labelOnRight ? htx : htx + boxW, hty + boxH / 2);
+                cCtx.strokeStyle = sys.accent + '80'; cCtx.lineWidth = 1; cCtx.stroke();
+
+                // Pin dot
+                cCtx.beginPath(); cCtx.arc(pinX, pinY, 3, 0, Math.PI * 2);
+                cCtx.fillStyle = sys.accent; cCtx.fill();
+
+                // Label callout box
+                cCtx.beginPath(); cCtx.roundRect(htx, hty, boxW, boxH, 4);
+                cCtx.fillStyle = 'rgba(15,23,42,0.85)'; cCtx.fill();
+                cCtx.strokeStyle = sys.accent + '60'; cCtx.lineWidth = 0.8; cCtx.stroke();
+
+                // Structure name text
+                cCtx.font = 'bold 9px Inter, system-ui, sans-serif';
                 cCtx.fillStyle = '#fff'; cCtx.textAlign = 'left';
-                cCtx.fillText(hSt.name, htx, hty);
+                cCtx.fillText(hSt.name, htx + 6, hty + 11);
+
+                // Brief function text
+                if (briefFn) {
+                  cCtx.font = '7px Inter, system-ui, sans-serif';
+                  cCtx.fillStyle = '#94a3b8';
+                  cCtx.fillText(briefFn, htx + 6, hty + 22);
+                }
                 cCtx.restore();
               }
             }
@@ -2771,8 +3102,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-4', style: { alignItems: 'flex-start' } },
               // Canvas
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-shrink-0' },
-                h('canvas', {
-                  ref: canvasRef, width: 360, height: 520,
+                h('canvas', { 'aria-label': 'Anatomy visualization',
+                  ref: canvasRef,
                   onClick: handleClick,
                   onMouseMove: handleMouseMove,
                   onMouseLeave: function() { upd('_hoverStructure', null); },

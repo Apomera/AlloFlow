@@ -497,7 +497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         return el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
           el('span', { style: { fontSize: 16, width: 24, textAlign: 'center' } }, emoji),
           el('span', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', width: 60 } }, label),
-          el('input', { type: 'range', min: 0, max: 100, value: value, onChange: onChange,
+          el('input', { type: 'range', 'aria-label': 'value', min: 0, max: 100, value: value, onChange: onChange,
             'aria-label': label + ' slider',
             style: { flex: 1, accentColor: color, height: 6 } }),
           el('span', { style: { fontSize: 13, fontWeight: 900, color: color, width: 40, textAlign: 'right', fontFamily: 'monospace' } }, value + '%')

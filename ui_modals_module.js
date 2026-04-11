@@ -1,5 +1,7 @@
 (function() {
 'use strict';
+  // WCAG 2.1 AA: Accessibility CSS
+  if (!document.getElementById("ui-modals-module-a11y")) { var _s = document.createElement("style"); _s.id = "ui-modals-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.UIModalsModule) { console.log('[CDN] UIModalsModule already loaded, skipping'); return; }
 // ui_modals_source.jsx — StudentQuizOverlay, TeacherGate, RoleSelectionModal, StudentEntryModal, StudentWelcomeModal
 // Extracted from AlloFlowANTI.txt for CDN modularization

@@ -6,6 +6,32 @@
 (function () {
   'use strict';
 
+  // WCAG 2.1 AA: Accessibility CSS injection
+  if (!document.getElementById('sa-a11y-css')) {
+    var saA11yStyle = document.createElement('style');
+    saA11yStyle.id = 'sa-a11y-css';
+    saA11yStyle.textContent = [
+      '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+      '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 textarea:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
+      '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
+      '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
+      '.fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }',
+    ].join('\n');
+    document.head.appendChild(saA11yStyle);
+  }
+
+  // WCAG 4.1.3: Live region for screen reader announcements
+  if (!document.getElementById('allo-live-analytics')) {
+    var saLive = document.createElement('div');
+    saLive.id = 'allo-live-analytics';
+    saLive.setAttribute('aria-live', 'polite');
+    saLive.setAttribute('aria-atomic', 'true');
+    saLive.setAttribute('role', 'status');
+    saLive.className = 'sr-only';
+    saLive.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(saLive);
+  }
+
   // Ensure React and ReactDOM are available
   var React = window.React;
   var ReactDOM = window.ReactDOM;

@@ -9,6 +9,14 @@
  */
 (function() {
   'use strict';
+  // WCAG 2.1 AA: Accessibility CSS injection
+  if (!document.getElementById('adv-a11y-css')) {
+    var advA11yStyle = document.createElement('style');
+    advA11yStyle.id = 'adv-a11y-css';
+    advA11yStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }';
+    document.head.appendChild(advA11yStyle);
+  }
+
   // Pixelated image rendering style (used for adventure pixel art)
   var STYLE_IMAGE_PIXELATED = { imageRendering: 'pixelated' };
   // Fallback: define ADVENTURE_SHOP_ITEMS if not available from main app

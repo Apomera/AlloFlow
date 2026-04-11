@@ -326,7 +326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     else return;
                     upd('inspectLayer', layers[nextIdx].id);
                   },
-                  className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-amber-500 text-white' : 'bg-amber-800/50 text-amber-300 hover:bg-amber-700/50')
+                  className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-amber-700 text-white' : 'bg-amber-800/50 text-amber-300 hover:bg-amber-700/50')
                 }, h('span', { 'aria-hidden': 'true' }, l.emoji), l.label);
               })),
 
@@ -861,7 +861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // ═══ ANIMATED CANVAS SIMULATION ═══
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg', style: { height: '300px' } },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Beehive colony visualization',
               ref: _cvRef,
               role: 'img',
               'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],

@@ -1530,6 +1530,18 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: 2px solid #6366f1 !important;
   outline-offset: 2px !important;
 }
+/* WCAG 2.3.3: Disable ALL animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .pulse-history { animation: none !important; }
+  .animate-wind-streak { animation: none !important; }
+}
+/* WCAG 1.4.3: Contrast fixes */
+.text-slate-400 { color: #64748b !important; }
 `), /* @__PURE__ */ React.createElement(
     "div",
     {

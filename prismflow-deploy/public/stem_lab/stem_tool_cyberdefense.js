@@ -921,7 +921,7 @@
                 // Caesar shift control
                 cipherMode === 'caesar' && el('div', { style: { marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
                   el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600 } }, 'Shift:'),
-                  el('input', { type: 'range', min: 1, max: 25, value: caesarShift, onChange: function(e) { upd('caesarShift', parseInt(e.target.value)); },
+                  el('input', { type: 'range', 'aria-label': 'caesar shift', min: 1, max: 25, value: caesarShift, onChange: function(e) { upd('caesarShift', parseInt(e.target.value)); },
                     style: { width: 180, accentColor: '#6366f1' } }),
                   el('span', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, fontFamily: 'monospace', minWidth: 28, textAlign: 'center' } }, caesarShift)
                 ),

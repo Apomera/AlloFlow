@@ -813,7 +813,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-sky-400 font-mono' }, (dims[sl.key] || sl.min).toFixed(sl.step < 1 ? 1 : 0))
                   ),
                   h('input', {
-                    type: 'range',
+                    type: 'range', 'aria-label': 'Geosandbox slider',
                     min: sl.min,
                     max: sl.max,
                     step: sl.step,
@@ -859,7 +859,7 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'text-sky-400 font-mono' }, Math.round(opacity * 100) + '%')
                 ),
                 h('input', {
-                  type: 'range', min: 0.1, max: 1, step: 0.05,
+                  type: 'range', 'aria-label': 'Geosandbox slider', min: 0.1, max: 1, step: 0.05,
                   value: opacity,
                   onChange: function(e) { upd('opacity', parseFloat(e.target.value)); },
                   'aria-label': 'Shape opacity',
@@ -920,7 +920,7 @@ window.StemLab = window.StemLab || {
 
           // === THREE.JS VIEWPORT ===
           h('div', { className: 'flex-1 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden relative', style: { minHeight: '400px' } },
-            h('canvas', {
+            h('canvas', { 'aria-label': 'Geosandbox visualization',
               id: 'geo-sandbox-canvas',
               'aria-label': 'Interactive geology sandbox 3D visualization', tabIndex: 0,
               className: 'w-full h-full',

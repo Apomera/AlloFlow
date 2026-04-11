@@ -1929,7 +1929,7 @@ var d = labToolData || {};
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Inflation Rate (%)'),
-                    React.createElement('input', { type: 'range', min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
+                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
                       onChange: function(e) { upd('inflationRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
@@ -1937,7 +1937,7 @@ var d = labToolData || {};
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Years'),
-                    React.createElement('input', { type: 'range', min: 1, max: 50, value: d.inflationYears || 20,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Years', min: 1, max: 50, value: d.inflationYears || 20,
                       onChange: function(e) { upd('inflationYears', parseInt(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
@@ -2031,21 +2031,21 @@ var d = labToolData || {};
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Starting Amount: $' + (d.pfPrincipal || 1000).toLocaleString()),
-                    React.createElement('input', { type: 'range', min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
+                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
                       onChange: function(e) { upd('pfPrincipal', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Annual Return: ' + (d.pfRate || 7) + '%'),
-                    React.createElement('input', { type: 'range', min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
+                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
                       onChange: function(e) { upd('pfRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Years: ' + (d.pfYears || 30)),
-                    React.createElement('input', { type: 'range', min: 1, max: 50, value: d.pfYears || 30,
+                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 1, max: 50, value: d.pfYears || 30,
                       onChange: function(e) { upd('pfYears', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
@@ -2505,7 +2505,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', min: -5, max: 5, value: sdDemandShift,
+                    type: 'range', 'aria-label': 'sd demand shift', min: -5, max: 5, value: sdDemandShift,
 
                     onChange: function (e) { upd('sdDemandShift', parseInt(e.target.value)); },
 
@@ -2517,7 +2517,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', min: -5, max: 5, value: sdSupplyShift,
+                    type: 'range', 'aria-label': 'sd supply shift', min: -5, max: 5, value: sdSupplyShift,
 
                     onChange: function (e) { upd('sdSupplyShift', parseInt(e.target.value)); },
 
@@ -2535,7 +2535,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', min: 0, max: 90, value: sdPriceFloor,
+                    type: 'range', 'aria-label': 'sd price floor', min: 0, max: 90, value: sdPriceFloor,
 
                     onChange: function (e) { upd('sdPriceFloor', parseInt(e.target.value)); },
 
@@ -2547,7 +2547,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', min: 0, max: 90, value: sdPriceCeiling,
+                    type: 'range', 'aria-label': 'sd price ceiling', min: 0, max: 90, value: sdPriceCeiling,
 
                     onChange: function (e) { upd('sdPriceCeiling', parseInt(e.target.value)); },
 
@@ -2559,7 +2559,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', min: 0, max: 30, value: sdTax,
+                    type: 'range', 'aria-label': 'sd tax', min: 0, max: 30, value: sdTax,
 
                     onChange: function (e) { upd('sdTax', parseInt(e.target.value)); },
 
@@ -3032,7 +3032,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', min: 0, max: 50, value: d.pfInvestPct || 0,
+                    type: 'range', 'aria-label': 'd', min: 0, max: 50, value: d.pfInvestPct || 0,
 
                     onChange: function (e) { upd('pfInvestPct', parseInt(e.target.value)); },
 
@@ -3707,7 +3707,7 @@ var d = labToolData || {};
 
                       React.createElement('input', {
 
-                        type: 'range', min: 1, max: (d.enBusiness.suggestedPrice || 10) * 3, step: 0.5,
+                        type: 'range', 'aria-label': 'Economicslab slider', min: 1, max: (d.enBusiness.suggestedPrice || 10) * 3, step: 0.5,
 
                         value: d.enBizPrice || d.enBusiness.suggestedPrice || 10,
 
